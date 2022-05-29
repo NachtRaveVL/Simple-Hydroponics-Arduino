@@ -45,6 +45,12 @@ public:
                              bool activeLow = true);
     virtual ~HydroponicsRelayActuator();
 
+    bool tryEnableActuator();
+    void disableActuator();
+    void enableActuatorFor(time_t enableTime);
+
+    void update();
+
     Hydroponics_RelayRail getRelayRail() const;
     bool getActiveLow() const;
 
