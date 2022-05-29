@@ -53,20 +53,20 @@
 #include <WProgram.h>
 #endif
 
-#include <DallasTemperature.h>      // DS18* submersible water temp probe
-#include <DHT.h>                    // DHT* OneWire air temp/humidity probe
-#include <EasyBuzzer.h>             // Asyncronous piezo buzzer library
-#include <I2C_EEPROM.h>             // i2c EEPROM interface library
-#include <Keypad.h>                 // 4-way directional matrix keypad
-#include <LiquidCrystal_I2C.h>      // i2c LCD library
+#include <DallasTemperature.h>          // DS18* submersible water temp probe
+#include <DHT.h>                        // DHT* OneWire air temp/humidity probe
+#include <EasyBuzzer\src\EasyBuzzer.h>  // Asyncronous piezo buzzer library
+#include <I2C_EEPROM\I2C_eeprom.h>      // i2c EEPROM interface library
+#include <Keypad\src\Keypad.h>          // 4-way directional matrix keypad
+#include <LiquidCrystal_I2C.h>          // i2c LCD library
 
 #ifndef __STM32F1__
-#include <OneWire.h>                // OneWire for DHT* probes             
+#include <OneWire.h>                    // OneWire for DHT* probes             
 #else
 #include <OneWireSTM.h>
 #endif
 
-#include <RTClib.h>                 // i2c RTC library
+#include <RTCLib\src\RTClib.h>          // i2c RTC library
 
 #if !defined(HYDRO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
 #include "Scheduler.h"
@@ -88,8 +88,8 @@
 #define HYDRO_USE_SOFTWARE_I2C
 #endif // /ifndef HYDRO_ENABLE_SOFTWARE_I2C
 
-#include <Time.h>
-#include <TimeAlarms.h>
+#include <Time\TimeLib.h>
+#include <TimeAlarms\TimeAlarms.h>
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
@@ -135,7 +135,7 @@ public:
 
     // Convenience builders for actuators (unowned, NULL return = failure)
     HydroponicsActuator *addGrowLightsRelay(byte outputPin);
-    HydroponicsActuator *addWaterPumpRelay(byte outputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsActuator *addWaterPumpRelay(byte outputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
     HydroponicsActuator *addWaterHeaterRelay(byte outputPin);
     HydroponicsActuator *addWaterAeratorRelay(byte outputPin);
     HydroponicsActuator *addFanCirculationRelay(byte outputPin);
@@ -154,21 +154,21 @@ public:
     HydroponicsSensor *addWaterPhMeter(byte inputPin);
     HydroponicsSensor *addWaterTDSElectrode(byte inputPin);
     HydroponicsSensor *addWaterDSTempSensor(byte inputPin);
-    HydroponicsSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
 
     // Adds/removes crops to/from system (ownership transfer)
     void registerCrop(HydroponicsCrop *crop);
     void unregisterCrop(HydroponicsCrop *crop);
 
     // Convenience builders for crops (unowned, NULL return = failure)
-    HydroponicsCrop *addCropFromSowDate(Hydroponics_CropType cropType, date_t sowDate, int positionIndex = -1);
-    HydroponicsCrop *addCropFromLastHarvest(Hydroponics_CropType cropType, date_t lastHarvestDate, int positionIndex = -1);
+    HydroponicsCrop *addCropFromSowDate(const Hydroponics_CropType cropType, time_t sowDate, int positionIndex = -1);
+    HydroponicsCrop *addCropFromLastHarvest(const Hydroponics_CropType cropType, time_t lastHarvestDate, int positionIndex = -1);
 
 
     // Accessors.
@@ -185,23 +185,23 @@ public:
     Keypad *getControlKeypad() const;                           // Control Keypad instance, available after init() (default: NULL)
 
     int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
-    int getRelayActiveCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;     // Current number of active relay devices, for the given rail (undefined-rail = all)
-    int getRelayMaxActiveCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;  // Maximum number of relay devices allowed active at a time, for the given rail (default: 2, undefined-rail = all)
+    int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;     // Current number of active relay devices, for the given rail (undefined-rail = all)
+    int getMaxActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;  // Maximum number of relay devices allowed active at a time, for the given rail (default: 2, undefined-rail = all)
 
     int getActuatorCount() const;                               // Current number of total actuators registered with system
     int getSensorCount() const;                                 // Current number of total sensors registered with system
 
     const char * getSystemName() const;                         // System display name (default: "Hydroduino", 31 char limit)
-    int getCropPositionsCount() const;                          // Total number of crop positions available in system (default: 16)
+    uint8_t getCropPositionsCount() const;                      // Total number of crop positions available in system (default: 16)
     float getReservoirSize(Hydroponics_FluidReservoir fluidReservoir) const;    // Fluid reservoir size, for given reservoir (liters)
     float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir) const;     // Fluid pump flow rate, for given reservoir (liters/sec)
 
     // Mutators.
 
-    void setRelayRailMaxActiveCount(int maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail
+    void setMaxActiveRelayCount(int maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail
 
     void setSystemName(const char * systemName);                // Sets display name of system (31 char limit)
-    void setCropPositionsCount(int cropPositionsCount);         // Sets number of crop positions
+    void setCropPositionsCount(uint8_t cropPositionsCount);     // Sets number of crop positions
     void setReservoirSize(float reservoirSize, Hydroponics_FluidReservoir fluidReservoir);  // Sets reservoir size, for the given reservoir (liters)
     void setPumpFlowRate(float pumpFlowRate, Hydroponics_FluidReservoir fluidReservoir);    // Sets pump flow rate, for the given reservoir (liters/sec)
 
@@ -237,6 +237,7 @@ protected:
     RTC_DS3231 *_rtc;                                       // Real time clock instance (owned)
     LiquidCrystal_I2C *_lcd;                                // Liquid crystal display instance (owned)
     Keypad *_keypad;                                        // Control matrix keypad (owned)
+
     HydroponicsSystemData *_systemData;                     // System data (owned, saved to EEPROM)
 
     // TODO maybe we use?

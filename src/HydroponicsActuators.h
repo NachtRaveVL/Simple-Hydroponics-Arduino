@@ -21,7 +21,7 @@ public:
     virtual bool tryEnableActuator() = 0;
     virtual void disableActuator() = 0;
     void enableActuatorFor(time_t enableTime);
-    inline void enableActuatorUntil(date_t disableDate) { enableActuatorFor(disableDate - now()); }
+    inline void enableActuatorUntil(time_t disableDate) { enableActuatorFor(disableDate - now()); }
 
     virtual void update() = 0;
 

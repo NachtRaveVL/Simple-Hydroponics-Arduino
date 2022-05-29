@@ -23,6 +23,7 @@
 
 
 #define HYDRO_NAME_MAXSIZE              32                  // Naming character maximum size
+#define HYDRO_EEPROM_MEMORYSIZE         64000               // Memory size for EEPROM
 
 
 // TODO
@@ -129,8 +130,8 @@ enum Hydroponics_CropPhase {
 
 // TODO
 enum Hydroponics_RelayRail {
-    Hydroponics_RelayRail_ACRelay,          // AC relay rail
-    Hydroponics_RelayRail_DCRelay,          // DC relay rail
+    Hydroponics_RelayRail_ACRail,           // AC relay rail
+    Hydroponics_RelayRail_DCRail,           // DC relay rail
     Hydroponics_RelayRail_Custom1,          // Custom 1 relay rail
     Hydroponics_RelayRail_Custom2,          // Custom 2 relay rail
 
@@ -194,7 +195,7 @@ enum Hydroponics_ControlInputMode {
 enum Hydroponics_ActuatorType {
     Hydroponics_ActuatorType_GrowLightsRelay,               // Grow lights relay actuator
     Hydroponics_ActuatorType_WaterPumpRelay,                // Water pump relay actuator (feed or drainage reservoir only)
-    Hydroponics_ActuatorType_PeristalticPumpRelay           // Peristaltic pump relay actuator (pH-up, pH-down, nutrient, or fresh water reservoir only)
+    Hydroponics_ActuatorType_PeristalticPumpRelay,          // Peristaltic pump relay actuator (pH-up, pH-down, nutrient, or fresh water reservoir only)
     Hydroponics_ActuatorType_WaterHeaterRelay,              // Water heater relay actuator (feed reservoir only)
     Hydroponics_ActuatorType_WaterAeratorRelay,             // Water aerator relay actuator (feed reservoir only)
     Hydroponics_ActuatorType_FanCirculationRelay,           // Fan circulation relay actuator
@@ -222,10 +223,12 @@ enum Hydroponics_SensorType {
 
 // TODO
 struct HydroponicsSystemData {
+    HydroponicsSystemData();                                    // Default constructor
     char _ident[3];                                             // Always 'HSD'
     uint8_t _version;                                           // Version #
     char systemName[HYDRO_NAME_MAXSIZE];                        // TODO
-    int cropPositionsCount;                                     // TODO
+    uint8_t cropPositionsCount;                                 // TODO
+    uint8_t maxActiveRelayCount[Hydroponics_RelayRail_Count];   // TODO
     float reservoirSize[Hydroponics_FluidReservoir_Count];      // TODO
     float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO
     float phDriftDataTODO;                                      // TODO
@@ -236,8 +239,7 @@ struct HydroponicsSystemData {
 
 // TODO
 struct HydroponicsCropData {
-    HydroponicsCropData(Hydroponics_CropType cropType);
-
+    HydroponicsCropData(Hydroponics_CropType cropType);         // Convenience constructor, loads from Crop Library if built
     char _ident[3];                                             // Always 'HCD'
     uint8_t _version;                                           // Version #
     Hydroponics_CropType cropType;                              // Crop type
@@ -256,6 +258,9 @@ struct HydroponicsCropData {
     bool isPerennial;                                           // TODO
     bool isPrunningRequired;                                    // TODO
     bool isToxicToPets;                                         // TODO
+
+private:
+    HydroponicsCropData();                                      // Default constructor
 };
 
 #endif // /ifndef HydroponicsDefines_H

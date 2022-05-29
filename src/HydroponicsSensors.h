@@ -10,6 +10,7 @@ class HydroponicsSensor;
 class HydroponicsAnalogSensor;
 class HydroponicsOneWireSensor;
 class HydroponicsBinarySensor;
+class HydroponicsBinaryAnalogSensor;
 
 #include "Hydroponics.h"
 
@@ -23,12 +24,12 @@ public:
 
     Hydroponics_SensorType getSensorType() const;
     Hydroponics_FluidReservoir getFluidReservoir() const;
-    date_t getLastMeasurementTime() const;
+    time_t getLastMeasurementTime() const;
 
 protected:
     Hydroponics_SensorType _sensorType;
     Hydroponics_FluidReservoir _fluidReservoir;
-    date_t _lastMeasureTime;
+    time_t _lastMeasureTime;
 };
 
 class HydroponicsAnalogSensor : public HydroponicsSensor {
@@ -61,8 +62,10 @@ protected:
 
 class HydroponicsBinarySensor : public HydroponicsSensor {
 public:
-    HydroponicsBinarySensor(Hydroponics_SensorType sensorType, byte inputPin, bool activeLow,
-                            Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsBinarySensor(byte inputPin,
+                            Hydroponics_SensorType sensorType,
+                            Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                            bool activeLow = true);
     virtual ~HydroponicsBinarySensor();
 
     // TODO reg as isr maybe?
@@ -81,7 +84,8 @@ protected:
 
 class HydroponicsBinaryAnalogSensor : public HydroponicsSensor {
 public:
-    HydroponicsBinaryAnalogSensor(Hydroponics_SensorType sensorType, byte inputPin, float tolerance, bool activeBelow,
+    HydroponicsBinaryAnalogSensor(byte inputPin, float tolerance, bool activeBelow,
+                                  Hydroponics_SensorType sensorType,
                                   Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
     virtual ~HydroponicsBinaryAnalogSensor();
 
