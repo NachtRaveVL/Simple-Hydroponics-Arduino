@@ -1,0 +1,29 @@
+{
+    "name": "Hydroponics-Arduino",
+    "version": "0.1",
+    "keywords": "todo",
+    "description": "todo",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "NachtRaveVL",
+            "email": "nachtravevl@gmail.com",
+            "url": "https://github.com/NachtRaveVL",
+            "maintainer": true
+        }
+    ],
+    "homepage": "https://github.com/NachtRaveVL/Hydroponics-Arduino/",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NachtRaveVL/Hydroponics-Arduino.git"
+    },
+    "examples": [
+        {
+            "name": "SimpleExample",
+            "base": "examples/SimpleExample",
+            "files": ["SimpleExample.ino"]
+        }
+    ],
+    "frameworks": ["arduino", "espidf"],
+    "platforms": ["avr", "sam", "samd", "teensy", "espressif8266", "espressif32"]
+}
