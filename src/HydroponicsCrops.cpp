@@ -7,15 +7,33 @@
 
 static bool _cropLibraryBuilt = false;
 
+HydroponicsCropData::HydroponicsCropData()
+    : _ident({'H','C','D'}), _version(1),
+      cropType(Hydroponics_CropType_Undefined), plantName({'\0'}),
+      growWeeksToHarvest(0), weeksBetweenHarvest(0),
+      phaseBeginWeek({0}), lightHoursPerDay({0}), feedIntervalMins({0}),
+      phRange({0}), ecRange({0}), waterTempRange({0}), airTempRange({0}),
+      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
+      isPrunningRequired(false), isToxicToPets(false)
+{ }
+
 HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType cropTypeIn)
-    : cropType(cropTypeIn)
+    : _ident({'H','C','D'}), _version(1),
+      cropType(cropTypeIn), plantName({'\0'}),
+      growWeeksToHarvest(0), weeksBetweenHarvest(0),
+      phaseBeginWeek({0}), lightHoursPerDay({0}), feedIntervalMins({0}),
+      phRange({0}), ecRange({0}), waterTempRange({0}), airTempRange({0}),
+      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
+      isPrunningRequired(false), isToxicToPets(false)
 {
-    if (_cropLibraryBuilt)
+    if (_cropLibraryBuilt) {
         *this = HydroponicsCropsLibrary::getInstance()->getCropData(this->cropType);
+    }
 }
 
+
 HydroponicsCropsLibrary::HydroponicsCropsLibrary()
-    : _cropData({0})
+    : _cropData({NULL})
 {
     buildLibrary();
 }
@@ -718,13 +736,13 @@ void HydroponicsCropsLibrary::setCustomCropData(const Hydroponics_CropType cropT
 }
 
 
-HydroponicsCrop::HydroponicsCrop(const Hydroponics_CropType cropType, const int positionIndex, const date_t sowDate)
+HydroponicsCrop::HydroponicsCrop(const Hydroponics_CropType cropType, const int positionIndex, const time_t sowDate)
     : _cropType(cropType), _positionIndex(positionIndex), _sowDate(sowDate),
       _cropData(NULL), _growWeek(0), _cropPhase(0)
 {
     _cropData = HydroponicsCropsLibrary::getInstance()->getCropData(cropType);
 
-    calcWeekAndPhase();
+    recalcGrowWeekAndPhase();
 }
 
 const Hydroponics_CropType HydroponicsCrop::getCropType() const
@@ -742,7 +760,7 @@ int HydroponicsCrop::getPositionIndex() const
     return _positionIndex;
 }
 
-date_t HydroponicsCrop::getSowDate() const
+time_t HydroponicsCrop::getSowDate() const
 {
     return _sowDate;
 }
