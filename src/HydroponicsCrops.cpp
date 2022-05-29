@@ -491,7 +491,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Pumpkin", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0] = { 5.5, 7.5 }; // alt: 5.0-7.5
         cropData.ecRange[0] = { 1.8, 2.4 };
-        cropData.isLargeCrop = true;
+        cropData.isLargePlant = true;
         _cropData[Hydroponics_CropType_Pumpkin] = cropData;
     }
 
