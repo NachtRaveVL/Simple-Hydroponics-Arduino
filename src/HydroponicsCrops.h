@@ -37,7 +37,7 @@ public:
     void update();
 
     const Hydroponics_CropType getCropType() const;
-    const Hydroponics_CropData *getCropData() const;
+    const HydroponicsCropData *getCropData() const;
     int getPositionIndex() const;
     time_t getSowDate() const;
     int getGrowWeek() const;

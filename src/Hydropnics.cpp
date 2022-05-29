@@ -184,7 +184,7 @@ void Hydroponics::unregisterActuator(HydroponicsActuator *actuator)
 HydroponicsActuator *Hydroponics::addGrowLightsRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_GrowLightsRelay, Hydroponics_RelayRail_ACRail);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_GrowLightsRelay, Hydroponics_RelayRail_ACRail);
     registerActuator(actuator);
     return actuator;
 }
@@ -192,7 +192,7 @@ HydroponicsActuator *Hydroponics::addGrowLightsRelay(byte outputPin)
 HydroponicsActuator *Hydroponics::addWaterPumpRelay(byte outputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_WaterPumpRelay, Hydroponics_RelayRail_ACRail, fluidReservoir);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_WaterPumpRelay, Hydroponics_RelayRail_ACRail, fluidReservoir);
     registerActuator(actuator);
     return actuator;
 }
@@ -200,7 +200,7 @@ HydroponicsActuator *Hydroponics::addWaterPumpRelay(byte outputPin, Hydroponics_
 HydroponicsActuator *Hydroponics::addWaterHeaterRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_WaterHeaterRelay, Hydroponics_RelayRail_ACRail);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_WaterHeaterRelay, Hydroponics_RelayRail_ACRail);
     registerActuator(actuator);
     return actuator;
 }
@@ -208,7 +208,7 @@ HydroponicsActuator *Hydroponics::addWaterHeaterRelay(byte outputPin)
 HydroponicsActuator *Hydroponics::addWaterAeratorRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_WaterAeratorRelay, Hydroponics_RelayRail_ACRail);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_WaterAeratorRelay, Hydroponics_RelayRail_ACRail);
     registerActuator(actuator);
     return actuator;
 }
@@ -216,7 +216,7 @@ HydroponicsActuator *Hydroponics::addWaterAeratorRelay(byte outputPin)
 HydroponicsActuator *Hydroponics::addFanCirculationRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_FanCirculationRelay, Hydroponics_RelayRail_ACRail);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_FanCirculationRelay, Hydroponics_RelayRail_ACRail);
     registerActuator(actuator);
     return actuator;
 }
@@ -224,7 +224,7 @@ HydroponicsActuator *Hydroponics::addFanCirculationRelay(byte outputPin)
 HydroponicsActuator *Hydroponics::addFanExhaustRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_FanExhaustRelay, Hydroponics_RelayRail_ACRail);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_FanExhaustRelay, Hydroponics_RelayRail_ACRail);
     registerActuator(actuator);
     return actuator;
 }
@@ -232,7 +232,7 @@ HydroponicsActuator *Hydroponics::addFanExhaustRelay(byte outputPin)
 HydroponicsActuator *Hydroponics::addPhUpPeristalticPumpRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_PhUpSolution);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_PhUpSolution);
     registerActuator(actuator);
     return actuator;
 }
@@ -240,7 +240,7 @@ HydroponicsActuator *Hydroponics::addPhUpPeristalticPumpRelay(byte outputPin)
 HydroponicsActuator *Hydroponics::addPhDownPeristalticPumpRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_PhDownSolution);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_PhDownSolution);
     registerActuator(actuator);
     return actuator;
 }
@@ -248,7 +248,7 @@ HydroponicsActuator *Hydroponics::addPhDownPeristalticPumpRelay(byte outputPin)
 HydroponicsActuator *Hydroponics::addNutrientPremixPeristalticPumpRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_NutrientPremix);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_NutrientPremix);
     registerActuator(actuator);
     return actuator;
 }
@@ -256,7 +256,7 @@ HydroponicsActuator *Hydroponics::addNutrientPremixPeristalticPumpRelay(byte out
 HydroponicsActuator *Hydroponics::addFreshWaterPeristalticPumpRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
-    HydroponicsActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_FreshWater);
+    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_PeristalticPumpRelay, Hydroponics_RelayRail_DCRail, Hydroponics_FluidReservoir_FreshWater);
     registerActuator(actuator);
     return actuator;
 }
@@ -273,7 +273,7 @@ void Hydroponics::unregisterSensor(HydroponicsSensor *sensor)
 
 HydroponicsSensor *Hydroponics::addAirDHTTempHumiditySensor(OneWire &oneWire)
 {
-    HydroponicsSensor *sensor = new HydroponicsOneWireSensor(oneWire, Hydroponics_SensorType_AirTempHumidity);
+    HydroponicsOneWireSensor *sensor = new HydroponicsOneWireSensor(oneWire, Hydroponics_SensorType_AirTempHumidity);
     // TODO switch to proper constructor, set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -282,7 +282,7 @@ HydroponicsSensor *Hydroponics::addAirDHTTempHumiditySensor(OneWire &oneWire)
 HydroponicsSensor *Hydroponics::addWaterPhMeter(byte inputPin)
 {
     // TODO assert inputPin in AnalogIn
-    HydroponicsSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_PotentialHydrogen);
+    HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_PotentialHydrogen);
     // TODO set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -291,7 +291,7 @@ HydroponicsSensor *Hydroponics::addWaterPhMeter(byte inputPin)
 HydroponicsSensor *Hydroponics::addWaterTDSElectrode(byte inputPin)
 {
     // TODO assert inputPin in AnalogIn
-    HydroponicsSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_TotalDissolvedSolids);
+    HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_TotalDissolvedSolids);
     // TODO set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -300,7 +300,7 @@ HydroponicsSensor *Hydroponics::addWaterTDSElectrode(byte inputPin)
 HydroponicsSensor *Hydroponics::addWaterDSTempSensor(byte inputPin)
 {
     // TODO assert inputPin in AnalogIn
-    HydroponicsSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_WaterTemperature);
+    HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_WaterTemperature);
     // TODO set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -309,7 +309,7 @@ HydroponicsSensor *Hydroponics::addWaterDSTempSensor(byte inputPin)
 HydroponicsSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert inputPin in PWM
-    HydroponicsSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_WaterPumpFlowSensor, fluidReservoir);
+    HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_WaterPumpFlowSensor, fluidReservoir);
     // TODO set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -318,7 +318,7 @@ HydroponicsSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydroponic
 HydroponicsSensor *Hydroponics::addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert inputPin in digital
-    HydroponicsSensor *sensor = new HydroponicsBinarySensor(inputPin, Hydroponics_SensorType_LowWaterLevelIndicator, fluidReservoir, true);
+    HydroponicsBinarySensor *sensor = new HydroponicsBinarySensor(inputPin, Hydroponics_SensorType_LowWaterLevelIndicator, fluidReservoir, true);
     // TODO test activeLow setting, set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -327,7 +327,7 @@ HydroponicsSensor *Hydroponics::addLowWaterLevelIndicator(byte inputPin, Hydropo
 HydroponicsSensor *Hydroponics::addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert inputPin in digital
-    HydroponicsSensor *sensor = new HydroponicsBinarySensor(inputPin, Hydroponics_SensorType_HighWaterLevelIndicator, fluidReservoir, false);
+    HydroponicsBinarySensor *sensor = new HydroponicsBinarySensor(inputPin, Hydroponics_SensorType_HighWaterLevelIndicator, fluidReservoir, false);
     // TODO test activeLow setting, set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -336,7 +336,7 @@ HydroponicsSensor *Hydroponics::addHighWaterLevelIndicator(byte inputPin, Hydrop
 HydroponicsSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert inputPin in AnalogIn
-    HydroponicsSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.1, true, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
+    HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.1, true, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
     // TODO actual tolerance value, set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -345,7 +345,7 @@ HydroponicsSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin, Hydroponic
 HydroponicsSensor *Hydroponics::addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert inputPin in AnalogIn
-    HydroponicsSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.9, false, Hydroponics_SensorType_HighWaterHeightMeter, fluidReservoir);
+    HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.9, false, Hydroponics_SensorType_HighWaterHeightMeter, fluidReservoir);
     // TODO actual tolerance value, set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -354,16 +354,16 @@ HydroponicsSensor *Hydroponics::addHighWaterHeightMeter(byte inputPin, Hydroponi
 HydroponicsSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert inputPin in AnalogIn
-    HydroponicsSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.9, false, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
+    HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.9, false, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
     // TODO actual tolerance value, set saved calibration data
     registerSensor(sensor);
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::ddHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
+HydroponicsSensor *Hydroponics::addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert inputPin in AnalogIn
-    HydroponicsSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.1, true, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
+    HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.1, true, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
     // TODO actual tolerance value, set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -390,7 +390,7 @@ HydroponicsCrop *Hydroponics::addCropFromSowDate(const Hydroponics_CropType crop
 HydroponicsCrop *Hydroponics::addCropFromLastHarvest(const Hydroponics_CropType cropType, time_t lastHarvestDate, int positionIndex)
 {
     // TODO assert cropType valid, position index validation or next new lookup when -1
-    time_t sowDate = lastHarvestDate - weeksToTime_t(HydroponicsCropsLibrary::getInstance()->getCropData(cropType)->weeksBetweenHarvest);
+    time_t sowDate = lastHarvestDate - (HydroponicsCropsLibrary::getInstance()->getCropData(cropType)->weeksBetweenHarvest * SECS_PER_WEEK);
     HydroponicsCrop *crop = new HydroponicsCrop(cropType, positionIndex, sowDate);
     registerCrop(crop);
     return crop;
@@ -416,7 +416,7 @@ Hydroponics_ControlInputMode Hydroponics::getControlInputMode() const
     return _ctrlInMode;
 }
 
-EasyBuzzer *Hydroponics::getPiezoBuzzer() const
+EasyBuzzerClass *Hydroponics::getPiezoBuzzer() const
 {
     return _buzzer;
 }
@@ -453,9 +453,10 @@ int Hydroponics::getActiveRelayCount(Hydroponics_RelayRail relayRail) const
     return 0;
 }
 
-int Hydroponics::getMaxActiveRelayCount(Hydroponics_RelayRail relayRail) const
+uint8_t Hydroponics::getMaxActiveRelayCount(Hydroponics_RelayRail relayRail) const
 {
-    return _systemData ? &_systemData->maxActiveRelayCount : 0;
+    // TODO assert params systemData
+    return _systemData ? _systemData->maxActiveRelayCount[relayRail] : 0;
 }
 
 int Hydroponics::getActuatorCount() const
@@ -476,10 +477,10 @@ const char * Hydroponics::getSystemName() const
     return _systemData ? &_systemData->systemName[0] : NULL;
 }
 
-int Hydroponics::getCropPositionsCount() const
+uint8_t Hydroponics::getCropPositionsCount() const
 {
     // TODO assert systemData
-    return _systemData ? &_systemData->cropPositionsCount : 0;
+    return _systemData ? _systemData->cropPositionsCount : 0;
 }
 
 float Hydroponics::getReservoirSize(Hydroponics_FluidReservoir fluidReservoir) const
@@ -494,7 +495,7 @@ float Hydroponics::getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir) co
     return _systemData ? _systemData->pumpFlowRate[fluidReservoir] : 0;
 }
 
-void Hydroponics::setMaxActiveRelayCount(int maxActiveCount, Hydroponics_RelayRail relayRail)
+void Hydroponics::setMaxActiveRelayCount(uint8_t maxActiveCount, Hydroponics_RelayRail relayRail)
 {
     // TODO assert params systemData
     if (_systemData) {

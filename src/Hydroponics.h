@@ -53,6 +53,8 @@
 #include <WProgram.h>
 #endif
 
+#include <assert.h>
+
 #include <DallasTemperature.h>          // DS18* submersible water temp probe
 #include <DHT.h>                        // DHT* OneWire air temp/humidity probe
 #include <EasyBuzzer\src\EasyBuzzer.h>  // Asyncronous piezo buzzer library
@@ -178,15 +180,15 @@ public:
     Hydroponics_LCDOutputMode getLCDOutputMode() const;             // System LCD output mode (default: disabled)
     Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
 
-    EasyBuzzer *getPiezoBuzzer() const;                         // Piezo buzzer EasyBuzzer instance, available after init (default: NULL)
+    EasyBuzzerClass *getPiezoBuzzer() const;                    // Piezo buzzer EasyBuzzer instance, available after init (default: NULL)
     I2C_eeprom *getEEPROM() const;                              // EEPROM instance, available after init() (default: NULL)
     RTC_DS3231 *getRealTimeClock() const;                       // Real time clock instance, available after init() (default: NULL)
     LiquidCrystal_I2C *getLiquidCrystalDisplay() const;         // Liquid crystal display instance, available after init() (default: NULL)
     Keypad *getControlKeypad() const;                           // Control Keypad instance, available after init() (default: NULL)
 
-    int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
-    int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;     // Current number of active relay devices, for the given rail (undefined-rail = all)
-    int getMaxActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;  // Maximum number of relay devices allowed active at a time, for the given rail (default: 2, undefined-rail = all)
+    int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;                 // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
+    int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of active relay devices, for the given rail (undefined-rail = all)
+    uint8_t getMaxActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;    // Maximum number of relay devices allowed active at a time, for the given rail (default: 2, undefined-rail = all)
 
     int getActuatorCount() const;                               // Current number of total actuators registered with system
     int getSensorCount() const;                                 // Current number of total sensors registered with system
@@ -198,7 +200,7 @@ public:
 
     // Mutators.
 
-    void setMaxActiveRelayCount(int maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail
+    void setMaxActiveRelayCount(uint8_t maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail
 
     void setSystemName(const char * systemName);                // Sets display name of system (31 char limit)
     void setCropPositionsCount(uint8_t cropPositionsCount);     // Sets number of crop positions
@@ -232,7 +234,7 @@ protected:
     Hydroponics_LCDOutputMode _lcdOutMode;                  // System LCD mode
     Hydroponics_ControlInputMode _ctrlInMode;               // System control input mode
 
-    EasyBuzzer *_buzzer;                                    // Piezo buzzer instance (unowned)
+    EasyBuzzerClass *_buzzer;                               // Piezo buzzer instance (unowned)
     I2C_eeprom *_eeprom;                                    // EEPROM instance (owned)
     RTC_DS3231 *_rtc;                                       // Real time clock instance (owned)
     LiquidCrystal_I2C *_lcd;                                // Liquid crystal display instance (owned)
