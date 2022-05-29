@@ -54,10 +54,12 @@ static void uDelayMicrosFuncDef(unsigned int timeout) {
 
 HydroponicsSystemData::HydroponicsSystemData()
     : _ident({'H','S', 'D'}), _version(1),
-      systemName({'H','y','d'.'r','o','d','u','i','n','o', '\0'}),
-      cropPositionsCount(16), maxActiveRelayCount({0}),
-      reservoirSize({0}), pumpFlowRate({0})
-{ }
+      systemName({'H','y','d','r','o','d','u','i','n','o', '\0'}),
+      cropPositionsCount(16), maxActiveRelayCount({2})
+{
+    memset(reservoirSize, 0, sizeof(reservoirSize));
+    memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
+}
 
 
 Hydroponics::Hydroponics(byte piezoBuzzerPin, byte i2cAddressEEPROM, byte i2cAddressRTC,
