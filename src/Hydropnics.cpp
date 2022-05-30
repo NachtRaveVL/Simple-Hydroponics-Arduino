@@ -59,6 +59,12 @@ HydroponicsSystemData::HydroponicsSystemData()
 {
     memset(reservoirSize, 0, sizeof(reservoirSize));
     memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
+    memset(calibrationData, 0, sizeof(calibrationData));
+
+    for (int calibIndex = 0; calibIndex < HYDRO_CALIB_MAXSIZE; ++calibIndex) {
+        calibrationData[calibIndex].sensor = Hydroponics_SensorType_Undefined;
+        calibrationData[calibIndex].reservoir = Hydroponics_FluidReservoir_Undefined;
+    }
 }
 
 
@@ -67,8 +73,10 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, byte i2cAddressEEPROM, byte i2cAdd
                          TwoWire& i2cWire, uint32_t i2cSpeed)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(i2cAddressEEPROM, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _lcd(NULL), _keypad(NULL), _systemData(NULL),
+      _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
       _i2cAddressLCD(i2cAddressLCD), _controlInputPin1(controlInputPin1),
+      _waterResMode(Hydroponics_WaterReservoirMode_Undefined), _tempMode(Hydroponics_TemperatureMode_Undefined),
+      _lcdOutMode(Hydroponics_LCDOutputMode_Undefined), _ctrlInMode(Hydroponics_ControlInputMode_Undefined),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
     if (piezoBuzzerPin) {
@@ -81,8 +89,10 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed,
                          byte i2cAddressLCD, byte controlInputPin1)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(i2cAddressEEPROM, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _lcd(NULL), _keypad(NULL), _systemData(NULL),
+      _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
       _i2cAddressLCD(i2cAddressLCD), _controlInputPin1(controlInputPin1),
+      _waterResMode(Hydroponics_WaterReservoirMode_Undefined), _tempMode(Hydroponics_TemperatureMode_Undefined),
+      _lcdOutMode(Hydroponics_LCDOutputMode_Undefined), _ctrlInMode(Hydroponics_ControlInputMode_Undefined),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
     if (piezoBuzzerPin) {
@@ -107,60 +117,21 @@ void Hydroponics::init(Hydroponics_WaterReservoirMode waterResMode,
                        Hydroponics_LCDOutputMode lcdOutMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
-    assert(!(waterResMode >= 0 && waterResMode < Hydroponics_WaterReservoirMode_Count && "Invalid water reservoir mode"));
-    assert(!(tempMode >= 0 && tempMode < Hydroponics_TemperatureMode_Count && "Invalid temperature mode"));
-    assert(!(lcdOutMode >= 0 && lcdOutMode < Hydroponics_LCDOutputMode_Count && "Invalid LCD output mode"));
-    assert(!(ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count && "Invalid control input mode"));
+    assert(!((int)waterResMode >= 0 && waterResMode < Hydroponics_WaterReservoirMode_Count && "Invalid water reservoir mode"));
+    assert(!((int)tempMode >= 0 && tempMode < Hydroponics_TemperatureMode_Count && "Invalid temperature mode"));
+    assert(!((int)lcdOutMode >= 0 && lcdOutMode < Hydroponics_LCDOutputMode_Count && "Invalid LCD output mode"));
+    assert(!((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count && "Invalid control input mode"));
 
     _waterResMode = waterResMode;
     _tempMode = tempMode;
     _lcdOutMode = lcdOutMode;
     _ctrlInMode = ctrlInMode;
 
-    if (_eeprom && !_eeprom->begin()) {
-        // TODO error
-    }
-    if (_rtc && !_rtc->begin(_i2cWire)) {
-        // TODO error
-    }
-
-    if (_lcd) { delete _lcd; _lcd = NULL; }
-    switch(_lcdOutMode) {
-        case Hydroponics_LCDOutputMode_20x4LCD:
-        case Hydroponics_LCDOutputMode_20x4LCD_Reversed:
-            _lcd = new LiquidCrystal_I2C(_i2cAddressLCD, 20, 4);
-            _lcd->init();
-            break;
-
-        default:
-            break;
-    }
-
-    if (_keypad) { delete _keypad; _keypad = NULL; }
-    switch(_ctrlInMode) {
-        case Hydroponics_ControlInputMode_2x2Directional: {
-            char keys[2][2] = {
-                {'D','L'},
-                {'R','U'}
-            };
-            byte rowPins[2] = { _controlInputPin1, _controlInputPin1+1 };
-            byte colPins[2] = { _controlInputPin1+2, _controlInputPin1+3 };
-            _keypad = new Keypad(makeKeymap(keys), rowPins, colPins, 2, 2 );
-        } break;
-
-        case Hydroponics_ControlInputMode_2x2Directional_Reversed: {
-            char keys[2][2] = {
-                {'U','R'},
-                {'L','D'}
-            };
-            byte rowPins[2] = { _controlInputPin1, _controlInputPin1+1 };
-            byte colPins[2] = { _controlInputPin1+2, _controlInputPin1+3 };
-            _keypad = new Keypad(makeKeymap(keys), rowPins, colPins, 2, 2 );
-        } break;
-
-        default:
-            break;
-    }
+    // Forces begin on these if not already
+    getEEPROM();
+    getRealTimeClock();
+    getLiquidCrystalDisplay();
+    getControlKeypad();    
 
     if (!_systemData) { _systemData = new HydroponicsSystemData(); }
 
@@ -321,7 +292,7 @@ HydroponicsSensor *Hydroponics::addLowWaterLevelIndicator(byte inputPin, Hydropo
 {
     // TODO assert inputPin in digital
     HydroponicsBinarySensor *sensor = new HydroponicsBinarySensor(inputPin, Hydroponics_SensorType_LowWaterLevelIndicator, fluidReservoir, true);
-    // TODO test activeLow setting, set saved calibration data
+    // TODO test activeLow setting
     registerSensor(sensor);
     return sensor;
 }
@@ -330,7 +301,7 @@ HydroponicsSensor *Hydroponics::addHighWaterLevelIndicator(byte inputPin, Hydrop
 {
     // TODO assert inputPin in digital
     HydroponicsBinarySensor *sensor = new HydroponicsBinarySensor(inputPin, Hydroponics_SensorType_HighWaterLevelIndicator, fluidReservoir, false);
-    // TODO test activeLow setting, set saved calibration data
+    // TODO test activeLow setting
     registerSensor(sensor);
     return sensor;
 }
@@ -423,23 +394,75 @@ EasyBuzzerClass *Hydroponics::getPiezoBuzzer() const
     return _buzzer;
 }
 
-I2C_eeprom *Hydroponics::getEEPROM() const
+I2C_eeprom *Hydroponics::getEEPROM()
 {
-    return _eeprom;
+    if (_eeprom && !_eepromBegan) {
+        _eepromBegan = _eeprom->begin();
+        assert(!(_eepromBegan && "Failed starting EEPROM"));
+    }
+    return _eeprom && _eepromBegan ? _eeprom : NULL;
 }
 
-RTC_DS3231 *Hydroponics::getRealTimeClock() const
+RTC_DS3231 *Hydroponics::getRealTimeClock()
 {
-    return _rtc;
+    if (_rtc && !_rtcBegan) {
+        _rtcBegan = _rtc->begin(_i2cWire);
+        assert(!(_rtcBegan && "Failed starting RTC"));
+    }
+    return _rtc && _rtcBegan ? _rtc : NULL;
 }
 
-LiquidCrystal_I2C *Hydroponics::getLiquidCrystalDisplay() const
+LiquidCrystal_I2C *Hydroponics::getLiquidCrystalDisplay()
 {
+    switch(_lcdOutMode) {
+        case Hydroponics_LCDOutputMode_20x4LCD:
+        case Hydroponics_LCDOutputMode_20x4LCD_Reversed:
+            if (!_lcd) {
+                _lcd = new LiquidCrystal_I2C(_i2cAddressLCD, 20, 4);
+                _lcd->init();
+            }
+            break;
+
+        default:
+            if (_lcd) { delete _lcd; _lcd = NULL; }
+            break;
+    }
+
     return _lcd;
 }
 
-Keypad *Hydroponics::getControlKeypad() const
+Keypad *Hydroponics::getControlKeypad()
 {
+    switch(_ctrlInMode) {
+        case Hydroponics_ControlInputMode_2x2Directional: {
+            if (!_keypad) {
+                char keys[2][2] = {
+                    {'D','L'},
+                    {'R','U'}
+                };
+                byte rowPins[2] = { _controlInputPin1, _controlInputPin1+1 };
+                byte colPins[2] = { _controlInputPin1+2, _controlInputPin1+3 };
+                _keypad = new Keypad(makeKeymap(keys), rowPins, colPins, 2, 2 );
+            }
+        } break;
+
+        case Hydroponics_ControlInputMode_2x2Directional_Reversed: {
+            if (!_keypad) {
+                char keys[2][2] = {
+                    {'U','R'},
+                    {'L','D'}
+                };
+                byte rowPins[2] = { _controlInputPin1, _controlInputPin1+1 };
+                byte colPins[2] = { _controlInputPin1+2, _controlInputPin1+3 };
+                _keypad = new Keypad(makeKeymap(keys), rowPins, colPins, 2, 2 );
+            }
+        } break;
+
+        default:
+            if (_keypad) { delete _keypad; _keypad = NULL; }
+            break;
+    }
+
     return _keypad;
 }
 
