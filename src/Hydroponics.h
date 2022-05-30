@@ -52,8 +52,13 @@
 #else
 #include <WProgram.h>
 #endif
-
 #include <assert.h>
+#include <Wire.h>
+
+#if !defined(HYDRO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
+#include "Scheduler.h"
+#define HYDRO_USE_SCHEDULER
+#endif
 
 #include <DallasTemperature.h>          // DS18* submersible water temp probe
 #include <DHT.h>                        // DHT* OneWire air temp/humidity probe
@@ -61,37 +66,15 @@
 #include <I2C_EEPROM\I2C_eeprom.h>      // i2c EEPROM interface library
 #include <Keypad\src\Keypad.h>          // 4-way directional matrix keypad
 #include <LiquidCrystal_I2C.h>          // i2c LCD library
-
 #ifndef __STM32F1__
 #include <OneWire.h>                    // OneWire for DHT* probes             
 #else
 #include <OneWireSTM.h>
 #endif
-
 #include <RTCLib\src\RTClib.h>          // i2c RTC library
-
-#if !defined(HYDRO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
-#include "Scheduler.h"
-#define HYDRO_USE_SCHEDULER
-#endif
-
-#ifndef HYDRO_ENABLE_SOFTWARE_I2C
-#include <Wire.h>
-#if BUFFER_LENGTH
-#define HYDRO_I2C_BUFFER_LENGTH   BUFFER_LENGTH
-#elif I2C_BUFFER_LENGTH
-#define HYDRO_I2C_BUFFER_LENGTH   I2C_BUFFER_LENGTH
-#else
-#warning "i2c buffer length not defined - using default value of 32a, which may not be correct for your microcontroller. Check Wire.h (or similar) for your hardware and manually define BUFFER_LENGTH or I2C_BUFFER_LENGTH to remove this warning."
-#define HYDRO_I2C_BUFFER_LENGTH   32
-#endif // /if BUFFER_LENGTH
-#else
-#include <avr/io.h>
-#define HYDRO_USE_SOFTWARE_I2C
-#endif // /ifndef HYDRO_ENABLE_SOFTWARE_I2C
-
 #include <Time\TimeLib.h>
 #include <TimeAlarms\TimeAlarms.h>
+
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
@@ -181,10 +164,10 @@ public:
     Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
 
     EasyBuzzerClass *getPiezoBuzzer() const;                    // Piezo buzzer EasyBuzzer instance, available after init (default: NULL)
-    I2C_eeprom *getEEPROM() const;                              // EEPROM instance, available after init() (default: NULL)
-    RTC_DS3231 *getRealTimeClock() const;                       // Real time clock instance, available after init() (default: NULL)
-    LiquidCrystal_I2C *getLiquidCrystalDisplay() const;         // Liquid crystal display instance, available after init() (default: NULL)
-    Keypad *getControlKeypad() const;                           // Control Keypad instance, available after init() (default: NULL)
+    I2C_eeprom *getEEPROM();                                    // EEPROM instance, available after init() (default: NULL)
+    RTC_DS3231 *getRealTimeClock();                             // Real time clock instance, available after init() (default: NULL)
+    LiquidCrystal_I2C *getLiquidCrystalDisplay();               // Liquid crystal display instance, available after init() (default: NULL)
+    Keypad *getControlKeypad();                                 // Control Keypad instance, available after init() (default: NULL)
 
     int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;                 // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
     int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of active relay devices, for the given rail (undefined-rail = all)
@@ -239,6 +222,8 @@ protected:
     RTC_DS3231 *_rtc;                                       // Real time clock instance (owned)
     LiquidCrystal_I2C *_lcd;                                // Liquid crystal display instance (owned)
     Keypad *_keypad;                                        // Control matrix keypad (owned)
+    bool _eepromBegan;                                      // Status of EEPROM begin()
+    bool _rtcBegan;                                         // Status of RTC begin() call
 
     HydroponicsSystemData *_systemData;                     // System data (owned, saved to EEPROM)
 

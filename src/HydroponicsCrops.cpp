@@ -93,6 +93,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.8;
         cropData.ecRange[0][0] = 1.4; cropData.ecRange[0][1] = 1.8;
         cropData.isPerennial = true;
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Asparagus] = cropData;
     }
 
@@ -100,6 +101,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Basil", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Basil] = cropData;
     }
 
@@ -107,6 +109,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Bean (common)", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 6.0;
         cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4; // alt: 2.0-4.0
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Bean] = cropData;
     }
 
@@ -114,6 +117,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Bean (broad)", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4; // alt: 1.8-2.2
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_BeanBroad] = cropData;
     }
 
@@ -261,6 +265,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Cucumber", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 5.8; cropData.phRange[0][1] = 6.0;
         cropData.ecRange[0][0] = 1.7; cropData.ecRange[0][1] = 2.5; // alt: 1.5-3.0
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Cucumber] = cropData;
     }
 
@@ -275,6 +280,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Eggplant", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 2.5; cropData.ecRange[0][1] = 3.5;
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Eggplant] = cropData;
     }
 
@@ -305,6 +311,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 1.5; cropData.ecRange[0][1] = 2.5;
         cropData.isToxicToPets = true;
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Flowers] = cropData;
     }
 
@@ -350,7 +357,7 @@ void HydroponicsCropsLibrary::buildLibrary()
     }
 
     {   HydroponicsCropData cropData(Hydroponics_CropType_LemonBalm);
-        strncpy(&cropData.plantName[0], "LemonBalm", HYDRO_NAME_MAXSIZE);
+        strncpy(&cropData.plantName[0], "Lemon Balm", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
         cropData.isPerennial = true;
@@ -470,6 +477,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Peppers (bell)", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.5; // alt: 2.0-3.0
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_PeppersBell] = cropData;
     }
 
@@ -477,6 +485,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         strncpy(&cropData.plantName[0], "Peppers (hot)", HYDRO_NAME_MAXSIZE);
         cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 3.5; // alt: 3.0-3.5
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_PeppersHot] = cropData;
     }
 
@@ -501,6 +510,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 7.5; // alt: 5.0-7.5
         cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
         cropData.isLargePlant = true;
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Pumpkin] = cropData;
     }
 
@@ -555,6 +565,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 6.5;
         cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
         cropData.isLargePlant = true;
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Squash] = cropData;
     }
 
@@ -609,6 +620,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5; // alt: 5.5-6.0
         cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 5.0;
         cropData.isToxicToPets = true;
+        cropData.isPrunningRequired = true;
         _cropData[Hydroponics_CropType_Tomato] = cropData;
     }
 

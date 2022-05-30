@@ -23,7 +23,8 @@
 
 
 #define HYDRO_NAME_MAXSIZE              32                  // Naming character maximum size
-#define HYDRO_EEPROM_MEMORYSIZE         64000               // Memory size for EEPROM
+#define HYDRO_CALIB_MAXSIZE             8                   // Analog calibration data maximum size
+#define HYDRO_EEPROM_MEMORYSIZE         262144UL            // Memory size for EEPROM
 
 
 // TODO
@@ -141,15 +142,15 @@ enum Hydroponics_RelayRail {
 
 // TODO
 enum Hydroponics_FluidReservoir {
-    Hydroponics_FluidReservoir_FeedWater,       // Feed water reservoir (aka main water reservoir)
-    Hydroponics_FluidReservoir_DrainageWater,   // Drainage water reservoir
-    Hydroponics_FluidReservoir_NutrientPremix,  // Nutrient premix reservoir
-    Hydroponics_FluidReservoir_FreshWater,      // Fresh water reservoir/source
-    Hydroponics_FluidReservoir_PhUpSolution,    // pH-Up solution
-    Hydroponics_FluidReservoir_PhDownSolution,  // pH-Down solution
+    Hydroponics_FluidReservoir_FeedWater,           // Feed water reservoir (aka main water reservoir)
+    Hydroponics_FluidReservoir_DrainageWater,       // Drainage water reservoir
+    Hydroponics_FluidReservoir_NutrientPremix,      // Nutrient premix reservoir
+    Hydroponics_FluidReservoir_FreshWater,          // Fresh water reservoir/source
+    Hydroponics_FluidReservoir_PhUpSolution,        // pH-Up solution
+    Hydroponics_FluidReservoir_PhDownSolution,      // pH-Down solution
 
-    Hydroponics_FluidReservoir_Count,           // Internal use only
-    Hydroponics_FluidReservoir_Undefined = -1   // Internal use only
+    Hydroponics_FluidReservoir_Count,               // Internal use only
+    Hydroponics_FluidReservoir_Undefined = -1       // Internal use only
 };
 
 // TODO
@@ -231,6 +232,11 @@ struct HydroponicsSystemData {
     uint8_t maxActiveRelayCount[Hydroponics_RelayRail_Count];   // TODO
     float reservoirSize[Hydroponics_FluidReservoir_Count];      // TODO
     float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO
+    struct {
+        Hydroponics_SensorType sensor;
+        Hydroponics_FluidReservoir reservoir;
+        float multiplier, offset;                               // Ax + B curve correction
+    } calibrationData[HYDRO_CALIB_MAXSIZE];                     // Analog sensor calibration data
     float phDriftDataTODO;                                      // TODO
     float ecDriftDataTODO;                                      // TODO
     float calibrationDataTODO;                                  // TODO
