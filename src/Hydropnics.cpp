@@ -53,9 +53,9 @@ static void uDelayMicrosFuncDef(unsigned int timeout) {
 
 
 HydroponicsSystemData::HydroponicsSystemData()
-    : _ident({'H','S', 'D'}), _version(1),
-      systemName({'H','y','d','r','o','d','u','i','n','o', '\0'}),
-      cropPositionsCount(16), maxActiveRelayCount({2})
+    : _ident{'H','S', 'D'}, _version(1),
+      systemName{'H','y','d','r','o','d','u','i','n','o', '\0'},
+      cropPositionsCount(16), maxActiveRelayCount{2}
 {
     memset(reservoirSize, 0, sizeof(reservoirSize));
     memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
@@ -68,35 +68,45 @@ HydroponicsSystemData::HydroponicsSystemData()
 }
 
 
-Hydroponics::Hydroponics(byte piezoBuzzerPin, byte i2cAddressEEPROM, byte i2cAddressRTC,
-                         byte i2cAddressLCD, byte controlInputPin1,
-                         TwoWire& i2cWire, uint32_t i2cSpeed)
-    : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed),
+Hydroponics::Hydroponics(byte piezoBuzzerPin, byte microSDCSPin, byte controlInputPin1,
+                         byte i2cAddressEEPROM, byte i2cAddressRTC, byte i2cAddressLCD,
+                         TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed)
+    : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(i2cAddressEEPROM, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
-      _i2cAddressLCD(i2cAddressLCD), _controlInputPin1(controlInputPin1),
-      _waterResMode(Hydroponics_WaterReservoirMode_Undefined), _tempMode(Hydroponics_TemperatureMode_Undefined),
-      _lcdOutMode(Hydroponics_LCDOutputMode_Undefined), _ctrlInMode(Hydroponics_ControlInputMode_Undefined),
+      _msd(NULL), _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
+      _i2cAddressLCD(i2cAddressLCD), _ctrlInputPin1(controlInputPin1), _msdCSPin(microSDCSPin),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
     if (piezoBuzzerPin) {
         _buzzer->setPin(piezoBuzzerPin);
     }
+    if (microSDCSPin) {
+        #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)
+            _msd = &SD;
+        #else
+            _msd = new SDClass();
+        #endif
+    }
 }
 
-Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed,
-                         byte piezoBuzzerPin, byte i2cAddressEEPROM, byte i2cAddressRTC,
-                         byte i2cAddressLCD, byte controlInputPin1)
-    : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed),
+Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
+                         byte piezoBuzzerPin, byte microSDCSPin, byte controlInputPin1,
+                         byte i2cAddressEEPROM, byte i2cAddressRTC, byte i2cAddressLCD)
+    : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(i2cAddressEEPROM, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
-      _i2cAddressLCD(i2cAddressLCD), _controlInputPin1(controlInputPin1),
-      _waterResMode(Hydroponics_WaterReservoirMode_Undefined), _tempMode(Hydroponics_TemperatureMode_Undefined),
-      _lcdOutMode(Hydroponics_LCDOutputMode_Undefined), _ctrlInMode(Hydroponics_ControlInputMode_Undefined),
+      _msd(NULL), _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
+      _i2cAddressLCD(i2cAddressLCD), _ctrlInputPin1(controlInputPin1), _msdCSPin(microSDCSPin),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
     if (piezoBuzzerPin) {
         _buzzer->setPin(piezoBuzzerPin);
+    }
+    if (microSDCSPin) {
+        #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)
+            _msd = &SD;
+        #else
+            _msd = new SDClass();
+        #endif
     }
 }
 
@@ -106,35 +116,77 @@ Hydroponics::~Hydroponics()
     _buzzer = NULL;
     if (_eeprom) { delete _eeprom; _eeprom = NULL; }
     if (_rtc) { delete _rtc; _rtc = NULL; }
+    #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)
+        _msd = NULL;
+    #else
+        if (_msd) { delete _msd; _msd = NULL; }
+    #endif
     if (_lcd) { delete _lcd; _lcd = NULL; }
     if (_keypad) { delete _keypad; _keypad = NULL; }
     if (_systemData) { delete _systemData; _systemData = NULL; }
-    // TODO
 }
 
-void Hydroponics::init(Hydroponics_WaterReservoirMode waterResMode,
+void Hydroponics::init(Hydroponics_SystemMode systemMode,
                        Hydroponics_TemperatureMode tempMode,
                        Hydroponics_LCDOutputMode lcdOutMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
-    assert(!((int)waterResMode >= 0 && waterResMode < Hydroponics_WaterReservoirMode_Count && "Invalid water reservoir mode"));
+    assert(!((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count && "Invalid system mode"));
     assert(!((int)tempMode >= 0 && tempMode < Hydroponics_TemperatureMode_Count && "Invalid temperature mode"));
     assert(!((int)lcdOutMode >= 0 && lcdOutMode < Hydroponics_LCDOutputMode_Count && "Invalid LCD output mode"));
     assert(!((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count && "Invalid control input mode"));
 
-    _waterResMode = waterResMode;
-    _tempMode = tempMode;
-    _lcdOutMode = lcdOutMode;
-    _ctrlInMode = ctrlInMode;
-
-    // Forces begin on these if not already
-    getEEPROM();
-    getRealTimeClock();
-    getLiquidCrystalDisplay();
-    getControlKeypad();    
-
     if (!_systemData) { _systemData = new HydroponicsSystemData(); }
+    assert(!(_systemData && "Invalid system data store"));
 
+    if (_systemData) {
+        _systemData->systemMode = systemMode;
+        _systemData->tempMode = tempMode;
+        _systemData->lcdOutMode = lcdOutMode;
+        _systemData->ctrlInMode = ctrlInMode;
+        commonInit();
+    }
+}
+
+bool Hydroponics::initFromEEPROM()
+{
+    if (!_systemData) {
+        getEEPROM(); // Forces begin, if not already
+        if (_eeprom) {
+            // TODO
+        }
+
+        assert(!(_systemData && "Invalid system data store"));
+        if (_systemData) { commonInit(); }
+        return _systemData;
+    }
+
+    return false;
+}
+
+bool Hydroponics::initFromMicroSD(const char * configFile)
+{
+    if (!_systemData) {
+        SDClass *msd = getMicroSD();
+        if (msd) {
+            File config = msd->open(configFile);
+            if (config && config.size()) {
+                // TODO
+                config.close();
+            }
+            msd->end();
+        }
+
+        assert(!(_systemData && "Invalid system data store"));
+        if (_systemData) { commonInit(); }
+        return _systemData;
+    }
+
+    return false;
+}
+
+void Hydroponics::commonInit()
+{
     // TODO
 }
 
@@ -186,18 +238,18 @@ HydroponicsActuator *Hydroponics::addWaterAeratorRelay(byte outputPin)
     return actuator;
 }
 
-HydroponicsActuator *Hydroponics::addFanCirculationRelay(byte outputPin)
-{
-    // TODO assert outputPin in digital
-    HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_FanCirculationRelay, Hydroponics_RelayRail_ACRail);
-    registerActuator(actuator);
-    return actuator;
-}
-
 HydroponicsActuator *Hydroponics::addFanExhaustRelay(byte outputPin)
 {
     // TODO assert outputPin in digital
     HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin, Hydroponics_ActuatorType_FanExhaustRelay, Hydroponics_RelayRail_ACRail);
+    registerActuator(actuator);
+    return actuator;
+}
+
+HydroponicsActuator *Hydroponics::addFanExhaustPWM(byte outputPin)
+{
+    // TODO assert outputPin in PWM
+    HydroponicsPWMActuator *actuator = new HydroponicsPWMActuator(outputPin, Hydroponics_ActuatorType_FanExhaustPWM);
     registerActuator(actuator);
     return actuator;
 }
@@ -248,6 +300,15 @@ HydroponicsSensor *Hydroponics::addAirDHTTempHumiditySensor(OneWire &oneWire)
 {
     HydroponicsOneWireSensor *sensor = new HydroponicsOneWireSensor(oneWire, Hydroponics_SensorType_AirTempHumidity);
     // TODO switch to proper constructor, set saved calibration data
+    registerSensor(sensor);
+    return sensor;
+}
+
+HydroponicsSensor *Hydroponics::addAirCO2Sensor(byte inputPin)
+{
+    HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_AirCarbonDioxide, Hydroponics_FluidReservoir_Undefined);
+
+    // TODO switch to proper constructor (analog/binary based on inputPin), set saved calibration data
     registerSensor(sensor);
     return sensor;
 }
@@ -369,24 +430,29 @@ HydroponicsCrop *Hydroponics::addCropFromLastHarvest(const Hydroponics_CropType 
     return crop;
 }
 
-Hydroponics_WaterReservoirMode Hydroponics::getWaterReservoirMode() const
+uint32_t Hydroponics::getI2CSpeed() const
 {
-    return _waterResMode;
+    return _i2cSpeed;
+}
+
+Hydroponics_SystemMode Hydroponics::getSystemMode() const
+{
+    return _systemData ? _systemData->systemMode : Hydroponics_SystemMode_Undefined;
 }
 
 Hydroponics_TemperatureMode Hydroponics::getTemperatureMode() const
 {
-    return _tempMode;
+    return _systemData ? _systemData->tempMode : Hydroponics_TemperatureMode_Undefined;
 }
 
 Hydroponics_LCDOutputMode Hydroponics::getLCDOutputMode() const
 {
-    return _lcdOutMode;
+    return _systemData ? _systemData->lcdOutMode : Hydroponics_LCDOutputMode_Undefined;
 }
 
 Hydroponics_ControlInputMode Hydroponics::getControlInputMode() const
 {
-    return _ctrlInMode;
+    return _systemData ? _systemData->ctrlInMode : Hydroponics_ControlInputMode_Undefined;
 }
 
 EasyBuzzerClass *Hydroponics::getPiezoBuzzer() const
@@ -412,9 +478,18 @@ RTC_DS3231 *Hydroponics::getRealTimeClock()
     return _rtc && _rtcBegan ? _rtc : NULL;
 }
 
+SDClass *Hydroponics::getMicroSD(bool begin)
+{
+    if (_msd && begin) {
+        bool microSDBegan = _msd->begin(_spiSpeed, _msdCSPin);
+        assert(!(microSDBegan && "Failed starting MicroSD"));
+    }
+    return _msd;
+}
+
 LiquidCrystal_I2C *Hydroponics::getLiquidCrystalDisplay()
 {
-    switch(_lcdOutMode) {
+    switch (getLCDOutputMode()) {
         case Hydroponics_LCDOutputMode_20x4LCD:
         case Hydroponics_LCDOutputMode_20x4LCD_Reversed:
             if (!_lcd) {
@@ -433,27 +508,27 @@ LiquidCrystal_I2C *Hydroponics::getLiquidCrystalDisplay()
 
 Keypad *Hydroponics::getControlKeypad()
 {
-    switch(_ctrlInMode) {
-        case Hydroponics_ControlInputMode_2x2Directional: {
+    switch (getControlInputMode()) {
+        case Hydroponics_ControlInputMode_2x2Matrix: {
             if (!_keypad) {
                 char keys[2][2] = {
                     {'D','L'},
                     {'R','U'}
                 };
-                byte rowPins[2] = { _controlInputPin1, _controlInputPin1+1 };
-                byte colPins[2] = { _controlInputPin1+2, _controlInputPin1+3 };
+                byte rowPins[2] = { _ctrlInputPin1, _ctrlInputPin1+1 };
+                byte colPins[2] = { _ctrlInputPin1+2, _ctrlInputPin1+3 };
                 _keypad = new Keypad(makeKeymap(keys), rowPins, colPins, 2, 2 );
             }
         } break;
 
-        case Hydroponics_ControlInputMode_2x2Directional_Reversed: {
+        case Hydroponics_ControlInputMode_2x2Matrix_Reversed: {
             if (!_keypad) {
                 char keys[2][2] = {
                     {'U','R'},
                     {'L','D'}
                 };
-                byte rowPins[2] = { _controlInputPin1, _controlInputPin1+1 };
-                byte colPins[2] = { _controlInputPin1+2, _controlInputPin1+3 };
+                byte rowPins[2] = { _ctrlInputPin1, _ctrlInputPin1+1 };
+                byte colPins[2] = { _ctrlInputPin1+2, _ctrlInputPin1+3 };
                 _keypad = new Keypad(makeKeymap(keys), rowPins, colPins, 2, 2 );
             }
         } break;

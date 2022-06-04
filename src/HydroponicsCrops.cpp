@@ -8,10 +8,10 @@
 static bool _cropLibraryBuilt = false;
 
 HydroponicsCropData::HydroponicsCropData()
-    : _ident({'H','C','D'}), _version(1),
-      cropType(Hydroponics_CropType_Undefined), plantName({'\0'}),
+    : _ident{'H','C','D'}, _version(1),
+      cropType(Hydroponics_CropType_Undefined), plantName{'\0'},
       growWeeksToHarvest(0), weeksBetweenHarvest(0),
-      phaseBeginWeek({0}), lightHoursPerDay({0}),
+      phaseBeginWeek{0}, lightHoursPerDay{0},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPrunningRequired(false), isToxicToPets(false)
 {
@@ -23,10 +23,10 @@ HydroponicsCropData::HydroponicsCropData()
 }
 
 HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType cropTypeIn)
-    : _ident({'H','C','D'}), _version(1),
-      cropType(cropTypeIn), plantName({'\0'}),
+    : _ident{'H','C','D'}, _version(1),
+      cropType(cropTypeIn), plantName{'\0'},
       growWeeksToHarvest(0), weeksBetweenHarvest(0),
-      phaseBeginWeek({0}), lightHoursPerDay({0}),
+      phaseBeginWeek{0}, lightHoursPerDay{0},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPrunningRequired(false), isToxicToPets(false)
 {
@@ -42,6 +42,8 @@ HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType cropTypeIn)
 }
 
 
+HydroponicsCropsLibrary *HydroponicsCropsLibrary::_instance = NULL;
+
 HydroponicsCropsLibrary::HydroponicsCropsLibrary()
 {
     buildLibrary();
@@ -49,7 +51,9 @@ HydroponicsCropsLibrary::HydroponicsCropsLibrary()
 
 HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
 {
-    static HydroponicsCropsLibrary *_instance = new HydroponicsCropsLibrary();
+    if (!_instance) {
+        _instance = new HydroponicsCropsLibrary();
+    }
     return _instance;
 }
 

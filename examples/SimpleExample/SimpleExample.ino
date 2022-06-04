@@ -2,28 +2,23 @@
 
 #include "Hydroponics.h"
 
-Hydroponics hydroController;            // Controller using default chip select pin D10, and default Wire @400kHz
+Hydroponics hydroController;            // Controller using default XXX pin DXX, and default Wire @400kHz
 
 void setup() {
-    Serial.begin(115200);               // Begin Serial, SPI, and Wire interfaces
-#ifdef __SAM3X8E__
-    // Arduino Due has SPI library that manages the CS pin for us
-    SPI.begin(flirController.getChipSelectPin());
-#else
-    SPI.begin();
-#endif
+    Serial.begin(115200);               // Begin Serial and Wire interfaces
     Wire.begin();
     Wire.setClock(hydroController.getI2CSpeed());
 
-    // Initializes module using Lepton v1 camera, and default celsius temperature mode
-    // NOTE: Make sure to change this to what hardware camera version you're using! (see manufacturer website)
-    hydroController.init(Hydroponics_CameraType_Lepton1);
+    hydroController.addGrowLightsRelay(22);
+    hydroController.addWaterPumpRelay(24);
+
+    hydroController.addCropFromSowDate(Hydroponics_CropType_Lettuce, DateTime(2022, 5, 21).unixtime());
+
+    // Initializes controller using default XXX
+    hydroController.init();
 }
 
 void loop() {
-    // Establishes sync, then reads next frame into raw data buffer
-    if (hydroController.tryReadNextFrame())
-        Serial.println("Frame read success");
-    else
-        Serial.println("Frame read failure");
+    // Update hydroponics controller
+    hydroController.update();
 }

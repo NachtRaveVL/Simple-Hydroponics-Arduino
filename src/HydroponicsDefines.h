@@ -144,7 +144,7 @@ enum Hydroponics_RelayRail {
 enum Hydroponics_FluidReservoir {
     Hydroponics_FluidReservoir_FeedWater,           // Feed water reservoir (aka main water reservoir)
     Hydroponics_FluidReservoir_DrainageWater,       // Drainage water reservoir
-    Hydroponics_FluidReservoir_NutrientPremix,      // Nutrient premix reservoir
+    Hydroponics_FluidReservoir_NutrientPremix,      // Nutrient premix reservoir/source
     Hydroponics_FluidReservoir_FreshWater,          // Fresh water reservoir/source
     Hydroponics_FluidReservoir_PhUpSolution,        // pH-Up solution
     Hydroponics_FluidReservoir_PhDownSolution,      // pH-Down solution
@@ -154,12 +154,12 @@ enum Hydroponics_FluidReservoir {
 };
 
 // TODO
-enum Hydroponics_WaterReservoirMode {
-    Hydroponics_WaterReservoirMode_Recycling,       // System consistently recycles water in main feed reservoir. Default setting.
-    Hydroponics_WaterReservoirMode_DrainToWaste,    // System fills feed reservoir before feeding (with pH/feed premix topoff), expects waste to drainage if drainage reservoir/pump not defined.
+enum Hydroponics_SystemMode {
+    Hydroponics_SystemMode_Recycling,               // System consistently recycles water in main feed water reservoir. Default setting.
+    Hydroponics_SystemMode_DrainToWaste,            // System fills feed reservoir before feeding (with pH/feed premix topoff prior), expects runoff (waste) to drain (unless drainage reservoir defined).
 
-    Hydroponics_WaterReservoirMode_Count,           // Internal use only
-    Hydroponics_WaterReservoirMode_Undefined = -1   // Internal use only
+    Hydroponics_SystemMode_Count,                   // Internal use only
+    Hydroponics_SystemMode_Undefined = -1           // Internal use only
 };
 
 // TODO
@@ -185,8 +185,8 @@ enum Hydroponics_LCDOutputMode {
 // TODO
 enum Hydroponics_ControlInputMode {
     Hydroponics_ControlInputMode_Disabled,                  // No control input
-    Hydroponics_ControlInputMode_2x2Directional,            // 2x2 directional matrix button array (L1,L2,R1,R2)
-    Hydroponics_ControlInputMode_2x2Directional_Reversed,   // 2x2 directional matrix button array, upside-down
+    Hydroponics_ControlInputMode_2x2Matrix,                 // 2x2 directional matrix button array (L1,L2,R1,R2)
+    Hydroponics_ControlInputMode_2x2Matrix_Reversed,        // 2x2 directional matrix button array, upside-down
 
     Hydroponics_ControlInputMode_Count,                     // Internal use only
     Hydroponics_ControlInputMode_Undefined = -1             // Internal use only
@@ -196,11 +196,11 @@ enum Hydroponics_ControlInputMode {
 enum Hydroponics_ActuatorType {
     Hydroponics_ActuatorType_GrowLightsRelay,               // Grow lights relay actuator
     Hydroponics_ActuatorType_WaterPumpRelay,                // Water pump relay actuator (feed or drainage reservoir only)
-    Hydroponics_ActuatorType_PeristalticPumpRelay,          // Peristaltic pump relay actuator (pH-up, pH-down, nutrient, or fresh water reservoir only)
+    Hydroponics_ActuatorType_PeristalticPumpRelay,          // Peristaltic pump relay actuator (pH-up/down, nutrient, or fresh water reservoirs only)
     Hydroponics_ActuatorType_WaterHeaterRelay,              // Water heater relay actuator (feed reservoir only)
     Hydroponics_ActuatorType_WaterAeratorRelay,             // Water aerator relay actuator (feed reservoir only)
-    Hydroponics_ActuatorType_FanCirculationRelay,           // Fan circulation relay actuator
     Hydroponics_ActuatorType_FanExhaustRelay,               // Fan exhaust relay actuator
+    Hydroponics_ActuatorType_FanExhaustPWM,                 // Fan exhaust PWM actuator
 
     Hydroponics_ActuatorType_Count,                         // Internal use only
     Hydroponics_ActuatorType_Undefined = -1                 // Internal use only
@@ -209,6 +209,7 @@ enum Hydroponics_ActuatorType {
 // TODO
 enum Hydroponics_SensorType {
     Hydroponics_SensorType_AirTempHumidity,                 // Air temperature and humidity sensor (digital, front-panel)
+    Hydroponics_SensorType_AirCarbonDioxide,                // Air CO2 sensor (analog->binary/binary)
     Hydroponics_SensorType_PotentialHydrogen,               // pH sensor (analog, signal pin sometimes labeled as 'Po', feed reservoir only)
     Hydroponics_SensorType_TotalDissolvedSolids,            // TDS salts electrode sensor (analog, feed reservoir only)
     Hydroponics_SensorType_WaterTemperature,                // DallasTemperature DS18* submersible sensor (analog)
@@ -228,10 +229,15 @@ struct HydroponicsSystemData {
     char _ident[3];                                             // Always 'HSD'
     uint8_t _version;                                           // Version #
     char systemName[HYDRO_NAME_MAXSIZE];                        // TODO
+    int8_t timeZoneOffset;
+    Hydroponics_SystemMode systemMode;                          // System type mode
+    Hydroponics_TemperatureMode tempMode;                       // System temperature mode
+    Hydroponics_LCDOutputMode lcdOutMode;                       // System LCD mode
+    Hydroponics_ControlInputMode ctrlInMode;                    // System control input mode 
     uint8_t cropPositionsCount;                                 // TODO
     uint8_t maxActiveRelayCount[Hydroponics_RelayRail_Count];   // TODO
     float reservoirSize[Hydroponics_FluidReservoir_Count];      // TODO
-    float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO
+    float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO L/s
     struct {
         Hydroponics_SensorType sensor;
         Hydroponics_FluidReservoir reservoir;
@@ -245,6 +251,7 @@ struct HydroponicsSystemData {
 
 // TODO
 struct HydroponicsCropData {
+    HydroponicsCropData();                                      // Default constructor
     HydroponicsCropData(Hydroponics_CropType cropType);         // Convenience constructor, loads from Crop Library if built
     char _ident[3];                                             // Always 'HCD'
     uint8_t _version;                                           // Version #
@@ -264,9 +271,6 @@ struct HydroponicsCropData {
     bool isPerennial;                                           // TODO
     bool isPrunningRequired;                                    // TODO
     bool isToxicToPets;                                         // TODO
-
-private:
-    HydroponicsCropData();                                      // Default constructor
 };
 
 #endif // /ifndef HydroponicsDefines_H

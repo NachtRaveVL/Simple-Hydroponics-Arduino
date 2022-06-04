@@ -8,6 +8,7 @@
 
 class HydroponicsActuator;
 class HydroponicsRelayActuator;
+class HydroponicsPWMActuator;
 
 #include "Hydroponics.h"
 
@@ -36,6 +37,7 @@ protected:
     int _enabledDataTODO;
 };
 
+
 class HydroponicsRelayActuator : public HydroponicsActuator {
 public:
     HydroponicsRelayActuator(byte outputPin,
@@ -56,6 +58,27 @@ public:
 
 protected:
     Hydroponics_RelayRail _relayRail;
+    bool _activeLow;
+};
+
+
+class HydroponicsPWMActuator : public HydroponicsActuator {
+public:
+    HydroponicsPWMActuator(byte outputPin,
+                           Hydroponics_ActuatorType actuatorType,
+                           Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
+    virtual ~HydroponicsPWMActuator();
+
+    bool tryEnableActuator();
+    void disableActuator();
+    void enableActuatorFor(time_t enableTime);
+
+    float getPWMAmount() const;
+    void setPWMAmount(float amount);
+
+    void update();
+
+protected:
     bool _activeLow;
 };
 
