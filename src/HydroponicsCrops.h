@@ -23,8 +23,10 @@ public:
     //void saveCustomCropData();
 
 protected:
-    HydroponicsCropsLibrary();
+    static HydroponicsCropsLibrary *_instance;
     HydroponicsCropData _cropData[Hydroponics_CropType_Count];      // Crop data (CUSTOM* saved to EEPROM)
+
+    HydroponicsCropsLibrary();
 
     void buildLibrary();
     void validateEntries();
