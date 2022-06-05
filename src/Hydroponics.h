@@ -87,21 +87,21 @@ public:
     // Library constructor. Typically called during class instantiation, before setup().
     // TODO
     Hydroponics(byte piezoBuzzerPin = 0,
-                byte microSDCSPin = 0,
+                byte sdCardCSPin = 0,
                 byte controlInputPin1 = 0,
-                byte i2cAddressEEPROM = B000000,
-                byte i2cAddressRTC = B000000,
-                byte i2cAddressLCD = B000000,
+                byte eepromI2CAddress = B000000,
+                byte rtcI2CAddress = B000000,
+                byte lcdI2CAddress = B000000,
                 TwoWire& i2cWire = Wire, uint32_t i2cSpeed = 400000,
-                uint32_t spiSpeed = F_CPU/2);
+                uint32_t spiSpeed = 4000000U);
     Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed = 400000,
-                uint32_t spiSpeed = F_CPU/2,
+                uint32_t spiSpeed = 4000000U,
                 byte piezoBuzzerPin = 0,
-                byte microSDCSPin = 0,
+                byte sdCardCSPin = 0,
                 byte controlInputPin1 = 0,
-                byte i2cAddressEEPROM = B000000,
-                byte i2cAddressRTC = B000000,
-                byte i2cAddressLCD = B000000);
+                byte eepromI2CAddress = B000000,
+                byte rtcI2CAddress = B000000,
+                byte lcdI2CAddress = B000000);
     ~Hydroponics();
 
     // Initializes module. Typically called in setup().
@@ -116,10 +116,12 @@ public:
     bool initFromMicroSD(const char * configFile = "/hydroponics.cfg");
 
     //bool initFromWiFiServer(); maybe?
-
     // TODO logging?
     //void enableLoggingToMicroSDFolder();
     //void enableLoggingToWiFiDatabase();
+
+    // Makes the RTC the time provider for the entire system. Only one may be set as such at a time.
+    void makeRTCSyncProvider();
 
     // Update method. Typically called in loop().
     void update();
@@ -172,7 +174,8 @@ public:
 
     // Accessors.
 
-    uint32_t getI2CSpeed() const;                                   // i2c clock speed (Hz)
+    uint32_t getI2CSpeed() const;                                   // i2c clock speed (Hz, default: 400kHz)
+    uint32_t getSPISpeed() const;                                   // SPI clock speed (Hz, default: 4MHz)
     Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: recycling)
     Hydroponics_TemperatureMode getTemperatureMode() const;         // System temperature mode (default: celsius)
     Hydroponics_LCDOutputMode getLCDOutputMode() const;             // System LCD output mode (default: disabled)
@@ -181,7 +184,7 @@ public:
     EasyBuzzerClass *getPiezoBuzzer() const;                        // Piezo buzzer instance
     I2C_eeprom *getEEPROM();                                        // EEPROM instance
     RTC_DS3231 *getRealTimeClock();                                 // Real time clock instance
-    SDClass *getMicroSD(bool begin = true);                         // MicroSD instance (if began user code *must* call end())
+    SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end())
     LiquidCrystal_I2C *getLiquidCrystalDisplay();                   // Liquid crystal display instance
     Keypad *getControlKeypad();                                     // Control keypad instance
 
@@ -215,24 +218,18 @@ public:
     // Scheduler.yield() is called until timeout expires.
     void setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc);
 
-
-    // Internal use (friend functions).
-
-    bool tryEnableActuator(HydroponicsActuator *actuator);
-    bool tryMeasureSensor(HydroponicsSensor *sensor);
-
 protected:
-    byte _i2cAddressLCD;                                    // LCD i2c address
-    byte _ctrlInputPin1;                                    // Control input pin 1
-    byte _msdCSPin;                                         // Micro SD cable select (CS) pin
+    byte _i2cAddressLCD;                                    // LCD i2c address (default: disabled)
+    byte _ctrlInputPin1;                                    // Control input pin 1 (default: disabled)
+    byte _sdCardCSPin;                                      // SD card cable select (CS) pin (default: disabled)
     TwoWire* _i2cWire;                                      // Wire class instance (unowned) (default: Wire)
-    uint32_t _i2cSpeed;                                     // Controller's i2c clock speed (default: 400000)
-    uint32_t _spiSpeed;                                     // Controller's SPI clock speed (default: F_CPU/2)
+    uint32_t _i2cSpeed;                                     // Controller's i2c clock speed (default: 400kHz)
+    uint32_t _spiSpeed;                                     // Controller's SPI clock speed (default: 4MHz)
 
     EasyBuzzerClass *_buzzer;                               // Piezo buzzer instance (unowned)
     I2C_eeprom *_eeprom;                                    // EEPROM instance (owned)
     RTC_DS3231 *_rtc;                                       // Real time clock instance (owned)
-    SDClass *_msd;                                          // MicroSD instance (owned/unowned)
+    SDClass *_sd;                                           // SD card instance (owned/unowned)
     LiquidCrystal_I2C *_lcd;                                // Liquid crystal display instance (owned)
     Keypad *_keypad;                                        // Control matrix keypad instance (owned)
     bool _eepromBegan;                                      // Status of EEPROM begin()
@@ -253,6 +250,9 @@ protected:
     // static uint16_t kelvinToKelvin100(float kelvin);
 
     void commonInit();
+
+    bool tryEnableActuator(HydroponicsActuator *actuator);
+    bool tryMeasureSensor(HydroponicsSensor *sensor);
 };
 
 #endif // /ifndef Hydroponics_H

@@ -176,7 +176,7 @@ enum Hydroponics_TemperatureMode {
 enum Hydroponics_LCDOutputMode {
     Hydroponics_LCDOutputMode_Disabled,             // No LCD output
     Hydroponics_LCDOutputMode_20x4LCD,              // 20x4 i2c LCD
-    Hydroponics_LCDOutputMode_20x4LCD_Reversed,     // 20x4 i2c LCD, upside-down
+    Hydroponics_LCDOutputMode_16x2LCD,              // 16x2 i2c LCD
 
     Hydroponics_LCDOutputMode_Count,                // Internal use only
     Hydroponics_LCDOutputMode_Undefined = -1        // Internal use only
@@ -184,43 +184,42 @@ enum Hydroponics_LCDOutputMode {
 
 // TODO
 enum Hydroponics_ControlInputMode {
-    Hydroponics_ControlInputMode_Disabled,                  // No control input
-    Hydroponics_ControlInputMode_2x2Matrix,                 // 2x2 directional matrix button array (L1,L2,R1,R2)
-    Hydroponics_ControlInputMode_2x2Matrix_Reversed,        // 2x2 directional matrix button array, upside-down
+    Hydroponics_ControlInputMode_Disabled,          // No control input
+    Hydroponics_ControlInputMode_2x2Matrix,         // 2x2 directional matrix button array (L1,L2,R1,R2)
 
-    Hydroponics_ControlInputMode_Count,                     // Internal use only
-    Hydroponics_ControlInputMode_Undefined = -1             // Internal use only
+    Hydroponics_ControlInputMode_Count,             // Internal use only
+    Hydroponics_ControlInputMode_Undefined = -1     // Internal use only
 };
 
 // TODO
 enum Hydroponics_ActuatorType {
-    Hydroponics_ActuatorType_GrowLightsRelay,               // Grow lights relay actuator
-    Hydroponics_ActuatorType_WaterPumpRelay,                // Water pump relay actuator (feed or drainage reservoir only)
-    Hydroponics_ActuatorType_PeristalticPumpRelay,          // Peristaltic pump relay actuator (pH-up/down, nutrient, or fresh water reservoirs only)
-    Hydroponics_ActuatorType_WaterHeaterRelay,              // Water heater relay actuator (feed reservoir only)
-    Hydroponics_ActuatorType_WaterAeratorRelay,             // Water aerator relay actuator (feed reservoir only)
-    Hydroponics_ActuatorType_FanExhaustRelay,               // Fan exhaust relay actuator
-    Hydroponics_ActuatorType_FanExhaustPWM,                 // Fan exhaust PWM actuator
+    Hydroponics_ActuatorType_GrowLightsRelay,       // Grow lights relay actuator
+    Hydroponics_ActuatorType_WaterPumpRelay,        // Water pump relay actuator (feed or drainage reservoir only)
+    Hydroponics_ActuatorType_PeristalticPumpRelay,  // Peristaltic pump relay actuator (pH-up/down, nutrient, or fresh water reservoirs only)
+    Hydroponics_ActuatorType_WaterHeaterRelay,      // Water heater relay actuator (feed reservoir only)
+    Hydroponics_ActuatorType_WaterAeratorRelay,     // Water aerator relay actuator (feed reservoir only)
+    Hydroponics_ActuatorType_FanExhaustRelay,       // Fan exhaust relay actuator
+    Hydroponics_ActuatorType_FanExhaustPWM,         // Fan exhaust PWM actuator
 
-    Hydroponics_ActuatorType_Count,                         // Internal use only
-    Hydroponics_ActuatorType_Undefined = -1                 // Internal use only
+    Hydroponics_ActuatorType_Count,                 // Internal use only
+    Hydroponics_ActuatorType_Undefined = -1         // Internal use only
 };
 
 // TODO
 enum Hydroponics_SensorType {
-    Hydroponics_SensorType_AirTempHumidity,                 // Air temperature and humidity sensor (digital, front-panel)
-    Hydroponics_SensorType_AirCarbonDioxide,                // Air CO2 sensor (analog->binary/binary)
-    Hydroponics_SensorType_PotentialHydrogen,               // pH sensor (analog, signal pin sometimes labeled as 'Po', feed reservoir only)
-    Hydroponics_SensorType_TotalDissolvedSolids,            // TDS salts electrode sensor (analog, feed reservoir only)
-    Hydroponics_SensorType_WaterTemperature,                // DallasTemperature DS18* submersible sensor (analog)
-    Hydroponics_SensorType_WaterPumpFlowSensor,             // Water pump flow hall sensor (PWM)
-    Hydroponics_SensorType_LowWaterLevelIndicator,          // Low water level indicator (binary)
-    Hydroponics_SensorType_HighWaterLevelIndicator,         // High water level indicator (binary)
-    Hydroponics_SensorType_LowWaterHeightMeter,             // Low water height meter (analog->binary)
-    Hydroponics_SensorType_HighWaterHeightMeter,            // High water height meter (analog->binary)
+    Hydroponics_SensorType_AirTempHumidity,         // Air temperature and humidity sensor (digital, front-panel)
+    Hydroponics_SensorType_AirCarbonDioxide,        // Air CO2 sensor (analog->binary/binary)
+    Hydroponics_SensorType_PotentialHydrogen,       // pH sensor (analog, signal pin sometimes labeled as 'Po', feed reservoir only)
+    Hydroponics_SensorType_TotalDissolvedSolids,    // TDS salts electrode sensor (analog, feed reservoir only)
+    Hydroponics_SensorType_WaterTemperature,        // DallasTemperature DS18* submersible sensor (analog)
+    Hydroponics_SensorType_WaterPumpFlowSensor,     // Water pump flow hall sensor (PWM)
+    Hydroponics_SensorType_LowWaterLevelIndicator,  // Low water level indicator (binary)
+    Hydroponics_SensorType_HighWaterLevelIndicator, // High water level indicator (binary)
+    Hydroponics_SensorType_LowWaterHeightMeter,     // Low water height meter (analog->binary)
+    Hydroponics_SensorType_HighWaterHeightMeter,    // High water height meter (analog->binary)
 
-    Hydroponics_SensorType_Count,                           // Internal use only
-    Hydroponics_SensorType_Undefined = -1                   // Internal use only
+    Hydroponics_SensorType_Count,                   // Internal use only
+    Hydroponics_SensorType_Undefined = -1           // Internal use only
 };
 
 // TODO

@@ -16,6 +16,9 @@ void setup() {
 
     // Initializes controller using default XXX
     hydroController.init();
+
+    // Sets RTC as the time sync provider
+    hydroController.makeRTCSyncProvider();
 }
 
 void loop() {
