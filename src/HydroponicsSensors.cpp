@@ -47,12 +47,12 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(byte inputPin,
 HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
 { ; }
 
-double HydroponicsAnalogSensor::getLastMeasurement() const
+float HydroponicsAnalogSensor::getLastMeasurement() const
 {
     return _lastMeasurement;
 }
 
-double HydroponicsAnalogSensor::takeMeasurement()
+float HydroponicsAnalogSensor::takeMeasurement()
 {
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
         analogReadResolution(_analogBitRes);
@@ -85,7 +85,12 @@ HydroponicsDHTSensor::HydroponicsDHTSensor(byte inputPin,
     : HydroponicsSensor(Hydroponics_SensorType_AirTempHumidity, fluidReservoir),
       _dht(new DHT(inputPin, dhtType))
 {
-    _dht->begin();
+    assert(!(_dht && "DHT instance creation failure"));
+    _lastMeasurement.humidity = _lastMeasurement.temperature = 0.0f;
+
+    if (_dht) {
+        _dht->begin();
+    }
 }
 
 HydroponicsDHTSensor::~HydroponicsDHTSensor()
@@ -104,6 +109,47 @@ DHTMeasurement HydroponicsDHTSensor::takeMeasurement(bool force)
     _lastMeasurement.temperature = _dht->readTemperature(false, force);
     _lastMeasurement.humidity = _dht->readHumidity(force);
     return _lastMeasurement;
+}
+
+HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
+                                         Hydroponics_FluidReservoir fluidReservoir,
+                                         byte readBitResolution)
+    : HydroponicsSensor(Hydroponics_SensorType_WaterTemperature, fluidReservoir),
+      _oneWire(new OneWire(inputPin)), _dt(new DallasTemperature()),
+      _lastMeasurement(0.0f)
+{
+    assert(!(_oneWire && "OneWire instance creation failure"));
+    assert(!(_dt && "DallasTemperature instance creation failure"));
+
+    if (_dt && _oneWire) {
+        _dt->setOneWire(_oneWire);
+        _dt->setPullupPin(inputPin);
+        _dt->begin();
+        _dt->setResolution(readBitResolution);
+    }
+}
+
+HydroponicsDSSensor::~HydroponicsDSSensor()
+{
+    if (_oneWire) { delete _oneWire; _oneWire = NULL; }
+    if (_dt) { delete _dt; _dt = NULL; }
+}
+
+float HydroponicsDSSensor::getLastMeasurement() const
+{
+    return _lastMeasurement;
+}
+
+float HydroponicsDSSensor::takeMeasurement()
+{
+    _lastMeasureTime = now();
+    _lastMeasurement = _dt->getTempCByIndex(0);
+    return _lastMeasurement;
+}
+
+OneWire &HydroponicsDSSensor::getOneWire() const
+{
+    return *_oneWire;
 }
 
 
@@ -181,7 +227,7 @@ bool HydroponicsBinaryAnalogSensor::getLastState() const
     return _lastState;
 }
 
-double HydroponicsBinaryAnalogSensor::getLastMeasurement() const
+float HydroponicsBinaryAnalogSensor::getLastMeasurement() const
 {
     return _lastMeasurement;
 }

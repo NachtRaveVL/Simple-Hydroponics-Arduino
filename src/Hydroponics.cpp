@@ -474,16 +474,15 @@ HydroponicsAnalogSensor *Hydroponics::addWaterTDSElectrode(byte inputPin, byte r
     return NULL;
 }
 
-HydroponicsAnalogSensor *Hydroponics::addWaterDSTempSensor(byte inputPin, byte readBitResolution)
+HydroponicsDSSensor *Hydroponics::addWaterDSTempSensor(byte inputPin, byte readBitResolution)
 {
-    bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    bool inputPinIsDigital = checkPinIsDigital(inputPin);
+    assert(!(inputPinIsDigital && "Input pin is not digital"));
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin,
-                                                                      Hydroponics_SensorType_WaterTemperature,
-                                                                      Hydroponics_FluidReservoir_FeedWater,
-                                                                      readBitResolution);
+    if (inputPinIsDigital) {
+        HydroponicsDSSensor *sensor = new HydroponicsDSSensor(inputPin,
+                                                              Hydroponics_FluidReservoir_FeedWater,
+                                                              readBitResolution);
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }

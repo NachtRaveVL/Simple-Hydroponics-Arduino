@@ -62,13 +62,13 @@
 #endif
 
 #include <DallasTemperature.h>          // DS18* submersible water temp probe
-#include <DHT.h>                        // DHT* OneWire air temp/humidity probe
+#include <DHT.h>                        // DHT* air temp/humidity probe
 #include <EasyBuzzer.h>                 // Asyncronous piezo buzzer library
 #include <I2C_eeprom.h>                 // i2c EEPROM interface library
 #include <Keypad.h>                     // 4-way directional matrix keypad
 #include <LiquidCrystal_I2C.h>          // i2c LCD library
 #ifndef __STM32F1__
-#include <OneWire.h>                    // OneWire for DHT* probes             
+#include <OneWire.h>                    // OneWire for DS18* probes
 #else
 #include <OneWireSTM.h>
 #endif
@@ -155,7 +155,7 @@ public:
     HydroponicsAnalogSensor *addAirCO2Sensor(byte inputPin, byte readBitResolution = 8);
     HydroponicsAnalogSensor *addWaterPhMeter(byte inputPin, byte readBitResolution = 8);
     HydroponicsAnalogSensor *addWaterTDSElectrode(byte inputPin, byte readBitResolution = 8);
-    HydroponicsAnalogSensor *addWaterDSTempSensor(byte inputPin, byte readBitResolution = 8);
+    HydroponicsDSSensor *addWaterDSTempSensor(byte inputPin, byte readBitResolution = 9);
     HydroponicsAnalogSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
     HydroponicsBinarySensor *addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
     HydroponicsBinarySensor *addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
