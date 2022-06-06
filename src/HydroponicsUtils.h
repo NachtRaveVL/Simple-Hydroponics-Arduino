@@ -8,6 +8,8 @@
 
 #include "Hydroponics.h"
 
+extern time_t rtcNow();
+
 extern bool checkInputPinIsAnalog(int pin);
 extern bool checkOutputPinIsAnalog(int pin);
 extern bool checkPinIsDigital(int pin);
