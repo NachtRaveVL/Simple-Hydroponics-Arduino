@@ -9,12 +9,13 @@
 class HydroponicsSensor;
 class HydroponicsAnalogSensor;
 class HydroponicsDHTSensor;
+class HydroponicsDSSensor;
 class HydroponicsBinarySensor;
 class HydroponicsBinaryAnalogSensor;
 
 #include "Hydroponics.h"
 
-//typedef void(*IntrAdvSensorFinish)(double);             // Passes raw value
+//typedef void(*IntrAdvSensorFinish)(float);             // Passes raw value
 
 class HydroponicsSensor {
 public:
@@ -40,8 +41,8 @@ public:
                             byte readBitResolution = 8);
     virtual ~HydroponicsAnalogSensor();
 
-    double getLastMeasurement() const;
-    virtual double takeMeasurement();
+    float getLastMeasurement() const;
+    virtual float takeMeasurement();
 
     byte getInputPin() const;
     int getAnalogMaxAmount() const;
@@ -51,7 +52,7 @@ protected:
     byte _inputPin;
     int _analogMaxAmount;
     byte _analogBitRes;
-    double _lastMeasurement;
+    float _lastMeasurement;
 };
 
 struct DHTMeasurement {
@@ -72,6 +73,24 @@ public:
 protected:
     DHT *_dht;
     DHTMeasurement _lastMeasurement;
+};
+
+class HydroponicsDSSensor : public HydroponicsSensor {
+public:
+    HydroponicsDSSensor(byte inputPin,
+                        Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                        byte readBitResolution = 9);
+    virtual ~HydroponicsDSSensor();
+
+    float getLastMeasurement() const;
+    virtual float takeMeasurement();
+
+    OneWire &getOneWire() const;
+
+protected:
+    OneWire *_oneWire;
+    DallasTemperature *_dt;
+    float _lastMeasurement;
 };
 
 class HydroponicsBinarySensor : public HydroponicsSensor {
@@ -113,7 +132,7 @@ public:
 
     bool pollState();
     bool getLastState() const;
-    double getLastMeasurement() const;
+    float getLastMeasurement() const;
 
     byte getInputPin() const;
     float getTolerance() const;
@@ -128,7 +147,7 @@ protected:
     int _analogMaxAmount;
     byte _analogBitRes;
     bool _lastState;
-    double _lastMeasurement;
+    float _lastMeasurement;
 };
 
 #endif // /ifndef HydroponicsSensors_H
