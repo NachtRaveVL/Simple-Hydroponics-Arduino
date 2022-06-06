@@ -3,8 +3,8 @@
     Hydroponics Actuators
 */
 
-#ifndef HydroponicsActuator_H
-#define HydroponicsActuator_H
+#ifndef HydroponicsActuators_H
+#define HydroponicsActuators_H
 
 class HydroponicsActuator;
 class HydroponicsRelayActuator;
@@ -19,22 +19,25 @@ public:
                         Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
     virtual ~HydroponicsActuator();
 
-    virtual bool tryEnableActuator() = 0;
     virtual void disableActuator() = 0;
-    void enableActuatorFor(time_t enableTime);
-    inline void enableActuatorUntil(time_t disableDate) { enableActuatorFor(disableDate - now()); }
+    virtual void enableActuator() = 0;
+    void enableActuatorUntil(time_t disableDate);
+    inline void enableActuatorFor(time_t enableTime) { enableActuatorUntil(now() + enableTime); }
 
-    virtual void update() = 0;
+    virtual void update();
 
+    byte getOutputPin() const;
     Hydroponics_ActuatorType getActuatorType() const;
     Hydroponics_FluidReservoir getFluidReservoir() const;
     bool getIsActuatorEnabled() const;
+    time_t getActuatorEnabledUntil() const;
 
 protected:
     byte _outputPin;
     Hydroponics_ActuatorType _actuatorType;
     Hydroponics_FluidReservoir _fluidReservoir;
-    int _enabledDataTODO;
+    bool _enabled;
+    time_t _enabledUntil;
 };
 
 
@@ -47,11 +50,8 @@ public:
                              bool activeLow = true);
     virtual ~HydroponicsRelayActuator();
 
-    bool tryEnableActuator();
-    void disableActuator();
-    void enableActuatorFor(time_t enableTime);
-
-    void update();
+    virtual void disableActuator();
+    virtual void enableActuator();
 
     Hydroponics_RelayRail getRelayRail() const;
     bool getActiveLow() const;
@@ -66,21 +66,28 @@ class HydroponicsPWMActuator : public HydroponicsActuator {
 public:
     HydroponicsPWMActuator(byte outputPin,
                            Hydroponics_ActuatorType actuatorType,
-                           Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
+                           Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined,
+                           byte writeBitResolution = 8);
     virtual ~HydroponicsPWMActuator();
 
-    bool tryEnableActuator();
-    void disableActuator();
-    void enableActuatorFor(time_t enableTime);
+    virtual void disableActuator();
+    virtual void enableActuator();
 
     float getPWMAmount() const;
+    int getPWMAmount(int) const;
     void setPWMAmount(float amount);
+    void setPWMAmount(int amount);
 
-    void update();
+    bool getIsActuatorEnabled(float tolerance) const;
+    int getPWMMaxAmount() const;
+    int getPWMBitResolution() const;
 
 protected:
-    bool _activeLow;
+    float _pwmAmount;
+    int _pwmMaxAmount;
+    byte _pwmBitRes;
+
+    void applyPWM();
 };
 
-
-#endif // /ifndef HydroponicsActuator_H
+#endif // /ifndef HydroponicsActuators_H

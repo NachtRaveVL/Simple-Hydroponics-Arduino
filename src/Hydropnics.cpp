@@ -267,10 +267,10 @@ HydroponicsActuator *Hydroponics::addFanExhaustRelay(byte outputPin)
     return actuator;
 }
 
-HydroponicsActuator *Hydroponics::addFanExhaustPWM(byte outputPin)
+HydroponicsActuator *Hydroponics::addFanExhaustPWM(byte outputPin, byte writeBitResolution)
 {
     // TODO assert outputPin in PWM
-    HydroponicsPWMActuator *actuator = new HydroponicsPWMActuator(outputPin, Hydroponics_ActuatorType_FanExhaustPWM);
+    HydroponicsPWMActuator *actuator = new HydroponicsPWMActuator(outputPin, Hydroponics_ActuatorType_FanExhaustPWM, Hydroponics_FluidReservoir_Undefined, writeBitResolution);
     registerActuator(actuator);
     return actuator;
 }
@@ -325,7 +325,7 @@ HydroponicsSensor *Hydroponics::addAirDHTTempHumiditySensor(OneWire &oneWire)
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addAirCO2Sensor(byte inputPin)
+HydroponicsSensor *Hydroponics::addAirCO2Sensor(byte inputPin, byte readBitResolution)
 {
     HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_AirCarbonDioxide, Hydroponics_FluidReservoir_Undefined);
 
@@ -334,7 +334,7 @@ HydroponicsSensor *Hydroponics::addAirCO2Sensor(byte inputPin)
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addWaterPhMeter(byte inputPin)
+HydroponicsSensor *Hydroponics::addWaterPhMeter(byte inputPin, byte readBitResolution)
 {
     // TODO assert inputPin in AnalogIn
     HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_PotentialHydrogen);
@@ -343,7 +343,7 @@ HydroponicsSensor *Hydroponics::addWaterPhMeter(byte inputPin)
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addWaterTDSElectrode(byte inputPin)
+HydroponicsSensor *Hydroponics::addWaterTDSElectrode(byte inputPin, byte readBitResolution)
 {
     // TODO assert inputPin in AnalogIn
     HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_TotalDissolvedSolids);
@@ -352,7 +352,7 @@ HydroponicsSensor *Hydroponics::addWaterTDSElectrode(byte inputPin)
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addWaterDSTempSensor(byte inputPin)
+HydroponicsSensor *Hydroponics::addWaterDSTempSensor(byte inputPin, byte readBitResolution)
 {
     // TODO assert inputPin in AnalogIn
     HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_WaterTemperature);
@@ -361,10 +361,10 @@ HydroponicsSensor *Hydroponics::addWaterDSTempSensor(byte inputPin)
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
+HydroponicsSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     // TODO assert inputPin in PWM
-    HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_WaterPumpFlowSensor, fluidReservoir);
+    HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin, Hydroponics_SensorType_WaterPumpFlowSensor, fluidReservoir, readBitResolution);
     // TODO set saved calibration data
     registerSensor(sensor);
     return sensor;
@@ -388,7 +388,7 @@ HydroponicsSensor *Hydroponics::addHighWaterLevelIndicator(byte inputPin, Hydrop
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
+HydroponicsSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     // TODO assert inputPin in AnalogIn
     HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.1, true, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
@@ -397,7 +397,7 @@ HydroponicsSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin, Hydroponic
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
+HydroponicsSensor *Hydroponics::addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     // TODO assert inputPin in AnalogIn
     HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.9, false, Hydroponics_SensorType_HighWaterHeightMeter, fluidReservoir);
@@ -406,7 +406,7 @@ HydroponicsSensor *Hydroponics::addHighWaterHeightMeter(byte inputPin, Hydroponi
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
+HydroponicsSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     // TODO assert inputPin in AnalogIn
     HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.9, false, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
@@ -415,7 +415,7 @@ HydroponicsSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inputPin, Hydro
     return sensor;
 }
 
-HydroponicsSensor *Hydroponics::addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
+HydroponicsSensor *Hydroponics::addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     // TODO assert inputPin in AnalogIn
     HydroponicsBinaryAnalogSensor *sensor = new HydroponicsBinaryAnalogSensor(inputPin, 0.1, true, Hydroponics_SensorType_LowWaterHeightMeter, fluidReservoir);
