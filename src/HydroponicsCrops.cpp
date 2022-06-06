@@ -5,8 +5,6 @@
 
 #include "HydroponicsCrops.h"
 
-static bool _cropLibraryBuilt = false;
-
 HydroponicsCropData::HydroponicsCropData()
     : _ident{'H','C','D'}, _version(1),
       cropType(Hydroponics_CropType_Undefined), plantName{'\0'},
@@ -36,13 +34,14 @@ HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType cropTypeIn)
     memset(waterTempRange, 0, sizeof(waterTempRange));
     memset(airTempRange, 0, sizeof(airTempRange));
 
-    if (_cropLibraryBuilt) {
+    if (HydroponicsCropsLibrary::_cropLibraryBuilt) {
         *this = *(HydroponicsCropsLibrary::getInstance()->getCropData(this->cropType));
     }
 }
 
 
 HydroponicsCropsLibrary *HydroponicsCropsLibrary::_instance = NULL;
+bool HydroponicsCropsLibrary::_cropLibraryBuilt = false;
 
 HydroponicsCropsLibrary::HydroponicsCropsLibrary()
 {
@@ -59,7 +58,7 @@ HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
 
 void HydroponicsCropsLibrary::buildLibrary()
 {   
-    _cropLibraryBuilt = false;
+    HydroponicsCropsLibrary::_cropLibraryBuilt = false;
 
     {   HydroponicsCropData cropData(Hydroponics_CropType_AloeVera);
         strncpy(&cropData.plantName[0], "Aloe Vera", HYDRO_NAME_MAXSIZE);
@@ -669,7 +668,7 @@ void HydroponicsCropsLibrary::buildLibrary()
 
     validateEntries();
 
-    _cropLibraryBuilt = true;
+    HydroponicsCropsLibrary::_cropLibraryBuilt = true;
 }
 
 void HydroponicsCropsLibrary::validateEntries()

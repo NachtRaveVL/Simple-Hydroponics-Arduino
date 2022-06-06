@@ -24,8 +24,10 @@ public:
 
 protected:
     static HydroponicsCropsLibrary *_instance;
+    static bool _cropLibraryBuilt;
     HydroponicsCropData _cropData[Hydroponics_CropType_Count];      // Crop data (CUSTOM* saved to EEPROM)
 
+    friend HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType);
     HydroponicsCropsLibrary();
 
     void buildLibrary();
