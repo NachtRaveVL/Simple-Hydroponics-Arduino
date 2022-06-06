@@ -113,7 +113,7 @@ public:
     // Initializes module from EEPROM save, returning success flag
     bool initFromEEPROM();
     // Initializes module from MicroSD save, returning success flag
-    bool initFromMicroSD(const char * configFile = "/hydroponics.cfg");
+    bool initFromMicroSD(const char * configFile = "/hydropon.cfg");
 
     //bool initFromWiFiServer(); maybe?
     // TODO logging?
@@ -139,7 +139,7 @@ public:
     HydroponicsActuator *addWaterHeaterRelay(byte outputPin);
     HydroponicsActuator *addWaterAeratorRelay(byte outputPin);
     HydroponicsActuator *addFanExhaustRelay(byte outputPin);
-    HydroponicsActuator *addFanExhaustPWM(byte outputPin);
+    HydroponicsActuator *addFanExhaustPWM(byte outputPin, byte writeBitResolution = 8);
     HydroponicsActuator *addPhUpPeristalticPumpRelay(byte outputPin);
     HydroponicsActuator *addPhDownPeristalticPumpRelay(byte outputPin);
     HydroponicsActuator *addNutrientPremixPeristalticPumpRelay(byte outputPin);
@@ -151,17 +151,17 @@ public:
 
     // Convenience builders for common sensors (unowned, NULL return = failure)
     HydroponicsSensor *addAirDHTTempHumiditySensor(OneWire &oneWire);
-    HydroponicsSensor *addAirCO2Sensor(byte inputPin);
-    HydroponicsSensor *addWaterPhMeter(byte inputPin);
-    HydroponicsSensor *addWaterTDSElectrode(byte inputPin);
-    HydroponicsSensor *addWaterDSTempSensor(byte inputPin);
-    HydroponicsSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addAirCO2Sensor(byte inputPin, byte readBitResolution = 8);
+    HydroponicsSensor *addWaterPhMeter(byte inputPin, byte readBitResolution = 8);
+    HydroponicsSensor *addWaterTDSElectrode(byte inputPin, byte readBitResolution = 8);
+    HydroponicsSensor *addWaterDSTempSensor(byte inputPin, byte readBitResolution = 8);
+    HydroponicsSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
     HydroponicsSensor *addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
     HydroponicsSensor *addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsSensor *addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsSensor *addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsSensor *addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsSensor *addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
 
     // Adds/removes crops to/from system (ownership transfer)
     void registerCrop(HydroponicsCrop *crop);
@@ -219,7 +219,7 @@ public:
     void setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc);
 
 protected:
-    byte _i2cAddressLCD;                                    // LCD i2c address (default: disabled)
+    byte _i2cAddressLCD;                                    // LCD i2c address (default: B000000)
     byte _ctrlInputPin1;                                    // Control input pin 1 (default: disabled)
     byte _sdCardCSPin;                                      // SD card cable select (CS) pin (default: disabled)
     TwoWire* _i2cWire;                                      // Wire class instance (unowned) (default: Wire)

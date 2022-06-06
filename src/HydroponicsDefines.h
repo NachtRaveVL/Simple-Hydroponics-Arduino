@@ -223,7 +223,15 @@ enum Hydroponics_SensorType {
 };
 
 // TODO
-struct HydroponicsSystemData {
+struct HydroponicsSavableDataInterface {
+    // todo toJSONDocument(todo) = 0;
+    // todo fromJSONDocument(todo) = 0;
+    // todo toEEPROMStore(todo) = 0;
+    // todo fromEEPROMStore(todo) = 0;
+};
+
+// TODO
+struct HydroponicsSystemData : public HydroponicsSavableDataInterface {
     HydroponicsSystemData();                                    // Default constructor
     char _ident[3];                                             // Always 'HSD'
     uint8_t _version;                                           // Version #
@@ -249,7 +257,7 @@ struct HydroponicsSystemData {
 };
 
 // TODO
-struct HydroponicsCropData {
+struct HydroponicsCropData : public HydroponicsSavableDataInterface {
     HydroponicsCropData();                                      // Default constructor
     HydroponicsCropData(Hydroponics_CropType cropType);         // Convenience constructor, loads from Crop Library if built
     char _ident[3];                                             // Always 'HCD'
