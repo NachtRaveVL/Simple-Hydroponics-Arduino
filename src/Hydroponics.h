@@ -151,7 +151,7 @@ public:
     bool unregisterSensor(HydroponicsSensor *sensor);
 
     // Convenience builders for common sensors (unowned, NULL return = failure)
-    HydroponicsOneWireSensor *addAirDHTTempHumiditySensor(OneWire &oneWire);
+    HydroponicsDHTSensor *addAirDHTTempHumiditySensor(byte inputPin, uint8_t dhtType = DHT12);
     HydroponicsAnalogSensor *addAirCO2Sensor(byte inputPin, byte readBitResolution = 8);
     HydroponicsAnalogSensor *addWaterPhMeter(byte inputPin, byte readBitResolution = 8);
     HydroponicsAnalogSensor *addWaterTDSElectrode(byte inputPin, byte readBitResolution = 8);
@@ -195,6 +195,7 @@ public:
 
     int getActuatorCount() const;                                   // Current number of total actuators registered with system
     int getSensorCount() const;                                     // Current number of total sensors registered with system
+    int getCropCount() const;                                       // Current number of total crops registered with system
 
     const char * getSystemName() const;                             // System display name (default: "Hydroduino", 31 char limit)
     uint8_t getCropPositionsCount() const;                          // Total number of crop positions available in system (default: 16)
@@ -242,18 +243,7 @@ protected:
     UserDelayFunc _uDelayMillisFunc;                        // User millisecond delay function
     UserDelayFunc _uDelayMicrosFunc;                        // User microsecond delay function
 
-    // TODO maybe we use?
-    // static float kelvin100ToCelsius(uint16_t kelvin100);
-    // static float kelvin100ToFahrenheit(uint16_t kelvin100);
-    // static float kelvin100ToKelvin(uint16_t kelvin100);
-    // static uint16_t celsiusToKelvin100(float celsius);
-    // static uint16_t fahrenheitToKelvin100(float fahrenheit);
-    // static uint16_t kelvinToKelvin100(float kelvin);
-
     void commonInit();
-
-    bool tryEnableActuator(HydroponicsActuator *actuator);
-    bool tryMeasureSensor(HydroponicsSensor *sensor);
 };
 
 #endif // /ifndef Hydroponics_H

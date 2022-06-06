@@ -8,7 +8,7 @@
 
 class HydroponicsSensor;
 class HydroponicsAnalogSensor;
-class HydroponicsOneWireSensor;
+class HydroponicsDHTSensor;
 class HydroponicsBinarySensor;
 class HydroponicsBinaryAnalogSensor;
 
@@ -49,24 +49,29 @@ public:
 
 protected:
     byte _inputPin;
+    int _analogMaxAmount;
+    byte _analogBitRes;
     double _lastMeasurement;
 };
 
-class HydroponicsOneWireSensor : public HydroponicsSensor {
+struct DHTMeasurement {
+    float temperature;
+    float humidity;
+};
+
+class HydroponicsDHTSensor : public HydroponicsSensor {
 public:
-    HydroponicsOneWireSensor(OneWire &oneWire,
-                             Hydroponics_SensorType sensorType,
-                             Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    virtual ~HydroponicsOneWireSensor();
+    HydroponicsDHTSensor(byte inputPin,
+                         Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                         uint8_t dhtType = DHT12);
+    virtual ~HydroponicsDHTSensor();
 
-    double getLastMeasurement() const;
-    virtual double takeMeasurement();
-
-    OneWire &getOneWire();
+    DHTMeasurement getLastMeasurement() const;
+    DHTMeasurement takeMeasurement(bool force = true);
 
 protected:
-    OneWire *_oneWire;
-    double _lastMeasurement;
+    DHT *_dht;
+    DHTMeasurement _lastMeasurement;
 };
 
 class HydroponicsBinarySensor : public HydroponicsSensor {
@@ -90,6 +95,7 @@ public:
     bool getActiveLow() const;
 
 protected:
+    byte _inputPin;
     bool _activeLow;
     bool _lastState;
 };
@@ -116,9 +122,12 @@ public:
     int getAnalogBitResolution() const;
 
 protected:
-    bool _lastState;
+    byte _inputPin;
     float _tolerance;
     bool _activeBelow;
+    int _analogMaxAmount;
+    byte _analogBitRes;
+    bool _lastState;
     double _lastMeasurement;
 };
 

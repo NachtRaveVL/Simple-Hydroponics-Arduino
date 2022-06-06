@@ -101,8 +101,8 @@ HydroponicsPWMActuator::HydroponicsPWMActuator(byte outputPin,
                                                byte writeBitResolution)
     : HydroponicsActuator(outputPin, actuatorType, fluidReservoir),
       _pwmAmount(0.0f),
-      #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)  
-          _pwmBitRes(writeBitResolution), _pwmMaxAmount((2 >> writeBitResolution) - 1)
+      #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+          _pwmBitRes(writeBitResolution), _pwmMaxAmount((1 << writeBitResolution) - 1)
       #else
           _pwmBitRes(8), _pwmMaxAmount(255)
       #endif

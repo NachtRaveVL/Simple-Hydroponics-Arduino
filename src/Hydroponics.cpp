@@ -53,7 +53,7 @@ static void uDelayMicrosFuncDef(unsigned int timeout) {
 
 
 static RTC_DS3231 *_rtcSyncProvider = NULL;
-static time_t rtcNow() {
+time_t rtcNow() {
     return _rtcSyncProvider ? _rtcSyncProvider->now().unixtime() : 0;
 }
 
@@ -407,12 +407,20 @@ bool Hydroponics::unregisterSensor(HydroponicsSensor *sensor)
     return true;
 }
 
-HydroponicsOneWireSensor *Hydroponics::addAirDHTTempHumiditySensor(OneWire &oneWire)
+HydroponicsDHTSensor *Hydroponics::addAirDHTTempHumiditySensor(byte inputPin, uint8_t dhtType)
 {
-    HydroponicsOneWireSensor *sensor = new HydroponicsOneWireSensor(oneWire,
-                                                                    Hydroponics_SensorType_AirTempHumidity);
-    if (registerSensor(sensor)) { return sensor; }
-    else { delete sensor; return NULL; }   
+    bool inputPinIsDigital = checkPinIsDigital(inputPin);
+    assert(!(inputPinIsDigital && "Input pin is not digital"));
+
+    if (inputPinIsDigital) {
+        HydroponicsDHTSensor *sensor = new HydroponicsDHTSensor(inputPin,
+                                                                Hydroponics_FluidReservoir_FeedWater,
+                                                                dhtType);
+        if (registerSensor(sensor)) { return sensor; }
+        else { delete sensor; }
+    }
+
+    return NULL;
 }
 
 HydroponicsAnalogSensor *Hydroponics::addAirCO2Sensor(byte inputPin, byte readBitResolution)
@@ -781,6 +789,12 @@ int Hydroponics::getActuatorCount() const
 }
 
 int Hydroponics::getSensorCount() const
+{
+    // TODO
+    return 0;
+}
+
+int Hydroponics::getCropCount() const
 {
     // TODO
     return 0;
