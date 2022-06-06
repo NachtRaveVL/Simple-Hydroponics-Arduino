@@ -78,6 +78,7 @@
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
+#include "HYdroponicsUtils.h"
 #include "HydroponicsActuators.h"
 #include "HydroponicsCrops.h"
 #include "HydroponicsSensors.h"
@@ -130,42 +131,42 @@ public:
     // Actuator, sensor, and crop registration.
 
     // Adds/removes acuator to/from system (ownership transfer - system will delete object upon class deconstruction unless unregistered)
-    void registerActuator(HydroponicsActuator *actuator);
-    void unregisterActuator(HydroponicsActuator *actuator);
+    bool registerActuator(HydroponicsActuator *actuator);
+    bool unregisterActuator(HydroponicsActuator *actuator);
 
     // Convenience builders for actuators (unowned, NULL return = failure)
-    HydroponicsActuator *addGrowLightsRelay(byte outputPin);
-    HydroponicsActuator *addWaterPumpRelay(byte outputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsActuator *addWaterHeaterRelay(byte outputPin);
-    HydroponicsActuator *addWaterAeratorRelay(byte outputPin);
-    HydroponicsActuator *addFanExhaustRelay(byte outputPin);
-    HydroponicsActuator *addFanExhaustPWM(byte outputPin, byte writeBitResolution = 8);
-    HydroponicsActuator *addPhUpPeristalticPumpRelay(byte outputPin);
-    HydroponicsActuator *addPhDownPeristalticPumpRelay(byte outputPin);
-    HydroponicsActuator *addNutrientPremixPeristalticPumpRelay(byte outputPin);
-    HydroponicsActuator *addFreshWaterPeristalticPumpRelay(byte outputPin);
+    HydroponicsRelayActuator *addGrowLightsRelay(byte outputPin);
+    HydroponicsRelayActuator *addWaterPumpRelay(byte outputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsRelayActuator *addWaterHeaterRelay(byte outputPin);
+    HydroponicsRelayActuator *addWaterAeratorRelay(byte outputPin);
+    HydroponicsRelayActuator *addFanExhaustRelay(byte outputPin);
+    HydroponicsPWMActuator *addFanExhaustPWM(byte outputPin, byte writeBitResolution = 8);
+    HydroponicsRelayActuator *addPhUpPeristalticPumpRelay(byte outputPin);
+    HydroponicsRelayActuator *addPhDownPeristalticPumpRelay(byte outputPin);
+    HydroponicsRelayActuator *addNutrientPremixPeristalticPumpRelay(byte outputPin);
+    HydroponicsRelayActuator *addFreshWaterPeristalticPumpRelay(byte outputPin);
 
     // Adds/removes sensor to/from system (ownership transfer)
-    void registerSensor(HydroponicsSensor *sensor);
-    void unregisterSensor(HydroponicsSensor *sensor);
+    bool registerSensor(HydroponicsSensor *sensor);
+    bool unregisterSensor(HydroponicsSensor *sensor);
 
     // Convenience builders for common sensors (unowned, NULL return = failure)
-    HydroponicsSensor *addAirDHTTempHumiditySensor(OneWire &oneWire);
-    HydroponicsSensor *addAirCO2Sensor(byte inputPin, byte readBitResolution = 8);
-    HydroponicsSensor *addWaterPhMeter(byte inputPin, byte readBitResolution = 8);
-    HydroponicsSensor *addWaterTDSElectrode(byte inputPin, byte readBitResolution = 8);
-    HydroponicsSensor *addWaterDSTempSensor(byte inputPin, byte readBitResolution = 8);
-    HydroponicsSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsSensor *addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsSensor *addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsSensor *addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsSensor *addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsSensor *addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsOneWireSensor *addAirDHTTempHumiditySensor(OneWire &oneWire);
+    HydroponicsAnalogSensor *addAirCO2Sensor(byte inputPin, byte readBitResolution = 8);
+    HydroponicsAnalogSensor *addWaterPhMeter(byte inputPin, byte readBitResolution = 8);
+    HydroponicsAnalogSensor *addWaterTDSElectrode(byte inputPin, byte readBitResolution = 8);
+    HydroponicsAnalogSensor *addWaterDSTempSensor(byte inputPin, byte readBitResolution = 8);
+    HydroponicsAnalogSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsBinarySensor *addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsBinarySensor *addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsBinaryAnalogSensor *addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsBinaryAnalogSensor *addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsBinaryAnalogSensor *addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    HydroponicsBinaryAnalogSensor *addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
 
     // Adds/removes crops to/from system (ownership transfer)
-    void registerCrop(HydroponicsCrop *crop);
-    void unregisterCrop(HydroponicsCrop *crop);
+    bool registerCrop(HydroponicsCrop *crop);
+    bool unregisterCrop(HydroponicsCrop *crop);
 
     // Convenience builders for crops (unowned, NULL return = failure)
     HydroponicsCrop *addCropFromSowDate(const Hydroponics_CropType cropType, time_t sowDate, int positionIndex = -1);
