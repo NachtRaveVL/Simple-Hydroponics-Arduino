@@ -15,8 +15,6 @@ class HydroponicsBinaryAnalogSensor;
 
 #include "Hydroponics.h"
 
-//typedef void(*IntrAdvSensorFinish)(float);             // Passes raw value
-
 class HydroponicsSensor {
 public:
     HydroponicsSensor(Hydroponics_SensorType sensorType,
@@ -32,6 +30,7 @@ protected:
     Hydroponics_FluidReservoir _fluidReservoir;
     time_t _lastMeasureTime;
 };
+
 
 class HydroponicsAnalogSensor : public HydroponicsSensor {
 public:
@@ -55,6 +54,7 @@ protected:
     float _lastMeasurement;
 };
 
+
 struct DHTMeasurement {
     float temperature;
     float humidity;
@@ -75,6 +75,7 @@ protected:
     DHTMeasurement _lastMeasurement;
 };
 
+
 class HydroponicsDSSensor : public HydroponicsSensor {
 public:
     HydroponicsDSSensor(byte inputPin,
@@ -92,6 +93,7 @@ protected:
     DallasTemperature *_dt;
     float _lastMeasurement;
 };
+
 
 class HydroponicsBinarySensor : public HydroponicsSensor {
 public:
@@ -118,6 +120,7 @@ protected:
     bool _activeLow;
     bool _lastState;
 };
+
 
 class HydroponicsBinaryAnalogSensor : public HydroponicsSensor {
 public:

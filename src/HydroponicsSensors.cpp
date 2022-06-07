@@ -36,11 +36,12 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(byte inputPin,
     : HydroponicsSensor(sensorType, fluidReservoir),
       _inputPin(inputPin), _lastMeasurement(0),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(readBitResolution), _analogMaxAmount((1 << readBitResolution) - 1)
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount((1 << constrain(readBitResolution, 8, 12)) - 1) // TODO: -1 may not be needed here?
       #else
           _analogBitRes(8), _analogMaxAmount(255)
       #endif
 {
+    assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
     pinMode(_inputPin, INPUT);
 }
 
@@ -57,8 +58,8 @@ float HydroponicsAnalogSensor::takeMeasurement()
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
         analogReadResolution(_analogBitRes);
     #endif
-    _lastMeasureTime = now();
     _lastMeasurement = analogRead(_inputPin) / (float)_analogMaxAmount;
+    _lastMeasureTime = now();
     // TODO: Curve correction for calibration data
     return _lastMeasurement;
 }
@@ -105,11 +106,13 @@ DHTMeasurement HydroponicsDHTSensor::getLastMeasurement() const
 
 DHTMeasurement HydroponicsDHTSensor::takeMeasurement(bool force)
 {
-    _lastMeasureTime = now();
     _lastMeasurement.temperature = _dht->readTemperature(false, force);
     _lastMeasurement.humidity = _dht->readHumidity(force);
+    _lastMeasureTime = now();
+
     return _lastMeasurement;
 }
+
 
 HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
                                          Hydroponics_FluidReservoir fluidReservoir,
@@ -123,9 +126,11 @@ HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
 
     if (_dt && _oneWire) {
         _dt->setOneWire(_oneWire);
-        _dt->setPullupPin(inputPin);
+        _dt->setPullupPin(inputPin); // TODO: needed?
+        _dt->setWaitForConversion(true); // TODO: make calls async
         _dt->begin();
         _dt->setResolution(readBitResolution);
+        assert(!(_dt->getResolution() == readBitResolution && "Resolved resolution mismatch with passed resolution"));
     }
 }
 
@@ -142,8 +147,14 @@ float HydroponicsDSSensor::getLastMeasurement() const
 
 float HydroponicsDSSensor::takeMeasurement()
 {
-    _lastMeasureTime = now();
-    _lastMeasurement = _dt->getTempCByIndex(0);
+    _dt->requestTemperatures();
+    float measurement = _dt->getTempCByIndex(0); // TODO: Support more than one DS device on line
+
+    if (!(fabs(measurement - DEVICE_DISCONNECTED_C) < FLT_EPSILON)) {
+        _lastMeasurement = measurement;
+        _lastMeasureTime = now();
+    }
+
     return _lastMeasurement;
 }
 
@@ -168,8 +179,9 @@ HydroponicsBinarySensor::~HydroponicsBinarySensor()
 
 bool HydroponicsBinarySensor::pollState()
 {
-    _lastMeasureTime = now();
     _lastState = digitalRead(_inputPin);
+    _lastMeasureTime = now();
+
     return _lastState;
 }
 
@@ -198,11 +210,12 @@ HydroponicsBinaryAnalogSensor::HydroponicsBinaryAnalogSensor(byte inputPin,
       _inputPin(inputPin), _tolerance(tolerance), _activeBelow(activeBelow),
       _lastState(false), _lastMeasurement(0),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(readBitResolution), _analogMaxAmount((1 << readBitResolution) - 1)
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount((1 << constrain(readBitResolution, 8, 12)) - 1) // TODO: -1 may not be needed here?
       #else
           _analogBitRes(8), _analogMaxAmount(255)
       #endif
 {
+    assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
     pinMode(_inputPin, INPUT);
 }
 
@@ -214,8 +227,9 @@ bool HydroponicsBinaryAnalogSensor::pollState()
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
         analogReadResolution(_analogBitRes);
     #endif
-    _lastMeasureTime = now();
+
     _lastMeasurement = analogRead(_inputPin) / (float)_analogMaxAmount;
+    _lastMeasureTime = now();
     // TODO: Curve correction for calibration data
     _lastState = _activeBelow ? _lastMeasurement <= _tolerance + FLT_EPSILON :
                                 _lastMeasurement >= _tolerance - FLT_EPSILON;
