@@ -224,10 +224,17 @@ enum Hydroponics_SensorType {
 
 // TODO
 struct HydroponicsSavableDataInterface {
-    // todo toJSONDocument(todo) = 0;
-    // todo fromJSONDocument(todo) = 0;
-    // todo toEEPROMStore(todo) = 0;
-    // todo fromEEPROMStore(todo) = 0;
+    // virtual todo toJSONDocument(todo) = 0;
+    // virtual todo fromJSONDocument(todo) = 0;
+    // virtual todo toEEPROMStore(todo) = 0;
+    // virtual todo fromEEPROMStore(todo) = 0;
+};
+
+struct HydroponicsLoggableDataInterface {
+    // virtual todo toMQTTPublish(todo) = 0;
+    // virtual todo toSDCardCSV(todo) = 0;
+    // virtual todo toWebServerDatabase(todo) = 0;
+    // virtual todo toWebServerAPI(todo) = 0;
 };
 
 // TODO
