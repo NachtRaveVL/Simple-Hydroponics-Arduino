@@ -34,14 +34,30 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(byte inputPin,
     : HydroponicsSensor(sensorType, fluidReservoir),
       _inputPin(inputPin),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12))
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12)),
       #else
-          _analogBitRes(8), _analogMaxAmount(256)
+          _analogBitRes(8), _analogMaxAmount(256),
       #endif
+      _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
     pinMode(_inputPin, INPUT);
+
+    // Known measurement units
+    switch (sensorType) {
+        case Hydroponics_SensorType_AirCarbonDioxide:
+            _measurementUnits = Hydroponics_UnitsType_Concentration_PPM;
+            break;
+        case Hydroponics_SensorType_PotentialHydrogen:
+            _measurementUnits = Hydroponics_UnitsType_pHScale_0_14;
+            break;
+        case Hydroponics_SensorType_TotalDissolvedSolids:
+            _measurementUnits = Hydroponics_UnitsType_Concentration_EC;
+            break;
+        default:
+            break;
+    }
 }
 
 HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
@@ -55,6 +71,7 @@ HydroponicsAnalogSensorMeasurement HydroponicsAnalogSensor::takeMeasurement()
 
     HydroponicsAnalogSensorMeasurement newMeasurement;
     newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
+    newMeasurement.units = Hydroponics_UnitsType_Raw_0_1; // TODO: Correct units conversion
     newMeasurement.timestamp = now();
     // TODO: Curve correction from calibration data
 
@@ -86,12 +103,18 @@ int HydroponicsAnalogSensor::getAnalogBitResolution() const
     return _analogBitRes;
 }
 
+void HydroponicsAnalogSensor::setMeasurementUnits(Hydroponics_UnitsType units)
+{
+    _measurementUnits = units;
+}
+
 
 HydroponicsDHTSensor::HydroponicsDHTSensor(byte inputPin,
                                            Hydroponics_FluidReservoir fluidReservoir,
                                            uint8_t dhtType)
     : HydroponicsSensor(Hydroponics_SensorType_AirTempHumidity, fluidReservoir),
-      _dht(new DHT(inputPin, dhtType)), _computeHeatIndex(true)
+      _dht(new DHT(inputPin, dhtType)), _computeHeatIndex(true),
+      _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     assert(!(_dht && "DHT instance creation failure"));
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
@@ -108,11 +131,28 @@ HydroponicsDHTSensor::~HydroponicsDHTSensor()
 
 HydroponicsDHTSensorMeasurement HydroponicsDHTSensor::takeMeasurement(bool force)
 {
+    bool isFahrenheit = _measurementUnits == Hydroponics_UnitsType_Temperature_Fahrenheit;
+
     HydroponicsDHTSensorMeasurement newMeasurement;
-    newMeasurement.temperature = _dht->readTemperature(false, force);
+    newMeasurement.temperature = _dht->readTemperature(isFahrenheit, force);
+    newMeasurement.temperatureUnits = isFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit : Hydroponics_UnitsType_Temperature_Celsius;
     newMeasurement.humidity = _dht->readHumidity(force);
+    newMeasurement.humidityUnits = Hydroponics_UnitsType_Percentile_0_100;
     newMeasurement.timestamp = now();
-    newMeasurement.heatIndex = _computeHeatIndex ? _dht->computeHeatIndex(newMeasurement.temperature, newMeasurement.humidity, false) : 0.0f;
+    if (_computeHeatIndex) {
+        newMeasurement.heatIndex = _dht->computeHeatIndex(newMeasurement.temperature, newMeasurement.humidity, isFahrenheit);
+        newMeasurement.heatIndexUnits = isFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit : Hydroponics_UnitsType_Temperature_Celsius;
+    }
+
+    // Convert to Kelvin from Celsius, if needed
+    if (_measurementUnits == Hydroponics_UnitsType_Temperature_Kelvin) {
+        newMeasurement.temperature += 273.15f;
+        newMeasurement.temperatureUnits = Hydroponics_UnitsType_Temperature_Kelvin;
+        if (_computeHeatIndex) {
+            newMeasurement.heatIndex += 273.15f;
+            newMeasurement.heatIndexUnits = Hydroponics_UnitsType_Temperature_Kelvin;
+        }
+    }
 
     return (_lastMeasurement = newMeasurement);
 }
@@ -137,6 +177,11 @@ bool HydroponicsDHTSensor::getComputeHeatIndex()
     return _computeHeatIndex;
 }
 
+void HydroponicsDHTSensor::setMeasurementUnits(Hydroponics_UnitsType units)
+{
+    _measurementUnits = units;
+}
+
 
 HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
                                          Hydroponics_FluidReservoir fluidReservoir,
@@ -151,7 +196,7 @@ HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
     if (_dt && _oneWire) {
         _dt->setOneWire(_oneWire);
         _dt->setPullupPin(inputPin); // TODO: needed?
-        _dt->setWaitForConversion(true); // TODO: make calls async
+        _dt->setWaitForConversion(true); // TODO: make measurement async
         _dt->begin();
         _dt->setResolution(readBitResolution);
         assert(!(_dt->getResolution() == readBitResolution && "Resolved resolution mismatch with passed resolution"));
@@ -166,13 +211,25 @@ HydroponicsDSSensor::~HydroponicsDSSensor()
 
 HydroponicsAnalogSensorMeasurement HydroponicsDSSensor::takeMeasurement()
 {
+    bool isFahrenheit = _measurementUnits == Hydroponics_UnitsType_Temperature_Fahrenheit;
+
     _dt->requestTemperatures(); // Blocking
 
     HydroponicsAnalogSensorMeasurement newMeasurement;
-    newMeasurement.value = _dt->getTempCByIndex(0); // TODO: Support more than one DS device on line
+    newMeasurement.value = isFahrenheit ? _dt->getTempFByIndex(0) : _dt->getTempCByIndex(0); // TODO: Support more than one DS device on line
+    newMeasurement.units = isFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit : Hydroponics_UnitsType_Temperature_Celsius;
     newMeasurement.timestamp = now();
 
-    if (!(fabs(newMeasurement.value - DEVICE_DISCONNECTED_C) < FLT_EPSILON)) {
+    bool deviceDisconnected = fabs(newMeasurement.value - (isFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C)) < FLT_EPSILON;
+    assert(!(!deviceDisconnected && "Measurement failed device disconnected"));
+
+    if (!deviceDisconnected) {
+        // Convert to Kelvin from Celsius, if needed
+        if (_measurementUnits == Hydroponics_UnitsType_Temperature_Kelvin) {
+            newMeasurement.value += 273.15f;
+            newMeasurement.units = Hydroponics_UnitsType_Temperature_Kelvin;
+        }
+
         return (_lastMeasurement = newMeasurement);
     }
     return _lastMeasurement;
@@ -191,6 +248,11 @@ time_t HydroponicsDSSensor::getLastMeasurementTime() const
 OneWire &HydroponicsDSSensor::getOneWire() const
 {
     return *_oneWire;
+}
+
+void HydroponicsDSSensor::setMeasurementUnits(Hydroponics_UnitsType units)
+{
+    _measurementUnits = units;
 }
 
 
@@ -246,10 +308,11 @@ HydroponicsBinaryAnalogSensor::HydroponicsBinaryAnalogSensor(byte inputPin,
     : HydroponicsSensor(sensorType, fluidReservoir),
       _inputPin(inputPin), _tolerance(tolerance), _activeBelow(activeBelow),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12))
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12)),
       #else
-          _analogBitRes(8), _analogMaxAmount(256)
+          _analogBitRes(8), _analogMaxAmount(256),
       #endif
+      _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
@@ -267,6 +330,7 @@ HydroponicsBinaryAnalogSensorMeasurement HydroponicsBinaryAnalogSensor::takeMeas
 
     HydroponicsBinaryAnalogSensorMeasurement newMeasurement;
     newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
+    newMeasurement.units = Hydroponics_UnitsType_Raw_0_1; // TODO: Correct units conversion
     newMeasurement.timestamp = now();
     // TODO: Curve correction from calibration data
     newMeasurement.state = _activeBelow ? newMeasurement.value <= _tolerance + FLT_EPSILON :
@@ -308,4 +372,9 @@ int HydroponicsBinaryAnalogSensor::getAnalogMaxAmount() const
 int HydroponicsBinaryAnalogSensor::getAnalogBitResolution() const
 {
     return _analogBitRes;
+}
+
+void HydroponicsBinaryAnalogSensor::setMeasurementUnits(Hydroponics_UnitsType units)
+{
+    _measurementUnits = units;
 }

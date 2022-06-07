@@ -61,7 +61,9 @@ time_t rtcNow() {
 HydroponicsSystemData::HydroponicsSystemData()
     : _ident{'H','S', 'D'}, _version(1),
       systemName{'H','y','d','r','o','d','u','i','n','o', '\0'},
-      cropPositionsCount(16), maxActiveRelayCount{2}
+      cropPositionsCount(16), maxActiveRelayCount{2},
+      reservoirSizeUnits(Hydroponics_UnitsType_Undefined),
+      pumpFlowRateUnits(Hydroponics_UnitsType_Undefined)
 {
     memset(reservoirSize, 0, sizeof(reservoirSize));
     memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
@@ -136,14 +138,14 @@ Hydroponics::~Hydroponics()
 }
 
 void Hydroponics::init(Hydroponics_SystemMode systemMode,
-                       Hydroponics_TemperatureMode tempMode,
+                       Hydroponics_MeasurementMode measurementMode,
                        Hydroponics_LCDOutputMode lcdOutMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
     assert(!(!_systemData && "Controller already initialized"));
     if (!_systemData) { 
         assert(!((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count && "Invalid system mode"));
-        assert(!((int)tempMode >= 0 && tempMode < Hydroponics_TemperatureMode_Count && "Invalid temperature mode"));
+        assert(!((int)measurementMode >= 0 && measurementMode < Hydroponics_MeasurementMode_Count && "Invalid measurement mode"));
         assert(!((int)lcdOutMode >= 0 && lcdOutMode < Hydroponics_LCDOutputMode_Count && "Invalid LCD output mode"));
         assert(!((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count && "Invalid control input mode"));
 
@@ -152,7 +154,7 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
 
         if (_systemData) {
             _systemData->systemMode = systemMode;
-            _systemData->tempMode = tempMode;
+            _systemData->measurementMode = measurementMode;
             _systemData->lcdOutMode = lcdOutMode;
             _systemData->ctrlInMode = ctrlInMode;
             commonInit();
@@ -201,7 +203,19 @@ bool Hydroponics::initFromMicroSD(const char * configFile)
 
 void Hydroponics::commonInit()
 {
-    // TODO
+    switch (getMeasurementMode()) {
+        default:
+        case Hydroponics_MeasurementMode_Imperial:
+            _systemData->reservoirSizeUnits = Hydroponics_UnitsType_LiquidVolume_Gallons; 
+            _systemData->pumpFlowRateUnits = Hydroponics_UnitsType_LiquidFlow_GallonsPerMin;
+            break;
+
+        case Hydroponics_MeasurementMode_Metric:
+        case Hydroponics_MeasurementMode_Scientific:
+            _systemData->reservoirSizeUnits = Hydroponics_UnitsType_LiquidVolume_Liters; 
+            _systemData->pumpFlowRateUnits = Hydroponics_UnitsType_LiquidFlow_LitersPerMin;
+            break;
+    }
 }
 
 void Hydroponics::makeRTCSyncProvider()
@@ -416,6 +430,19 @@ HydroponicsDHTSensor *Hydroponics::addAirDHTTempHumiditySensor(byte inputPin, ui
         HydroponicsDHTSensor *sensor = new HydroponicsDHTSensor(inputPin,
                                                                 Hydroponics_FluidReservoir_FeedWater,
                                                                 dhtType);
+
+        switch (getMeasurementMode()) {
+            default:
+            case Hydroponics_MeasurementMode_Imperial:
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Temperature_Fahrenheit);
+                break;
+            case Hydroponics_MeasurementMode_Metric:
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Temperature_Celsius);
+                break;
+            case Hydroponics_MeasurementMode_Scientific:
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Temperature_Kelvin);
+                break;
+        }
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }
@@ -483,6 +510,20 @@ HydroponicsDSSensor *Hydroponics::addWaterDSTempSensor(byte inputPin, byte readB
         HydroponicsDSSensor *sensor = new HydroponicsDSSensor(inputPin,
                                                               Hydroponics_FluidReservoir_FeedWater,
                                                               readBitResolution);
+
+        switch (getMeasurementMode()) {
+            default:
+            case Hydroponics_MeasurementMode_Imperial:
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Temperature_Fahrenheit);
+                break;
+            case Hydroponics_MeasurementMode_Metric:
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Temperature_Celsius);
+                break;
+            case Hydroponics_MeasurementMode_Scientific:
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Temperature_Kelvin);
+                break;
+        }
+
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }
@@ -500,6 +541,18 @@ HydroponicsAnalogSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydr
                                                                       Hydroponics_SensorType_WaterPumpFlowSensor,
                                                                       fluidReservoir,
                                                                       readBitResolution);
+
+        switch (getMeasurementMode()) {
+            default:
+            case Hydroponics_MeasurementMode_Imperial:
+                sensor->setLiquidFlowUnits(Hydroponics_UnitsType_LiquidFlow_GallonsPerMin);
+                break;
+            case Hydroponics_MeasurementMode_Metric:
+            case Hydroponics_MeasurementMode_Scientific:
+                sensor->setLiquidFlowUnits(Hydroponics_UnitsType_LiquidFlow_LitersPerMin);
+                break;
+        }
+
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }
@@ -553,6 +606,18 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin
                                                                                   Hydroponics_SensorType_LowWaterHeightMeter,
                                                                                   fluidReservoir,
                                                                                   readBitResolution);
+
+        switch (getMeasurementMode()) {
+            default:
+            case Hydroponics_MeasurementMode_Imperial:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                break;
+            case Hydroponics_MeasurementMode_Metric:
+            case Hydroponics_MeasurementMode_Scientific:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                break;
+        }
+
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }
@@ -572,6 +637,18 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addHighWaterHeightMeter(byte inputPi
                                                                                   Hydroponics_SensorType_HighWaterHeightMeter,
                                                                                   fluidReservoir,
                                                                                   readBitResolution);
+
+        switch (getMeasurementMode()) {
+            default:
+            case Hydroponics_MeasurementMode_Imperial:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                break;
+            case Hydroponics_MeasurementMode_Metric:
+            case Hydroponics_MeasurementMode_Scientific:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                break;
+        }
+
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }
@@ -591,6 +668,18 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inp
                                                                                   Hydroponics_SensorType_LowWaterHeightMeter,
                                                                                   fluidReservoir,
                                                                                   readBitResolution);
+
+        switch (getMeasurementMode()) {
+            default:
+            case Hydroponics_MeasurementMode_Imperial:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                break;
+            case Hydroponics_MeasurementMode_Metric:
+            case Hydroponics_MeasurementMode_Scientific:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                break;
+        }
+
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }
@@ -610,6 +699,18 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addHighWaterUltrasonicSensor(byte in
                                                                                   Hydroponics_SensorType_LowWaterHeightMeter,
                                                                                   fluidReservoir,
                                                                                   readBitResolution);
+
+        switch (getMeasurementMode()) {
+            default:
+            case Hydroponics_MeasurementMode_Imperial:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                break;
+            case Hydroponics_MeasurementMode_Metric:
+            case Hydroponics_MeasurementMode_Scientific:
+                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                break;
+        }
+
         if (registerSensor(sensor)) { return sensor; }
         else { delete sensor; }
     }
@@ -666,9 +767,9 @@ Hydroponics_SystemMode Hydroponics::getSystemMode() const
     return _systemData ? _systemData->systemMode : Hydroponics_SystemMode_Undefined;
 }
 
-Hydroponics_TemperatureMode Hydroponics::getTemperatureMode() const
+Hydroponics_MeasurementMode Hydroponics::getMeasurementMode() const
 {
-    return _systemData ? _systemData->tempMode : Hydroponics_TemperatureMode_Undefined;
+    return _systemData ? _systemData->measurementMode : Hydroponics_MeasurementMode_Undefined;
 }
 
 Hydroponics_LCDOutputMode Hydroponics::getLCDOutputMode() const

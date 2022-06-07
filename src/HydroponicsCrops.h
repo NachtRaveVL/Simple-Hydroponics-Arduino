@@ -11,6 +11,7 @@ class HydroponicsCrop;
 
 #include "Hydroponics.h"
 
+// TODO
 class HydroponicsCropsLibrary {
 public:
     static HydroponicsCropsLibrary *getInstance();
@@ -23,9 +24,9 @@ public:
     //void saveCustomCropData();
 
 protected:
-    static HydroponicsCropsLibrary *_instance;
-    static bool _cropLibraryBuilt;
-    HydroponicsCropData _cropData[Hydroponics_CropType_Count];      // Crop data (CUSTOM* saved to EEPROM)
+    static HydroponicsCropsLibrary *_instance;              // TODO
+    static bool _cropLibraryBuilt;                          // TODO
+    HydroponicsCropData _cropData[Hydroponics_CropType_Count]; // Crop data (CUSTOM* saved to EEPROM)
 
     friend HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType);
     HydroponicsCropsLibrary();
@@ -34,6 +35,8 @@ protected:
     void validateEntries();
 };
 
+
+// TODO
 class HydroponicsCrop {
 public:
     HydroponicsCrop(const Hydroponics_CropType cropType, const int positionIndex, const time_t sowDate);
@@ -48,12 +51,12 @@ public:
     Hydroponics_CropPhase getCropPhase() const;
 
 protected:
-    const Hydroponics_CropType _cropType;
-    const HydroponicsCropData *_cropData; 
-    int _positionIndex;
-    time_t _sowDate;
-    int _growWeek;
-    Hydroponics_CropPhase _cropPhase;
+    const Hydroponics_CropType _cropType;                   // TODO
+    const HydroponicsCropData *_cropData;                   // TODO
+    int _positionIndex;                                     // TODO
+    time_t _sowDate;                                        // TODO
+    int _growWeek;                                          // TODO
+    Hydroponics_CropPhase _cropPhase;                       // TODO
 
     void recalcGrowWeekAndPhase();
 };

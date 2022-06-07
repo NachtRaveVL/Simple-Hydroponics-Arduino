@@ -12,6 +12,7 @@ class HydroponicsPWMActuator;
 
 #include "Hydroponics.h"
 
+// TODO
 class HydroponicsActuator {
 public:
     HydroponicsActuator(byte outputPin,
@@ -33,14 +34,15 @@ public:
     time_t getActuatorEnabledUntil() const;
 
 protected:
-    byte _outputPin;
-    Hydroponics_ActuatorType _actuatorType;
-    Hydroponics_FluidReservoir _fluidReservoir;
-    bool _enabled;
-    time_t _enabledUntil;
+    byte _outputPin;                                        // TODO
+    Hydroponics_ActuatorType _actuatorType;                 // TODO
+    Hydroponics_FluidReservoir _fluidReservoir;             // TODO
+    bool _enabled;                                          // TODO
+    time_t _enabledUntil;                                   // TODO
 };
 
 
+// TODO
 class HydroponicsRelayActuator : public HydroponicsActuator {
 public:
     HydroponicsRelayActuator(byte outputPin,
@@ -57,11 +59,12 @@ public:
     bool getActiveLow() const;
 
 protected:
-    Hydroponics_RelayRail _relayRail;
-    bool _activeLow;
+    Hydroponics_RelayRail _relayRail;                       // TODO
+    bool _activeLow;                                        // TODO
 };
 
 
+// TODO
 class HydroponicsPWMActuator : public HydroponicsActuator {
 public:
     HydroponicsPWMActuator(byte outputPin,
@@ -83,9 +86,9 @@ public:
     int getPWMBitResolution() const;
 
 protected:
-    float _pwmAmount;
-    int _pwmMaxAmount;
-    byte _pwmBitRes;
+    float _pwmAmount;                                       // TODO
+    int _pwmMaxAmount;                                      // TODO
+    byte _pwmBitRes;                                        // TODO
 
     void applyPWM();
 };

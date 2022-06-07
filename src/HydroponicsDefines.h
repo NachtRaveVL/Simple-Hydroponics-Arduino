@@ -163,13 +163,13 @@ enum Hydroponics_SystemMode {
 };
 
 // TODO
-enum Hydroponics_TemperatureMode {
-    Hydroponics_TemperatureMode_Celsius,            // Celsius temperature mode (default setting)
-    Hydroponics_TemperatureMode_Fahrenheit,         // Fahrenheit temperature mode
-    Hydroponics_TemperatureMode_Kelvin,             // Kelvin temperature mode
+enum Hydroponics_MeasurementMode {
+    Hydroponics_MeasurementMode_Imperial,           // Imperial measurement mode (default setting, °F Ft Gal Lbs M-D-Y Val.X etc)
+    Hydroponics_MeasurementMode_Metric,             // Metric measurement mode (°C M L Kg Y-M-D Val.X etc)
+    Hydroponics_MeasurementMode_Scientific,         // Scientific measurement mode (°K M L Kg Y-M-D Val.XX etc)
 
-    Hydroponics_TemperatureMode_Count,              // Internal use only
-    Hydroponics_TemperatureMode_Undefined = -1      // Internal use only
+    Hydroponics_MeasurementMode_Count,              // Internal use only
+    Hydroponics_MeasurementMode_Undefined = -1      // Internal use only
 };
 
 // TODO
@@ -223,6 +223,29 @@ enum Hydroponics_SensorType {
 };
 
 // TODO
+enum Hydroponics_UnitsType {
+    Hydroponics_UnitsType_Temperature_Celsius,      // Celsius temperature mode.
+    Hydroponics_UnitsType_Temperature_Fahrenheit,   // Fahrenheit temperature mode.
+    Hydroponics_UnitsType_Temperature_Kelvin,       // Kelvin temperature mode.
+    Hydroponics_UnitsType_Distance_Meters,          // Meters distance mode.
+    Hydroponics_UnitsType_Distance_Feet,            // Feet distance mode.
+    Hydroponics_UnitsType_Weight_Kilogram,          // Kilogram weight mode.
+    Hydroponics_UnitsType_Weight_Pounds,            // Pounds weight mode.
+    Hydroponics_UnitsType_LiquidVolume_Liters,      // Liters liquid volume mode.
+    Hydroponics_UnitsType_LiquidVolume_Gallons,     // Gallons liquid volume mode.
+    Hydroponics_UnitsType_LiquidFlow_LitersPerMin,  // Liters per minute liquid flow mode.
+    Hydroponics_UnitsType_LiquidFlow_GallonsPerMin, // Gallons per minute liquid flow mode.
+    Hydroponics_UnitsType_pHScale_0_14,             // pH scale [0.0,14.0] mode.
+    Hydroponics_UnitsType_Concentration_EC,         // Electrical conductivity concentration mode.
+    Hydroponics_UnitsType_Concentration_PPM,        // Parts-per-million concentration mode.
+    Hydroponics_UnitsType_Percentile_0_100,         // Percentile [0.0,100.0] mode.
+    Hydroponics_UnitsType_Raw_0_1,                  // Raw value [0.0,1.0] mode.
+
+    Hydroponics_UnitsType_Count,                    // Internal use only
+    Hydroponics_UnitsType_Undefined = -1            // Internal use only
+};
+
+// TODO
 struct HydroponicsSavableDataInterface {
     // virtual todo toJSONDocument(todo) = 0;
     // virtual todo fromJSONDocument(todo) = 0;
@@ -230,6 +253,7 @@ struct HydroponicsSavableDataInterface {
     // virtual todo fromEEPROMStore(todo) = 0;
 };
 
+// TODO
 struct HydroponicsLoggableDataInterface {
     // virtual todo toMQTTPublish(todo) = 0;
     // virtual todo toSDCardCSV(todo) = 0;
@@ -245,13 +269,15 @@ struct HydroponicsSystemData : public HydroponicsSavableDataInterface {
     char systemName[HYDRO_NAME_MAXSIZE];                        // TODO
     int8_t timeZoneOffset;
     Hydroponics_SystemMode systemMode;                          // System type mode
-    Hydroponics_TemperatureMode tempMode;                       // System temperature mode
+    Hydroponics_MeasurementMode measurementMode;                // System measurement mode
     Hydroponics_LCDOutputMode lcdOutMode;                       // System LCD mode
     Hydroponics_ControlInputMode ctrlInMode;                    // System control input mode 
     uint8_t cropPositionsCount;                                 // TODO
     uint8_t maxActiveRelayCount[Hydroponics_RelayRail_Count];   // TODO
     float reservoirSize[Hydroponics_FluidReservoir_Count];      // TODO
-    float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO L/s
+    Hydroponics_UnitsType reservoirSizeUnits;                   // TODO
+    float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO
+    Hydroponics_UnitsType pumpFlowRateUnits;                    // TODO
     struct {
         Hydroponics_SensorType sensor;
         Hydroponics_FluidReservoir reservoir;
@@ -259,8 +285,6 @@ struct HydroponicsSystemData : public HydroponicsSavableDataInterface {
     } calibrationData[HYDRO_CALIB_MAXSIZE];                     // Analog sensor calibration data
     float phDriftDataTODO;                                      // TODO
     float ecDriftDataTODO;                                      // TODO
-    float calibrationDataTODO;                                  // TODO
-    int measurementDataTODO;                                    // TODO
 };
 
 // TODO
