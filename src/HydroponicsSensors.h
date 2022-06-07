@@ -7,10 +7,10 @@
 #define HydroponicsSensors_H
 
 struct HydroponicsSensorMeasurement;
-struct HydroponicsSensorAnalogMeasurement;
-struct HydroponicsSensorDHTMeasurement;
-struct HydroponicsSensorBinaryMeasurement;
-struct HydroponicsSensorBinaryAnalogMeasurement;
+struct HydroponicsAnalogSensorMeasurement;
+struct HydroponicsDHTSensorMeasurement;
+struct HydroponicsBinarySensorMeasurement;
+struct HydroponicsBinaryAnalogSensorMeasurement;
 
 class HydroponicsSensor;
 class HydroponicsAnalogSensor;
@@ -22,30 +22,30 @@ class HydroponicsBinaryAnalogSensor;
 #include "Hydroponics.h"
 
 
-struct HydroponicsSensorMeasurement
+struct HydroponicsSensorMeasurement : public HydroponicsLoggableDataInterface
 {
     time_t timestamp;
 };
 
-struct HydroponicsSensorAnalogMeasurement : public HydroponicsSensorMeasurement
+struct HydroponicsAnalogSensorMeasurement : public HydroponicsSensorMeasurement
 {
     float value;
     // TODO: units?
 };
 
-struct HydroponicsSensorDHTMeasurement : public HydroponicsSensorMeasurement
+struct HydroponicsDHTSensorMeasurement : public HydroponicsSensorMeasurement
 {
     float temperature;
     float humidity;
     float heatIndex;
 };
 
-struct HydroponicsSensorBinaryMeasurement : public HydroponicsSensorMeasurement
+struct HydroponicsBinarySensorMeasurement : public HydroponicsSensorMeasurement
 {
     bool state;
 };
 
-struct HydroponicsSensorBinaryAnalogMeasurement : public HydroponicsSensorMeasurement
+struct HydroponicsBinaryAnalogSensorMeasurement : public HydroponicsSensorMeasurement
 {
     float value;
     bool state;
@@ -62,6 +62,8 @@ public:
     Hydroponics_FluidReservoir getFluidReservoir() const;
     virtual time_t getLastMeasurementTime() const = 0;
 
+    virtual void update();
+
 protected:
     Hydroponics_SensorType _sensorType;
     Hydroponics_FluidReservoir _fluidReservoir;
@@ -76,8 +78,8 @@ public:
                             byte readBitResolution = 8);
     virtual ~HydroponicsAnalogSensor();
 
-    HydroponicsSensorAnalogMeasurement takeMeasurement();
-    HydroponicsSensorAnalogMeasurement getLastMeasurement() const;
+    HydroponicsAnalogSensorMeasurement takeMeasurement();
+    HydroponicsAnalogSensorMeasurement getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     byte getInputPin() const;
@@ -88,7 +90,7 @@ protected:
     byte _inputPin;
     int _analogMaxAmount;
     byte _analogBitRes;
-    HydroponicsSensorAnalogMeasurement _lastMeasurement;
+    HydroponicsAnalogSensorMeasurement _lastMeasurement;
 };
 
 class HydroponicsDHTSensor : public HydroponicsSensor {
@@ -98,8 +100,8 @@ public:
                          uint8_t dhtType = DHT12);
     virtual ~HydroponicsDHTSensor();
 
-    HydroponicsSensorDHTMeasurement takeMeasurement(bool force = true);
-    HydroponicsSensorDHTMeasurement getLastMeasurement() const;
+    HydroponicsDHTSensorMeasurement takeMeasurement(bool force = true);
+    HydroponicsDHTSensorMeasurement getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     void setComputeHeatIndex(bool computeHeatIndex);
@@ -107,7 +109,7 @@ public:
 
 protected:
     DHT *_dht;
-    HydroponicsSensorDHTMeasurement _lastMeasurement;
+    HydroponicsDHTSensorMeasurement _lastMeasurement;
     bool _computeHeatIndex;
 };
 
@@ -119,8 +121,8 @@ public:
                         byte readBitResolution = 9);
     virtual ~HydroponicsDSSensor();
 
-    HydroponicsSensorAnalogMeasurement takeMeasurement();
-    HydroponicsSensorAnalogMeasurement getLastMeasurement() const;
+    HydroponicsAnalogSensorMeasurement takeMeasurement();
+    HydroponicsAnalogSensorMeasurement getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     OneWire &getOneWire() const;
@@ -128,7 +130,7 @@ public:
 protected:
     OneWire *_oneWire;
     DallasTemperature *_dt;
-    HydroponicsSensorAnalogMeasurement _lastMeasurement;
+    HydroponicsAnalogSensorMeasurement _lastMeasurement;
 };
 
 
@@ -146,8 +148,8 @@ public:
     // TODO event listener maybe?
     //void addEventListener(int paramsTODO)
 
-    HydroponicsSensorBinaryMeasurement takeMeasurement();
-    HydroponicsSensorBinaryMeasurement getLastMeasurement() const;
+    HydroponicsBinarySensorMeasurement takeMeasurement();
+    HydroponicsBinarySensorMeasurement getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     byte getInputPin() const;
@@ -156,7 +158,7 @@ public:
 protected:
     byte _inputPin;
     bool _activeLow;
-    HydroponicsSensorBinaryMeasurement _lastMeasurement;
+    HydroponicsBinarySensorMeasurement _lastMeasurement;
 };
 
 
@@ -171,8 +173,8 @@ public:
     // TODO event listener maybe?
     //void addEventListener(int paramsTODO)
 
-    HydroponicsSensorBinaryAnalogMeasurement takeMeasurement();
-    HydroponicsSensorBinaryAnalogMeasurement getLastMeasurement() const;
+    HydroponicsBinaryAnalogSensorMeasurement takeMeasurement();
+    HydroponicsBinaryAnalogSensorMeasurement getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     byte getInputPin() const;
@@ -187,7 +189,7 @@ protected:
     bool _activeBelow;
     int _analogMaxAmount;
     byte _analogBitRes;
-    HydroponicsSensorBinaryAnalogMeasurement _lastMeasurement;
+    HydroponicsBinaryAnalogSensorMeasurement _lastMeasurement;
 };
 
 #endif // /ifndef HydroponicsSensors_H
