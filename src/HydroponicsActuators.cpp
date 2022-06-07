@@ -102,9 +102,9 @@ HydroponicsPWMActuator::HydroponicsPWMActuator(byte outputPin,
     : HydroponicsActuator(outputPin, actuatorType, fluidReservoir),
       _pwmAmount(0.0f),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _pwmBitRes(constrain(writeBitResolution, 8, 12)), _pwmMaxAmount((1 << constrain(writeBitResolution, 8, 12)) - 1) // TODO: -1 may not be needed here?
+          _pwmBitRes(constrain(writeBitResolution, 8, 12)), _pwmMaxAmount(1 << constrain(writeBitResolution, 8, 12))
       #else
-          _pwmBitRes(8), _pwmMaxAmount(255)
+          _pwmBitRes(8), _pwmMaxAmount(256)
       #endif
 {
     assert(!(_pwmBitRes == writeBitResolution && "Resolved resolution mismatch with passed resolution"));
