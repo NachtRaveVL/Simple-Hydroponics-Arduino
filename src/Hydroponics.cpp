@@ -545,11 +545,11 @@ HydroponicsAnalogSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydr
         switch (getMeasurementMode()) {
             default:
             case Hydroponics_MeasurementMode_Imperial:
-                sensor->setLiquidFlowUnits(Hydroponics_UnitsType_LiquidFlow_GallonsPerMin);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_LiquidFlow_GallonsPerMin);
                 break;
             case Hydroponics_MeasurementMode_Metric:
             case Hydroponics_MeasurementMode_Scientific:
-                sensor->setLiquidFlowUnits(Hydroponics_UnitsType_LiquidFlow_LitersPerMin);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_LiquidFlow_LitersPerMin);
                 break;
         }
 
@@ -610,11 +610,11 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin
         switch (getMeasurementMode()) {
             default:
             case Hydroponics_MeasurementMode_Imperial:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Feet);
                 break;
             case Hydroponics_MeasurementMode_Metric:
             case Hydroponics_MeasurementMode_Scientific:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Meters);
                 break;
         }
 
@@ -641,11 +641,11 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addHighWaterHeightMeter(byte inputPi
         switch (getMeasurementMode()) {
             default:
             case Hydroponics_MeasurementMode_Imperial:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Feet);
                 break;
             case Hydroponics_MeasurementMode_Metric:
             case Hydroponics_MeasurementMode_Scientific:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Meters);
                 break;
         }
 
@@ -672,11 +672,11 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inp
         switch (getMeasurementMode()) {
             default:
             case Hydroponics_MeasurementMode_Imperial:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Feet);
                 break;
             case Hydroponics_MeasurementMode_Metric:
             case Hydroponics_MeasurementMode_Scientific:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Meters);
                 break;
         }
 
@@ -703,11 +703,11 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addHighWaterUltrasonicSensor(byte in
         switch (getMeasurementMode()) {
             default:
             case Hydroponics_MeasurementMode_Imperial:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Feet);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Feet);
                 break;
             case Hydroponics_MeasurementMode_Metric:
             case Hydroponics_MeasurementMode_Scientific:
-                sensor->setDistanceUnits(Hydroponics_UnitsType_Distance_Meters);
+                sensor->setMeasurementUnits(Hydroponics_UnitsType_Distance_Meters);
                 break;
         }
 
