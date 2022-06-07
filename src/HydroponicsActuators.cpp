@@ -19,7 +19,7 @@ HydroponicsActuator::~HydroponicsActuator()
 
 void HydroponicsActuator::enableActuatorUntil(time_t disableDate)
 {
-    assert(!(disableDate >= now() && "Invalid disable date range"));
+    assert(!(disableDate >= now() && "Disable date out of range"));
     _enabledUntil = disableDate;
     enableActuator();
 }
@@ -102,11 +102,12 @@ HydroponicsPWMActuator::HydroponicsPWMActuator(byte outputPin,
     : HydroponicsActuator(outputPin, actuatorType, fluidReservoir),
       _pwmAmount(0.0f),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _pwmBitRes(writeBitResolution), _pwmMaxAmount((1 << writeBitResolution) - 1)
+          _pwmBitRes(constrain(writeBitResolution, 8, 12)), _pwmMaxAmount((1 << constrain(writeBitResolution, 8, 12)) - 1) // TODO: -1 may not be needed here?
       #else
           _pwmBitRes(8), _pwmMaxAmount(255)
       #endif
 {
+    assert(!(_pwmBitRes == writeBitResolution && "Resolved resolution mismatch with passed resolution"));
     applyPWM();
 }
 
@@ -139,7 +140,7 @@ int HydroponicsPWMActuator::getPWMAmount(int toss) const
 
 void HydroponicsPWMActuator::setPWMAmount(float amount)
 {
-    assert(!(amount >= 0.0f && amount <= 1.0f && "Invalid amount range"));
+    assert(!(amount >= 0.0f && amount <= 1.0f && "Amount out of range"));
     _pwmAmount = amount;
     if (_pwmAmount <= FLT_EPSILON) _pwmAmount = 0.0f;
     if (_pwmAmount >= 1.0f - FLT_EPSILON) _pwmAmount = 1.0f;
@@ -149,7 +150,7 @@ void HydroponicsPWMActuator::setPWMAmount(float amount)
 
 void HydroponicsPWMActuator::setPWMAmount(int amount)
 {
-    assert(!(amount >= 0 && amount <= _pwmMaxAmount && "Invalid amount range"));
+    assert(!(amount >= 0 && amount <= _pwmMaxAmount && "Amount out of range"));
     _pwmAmount = amount / (float)_pwmMaxAmount;
     if (_pwmAmount <= FLT_EPSILON) _pwmAmount = 0.0f;
     if (_pwmAmount >= 1.0f - FLT_EPSILON) _pwmAmount = 1.0f;
