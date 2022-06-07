@@ -108,7 +108,7 @@ public:
     // Initializes module. Typically called in setup().
     // See individual enums for more info.
     void init(Hydroponics_SystemMode systemMode = Hydroponics_SystemMode_Recycling,
-              Hydroponics_TemperatureMode tempMode = Hydroponics_TemperatureMode_Celsius,
+              Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Imperial,
               Hydroponics_LCDOutputMode lcdOutMode = Hydroponics_LCDOutputMode_Disabled,
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);
     // Initializes module from EEPROM save, returning success flag
@@ -177,8 +177,8 @@ public:
 
     uint32_t getI2CSpeed() const;                                   // i2c clock speed (Hz, default: 400kHz)
     uint32_t getSPISpeed() const;                                   // SPI clock speed (Hz, default: 4MHz)
-    Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: recycling)
-    Hydroponics_TemperatureMode getTemperatureMode() const;         // System temperature mode (default: celsius)
+    Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: Recycling)
+    Hydroponics_MeasurementMode getMeasurementMode() const;         // System measurement mode (default: Impterial)
     Hydroponics_LCDOutputMode getLCDOutputMode() const;             // System LCD output mode (default: disabled)
     Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
 

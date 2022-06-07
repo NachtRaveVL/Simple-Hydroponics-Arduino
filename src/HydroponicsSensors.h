@@ -21,37 +21,46 @@ class HydroponicsBinaryAnalogSensor;
 
 #include "Hydroponics.h"
 
-
+// TODO
 struct HydroponicsSensorMeasurement : public HydroponicsLoggableDataInterface
 {
-    time_t timestamp;
+    time_t timestamp;                       // TODO
 };
 
+// TODO
 struct HydroponicsAnalogSensorMeasurement : public HydroponicsSensorMeasurement
 {
-    float value;
-    // TODO: units?
+    float value;                            // TODO
+    Hydroponics_UnitsType units;            // TODO
 };
 
+// TODO
 struct HydroponicsDHTSensorMeasurement : public HydroponicsSensorMeasurement
 {
-    float temperature;
-    float humidity;
-    float heatIndex;
+    float temperature;                      // TODO
+    Hydroponics_UnitsType temperatureUnits; // TODO
+    float humidity;                         // TODO
+    Hydroponics_UnitsType humidityUnits;    // TODO
+    float heatIndex;                        // TODO
+    Hydroponics_UnitsType heatIndexUnits;   // TODO
 };
 
+// TODO
 struct HydroponicsBinarySensorMeasurement : public HydroponicsSensorMeasurement
 {
-    bool state;
+    bool state;                             // TODO
 };
 
+// TODO
 struct HydroponicsBinaryAnalogSensorMeasurement : public HydroponicsSensorMeasurement
 {
-    float value;
-    bool state;
+    float value;                            // TODO
+    Hydroponics_UnitsType units;            // TODO
+    bool state;                             // TODO
 };
 
 
+// TODO
 class HydroponicsSensor {
 public:
     HydroponicsSensor(Hydroponics_SensorType sensorType,
@@ -65,11 +74,12 @@ public:
     virtual void update();
 
 protected:
-    Hydroponics_SensorType _sensorType;
-    Hydroponics_FluidReservoir _fluidReservoir;
+    Hydroponics_SensorType _sensorType;                     // TODO
+    Hydroponics_FluidReservoir _fluidReservoir;             // TODO
 };
 
 
+// TODO
 class HydroponicsAnalogSensor : public HydroponicsSensor {
 public:
     HydroponicsAnalogSensor(byte inputPin,
@@ -86,13 +96,18 @@ public:
     int getAnalogMaxAmount() const;
     int getAnalogBitResolution() const;
 
+    void setMeasurementUnits(Hydroponics_UnitsType units);
+
 protected:
-    byte _inputPin;
-    int _analogMaxAmount;
-    byte _analogBitRes;
-    HydroponicsAnalogSensorMeasurement _lastMeasurement;
+    byte _inputPin;                                         // TODO
+    int _analogMaxAmount;                                   // TODO
+    byte _analogBitRes;                                     // TODO
+    HydroponicsAnalogSensorMeasurement _lastMeasurement;    // TODO
+    Hydroponics_UnitsType _measurementUnits;                // TODO
 };
 
+
+// TODO
 class HydroponicsDHTSensor : public HydroponicsSensor {
 public:
     HydroponicsDHTSensor(byte inputPin,
@@ -107,13 +122,17 @@ public:
     void setComputeHeatIndex(bool computeHeatIndex);
     bool getComputeHeatIndex();
 
+    void setMeasurementUnits(Hydroponics_UnitsType units);
+
 protected:
-    DHT *_dht;
-    HydroponicsDHTSensorMeasurement _lastMeasurement;
-    bool _computeHeatIndex;
+    DHT *_dht;                                              // TODO
+    HydroponicsDHTSensorMeasurement _lastMeasurement;       // TODO
+    bool _computeHeatIndex;                                 // TODO
+    Hydroponics_UnitsType _measurementUnits;                // TODO
 };
 
 
+// TODO
 class HydroponicsDSSensor : public HydroponicsSensor {
 public:
     HydroponicsDSSensor(byte inputPin,
@@ -127,13 +146,17 @@ public:
 
     OneWire &getOneWire() const;
 
+    void setMeasurementUnits(Hydroponics_UnitsType units);
+
 protected:
-    OneWire *_oneWire;
-    DallasTemperature *_dt;
-    HydroponicsAnalogSensorMeasurement _lastMeasurement;
+    OneWire *_oneWire;                                      // TODO
+    DallasTemperature *_dt;                                 // TODO
+    HydroponicsAnalogSensorMeasurement _lastMeasurement;    // TODO
+    Hydroponics_UnitsType _measurementUnits;                // TODO
 };
 
 
+// TODO
 class HydroponicsBinarySensor : public HydroponicsSensor {
 public:
     HydroponicsBinarySensor(byte inputPin,
@@ -156,9 +179,9 @@ public:
     bool getActiveLow() const;
 
 protected:
-    byte _inputPin;
-    bool _activeLow;
-    HydroponicsBinarySensorMeasurement _lastMeasurement;
+    byte _inputPin;                                         // TODO
+    bool _activeLow;                                        // TODO
+    HydroponicsBinarySensorMeasurement _lastMeasurement;    // TODO
 };
 
 
@@ -183,13 +206,16 @@ public:
     int getAnalogMaxAmount() const;
     int getAnalogBitResolution() const;
 
+    void setMeasurementUnits(Hydroponics_UnitsType units);
+
 protected:
-    byte _inputPin;
-    float _tolerance;
-    bool _activeBelow;
-    int _analogMaxAmount;
-    byte _analogBitRes;
-    HydroponicsBinaryAnalogSensorMeasurement _lastMeasurement;
+    byte _inputPin;                                         // TODO
+    float _tolerance;                                       // TODO
+    bool _activeBelow;                                      // TODO
+    int _analogMaxAmount;                                   // TODO
+    byte _analogBitRes;                                     // TODO
+    HydroponicsBinaryAnalogSensorMeasurement _lastMeasurement; // TODO
+    Hydroponics_UnitsType _measurementUnits;                // TODO
 };
 
 #endif // /ifndef HydroponicsSensors_H
