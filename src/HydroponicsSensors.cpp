@@ -7,8 +7,7 @@
 
 HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
                                      Hydroponics_FluidReservoir fluidReservoir)
-    : _sensorType(sensorType), _fluidReservoir(fluidReservoir),
-      _lastMeasureTime(0)
+    : _sensorType(sensorType), _fluidReservoir(fluidReservoir)
 { ; }
 
 HydroponicsSensor::~HydroponicsSensor()
@@ -24,44 +23,49 @@ Hydroponics_FluidReservoir HydroponicsSensor::getFluidReservoir() const
     return _fluidReservoir;
 }
 
-time_t HydroponicsSensor::getLastMeasurementTime() const
-{
-    return _lastMeasureTime;
-}
 
 HydroponicsAnalogSensor::HydroponicsAnalogSensor(byte inputPin,
                                                  Hydroponics_SensorType sensorType,
                                                  Hydroponics_FluidReservoir fluidReservoir,
                                                  byte readBitResolution)
     : HydroponicsSensor(sensorType, fluidReservoir),
-      _inputPin(inputPin), _lastMeasurement(0),
+      _inputPin(inputPin),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount((1 << constrain(readBitResolution, 8, 12)) - 1) // TODO: -1 may not be needed here?
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12))
       #else
-          _analogBitRes(8), _analogMaxAmount(255)
+          _analogBitRes(8), _analogMaxAmount(256)
       #endif
 {
     assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
+    memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
     pinMode(_inputPin, INPUT);
 }
 
 HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
 { ; }
 
-float HydroponicsAnalogSensor::getLastMeasurement() const
-{
-    return _lastMeasurement;
-}
-
-float HydroponicsAnalogSensor::takeMeasurement()
+HydroponicsSensorAnalogMeasurement HydroponicsAnalogSensor::takeMeasurement()
 {
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
         analogReadResolution(_analogBitRes);
     #endif
-    _lastMeasurement = analogRead(_inputPin) / (float)_analogMaxAmount;
-    _lastMeasureTime = now();
-    // TODO: Curve correction for calibration data
+
+    HydroponicsSensorAnalogMeasurement newMeasurement;
+    newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
+    newMeasurement.timestamp = now();
+    // TODO: Curve correction from calibration data
+
+    return (_lastMeasurement = newMeasurement);
+}
+
+HydroponicsSensorAnalogMeasurement HydroponicsAnalogSensor::getLastMeasurement() const
+{
     return _lastMeasurement;
+}
+
+time_t HydroponicsAnalogSensor::getLastMeasurementTime() const
+{
+    return _lastMeasurement.timestamp;
 }
 
 byte HydroponicsAnalogSensor::getInputPin() const
@@ -84,10 +88,10 @@ HydroponicsDHTSensor::HydroponicsDHTSensor(byte inputPin,
                                            Hydroponics_FluidReservoir fluidReservoir,
                                            uint8_t dhtType)
     : HydroponicsSensor(Hydroponics_SensorType_AirTempHumidity, fluidReservoir),
-      _dht(new DHT(inputPin, dhtType))
+      _dht(new DHT(inputPin, dhtType)), _computeHeatIndex(true)
 {
     assert(!(_dht && "DHT instance creation failure"));
-    _lastMeasurement.humidity = _lastMeasurement.temperature = 0.0f;
+    memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
 
     if (_dht) {
         _dht->begin();
@@ -99,18 +103,35 @@ HydroponicsDHTSensor::~HydroponicsDHTSensor()
     if (_dht) { delete _dht; _dht = NULL; }
 }
 
-DHTMeasurement HydroponicsDHTSensor::getLastMeasurement() const
+HydroponicsSensorDHTMeasurement HydroponicsDHTSensor::takeMeasurement(bool force)
+{
+    HydroponicsSensorDHTMeasurement newMeasurement;
+    newMeasurement.temperature = _dht->readTemperature(false, force);
+    newMeasurement.humidity = _dht->readHumidity(force);
+    newMeasurement.timestamp = now();
+    newMeasurement.heatIndex = _computeHeatIndex ? _dht->computeHeatIndex(newMeasurement.temperature, newMeasurement.humidity, false) : 0.0f;
+
+    return (_lastMeasurement = newMeasurement);
+}
+
+HydroponicsSensorDHTMeasurement HydroponicsDHTSensor::getLastMeasurement() const
 {
     return _lastMeasurement;
 }
 
-DHTMeasurement HydroponicsDHTSensor::takeMeasurement(bool force)
+time_t HydroponicsDHTSensor::getLastMeasurementTime() const
 {
-    _lastMeasurement.temperature = _dht->readTemperature(false, force);
-    _lastMeasurement.humidity = _dht->readHumidity(force);
-    _lastMeasureTime = now();
+    return _lastMeasurement.timestamp;
+}
 
-    return _lastMeasurement;
+void HydroponicsDHTSensor::setComputeHeatIndex(bool computeHeatIndex)
+{
+    _computeHeatIndex = computeHeatIndex;
+}
+
+bool HydroponicsDHTSensor::getComputeHeatIndex()
+{
+    return _computeHeatIndex;
 }
 
 
@@ -118,11 +139,11 @@ HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
                                          Hydroponics_FluidReservoir fluidReservoir,
                                          byte readBitResolution)
     : HydroponicsSensor(Hydroponics_SensorType_WaterTemperature, fluidReservoir),
-      _oneWire(new OneWire(inputPin)), _dt(new DallasTemperature()),
-      _lastMeasurement(0.0f)
+      _oneWire(new OneWire(inputPin)), _dt(new DallasTemperature())
 {
     assert(!(_oneWire && "OneWire instance creation failure"));
     assert(!(_dt && "DallasTemperature instance creation failure"));
+    memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
 
     if (_dt && _oneWire) {
         _dt->setOneWire(_oneWire);
@@ -140,22 +161,28 @@ HydroponicsDSSensor::~HydroponicsDSSensor()
     if (_dt) { delete _dt; _dt = NULL; }
 }
 
-float HydroponicsDSSensor::getLastMeasurement() const
+HydroponicsSensorAnalogMeasurement HydroponicsDSSensor::takeMeasurement()
+{
+    _dt->requestTemperatures(); // Blocking
+
+    HydroponicsSensorAnalogMeasurement newMeasurement;
+    newMeasurement.value = _dt->getTempCByIndex(0); // TODO: Support more than one DS device on line
+    newMeasurement.timestamp = now();
+
+    if (!(fabs(newMeasurement.value - DEVICE_DISCONNECTED_C) < FLT_EPSILON)) {
+        return (_lastMeasurement = newMeasurement);
+    }
+    return _lastMeasurement;
+}
+
+HydroponicsSensorAnalogMeasurement HydroponicsDSSensor::getLastMeasurement() const
 {
     return _lastMeasurement;
 }
 
-float HydroponicsDSSensor::takeMeasurement()
+time_t HydroponicsDSSensor::getLastMeasurementTime() const
 {
-    _dt->requestTemperatures();
-    float measurement = _dt->getTempCByIndex(0); // TODO: Support more than one DS device on line
-
-    if (!(fabs(measurement - DEVICE_DISCONNECTED_C) < FLT_EPSILON)) {
-        _lastMeasurement = measurement;
-        _lastMeasureTime = now();
-    }
-
-    return _lastMeasurement;
+    return _lastMeasurement.timestamp;
 }
 
 OneWire &HydroponicsDSSensor::getOneWire() const
@@ -169,25 +196,32 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(byte inputPin,
                                                  Hydroponics_FluidReservoir fluidReservoir,
                                                  bool activeLow)
     : HydroponicsSensor(sensorType, fluidReservoir),
-      _inputPin(inputPin), _activeLow(activeLow), _lastState(false)
+      _inputPin(inputPin), _activeLow(activeLow)
 {
+    memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
     pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
 }
 
 HydroponicsBinarySensor::~HydroponicsBinarySensor()
 { ; }
 
-bool HydroponicsBinarySensor::pollState()
+HydroponicsSensorBinaryMeasurement HydroponicsBinarySensor::takeMeasurement()
 {
-    _lastState = digitalRead(_inputPin);
-    _lastMeasureTime = now();
+    HydroponicsSensorBinaryMeasurement newMeasurement;
+    newMeasurement.state = digitalRead(_inputPin);
+    newMeasurement.timestamp = now();
 
-    return _lastState;
+    return (_lastMeasurement = newMeasurement);
 }
 
-bool HydroponicsBinarySensor::getLastState() const
+HydroponicsSensorBinaryMeasurement HydroponicsBinarySensor::getLastMeasurement() const
 {
-    return _lastState;
+    return _lastMeasurement;
+}
+
+time_t HydroponicsBinarySensor::getLastMeasurementTime() const
+{
+    return _lastMeasurement.timestamp;
 }
 
 byte HydroponicsBinarySensor::getInputPin() const
@@ -208,42 +242,44 @@ HydroponicsBinaryAnalogSensor::HydroponicsBinaryAnalogSensor(byte inputPin,
                                                              byte readBitResolution)
     : HydroponicsSensor(sensorType, fluidReservoir),
       _inputPin(inputPin), _tolerance(tolerance), _activeBelow(activeBelow),
-      _lastState(false), _lastMeasurement(0),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount((1 << constrain(readBitResolution, 8, 12)) - 1) // TODO: -1 may not be needed here?
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12))
       #else
-          _analogBitRes(8), _analogMaxAmount(255)
+          _analogBitRes(8), _analogMaxAmount(256)
       #endif
 {
     assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
+    memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
     pinMode(_inputPin, INPUT);
 }
 
 HydroponicsBinaryAnalogSensor::~HydroponicsBinaryAnalogSensor()
 { ; }
 
-bool HydroponicsBinaryAnalogSensor::pollState()
+HydroponicsSensorBinaryAnalogMeasurement HydroponicsBinaryAnalogSensor::takeMeasurement()
 {
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
         analogReadResolution(_analogBitRes);
     #endif
 
-    _lastMeasurement = analogRead(_inputPin) / (float)_analogMaxAmount;
-    _lastMeasureTime = now();
-    // TODO: Curve correction for calibration data
-    _lastState = _activeBelow ? _lastMeasurement <= _tolerance + FLT_EPSILON :
-                                _lastMeasurement >= _tolerance - FLT_EPSILON;
-    return _lastState;
+    HydroponicsSensorBinaryAnalogMeasurement newMeasurement;
+    newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
+    newMeasurement.timestamp = now();
+    // TODO: Curve correction from calibration data
+    newMeasurement.state = _activeBelow ? newMeasurement.value <= _tolerance + FLT_EPSILON :
+                                          newMeasurement.value >= _tolerance - FLT_EPSILON;
+
+    return (_lastMeasurement = newMeasurement);
 }
 
-bool HydroponicsBinaryAnalogSensor::getLastState() const
-{
-    return _lastState;
-}
-
-float HydroponicsBinaryAnalogSensor::getLastMeasurement() const
+HydroponicsSensorBinaryAnalogMeasurement HydroponicsBinaryAnalogSensor::getLastMeasurement() const
 {
     return _lastMeasurement;
+}
+
+time_t HydroponicsBinaryAnalogSensor::getLastMeasurementTime() const
+{
+    return _lastMeasurement.timestamp;
 }
 
 byte HydroponicsBinaryAnalogSensor::getInputPin() const
