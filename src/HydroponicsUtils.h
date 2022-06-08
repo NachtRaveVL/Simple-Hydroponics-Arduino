@@ -11,7 +11,7 @@
 extern time_t rtcNow();
 
 extern bool tryConvertValue(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut);
-extern void convertAndAssign(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = 2);
+extern void convertAndAssign(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = -1);
 
 extern bool checkInputPinIsAnalog(int pin);
 extern bool checkOutputPinIsAnalog(int pin);

@@ -211,6 +211,8 @@ bool Hydroponics::initFromSDCard(const char * configFile)
 
 void Hydroponics::commonInit()
 {
+    _activeInstance = this;
+
     switch (getMeasurementMode()) {
         default:
         case Hydroponics_MeasurementMode_Imperial:
@@ -225,29 +227,131 @@ void Hydroponics::commonInit()
             break;
     }
 
-    _activeInstance = this;
-
-    if (_rtc) {
-        makeRTCSyncProvider();
-    }
-}
-
-void Hydroponics::makeRTCSyncProvider()
-{
-    if ((_rtcSyncProvider = getRealTimeClock())) {
+    if (_rtc && (_rtcSyncProvider = getRealTimeClock())) {
         setSyncProvider(rtcNow);
     }
 }
 
+void controlLoop()
+{
+    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    if (hydroponics) {
+        hydroponics->updateScheduling();
+        hydroponics->updateActuators();
+    }
+
+    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
+        yield();
+    #endif
+}
+
+void dataLoop()
+{
+    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    if (hydroponics) {
+        hydroponics->updateSensors();
+        hydroponics->updateLogging();
+    }
+
+    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
+        yield();
+    #endif
+}
+
+void guiLoop()
+{
+    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    if (hydroponics) {
+        hydroponics->updateScreen();
+    }
+
+    taskManager.runLoop();
+
+    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
+        yield();
+    #endif
+}
+
+void miscLoop()
+{
+    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    if (hydroponics) {
+        hydroponics->updateBuzzer();
+    }
+
+    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
+        yield();
+    #endif
+}
+
 void Hydroponics::launch()
 {
+    #if defined(HYDRO_USE_SCHEDULER)
+        Scheduler.startLoop(controlLoop);
+        Scheduler.startLoop(dataLoop);
+        Scheduler.startLoop(guiLoop);
+        Scheduler.startLoop(miscLoop);
+    #elif defined(HYDRO_USE_COOPTASK)
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("controlLoop", controlLoop);
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("dataLoop", dataLoop);
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("guiLoop", guiLoop);
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("miscLoop", miscLoop);
+    #endif
+
     // TODO
 }
 
 void Hydroponics::update()
 {
-    if (_buzzer) { _buzzer->update(); }
+    #if defined(HYDRO_USE_SCHEDULER)
+        yield();
+    #elif defined(HYDRO_USE_COOPTASK)
+        runCoopTasks();
+    #else
+        controlLoop();
+        dataLoop();
+        guiLoop();
+        miscLoop();
+    #endif
+}
+
+void Hydroponics::updateActuators()
+{
     // TODO
+    // for (auto actuator in actuators.copy()) {
+    //     actuator->update();
+    // }
+}
+
+void Hydroponics::updateBuzzer()
+{
+    auto *buzzer = getPiezoBuzzer();
+    if (buzzer) {
+        buzzer->update();
+    }
+}
+
+void Hydroponics::updateLogging()
+{
+    // TODO
+}
+
+void Hydroponics::updateScheduling()
+{
+    // TODO
+}
+
+void Hydroponics::updateScreen()
+{
+    // TODO
+}
+
+void Hydroponics::updateSensors()
+{
+    // TODO
+    // for (auto sensor in sensors.copy()) {
+    //     sensor->update();
+    // }
 }
 
 bool Hydroponics::registerActuator(HydroponicsActuator *actuator)
