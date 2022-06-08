@@ -131,10 +131,14 @@ bool tryConvertValue(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
     return false;
 }
 
-void convertAndAssign(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = 2)
+void convertAndAssign(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces)
 {
     if (tryConvertValue(*valueInOut, *unitsInOut, valueInOut, unitsOut)) {
         *unitsInOut = unitsOut;
+        if (roundToDecPlaces >= 0) {
+            float shiftScaler = powf(10.0f, roundToDecPlaces);
+            *valueInOut = roundf(*valueInOut * shiftScaler) / shiftScaler;
+        }
     }
 }
 

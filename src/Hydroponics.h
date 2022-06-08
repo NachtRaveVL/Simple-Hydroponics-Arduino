@@ -109,7 +109,6 @@ public:
                 byte rtcI2CAddress = B000,
                 byte lcdI2CAddress = B000);
     ~Hydroponics();
-    static Hydroponics *getActiveInstance();
 
     // Initializes module. Typically called in setup().
     // See individual enums for more info.
@@ -181,6 +180,7 @@ public:
 
     // Accessors.
 
+    static Hydroponics *getActiveInstance();                        // Currenty active Hydroponics instance (unowned)
     uint32_t getI2CSpeed() const;                                   // i2c clock speed (Hz, default: 400kHz)
     uint32_t getSPISpeed() const;                                   // SPI clock speed (Hz, default: 4MHz)
     Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: Recycling)
@@ -246,7 +246,17 @@ protected:
     UserDelayFunc _uDelayMicrosFunc;                        // User microsecond delay function
 
     void commonInit();
-    void makeRTCSyncProvider();
+
+    friend extern void controlLoop();
+    friend extern void dataLoop();
+    friend extern void miscLoop();
+    friend extern void guiLoop();
+    void updateActuators();
+    void updateBuzzer();
+    void updateLogging();
+    void updateScheduling();
+    void updateScreen();
+    void updateSensors();
 };
 
 #endif // /ifndef Hydroponics_H
