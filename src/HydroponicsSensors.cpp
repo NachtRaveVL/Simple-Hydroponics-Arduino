@@ -1,4 +1,4 @@
-/*  Arduino Controller for Simple Hydroponics.
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
     Hydroponics Sensorsare 
 */
@@ -12,6 +12,24 @@ HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
 
 HydroponicsSensor::~HydroponicsSensor()
 { ; }
+
+HydroponicsSensorMeasurement *HydroponicsSensor::takeMeasurement()
+{
+    assert("To be overridden in base classes.");
+    return NULL;
+}
+
+HydroponicsSensorMeasurement *HydroponicsSensor::getLastMeasurement() const
+{
+    assert("To be overridden in base classes.");
+    return NULL;
+}
+
+time_t HydroponicsSensor::getLastMeasurementTime() const
+{
+    assert("To be overridden in base classes.");
+    return 0;
+}
 
 void HydroponicsSensor::update()
 { ; }
@@ -63,7 +81,7 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(byte inputPin,
 HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
 { ; }
 
-HydroponicsAnalogSensorMeasurement HydroponicsAnalogSensor::takeMeasurement()
+HydroponicsAnalogSensorMeasurement *HydroponicsAnalogSensor::takeMeasurement()
 {
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
         analogReadResolution(_analogBitRes);
@@ -73,14 +91,18 @@ HydroponicsAnalogSensorMeasurement HydroponicsAnalogSensor::takeMeasurement()
     newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
     newMeasurement.units = Hydroponics_UnitsType_Raw_0_1; // TODO: Correct units conversion
     newMeasurement.timestamp = now();
-    // TODO: Curve correction from calibration data
 
-    return (_lastMeasurement = newMeasurement);
+    // TODO: Curve correction from calibration data
+    
+    // Convert value and assign units, if needed
+    convertAndAssign(&newMeasurement.value, &newMeasurement.units, _measurementUnits);
+
+    return &(_lastMeasurement = newMeasurement);
 }
 
-HydroponicsAnalogSensorMeasurement HydroponicsAnalogSensor::getLastMeasurement() const
+HydroponicsAnalogSensorMeasurement *HydroponicsAnalogSensor::getLastMeasurement() const
 {
-    return _lastMeasurement;
+    return &_lastMeasurement;
 }
 
 time_t HydroponicsAnalogSensor::getLastMeasurementTime() const
@@ -129,7 +151,7 @@ HydroponicsDHTSensor::~HydroponicsDHTSensor()
     if (_dht) { delete _dht; _dht = NULL; }
 }
 
-HydroponicsDHTSensorMeasurement HydroponicsDHTSensor::takeMeasurement(bool force)
+HydroponicsDHTSensorMeasurement *HydroponicsDHTSensor::takeMeasurement(bool force)
 {
     bool isFahrenheit = _measurementUnits == Hydroponics_UnitsType_Temperature_Fahrenheit;
 
@@ -144,22 +166,20 @@ HydroponicsDHTSensorMeasurement HydroponicsDHTSensor::takeMeasurement(bool force
         newMeasurement.heatIndexUnits = isFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit : Hydroponics_UnitsType_Temperature_Celsius;
     }
 
-    // Convert to Kelvin from Celsius, if needed
-    if (_measurementUnits == Hydroponics_UnitsType_Temperature_Kelvin) {
-        newMeasurement.temperature += 273.15f;
-        newMeasurement.temperatureUnits = Hydroponics_UnitsType_Temperature_Kelvin;
-        if (_computeHeatIndex) {
-            newMeasurement.heatIndex += 273.15f;
-            newMeasurement.heatIndexUnits = Hydroponics_UnitsType_Temperature_Kelvin;
-        }
+    // TODO: Curve correction from calibration data
+
+    // Convert value and assign units, if needed
+    convertAndAssign(&newMeasurement.temperature, &newMeasurement.temperatureUnits, _measurementUnits);
+    if (_computeHeatIndex) {
+        convertAndAssign(&newMeasurement.heatIndex, &newMeasurement.heatIndexUnits, _measurementUnits);
     }
 
-    return (_lastMeasurement = newMeasurement);
+    return &(_lastMeasurement = newMeasurement);
 }
 
-HydroponicsDHTSensorMeasurement HydroponicsDHTSensor::getLastMeasurement() const
+HydroponicsDHTSensorMeasurement *HydroponicsDHTSensor::getLastMeasurement() const
 {
-    return _lastMeasurement;
+    return &_lastMeasurement;
 }
 
 time_t HydroponicsDHTSensor::getLastMeasurementTime() const
@@ -209,7 +229,7 @@ HydroponicsDSSensor::~HydroponicsDSSensor()
     if (_dt) { delete _dt; _dt = NULL; }
 }
 
-HydroponicsAnalogSensorMeasurement HydroponicsDSSensor::takeMeasurement()
+HydroponicsAnalogSensorMeasurement *HydroponicsDSSensor::takeMeasurement()
 {
     bool isFahrenheit = _measurementUnits == Hydroponics_UnitsType_Temperature_Fahrenheit;
 
@@ -224,20 +244,19 @@ HydroponicsAnalogSensorMeasurement HydroponicsDSSensor::takeMeasurement()
     assert(!(!deviceDisconnected && "Measurement failed device disconnected"));
 
     if (!deviceDisconnected) {
-        // Convert to Kelvin from Celsius, if needed
-        if (_measurementUnits == Hydroponics_UnitsType_Temperature_Kelvin) {
-            newMeasurement.value += 273.15f;
-            newMeasurement.units = Hydroponics_UnitsType_Temperature_Kelvin;
-        }
+        // TODO: Curve correction from calibration data
 
-        return (_lastMeasurement = newMeasurement);
+        // Convert value and assign units, if needed
+        convertAndAssign(&newMeasurement.value, &newMeasurement.units, _measurementUnits);
+
+        return &(_lastMeasurement = newMeasurement);
     }
-    return _lastMeasurement;
+    return &_lastMeasurement;
 }
 
-HydroponicsAnalogSensorMeasurement HydroponicsDSSensor::getLastMeasurement() const
+HydroponicsAnalogSensorMeasurement *HydroponicsDSSensor::getLastMeasurement() const
 {
-    return _lastMeasurement;
+    return &_lastMeasurement;
 }
 
 time_t HydroponicsDSSensor::getLastMeasurementTime() const
@@ -270,18 +289,18 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(byte inputPin,
 HydroponicsBinarySensor::~HydroponicsBinarySensor()
 { ; }
 
-HydroponicsBinarySensorMeasurement HydroponicsBinarySensor::takeMeasurement()
+HydroponicsBinarySensorMeasurement *HydroponicsBinarySensor::takeMeasurement()
 {
     HydroponicsBinarySensorMeasurement newMeasurement;
     newMeasurement.state = digitalRead(_inputPin);
     newMeasurement.timestamp = now();
 
-    return (_lastMeasurement = newMeasurement);
+    return &(_lastMeasurement = newMeasurement);
 }
 
-HydroponicsBinarySensorMeasurement HydroponicsBinarySensor::getLastMeasurement() const
+HydroponicsBinarySensorMeasurement *HydroponicsBinarySensor::getLastMeasurement() const
 {
-    return _lastMeasurement;
+    return &_lastMeasurement;
 }
 
 time_t HydroponicsBinarySensor::getLastMeasurementTime() const
@@ -322,7 +341,7 @@ HydroponicsBinaryAnalogSensor::HydroponicsBinaryAnalogSensor(byte inputPin,
 HydroponicsBinaryAnalogSensor::~HydroponicsBinaryAnalogSensor()
 { ; }
 
-HydroponicsBinaryAnalogSensorMeasurement HydroponicsBinaryAnalogSensor::takeMeasurement()
+HydroponicsBinaryAnalogSensorMeasurement *HydroponicsBinaryAnalogSensor::takeMeasurement()
 {
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
         analogReadResolution(_analogBitRes);
@@ -332,16 +351,20 @@ HydroponicsBinaryAnalogSensorMeasurement HydroponicsBinaryAnalogSensor::takeMeas
     newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
     newMeasurement.units = Hydroponics_UnitsType_Raw_0_1; // TODO: Correct units conversion
     newMeasurement.timestamp = now();
-    // TODO: Curve correction from calibration data
     newMeasurement.state = _activeBelow ? newMeasurement.value <= _tolerance + FLT_EPSILON :
                                           newMeasurement.value >= _tolerance - FLT_EPSILON;
 
-    return (_lastMeasurement = newMeasurement);
+    // TODO: Curve correction from calibration data
+
+    // Convert value and assign units, if needed
+    convertAndAssign(&newMeasurement.value, &newMeasurement.units, _measurementUnits);
+
+    return &(_lastMeasurement = newMeasurement);
 }
 
-HydroponicsBinaryAnalogSensorMeasurement HydroponicsBinaryAnalogSensor::getLastMeasurement() const
+HydroponicsBinaryAnalogSensorMeasurement *HydroponicsBinaryAnalogSensor::getLastMeasurement() const
 {
-    return _lastMeasurement;
+    return &_lastMeasurement;
 }
 
 time_t HydroponicsBinaryAnalogSensor::getLastMeasurementTime() const

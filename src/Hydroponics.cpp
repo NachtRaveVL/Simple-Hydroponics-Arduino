@@ -1,4 +1,4 @@
-/*  Arduino Controller for Simple Hydroponics.
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
     Hydroponics Main
 */
@@ -6,49 +6,41 @@
 #include "Hydroponics.h"
 
 static void uDelayMillisFuncDef(unsigned int timeout) {
-#ifdef HYDRO_USE_SCHEDULER
     if (timeout > 0) {
         unsigned long currTime = millis();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (millis() < endTime)
-                Scheduler.yield();
+                yield();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                Scheduler.yield();
+                yield();
                 currTime = millis();
             }
         }
     } else
-        Scheduler.yield();
-#else
-    delay(timeout);
-#endif
+        yield();
 }
 
 static void uDelayMicrosFuncDef(unsigned int timeout) {
-#ifdef HYDRO_USE_SCHEDULER
     if (timeout > 1000) {
         unsigned long currTime = micros();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (micros() < endTime)
-                Scheduler.yield();
+                yield();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                Scheduler.yield();
+                yield();
                 currTime = micros();
             }
         }
     } else if (timeout > 0)
         delayMicroseconds(timeout);
     else
-        Scheduler.yield();
-#else
-    delayMicroseconds(timeout);
-#endif
+        yield();
 }
 
 
@@ -60,7 +52,7 @@ time_t rtcNow() {
 
 HydroponicsSystemData::HydroponicsSystemData()
     : _ident{'H','S', 'D'}, _version(1),
-      systemName{'H','y','d','r','o','d','u','i','n','o', '\0'},
+      systemName{'H','y','d','r','u','i','n','o', '\0'},
       cropPositionsCount(16), maxActiveRelayCount{2},
       reservoirSizeUnits(Hydroponics_UnitsType_Undefined),
       pumpFlowRateUnits(Hydroponics_UnitsType_Undefined)
@@ -76,12 +68,14 @@ HydroponicsSystemData::HydroponicsSystemData()
 }
 
 
+Hydroponics *Hydroponics::_activeInstance = NULL;
+
 Hydroponics::Hydroponics(byte piezoBuzzerPin, byte sdCardCSPin, byte controlInputPin1,
                         byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress,
                         TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
+      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _systemData(NULL),
       _i2cAddressLCD(lcdI2CAddress), _ctrlInputPin1(controlInputPin1), _sdCardCSPin(sdCardCSPin),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
@@ -102,7 +96,7 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
                          byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _lcd(NULL), _keypad(NULL), _systemData(NULL),
+      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _systemData(NULL),
       _i2cAddressLCD(lcdI2CAddress), _ctrlInputPin1(controlInputPin1), _sdCardCSPin(sdCardCSPin),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
@@ -120,6 +114,7 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
 
 Hydroponics::~Hydroponics()
 {
+    if (this == _activeInstance) { _activeInstance = NULL; }
     _i2cWire = NULL;
     _buzzer = NULL;
     if (_eeprom) { delete _eeprom; _eeprom = NULL; }
@@ -132,9 +127,12 @@ Hydroponics::~Hydroponics()
     #else
         if (_sd) { delete _sd; _sd = NULL; }
     #endif
-    if (_lcd) { delete _lcd; _lcd = NULL; }
-    if (_keypad) { delete _keypad; _keypad = NULL; }
     if (_systemData) { delete _systemData; _systemData = NULL; }
+}
+
+Hydroponics *Hydroponics::getActiveInstance()
+{
+    return _activeInstance;
 }
 
 void Hydroponics::init(Hydroponics_SystemMode systemMode,
@@ -179,7 +177,7 @@ bool Hydroponics::initFromEEPROM()
     return false;
 }
 
-bool Hydroponics::initFromMicroSD(const char * configFile)
+bool Hydroponics::initFromSDCard(const char * configFile)
 {
     assert(!(!_systemData && "Controller already initialized"));
     if (!_systemData) {
@@ -216,6 +214,12 @@ void Hydroponics::commonInit()
             _systemData->pumpFlowRateUnits = Hydroponics_UnitsType_LiquidFlow_LitersPerMin;
             break;
     }
+
+    _activeInstance = this;
+
+    if (_rtc) {
+        makeRTCSyncProvider();
+    }
 }
 
 void Hydroponics::makeRTCSyncProvider()
@@ -225,8 +229,14 @@ void Hydroponics::makeRTCSyncProvider()
     }
 }
 
+void Hydroponics::launch()
+{
+    // TODO
+}
+
 void Hydroponics::update()
 {
+    runCoopTasks();
     if (_buzzer) { _buzzer->update(); }
     // TODO
 }
@@ -734,7 +744,7 @@ HydroponicsCrop *Hydroponics::addCropFromSowDate(const Hydroponics_CropType crop
 {
     assert(!((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count && "Invalid crop type"));
     assert(!(sowDate > 0 && "Invalid sow date"));
-    bool positionIsAvailable = positionIndex == -1; // TODO
+    bool positionIsAvailable = positionIndex == -1; // TODO: position indexing.
     assert(!(positionIsAvailable && "Invalid position index"));
 
     if (positionIsAvailable) {
@@ -813,54 +823,6 @@ SDClass *Hydroponics::getSDCard(bool begin)
         assert(!(sdBegan && "Failed starting SD card"));
     }
     return _sd;
-}
-
-LiquidCrystal_I2C *Hydroponics::getLiquidCrystalDisplay()
-{
-    switch (getLCDOutputMode()) {
-        case Hydroponics_LCDOutputMode_20x4LCD:
-            if (!_lcd) {
-                _lcd = new LiquidCrystal_I2C(_i2cAddressLCD, 20, 4);
-                _lcd->init();
-            }
-            break;
-
-        case Hydroponics_LCDOutputMode_16x2LCD:
-            if (!_lcd) {
-                _lcd = new LiquidCrystal_I2C(_i2cAddressLCD, 16, 2);
-                _lcd->init();
-            }
-            break;
-
-        default:
-            if (_lcd) { delete _lcd; _lcd = NULL; }
-            break;
-    }
-
-    return _lcd;
-}
-
-Keypad *Hydroponics::getControlKeypad()
-{
-    switch (getControlInputMode()) {
-        case Hydroponics_ControlInputMode_2x2Matrix: {
-            if (!_keypad) {
-                char keys[2][2] = {
-                    {'D','L'},
-                    {'R','U'}
-                };
-                byte rowPins[2] = { _ctrlInputPin1, _ctrlInputPin1+1 };
-                byte colPins[2] = { _ctrlInputPin1+2, _ctrlInputPin1+3 };
-                _keypad = new Keypad(makeKeymap(keys), rowPins, colPins, 2, 2 );
-            }
-        } break;
-
-        default:
-            if (_keypad) { delete _keypad; _keypad = NULL; }
-            break;
-    }
-
-    return _keypad;
 }
 
 int Hydroponics::getRelayCount(Hydroponics_RelayRail relayRail) const

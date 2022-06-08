@@ -1,10 +1,142 @@
-/*  Arduino Controller for Simple Hydroponics.
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
     Hydroponics Utilities
 */
 
 #include "HydroponicsUtils.h"
 #include <pins_arduino.h>
+
+bool tryConvertValue(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut)
+{
+    switch (unitsIn) {
+        case Hydroponics_UnitsType_Temperature_Celsius:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Temperature_Fahrenheit:
+                    if (valueOut) {
+                        *valueOut = valueIn * 1.8 + 32.0;
+                        return true;
+                    }
+                    break;
+
+                case Hydroponics_UnitsType_Temperature_Kelvin:
+                    if (valueOut) {
+                        *valueOut = valueIn + 273.15;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Temperature_Fahrenheit:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Temperature_Celsius:
+                    if (valueOut) {
+                        *valueOut = (valueIn - 32.0) / 1.8;
+                        return true;
+                    }
+                    break;
+
+                case Hydroponics_UnitsType_Temperature_Kelvin:
+                    if (valueOut) {
+                        *valueOut = ((valueIn + 459.67f) * 5.0f) / 9.0f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Temperature_Kelvin:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Temperature_Celsius:
+                    if (valueOut) {
+                        *valueOut = valueIn - 273.15;
+                        return true;
+                    }
+                    break;
+
+                case Hydroponics_UnitsType_Temperature_Fahrenheit:
+                    if (valueOut) {
+                        *valueOut = ((valueIn * 9.0) / 5.0) - 459.67;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Distance_Meters:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_Distance_Feet:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_Weight_Kilogram:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_Weight_Pounds:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_LiquidVolume_Liters:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_LiquidVolume_Gallons:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_LiquidFlow_GallonsPerMin:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_pHScale_0_14:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_Concentration_EC:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_Concentration_PPM:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_Percentile_0_100:
+            // TODO
+            break;
+
+        case Hydroponics_UnitsType_Raw_0_1:
+            // TODO
+            break;
+
+        default:
+            break;
+    }
+
+    return false;
+}
+
+void convertAndAssign(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = 2)
+{
+    if (tryConvertValue(*valueInOut, *unitsInOut, valueInOut, unitsOut)) {
+        *unitsInOut = unitsOut;
+    }
+}
 
 bool checkInputPinIsAnalog(int pin)
 {

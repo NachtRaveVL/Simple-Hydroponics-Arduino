@@ -1,4 +1,4 @@
-/*  Arduino Controller for Simple Hydroponics.
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
 
     Permission is hereby granted, free of charge, to any person
@@ -34,11 +34,6 @@
 // the Arduino IDE's limited custom build flag support. Editing this header file directly
 // will affect all projects compiled on your system using these library files.
 
-// Uncomment or -D this define to disable usage of the Scheduler library on SAM/SAMD architecures.
-//#define HYDRO_DISABLE_SCHEDULER                 // https://github.com/arduino-libraries/Scheduler
-// Uncomment or -D this define to disable usage of LCD library. Maybe? TODO
-// Uncomment or -D this define to disable usage of LCD OLED library. Maybe? TODO
-
 // Uncomment or -D this define to enable debug output.
 #define HYDRO_ENABLE_DEBUG_OUTPUT
 
@@ -54,27 +49,23 @@
 #endif
 #include <assert.h>
 #include <SPI.h>
+#include <SD.h>
 #include <Wire.h>
 
-#if !defined(HYDRO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
-#include "Scheduler.h"
-#define HYDRO_USE_SCHEDULER
-#endif
-
+#include <CoopTask.h>                   // Cooperative coroutines
 #include <DallasTemperature.h>          // DS18* submersible water temp probe
 #include <DHT.h>                        // DHT* air temp/humidity probe
-#include <EasyBuzzer.h>                 // Asyncronous piezo buzzer library
-#include <I2C_eeprom.h>                 // i2c EEPROM interface library
-#include <Keypad.h>                     // 4-way directional matrix keypad
-#include <LiquidCrystal_I2C.h>          // i2c LCD library
-#ifndef __STM32F1__
+#include <EasyBuzzer.h>                 // Async piezo buzzer library
+#include <I2C_eeprom.h>                 // i2c EEPROM library
+#if !defined(__STM32F1__)
 #include <OneWire.h>                    // OneWire for DS18* probes
 #else
 #include <OneWireSTM.h>
 #endif
 #include <RTClib.h>                     // i2c RTC library
-#include <SD.h>                         // SPI MicroSD library
-#include <TimeLib.h>
+#include <SimpleCollections.h>          // SimpleCollections library
+#include <TimeLib.h>                    // Time library
+#include <tcMenu.h>                     // tcMenu library
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
@@ -87,23 +78,24 @@ class Hydroponics {
 public:
     // Library constructor. Typically called during class instantiation, before setup().
     // TODO
-    Hydroponics(byte piezoBuzzerPin = 0,
-                byte sdCardCSPin = 0,
-                byte controlInputPin1 = 0,
-                byte eepromI2CAddress = B000000,
-                byte rtcI2CAddress = B000000,
-                byte lcdI2CAddress = B000000,
-                TwoWire& i2cWire = Wire, uint32_t i2cSpeed = 400000,
+    Hydroponics(byte piezoBuzzerPin = -1,
+                byte sdCardCSPin = -1,
+                byte controlInputPin1 = -1,                 // First pin of ribbon type specified by ctrlInMode
+                byte eepromI2CAddress = B000,
+                byte rtcI2CAddress = B000,
+                byte lcdI2CAddress = B000,
+                TwoWire& i2cWire = Wire, uint32_t i2cSpeed = 400000U,
                 uint32_t spiSpeed = 4000000U);
-    Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed = 400000,
+    Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed = 400000U,
                 uint32_t spiSpeed = 4000000U,
-                byte piezoBuzzerPin = 0,
-                byte sdCardCSPin = 0,
-                byte controlInputPin1 = 0,
-                byte eepromI2CAddress = B000000,
-                byte rtcI2CAddress = B000000,
-                byte lcdI2CAddress = B000000);
+                byte piezoBuzzerPin = -1,
+                byte sdCardCSPin = -1,
+                byte controlInputPin1 = -1,
+                byte eepromI2CAddress = B000,
+                byte rtcI2CAddress = B000,
+                byte lcdI2CAddress = B000);
     ~Hydroponics();
+    static Hydroponics *getActiveInstance();
 
     // Initializes module. Typically called in setup().
     // See individual enums for more info.
@@ -114,17 +106,17 @@ public:
     // Initializes module from EEPROM save, returning success flag
     bool initFromEEPROM();
     // Initializes module from MicroSD save, returning success flag
-    bool initFromMicroSD(const char * configFile = "/hydropon.cfg");
+    bool initFromSDCard(const char * configFile = "/hydruino.cfg");
 
     //bool initFromWiFiServer(); maybe?
     // TODO logging?
     //void enableLoggingToMicroSDFolder();
     //void enableLoggingToWiFiDatabase();
 
-    // Makes the RTC the time provider for the entire system. Only one may be set as such at a time.
-    void makeRTCSyncProvider();
+    // Launches system into operational mode. Typically called last in setup().
+    void launch();
 
-    // Update method. Typically called in loop().
+    // Update method. Typically called in loop() or CoopTask co-routine.
     void update();
 
 
@@ -178,7 +170,7 @@ public:
     uint32_t getI2CSpeed() const;                                   // i2c clock speed (Hz, default: 400kHz)
     uint32_t getSPISpeed() const;                                   // SPI clock speed (Hz, default: 4MHz)
     Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: Recycling)
-    Hydroponics_MeasurementMode getMeasurementMode() const;         // System measurement mode (default: Impterial)
+    Hydroponics_MeasurementMode getMeasurementMode() const;         // System measurement mode (default: Imperial)
     Hydroponics_LCDOutputMode getLCDOutputMode() const;             // System LCD output mode (default: disabled)
     Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
 
@@ -186,8 +178,6 @@ public:
     I2C_eeprom *getEEPROM();                                        // EEPROM instance
     RTC_DS3231 *getRealTimeClock();                                 // Real time clock instance
     SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end())
-    LiquidCrystal_I2C *getLiquidCrystalDisplay();                   // Liquid crystal display instance
-    Keypad *getControlKeypad();                                     // Control keypad instance
 
     int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;                 // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
     int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of active relay devices, for the given rail (undefined-rail = all)
@@ -221,7 +211,9 @@ public:
     void setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc);
 
 protected:
-    byte _i2cAddressLCD;                                    // LCD i2c address (default: B000000)
+    static Hydroponics *_activeInstance;                    // Current active instance (set after init)
+
+    byte _i2cAddressLCD;                                    // LCD i2c address, format: {A2,A1,A0} (default: B000)
     byte _ctrlInputPin1;                                    // Control input pin 1 (default: disabled)
     byte _sdCardCSPin;                                      // SD card cable select (CS) pin (default: disabled)
     TwoWire* _i2cWire;                                      // Wire class instance (unowned) (default: Wire)
@@ -232,8 +224,6 @@ protected:
     I2C_eeprom *_eeprom;                                    // EEPROM instance (owned)
     RTC_DS3231 *_rtc;                                       // Real time clock instance (owned)
     SDClass *_sd;                                           // SD card instance (owned/unowned)
-    LiquidCrystal_I2C *_lcd;                                // Liquid crystal display instance (owned)
-    Keypad *_keypad;                                        // Control matrix keypad instance (owned)
     bool _eepromBegan;                                      // Status of EEPROM begin()
     bool _rtcBegan;                                         // Status of RTC begin() call
 
@@ -244,6 +234,7 @@ protected:
     UserDelayFunc _uDelayMicrosFunc;                        // User microsecond delay function
 
     void commonInit();
+    void makeRTCSyncProvider();
 };
 
 #endif // /ifndef Hydroponics_H

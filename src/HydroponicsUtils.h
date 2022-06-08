@@ -1,4 +1,4 @@
-/*  Arduino Controller for Simple Hydroponics.
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
     Hydroponics Utilities
 */
@@ -9,6 +9,9 @@
 #include "Hydroponics.h"
 
 extern time_t rtcNow();
+
+extern bool tryConvertValue(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut);
+extern void convertAndAssign(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = 2);
 
 extern bool checkInputPinIsAnalog(int pin);
 extern bool checkOutputPinIsAnalog(int pin);
