@@ -34,6 +34,12 @@
                 "${PROGRAMFILES(X86)}/Arduino/hardware/teensy/avr/cores/**",
                 "${PROGRAMFILES(X86)}/Arduino/hardware/teensy/avr/libraries/**",
                 "${USERPROFILE}/Documents/Arduino/libraries/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/CoopTask/src/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/EasyBuzzer/src/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/I2C_EEPROM/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/Scheduler/src/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/SimpleCollections/src/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/tcMenu/src/**"
             ],
             "defines": [
                 "_DEBUG",

@@ -34,6 +34,12 @@
 // the Arduino IDE's limited custom build flag support. Editing this header file directly
 // will affect all projects compiled on your system using these library files.
 
+// Uncomment or -D this define to disable usage of the Scheduler library on SAM/SAMD architecures.
+//#define HYDRO_DISABLE_SCHEDULER                   // https://github.com/arduino-libraries/Scheduler
+
+// Uncomment or -D this define to disable usage of the CoopTask library when Scheduler library not used.
+//#define HYDRO_DISABLE_COOPTASK                    // https://github.com/dok-net/CoopTask
+
 // Uncomment or -D this define to enable debug output.
 #define HYDRO_ENABLE_DEBUG_OUTPUT
 
@@ -52,20 +58,30 @@
 #include <SD.h>
 #include <Wire.h>
 
-#include <CoopTask.h>                   // Cooperative coroutines
-#include <DallasTemperature.h>          // DS18* submersible water temp probe
-#include <DHT.h>                        // DHT* air temp/humidity probe
-#include <EasyBuzzer.h>                 // Async piezo buzzer library
-#include <I2C_eeprom.h>                 // i2c EEPROM library
-#if !defined(__STM32F1__)
-#include <OneWire.h>                    // OneWire for DS18* probes
-#else
-#include <OneWireSTM.h>
+#if !defined(HYDRO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
+#include "Scheduler.h"
+#define HYDRO_USE_SCHEDULER
+#define HYDRO_YIELD()                   Scheduler.yield()
 #endif
-#include <RTClib.h>                     // i2c RTC library
-#include <SimpleCollections.h>          // SimpleCollections library
-#include <TimeLib.h>                    // Time library
-#include <tcMenu.h>                     // tcMenu library
+#if !defined(HYDRO_DISABLE_COOPTASK) && !defined(HYDRO_USE_SCHEDULER)
+#include "CoopTask.h"
+#define HYDRO_USE_COOPTASK
+#define HYDRO_YIELD()                   yield()
+#endif
+
+#include "DallasTemperature.h"          // DS18* submersible water temp probe
+#include "DHT.h"                        // DHT* air temp/humidity probe
+#include "EasyBuzzer.h"                 // Async piezo buzzer library
+#include "I2C_eeprom.h"                 // i2c EEPROM library
+#if !defined(__STM32F1__)
+#include "OneWire.h"                    // OneWire for DS18* probes
+#else
+#include "OneWireSTM.h"
+#endif
+#include "RTClib.h"                     // i2c RTC library
+#include "SimpleCollections.h"          // SimpleCollections library
+#include "TimeLib.h"                    // Time library
+#include "tcMenu.h"                     // tcMenu library
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
