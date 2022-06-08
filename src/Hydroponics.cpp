@@ -6,46 +6,48 @@
 #include "Hydroponics.h"
 
 static void uDelayMillisFuncDef(unsigned int timeout) {
-#if defined(HYDRO_YIELD)
+#if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
     if (timeout > 0) {
         unsigned long currTime = millis();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (millis() < endTime)
-                HYDRO_YIELD();
+                yield();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                HYDRO_YIELD();
+                yield();
                 currTime = millis();
             }
         }
-    } else
-        HYDRO_YIELD();
+    } else {
+        yield();
+    }
 #else
     delay(timeout);
 #endif
 }
 
 static void uDelayMicrosFuncDef(unsigned int timeout) {
-#if defined(HYDRO_YIELD)
+#if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
     if (timeout > 1000) {
         unsigned long currTime = micros();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (micros() < endTime)
-                HYDRO_YIELD();
+                yield();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                HYDRO_YIELD();
+                yield();
                 currTime = micros();
             }
         }
-    } else if (timeout > 0)
+    } else if (timeout > 0) {
         delayMicroseconds(timeout);
-    else
-        HYDRO_YIELD();
+    } else {
+        yield();
+    }
 #else
     delayMicroseconds(timeout);
 #endif
@@ -244,7 +246,6 @@ void Hydroponics::launch()
 
 void Hydroponics::update()
 {
-    runCoopTasks();
     if (_buzzer) { _buzzer->update(); }
     // TODO
 }

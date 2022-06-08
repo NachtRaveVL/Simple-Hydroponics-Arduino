@@ -61,12 +61,10 @@
 #if !defined(HYDRO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
 #include "Scheduler.h"
 #define HYDRO_USE_SCHEDULER
-#define HYDRO_YIELD()                   Scheduler.yield()
 #endif
 #if !defined(HYDRO_DISABLE_COOPTASK) && !defined(HYDRO_USE_SCHEDULER)
 #include "CoopTask.h"
 #define HYDRO_USE_COOPTASK
-#define HYDRO_YIELD()                   yield()
 #endif
 
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
@@ -221,9 +219,7 @@ public:
     // Sets user delay functions to call when a delay has to occur for processing to
     // continue. User functions here can customize what this means - typically it would
     // mean to call into a thread barrier() or yield() mechanism. Default implementation
-    // simply calls standard delay() and delayMicroseconds(), unless on SAM/SAMD
-    // architectures where Scheduler is available, in which case when timeout > 1ms
-    // Scheduler.yield() is called until timeout expires.
+    // is to call yield() when timeout >= 1ms, unless Scheduler and CoopTask are disabled.
     void setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc);
 
 protected:
