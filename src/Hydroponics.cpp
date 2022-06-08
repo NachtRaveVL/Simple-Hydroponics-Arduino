@@ -6,41 +6,49 @@
 #include "Hydroponics.h"
 
 static void uDelayMillisFuncDef(unsigned int timeout) {
+#if defined(HYDRO_YIELD)
     if (timeout > 0) {
         unsigned long currTime = millis();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (millis() < endTime)
-                yield();
+                HYDRO_YIELD();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                yield();
+                HYDRO_YIELD();
                 currTime = millis();
             }
         }
     } else
-        yield();
+        HYDRO_YIELD();
+#else
+    delay(timeout);
+#endif
 }
 
 static void uDelayMicrosFuncDef(unsigned int timeout) {
+#if defined(HYDRO_YIELD)
     if (timeout > 1000) {
         unsigned long currTime = micros();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (micros() < endTime)
-                yield();
+                HYDRO_YIELD();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                yield();
+                HYDRO_YIELD();
                 currTime = micros();
             }
         }
     } else if (timeout > 0)
         delayMicroseconds(timeout);
     else
-        yield();
+        HYDRO_YIELD();
+#else
+    delayMicroseconds(timeout);
+#endif
 }
 
 
