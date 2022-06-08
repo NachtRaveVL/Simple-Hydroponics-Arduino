@@ -1,4 +1,4 @@
-/*  Arduino Controller for Simple Hydroponics.
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
     Hydroponics Sensors
 */
@@ -67,11 +67,14 @@ public:
                       Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
     virtual ~HydroponicsSensor();
 
-    Hydroponics_SensorType getSensorType() const;
-    Hydroponics_FluidReservoir getFluidReservoir() const;
-    virtual time_t getLastMeasurementTime() const = 0;
+    virtual HydroponicsSensorMeasurement *takeMeasurement();
+    virtual HydroponicsSensorMeasurement *getLastMeasurement() const;
+    virtual time_t getLastMeasurementTime() const;
 
     virtual void update();
+
+    Hydroponics_SensorType getSensorType() const;
+    Hydroponics_FluidReservoir getFluidReservoir() const;
 
 protected:
     Hydroponics_SensorType _sensorType;                     // TODO
@@ -88,8 +91,8 @@ public:
                             byte readBitResolution = 8);
     virtual ~HydroponicsAnalogSensor();
 
-    HydroponicsAnalogSensorMeasurement takeMeasurement();
-    HydroponicsAnalogSensorMeasurement getLastMeasurement() const;
+    virtual HydroponicsAnalogSensorMeasurement *takeMeasurement();
+    virtual HydroponicsAnalogSensorMeasurement *getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     byte getInputPin() const;
@@ -115,8 +118,8 @@ public:
                          uint8_t dhtType = DHT12);
     virtual ~HydroponicsDHTSensor();
 
-    HydroponicsDHTSensorMeasurement takeMeasurement(bool force = true);
-    HydroponicsDHTSensorMeasurement getLastMeasurement() const;
+    virtual HydroponicsDHTSensorMeasurement *takeMeasurement(bool force = true);
+    virtual HydroponicsDHTSensorMeasurement *getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     void setComputeHeatIndex(bool computeHeatIndex);
@@ -140,8 +143,8 @@ public:
                         byte readBitResolution = 9);
     virtual ~HydroponicsDSSensor();
 
-    HydroponicsAnalogSensorMeasurement takeMeasurement();
-    HydroponicsAnalogSensorMeasurement getLastMeasurement() const;
+    virtual HydroponicsAnalogSensorMeasurement *takeMeasurement();
+    virtual HydroponicsAnalogSensorMeasurement *getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     OneWire &getOneWire() const;
@@ -171,8 +174,8 @@ public:
     // TODO event listener maybe?
     //void addEventListener(int paramsTODO)
 
-    HydroponicsBinarySensorMeasurement takeMeasurement();
-    HydroponicsBinarySensorMeasurement getLastMeasurement() const;
+    virtual HydroponicsBinarySensorMeasurement *takeMeasurement();
+    virtual HydroponicsBinarySensorMeasurement *getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     byte getInputPin() const;
@@ -196,8 +199,8 @@ public:
     // TODO event listener maybe?
     //void addEventListener(int paramsTODO)
 
-    HydroponicsBinaryAnalogSensorMeasurement takeMeasurement();
-    HydroponicsBinaryAnalogSensorMeasurement getLastMeasurement() const;
+    virtual HydroponicsBinaryAnalogSensorMeasurement *takeMeasurement();
+    virtual HydroponicsBinaryAnalogSensorMeasurement *getLastMeasurement() const;
     virtual time_t getLastMeasurementTime() const;
 
     byte getInputPin() const;

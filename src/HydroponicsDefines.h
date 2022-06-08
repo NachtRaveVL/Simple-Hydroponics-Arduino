@@ -1,4 +1,4 @@
-/*  Arduino Controller for Simple Hydroponics.
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
     Hydroponics Defines
 */
@@ -22,9 +22,9 @@
 #endif
 
 
-#define HYDRO_NAME_MAXSIZE              32                  // Naming character maximum size
-#define HYDRO_CALIB_MAXSIZE             8                   // Analog calibration data maximum size
-#define HYDRO_EEPROM_MEMORYSIZE         262144UL            // Memory size for EEPROM
+#define HYDRO_NAME_MAXSIZE              32                      // Naming character maximum size
+#define HYDRO_CALIB_MAXSIZE             8                       // Analog calibration data maximum size
+#define HYDRO_EEPROM_MEMORYSIZE         I2C_DEVICESIZE_24LC256  // Memory size for EEPROM (256kb)
 
 
 // TODO
@@ -175,8 +175,10 @@ enum Hydroponics_MeasurementMode {
 // TODO
 enum Hydroponics_LCDOutputMode {
     Hydroponics_LCDOutputMode_Disabled,             // No LCD output
-    Hydroponics_LCDOutputMode_20x4LCD,              // 20x4 i2c LCD
-    Hydroponics_LCDOutputMode_16x2LCD,              // 16x2 i2c LCD
+    Hydroponics_LCDOutputMode_20x4LCD,              // 20x4 i2c LCD (with layout EN, RW, RS, BL, Data)
+    Hydroponics_LCDOutputMode_20x4LCD_Swapped,      // 20x4 i2c LCD (with EN<->RS swapped layout RS, RW, EN, BL, Data)
+    Hydroponics_LCDOutputMode_16x2LCD,              // 16x2 i2c LCD (with layout EN, RW, RS, BL, Data)
+    Hydroponics_LCDOutputMode_16x2LCD_Swapped,      // 16x2 i2c LCD (with EN<->RS swapped layout RS, RW, EN, BL, Data)
 
     Hydroponics_LCDOutputMode_Count,                // Internal use only
     Hydroponics_LCDOutputMode_Undefined = -1        // Internal use only
@@ -185,7 +187,10 @@ enum Hydroponics_LCDOutputMode {
 // TODO
 enum Hydroponics_ControlInputMode {
     Hydroponics_ControlInputMode_Disabled,          // No control input
-    Hydroponics_ControlInputMode_2x2Matrix,         // 2x2 directional matrix button array (L1,L2,R1,R2)
+    Hydroponics_ControlInputMode_2x2Matrix,         // 2x2 directional keyboard matrix button array, ribbon: {L1,L2,R1,R2} (L1 = pin 1)
+    Hydroponics_ControlInputMode_4xButton,          // 4x standard momentary buttons, ribbon: {U,D,L,R} (U = pin 1)
+    Hydroponics_ControlInputMode_6xButton,          // 6x standard momentary buttons, ribbon: {TODO} (X = pin 1)
+    Hydroponics_ControlInputMode_RotaryEncoder,     // Rotary encoder, ribbon: {A,B,OK,L,R} (X = pin 1)
 
     Hydroponics_ControlInputMode_Count,             // Internal use only
     Hydroponics_ControlInputMode_Undefined = -1     // Internal use only

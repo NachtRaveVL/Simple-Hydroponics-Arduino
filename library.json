@@ -1,8 +1,8 @@
 {
-    "name": "Hydroponics-Arduino",
+    "name": "Hydruino: Simple Hydroponics Arduino",
     "version": "0.1",
     "keywords": "todo",
-    "description": "todo",
+    "description": "Hydruino: Simple automation controller for hydroponic grow systems.",
     "license": "MIT",
     "authors": [
         {
@@ -12,16 +12,21 @@
             "maintainer": true
         }
     ],
-    "homepage": "https://github.com/NachtRaveVL/Hydroponics-Arduino/",
+    "homepage": "https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/",
     "repository": {
         "type": "git",
-        "url": "https://github.com/NachtRaveVL/Hydroponics-Arduino.git"
+        "url": "https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino.git"
     },
     "examples": [
         {
-            "name": "SimpleExample",
-            "base": "examples/SimpleExample",
-            "files": ["SimpleExample.ino"]
+            "name": "SimpleDWC",
+            "base": "examples/SimpleDWC",
+            "files": ["SimpleDWC.ino"]
+        },
+        {
+            "name": "VerticalNFT",
+            "base": "examples/VerticalNFT",
+            "files": ["VerticalNFT.ino"]
         }
     ],
     "frameworks": ["arduino", "espidf"],
