@@ -1,3 +1,5 @@
 {
-    "sketch": "examples\\SimpleDWC\\SimpleDWC.ino"
+    "sketch": "examples\\SimpleDWC\\SimpleDWC.ino",
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega"
 }
