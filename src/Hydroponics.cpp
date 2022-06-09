@@ -140,11 +140,6 @@ Hydroponics::~Hydroponics()
     if (_systemData) { delete _systemData; _systemData = NULL; }
 }
 
-Hydroponics *Hydroponics::getActiveInstance()
-{
-    return _activeInstance;
-}
-
 void Hydroponics::init(Hydroponics_SystemMode systemMode,
                        Hydroponics_MeasurementMode measurementMode,
                        Hydroponics_LCDOutputMode lcdOutMode,
@@ -232,6 +227,37 @@ void Hydroponics::commonInit()
     }
 }
 
+void Hydroponics::launch()
+{
+    #if defined(HYDRO_USE_SCHEDULER)
+        Scheduler.startLoop(controlLoop);
+        Scheduler.startLoop(dataLoop);
+        Scheduler.startLoop(guiLoop);
+        Scheduler.startLoop(miscLoop);
+    #elif defined(HYDRO_USE_COOPTASK)
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("controlLoop", controlLoop);
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("dataLoop", dataLoop);
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("guiLoop", guiLoop);
+        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("miscLoop", miscLoop);
+    #endif
+
+    // TODO
+}
+
+void Hydroponics::update()
+{
+    #if defined(HYDRO_USE_SCHEDULER)
+        yield();
+    #elif defined(HYDRO_USE_COOPTASK)
+        runCoopTasks();
+    #else
+        controlLoop();
+        dataLoop();
+        guiLoop();
+        miscLoop();
+    #endif
+}
+
 void controlLoop()
 {
     Hydroponics *hydroponics = Hydroponics::getActiveInstance();
@@ -281,37 +307,6 @@ void miscLoop()
 
     #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
         yield();
-    #endif
-}
-
-void Hydroponics::launch()
-{
-    #if defined(HYDRO_USE_SCHEDULER)
-        Scheduler.startLoop(controlLoop);
-        Scheduler.startLoop(dataLoop);
-        Scheduler.startLoop(guiLoop);
-        Scheduler.startLoop(miscLoop);
-    #elif defined(HYDRO_USE_COOPTASK)
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("controlLoop", controlLoop);
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("dataLoop", dataLoop);
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("guiLoop", guiLoop);
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("miscLoop", miscLoop);
-    #endif
-
-    // TODO
-}
-
-void Hydroponics::update()
-{
-    #if defined(HYDRO_USE_SCHEDULER)
-        yield();
-    #elif defined(HYDRO_USE_COOPTASK)
-        runCoopTasks();
-    #else
-        controlLoop();
-        dataLoop();
-        guiLoop();
-        miscLoop();
     #endif
 }
 
@@ -873,6 +868,11 @@ HydroponicsCrop *Hydroponics::addCropFromLastHarvest(const Hydroponics_CropType 
 {
     time_t sowDate = lastHarvestDate - (time_t)(HydroponicsCropsLibrary::getInstance()->getCropData(cropType)->weeksBetweenHarvest * SECS_PER_WEEK);
     return addCropFromSowDate(cropType, sowDate, positionIndex);
+}
+
+Hydroponics *Hydroponics::getActiveInstance()
+{
+    return _activeInstance;
 }
 
 uint32_t Hydroponics::getI2CSpeed() const

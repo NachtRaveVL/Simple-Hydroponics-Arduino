@@ -50,6 +50,8 @@
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include <Arduino.h>
+#elif defined(__MBED__)
+#include <mbed.h>
 #else
 #include <WProgram.h>
 #endif
