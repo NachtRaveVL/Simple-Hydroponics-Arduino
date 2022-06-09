@@ -41,7 +41,7 @@
 //#define HYDRO_DISABLE_COOPTASK                    // https://github.com/dok-net/CoopTask
 
 // Uncomment or -D this define to enable debug output.
-#define HYDRO_ENABLE_DEBUG_OUTPUT
+//#define HYDRO_ENABLE_DEBUG_OUTPUT
 
 
 // Hookup Callouts
