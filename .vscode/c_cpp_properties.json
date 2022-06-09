@@ -52,8 +52,10 @@
                 "${USERPROFILE}/Documents/Arduino/libraries/CoopTask/src/**",
                 "${USERPROFILE}/Documents/Arduino/libraries/EasyBuzzer/src/**",
                 "${USERPROFILE}/Documents/Arduino/libraries/I2C_EEPROM/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/IoAbstraction/src/**",
                 "${USERPROFILE}/Documents/Arduino/libraries/Scheduler/src/**",
                 "${USERPROFILE}/Documents/Arduino/libraries/SimpleCollections/src/**",
+                "${USERPROFILE}/Documents/Arduino/libraries/TaskManagerIO/src/**",
                 "${USERPROFILE}/Documents/Arduino/libraries/tcMenu/src/**"
             ],
             "defines": [
@@ -62,7 +64,7 @@
                 "_UNICODE",
                 "ARDUINO=100",
                 "F_CPU=16000000",
-                "HYDROP_ENABLE_DEBUG_OUTPUT"
+                "HYDRO_ENABLE_DEBUG_OUTPUT"
             ],
             "cStandard": "c11",
             "cppStandard": "c++14",
