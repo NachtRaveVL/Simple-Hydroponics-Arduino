@@ -90,6 +90,11 @@
 #include "HydroponicsCrops.h"
 #include "HydroponicsSensors.h"
 
+extern void controlLoop();
+extern void dataLoop();
+extern void guiLoop();
+extern void miscLoop();
+
 class Hydroponics {
 public:
     // Library constructor. Typically called during class instantiation, before setup().
@@ -240,6 +245,7 @@ protected:
     SDClass *_sd;                                           // SD card instance (owned/unowned)
     bool _eepromBegan;                                      // Status of EEPROM begin()
     bool _rtcBegan;                                         // Status of RTC begin() call
+    bool _rtcBattFail;                                      // Status of RTC battery failure flag
 
     HydroponicsSystemData *_systemData;                     // System data (owned, saved to storage)
 
@@ -249,12 +255,13 @@ protected:
 
     void commonInit();
 
-    friend extern void controlLoop();
-    friend extern void dataLoop();
-    friend extern void miscLoop();
-    friend extern void guiLoop();
+    friend void ::controlLoop();
+    friend void ::dataLoop();
+    friend void ::guiLoop();
+    friend void ::miscLoop();
     void updateActuators();
     void updateBuzzer();
+    void updateCrops();
     void updateLogging();
     void updateScheduling();
     void updateScreen();

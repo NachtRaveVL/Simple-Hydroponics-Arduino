@@ -85,7 +85,7 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, byte sdCardCSPin, byte controlInpu
                         TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _systemData(NULL),
+      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _systemData(NULL),
       _i2cAddressLCD(lcdI2CAddress), _ctrlInputPin1(controlInputPin1), _sdCardCSPin(sdCardCSPin),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
@@ -106,7 +106,7 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
                          byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
       _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _systemData(NULL),
+      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _systemData(NULL),
       _i2cAddressLCD(lcdI2CAddress), _ctrlInputPin1(controlInputPin1), _sdCardCSPin(sdCardCSPin),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
@@ -146,6 +146,7 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
     assert(!(!_systemData && "Controller already initialized"));
+    
     if (!_systemData) { 
         assert(!((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count && "Invalid system mode"));
         assert(!((int)measurementMode >= 0 && measurementMode < Hydroponics_MeasurementMode_Count && "Invalid measurement mode"));
@@ -169,8 +170,8 @@ bool Hydroponics::initFromEEPROM()
 {
     assert(!(!_systemData && "Controller already initialized"));
     if (!_systemData) {
-        getEEPROM(); // Forces begin, if not already
-        if (_eeprom) {
+        auto *eeprom = getEEPROM(); // Forces begin, if not already
+        if (eeprom) {
             // TODO
         }
 
@@ -186,7 +187,7 @@ bool Hydroponics::initFromSDCard(const char * configFile)
 {
     assert(!(!_systemData && "Controller already initialized"));
     if (!_systemData) {
-        SDClass *sd = getSDCard();
+        auto *sd = getSDCard();
         if (sd) {
             File config = sd->open(configFile);
             if (config && config.size()) {
@@ -262,6 +263,7 @@ void controlLoop()
 {
     Hydroponics *hydroponics = Hydroponics::getActiveInstance();
     if (hydroponics) {
+        hydroponics->updateCrops();
         hydroponics->updateScheduling();
         hydroponics->updateActuators();
     }
@@ -324,6 +326,14 @@ void Hydroponics::updateBuzzer()
     if (buzzer) {
         buzzer->update();
     }
+}
+
+void Hydroponics::updateCrops()
+{
+    // TODO
+    // for (auto crop in crops.copy()) {
+    //     crop->update();
+    // }
 }
 
 void Hydroponics::updateLogging()
@@ -924,6 +934,9 @@ RTC_DS3231 *Hydroponics::getRealTimeClock()
     if (_rtc && !_rtcBegan) {
         _rtcBegan = _rtc->begin(_i2cWire);
         assert(!(_rtcBegan && "Failed starting RTC"));
+        if (_rtcBegan) {
+            _rtcBattFail = _rtc->lostPower();
+        }
     }
     return _rtc && _rtcBegan ? _rtc : NULL;
 }
