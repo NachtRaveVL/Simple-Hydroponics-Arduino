@@ -6,22 +6,22 @@
 #include "Hydroponics.h"
 
 static void uDelayMillisFuncDef(unsigned int timeout) {
-#if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
+#ifndef HYDRUINO_DISABLE_MULTITASKING
     if (timeout > 0) {
         unsigned long currTime = millis();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (millis() < endTime)
-                yield();
+                HYDRUINO_YIELD();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                yield();
+                HYDRUINO_YIELD();
                 currTime = millis();
             }
         }
     } else {
-        yield();
+        HYDRUINO_YIELD();
     }
 #else
     delay(timeout);
@@ -29,24 +29,24 @@ static void uDelayMillisFuncDef(unsigned int timeout) {
 }
 
 static void uDelayMicrosFuncDef(unsigned int timeout) {
-#if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
+#ifndef HYDRUINO_DISABLE_MULTITASKING
     if (timeout > 1000) {
         unsigned long currTime = micros();
         unsigned long endTime = currTime + (unsigned long)timeout;
         if (currTime < endTime) { // not overflowing
             while (micros() < endTime)
-                yield();
+                HYDRUINO_YIELD();
         } else { // overflowing
             unsigned long begTime = currTime;
             while (currTime >= begTime || currTime < endTime) {
-                yield();
+                HYDRUINO_YIELD();
                 currTime = micros();
             }
         }
     } else if (timeout > 0) {
         delayMicroseconds(timeout);
     } else {
-        yield();
+        HYDRUINO_YIELD();
     }
 #else
     delayMicroseconds(timeout);
@@ -71,7 +71,7 @@ HydroponicsSystemData::HydroponicsSystemData()
     memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
     memset(calibrationData, 0, sizeof(calibrationData));
 
-    for (int calibIndex = 0; calibIndex < HYDRO_CALIB_MAXSIZE; ++calibIndex) {
+    for (int calibIndex = 0; calibIndex < HYDRUINO_CALIB_MAXSIZE; ++calibIndex) {
         calibrationData[calibIndex].sensor = Hydroponics_SensorType_Undefined;
         calibrationData[calibIndex].reservoir = Hydroponics_FluidReservoir_Undefined;
     }
@@ -81,18 +81,19 @@ HydroponicsSystemData::HydroponicsSystemData()
 Hydroponics *Hydroponics::_activeInstance = NULL;
 
 Hydroponics::Hydroponics(byte piezoBuzzerPin, byte sdCardCSPin, byte controlInputPin1,
-                        byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress,
-                        TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed)
+                         byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress,
+                         TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
-      _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _systemData(NULL),
-      _i2cAddressLCD(lcdI2CAddress), _ctrlInputPin1(controlInputPin1), _sdCardCSPin(sdCardCSPin),
+      _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
+      _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRUINO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
+      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _ctrlInPinMap{-1}, _systemData(NULL),
+      _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
-    if (piezoBuzzerPin) {
-        _buzzer->setPin(piezoBuzzerPin);
+    if (isValidPin(_piezoBuzzerPin)) {
+        _buzzer->setPin(_piezoBuzzerPin);
     }
-    if (sdCardCSPin) {
+    if (isValidPin(_sdCardCSPin)) {
         #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)) || defined(SD)
             _sd = &SD;
         #else
@@ -105,15 +106,16 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
                          byte piezoBuzzerPin, byte sdCardCSPin, byte controlInputPin1,
                          byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
-      _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
-      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _systemData(NULL),
-      _i2cAddressLCD(lcdI2CAddress), _ctrlInputPin1(controlInputPin1), _sdCardCSPin(sdCardCSPin),
+      _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
+      _buzzer(&EasyBuzzer), _eeprom(new I2C_eeprom(eepromI2CAddress, HYDRUINO_EEPROM_MEMORYSIZE, &i2cWire)), _rtc(new RTC_DS3231()),
+      _sd(NULL), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _ctrlInPinMap{-1}, _systemData(NULL),
+      _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1),
       _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
 {
-    if (piezoBuzzerPin) {
-        _buzzer->setPin(piezoBuzzerPin);
+    if (isValidPin(_piezoBuzzerPin)) {
+        _buzzer->setPin(_piezoBuzzerPin);
     }
-    if (sdCardCSPin) {
+    if (isValidPin(_sdCardCSPin)) {
         #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)) || defined(SD)
             _sd = &SD;
         #else
@@ -145,22 +147,24 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
                        Hydroponics_LCDOutputMode lcdOutMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
-    assert(!(!_systemData && "Controller already initialized"));
-    
-    if (!_systemData) { 
-        assert(!((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count && "Invalid system mode"));
-        assert(!((int)measurementMode >= 0 && measurementMode < Hydroponics_MeasurementMode_Count && "Invalid measurement mode"));
-        assert(!((int)lcdOutMode >= 0 && lcdOutMode < Hydroponics_LCDOutputMode_Count && "Invalid LCD output mode"));
-        assert(!((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count && "Invalid control input mode"));
+    //assert(!_systemData && "Controller already initialized");
+    //assert(!_activeInstance && "Controller already active");
+
+    if (!_systemData && !_activeInstance) {
+        //assert((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count && "Invalid system mode");
+        //assert((int)measurementMode >= 0 && measurementMode < Hydroponics_MeasurementMode_Count && "Invalid measurement mode");
+        //assert((int)lcdOutMode >= 0 && lcdOutMode < Hydroponics_LCDOutputMode_Count && "Invalid LCD output mode");
+        //assert((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count && "Invalid control input mode");
 
         _systemData = new HydroponicsSystemData();
-        assert(!(_systemData && "Invalid system data store"));
+        //assert(_systemData && "Invalid system data store");
 
         if (_systemData) {
             _systemData->systemMode = systemMode;
             _systemData->measurementMode = measurementMode;
             _systemData->lcdOutMode = lcdOutMode;
             _systemData->ctrlInMode = ctrlInMode;
+
             commonInit();
         }
     }  
@@ -168,15 +172,21 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
 
 bool Hydroponics::initFromEEPROM()
 {
-    assert(!(!_systemData && "Controller already initialized"));
-    if (!_systemData) {
+    //assert(!_systemData && "Controller already initialized");
+    //assert(!_activeInstance && "Controller already active");
+
+    if (!_systemData && !_activeInstance) {
         auto *eeprom = getEEPROM(); // Forces begin, if not already
         if (eeprom) {
             // TODO
+            //auto *systemData = HydroponicsSystemData::fromEEPROMStore();
+            //if (systemData) { _systemData = systemData; }
         }
 
-        assert(!(_systemData && "Invalid system data store"));
-        if (_systemData) { commonInit(); }
+        //assert(_systemData && "Invalid system data store");
+        if (_systemData) {
+            commonInit();
+        }
         return _systemData;
     }
 
@@ -185,20 +195,26 @@ bool Hydroponics::initFromEEPROM()
 
 bool Hydroponics::initFromSDCard(const char * configFile)
 {
-    assert(!(!_systemData && "Controller already initialized"));
-    if (!_systemData) {
+    //assert(!_systemData && "Controller already initialized");
+    //assert(!_activeInstance && "Controller already active");
+
+    if (!_systemData && !_activeInstance) {
         auto *sd = getSDCard();
         if (sd) {
-            File config = sd->open(configFile);
+            auto config = sd->open(configFile);
             if (config && config.size()) {
                 // TODO
+                //auto *systemData = HydroponicsSystemData::fromJSONDocument(configToJSON);
+                //if (systemData) { _systemData = systemData; }
                 config.close();
             }
             sd->end();
         }
 
-        assert(!(_systemData && "Invalid system data store"));
-        if (_systemData) { commonInit(); }
+        //assert(_systemData && "Invalid system data store");
+        if (_systemData) {
+            commonInit();
+        }
         return _systemData;
     }
 
@@ -223,34 +239,106 @@ void Hydroponics::commonInit()
             break;
     }
 
+    int ctrlInPinCount = min(getControlInputRibbonPinCount(), HYDRUINO_CTRLINPINMAP_MAXSIZE);
+    if (ctrlInPinCount) {
+        for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
+            _ctrlInPinMap[ribbonPinIndex] = _ctrlInputPin1 + ribbonPinIndex;
+        }
+    }
+
     if (_rtc && (_rtcSyncProvider = getRealTimeClock())) {
         setSyncProvider(rtcNow);
     }
+
+    #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+        Serial.print("Hydroponics::commonInit piezoBuzzerPin: ");
+        Serial.print(_piezoBuzzerPin);
+        Serial.print(", sdCardCSPin: ");
+        Serial.print(_sdCardCSPin);
+        Serial.print(", controlInputPin1: ");
+        Serial.print(_ctrlInputPin1);
+        Serial.print(", EEPROMi2cAddress: 0x");
+        Serial.print(_eepromI2CAddr, HEX);
+        Serial.print(", RTCi2cAddress: 0x");
+        Serial.print(_rtcI2CAddr, HEX);
+        Serial.print(", LCDi2cAddress: 0x");
+        Serial.print(_lcdI2CAddr, HEX);
+        Serial.print(", i2cSpeed: ");
+        Serial.print(roundf(getI2CSpeed() / 1000.0f)); Serial.print("kHz");
+        Serial.print(", SPISpeed: ");
+        Serial.print(roundf(getSPISpeed() / 1000000.0f)); Serial.print("MHz");
+        Serial.print(", systemMode: ");
+        switch(getSystemMode()) {
+            case Hydroponics_SystemMode_Recycling: Serial.print("Recycling"); break;
+            case Hydroponics_SystemMode_DrainToWaste: Serial.print("DrainToWaste"); break;
+            case Hydroponics_SystemMode_Count:
+            case Hydroponics_SystemMode_Undefined:
+                Serial.print(getSystemMode()); break;
+        }
+        Serial.print(", measurementMode: ");
+        switch (getMeasurementMode()) {
+            case Hydroponics_MeasurementMode_Imperial: Serial.print("Imperial"); break;
+            case Hydroponics_MeasurementMode_Metric: Serial.print("Metric"); break;
+            case Hydroponics_MeasurementMode_Scientific: Serial.print("Scientific"); break;
+            case Hydroponics_MeasurementMode_Count:
+            case Hydroponics_MeasurementMode_Undefined:
+                Serial.print(getMeasurementMode()); break;
+        }
+        Serial.print(", lcdOutMode: ");
+        switch (getLCDOutputMode()) {
+            case Hydroponics_LCDOutputMode_Disabled: Serial.print("Disabled"); break;
+            case Hydroponics_LCDOutputMode_20x4LCD: Serial.print("20x4LCD"); break;
+            case Hydroponics_LCDOutputMode_20x4LCD_Swapped: Serial.print("20x4LCD <Swapped>"); break;
+            case Hydroponics_LCDOutputMode_16x2LCD: Serial.print("16x2LCD"); break;
+            case Hydroponics_LCDOutputMode_16x2LCD_Swapped: Serial.print("16x2LCD <Swapped>"); break;
+            case Hydroponics_LCDOutputMode_Count:
+            case Hydroponics_LCDOutputMode_Undefined:
+                Serial.print(getLCDOutputMode()); break;
+        }
+        Serial.print(", ctrlInMode: ");
+        switch (getControlInputMode()) {
+            case Hydroponics_ControlInputMode_Disabled: Serial.print("Disabled"); break;
+            case Hydroponics_ControlInputMode_2x2Matrix: Serial.print("2x2Matrix"); break;
+            case Hydroponics_ControlInputMode_4xButton: Serial.print("4xButton"); break;
+            case Hydroponics_ControlInputMode_6xButton: Serial.print("6xButton"); break;
+            case Hydroponics_ControlInputMode_RotaryEncoder: Serial.print("RotaryEncoder"); break;
+            case Hydroponics_ControlInputMode_Count:
+            case Hydroponics_ControlInputMode_Undefined:
+                Serial.print(getControlInputMode()); break;
+        }
+        Serial.println("");
+    #endif
 }
 
 void Hydroponics::launch()
 {
-    #if defined(HYDRO_USE_SCHEDULER)
+    #if defined(HYDRUINO_USE_SCHEDULER)
         Scheduler.startLoop(controlLoop);
         Scheduler.startLoop(dataLoop);
         Scheduler.startLoop(guiLoop);
         Scheduler.startLoop(miscLoop);
-    #elif defined(HYDRO_USE_COOPTASK)
+    #elif defined(HYDRUINO_USE_TASKSCHEDULER)
+        Task *controlTask = new Task(499 * TASK_MILLISECOND, 0, controlLoop, &_ts, true);
+        Task *dataTask = new Task(100 * TASK_MILLISECOND, 0, dataLoop, &_ts, true);
+        Task *guiTask = new Task(20 * TASK_MILLISECOND, 0, guiLoop, &_ts, true);
+        Task *miscTask = new Task(TASK_IMMEDIATE, 0, miscLoop, &_ts, true);
+    #elif defined(HYDRUINO_USE_COOPTASK)
         createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("controlLoop", controlLoop);
         createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("dataLoop", dataLoop);
         createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("guiLoop", guiLoop);
         createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("miscLoop", miscLoop);
     #endif
-
-    // TODO
 }
 
 void Hydroponics::update()
 {
-    #if defined(HYDRO_USE_SCHEDULER)
-        yield();
-    #elif defined(HYDRO_USE_COOPTASK)
-        runCoopTasks();
+    #ifndef HYDRUINO_DISABLE_MULTITASKING
+        #ifdef HYDRUINO_USE_TASKSCHEDULER
+            HYDRUINO_ENDLOOP(_ts);
+        #else
+            HYDRUINO_ENDLOOP();
+        #endif
+        taskManager.runLoop(); // tcMenu uses this system to run its UI
     #else
         controlLoop();
         dataLoop();
@@ -268,9 +356,7 @@ void controlLoop()
         hydroponics->updateActuators();
     }
 
-    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
-        yield();
-    #endif
+    yield();
 }
 
 void dataLoop()
@@ -281,9 +367,7 @@ void dataLoop()
         hydroponics->updateLogging();
     }
 
-    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
-        yield();
-    #endif
+    yield();
 }
 
 void guiLoop()
@@ -293,11 +377,7 @@ void guiLoop()
         hydroponics->updateScreen();
     }
 
-    taskManager.runLoop();
-
-    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
-        yield();
-    #endif
+    yield();
 }
 
 void miscLoop()
@@ -307,9 +387,7 @@ void miscLoop()
         hydroponics->updateBuzzer();
     }
 
-    #if defined(HYDRO_USE_SCHEDULER) || defined(HYDRO_USE_COOPTASK)
-        yield();
-    #endif
+    yield();
 }
 
 void Hydroponics::updateActuators()
@@ -374,7 +452,7 @@ bool Hydroponics::unregisterActuator(HydroponicsActuator *actuator)
 HydroponicsRelayActuator *Hydroponics::addGrowLightsRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -390,7 +468,7 @@ HydroponicsRelayActuator *Hydroponics::addGrowLightsRelay(byte outputPin)
 HydroponicsRelayActuator *Hydroponics::addWaterPumpRelay(byte outputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -407,7 +485,7 @@ HydroponicsRelayActuator *Hydroponics::addWaterPumpRelay(byte outputPin, Hydropo
 HydroponicsRelayActuator *Hydroponics::addWaterHeaterRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -423,7 +501,7 @@ HydroponicsRelayActuator *Hydroponics::addWaterHeaterRelay(byte outputPin)
 HydroponicsRelayActuator *Hydroponics::addWaterAeratorRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -439,7 +517,7 @@ HydroponicsRelayActuator *Hydroponics::addWaterAeratorRelay(byte outputPin)
 HydroponicsRelayActuator *Hydroponics::addFanExhaustRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -455,7 +533,7 @@ HydroponicsRelayActuator *Hydroponics::addFanExhaustRelay(byte outputPin)
 HydroponicsPWMActuator *Hydroponics::addFanExhaustPWM(byte outputPin, byte writeBitResolution)
 {
     bool outputPinIsPWM = checkPinIsPWM(outputPin);
-    assert(!(outputPinIsPWM && "Output pin does not support PWM"));
+    //assert(outputPinIsPWM && "Output pin does not support PWM");
 
     if (outputPinIsPWM) {
         HydroponicsPWMActuator *actuator = new HydroponicsPWMActuator(outputPin,
@@ -472,7 +550,7 @@ HydroponicsPWMActuator *Hydroponics::addFanExhaustPWM(byte outputPin, byte write
 HydroponicsRelayActuator *Hydroponics::addPhUpPeristalticPumpRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -489,7 +567,7 @@ HydroponicsRelayActuator *Hydroponics::addPhUpPeristalticPumpRelay(byte outputPi
 HydroponicsRelayActuator *Hydroponics::addPhDownPeristalticPumpRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -506,7 +584,7 @@ HydroponicsRelayActuator *Hydroponics::addPhDownPeristalticPumpRelay(byte output
 HydroponicsRelayActuator *Hydroponics::addNutrientPremixPeristalticPumpRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -523,7 +601,7 @@ HydroponicsRelayActuator *Hydroponics::addNutrientPremixPeristalticPumpRelay(byt
 HydroponicsRelayActuator *Hydroponics::addFreshWaterPeristalticPumpRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    assert(!(outputPinIsDigital && "Output pin is not digital"));
+    //assert(outputPinIsDigital && "Output pin is not digital");
 
     if (outputPinIsDigital) {
         HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(outputPin,
@@ -552,7 +630,7 @@ bool Hydroponics::unregisterSensor(HydroponicsSensor *sensor)
 HydroponicsDHTSensor *Hydroponics::addAirDHTTempHumiditySensor(byte inputPin, uint8_t dhtType)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    assert(!(inputPinIsDigital && "Input pin is not digital"));
+    //assert(inputPinIsDigital && "Input pin is not digital");
 
     if (inputPinIsDigital) {
         HydroponicsDHTSensor *sensor = new HydroponicsDHTSensor(inputPin,
@@ -581,7 +659,7 @@ HydroponicsDHTSensor *Hydroponics::addAirDHTTempHumiditySensor(byte inputPin, ui
 HydroponicsAnalogSensor *Hydroponics::addAirCO2Sensor(byte inputPin, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin,
@@ -598,7 +676,7 @@ HydroponicsAnalogSensor *Hydroponics::addAirCO2Sensor(byte inputPin, byte readBi
 HydroponicsAnalogSensor *Hydroponics::addWaterPhMeter(byte inputPin, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin,
@@ -615,7 +693,7 @@ HydroponicsAnalogSensor *Hydroponics::addWaterPhMeter(byte inputPin, byte readBi
 HydroponicsAnalogSensor *Hydroponics::addWaterTDSElectrode(byte inputPin, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin,
@@ -632,7 +710,7 @@ HydroponicsAnalogSensor *Hydroponics::addWaterTDSElectrode(byte inputPin, byte r
 HydroponicsDSSensor *Hydroponics::addWaterDSTempSensor(byte inputPin, byte readBitResolution)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    assert(!(inputPinIsDigital && "Input pin is not digital"));
+    //assert(inputPinIsDigital && "Input pin is not digital");
 
     if (inputPinIsDigital) {
         HydroponicsDSSensor *sensor = new HydroponicsDSSensor(inputPin,
@@ -662,7 +740,7 @@ HydroponicsDSSensor *Hydroponics::addWaterDSTempSensor(byte inputPin, byte readB
 HydroponicsAnalogSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(inputPin,
@@ -691,7 +769,7 @@ HydroponicsAnalogSensor *Hydroponics::addWaterPumpFlowSensor(byte inputPin, Hydr
 HydroponicsBinarySensor *Hydroponics::addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    assert(!(inputPinIsDigital && "Input pin is not digital"));
+    //assert(inputPinIsDigital && "Input pin is not digital");
 
     if (inputPinIsDigital) {
         HydroponicsBinarySensor *sensor = new HydroponicsBinarySensor(inputPin,
@@ -708,7 +786,7 @@ HydroponicsBinarySensor *Hydroponics::addLowWaterLevelIndicator(byte inputPin, H
 HydroponicsBinarySensor *Hydroponics::addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    assert(!(inputPinIsDigital && "Input pin is not digital"));
+    //assert(inputPinIsDigital && "Input pin is not digital");
 
     if (inputPinIsDigital) {
         HydroponicsBinarySensor *sensor = new HydroponicsBinarySensor(inputPin,
@@ -725,7 +803,7 @@ HydroponicsBinarySensor *Hydroponics::addHighWaterLevelIndicator(byte inputPin, 
 HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         // TODO: actual tolerance value
@@ -756,7 +834,7 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterHeightMeter(byte inputPin
 HydroponicsBinaryAnalogSensor *Hydroponics::addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         // TODO: actual tolerance value
@@ -787,7 +865,7 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addHighWaterHeightMeter(byte inputPi
 HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         // TODO: actual tolerance value
@@ -818,7 +896,7 @@ HydroponicsBinaryAnalogSensor *Hydroponics::addLowWaterUltrasonicSensor(byte inp
 HydroponicsBinaryAnalogSensor *Hydroponics::addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir, byte readBitResolution)
 {
     bool inputPinIsAnalog = checkInputPinIsAnalog(inputPin);
-    assert(!(inputPinIsAnalog && "Input pin is not analog"));
+    //assert(inputPinIsAnalog && "Input pin is not analog");
 
     if (inputPinIsAnalog) {
         // TODO: actual tolerance value
@@ -860,10 +938,10 @@ bool Hydroponics::unregisterCrop(HydroponicsCrop *crop)
 
 HydroponicsCrop *Hydroponics::addCropFromSowDate(const Hydroponics_CropType cropType, time_t sowDate, int positionIndex)
 {
-    assert(!((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count && "Invalid crop type"));
-    assert(!(sowDate > 0 && "Invalid sow date"));
+    //assert((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count && "Invalid crop type");
+    //assert(sowDate > 0 && "Invalid sow date");
     bool positionIsAvailable = positionIndex == -1; // TODO: position indexing.
-    assert(!(positionIsAvailable && "Invalid position index"));
+    //assert(positionIsAvailable && "Invalid position index");
 
     if (positionIsAvailable) {
         HydroponicsCrop *crop = new HydroponicsCrop(cropType, positionIndex, sowDate);
@@ -924,7 +1002,7 @@ I2C_eeprom *Hydroponics::getEEPROM()
 {
     if (_eeprom && !_eepromBegan) {
         _eepromBegan = _eeprom->begin();
-        assert(!(_eepromBegan && "Failed starting EEPROM"));
+        //assert(_eepromBegan && "Failed starting EEPROM");
     }
     return _eeprom && _eepromBegan ? _eeprom : NULL;
 }
@@ -933,7 +1011,7 @@ RTC_DS3231 *Hydroponics::getRealTimeClock()
 {
     if (_rtc && !_rtcBegan) {
         _rtcBegan = _rtc->begin(_i2cWire);
-        assert(!(_rtcBegan && "Failed starting RTC"));
+        //assert(_rtcBegan && "Failed starting RTC");
         if (_rtcBegan) {
             _rtcBattFail = _rtc->lostPower();
         }
@@ -946,7 +1024,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
     if (_sd && begin) {
         // TODO ESP8266/ESP32 differences
         bool sdBegan = _sd->begin(_spiSpeed, _sdCardCSPin);
-        assert(!(sdBegan && "Failed starting SD card"));
+        //assert(sdBegan && "Failed starting SD card");
     }
     return _sd;
 }
@@ -963,10 +1041,10 @@ int Hydroponics::getActiveRelayCount(Hydroponics_RelayRail relayRail) const
     return 0;
 }
 
-uint8_t Hydroponics::getMaxActiveRelayCount(Hydroponics_RelayRail relayRail) const
+byte Hydroponics::getMaxActiveRelayCount(Hydroponics_RelayRail relayRail) const
 {
     // TODO assert params
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     return _systemData ? _systemData->maxActiveRelayCount[relayRail] : 0;
 }
 
@@ -990,32 +1068,56 @@ int Hydroponics::getCropCount() const
 
 const char * Hydroponics::getSystemName() const
 {
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     return _systemData ? &_systemData->systemName[0] : NULL;
 }
 
-uint8_t Hydroponics::getCropPositionsCount() const
+byte Hydroponics::getCropPositionsCount() const
 {
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     return _systemData ? _systemData->cropPositionsCount : 0;
 }
 
 float Hydroponics::getReservoirSize(Hydroponics_FluidReservoir fluidReservoir) const
 {
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     return _systemData ? _systemData->reservoirSize[fluidReservoir] : 0;
 }
 
 float Hydroponics::getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir) const
 {
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     return _systemData ? _systemData->pumpFlowRate[fluidReservoir] : 0;
 }
 
-void Hydroponics::setMaxActiveRelayCount(uint8_t maxActiveCount, Hydroponics_RelayRail relayRail)
+int Hydroponics::getControlInputRibbonPinCount()
+{
+    switch (getControlInputMode()) {
+        case Hydroponics_ControlInputMode_2x2Matrix:
+        case Hydroponics_ControlInputMode_4xButton:
+            return 4;
+        case Hydroponics_ControlInputMode_6xButton:
+            return 6;
+        case Hydroponics_ControlInputMode_RotaryEncoder:
+            return 5;
+        default:
+            return 0;
+    }
+}
+
+byte Hydroponics::getControlInputPin(int ribbonPinIndex)
+{
+    int ctrlInPinCount = getControlInputRibbonPinCount();
+    //assert(ctrlInPinCount > 0 && "Control input pinmap not used in this mode");
+    //assert(ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount && "Ribbon pin index out of range");
+
+    return _ctrlInPinMap && ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInPinMap[ribbonPinIndex] : -1;
+}
+
+void Hydroponics::setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RelayRail relayRail)
 {
     // TODO assert params
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
         _systemData->maxActiveRelayCount[relayRail] = maxActiveCount;
     }
@@ -1024,17 +1126,17 @@ void Hydroponics::setMaxActiveRelayCount(uint8_t maxActiveCount, Hydroponics_Rel
 void Hydroponics::setSystemName(const char * systemName)
 {
     // TODO assert params
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
-        strncpy(&_systemData->systemName[0], systemName, HYDRO_NAME_MAXSIZE);
+        strncpy(&_systemData->systemName[0], systemName, HYDRUINO_NAME_MAXSIZE);
         // TODO lcd update
     }
 }
 
-void Hydroponics::setCropPositionsCount(uint8_t cropPositionsCount)
+void Hydroponics::setCropPositionsCount(byte cropPositionsCount)
 {
     // TODO assert params
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
         _systemData->cropPositionsCount = cropPositionsCount;
         // TODO remove out-of-range crops, lcd update
@@ -1044,7 +1146,7 @@ void Hydroponics::setCropPositionsCount(uint8_t cropPositionsCount)
 void Hydroponics::setReservoirSize(float reservoirSize, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert params
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
         _systemData->reservoirSize[fluidReservoir] = reservoirSize;
         // TODO lcd update
@@ -1054,10 +1156,21 @@ void Hydroponics::setReservoirSize(float reservoirSize, Hydroponics_FluidReservo
 void Hydroponics::setPumpFlowRate(float pumpFlowRate, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert params
-    assert(!(_systemData && "System data not yet initialized"));
+    //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
         _systemData->pumpFlowRate[fluidReservoir] = pumpFlowRate;
         // TODO updates?
+    }
+}
+
+void Hydroponics::setControlInputPinMap(byte *pinMap)
+{
+    //assert(pinMap && "Invalid pinMap");
+    int ctrlInPinCount = getControlInputRibbonPinCount();
+    //assert(ctrlInPinCount > 0 && "Control input pinmap not used in this mode");
+
+    for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
+        _ctrlInPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
     }
 }
 

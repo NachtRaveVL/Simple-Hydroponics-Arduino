@@ -1,7 +1,8 @@
-// Simple-Hydroponics-Arduino Vertical NFT Example
+// Simple-Hydroponics-Arduino Vertical Nutrient Film Technique (NFT) Example
 // TODO
 
 #include <Hydroponics.h>
+#include <TaskScheduler.h>
 
 // TODO
 
@@ -9,6 +10,7 @@ Hydroponics hydroController;            // Controller using default XXX TODO pin
 
 void setup() {
     Serial.begin(115200);               // Begin Serial and Wire interfaces
+    while(!Serial) { ; }                // Wait for USB serial to link up
     Wire.setClock(hydroController.getI2CSpeed()); // Don't worry, Wire.begin() gets called plenty enough times internally
 
     // Initializes controller with first initialization method that successfully returns using default XXX TODO

@@ -22,10 +22,10 @@
 #endif
 
 
-#define HYDRO_NAME_MAXSIZE              32                      // Naming character maximum size
-#define HYDRO_CALIB_MAXSIZE             8                       // Analog calibration data maximum size
-#define HYDRO_EEPROM_MEMORYSIZE         I2C_DEVICESIZE_24LC256  // Memory size for EEPROM (256kb)
-
+#define HYDRUINO_NAME_MAXSIZE               32                      // Naming character maximum size
+#define HYDRUINO_CALIB_MAXSIZE              8                       // Analog calibration data maximum size
+#define HYDRUINO_EEPROM_MEMORYSIZE          I2C_DEVICESIZE_24LC256  // Memory size for EEPROM (256kb)
+#define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
 
 // TODO
 enum Hydroponics_CropType {
@@ -113,7 +113,8 @@ enum Hydroponics_CropType {
     Hydroponics_CropType_Custom4,           // Custom 4 crop.
     Hydroponics_CropType_Custom5,           // Custom 5 crop.
 
-    Hydroponics_CropType_Count,             // Internal use only
+    // FIXME: Need to change storage of crop data to PROGMEM. Capping CropType count until fixed.
+    Hydroponics_CropType_Count = 10,             // Internal use only
     Hydroponics_CropType_Undefined = -1     // Internal use only
 };
 
@@ -190,7 +191,7 @@ enum Hydroponics_ControlInputMode {
     Hydroponics_ControlInputMode_2x2Matrix,         // 2x2 directional keyboard matrix button array, ribbon: {L1,L2,R1,R2} (L1 = pin 1)
     Hydroponics_ControlInputMode_4xButton,          // 4x standard momentary buttons, ribbon: {U,D,L,R} (U = pin 1)
     Hydroponics_ControlInputMode_6xButton,          // 6x standard momentary buttons, ribbon: {TODO} (X = pin 1)
-    Hydroponics_ControlInputMode_RotaryEncoder,     // Rotary encoder, ribbon: {A,B,OK,L,R} (X = pin 1)
+    Hydroponics_ControlInputMode_RotaryEncoder,     // Rotary encoder, ribbon: {A,B,OK,L,R} (A = pin 1)
 
     Hydroponics_ControlInputMode_Count,             // Internal use only
     Hydroponics_ControlInputMode_Undefined = -1     // Internal use only
@@ -270,15 +271,15 @@ struct HydroponicsLoggableDataInterface {
 struct HydroponicsSystemData : public HydroponicsSavableDataInterface {
     HydroponicsSystemData();                                    // Default constructor
     char _ident[3];                                             // Always 'HSD'
-    uint8_t _version;                                           // Version #
-    char systemName[HYDRO_NAME_MAXSIZE];                        // TODO
-    int8_t timeZoneOffset;
+    byte _version;                                              // Version #
+    char systemName[HYDRUINO_NAME_MAXSIZE];                     // System name
+    int8_t timeZoneOffset;                                      // Timezone offset (TODO)
     Hydroponics_SystemMode systemMode;                          // System type mode
     Hydroponics_MeasurementMode measurementMode;                // System measurement mode
     Hydroponics_LCDOutputMode lcdOutMode;                       // System LCD mode
     Hydroponics_ControlInputMode ctrlInMode;                    // System control input mode 
-    uint8_t cropPositionsCount;                                 // TODO
-    uint8_t maxActiveRelayCount[Hydroponics_RelayRail_Count];   // TODO
+    byte cropPositionsCount;                                    // TODO
+    byte maxActiveRelayCount[Hydroponics_RelayRail_Count];      // TODO
     float reservoirSize[Hydroponics_FluidReservoir_Count];      // TODO
     Hydroponics_UnitsType reservoirSizeUnits;                   // TODO
     float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO
@@ -287,7 +288,7 @@ struct HydroponicsSystemData : public HydroponicsSavableDataInterface {
         Hydroponics_SensorType sensor;
         Hydroponics_FluidReservoir reservoir;
         float multiplier, offset;                               // Ax + B curve correction
-    } calibrationData[HYDRO_CALIB_MAXSIZE];                     // Analog sensor calibration data
+    } calibrationData[HYDRUINO_CALIB_MAXSIZE];                  // Analog sensor calibration data
     float phDriftDataTODO;                                      // TODO
     float ecDriftDataTODO;                                      // TODO
 };
@@ -297,18 +298,18 @@ struct HydroponicsCropData : public HydroponicsSavableDataInterface {
     HydroponicsCropData();                                      // Default constructor
     HydroponicsCropData(Hydroponics_CropType cropType);         // Convenience constructor, loads from Crop Library if built
     char _ident[3];                                             // Always 'HCD'
-    uint8_t _version;                                           // Version #
+    byte _version;                                              // Version #
     Hydroponics_CropType cropType;                              // Crop type
-    char plantName[HYDRO_NAME_MAXSIZE];                         // TODO
-    uint8_t growWeeksToHarvest;                                 // TODO
-    uint8_t weeksBetweenHarvest;                                // TODO
-    uint8_t phaseBeginWeek[Hydroponics_CropPhase_Count];        // TODO
-    uint8_t lightHoursPerDay[Hydroponics_CropPhase_Count];      // TODO
-    float feedIntervalMins[Hydroponics_CropPhase_Count][2];     // TODO
+    char plantName[HYDRUINO_NAME_MAXSIZE];                      // TODO
+    byte growWeeksToHarvest;                                    // TODO
+    byte weeksBetweenHarvest;                                   // TODO
+    byte phaseBeginWeek[Hydroponics_CropPhase_Count];           // TODO
+    byte lightHoursPerDay[Hydroponics_CropPhase_Count];         // TODO
+    byte feedIntervalMins[Hydroponics_CropPhase_Count][2];      // TODO
     float phRange[Hydroponics_CropPhase_Count][2];              // TODO
     float ecRange[Hydroponics_CropPhase_Count][2];              // TODO
-    float waterTempRange[Hydroponics_CropPhase_Count][2];       // TODO
-    float airTempRange[Hydroponics_CropPhase_Count][2];         // TODO
+    byte waterTempRange[Hydroponics_CropPhase_Count][2];        // TODO
+    byte airTempRange[Hydroponics_CropPhase_Count][2];          // TODO
     bool isInvasiveOrViner;                                     // TODO
     bool isLargePlant;                                          // TODO
     bool isPerennial;                                           // TODO

@@ -15,19 +15,19 @@ HydroponicsSensor::~HydroponicsSensor()
 
 HydroponicsSensorMeasurement *HydroponicsSensor::takeMeasurement()
 {
-    assert("To be overridden in base classes.");
+    //assert(!"To be overridden in base classes.");
     return NULL;
 }
 
 HydroponicsSensorMeasurement *HydroponicsSensor::getLastMeasurement() const
 {
-    assert("To be overridden in base classes.");
+    //assert(!"To be overridden in base classes.");
     return NULL;
 }
 
 time_t HydroponicsSensor::getLastMeasurementTime() const
 {
-    assert("To be overridden in base classes.");
+    //assert(!"To be overridden in base classes.");
     return 0;
 }
 
@@ -58,7 +58,7 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(byte inputPin,
       #endif
       _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
-    assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
+    //assert(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution");
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
     pinMode(_inputPin, INPUT);
 
@@ -138,7 +138,7 @@ HydroponicsDHTSensor::HydroponicsDHTSensor(byte inputPin,
       _dht(new DHT(inputPin, dhtType)), _computeHeatIndex(true),
       _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
-    assert(!(_dht && "DHT instance creation failure"));
+    //assert(_dht && "DHT instance creation failure");
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
 
     if (_dht) {
@@ -209,8 +209,8 @@ HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
     : HydroponicsSensor(Hydroponics_SensorType_WaterTemperature, fluidReservoir),
       _oneWire(new OneWire(inputPin)), _dt(new DallasTemperature())
 {
-    assert(!(_oneWire && "OneWire instance creation failure"));
-    assert(!(_dt && "DallasTemperature instance creation failure"));
+    //assert(_oneWire && "OneWire instance creation failure");
+    //assert(_dt && "DallasTemperature instance creation failure");
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
 
     if (_dt && _oneWire) {
@@ -219,7 +219,7 @@ HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
         _dt->setWaitForConversion(true); // TODO: make measurement async
         _dt->begin();
         _dt->setResolution(readBitResolution);
-        assert(!(_dt->getResolution() == readBitResolution && "Resolved resolution mismatch with passed resolution"));
+        //assert(_dt->getResolution() == readBitResolution && "Resolved resolution mismatch with passed resolution");
     }
 }
 
@@ -241,7 +241,7 @@ HydroponicsAnalogSensorMeasurement *HydroponicsDSSensor::takeMeasurement()
     newMeasurement.timestamp = now();
 
     bool deviceDisconnected = fabs(newMeasurement.value - (isFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C)) < FLT_EPSILON;
-    assert(!(!deviceDisconnected && "Measurement failed device disconnected"));
+    //assert(!deviceDisconnected && "Measurement failed device disconnected");
 
     if (!deviceDisconnected) {
         // TODO: Curve correction from calibration data
@@ -333,7 +333,7 @@ HydroponicsBinaryAnalogSensor::HydroponicsBinaryAnalogSensor(byte inputPin,
       #endif
       _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
-    assert(!(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution"));
+    //assert(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution");
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
     pinMode(_inputPin, INPUT);
 }
