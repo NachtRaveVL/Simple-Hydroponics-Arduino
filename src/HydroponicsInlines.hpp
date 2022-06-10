@@ -13,4 +13,6 @@
 // static inline byte *roundUpMalloc16(int size) { return (byte *)malloc((size_t)(size + 15)); }
 // static inline byte *roundUpRealloc16(byte *ptr, int size) { return (byte *)realloc((void *)ptr, (size_t)(size + 15)); }
 
+static inline bool isValidPin(byte pin) { return pin < 255; }
+
 #endif // /ifndef HydroponicsInlines_HPP

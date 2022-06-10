@@ -22,7 +22,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
 
-    Hydroponics-Arduino - Version 0.1
+    Simple-Hydroponics-Arduino - Version 0.1
 */
 
 #ifndef Hydroponics_H
@@ -30,18 +30,22 @@
 
 // Library Setup
 
-// NOTE: While editing the main header file isn't ideal, it is often the easiest given
-// the Arduino IDE's limited custom build flag support. Editing this header file directly
-// will affect all projects compiled on your system using these library files.
+// NOTE: It is recommended to use custom build flags instead of editing this file directly.
 
-// Uncomment or -D this define to disable usage of the Scheduler library on SAM/SAMD architecures.
-//#define HYDRO_DISABLE_SCHEDULER                   // https://github.com/arduino-libraries/Scheduler
+// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield().
+//#define HYDRUINO_DISABLE_MULTITASKING
 
-// Uncomment or -D this define to disable usage of the CoopTask library when Scheduler library not used.
-//#define HYDRO_DISABLE_COOPTASK                    // https://github.com/dok-net/CoopTask
+// Uncomment or -D this define to disable usage of the Scheduler library, for SAM/SAMD architechtures.
+//#define HYDRUINO_DISABLE_SCHEDULER              // https://github.com/arduino-libraries/Scheduler
+
+// Uncomment or -D this define to disable usage of the TaskScheduler library, in place of Scheduler.
+//#define HYDRUINO_DISABLE_TASKSCHEDULER          // https://github.com/arkhipenko/TaskScheduler
+
+// Uncomment or -D this define to enable usage of the CoopTask library, in place of TaskScheduler and Scheduler.
+//#define HYDRUINO_ENABLE_COOPTASK                // https://github.com/dok-net/CoopTask
 
 // Uncomment or -D this define to enable debug output.
-//#define HYDRO_ENABLE_DEBUG_OUTPUT
+#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
 
 // Hookup Callouts
@@ -60,13 +64,27 @@
 #include <SD.h>
 #include <Wire.h>
 
-#if !defined(HYDRO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
+#ifndef HYDRUINO_DISABLE_MULTITASKING
+#if !defined(HYDRUINO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
 #include "Scheduler.h"
-#define HYDRO_USE_SCHEDULER
+#define HYDRUINO_USE_SCHEDULER
 #endif
-#if !defined(HYDRO_DISABLE_COOPTASK) && !defined(HYDRO_USE_SCHEDULER)
+#if !defined(HYDRUINO_DISABLE_TASKSCHEDULER) && !defined(HYDRUINO_USE_SCHEDULER)
+#include "TaskSchedulerDeclarations.h"
+#define HYDRUINO_USE_TASKSCHEDULER
+#define HYDRUINO_ENDLOOP(scheduler)     (scheduler).execute()
+#endif
+#if defined(HYDRUINO_ENABLE_COOPTASK) && !defined(HYDRUINO_USE_SCHEDULER) && !defined(HYDRUINO_USE_TASKSCHEDULER)
 #include "CoopTask.h"
-#define HYDRO_USE_COOPTASK
+#define HYDRUINO_USE_COOPTASK
+#define HYDRUINO_ENDLOOP()              runCoopTasks()
+#endif
+#endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
+#ifndef HYDRUINO_YIELD
+#define HYDRUINO_YIELD()                yield()
+#endif
+#ifndef HYDRUINO_ENDLOOP
+#define HYDRUINO_ENDLOOP()              yield()
 #endif
 
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
@@ -76,7 +94,7 @@
 #if !defined(__STM32F1__)
 #include "OneWire.h"                    // OneWire for DS18* probes
 #else
-#include "OneWireSTM.h"
+#include "OneWireSTM.h"                 // STM32 version of OneWire
 #endif
 #include "RTClib.h"                     // i2c RTC library
 #include "SimpleCollections.h"          // SimpleCollections library
@@ -90,10 +108,10 @@
 #include "HydroponicsCrops.h"
 #include "HydroponicsSensors.h"
 
-extern void controlLoop();
-extern void dataLoop();
-extern void guiLoop();
-extern void miscLoop();
+extern void controlLoop();              // Control processing runloop (scheduling, actuators, etc.)
+extern void dataLoop();                 // Data processing runloop (sensors, logging, etc.)
+extern void guiLoop();                  // GUI processing runloop (screens, interface, etc.)
+extern void miscLoop();                 // Misc processing runloop (buzzer, utilities, etc.)
 
 class Hydroponics {
 public:
@@ -128,15 +146,17 @@ public:
     // Initializes module from MicroSD save, returning success flag
     bool initFromSDCard(const char * configFile = "/hydruino.cfg");
 
-    //bool initFromWiFiServer(); maybe?
+    //bool initFromWiFiServer(paramsTODO); maybe?
     // TODO logging?
-    //void enableLoggingToMicroSDFolder();
-    //void enableLoggingToWiFiDatabase();
+    //void enableLoggingToMicroSDFolder(const char *folderNamePrefix = "hlog");
+    //void enableLoggingToWiFiDatabase(const char *ssid, const char *ssidPass, const char *brokerURL, const char *clientId);
 
     // Launches system into operational mode. Typically called last in setup().
+    // Once launch is called further system setup may no longer be available due to dependency constraints.
     void launch();
 
-    // Update method. Typically called in loop() or CoopTask co-routine.
+    // Update method. Typically called last in loop().
+    // By default this method simply calls into the active scheduler's main loop mechanism, unless multitasking is disabled in which case calls all runloops.
     void update();
 
 
@@ -202,43 +222,54 @@ public:
 
     int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;                 // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
     int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of active relay devices, for the given rail (undefined-rail = all)
-    uint8_t getMaxActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;    // Maximum number of relay devices allowed active at a time, for the given rail (default: 2, undefined-rail = all)
+    byte getMaxActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;       // Maximum number of relay devices allowed active at a time, for the given rail (default: 2, undefined-rail = all)
 
     int getActuatorCount() const;                                   // Current number of total actuators registered with system
     int getSensorCount() const;                                     // Current number of total sensors registered with system
     int getCropCount() const;                                       // Current number of total crops registered with system
 
     const char * getSystemName() const;                             // System display name (default: "Hydroduino", 31 char limit)
-    uint8_t getCropPositionsCount() const;                          // Total number of crop positions available in system (default: 16)
+    byte getCropPositionsCount() const;                             // Total number of crop positions available in system (default: 16)
     float getReservoirSize(Hydroponics_FluidReservoir fluidReservoir) const;    // Fluid reservoir size, for given reservoir (liters)
     float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir) const;     // Fluid pump flow rate, for given reservoir (liters/sec)
 
+    int getControlInputRibbonPinCount();                            // Total number of pins being used for the current control input ribbon mode
+    byte getControlInputPin(int ribbonPinIndex);                    // Control input pin mapped to ribbon pin index, or -1 (255) if not used
+
     // Mutators.
 
-    void setMaxActiveRelayCount(uint8_t maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail
+    void setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail
 
     void setSystemName(const char * systemName);                    // Sets display name of system (31 char limit)
-    void setCropPositionsCount(uint8_t cropPositionsCount);         // Sets number of crop positions
+    void setCropPositionsCount(byte cropPositionsCount);            // Sets number of crop positions
     void setReservoirSize(float reservoirSize, Hydroponics_FluidReservoir fluidReservoir);  // Sets reservoir size, for the given reservoir (liters)
     void setPumpFlowRate(float pumpFlowRate, Hydroponics_FluidReservoir fluidReservoir);    // Sets pump flow rate, for the given reservoir (liters/sec)
+
+    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin defaults
 
     typedef void(*UserDelayFunc)(unsigned int);                     // Passes delay timeout (where 0 indicates inside long blocking call / yield attempt suggested)
     // Sets user delay functions to call when a delay has to occur for processing to
     // continue. User functions here can customize what this means - typically it would
     // mean to call into a thread barrier() or yield() mechanism. Default implementation
-    // is to call yield() when timeout >= 1ms, unless Scheduler and CoopTask are disabled.
+    // is to call yield() when timeout >= 1ms, unless disabled.
     void setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc);
 
 protected:
     static Hydroponics *_activeInstance;                    // Current active instance (set after init)
 
-    byte _i2cAddressLCD;                                    // LCD i2c address, format: {A2,A1,A0} (default: B000)
-    byte _ctrlInputPin1;                                    // Control input pin 1 (default: disabled)
+    byte _eepromI2CAddr;                                    // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
+    byte _rtcI2CAddr;                                       // RTC i2c address, format: {A2,A1,A0} (default: B000)
+    byte _lcdI2CAddr;                                       // LCD i2c address, format: {A2,A1,A0} (default: B000)
+    byte _piezoBuzzerPin;                                   // Piezo buzzer pin (default: disabled)
     byte _sdCardCSPin;                                      // SD card cable select (CS) pin (default: disabled)
+    byte _ctrlInputPin1;                                    // Control input pin 1 (default: disabled)
     TwoWire* _i2cWire;                                      // Wire class instance (unowned) (default: Wire)
     uint32_t _i2cSpeed;                                     // Controller's i2c clock speed (default: 400kHz)
     uint32_t _spiSpeed;                                     // Controller's SPI clock speed (default: 4MHz)
 
+#ifdef HYDRUINO_USE_TASKSCHEDULER
+    Scheduler _ts;                                          // Task scheduler
+#endif
     EasyBuzzerClass *_buzzer;                               // Piezo buzzer instance (unowned)
     I2C_eeprom *_eeprom;                                    // EEPROM instance (owned)
     RTC_DS3231 *_rtc;                                       // Real time clock instance (owned)
@@ -246,14 +277,16 @@ protected:
     bool _eepromBegan;                                      // Status of EEPROM begin()
     bool _rtcBegan;                                         // Status of RTC begin() call
     bool _rtcBattFail;                                      // Status of RTC battery failure flag
+    byte _ctrlInPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];      // Control input pin map
 
     HydroponicsSystemData *_systemData;                     // System data (owned, saved to storage)
 
-    // TODO maybe we use?
     UserDelayFunc _uDelayMillisFunc;                        // User millisecond delay function
     UserDelayFunc _uDelayMicrosFunc;                        // User microsecond delay function
 
     void commonInit();
+
+    // Runloops & update segmentation.
 
     friend void ::controlLoop();
     friend void ::dataLoop();
