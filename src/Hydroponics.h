@@ -35,13 +35,13 @@
 // Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), and libraries.
 //#define HYDRUINO_DISABLE_MULTITASKING
 
-// Uncomment or -D this define to disable usage of the TaskScheduler library, used by default.
+// Uncomment or -D this define to disable usage of the TaskScheduler library, which is used by default.
 //#define HYDRUINO_DISABLE_TASKSCHEDULER          // https://github.com/arkhipenko/TaskScheduler
 
-// Uncomment or -D this define to enable usage of the Scheduler library, in place of TaskScheduler, for SAM/SAMD architechtures only.
+// Uncomment or -D this define to enable usage of the Scheduler library, iff TaskScheduler disabled, for SAM/SAMD architechtures only.
 //#define HYDRUINO_ENABLE_SCHEDULER               // https://github.com/arduino-libraries/Scheduler
 
-// Uncomment or -D this define to enable usage of the CoopTask library, in place of TaskScheduler and Scheduler.
+// Uncomment or -D this define to enable usage of the CoopTask library, iff both TaskScheduler/Scheduler disabled.
 //#define HYDRUINO_ENABLE_COOPTASK                // https://github.com/dok-net/CoopTask
 
 // Uncomment or -D this define to enable debug output.
@@ -69,12 +69,10 @@
 #include "TaskSchedulerDeclarations.h"
 #define HYDRUINO_USE_TASKSCHEDULER
 #define HYDRUINO_MAINLOOP(scheduler)    (scheduler).execute()
-#endif
-#if defined(HYDRUINO_ENABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)) && !defined(HYDRUINO_USE_TASKSCHEDULER)
+#elif defined(HYDRUINO_ENABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
 #include "Scheduler.h"
 #define HYDRUINO_USE_SCHEDULER
-#endif
-#if defined(HYDRUINO_ENABLE_COOPTASK) && !defined(HYDRUINO_USE_TASKSCHEDULER) && !defined(HYDRUINO_USE_SCHEDULER)
+#elif defined(HYDRUINO_ENABLE_COOPTASK)
 #include "CoopTask.h"
 #define HYDRUINO_USE_COOPTASK
 #define HYDRUINO_MAINLOOP()             runCoopTasks()

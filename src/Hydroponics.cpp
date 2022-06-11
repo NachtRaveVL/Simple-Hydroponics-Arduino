@@ -80,11 +80,6 @@ HydroponicsSystemData::HydroponicsSystemData()
 
     // Moving this to its own thing
     //memset(calibrationData, 0, sizeof(calibrationData));
-
-    // for (int calibIndex = 0; calibIndex < HYDRUINO_CALIB_MAXSIZE; ++calibIndex) {
-    //     calibrationData[calibIndex].sensor = Hydroponics_SensorType_Undefined;
-    //     calibrationData[calibIndex].reservoir = Hydroponics_FluidReservoir_Undefined;
-    // }
 }
 
 void HydroponicsSystemData::toJSONDocument(JsonDocument &docOut) const
@@ -301,57 +296,57 @@ void Hydroponics::commonInit()
     }
 
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-        Serial.print("Hydroponics::commonInit piezoBuzzerPin: ");
+        Serial.print(F("Hydroponics::commonInit piezoBuzzerPin: "));
         Serial.print(_piezoBuzzerPin);
-        Serial.print(", sdCardCSPin: ");
+        Serial.print(F(", sdCardCSPin: "));
         Serial.print(_sdCardCSPin);
-        Serial.print(", controlInputPin1: ");
+        Serial.print(F(", controlInputPin1: "));
         Serial.print(_ctrlInputPin1);
-        Serial.print(", EEPROMi2cAddress: 0x");
+        Serial.print(F(", EEPROMi2cAddress: 0x"));
         Serial.print(_eepromI2CAddr, HEX);
-        Serial.print(", RTCi2cAddress: 0x");
+        Serial.print(F(", RTCi2cAddress: 0x"));
         Serial.print(_rtcI2CAddr, HEX);
-        Serial.print(", LCDi2cAddress: 0x");
+        Serial.print(F(", LCDi2cAddress: 0x"));
         Serial.print(_lcdI2CAddr, HEX);
-        Serial.print(", i2cSpeed: ");
-        Serial.print(roundf(getI2CSpeed() / 1000.0f)); Serial.print("kHz");
-        Serial.print(", SPISpeed: ");
-        Serial.print(roundf(getSPISpeed() / 1000000.0f)); Serial.print("MHz");
-        Serial.print(", systemMode: ");
+        Serial.print(F(", i2cSpeed: "));
+        Serial.print(roundf(getI2CSpeed() / 1000.0f)); Serial.print(F("kHz"));
+        Serial.print(F(", SPISpeed: "));
+        Serial.print(roundf(getSPISpeed() / 1000000.0f)); Serial.print(F("MHz"));
+        Serial.print(F(", systemMode: "));
         switch(getSystemMode()) {
-            case Hydroponics_SystemMode_Recycling: Serial.print("Recycling"); break;
-            case Hydroponics_SystemMode_DrainToWaste: Serial.print("DrainToWaste"); break;
+            case Hydroponics_SystemMode_Recycling: Serial.print(F("Recycling")); break;
+            case Hydroponics_SystemMode_DrainToWaste: Serial.print(F("DrainToWaste")); break;
             case Hydroponics_SystemMode_Count:
             case Hydroponics_SystemMode_Undefined:
                 Serial.print(getSystemMode()); break;
         }
-        Serial.print(", measurementMode: ");
+        Serial.print(F(", measurementMode: "));
         switch (getMeasurementMode()) {
-            case Hydroponics_MeasurementMode_Imperial: Serial.print("Imperial"); break;
-            case Hydroponics_MeasurementMode_Metric: Serial.print("Metric"); break;
-            case Hydroponics_MeasurementMode_Scientific: Serial.print("Scientific"); break;
+            case Hydroponics_MeasurementMode_Imperial: Serial.print(F("Imperial")); break;
+            case Hydroponics_MeasurementMode_Metric: Serial.print(F("Metric")); break;
+            case Hydroponics_MeasurementMode_Scientific: Serial.print(F("Scientific")); break;
             case Hydroponics_MeasurementMode_Count:
             case Hydroponics_MeasurementMode_Undefined:
                 Serial.print(getMeasurementMode()); break;
         }
-        Serial.print(", lcdOutMode: ");
+        Serial.print(F(", lcdOutMode: "));
         switch (getLCDOutputMode()) {
-            case Hydroponics_LCDOutputMode_Disabled: Serial.print("Disabled"); break;
-            case Hydroponics_LCDOutputMode_20x4LCD: Serial.print("20x4LCD"); break;
-            case Hydroponics_LCDOutputMode_20x4LCD_Swapped: Serial.print("20x4LCD <Swapped>"); break;
-            case Hydroponics_LCDOutputMode_16x2LCD: Serial.print("16x2LCD"); break;
-            case Hydroponics_LCDOutputMode_16x2LCD_Swapped: Serial.print("16x2LCD <Swapped>"); break;
+            case Hydroponics_LCDOutputMode_Disabled: Serial.print(F("Disabled")); break;
+            case Hydroponics_LCDOutputMode_20x4LCD: Serial.print(F("20x4LCD")); break;
+            case Hydroponics_LCDOutputMode_20x4LCD_Swapped: Serial.print(F("20x4LCD <Swapped>")); break;
+            case Hydroponics_LCDOutputMode_16x2LCD: Serial.print(F("16x2LCD")); break;
+            case Hydroponics_LCDOutputMode_16x2LCD_Swapped: Serial.print(F("16x2LCD <Swapped>")); break;
             case Hydroponics_LCDOutputMode_Count:
             case Hydroponics_LCDOutputMode_Undefined:
                 Serial.print(getLCDOutputMode()); break;
         }
-        Serial.print(", ctrlInMode: ");
+        Serial.print(F(", ctrlInMode: "));
         switch (getControlInputMode()) {
-            case Hydroponics_ControlInputMode_Disabled: Serial.print("Disabled"); break;
-            case Hydroponics_ControlInputMode_2x2Matrix: Serial.print("2x2Matrix"); break;
-            case Hydroponics_ControlInputMode_4xButton: Serial.print("4xButton"); break;
-            case Hydroponics_ControlInputMode_6xButton: Serial.print("6xButton"); break;
-            case Hydroponics_ControlInputMode_RotaryEncoder: Serial.print("RotaryEncoder"); break;
+            case Hydroponics_ControlInputMode_Disabled: Serial.print(F("Disabled")); break;
+            case Hydroponics_ControlInputMode_2x2Matrix: Serial.print(F("2x2Matrix")); break;
+            case Hydroponics_ControlInputMode_4xButton: Serial.print(F("4xButton")); break;
+            case Hydroponics_ControlInputMode_6xButton: Serial.print(F("6xButton")); break;
+            case Hydroponics_ControlInputMode_RotaryEncoder: Serial.print(F("RotaryEncoder")); break;
             case Hydroponics_ControlInputMode_Count:
             case Hydroponics_ControlInputMode_Undefined:
                 Serial.print(getControlInputMode()); break;
