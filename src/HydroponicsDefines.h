@@ -21,13 +21,12 @@
 #define max _max
 #endif
 
-
 #define HYDRUINO_NAME_MAXSIZE               32                      // Naming character maximum size
 #define HYDRUINO_CALIB_MAXSIZE              8                       // Analog calibration data maximum size
 #define HYDRUINO_EEPROM_MEMORYSIZE          I2C_DEVICESIZE_24LC256  // Memory size for EEPROM (256kb)
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
 
-// TODO
+// Crop Type
 enum Hydroponics_CropType {
     Hydroponics_CropType_AloeVera,          // Aloe Vera crop.
     Hydroponics_CropType_Anise,             // Anise crop.
@@ -104,8 +103,7 @@ enum Hydroponics_CropType {
     Hydroponics_CropType_Tomato,            // Tomato crop.
     Hydroponics_CropType_Turnip,            // Turnip crop.
     Hydroponics_CropType_Watercress,        // Watercress crop.
-    Hydroponics_CropType_Watermelon,        // Watermelon (common) crop.
-    Hydroponics_CropType_WatermelonBaby,    // Watermelon (baby) crop.
+    Hydroponics_CropType_Watermelon,        // Watermelon crop.
     Hydroponics_CropType_Zucchini,          // Zucchini crop.
     Hydroponics_CropType_Custom1,           // Custom 1 crop.
     Hydroponics_CropType_Custom2,           // Custom 2 crop.
@@ -114,11 +112,12 @@ enum Hydroponics_CropType {
     Hydroponics_CropType_Custom5,           // Custom 5 crop.
 
     // FIXME: Need to change storage of crop data to PROGMEM. Capping CropType count until fixed.
-    Hydroponics_CropType_Count = 10,             // Internal use only
+    Hydroponics_CropType_Count = 10,        // Internal use only
+    Hydroponics_CropType_CustomCount = 5,   // Internal use only
     Hydroponics_CropType_Undefined = -1     // Internal use only
 };
 
-// TODO
+// Crop Phase
 enum Hydroponics_CropPhase {
     Hydroponics_CropPhase_Seedling,         // Initial seedling stage
     Hydroponics_CropPhase_Vegetative,       // Vegetative stage
@@ -130,7 +129,7 @@ enum Hydroponics_CropPhase {
     Hydroponics_CropPhase_Undefined = -1    // Internal use only
 };
 
-// TODO
+// Relay Rail
 enum Hydroponics_RelayRail {
     Hydroponics_RelayRail_ACRail,           // AC relay rail
     Hydroponics_RelayRail_DCRail,           // DC relay rail
@@ -138,10 +137,11 @@ enum Hydroponics_RelayRail {
     Hydroponics_RelayRail_Custom2,          // Custom 2 relay rail
 
     Hydroponics_RelayRail_Count,            // Internal use only
+    Hydroponics_RelayRail_CustomCount,      // Internal use only
     Hydroponics_RelayRail_Undefined = -1    // Internal use only
 };
 
-// TODO
+// Fluid Reservoir
 enum Hydroponics_FluidReservoir {
     Hydroponics_FluidReservoir_FeedWater,           // Feed water reservoir (aka main water reservoir)
     Hydroponics_FluidReservoir_DrainageWater,       // Drainage water reservoir
@@ -154,7 +154,7 @@ enum Hydroponics_FluidReservoir {
     Hydroponics_FluidReservoir_Undefined = -1       // Internal use only
 };
 
-// TODO
+// System Run Mode
 enum Hydroponics_SystemMode {
     Hydroponics_SystemMode_Recycling,               // System consistently recycles water in main feed water reservoir. Default setting.
     Hydroponics_SystemMode_DrainToWaste,            // System fills feed reservoir before feeding (with pH/feed premix topoff prior), expects runoff (waste) to drain (unless drainage reservoir defined).
@@ -163,17 +163,18 @@ enum Hydroponics_SystemMode {
     Hydroponics_SystemMode_Undefined = -1           // Internal use only
 };
 
-// TODO
+// Measurement Units Mode
 enum Hydroponics_MeasurementMode {
     Hydroponics_MeasurementMode_Imperial,           // Imperial measurement mode (default setting, °F Ft Gal Lbs M-D-Y Val.X etc)
     Hydroponics_MeasurementMode_Metric,             // Metric measurement mode (°C M L Kg Y-M-D Val.X etc)
     Hydroponics_MeasurementMode_Scientific,         // Scientific measurement mode (°K M L Kg Y-M-D Val.XX etc)
 
     Hydroponics_MeasurementMode_Count,              // Internal use only
-    Hydroponics_MeasurementMode_Undefined = -1      // Internal use only
+    Hydroponics_MeasurementMode_Undefined = -1,     // Internal use only
+    Hydroponics_MeasurementMode_Default = Hydroponics_MeasurementMode_Imperial // If you must change it
 };
 
-// TODO
+// LCD Output Mode
 enum Hydroponics_LCDOutputMode {
     Hydroponics_LCDOutputMode_Disabled,             // No LCD output
     Hydroponics_LCDOutputMode_20x4LCD,              // 20x4 i2c LCD (with layout EN, RW, RS, BL, Data)
@@ -185,7 +186,7 @@ enum Hydroponics_LCDOutputMode {
     Hydroponics_LCDOutputMode_Undefined = -1        // Internal use only
 };
 
-// TODO
+// Control Input Mode
 enum Hydroponics_ControlInputMode {
     Hydroponics_ControlInputMode_Disabled,          // No control input
     Hydroponics_ControlInputMode_2x2Matrix,         // 2x2 directional keyboard matrix button array, ribbon: {L1,L2,R1,R2} (L1 = pin 1)
@@ -197,7 +198,7 @@ enum Hydroponics_ControlInputMode {
     Hydroponics_ControlInputMode_Undefined = -1     // Internal use only
 };
 
-// TODO
+// Actuator Type
 enum Hydroponics_ActuatorType {
     Hydroponics_ActuatorType_GrowLightsRelay,       // Grow lights relay actuator
     Hydroponics_ActuatorType_WaterPumpRelay,        // Water pump relay actuator (feed or drainage reservoir only)
@@ -211,7 +212,7 @@ enum Hydroponics_ActuatorType {
     Hydroponics_ActuatorType_Undefined = -1         // Internal use only
 };
 
-// TODO
+// Sensor Type
 enum Hydroponics_SensorType {
     Hydroponics_SensorType_AirTempHumidity,         // Air temperature and humidity sensor (digital, front-panel)
     Hydroponics_SensorType_AirCarbonDioxide,        // Air CO2 sensor (analog->binary/binary)
@@ -228,7 +229,7 @@ enum Hydroponics_SensorType {
     Hydroponics_SensorType_Undefined = -1           // Internal use only
 };
 
-// TODO
+// Units Type
 enum Hydroponics_UnitsType {
     Hydroponics_UnitsType_Temperature_Celsius,      // Celsius temperature mode.
     Hydroponics_UnitsType_Temperature_Fahrenheit,   // Fahrenheit temperature mode.
@@ -251,70 +252,141 @@ enum Hydroponics_UnitsType {
     Hydroponics_UnitsType_Undefined = -1            // Internal use only
 };
 
-// TODO
-struct HydroponicsSavableDataInterface {
-    // virtual todo toJSONDocument(todo) = 0;
-    // virtual todo fromJSONDocument(todo) = 0;
-    // virtual todo toEEPROMStore(todo) = 0;
-    // virtual todo fromEEPROMStore(todo) = 0;
+
+// Serializable Interface
+struct HydroponicsSerializableInterface {
+    // Given a JSON document to fill in, writes self to JSON format.
+    virtual void toJSONDocument(JsonDocument &docOut) const = 0;
+
+    // Given a JSON document to read from, reads JSON overtop self.
+    virtual void fromJSONDocument(const JsonDocument &docIn) = 0;
 };
 
-// TODO
-struct HydroponicsLoggableDataInterface {
-    // virtual todo toMQTTPublish(todo) = 0;
-    // virtual todo toSDCardCSV(todo) = 0;
-    // virtual todo toWebServerDatabase(todo) = 0;
-    // virtual todo toWebServerAPI(todo) = 0;
+// Base class for serializable (JSON+Binary) storage data.
+// NOTE: NO REFERENCES OR CONSTS ALLOWED. All data *MUST* be fully memcpy'able.
+struct HydroponicsData : public HydroponicsSerializableInterface {
+    // Default constructor
+    HydroponicsData(const char *ident,
+                    uint16_t version = 1, uint16_t revision = 1);
+
+    char _ident[4];                                             // Data structure identifier
+    uint16_t _version;                                          // Version # of data container
+    uint16_t _revision;                                         // Revision # of stored data
 };
 
-// TODO
-struct HydroponicsSystemData : public HydroponicsSavableDataInterface {
+// User System Setup Data
+struct HydroponicsSystemData : public HydroponicsData {         // _ident: HSYS
     HydroponicsSystemData();                                    // Default constructor
-    char _ident[3];                                             // Always 'HSD'
-    byte _version;                                              // Version #
+    HydroponicsSystemData(const JsonDocument *docIn);           // From JSON convenience constructor
+
+    // Overrides
+    virtual void toJSONDocument(JsonDocument &docOut) const;
+    virtual void fromJSONDocument(const JsonDocument &docIn);
+
     char systemName[HYDRUINO_NAME_MAXSIZE];                     // System name
     int8_t timeZoneOffset;                                      // Timezone offset (TODO)
     Hydroponics_SystemMode systemMode;                          // System type mode
     Hydroponics_MeasurementMode measurementMode;                // System measurement mode
     Hydroponics_LCDOutputMode lcdOutMode;                       // System LCD mode
     Hydroponics_ControlInputMode ctrlInMode;                    // System control input mode 
-    byte cropPositionsCount;                                    // TODO
-    byte maxActiveRelayCount[Hydroponics_RelayRail_Count];      // TODO
-    float reservoirSize[Hydroponics_FluidReservoir_Count];      // TODO
-    Hydroponics_UnitsType reservoirSizeUnits;                   // TODO
-    float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // TODO
-    Hydroponics_UnitsType pumpFlowRateUnits;                    // TODO
-    struct {
-        Hydroponics_SensorType sensor;
-        Hydroponics_FluidReservoir reservoir;
-        float multiplier, offset;                               // Ax + B curve correction
-    } calibrationData[HYDRUINO_CALIB_MAXSIZE];                  // Analog sensor calibration data
+    byte cropPositionsCount;                                    // Total number of crop positions
+    byte maxActiveRelayCount[Hydroponics_RelayRail_Count];      // Total active relays on same rail per rail
+    float reservoirSize[Hydroponics_FluidReservoir_Count];      // Total reservoir size of each
+    Hydroponics_UnitsType reservoirSizeUnits;                   // Units of reservoir size
+    float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // Pump flow rate for each reservoir
+    Hydroponics_UnitsType pumpFlowRateUnits;                    // Units of pump flow rate
+
+    // Other TODO stuff not used yet
     float phDriftDataTODO;                                      // TODO
     float ecDriftDataTODO;                                      // TODO
 };
 
-// TODO
-struct HydroponicsCropData : public HydroponicsSavableDataInterface {
+// Sensor Calibration Data
+struct HydroponicsCalibrationData : public HydroponicsData {    // _ident: HCAL
+    HydroponicsCalibrationData();
+    HydroponicsCalibrationData(Hydroponics_SensorType sensor, Hydroponics_FluidReservoir reservoir);
+
+    // Overrides
+    virtual void toJSONDocument(JsonDocument &docOut) const;
+    virtual void fromJSONDocument(const JsonDocument &docIn);
+
+    Hydroponics_SensorType sensor;                              // Sensor type this applies to
+    Hydroponics_FluidReservoir reservoir;                       // Reservoir type this applies to
+    float multiplier, offset;                                   // Ax + B curve correction
+};
+
+// Crop Library Data
+struct HydroponicsCropData : public HydroponicsData {           // _ident: HCRP
     HydroponicsCropData();                                      // Default constructor
-    HydroponicsCropData(Hydroponics_CropType cropType);         // Convenience constructor, loads from Crop Library if built
-    char _ident[3];                                             // Always 'HCD'
-    byte _version;                                              // Version #
+    HydroponicsCropData(Hydroponics_CropType cropType);         // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
+
+    // Overrides
+    virtual void toJSONDocument(JsonDocument &docOut) const;
+    virtual void fromJSONDocument(const JsonDocument &docIn);
+
     Hydroponics_CropType cropType;                              // Crop type
-    char plantName[HYDRUINO_NAME_MAXSIZE];                      // TODO
-    byte growWeeksToHarvest;                                    // TODO
-    byte weeksBetweenHarvest;                                   // TODO
-    byte phaseBeginWeek[Hydroponics_CropPhase_Count];           // TODO
-    byte lightHoursPerDay[Hydroponics_CropPhase_Count];         // TODO
-    byte feedIntervalMins[Hydroponics_CropPhase_Count][2];      // TODO
-    float phRange[Hydroponics_CropPhase_Count][2];              // TODO
-    float ecRange[Hydroponics_CropPhase_Count][2];              // TODO
-    byte waterTempRange[Hydroponics_CropPhase_Count][2];        // TODO
-    byte airTempRange[Hydroponics_CropPhase_Count][2];          // TODO
-    bool isInvasiveOrViner;                                     // TODO
-    bool isLargePlant;                                          // TODO
-    bool isPerennial;                                           // TODO
-    bool isPrunningRequired;                                    // TODO
-    bool isToxicToPets;                                         // TODO
+    char plantName[HYDRUINO_NAME_MAXSIZE];                      // Name of plant
+    byte growWeeksToHarvest;                                    // How long it takes to grow before harvestable
+    byte weeksBetweenHarvest;                                   // How long it takes between harvests, if applicable
+    byte phaseBeginWeek[Hydroponics_CropPhase_Count];           // Which week the plating phase generally begins.
+    byte lightHoursPerDay[Hydroponics_CropPhase_Count];         // How many light hours is needed per each day.
+    byte feedIntervalMins[Hydroponics_CropPhase_Count][2];      // How much time between feedings (on time / off time)
+    float phRange[Hydroponics_CropPhase_Count][2];              // pH range acceptable ( min / max, or avg )
+    float ecRange[Hydroponics_CropPhase_Count][2];              // EC range ( min / max, or avg )
+    float waterTempRange[Hydroponics_CropPhase_Count][2];       // Water temperature range (C) (maybe?)
+    float airTempRange[Hydroponics_CropPhase_Count][2];         // Air temperature range (C)
+    bool isInvasiveOrViner;                                     // Flag indicating plant will vine and/or take over other plants
+    bool isLargePlant;                                          // Flag indicating plant requires proper supports
+    bool isPerennial;                                           // Flag indicating plant grows back year after year
+    bool isPrunningRequired;                                    // Flag indicating plant benefits from active prunning
+    bool isToxicToPets;                                         // Flag indicating plant toxicity to common house pets (cats + dogs)
+};
+
+
+// Loggable Data Interface TODO
+struct HydroponicsLoggableDataInterface {
+    // virtual todo toMQTTPublish(todo *mqttBroker) = 0;
+    // virtual todo toSDCardCSVAppend(todo *csvFile) = 0;
+    // virtual todo toWebServerDBInsert(todo *dbInterface) = 0;
+    // virtual todo toWebServerAPIService(todo *apiInterface) = 0;
+};
+
+// Sensor Data Measurement
+struct HydroponicsSensorMeasurement : public HydroponicsLoggableDataInterface
+{
+    time_t timestamp;                       // Time event recorded
+};
+
+// Analog Sensor Data Measurement
+struct HydroponicsAnalogSensorMeasurement : public HydroponicsSensorMeasurement
+{
+    float value;                            // Analog value
+    Hydroponics_UnitsType units;            // Units of value
+};
+
+// DHT Sensor Data Measurement
+struct HydroponicsDHTSensorMeasurement : public HydroponicsSensorMeasurement
+{
+    float temperature;                      // Temperature
+    Hydroponics_UnitsType temperatureUnits; // Units of temperature
+    float humidity;                         // Hunidity
+    Hydroponics_UnitsType humidityUnits;    // Units of humidity
+    float heatIndex;                        // Heat index
+    Hydroponics_UnitsType heatIndexUnits;   // Units of heat index
+};
+
+// Binary Sensor Data Measurement
+struct HydroponicsBinarySensorMeasurement : public HydroponicsSensorMeasurement
+{
+    bool state;                             // Trigger state
+};
+
+// Binary Analog Sensor Data Measurement
+struct HydroponicsBinaryAnalogSensorMeasurement : public HydroponicsSensorMeasurement
+{
+    float value;                            // Analog value
+    Hydroponics_UnitsType units;            // Units of value
+    bool state;                             // Trigger state
 };
 
 #endif // /ifndef HydroponicsDefines_H

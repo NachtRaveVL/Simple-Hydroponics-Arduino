@@ -12,7 +12,7 @@ class HydroponicsPWMActuator;
 
 #include "Hydroponics.h"
 
-// TODO
+// Hydroponic Actuator Base
 class HydroponicsActuator {
 public:
     HydroponicsActuator(byte outputPin,
@@ -34,15 +34,15 @@ public:
     time_t getActuatorEnabledUntil() const;
 
 protected:
-    byte _outputPin;                                        // TODO
-    Hydroponics_ActuatorType _actuatorType;                 // TODO
-    Hydroponics_FluidReservoir _fluidReservoir;             // TODO
-    bool _enabled;                                          // TODO
-    time_t _enabledUntil;                                   // TODO
+    byte _outputPin;                                        // Output pin
+    Hydroponics_ActuatorType _actuatorType;                 // Actuator type
+    Hydroponics_FluidReservoir _fluidReservoir;             // Fluid reservoir type
+    bool _enabled;                                          // Enabled flag
+    time_t _enabledUntil;                                   // Enabled until date (or 0 for undef)
 };
 
 
-// TODO
+// Relay-based Actuator
 class HydroponicsRelayActuator : public HydroponicsActuator {
 public:
     HydroponicsRelayActuator(byte outputPin,
@@ -64,7 +64,7 @@ protected:
 };
 
 
-// TODO
+// PWM-based Actuator
 class HydroponicsPWMActuator : public HydroponicsActuator {
 public:
     HydroponicsPWMActuator(byte outputPin,

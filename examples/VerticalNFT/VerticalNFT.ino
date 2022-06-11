@@ -27,6 +27,6 @@ void setup() {
 
 void loop()
 {
-    // Hydruino will manage all updates for us.
+    // Hydruino will manage most updates for us.
     hydroController.update();
 }

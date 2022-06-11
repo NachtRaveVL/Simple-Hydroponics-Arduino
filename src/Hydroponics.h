@@ -32,14 +32,14 @@
 
 // NOTE: It is recommended to use custom build flags instead of editing this file directly.
 
-// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield().
+// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), and libraries.
 //#define HYDRUINO_DISABLE_MULTITASKING
 
-// Uncomment or -D this define to disable usage of the Scheduler library, for SAM/SAMD architechtures.
-//#define HYDRUINO_DISABLE_SCHEDULER              // https://github.com/arduino-libraries/Scheduler
-
-// Uncomment or -D this define to disable usage of the TaskScheduler library, in place of Scheduler.
+// Uncomment or -D this define to disable usage of the TaskScheduler library, used by default.
 //#define HYDRUINO_DISABLE_TASKSCHEDULER          // https://github.com/arkhipenko/TaskScheduler
+
+// Uncomment or -D this define to enable usage of the Scheduler library, in place of TaskScheduler, for SAM/SAMD architechtures only.
+//#define HYDRUINO_ENABLE_SCHEDULER               // https://github.com/arduino-libraries/Scheduler
 
 // Uncomment or -D this define to enable usage of the CoopTask library, in place of TaskScheduler and Scheduler.
 //#define HYDRUINO_ENABLE_COOPTASK                // https://github.com/dok-net/CoopTask
@@ -65,28 +65,26 @@
 #include <Wire.h>
 
 #ifndef HYDRUINO_DISABLE_MULTITASKING
-#if !defined(HYDRUINO_DISABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
+#if !defined(HYDRUINO_DISABLE_TASKSCHEDULER)
+#include "TaskSchedulerDeclarations.h"
+#define HYDRUINO_USE_TASKSCHEDULER
+#define HYDRUINO_MAINLOOP(scheduler)    (scheduler).execute()
+#endif
+#if defined(HYDRUINO_ENABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)) && !defined(HYDRUINO_USE_TASKSCHEDULER)
 #include "Scheduler.h"
 #define HYDRUINO_USE_SCHEDULER
 #endif
-#if !defined(HYDRUINO_DISABLE_TASKSCHEDULER) && !defined(HYDRUINO_USE_SCHEDULER)
-#include "TaskSchedulerDeclarations.h"
-#define HYDRUINO_USE_TASKSCHEDULER
-#define HYDRUINO_ENDLOOP(scheduler)     (scheduler).execute()
-#endif
-#if defined(HYDRUINO_ENABLE_COOPTASK) && !defined(HYDRUINO_USE_SCHEDULER) && !defined(HYDRUINO_USE_TASKSCHEDULER)
+#if defined(HYDRUINO_ENABLE_COOPTASK) && !defined(HYDRUINO_USE_TASKSCHEDULER) && !defined(HYDRUINO_USE_SCHEDULER)
 #include "CoopTask.h"
 #define HYDRUINO_USE_COOPTASK
-#define HYDRUINO_ENDLOOP()              runCoopTasks()
+#define HYDRUINO_MAINLOOP()             runCoopTasks()
 #endif
 #endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
-#ifndef HYDRUINO_YIELD
-#define HYDRUINO_YIELD()                yield()
-#endif
-#ifndef HYDRUINO_ENDLOOP
-#define HYDRUINO_ENDLOOP()              yield()
+#ifndef HYDRUINO_MAINLOOP
+#define HYDRUINO_MAINLOOP()             yield()
 #endif
 
+#include "ArduinoJson.h"                // JSON library
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "EasyBuzzer.h"                 // Async piezo buzzer library
@@ -108,18 +106,13 @@
 #include "HydroponicsCrops.h"
 #include "HydroponicsSensors.h"
 
-extern void controlLoop();              // Control processing runloop (scheduling, actuators, etc.)
-extern void dataLoop();                 // Data processing runloop (sensors, logging, etc.)
-extern void guiLoop();                  // GUI processing runloop (screens, interface, etc.)
-extern void miscLoop();                 // Misc processing runloop (buzzer, utilities, etc.)
-
 class Hydroponics {
 public:
     // Library constructor. Typically called during class instantiation, before setup().
     // TODO
     Hydroponics(byte piezoBuzzerPin = -1,
                 byte sdCardCSPin = -1,
-                byte controlInputPin1 = -1,                 // First pin of ribbon type specified by ctrlInMode
+                byte controlInputPin1 = -1,                 // First pin of ribbon (can be customized later)
                 byte eepromI2CAddress = B000,
                 byte rtcI2CAddress = B000,
                 byte lcdI2CAddress = B000,
@@ -138,7 +131,7 @@ public:
     // Initializes module. Typically called in setup().
     // See individual enums for more info.
     void init(Hydroponics_SystemMode systemMode = Hydroponics_SystemMode_Recycling,
-              Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Imperial,
+              Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default,
               Hydroponics_LCDOutputMode lcdOutMode = Hydroponics_LCDOutputMode_Disabled,
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);
     // Initializes module from EEPROM save, returning success flag
@@ -216,9 +209,9 @@ public:
     Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
 
     EasyBuzzerClass *getPiezoBuzzer() const;                        // Piezo buzzer instance
-    I2C_eeprom *getEEPROM();                                        // EEPROM instance
-    RTC_DS3231 *getRealTimeClock();                                 // Real time clock instance
-    SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end())
+    I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazy instantiation)
+    RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazy instantiation)
+    SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end(), lazy instantiation)
 
     int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;                 // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
     int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of active relay devices, for the given rail (undefined-rail = all)
@@ -230,8 +223,8 @@ public:
 
     const char * getSystemName() const;                             // System display name (default: "Hydroduino", 31 char limit)
     byte getCropPositionsCount() const;                             // Total number of crop positions available in system (default: 16)
-    float getReservoirSize(Hydroponics_FluidReservoir fluidReservoir) const;    // Fluid reservoir size, for given reservoir (liters)
-    float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir) const;     // Fluid pump flow rate, for given reservoir (liters/sec)
+    float getReservoirSize(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;    // Fluid reservoir size, for given reservoir (liters)
+    float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;     // Fluid pump flow rate, for given reservoir (liters/sec)
 
     int getControlInputRibbonPinCount();                            // Total number of pins being used for the current control input ribbon mode
     byte getControlInputPin(int ribbonPinIndex);                    // Control input pin mapped to ribbon pin index, or -1 (255) if not used
@@ -251,18 +244,18 @@ public:
     // Sets user delay functions to call when a delay has to occur for processing to
     // continue. User functions here can customize what this means - typically it would
     // mean to call into a thread barrier() or yield() mechanism. Default implementation
-    // is to call yield() when timeout >= 1ms, unless disabled.
+    // is to call yield() when timeout >= 1ms, unless multitasking is disabled.
     void setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc);
 
 protected:
     static Hydroponics *_activeInstance;                    // Current active instance (set after init)
 
-    byte _eepromI2CAddr;                                    // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
-    byte _rtcI2CAddr;                                       // RTC i2c address, format: {A2,A1,A0} (default: B000)
-    byte _lcdI2CAddr;                                       // LCD i2c address, format: {A2,A1,A0} (default: B000)
-    byte _piezoBuzzerPin;                                   // Piezo buzzer pin (default: disabled)
-    byte _sdCardCSPin;                                      // SD card cable select (CS) pin (default: disabled)
-    byte _ctrlInputPin1;                                    // Control input pin 1 (default: disabled)
+    const byte _piezoBuzzerPin;                             // Piezo buzzer pin (default: disabled)
+    const byte _sdCardCSPin;                                // SD card cable select (CS) pin (default: disabled)
+    const byte _ctrlInputPin1;                              // Control input pin 1 (default: disabled)
+    const byte _eepromI2CAddr;                              // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
+    const byte _rtcI2CAddr;                                 // RTC i2c address, format: {A2,A1,A0} (default: B000)
+    const byte _lcdI2CAddr;                                 // LCD i2c address, format: {A2,A1,A0} (default: B000)
     TwoWire* _i2cWire;                                      // Wire class instance (unowned) (default: Wire)
     uint32_t _i2cSpeed;                                     // Controller's i2c clock speed (default: 400kHz)
     uint32_t _spiSpeed;                                     // Controller's SPI clock speed (default: 4MHz)
@@ -271,19 +264,27 @@ protected:
     Scheduler _ts;                                          // Task scheduler
 #endif
     EasyBuzzerClass *_buzzer;                               // Piezo buzzer instance (unowned)
-    I2C_eeprom *_eeprom;                                    // EEPROM instance (owned)
-    RTC_DS3231 *_rtc;                                       // Real time clock instance (owned)
-    SDClass *_sd;                                           // SD card instance (owned/unowned)
+    I2C_eeprom *_eeprom;                                    // EEPROM instance (owned, lazy)
+    RTC_DS3231 *_rtc;                                       // Real time clock instance (owned, lazy)
+    SDClass *_sd;                                           // SD card instance (owned/unowned, lazy)
     bool _eepromBegan;                                      // Status of EEPROM begin()
     bool _rtcBegan;                                         // Status of RTC begin() call
     bool _rtcBattFail;                                      // Status of RTC battery failure flag
-    byte _ctrlInPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];      // Control input pin map
+    byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];   // Control input pin map
 
     HydroponicsSystemData *_systemData;                     // System data (owned, saved to storage)
 
     UserDelayFunc _uDelayMillisFunc;                        // User millisecond delay function
     UserDelayFunc _uDelayMicrosFunc;                        // User microsecond delay function
 
+    // Allocation & initialization.
+
+    void allocateEEPROM();
+    void deallocateEEPROM();
+    void allocateRTC();
+    void deallocateRTC();
+    void allocateSD();
+    void deallocateSD();
     void commonInit();
 
     // Runloops & update segmentation.

@@ -73,55 +73,182 @@ bool tryConvertValue(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Distance_Meters:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Distance_Feet:
+                    if (valueOut) {
+                        *valueOut = valueIn * 3.28084f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_Distance_Feet:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Distance_Meters:
+                    if (valueOut) {
+                        *valueOut = valueIn * 0.3048;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_Weight_Kilogram:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Weight_Pounds:
+                    if (valueOut) {
+                        *valueOut = valueIn * 2.20462f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_Weight_Pounds:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Weight_Kilogram:
+                    if (valueOut) {
+                        *valueOut = valueIn * 0.453592f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_LiquidVolume_Liters:
-            // TODO
+        case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_LiquidVolume_Gallons:
+                case Hydroponics_UnitsType_LiquidFlow_GallonsPerMin:
+                    if (valueOut) {
+                        *valueOut = valueIn * 0.264172f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_LiquidVolume_Gallons:
-            // TODO
-            break;
-
-        case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
-            // TODO
-            break;
-
         case Hydroponics_UnitsType_LiquidFlow_GallonsPerMin:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_LiquidVolume_Liters:
+                case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
+                    if (valueOut) {
+                        *valueOut = valueIn * 3.78541f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_pHScale_0_14:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Raw_0_1:
+                    if (valueOut) {
+                        *valueOut = valueIn / 14.0f; // FIXME no idea if this is correct
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_Concentration_EC:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Raw_0_1:
+                    if (valueOut) {
+                        *valueOut = valueIn / 5.0f; // FIXME no idea if this is correct
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_Concentration_PPM:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Raw_0_1:
+                    if (valueOut) {
+                        *valueOut = valueIn / 1000.0f; // FIXME no idea if this is correct
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_Percentile_0_100:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Raw_0_1:
+                    if (valueOut) {
+                        *valueOut = valueIn / 100.0f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case Hydroponics_UnitsType_Raw_0_1:
-            // TODO
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_pHScale_0_14:
+                    if (valueOut) {
+                        *valueOut = valueIn * 14.0f; // FIXME no idea if this is correct
+                        return true;
+                    }
+                    break;
+
+                case Hydroponics_UnitsType_Concentration_EC:
+                    if (valueOut) {
+                        *valueOut = valueIn * 5.0f; // FIXME no idea if this is correct
+                        return true;
+                    }
+                    break;
+
+                case Hydroponics_UnitsType_Concentration_PPM:
+                    if (valueOut) {
+                        *valueOut = valueIn * 1000.0f; // FIXME no idea if this is correct
+                        return true;
+                    }
+                    break;
+
+                case Hydroponics_UnitsType_Percentile_0_100:
+                    if (valueOut) {
+                        *valueOut = valueIn * 100.0f;
+                        return true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         default:
