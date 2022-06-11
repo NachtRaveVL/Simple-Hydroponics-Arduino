@@ -12,7 +12,7 @@ TODO
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
 
-Dependencies include: Scheduler (SAM/SAMD only, disableable), TaskScheduler (alternate to Scheduler, disableable), CoopTask (alternate to TaskScheduler, optional), Adafruit BusIO, Adafruit Unified Sensor, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction LiquidCrystalIO, OneWire, RTClib, SimpleCollections, TaskManagerIO, tcMenu, and Time.
+Dependencies include: TaskScheduler (disableable), Scheduler (SAM/SAMD only, alt to TaskScheduler, optional), CoopTask (alt to TaskScheduler, optional), Adafruit BusIO, Adafruit Unified Sensor, ArduinoJson, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction LiquidCrystalIO, OneWire, RTClib, SimpleCollections, TaskManagerIO, tcMenu, and Time.
 
 TODO
 
@@ -26,7 +26,7 @@ The easiest way to install this controller is to utilize the Arduino IDE library
 
 There are several defines inside of the controller's main header file that allow for more fine-tuned control of the controller. You may edit and uncomment these lines directly, or supply them via custom build flags. While editing the main header file isn't ideal, it is often easiest. Note that editing the controller's main header file directly will affect all projects compiled on your system using those modified controller files.
 
-Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=602603.0> on how to define custom build flags manually via modifying the platform[.local].txt file. Note that editing such directly will affect all other projects compiled on your system using those modified platform framework files.
+Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=602603.0> on how to define custom build flags manually via modifying the platform[.local].txt file. Note that editing such directly will affect all other projects compiled on your system using those modified platform framework files, but at least you keep those changes to the same place.
 
 From Hydroponics.h:
 ```Arduino

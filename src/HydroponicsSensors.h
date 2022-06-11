@@ -21,50 +21,14 @@ class HydroponicsBinaryAnalogSensor;
 
 #include "Hydroponics.h"
 
-// TODO
-struct HydroponicsSensorMeasurement : public HydroponicsLoggableDataInterface
-{
-    time_t timestamp;                       // TODO
-};
-
-// TODO
-struct HydroponicsAnalogSensorMeasurement : public HydroponicsSensorMeasurement
-{
-    float value;                            // TODO
-    Hydroponics_UnitsType units;            // TODO
-};
-
-// TODO
-struct HydroponicsDHTSensorMeasurement : public HydroponicsSensorMeasurement
-{
-    float temperature;                      // TODO
-    Hydroponics_UnitsType temperatureUnits; // TODO
-    float humidity;                         // TODO
-    Hydroponics_UnitsType humidityUnits;    // TODO
-    float heatIndex;                        // TODO
-    Hydroponics_UnitsType heatIndexUnits;   // TODO
-};
-
-// TODO
-struct HydroponicsBinarySensorMeasurement : public HydroponicsSensorMeasurement
-{
-    bool state;                             // TODO
-};
-
-// TODO
-struct HydroponicsBinaryAnalogSensorMeasurement : public HydroponicsSensorMeasurement
-{
-    float value;                            // TODO
-    Hydroponics_UnitsType units;            // TODO
-    bool state;                             // TODO
-};
-
+// TODO: Change ALL measurement stuff below to using async methods.
 
 // TODO
 class HydroponicsSensor {
 public:
     HydroponicsSensor(Hydroponics_SensorType sensorType,
-                      Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
+                      Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined,
+                      Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default);
     virtual ~HydroponicsSensor();
 
     virtual HydroponicsSensorMeasurement *takeMeasurement();
@@ -75,10 +39,12 @@ public:
 
     Hydroponics_SensorType getSensorType() const;
     Hydroponics_FluidReservoir getFluidReservoir() const;
+    Hydroponics_UnitsType getMeasurementUnits() const;
 
 protected:
-    Hydroponics_SensorType _sensorType;                     // TODO
-    Hydroponics_FluidReservoir _fluidReservoir;             // TODO
+    Hydroponics_SensorType _sensorType;                     // Sensor type enumeration
+    Hydroponics_FluidReservoir _fluidReservoir;             // Fluid reservoir sensor belongs to
+    Hydroponics_UnitsType _measurementUnits;                // Measurement units for sensor
 };
 
 
@@ -88,6 +54,7 @@ public:
     HydroponicsAnalogSensor(byte inputPin,
                             Hydroponics_SensorType sensorType,
                             Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                            Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default,
                             byte readBitResolution = 8);
     virtual ~HydroponicsAnalogSensor();
 
@@ -99,14 +66,11 @@ public:
     int getAnalogMaxAmount() const;
     int getAnalogBitResolution() const;
 
-    void setMeasurementUnits(Hydroponics_UnitsType units);
-
 protected:
-    byte _inputPin;                                         // TODO
-    int _analogMaxAmount;                                   // TODO
-    byte _analogBitRes;                                     // TODO
-    HydroponicsAnalogSensorMeasurement _lastMeasurement;    // TODO
-    Hydroponics_UnitsType _measurementUnits;                // TODO
+    byte _inputPin;                                         // Sensor input pin (should be A0 - AX)
+    int _analogMaxAmount;                                   // Maximum value that reads support
+    byte _analogBitRes;                                     // Bit resolution of analog reads
+    HydroponicsAnalogSensorMeasurement _lastMeasurement;    // Latest successful measurement
 };
 
 
@@ -115,6 +79,7 @@ class HydroponicsDHTSensor : public HydroponicsSensor {
 public:
     HydroponicsDHTSensor(byte inputPin,
                          Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                         Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default,
                          uint8_t dhtType = DHT12);
     virtual ~HydroponicsDHTSensor();
 
@@ -125,13 +90,10 @@ public:
     void setComputeHeatIndex(bool computeHeatIndex);
     bool getComputeHeatIndex();
 
-    void setMeasurementUnits(Hydroponics_UnitsType units);
-
 protected:
-    DHT *_dht;                                              // TODO
-    HydroponicsDHTSensorMeasurement _lastMeasurement;       // TODO
-    bool _computeHeatIndex;                                 // TODO
-    Hydroponics_UnitsType _measurementUnits;                // TODO
+    DHT *_dht;                                              // DHT sensor instance (owned)
+    HydroponicsDHTSensorMeasurement _lastMeasurement;       // Latest successful measurement
+    bool _computeHeatIndex;                                 // Flag to compute heat index
 };
 
 
@@ -140,6 +102,7 @@ class HydroponicsDSSensor : public HydroponicsSensor {
 public:
     HydroponicsDSSensor(byte inputPin,
                         Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                        Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default,
                         byte readBitResolution = 9);
     virtual ~HydroponicsDSSensor();
 
@@ -149,13 +112,10 @@ public:
 
     OneWire &getOneWire() const;
 
-    void setMeasurementUnits(Hydroponics_UnitsType units);
-
 protected:
-    OneWire *_oneWire;                                      // TODO
-    DallasTemperature *_dt;                                 // TODO
-    HydroponicsAnalogSensorMeasurement _lastMeasurement;    // TODO
-    Hydroponics_UnitsType _measurementUnits;                // TODO
+    OneWire *_oneWire;                                      // OneWire comm instance (owned)
+    DallasTemperature *_dt;                                 // DallasTemperature instance (owned)
+    HydroponicsAnalogSensorMeasurement _lastMeasurement;    // Latest successful measurement
 };
 
 
@@ -165,14 +125,12 @@ public:
     HydroponicsBinarySensor(byte inputPin,
                             Hydroponics_SensorType sensorType,
                             Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                            Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default,
                             bool activeLow = true);
     virtual ~HydroponicsBinarySensor();
 
     // TODO reg as isr maybe?
-    //void registerAsISR();
-
-    // TODO event listener maybe?
-    //void addEventListener(int paramsTODO)
+    //bool tryRegisterAsISR();
 
     virtual HydroponicsBinarySensorMeasurement *takeMeasurement();
     virtual HydroponicsBinarySensorMeasurement *getLastMeasurement() const;
@@ -182,9 +140,9 @@ public:
     bool getActiveLow() const;
 
 protected:
-    byte _inputPin;                                         // TODO
-    bool _activeLow;                                        // TODO
-    HydroponicsBinarySensorMeasurement _lastMeasurement;    // TODO
+    byte _inputPin;                                         // Sensor input pin (best to use interrupt pin)
+    bool _activeLow;                                        // Active when low flag
+    HydroponicsBinarySensorMeasurement _lastMeasurement;    // Latest successful measurement
 };
 
 
@@ -193,11 +151,9 @@ public:
     HydroponicsBinaryAnalogSensor(byte inputPin, float tolerance, bool activeBelow,
                                   Hydroponics_SensorType sensorType,
                                   Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater,
+                                  Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default,
                                   byte readBitResolution = 8);
     virtual ~HydroponicsBinaryAnalogSensor();
-
-    // TODO event listener maybe?
-    //void addEventListener(int paramsTODO)
 
     virtual HydroponicsBinaryAnalogSensorMeasurement *takeMeasurement();
     virtual HydroponicsBinaryAnalogSensorMeasurement *getLastMeasurement() const;
@@ -209,16 +165,13 @@ public:
     int getAnalogMaxAmount() const;
     int getAnalogBitResolution() const;
 
-    void setMeasurementUnits(Hydroponics_UnitsType units);
-
 protected:
-    byte _inputPin;                                         // TODO
-    float _tolerance;                                       // TODO
-    bool _activeBelow;                                      // TODO
-    int _analogMaxAmount;                                   // TODO
-    byte _analogBitRes;                                     // TODO
-    HydroponicsBinaryAnalogSensorMeasurement _lastMeasurement; // TODO
-    Hydroponics_UnitsType _measurementUnits;                // TODO
+    byte _inputPin;                                         // Sensor input pin (should be A0 - AX)
+    float _tolerance;                                       // Trigger tolerance
+    bool _activeBelow;                                      // Active when below flag
+    int _analogMaxAmount;                                   // Maximum value that reads support
+    byte _analogBitRes;                                     // Bit resolution of analog reads
+    HydroponicsBinaryAnalogSensorMeasurement _lastMeasurement; // Latest successful measurement
 };
 
 #endif // /ifndef HydroponicsSensors_H

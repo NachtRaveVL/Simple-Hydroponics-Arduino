@@ -15,4 +15,6 @@
 
 static inline bool isValidPin(byte pin) { return pin < 255; }
 
+static inline bool isFPEqual(float lhs, float rhs) { return fabs(lhs - rhs) <= FLT_EPSILON; }
+
 #endif // /ifndef HydroponicsInlines_HPP

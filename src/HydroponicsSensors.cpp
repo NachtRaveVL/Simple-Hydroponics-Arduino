@@ -5,10 +5,87 @@
 
 #include "HydroponicsSensors.h"
 
-HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
-                                     Hydroponics_FluidReservoir fluidReservoir)
-    : _sensorType(sensorType), _fluidReservoir(fluidReservoir)
+HydroponicsCalibrationData::HydroponicsCalibrationData()
+    : HydroponicsData("HCAL", 1),
+      sensor(Hydroponics_SensorType_Undefined), reservoir(Hydroponics_FluidReservoir_Undefined),
+      multiplier(1.0), offset(0.0)
 { ; }
+
+HydroponicsCalibrationData::HydroponicsCalibrationData(Hydroponics_SensorType sensorIn, Hydroponics_FluidReservoir reservoirIn)
+    : HydroponicsData("HCAL", 1),
+      sensor(sensorIn), reservoir(reservoirIn),
+      multiplier(1.0), offset(0.0)
+{ ; }
+
+void HydroponicsCalibrationData::toJSONDocument(JsonDocument &docOut) const
+{
+    // TODO
+}
+
+void HydroponicsCalibrationData::fromJSONDocument(const JsonDocument &docIn)
+{
+    // TODO
+}
+
+
+HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
+                                     Hydroponics_FluidReservoir fluidReservoir,
+                                     Hydroponics_MeasurementMode measurementMode)
+    : _sensorType(sensorType), _fluidReservoir(fluidReservoir), _measurementUnits(Hydroponics_UnitsType_Undefined)
+{
+    switch (sensorType) {
+        case Hydroponics_SensorType_AirCarbonDioxide:
+            _measurementUnits = Hydroponics_UnitsType_Concentration_PPM;
+            break;
+        case Hydroponics_SensorType_PotentialHydrogen:
+            _measurementUnits = Hydroponics_UnitsType_pHScale_0_14;
+            break;
+        case Hydroponics_SensorType_TotalDissolvedSolids:
+            _measurementUnits = Hydroponics_UnitsType_Concentration_EC;
+            break;
+        case Hydroponics_SensorType_WaterTemperature:
+            switch (measurementMode) {
+                case Hydroponics_MeasurementMode_Imperial:
+                    _measurementUnits = Hydroponics_UnitsType_Temperature_Fahrenheit;
+                    break;
+                case Hydroponics_MeasurementMode_Metric:
+                    _measurementUnits = Hydroponics_UnitsType_Temperature_Celsius;
+                    break;
+                case Hydroponics_MeasurementMode_Scientific:
+                    _measurementUnits = Hydroponics_UnitsType_Temperature_Kelvin;
+                    break;
+                default: break;
+            }
+            break;
+        case Hydroponics_SensorType_WaterPumpFlowSensor:
+            switch (measurementMode) {
+                case Hydroponics_MeasurementMode_Imperial:
+                    _measurementUnits = Hydroponics_UnitsType_LiquidFlow_GallonsPerMin;
+                    break;
+                case Hydroponics_MeasurementMode_Metric:
+                case Hydroponics_MeasurementMode_Scientific:
+                    _measurementUnits = Hydroponics_UnitsType_LiquidFlow_LitersPerMin;
+                    break;
+                default: break;
+            }
+            break;
+        case Hydroponics_SensorType_LowWaterHeightMeter:
+        case Hydroponics_SensorType_HighWaterHeightMeter:
+            switch (measurementMode) {
+                case Hydroponics_MeasurementMode_Imperial:
+                    _measurementUnits = Hydroponics_UnitsType_Distance_Feet;
+                    break;
+                case Hydroponics_MeasurementMode_Metric:
+                case Hydroponics_MeasurementMode_Scientific:
+                    _measurementUnits = Hydroponics_UnitsType_Distance_Meters;
+                    break;
+                default: break;
+            }
+            break;
+        default:
+            break;
+    }
+}
 
 HydroponicsSensor::~HydroponicsSensor()
 { ; }
@@ -44,38 +121,27 @@ Hydroponics_FluidReservoir HydroponicsSensor::getFluidReservoir() const
     return _fluidReservoir;
 }
 
+Hydroponics_UnitsType HydroponicsSensor::getMeasurementUnits() const
+{
+    return _measurementUnits;
+}
+
 
 HydroponicsAnalogSensor::HydroponicsAnalogSensor(byte inputPin,
                                                  Hydroponics_SensorType sensorType,
                                                  Hydroponics_FluidReservoir fluidReservoir,
+                                                 Hydroponics_MeasurementMode measurementMode,
                                                  byte readBitResolution)
-    : HydroponicsSensor(sensorType, fluidReservoir),
+    : HydroponicsSensor(sensorType, fluidReservoir, measurementMode),
       _inputPin(inputPin),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12)),
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12))
       #else
-          _analogBitRes(8), _analogMaxAmount(256),
+          _analogBitRes(8), _analogMaxAmount(256)
       #endif
-      _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     //assert(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution");
-    memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
     pinMode(_inputPin, INPUT);
-
-    // Known measurement units
-    switch (sensorType) {
-        case Hydroponics_SensorType_AirCarbonDioxide:
-            _measurementUnits = Hydroponics_UnitsType_Concentration_PPM;
-            break;
-        case Hydroponics_SensorType_PotentialHydrogen:
-            _measurementUnits = Hydroponics_UnitsType_pHScale_0_14;
-            break;
-        case Hydroponics_SensorType_TotalDissolvedSolids:
-            _measurementUnits = Hydroponics_UnitsType_Concentration_EC;
-            break;
-        default:
-            break;
-    }
 }
 
 HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
@@ -89,11 +155,11 @@ HydroponicsAnalogSensorMeasurement *HydroponicsAnalogSensor::takeMeasurement()
 
     HydroponicsAnalogSensorMeasurement newMeasurement;
     newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
-    newMeasurement.units = Hydroponics_UnitsType_Raw_0_1; // TODO: Correct units conversion
+    newMeasurement.units = Hydroponics_UnitsType_Raw_0_1;
     newMeasurement.timestamp = now();
 
     // TODO: Curve correction from calibration data
-    
+
     // Convert value and assign units, if needed
     convertAndAssign(&newMeasurement.value, &newMeasurement.units, _measurementUnits);
 
@@ -125,18 +191,13 @@ int HydroponicsAnalogSensor::getAnalogBitResolution() const
     return _analogBitRes;
 }
 
-void HydroponicsAnalogSensor::setMeasurementUnits(Hydroponics_UnitsType units)
-{
-    _measurementUnits = units;
-}
-
 
 HydroponicsDHTSensor::HydroponicsDHTSensor(byte inputPin,
                                            Hydroponics_FluidReservoir fluidReservoir,
+                                           Hydroponics_MeasurementMode measurementMode,
                                            uint8_t dhtType)
-    : HydroponicsSensor(Hydroponics_SensorType_AirTempHumidity, fluidReservoir),
-      _dht(new DHT(inputPin, dhtType)), _computeHeatIndex(true),
-      _measurementUnits(Hydroponics_UnitsType_Undefined)
+    : HydroponicsSensor(Hydroponics_SensorType_AirTempHumidity, fluidReservoir, measurementMode),
+      _dht(new DHT(inputPin, dhtType)), _computeHeatIndex(true)
 {
     //assert(_dht && "DHT instance creation failure");
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
@@ -197,16 +258,12 @@ bool HydroponicsDHTSensor::getComputeHeatIndex()
     return _computeHeatIndex;
 }
 
-void HydroponicsDHTSensor::setMeasurementUnits(Hydroponics_UnitsType units)
-{
-    _measurementUnits = units;
-}
-
 
 HydroponicsDSSensor::HydroponicsDSSensor(byte inputPin,
                                          Hydroponics_FluidReservoir fluidReservoir,
+                                         Hydroponics_MeasurementMode measurementMode,
                                          byte readBitResolution)
-    : HydroponicsSensor(Hydroponics_SensorType_WaterTemperature, fluidReservoir),
+    : HydroponicsSensor(Hydroponics_SensorType_WaterTemperature, fluidReservoir, measurementMode),
       _oneWire(new OneWire(inputPin)), _dt(new DallasTemperature())
 {
     //assert(_oneWire && "OneWire instance creation failure");
@@ -240,7 +297,7 @@ HydroponicsAnalogSensorMeasurement *HydroponicsDSSensor::takeMeasurement()
     newMeasurement.units = isFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit : Hydroponics_UnitsType_Temperature_Celsius;
     newMeasurement.timestamp = now();
 
-    bool deviceDisconnected = fabs(newMeasurement.value - (isFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C)) < FLT_EPSILON;
+    bool deviceDisconnected = isFPEqual(newMeasurement.value, (isFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C));
     //assert(!deviceDisconnected && "Measurement failed device disconnected");
 
     if (!deviceDisconnected) {
@@ -269,17 +326,13 @@ OneWire &HydroponicsDSSensor::getOneWire() const
     return *_oneWire;
 }
 
-void HydroponicsDSSensor::setMeasurementUnits(Hydroponics_UnitsType units)
-{
-    _measurementUnits = units;
-}
-
 
 HydroponicsBinarySensor::HydroponicsBinarySensor(byte inputPin,
                                                  Hydroponics_SensorType sensorType,
                                                  Hydroponics_FluidReservoir fluidReservoir,
+                                                 Hydroponics_MeasurementMode measurementMode,
                                                  bool activeLow)
-    : HydroponicsSensor(sensorType, fluidReservoir),
+    : HydroponicsSensor(sensorType, fluidReservoir, measurementMode),
       _inputPin(inputPin), _activeLow(activeLow)
 {
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
@@ -323,15 +376,15 @@ HydroponicsBinaryAnalogSensor::HydroponicsBinaryAnalogSensor(byte inputPin,
                                                              float tolerance, bool activeBelow,
                                                              Hydroponics_SensorType sensorType,
                                                              Hydroponics_FluidReservoir fluidReservoir,
+                                                             Hydroponics_MeasurementMode measurementMode,
                                                              byte readBitResolution)
-    : HydroponicsSensor(sensorType, fluidReservoir),
+    : HydroponicsSensor(sensorType, fluidReservoir, measurementMode),
       _inputPin(inputPin), _tolerance(tolerance), _activeBelow(activeBelow),
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12)),
+          _analogBitRes(constrain(readBitResolution, 8, 12)), _analogMaxAmount(1 << constrain(readBitResolution, 8, 12))
       #else
-          _analogBitRes(8), _analogMaxAmount(256),
+          _analogBitRes(8), _analogMaxAmount(256)
       #endif
-      _measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     //assert(_analogBitRes == readBitResolution && "Resolved resolution mismatch with passed resolution");
     memset(&_lastMeasurement, 0, sizeof(_lastMeasurement));
@@ -349,7 +402,7 @@ HydroponicsBinaryAnalogSensorMeasurement *HydroponicsBinaryAnalogSensor::takeMea
 
     HydroponicsBinaryAnalogSensorMeasurement newMeasurement;
     newMeasurement.value = analogRead(_inputPin) / (float)_analogMaxAmount;
-    newMeasurement.units = Hydroponics_UnitsType_Raw_0_1; // TODO: Correct units conversion
+    newMeasurement.units = Hydroponics_UnitsType_Raw_0_1;
     newMeasurement.timestamp = now();
     newMeasurement.state = _activeBelow ? newMeasurement.value <= _tolerance + FLT_EPSILON :
                                           newMeasurement.value >= _tolerance - FLT_EPSILON;
@@ -395,9 +448,4 @@ int HydroponicsBinaryAnalogSensor::getAnalogMaxAmount() const
 int HydroponicsBinaryAnalogSensor::getAnalogBitResolution() const
 {
     return _analogBitRes;
-}
-
-void HydroponicsBinaryAnalogSensor::setMeasurementUnits(Hydroponics_UnitsType units)
-{
-    _measurementUnits = units;
 }

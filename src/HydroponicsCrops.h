@@ -8,38 +8,53 @@
 
 class HydroponicsCropsLibrary;
 class HydroponicsCrop;
+struct HydroponicsCropsLibraryBook;
 
 #include "Hydroponics.h"
 
-// TODO
+// Hydroponics Crops Library
+// Crop data is vast and most microcontrollers don't have the memory to load all the crop
+// data at once. The crops library uses a library book like checkout and return system,
+// in which case reference counting is performed to see which crops need to be loaded and
+// which ones can unload. It is recommended to use the HydroponicsCropData's constructor
+// method if using a temporary, otherwise this checkout/return system. The returned crop
+// data instance is garuanteed to stay unique for as long as it is allocated.
+// All crop data is internally stored as JSON strings in the Flash PROGMEM memory space.
 class HydroponicsCropsLibrary {
 public:
+    // Returns the singleton instance of this library.
     static HydroponicsCropsLibrary *getInstance();
 
-    const HydroponicsCropData *getCropData(Hydroponics_CropType cropType) const;
-    void setCustomCropData(const Hydroponics_CropType cropType, const HydroponicsCropData *cropData);
+    // Checks out the crop data for this crop, created via the JSON from PROGMEM if needed. Increments ref count by one.
+    const HydroponicsCropData *checkoutCropData(Hydroponics_CropType cropType);
 
-    // TODO maybe?
-    //void loadCustomCropData();
-    //void saveCustomCropData();
+    // Returns crop data back to system, to delete when no longer used. Decrements internal ref count by one, deleting on zero.
+    void returnCropData(const HydroponicsCropData *cropData);
+
+    // TODO
+    // TODO: Handle the case where custom data gets updated and existing stores are out of date (integrate into object updates/signaling)
+    //const HydroponicsCropData *resyncCropData(const HydroponicsCropData *cropData);
+    //void setCustomCropData(const Hydroponics_CropType cropType, const HydroponicsCropData *cropData);
+    // Signal<CropType> *signalForCropUpdate();
 
 protected:
-    static HydroponicsCropsLibrary *_instance;              // TODO
-    static bool _cropLibraryBuilt;                          // TODO
-    HydroponicsCropData _cropData[Hydroponics_CropType_Count]; // Crop data (CUSTOM* saved to EEPROM)
+    static HydroponicsCropsLibrary *_instance;              // Shared instance
+    BtreeList<Hydroponics_CropType,
+              HydroponicsCropsLibraryBook> _cropData;       // Loaded crop library data
+    HydroponicsCropData _cropDataOld[Hydroponics_CropType_Count]; // TBR
 
-    friend HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType);
-    HydroponicsCropsLibrary();
+    HydroponicsCropsLibrary();                              // Private constructor to force singleton
 
-    void buildLibrary();
-    void validateEntries();
+    void buildLibrary(); // TBR
+    void validateEntries(); // TBD
 };
 
 
-// TODO
+// Hydroponic Crop Base Instance
 class HydroponicsCrop {
 public:
     HydroponicsCrop(const Hydroponics_CropType cropType, const int positionIndex, const time_t sowDate);
+    ~HydroponicsCrop();
 
     void update();
 
