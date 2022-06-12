@@ -12,7 +12,7 @@ TODO
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
 
-Dependencies include: TaskScheduler (disableable), Scheduler (SAM/SAMD only, alt to TaskScheduler, optional), CoopTask (alt to TaskScheduler, optional), Adafruit BusIO, Adafruit Unified Sensor, ArduinoJson, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction LiquidCrystalIO, OneWire, RTClib, SimpleCollections, TaskManagerIO, tcMenu, and Time.
+Dependencies include: TaskScheduler (disableable), Scheduler (SAM/SAMD only, alt to TaskScheduler, optional), CoopTask (alt to TaskScheduler, optional), Adafruit BusIO, Adafruit Unified Sensor, ArduinoJson, Callback, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction LiquidCrystalIO, OneWire, RTClib, SimpleCollections, TaskManagerIO, tcMenu, and Time.
 
 TODO
 

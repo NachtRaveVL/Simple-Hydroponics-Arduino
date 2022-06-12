@@ -296,6 +296,8 @@ void Hydroponics::commonInit()
         setSyncProvider(rtcNow);
     }
 
+    // TODO: tcMenu setup
+
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         Serial.print(F("Hydroponics::commonInit piezoBuzzerPin: "));
         Serial.print(_piezoBuzzerPin);
