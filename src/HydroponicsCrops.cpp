@@ -901,10 +901,10 @@ void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropData *cropData
 // }
 
 
-HydroponicsCrop::HydroponicsCrop(const Hydroponics_CropType cropType, const int positionIndex, const time_t sowDate)
+HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType, int positionIndex, time_t sowDate)
     : _cropType(cropType), _positionIndex(positionIndex), _sowDate(sowDate),
       _cropData(NULL), _growWeek(0), _cropPhase(Hydroponics_CropPhase_Undefined),
-      _key(stringForCropType(cropType, true) + String(positionIndex))
+      _key(HydroponicsCrop::getKeyFor(cropType, positionIndex))
 {
     _cropData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
     recalcGrowWeekAndPhase();
@@ -920,7 +920,12 @@ String HydroponicsCrop::getKey() const
     return _key;
 }
 
-const Hydroponics_CropType HydroponicsCrop::getCropType() const
+String HydroponicsCrop::getKeyFor(Hydroponics_CropType cropType, int positionIndex)
+{
+    return stringForCropType(cropType, true) + String(positionIndex);
+}
+
+Hydroponics_CropType HydroponicsCrop::getCropType() const
 {
     return _cropType;
 }
@@ -930,12 +935,12 @@ const HydroponicsCropData *HydroponicsCrop::getCropData() const
     return _cropData;
 }
 
-const int HydroponicsCrop::getPositionIndex() const
+int HydroponicsCrop::getPositionIndex() const
 {
     return _positionIndex;
 }
 
-const time_t HydroponicsCrop::getSowDate() const
+time_t HydroponicsCrop::getSowDate() const
 {
     return _sowDate;
 }

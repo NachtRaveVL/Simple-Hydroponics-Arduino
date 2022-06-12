@@ -289,10 +289,10 @@ struct HydroponicsSystemData : public HydroponicsData {         // _ident: HSYS
     Hydroponics_MeasurementMode measurementMode;                // System measurement mode
     Hydroponics_LCDOutputMode lcdOutMode;                       // System LCD mode
     Hydroponics_ControlInputMode ctrlInMode;                    // System control input mode 
-    byte cropPositionsCount;                                    // Total number of crop positions
+    uint32_t pollingIntMs;                                      // Sensor polling interval (milliseconds)
     byte maxActiveRelayCount[Hydroponics_RelayRail_Count];      // Total active relays on same rail per rail
-    float reservoirSize[Hydroponics_FluidReservoir_Count];      // Total reservoir size of each
-    Hydroponics_UnitsType reservoirSizeUnits;                   // Units of reservoir size
+    float reservoirVol[Hydroponics_FluidReservoir_Count];       // Total reservoir volume of each type
+    Hydroponics_UnitsType reservoirVolUnits;                    // Units of reservoir volume
     float pumpFlowRate[Hydroponics_FluidReservoir_Count];       // Pump flow rate for each reservoir
     Hydroponics_UnitsType pumpFlowRateUnits;                    // Units of pump flow rate
 
@@ -345,10 +345,10 @@ struct HydroponicsCropData : public HydroponicsData {           // _ident: HCRP
 
 // Loggable Data Interface TODO
 struct HydroponicsLoggableDataInterface {
-    // virtual todo toMQTTPublish(todo *mqttBroker) = 0;
-    // virtual todo toSDCardCSVAppend(todo *csvFile) = 0;
-    // virtual todo toWebServerDBInsert(todo *dbInterface) = 0;
-    // virtual todo toWebServerAPIService(todo *apiInterface) = 0;
+    // virtual todo toMQTTPublish(see hydroponics main class) = 0;
+    // virtual todo toSDCardCSVAppend(see hydroponics main class) = 0;
+    // virtual todo toWebDBInsert(see hydroponics main class) = 0;
+    // virtual todo toWebAPIService(see hydroponics main class) = 0;
 };
 
 // Sensor Data Measurement

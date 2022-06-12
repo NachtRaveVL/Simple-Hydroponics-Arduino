@@ -38,12 +38,14 @@ public:
     virtual void update();
 
     String getKey() const;
+    static String getKeyFor(Hydroponics_SensorType sensorType,
+                            Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
     Hydroponics_SensorType getSensorType() const;
     Hydroponics_FluidReservoir getFluidReservoir() const;
     Hydroponics_UnitsType getMeasurementUnits() const;
 
 protected:
-    const String _key;                                      // Identifier
+    String _key;                                            // Identifier
     Hydroponics_SensorType _sensorType;                     // Sensor type enumeration
     Hydroponics_FluidReservoir _fluidReservoir;             // Fluid reservoir sensor belongs to
     Hydroponics_UnitsType _measurementUnits;                // Measurement units for sensor

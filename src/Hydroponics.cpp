@@ -70,13 +70,13 @@ HydroponicsData::HydroponicsData(const char *ident, uint16_t version, uint16_t r
 HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData("HSYS", 1),
       systemName{'\0'},
-      cropPositionsCount(16), maxActiveRelayCount{2},
-      reservoirSizeUnits(Hydroponics_UnitsType_Undefined),
+      pollingIntMs(0), maxActiveRelayCount{2},
+      reservoirVolUnits(Hydroponics_UnitsType_Undefined),
       pumpFlowRateUnits(Hydroponics_UnitsType_Undefined)
 {
     auto defName = String(F("Hydruino"));
     strncpy(systemName, defName.c_str(), HYDRUINO_NAME_MAXSIZE);
-    memset(reservoirSize, 0, sizeof(reservoirSize));
+    memset(reservoirVol, 0, sizeof(reservoirVol));
     memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
 
     // Moving this to its own thing
@@ -246,7 +246,7 @@ bool Hydroponics::initFromEEPROM()
     return false;
 }
 
-bool Hydroponics::initFromSDCard(const char * configFile)
+bool Hydroponics::initFromSDCard(String configFile)
 {
     //assert(!_systemData && "Controller already initialized");
     //assert(!_activeInstance && "Controller already active");
@@ -281,13 +281,13 @@ void Hydroponics::commonInit()
     switch (getMeasurementMode()) {
         default:
         case Hydroponics_MeasurementMode_Imperial:
-            _systemData->reservoirSizeUnits = Hydroponics_UnitsType_LiquidVolume_Gallons; 
+            _systemData->reservoirVolUnits = Hydroponics_UnitsType_LiquidVolume_Gallons; 
             _systemData->pumpFlowRateUnits = Hydroponics_UnitsType_LiquidFlow_GallonsPerMin;
             break;
 
         case Hydroponics_MeasurementMode_Metric:
         case Hydroponics_MeasurementMode_Scientific:
-            _systemData->reservoirSizeUnits = Hydroponics_UnitsType_LiquidVolume_Liters; 
+            _systemData->reservoirVolUnits = Hydroponics_UnitsType_LiquidVolume_Liters; 
             _systemData->pumpFlowRateUnits = Hydroponics_UnitsType_LiquidFlow_LitersPerMin;
             break;
     }
@@ -1069,22 +1069,22 @@ int Hydroponics::getCropCount() const
     return 0;
 }
 
-const char * Hydroponics::getSystemName() const
+String Hydroponics::getSystemName() const
 {
     //assert(_systemData && "System data not yet initialized");
-    return _systemData ? &_systemData->systemName[0] : NULL;
+    return _systemData ? String(_systemData->systemName) : String();
 }
 
-byte Hydroponics::getCropPositionsCount() const
+uint32_t Hydroponics::getPollingIntervalMillis() const
 {
     //assert(_systemData && "System data not yet initialized");
-    return _systemData ? _systemData->cropPositionsCount : 0;
+    return _systemData ? _systemData->pollingIntMs : 0;
 }
 
-float Hydroponics::getReservoirSize(Hydroponics_FluidReservoir fluidReservoir) const
+float Hydroponics::getReservoirVolume(Hydroponics_FluidReservoir fluidReservoir) const
 {
     //assert(_systemData && "System data not yet initialized");
-    return _systemData ? _systemData->reservoirSize[fluidReservoir] : 0;
+    return _systemData ? _systemData->reservoirVol[fluidReservoir] : 0;
 }
 
 float Hydroponics::getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir) const
@@ -1126,32 +1126,32 @@ void Hydroponics::setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RelayR
     }
 }
 
-void Hydroponics::setSystemName(const char * systemName)
+void Hydroponics::setSystemName(String systemName)
 {
     // TODO assert params
     //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
-        strncpy(&_systemData->systemName[0], systemName, HYDRUINO_NAME_MAXSIZE);
+        strncpy(&_systemData->systemName[0], systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
         // TODO lcd update
     }
 }
 
-void Hydroponics::setCropPositionsCount(byte cropPositionsCount)
+void Hydroponics::setPollingIntervalMillis(uint32_t pollingIntMs)
 {
     // TODO assert params
     //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
-        _systemData->cropPositionsCount = cropPositionsCount;
-        // TODO remove out-of-range crops, lcd update
+        _systemData->pollingIntMs = pollingIntMs;
+        // TODO adjust per sensor polling
     }
 }
 
-void Hydroponics::setReservoirSize(float reservoirSize, Hydroponics_FluidReservoir fluidReservoir)
+void Hydroponics::setReservoirVolume(float reservoirVol, Hydroponics_FluidReservoir fluidReservoir)
 {
     // TODO assert params
     //assert(_systemData && "System data not yet initialized");
     if (_systemData) {
-        _systemData->reservoirSize[fluidReservoir] = reservoirSize;
+        _systemData->reservoirVol[fluidReservoir] = reservoirVol;
         // TODO lcd update
     }
 }

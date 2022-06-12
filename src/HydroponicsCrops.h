@@ -54,27 +54,28 @@ protected:
 // Hydroponic Crop Base Instance
 class HydroponicsCrop {
 public:
-    HydroponicsCrop(const Hydroponics_CropType cropType, const int positionIndex, const time_t sowDate);
+    HydroponicsCrop(Hydroponics_CropType cropType, int positionIndex, time_t sowDate);
     ~HydroponicsCrop();
 
     void update();
 
     String getKey() const;
-    const Hydroponics_CropType getCropType() const;
+    static String getKeyFor(Hydroponics_CropType cropType, int positionIndex);
+    Hydroponics_CropType getCropType() const;
     const HydroponicsCropData *getCropData() const;
-    const int getPositionIndex() const;
-    const time_t getSowDate() const;
+    int getPositionIndex() const;
+    time_t getSowDate() const;
     int getGrowWeek() const;
     Hydroponics_CropPhase getCropPhase() const;
 
 protected:
-    const String _key;                                      // Identifier
-    const Hydroponics_CropType _cropType;                   // TODO
-    const HydroponicsCropData *_cropData;                   // TODO
-    const int _positionIndex;                               // TODO
-    const time_t _sowDate;                                  // TODO
-    int _growWeek;                                          // TODO
-    Hydroponics_CropPhase _cropPhase;                       // TODO
+    String _key;                                            // Identifier
+    Hydroponics_CropType _cropType;                         // Crop type
+    HydroponicsCropData *_cropData;                         // Crop data (checked out)
+    int _positionIndex;                                     // Position index
+    time_t _sowDate;                                        // Sow date
+    int _growWeek;                                          // Current grow week
+    Hydroponics_CropPhase _cropPhase;                       // Current crop phase
 
     void recalcGrowWeekAndPhase();
 };

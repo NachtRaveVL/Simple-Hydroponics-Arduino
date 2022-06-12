@@ -136,15 +136,16 @@ public:
     // Initializes module from EEPROM save, returning success flag
     bool initFromEEPROM();
     // Initializes module from MicroSD save, returning success flag
-    bool initFromSDCard(const char * configFile = "/hydruino.cfg");
+    bool initFromSDCard(String configFile = "hydruino.cfg");
 
     // TODO: maybe?
-    //bool initFromWiFiServer(wifiClient, serverhData);
-    //void enableLoggingToSDCard(logNamePrefix = "log/system_");
-    //void enableLoggingToNetworkShare(wifiClient, shareData, logNamePrefix = "log/system_");
+    //bool initFromNetworkURL(wifiClient, serverData, configFile = "hydruino.cfg");
+    //void enableLoggingToSDCard(sd, logFilePrefix = "logs/sys");
+    //void enableLoggingToNetworkURL(netClient, urlData, logFilePrefix = "logs/sys");
+    //void enablePublishingToSDCard(sd, csvFilePrefix = "logs/dat");
+    //void enablePublishingToNetworkURL(netClient, urlData, csvFilePrefix = "logs/dat");
     //void enablePublishingToMQTT(mqttBroker, deviceData);
-    //void enablePublishingToWebAPI(wifiClient, hostData, apiInterface);
-    //void enablePublishingToSDCard(eventsNamePrefix = "log/sensor_");
+    //void enablePublishingToWebAPI(netClient, urlData, apiInterface);
 
     // Launches system into operational mode. Typically called last in setup().
     // Once launch is called further system setup may no longer be available due to dependency constraints.
@@ -223,10 +224,10 @@ public:
     int getSensorCount() const;                                     // Current number of total sensors registered with system
     int getCropCount() const;                                       // Current number of total crops registered with system
 
-    const char * getSystemName() const;                             // System display name (default: "Hydruino")
-    byte getCropPositionsCount() const;                             // Total number of crop positions available in system (default: 16)
-    float getReservoirSize(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;    // Fluid reservoir size, for given reservoir (liters)
-    float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;     // Fluid pump flow rate, for given reservoir (liters/sec)
+    String getSystemName() const;                                   // System display name (default: "Hydruino")
+    uint32_t getPollingIntervalMillis() const;                      // System sensor polling interval (time between sensor reads) in milliseconds (default: 0 when disabled, 5000 when enabled)
+    float getReservoirVolume(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;  // Fluid reservoir volume, for given reservoir
+    float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;     // Fluid pump flow rate, for given reservoir
 
     int getControlInputRibbonPinCount();                            // Total number of pins being used for the current control input ribbon mode
     byte getControlInputPin(int ribbonPinIndex);                    // Control input pin mapped to ribbon pin index, or -1 (255) if not used
@@ -235,12 +236,12 @@ public:
 
     void setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail. This is useful for managing power limits on your system.
 
-    void setSystemName(const char * systemName);                    // Sets display name of system (HYDRUINO_NAME_MAXSIZE char limit)
-    void setCropPositionsCount(byte cropPositionsCount);            // Sets number of crop positions
-    void setReservoirSize(float reservoirSize, Hydroponics_FluidReservoir fluidReservoir);  // Sets reservoir size, for the given reservoir (liters)
-    void setPumpFlowRate(float pumpFlowRate, Hydroponics_FluidReservoir fluidReservoir);    // Sets pump flow rate, for the given reservoir (liters/sec)
+    void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE char limit)
+    void setPollingIntervalMillis(uint32_t pollingIntMs);           // Sets system polling interval in milliseconds (does not enable polling, see enablePublishingTo* methods)
+    void setReservoirVolume(float reservoirVol, Hydroponics_FluidReservoir fluidReservoir); // Sets reservoir volume, for the given reservoir
+    void setPumpFlowRate(float pumpFlowRate, Hydroponics_FluidReservoir fluidReservoir);    // Sets pump flow rate, for the given reservoir
 
-    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin defaults
+    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
 
     typedef void(*UserDelayFunc)(unsigned int);                     // Passes delay timeout (where 0 indicates inside long blocking call / yield attempt suggested)
     // Sets user delay functions to call when a delay has to occur for processing to
