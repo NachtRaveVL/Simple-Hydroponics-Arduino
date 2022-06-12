@@ -5,6 +5,8 @@
 
 #include "HydroponicsCrops.h"
 
+static bool _libraryBuilt = false; // TBR
+
 HydroponicsCropData::HydroponicsCropData()
     : HydroponicsData("HCRP", 1),
       cropType(Hydroponics_CropType_Undefined), plantName{'\0'},
@@ -34,60 +36,102 @@ HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType cropTypeIn)
     memset(waterTempRange, 0, sizeof(waterTempRange));
     memset(airTempRange, 0, sizeof(airTempRange));
 
-    auto *cropLibData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
-    if (cropLibData && this != cropLibData) {
-        memcpy(this, cropLibData, sizeof(HydroponicsCropData));
+    if (_libraryBuilt) {
+        auto *cropLibData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
+        if (cropLibData && this != cropLibData) {
+            memcpy(this, cropLibData, sizeof(HydroponicsCropData));
+        }
+        HydroponicsCropsLibrary::getInstance()->returnCropData(cropLibData);
     }
-    HydroponicsCropsLibrary::getInstance()->returnCropData(cropLibData);
 }
 
-void HydroponicsCropData::toJSONDocument(JsonDocument &docOut) const
+void HydroponicsCropData::toJSONDocument(JsonDocument *docOut) const
 {
-    docOut[F("_version")] = _version;
-    docOut[F("cropType")] = cropType;
-    docOut[F("plantName")] = plantName;
-    if (!isFPEqual(phRange[0][0], phRange[0][1])) {
-        auto phRangeObj = docOut.createNestedObject(F("phRange"));
-        phRangeObj[F("min")] = phRange[0][0];
-        phRangeObj[F("max")] = phRange[0][1];
-    } else {
-        docOut[F("phRange")] = phRange[0][0];
+    (*docOut)[F("_version")] = _version;
+    (*docOut)[F("cropType")] = cropType;
+    (*docOut)[F("plantName")] = plantName;
+
+    if (growWeeksToHarvest > 0) {
+        (*docOut)[F("growWeeksToHarvest")] = growWeeksToHarvest;
     }
-    if (!isFPEqual(ecRange[0][0], ecRange[0][1])) {
-        auto ecRangeObj = docOut.createNestedObject(F("ecRange"));
-        ecRangeObj[F("min")] = ecRange[0][0];
-        ecRangeObj[F("max")] = ecRange[0][1];
-    } else {
-        docOut[F("ecRange")] = ecRange[0][0];
+    if (weeksBetweenHarvest > 0) {
+        (*docOut)[F("weeksBetweenHarvest")] = weeksBetweenHarvest;
     }
-    if (!isFPEqual(waterTempRange[0][0], waterTempRange[0][1])) {
-        auto waterTempRangeObj = docOut.createNestedObject(F("waterTempRange"));
-        waterTempRangeObj[F("min")] = waterTempRange[0][0];
-        waterTempRangeObj[F("max")] = waterTempRange[0][1];
-    } else {
-        docOut[F("waterTempRange")] = waterTempRange[0][0];
+    if (lightHoursPerDay[0] > 0) {
+        (*docOut)[F("lightHoursPerDay")] = lightHoursPerDay[0];
     }
-    if (!isFPEqual(airTempRange[0][0], airTempRange[0][1])) {
-        auto airTempRangeObj = docOut.createNestedObject(F("airTempRange"));
-        airTempRangeObj[F("min")] = airTempRange[0][0];
-        airTempRangeObj[F("max")] = airTempRange[0][1];
-    } else {
-        docOut[F("airTempRange")] = airTempRange[0][0];
+    if (phaseBeginWeek[(int)Hydroponics_CropPhase_Count-1] > (int)Hydroponics_CropPhase_Count-1) {
+        auto phaseBegArray = docOut->createNestedArray(F("phaseBeginWeek"));
+        for (int phaseIndex = 0; phaseIndex < (int)Hydroponics_CropPhase_Count; ++phaseIndex) {
+            phaseBegArray.add(phaseBeginWeek[phaseIndex]);
+        }
+    }
+
+    if (feedIntervalMins[0][0] > 0 || feedIntervalMins[0][1] > 0) {
+        if (!isFPEqual(feedIntervalMins[0][0], feedIntervalMins[0][1])) {
+            auto feedIntrvlObj = docOut->createNestedObject(F("feedIntervalMins"));
+            feedIntrvlObj[F("on")] = feedIntervalMins[0][0];
+            feedIntrvlObj[F("off")] = feedIntervalMins[0][1];
+        } else {
+            (*docOut)[F("feedIntervalMins")] = feedIntervalMins[0][0];
+        }
+    }
+
+    if (phRange[0][0] > 0 || phRange[0][1] > 0) {
+        if (!isFPEqual(phRange[0][0], phRange[0][1])) {
+            auto phRangeObj = docOut->createNestedObject(F("phRange"));
+            phRangeObj[F("min")] = phRange[0][0];
+            phRangeObj[F("max")] = phRange[0][1];
+        } else {
+            (*docOut)[F("phRange")] = phRange[0][0];
+        }
+    }
+
+    if (ecRange[0][0] > 0 || ecRange[0][1] > 0) {
+        if (!isFPEqual(ecRange[0][0], ecRange[0][1])) {
+            auto ecRangeObj = docOut->createNestedObject(F("ecRange"));
+            ecRangeObj[F("min")] = ecRange[0][0];
+            ecRangeObj[F("max")] = ecRange[0][1];
+        } else {
+            (*docOut)[F("ecRange")] = ecRange[0][0];
+        }
+    }
+
+    if (waterTempRange[0][0] > 0 || waterTempRange[0][1] > 0) {
+        if (!isFPEqual(waterTempRange[0][0], waterTempRange[0][1])) {
+            auto waterTempRangeObj = docOut->createNestedObject(F("waterTempRange"));
+            waterTempRangeObj[F("min")] = waterTempRange[0][0];
+            waterTempRangeObj[F("max")] = waterTempRange[0][1];
+        } else {
+            (*docOut)[F("waterTempRange")] = waterTempRange[0][0];
+        }
+    }
+
+    if (airTempRange[0][0] > 0 || airTempRange[0][1] > 0) {
+        if (!isFPEqual(airTempRange[0][0], airTempRange[0][1])) {
+            auto airTempRangeObj = docOut->createNestedObject(F("airTempRange"));
+            airTempRangeObj[F("min")] = airTempRange[0][0];
+            airTempRangeObj[F("max")] = airTempRange[0][1];
+        } else {
+            (*docOut)[F("airTempRange")] = airTempRange[0][0];
+        }
     }
 }
 
 void HydroponicsCropData::fromJSONDocument(const JsonDocument &docIn)
 {
-    _version = docIn[F("_version")].as<uint16_t>();
-    cropType = docIn[F("cropType")].as<Hydroponics_CropType>();
-    strncpy(plantName, docIn[F("plantName")].as<const char *>(), HYDRUINO_NAME_MAXSIZE); // dunno if this will work
+    // _version = docIn[F("_version")].as<uint16_t>();
+    // cropType = docIn[F("cropType")].as<Hydroponics_CropType>();
+    // strncpy(plantName, docIn[F("plantName")].as<const char *>(), HYDRUINO_NAME_MAXSIZE); // dunno if this will work
     // TODO
 }
 
 
 struct HydroponicsCropsLibraryBook {
     HydroponicsCropsLibraryBook();
-    Hydroponics_CropType getKey();
+    HydroponicsCropsLibraryBook(const HydroponicsCropsLibraryBook& otherBook) = default;
+    HydroponicsCropsLibraryBook& operator=(const HydroponicsCropsLibraryBook& otherBook) = default;
+    Hydroponics_CropType getKey() const;
     HydroponicsCropData data;
     int count;
 };
@@ -96,7 +140,7 @@ HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook()
     : data(), count(1)
 { ; }
 
-Hydroponics_CropType HydroponicsCropsLibraryBook::getKey()
+Hydroponics_CropType HydroponicsCropsLibraryBook::getKey() const
 {
     return data.cropType;
 }
@@ -105,16 +149,25 @@ Hydroponics_CropType HydroponicsCropsLibraryBook::getKey()
 HydroponicsCropsLibrary *HydroponicsCropsLibrary::_instance = NULL;
 
 HydroponicsCropsLibrary::HydroponicsCropsLibrary()
+    : _cropData()
 {
     buildLibrary();
+    _libraryBuilt = true; // TBR
 }
 
 HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
 {
-    if (!_instance) {
-        _instance = new HydroponicsCropsLibrary();
+    if (_instance) { return _instance; }
+    else {
+        // TODO: static lock
+        auto *instance = new HydroponicsCropsLibrary();
+        if (!_instance) {
+            _instance = instance; instance = NULL;
+        } else {
+            delete instance; instance = NULL;
+        }
+        return _instance;
     }
-    return _instance;
 }
 
 void HydroponicsCropsLibrary::buildLibrary()
@@ -126,7 +179,7 @@ void HydroponicsCropsLibrary::buildLibrary()
         cropData.isPerennial = true;
         cropData.isToxicToPets = true;
         _cropDataOld[Hydroponics_CropType_AloeVera] = cropData;
-    }
+    }   
 
     {   HydroponicsCropData cropData(Hydroponics_CropType_Anise);
         strncpy(&cropData.plantName[0], "Anise", HYDRUINO_NAME_MAXSIZE);
@@ -804,9 +857,14 @@ const HydroponicsCropData *HydroponicsCropsLibrary::checkoutCropData(Hydroponics
         book->count += 1;
     } else {
         // TODO: Create from Flash PROGMEM conversion
-        book = new HydroponicsCropsLibraryBook();
-        book->data = _cropDataOld[cropType]; // remove after flash fix
-        _cropData.add(*book);
+        HydroponicsCropsLibraryBook tempBook;
+
+        memcpy(&(tempBook.data), &_cropDataOld[cropType], sizeof(HydroponicsCropData)); // remove after flash move
+        //deserializeJson(doc, F("TODO"));
+        //book.data.fromJSONDocument(doc);
+
+        _cropData.add(tempBook);
+        book = _cropData.getByKey(cropType);
     }
 
     return book ? &(book->data) : NULL;
@@ -816,12 +874,12 @@ void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropData *cropData
 {
     //assert(cropData && "Invalid crop data");
     HydroponicsCropsLibraryBook *book = _cropData.getByKey(cropData->cropType);
+    //assert(book && "No matching book for crop type");
 
     if (book) {
         book->count -= 1;
         if (book->count <= 0) {
             _cropData.removeByKey(book->data.cropType);
-            delete book; book = NULL;
         }
     }
 }
