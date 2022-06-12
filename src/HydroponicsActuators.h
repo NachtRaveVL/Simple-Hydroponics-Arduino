@@ -28,6 +28,8 @@ public:
     virtual void update();
 
     String getKey() const;
+    static String getKeyFor(Hydroponics_ActuatorType actuatorType,
+                            Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
     byte getOutputPin() const;
     Hydroponics_ActuatorType getActuatorType() const;
     Hydroponics_FluidReservoir getFluidReservoir() const;
@@ -35,7 +37,7 @@ public:
     time_t getActuatorEnabledUntil() const;
 
 protected:
-    const String _key;                                      // Identifier
+    String _key;                                            // Identifier
     byte _outputPin;                                        // Output pin
     Hydroponics_ActuatorType _actuatorType;                 // Actuator type
     Hydroponics_FluidReservoir _fluidReservoir;             // Fluid reservoir type

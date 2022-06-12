@@ -10,7 +10,7 @@ HydroponicsActuator::HydroponicsActuator(byte outputPin,
                                          Hydroponics_FluidReservoir fluidReservoir)
     : _outputPin(outputPin), _actuatorType(actuatorType), _fluidReservoir(fluidReservoir),
       _enabled(false), _enabledUntil(0),
-      _key(stringForActuatorType(actuatorType, true) + stringForFluidReservoir(fluidReservoir, true))
+      _key(HydroponicsActuator::getKeyFor(actuatorType, fluidReservoir))
 {
     pinMode(_outputPin, OUTPUT);
 }
@@ -35,6 +35,11 @@ void HydroponicsActuator::update()
 String HydroponicsActuator::getKey() const
 {
     return _key;
+}
+
+String HydroponicsActuator::getKeyFor(Hydroponics_ActuatorType actuatorType, Hydroponics_FluidReservoir fluidReservoir)
+{
+    return stringForActuatorType(actuatorType, true) + stringForFluidReservoir(fluidReservoir, true);
 }
 
 byte HydroponicsActuator::getOutputPin() const

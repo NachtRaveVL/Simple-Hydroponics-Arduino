@@ -424,7 +424,7 @@ String stringForSensorType(Hydroponics_SensorType sensorType, bool excludeSpecia
         case Hydroponics_SensorType_WaterTemperature:
             return F("WaterTemp");
         case Hydroponics_SensorType_WaterPumpFlowSensor:
-            return F("PumpFlow");
+            return F("FlowSensor");
         case Hydroponics_SensorType_LowWaterLevelIndicator:
             return F("LowLevel");
         case Hydroponics_SensorType_HighWaterLevelIndicator:

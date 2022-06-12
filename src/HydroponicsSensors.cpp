@@ -32,7 +32,7 @@ HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
                                      Hydroponics_FluidReservoir fluidReservoir,
                                      Hydroponics_MeasurementMode measurementMode)
     : _sensorType(sensorType), _fluidReservoir(fluidReservoir), _measurementUnits(Hydroponics_UnitsType_Undefined),
-      _key(stringForSensorType(sensorType, true) + stringForFluidReservoir(fluidReservoir, true))
+      _key(HydroponicsSensor::getKeyFor(sensorType, fluidReservoir))
 { 
     switch (sensorType) {
         case Hydroponics_SensorType_AirCarbonDioxide:
@@ -115,6 +115,11 @@ void HydroponicsSensor::update()
 String HydroponicsSensor::getKey() const
 {
     return _key;
+}
+
+String HydroponicsSensor::getKeyFor(Hydroponics_SensorType sensorType, Hydroponics_FluidReservoir fluidReservoir)
+{
+    return stringForSensorType(sensorType, true) + stringForFluidReservoir(fluidReservoir, true);
 }
 
 Hydroponics_SensorType HydroponicsSensor::getSensorType() const
