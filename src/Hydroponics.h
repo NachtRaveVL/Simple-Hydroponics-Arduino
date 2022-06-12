@@ -32,7 +32,7 @@
 
 // NOTE: It is recommended to use custom build flags instead of editing this file directly.
 
-// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), and libraries.
+// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), as well as libraries.
 //#define HYDRUINO_DISABLE_MULTITASKING
 
 // Uncomment or -D this define to disable usage of the TaskScheduler library, which is used by default.
@@ -66,7 +66,7 @@
 
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 #if !defined(HYDRUINO_DISABLE_TASKSCHEDULER)
-#include "TaskSchedulerDeclarations.h"
+#include "TaskSchedulerDeclarations.h"  // Including this forces user code to include TaskSheduler.h
 #define HYDRUINO_USE_TASKSCHEDULER
 #define HYDRUINO_MAINLOOP(scheduler)    (scheduler).execute()
 #elif defined(HYDRUINO_ENABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
@@ -90,7 +90,7 @@
 #if !defined(__STM32F1__)
 #include "OneWire.h"                    // OneWire for DS18* probes
 #else
-#include "OneWireSTM.h"                 // STM32 version of OneWire
+#include <OneWireSTM.h>                 // STM32 version of OneWire
 #endif
 #include "RTClib.h"                     // i2c RTC library
 #include "SimpleCollections.h"          // SimpleCollections library
@@ -137,10 +137,9 @@ public:
     // Initializes module from MicroSD save, returning success flag
     bool initFromSDCard(const char * configFile = "/hydruino.cfg");
 
-    //bool initFromWiFiServer(paramsTODO); maybe?
-    // TODO logging?
-    //void enableLoggingToMicroSDFolder(const char *folderNamePrefix = "hlog");
-    //void enableLoggingToWiFiDatabase(const char *ssid, const char *ssidPass, const char *brokerURL, const char *clientId);
+    // TODO: maybe?
+    //bool initFromWiFiServer(const char *ssid, const char *ssidPass, const char *serverURL, const char *auth); //maybe?
+    //void enableLoggingToMicroSDFolder(const char *folderNamePrefix = "hlog"); //maybe?
 
     // Launches system into operational mode. Typically called last in setup().
     // Once launch is called further system setup may no longer be available due to dependency constraints.
@@ -207,19 +206,19 @@ public:
     Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
 
     EasyBuzzerClass *getPiezoBuzzer() const;                        // Piezo buzzer instance
-    I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazy instantiation)
-    RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazy instantiation)
-    SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end(), lazy instantiation)
+    I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazily instantiated, NULL return = failure/no device)
+    RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, NULL return = failure/no device)
+    SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, NULL return = failure/no device)
 
-    int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;                 // Current number of relay devices registered with system, for the given rail (undefined-rail = all)
-    int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;           // Current number of active relay devices, for the given rail (undefined-rail = all)
-    byte getMaxActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;       // Maximum number of relay devices allowed active at a time, for the given rail (default: 2, undefined-rail = all)
+    int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;         // Current number of relay devices registered with system, for the given rail (default params = from all rails)
+    int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;   // Current number of active relay devices, for the given rail (default params = from all rails)
+    byte getMaxActiveRelayCount(Hydroponics_RelayRail relayRail) const;                                 // Maximum number of relay devices allowed active at a time, for the given rail (default: 2)
 
     int getActuatorCount() const;                                   // Current number of total actuators registered with system
     int getSensorCount() const;                                     // Current number of total sensors registered with system
     int getCropCount() const;                                       // Current number of total crops registered with system
 
-    const char * getSystemName() const;                             // System display name (default: "Hydroduino", 31 char limit)
+    const char * getSystemName() const;                             // System display name (default: "Hydruino")
     byte getCropPositionsCount() const;                             // Total number of crop positions available in system (default: 16)
     float getReservoirSize(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;    // Fluid reservoir size, for given reservoir (liters)
     float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;     // Fluid pump flow rate, for given reservoir (liters/sec)
@@ -229,9 +228,9 @@ public:
 
     // Mutators.
 
-    void setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail
+    void setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail. This is useful for managing power limits on your system.
 
-    void setSystemName(const char * systemName);                    // Sets display name of system (31 char limit)
+    void setSystemName(const char * systemName);                    // Sets display name of system (HYDRUINO_NAME_MAXSIZE char limit)
     void setCropPositionsCount(byte cropPositionsCount);            // Sets number of crop positions
     void setReservoirSize(float reservoirSize, Hydroponics_FluidReservoir fluidReservoir);  // Sets reservoir size, for the given reservoir (liters)
     void setPumpFlowRate(float pumpFlowRate, Hydroponics_FluidReservoir fluidReservoir);    // Sets pump flow rate, for the given reservoir (liters/sec)

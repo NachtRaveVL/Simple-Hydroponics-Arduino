@@ -17,7 +17,7 @@ HydroponicsCalibrationData::HydroponicsCalibrationData(Hydroponics_SensorType se
       multiplier(1.0), offset(0.0)
 { ; }
 
-void HydroponicsCalibrationData::toJSONDocument(JsonDocument &docOut) const
+void HydroponicsCalibrationData::toJSONDocument(JsonDocument *docOut) const
 {
     // TODO
 }

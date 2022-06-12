@@ -74,7 +74,8 @@ HydroponicsSystemData::HydroponicsSystemData()
       reservoirSizeUnits(Hydroponics_UnitsType_Undefined),
       pumpFlowRateUnits(Hydroponics_UnitsType_Undefined)
 {
-    strncpy(systemName, String(F("Hydruino")).c_str(), HYDRUINO_NAME_MAXSIZE);
+    auto defName = String(F("Hydruino"));
+    strncpy(systemName, defName.c_str(), HYDRUINO_NAME_MAXSIZE);
     memset(reservoirSize, 0, sizeof(reservoirSize));
     memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
 
@@ -82,7 +83,7 @@ HydroponicsSystemData::HydroponicsSystemData()
     //memset(calibrationData, 0, sizeof(calibrationData));
 }
 
-void HydroponicsSystemData::toJSONDocument(JsonDocument &docOut) const
+void HydroponicsSystemData::toJSONDocument(JsonDocument *docOut) const
 {
     // TODO
 }
@@ -426,13 +427,14 @@ void Hydroponics::update()
         #else
             HYDRUINO_MAINLOOP();
         #endif
-        taskManager.runLoop(); // tcMenu uses this system to run its UI
     #else
         controlLoop();
         dataLoop();
         guiLoop();
         miscLoop();
     #endif
+
+    taskManager.runLoop(); // tcMenu uses this system to run its UI
 }
 
 void Hydroponics::updateActuators()

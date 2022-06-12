@@ -256,7 +256,7 @@ enum Hydroponics_UnitsType {
 // Serializable Interface
 struct HydroponicsSerializableInterface {
     // Given a JSON document to fill in, writes self to JSON format.
-    virtual void toJSONDocument(JsonDocument &docOut) const = 0;
+    virtual void toJSONDocument(JsonDocument *docOut) const = 0;
 
     // Given a JSON document to read from, reads JSON overtop self.
     virtual void fromJSONDocument(const JsonDocument &docIn) = 0;
@@ -280,7 +280,7 @@ struct HydroponicsSystemData : public HydroponicsData {         // _ident: HSYS
     HydroponicsSystemData(const JsonDocument *docIn);           // From JSON convenience constructor
 
     // Overrides
-    virtual void toJSONDocument(JsonDocument &docOut) const;
+    virtual void toJSONDocument(JsonDocument *docOut) const;
     virtual void fromJSONDocument(const JsonDocument &docIn);
 
     char systemName[HYDRUINO_NAME_MAXSIZE];                     // System name
@@ -307,7 +307,7 @@ struct HydroponicsCalibrationData : public HydroponicsData {    // _ident: HCAL
     HydroponicsCalibrationData(Hydroponics_SensorType sensor, Hydroponics_FluidReservoir reservoir);
 
     // Overrides
-    virtual void toJSONDocument(JsonDocument &docOut) const;
+    virtual void toJSONDocument(JsonDocument *docOut) const;
     virtual void fromJSONDocument(const JsonDocument &docIn);
 
     Hydroponics_SensorType sensor;                              // Sensor type this applies to
@@ -321,7 +321,7 @@ struct HydroponicsCropData : public HydroponicsData {           // _ident: HCRP
     HydroponicsCropData(Hydroponics_CropType cropType);         // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
 
     // Overrides
-    virtual void toJSONDocument(JsonDocument &docOut) const;
+    virtual void toJSONDocument(JsonDocument *docOut) const;
     virtual void fromJSONDocument(const JsonDocument &docIn);
 
     Hydroponics_CropType cropType;                              // Crop type

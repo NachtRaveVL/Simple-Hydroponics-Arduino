@@ -7,8 +7,8 @@
 #define HydroponicsCrops_H
 
 class HydroponicsCropsLibrary;
-class HydroponicsCrop;
 struct HydroponicsCropsLibraryBook;
+class HydroponicsCrop;
 
 #include "Hydroponics.h"
 
@@ -25,7 +25,7 @@ public:
     // Returns the singleton instance of this library.
     static HydroponicsCropsLibrary *getInstance();
 
-    // Checks out the crop data for this crop, created via the JSON from PROGMEM if needed. Increments ref count by one.
+    // Checks out the crop data for this crop, created via the JSON from PROGMEM if needed (NULL return = failure). Increments ref count by one.
     const HydroponicsCropData *checkoutCropData(Hydroponics_CropType cropType);
 
     // Returns crop data back to system, to delete when no longer used. Decrements internal ref count by one, deleting on zero.
@@ -41,6 +41,7 @@ protected:
     static HydroponicsCropsLibrary *_instance;              // Shared instance
     BtreeList<Hydroponics_CropType,
               HydroponicsCropsLibraryBook> _cropData;       // Loaded crop library data
+
     HydroponicsCropData _cropDataOld[Hydroponics_CropType_Count]; // TBR
 
     HydroponicsCropsLibrary();                              // Private constructor to force singleton
