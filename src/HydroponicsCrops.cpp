@@ -116,6 +116,15 @@ void HydroponicsCropData::toJSONDocument(JsonDocument *docOut) const
             (*docOut)[F("airTempRange")] = airTempRange[0][0];
         }
     }
+
+    if (isInvasiveOrViner || isLargePlant || isPerennial || isPrunningRequired || isToxicToPets) {
+        auto flagsArray = docOut->createNestedArray(F("flags"));
+        if (isInvasiveOrViner) { flagsArray.add(F("viner")); }
+        if (isLargePlant) { flagsArray.add(F("large")); }
+        if (isPerennial) { flagsArray.add(F("perennial")); }
+        if (isPrunningRequired) { flagsArray.add(F("prunning")); }
+        if (isToxicToPets) { flagsArray.add(F("toxic")); }
+    }
 }
 
 void HydroponicsCropData::fromJSONDocument(const JsonDocument &docIn)
@@ -894,7 +903,8 @@ void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropData *cropData
 
 HydroponicsCrop::HydroponicsCrop(const Hydroponics_CropType cropType, const int positionIndex, const time_t sowDate)
     : _cropType(cropType), _positionIndex(positionIndex), _sowDate(sowDate),
-      _cropData(NULL), _growWeek(0), _cropPhase(Hydroponics_CropPhase_Undefined)
+      _cropData(NULL), _growWeek(0), _cropPhase(Hydroponics_CropPhase_Undefined),
+      _key(stringForCropType(cropType, true) + String(positionIndex))
 {
     _cropData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
     recalcGrowWeekAndPhase();
@@ -903,6 +913,11 @@ HydroponicsCrop::HydroponicsCrop(const Hydroponics_CropType cropType, const int 
 HydroponicsCrop::~HydroponicsCrop()
 {
     if (_cropData) { HydroponicsCropsLibrary::getInstance()->returnCropData(_cropData); _cropData = NULL; }
+}
+
+String HydroponicsCrop::getKey() const
+{
+    return _key;
 }
 
 const Hydroponics_CropType HydroponicsCrop::getCropType() const
@@ -915,12 +930,12 @@ const HydroponicsCropData *HydroponicsCrop::getCropData() const
     return _cropData;
 }
 
-int HydroponicsCrop::getPositionIndex() const
+const int HydroponicsCrop::getPositionIndex() const
 {
     return _positionIndex;
 }
 
-time_t HydroponicsCrop::getSowDate() const
+const time_t HydroponicsCrop::getSowDate() const
 {
     return _sowDate;
 }

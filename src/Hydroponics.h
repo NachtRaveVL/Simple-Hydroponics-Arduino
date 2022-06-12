@@ -83,6 +83,7 @@
 #endif
 
 #include "ArduinoJson.h"                // JSON library
+#include "Callback.h"                   // Callback library
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "EasyBuzzer.h"                 // Async piezo buzzer library
@@ -138,8 +139,12 @@ public:
     bool initFromSDCard(const char * configFile = "/hydruino.cfg");
 
     // TODO: maybe?
-    //bool initFromWiFiServer(const char *ssid, const char *ssidPass, const char *serverURL, const char *auth); //maybe?
-    //void enableLoggingToMicroSDFolder(const char *folderNamePrefix = "hlog"); //maybe?
+    //bool initFromWiFiServer(wifiClient, serverhData);
+    //void enableLoggingToSDCard(logNamePrefix = "log/system_");
+    //void enableLoggingToNetworkShare(wifiClient, shareData, logNamePrefix = "log/system_");
+    //void enablePublishingToMQTT(mqttBroker, deviceData);
+    //void enablePublishingToWebAPI(wifiClient, hostData, apiInterface);
+    //void enablePublishingToSDCard(eventsNamePrefix = "log/sensor_");
 
     // Launches system into operational mode. Typically called last in setup().
     // Once launch is called further system setup may no longer be available due to dependency constraints.

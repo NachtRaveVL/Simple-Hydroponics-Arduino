@@ -11,7 +11,7 @@ Hydroponics hydroController;            // Controller using default XXX TODO pin
 
 void setup() {
     Serial.begin(115200);               // Begin Serial and Wire interfaces
-    while(!Serial) { ; }                // Wait for USB serial to link up
+    while(!Serial) { ; }                // Wait for USB serial to connect (remove in production)
     Wire.setClock(hydroController.getI2CSpeed()); // Don't worry, Wire.begin() gets called plenty enough times internally
 
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else

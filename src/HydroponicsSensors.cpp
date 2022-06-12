@@ -31,8 +31,9 @@ void HydroponicsCalibrationData::fromJSONDocument(const JsonDocument &docIn)
 HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
                                      Hydroponics_FluidReservoir fluidReservoir,
                                      Hydroponics_MeasurementMode measurementMode)
-    : _sensorType(sensorType), _fluidReservoir(fluidReservoir), _measurementUnits(Hydroponics_UnitsType_Undefined)
-{
+    : _sensorType(sensorType), _fluidReservoir(fluidReservoir), _measurementUnits(Hydroponics_UnitsType_Undefined),
+      _key(stringForSensorType(sensorType, true) + stringForFluidReservoir(fluidReservoir, true))
+{ 
     switch (sensorType) {
         case Hydroponics_SensorType_AirCarbonDioxide:
             _measurementUnits = Hydroponics_UnitsType_Concentration_PPM;
@@ -110,6 +111,11 @@ time_t HydroponicsSensor::getLastMeasurementTime() const
 
 void HydroponicsSensor::update()
 { ; }
+
+String HydroponicsSensor::getKey() const
+{
+    return _key;
+}
 
 Hydroponics_SensorType HydroponicsSensor::getSensorType() const
 {

@@ -47,7 +47,7 @@ protected:
     HydroponicsCropsLibrary();                              // Private constructor to force singleton
 
     void buildLibrary(); // TBR
-    void validateEntries(); // TBD
+    void validateEntries(); // TBR
 };
 
 
@@ -59,18 +59,20 @@ public:
 
     void update();
 
+    String getKey() const;
     const Hydroponics_CropType getCropType() const;
     const HydroponicsCropData *getCropData() const;
-    int getPositionIndex() const;
-    time_t getSowDate() const;
+    const int getPositionIndex() const;
+    const time_t getSowDate() const;
     int getGrowWeek() const;
     Hydroponics_CropPhase getCropPhase() const;
 
 protected:
+    const String _key;                                      // Identifier
     const Hydroponics_CropType _cropType;                   // TODO
     const HydroponicsCropData *_cropData;                   // TODO
-    int _positionIndex;                                     // TODO
-    time_t _sowDate;                                        // TODO
+    const int _positionIndex;                               // TODO
+    const time_t _sowDate;                                  // TODO
     int _growWeek;                                          // TODO
     Hydroponics_CropPhase _cropPhase;                       // TODO
 
