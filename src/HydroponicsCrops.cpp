@@ -138,8 +138,6 @@ void HydroponicsCropData::fromJSONDocument(const JsonDocument &docIn)
 
 struct HydroponicsCropsLibraryBook {
     HydroponicsCropsLibraryBook();
-    HydroponicsCropsLibraryBook(const HydroponicsCropsLibraryBook& otherBook) = default;
-    HydroponicsCropsLibraryBook& operator=(const HydroponicsCropsLibraryBook& otherBook) = default;
     Hydroponics_CropType getKey() const;
     HydroponicsCropData data;
     int count;
@@ -158,7 +156,6 @@ Hydroponics_CropType HydroponicsCropsLibraryBook::getKey() const
 HydroponicsCropsLibrary *HydroponicsCropsLibrary::_instance = NULL;
 
 HydroponicsCropsLibrary::HydroponicsCropsLibrary()
-    : _cropData()
 {
     buildLibrary();
     _libraryBuilt = true; // TBR
@@ -872,8 +869,9 @@ const HydroponicsCropData *HydroponicsCropsLibrary::checkoutCropData(Hydroponics
         //deserializeJson(doc, F("TODO"));
         //book.data.fromJSONDocument(doc);
 
-        _cropData.add(tempBook);
-        book = _cropData.getByKey(cropType);
+        if (_cropData.add(tempBook)) {
+            book = _cropData.getByKey(cropType);
+        }
     }
 
     return book ? &(book->data) : NULL;

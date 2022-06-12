@@ -69,18 +69,16 @@ HydroponicsData::HydroponicsData(const char *ident, uint16_t version, uint16_t r
 
 HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData("HSYS", 1),
-      systemName{'\0'},
+      systemName{'\0'}, timeZoneOffset(0),
+      systemMode(Hydroponics_SystemMode_Undefined), measurementMode(Hydroponics_MeasurementMode_Undefined),
+      lcdOutMode(Hydroponics_LCDOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
       pollingIntMs(0), maxActiveRelayCount{2},
+      reservoirVol{0}, pumpFlowRate{0},
       reservoirVolUnits(Hydroponics_UnitsType_Undefined),
       pumpFlowRateUnits(Hydroponics_UnitsType_Undefined)
 {
-    auto defName = String(F("Hydruino"));
-    strncpy(systemName, defName.c_str(), HYDRUINO_NAME_MAXSIZE);
-    memset(reservoirVol, 0, sizeof(reservoirVol));
-    memset(pumpFlowRate, 0, sizeof(pumpFlowRate));
-
-    // Moving this to its own thing
-    //memset(calibrationData, 0, sizeof(calibrationData));
+    auto defaultSysName = String(F("Hydruino"));
+    strncpy(systemName, defaultSysName.c_str(), HYDRUINO_NAME_MAXSIZE);
 }
 
 void HydroponicsSystemData::toJSONDocument(JsonDocument *docOut) const
