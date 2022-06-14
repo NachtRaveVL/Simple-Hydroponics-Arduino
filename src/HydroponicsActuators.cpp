@@ -3,14 +3,14 @@
     Hydroponics Actuators
 */
 
-#include "HydroponicsActuators.h"
+#include "Hydroponics.h"
 
-HydroponicsActuator::HydroponicsActuator(byte outputPin,
-                                         Hydroponics_ActuatorType actuatorType,
-                                         Hydroponics_FluidReservoir fluidReservoir)
-    : _outputPin(outputPin), _actuatorType(actuatorType), _fluidReservoir(fluidReservoir),
-      _enabled(false), _enabledUntil(0),
-      _key(HydroponicsActuator::getKeyFor(actuatorType, fluidReservoir))
+HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
+                                         Hydroponics_PositionIndex actuatorIndex,
+                                         byte outputPin)
+    : HydroponicsObject(HydroponicsIdentity(actuatorType, actuatorIndex)),
+      _outputPin(outputPin),
+      _enabled(false), _enabledUntil(0)
 {
     pinMode(_outputPin, OUTPUT);
 }
@@ -32,16 +32,6 @@ void HydroponicsActuator::update()
     }
 }
 
-String HydroponicsActuator::getKey() const
-{
-    return _key;
-}
-
-String HydroponicsActuator::getKeyFor(Hydroponics_ActuatorType actuatorType, Hydroponics_FluidReservoir fluidReservoir)
-{
-    return stringForActuatorType(actuatorType, true) + stringForFluidReservoir(fluidReservoir, true);
-}
-
 byte HydroponicsActuator::getOutputPin() const
 {
     return _outputPin;
@@ -49,12 +39,12 @@ byte HydroponicsActuator::getOutputPin() const
 
 Hydroponics_ActuatorType HydroponicsActuator::getActuatorType() const
 {
-    return _actuatorType;
+    return _id.as.actuatorType;
 }
 
-Hydroponics_FluidReservoir HydroponicsActuator::getFluidReservoir() const
+Hydroponics_PositionIndex HydroponicsActuator::getActuatorIndex() const
 {
-    return _fluidReservoir;
+    return _id.posIndex;
 }
 
 bool HydroponicsActuator::getIsActuatorEnabled() const
@@ -68,15 +58,14 @@ time_t HydroponicsActuator::getActuatorEnabledUntil() const
 }
 
 
-HydroponicsRelayActuator::HydroponicsRelayActuator(byte outputPin,
-                                                   Hydroponics_ActuatorType actuatorType,
-                                                   Hydroponics_RelayRail relayRail,
-                                                   Hydroponics_FluidReservoir fluidReservoir,
-                                                   bool activeLow)
-    : HydroponicsActuator(outputPin, actuatorType, fluidReservoir),
-      _relayRail(relayRail), _activeLow(activeLow)
+HydroponicsRelayActuator::HydroponicsRelayActuator(Hydroponics_ActuatorType actuatorType,
+                                                   Hydroponics_PositionIndex actuatorIndex,
+                                                   byte outputPin,
+                                                   bool activeLow = true)
+    : HydroponicsActuator(actuatorType, actuatorIndex, outputPin),
+      _activeLow(activeLow)
 {
-    digitalWrite(_outputPin, _activeLow ? HIGH : LOW);  // Disable on startup
+    digitalWrite(_outputPin, _activeLow ? HIGH : LOW);  // Disable on start
 }
 
 HydroponicsRelayActuator::~HydroponicsRelayActuator()
@@ -95,30 +84,19 @@ void HydroponicsRelayActuator::enableActuator()
     digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
 }
 
-Hydroponics_RelayRail HydroponicsRelayActuator::getRelayRail() const
-{
-    return _relayRail;
-}
-
 bool HydroponicsRelayActuator::getActiveLow() const
 {
     return _activeLow;
 }
 
 
-HydroponicsPWMActuator::HydroponicsPWMActuator(byte outputPin,
-                                               Hydroponics_ActuatorType actuatorType,
-                                               Hydroponics_FluidReservoir fluidReservoir,
-                                               byte writeBitResolution)
-    : HydroponicsActuator(outputPin, actuatorType, fluidReservoir),
-      _pwmAmount(0.0f),
-      #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          _pwmBitRes(constrain(writeBitResolution, 8, 12)), _pwmMaxAmount(1 << constrain(writeBitResolution, 8, 12))
-      #else
-          _pwmBitRes(8), _pwmMaxAmount(256)
-      #endif
+HydroponicsPWMActuator::HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,
+                                               Hydroponics_PositionIndex actuatorIndex,
+                                               byte outputPin,
+                                               byte outputBitResolution)
+    : HydroponicsActuator(actuatorType, actuatorIndex, outputPin),
+      _pwmAmount(0.0f), _pwmResolution(outputBitResolution)
 {
-    //assert(_pwmBitRes == writeBitResolution && "Resolved resolution mismatch with passed resolution");
     applyPWM();
 }
 
@@ -145,26 +123,21 @@ float HydroponicsPWMActuator::getPWMAmount() const
 
 int HydroponicsPWMActuator::getPWMAmount(int toss) const
 {
-    toss = _pwmAmount * _pwmMaxAmount;
-    return constrain(toss, 0, _pwmMaxAmount);
+    return _pwmResolution.inverseTransform(_pwmAmount);
 }
 
 void HydroponicsPWMActuator::setPWMAmount(float amount)
 {
     //assert(amount >= 0.0f && amount <= 1.0f && "Amount out of range");
-    _pwmAmount = amount;
-    if (_pwmAmount <= FLT_EPSILON) _pwmAmount = 0.0f;
-    if (_pwmAmount >= 1.0f - FLT_EPSILON) _pwmAmount = 1.0f;
+    _pwmAmount = constrain(amount, 0.0f, 1.0f);
 
     if (_enabled) { applyPWM(); }
 }
 
 void HydroponicsPWMActuator::setPWMAmount(int amount)
 {
-    //assert(amount >= 0 && amount <= _pwmMaxAmount && "Amount out of range");
-    _pwmAmount = amount / (float)_pwmMaxAmount;
-    if (_pwmAmount <= FLT_EPSILON) _pwmAmount = 0.0f;
-    if (_pwmAmount >= 1.0f - FLT_EPSILON) _pwmAmount = 1.0f;
+    //assert(amount >= 0 && amount <= _pwmResolution.maxValue && "Amount out of range");
+    _pwmAmount = _pwmResolution.transform(amount);
 
     if (_enabled) { applyPWM(); }
 }
@@ -174,20 +147,15 @@ bool HydroponicsPWMActuator::getIsActuatorEnabled(float tolerance) const
     return _enabled && _pwmAmount - tolerance >= -FLT_EPSILON;
 }
 
-int HydroponicsPWMActuator::getPWMMaxAmount() const
+HydroponicsBitResolution HydroponicsPWMActuator::getPWMResolution() const
 {
-    return _pwmMaxAmount;
-}
-
-int HydroponicsPWMActuator::getPWMBitResolution() const
-{
-    return _pwmBitRes;
+    return _pwmResolution;
 }
 
 void HydroponicsPWMActuator::applyPWM()
 {
     #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-        analogWriteResolution(_pwmBitRes);
+        analogWriteResolution(_pwmResolution.bitRes);
     #endif
     analogWrite(_outputPin, _enabled ? getPWMAmount(0) : 0);
 }
