@@ -3,143 +3,12 @@
     Hydroponics Crops
 */
 
-#include "HydroponicsCrops.h"
-
-static bool _libraryBuilt = false; // TBR
-
-HydroponicsCropData::HydroponicsCropData()
-    : HydroponicsData("HCRP", 1),
-      cropType(Hydroponics_CropType_Undefined), plantName{'\0'},
-      growWeeksToHarvest(0), weeksBetweenHarvest(0),
-      phaseBeginWeek{0}, lightHoursPerDay{0},
-      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
-      isPrunningRequired(false), isToxicToPets(false)
-{
-    memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
-    memset(phRange, 0, sizeof(phRange));
-    memset(ecRange, 0, sizeof(ecRange));
-    memset(waterTempRange, 0, sizeof(waterTempRange));
-    memset(airTempRange, 0, sizeof(airTempRange));
-}
-
-HydroponicsCropData::HydroponicsCropData(const Hydroponics_CropType cropTypeIn)
-    : HydroponicsData("HCRP", 1),
-      cropType(cropTypeIn), plantName{'\0'},
-      growWeeksToHarvest(0), weeksBetweenHarvest(0),
-      phaseBeginWeek{0}, lightHoursPerDay{0},
-      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
-      isPrunningRequired(false), isToxicToPets(false)
-{
-    memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
-    memset(phRange, 0, sizeof(phRange));
-    memset(ecRange, 0, sizeof(ecRange));
-    memset(waterTempRange, 0, sizeof(waterTempRange));
-    memset(airTempRange, 0, sizeof(airTempRange));
-
-    if (_libraryBuilt) {
-        auto *cropLibData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
-        if (cropLibData && this != cropLibData) {
-            memcpy(this, cropLibData, sizeof(HydroponicsCropData));
-        }
-        HydroponicsCropsLibrary::getInstance()->returnCropData(cropLibData);
-    }
-}
-
-void HydroponicsCropData::toJSONDocument(JsonDocument *docOut) const
-{
-    (*docOut)[F("_version")] = _version;
-    (*docOut)[F("cropType")] = cropType;
-    (*docOut)[F("plantName")] = plantName;
-
-    if (growWeeksToHarvest > 0) {
-        (*docOut)[F("growWeeksToHarvest")] = growWeeksToHarvest;
-    }
-    if (weeksBetweenHarvest > 0) {
-        (*docOut)[F("weeksBetweenHarvest")] = weeksBetweenHarvest;
-    }
-    if (lightHoursPerDay[0] > 0) {
-        (*docOut)[F("lightHoursPerDay")] = lightHoursPerDay[0];
-    }
-    if (phaseBeginWeek[(int)Hydroponics_CropPhase_Count-1] > (int)Hydroponics_CropPhase_Count-1) {
-        auto phaseBegArray = docOut->createNestedArray(F("phaseBeginWeek"));
-        for (int phaseIndex = 0; phaseIndex < (int)Hydroponics_CropPhase_Count; ++phaseIndex) {
-            phaseBegArray.add(phaseBeginWeek[phaseIndex]);
-        }
-    }
-
-    if (feedIntervalMins[0][0] > 0 || feedIntervalMins[0][1] > 0) {
-        if (!isFPEqual(feedIntervalMins[0][0], feedIntervalMins[0][1])) {
-            auto feedIntrvlObj = docOut->createNestedObject(F("feedIntervalMins"));
-            feedIntrvlObj[F("on")] = feedIntervalMins[0][0];
-            feedIntrvlObj[F("off")] = feedIntervalMins[0][1];
-        } else {
-            (*docOut)[F("feedIntervalMins")] = feedIntervalMins[0][0];
-        }
-    }
-
-    if (phRange[0][0] > 0 || phRange[0][1] > 0) {
-        if (!isFPEqual(phRange[0][0], phRange[0][1])) {
-            auto phRangeObj = docOut->createNestedObject(F("phRange"));
-            phRangeObj[F("min")] = phRange[0][0];
-            phRangeObj[F("max")] = phRange[0][1];
-        } else {
-            (*docOut)[F("phRange")] = phRange[0][0];
-        }
-    }
-
-    if (ecRange[0][0] > 0 || ecRange[0][1] > 0) {
-        if (!isFPEqual(ecRange[0][0], ecRange[0][1])) {
-            auto ecRangeObj = docOut->createNestedObject(F("ecRange"));
-            ecRangeObj[F("min")] = ecRange[0][0];
-            ecRangeObj[F("max")] = ecRange[0][1];
-        } else {
-            (*docOut)[F("ecRange")] = ecRange[0][0];
-        }
-    }
-
-    if (waterTempRange[0][0] > 0 || waterTempRange[0][1] > 0) {
-        if (!isFPEqual(waterTempRange[0][0], waterTempRange[0][1])) {
-            auto waterTempRangeObj = docOut->createNestedObject(F("waterTempRange"));
-            waterTempRangeObj[F("min")] = waterTempRange[0][0];
-            waterTempRangeObj[F("max")] = waterTempRange[0][1];
-        } else {
-            (*docOut)[F("waterTempRange")] = waterTempRange[0][0];
-        }
-    }
-
-    if (airTempRange[0][0] > 0 || airTempRange[0][1] > 0) {
-        if (!isFPEqual(airTempRange[0][0], airTempRange[0][1])) {
-            auto airTempRangeObj = docOut->createNestedObject(F("airTempRange"));
-            airTempRangeObj[F("min")] = airTempRange[0][0];
-            airTempRangeObj[F("max")] = airTempRange[0][1];
-        } else {
-            (*docOut)[F("airTempRange")] = airTempRange[0][0];
-        }
-    }
-
-    if (isInvasiveOrViner || isLargePlant || isPerennial || isPrunningRequired || isToxicToPets) {
-        auto flagsArray = docOut->createNestedArray(F("flags"));
-        if (isInvasiveOrViner) { flagsArray.add(F("viner")); }
-        if (isLargePlant) { flagsArray.add(F("large")); }
-        if (isPerennial) { flagsArray.add(F("perennial")); }
-        if (isPrunningRequired) { flagsArray.add(F("prunning")); }
-        if (isToxicToPets) { flagsArray.add(F("toxic")); }
-    }
-}
-
-void HydroponicsCropData::fromJSONDocument(const JsonDocument &docIn)
-{
-    // _version = docIn[F("_version")].as<uint16_t>();
-    // cropType = docIn[F("cropType")].as<Hydroponics_CropType>();
-    // strncpy(plantName, docIn[F("plantName")].as<const char *>(), HYDRUINO_NAME_MAXSIZE); // dunno if this will work
-    // TODO
-}
-
+#include "Hydroponics.h"
 
 struct HydroponicsCropsLibraryBook {
     HydroponicsCropsLibraryBook();
     Hydroponics_CropType getKey() const;
-    HydroponicsCropData data;
+    HydroponicsCropLibData data;
     int count;
 };
 
@@ -153,12 +22,13 @@ Hydroponics_CropType HydroponicsCropsLibraryBook::getKey() const
 }
 
 
-HydroponicsCropsLibrary *HydroponicsCropsLibrary::_instance = NULL;
+bool HydroponicsCropsLibrary::_libraryBuilt = false; // To be removed in near future
+HydroponicsCropsLibrary *HydroponicsCropsLibrary::_instance = nullptr;
 
 HydroponicsCropsLibrary::HydroponicsCropsLibrary()
 {
     buildLibrary();
-    _libraryBuilt = true; // TBR
+    _libraryBuilt = true; // To be removed in near future
 }
 
 HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
@@ -168,9 +38,9 @@ HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
         // TODO: static lock
         auto *instance = new HydroponicsCropsLibrary();
         if (!_instance) {
-            _instance = instance; instance = NULL;
+            _instance = instance; instance = nullptr;
         } else {
-            delete instance; instance = NULL;
+            delete instance; instance = nullptr;
         }
         return _instance;
     }
@@ -178,603 +48,604 @@ HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
 
 void HydroponicsCropsLibrary::buildLibrary()
 {
-    {   HydroponicsCropData cropData(Hydroponics_CropType_AloeVera);
-        strncpy(&cropData.plantName[0], "Aloe Vera", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 7.0; cropData.phRange[0][1] = 8.5;
-        cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.5;
-        cropData.isPerennial = true;
-        cropData.isToxicToPets = true;
-        _cropDataOld[Hydroponics_CropType_AloeVera] = cropData;
-    }   
-
-    {   HydroponicsCropData cropData(Hydroponics_CropType_Anise);
-        strncpy(&cropData.plantName[0], "Anise", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 5.8; cropData.phRange[0][1] = 6.4;
-        cropData.ecRange[0][0] = 0.9; cropData.ecRange[0][1] = 1.4;
-        _cropDataOld[Hydroponics_CropType_Anise] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_AloeVera);
+        strncpy(&plantData.plantName[0], "Aloe Vera", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 7.0; plantData.phRange[0][1] = 8.5;
+        plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.5;
+        plantData.isInvasiveOrViner = true;
+        plantData.isPerennial = true;
+        plantData.isToxicToPets = true;
+        _cropLibDataOld[Hydroponics_CropType_AloeVera] = plantData;
     }
 
-    {   HydroponicsCropData cropData(Hydroponics_CropType_Artichoke);
-        strncpy(&cropData.plantName[0], "Artichoke", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 6.5; cropData.phRange[0][1] = 7.5;
-        cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 1.8;
-        cropData.isPerennial = true;
-        _cropDataOld[Hydroponics_CropType_Artichoke] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_Anise);
+        strncpy(&plantData.plantName[0], "Anise", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 5.8; plantData.phRange[0][1] = 6.4;
+        plantData.ecRange[0][0] = 0.9; plantData.ecRange[0][1] = 1.4;
+        _cropLibDataOld[Hydroponics_CropType_Anise] = plantData;
     }
 
-    {   HydroponicsCropData cropData(Hydroponics_CropType_Arugula);
-        strncpy(&cropData.plantName[0], "Arugula", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 7.5;
-        cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 1.8;
-        _cropDataOld[Hydroponics_CropType_Arugula] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_Artichoke);
+        strncpy(&plantData.plantName[0], "Artichoke", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 6.5; plantData.phRange[0][1] = 7.5;
+        plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 1.8;
+        plantData.isPerennial = true;
+        _cropLibDataOld[Hydroponics_CropType_Artichoke] = plantData;
     }
 
-    {   HydroponicsCropData cropData(Hydroponics_CropType_Asparagus);
-        strncpy(&cropData.plantName[0], "Asparagus", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.8;
-        cropData.ecRange[0][0] = 1.4; cropData.ecRange[0][1] = 1.8;
-        cropData.isPerennial = true;
-        cropData.isPrunningRequired = true;
-        _cropDataOld[Hydroponics_CropType_Asparagus] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_Arugula);
+        strncpy(&plantData.plantName[0], "Arugula", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 7.5;
+        plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 1.8;
+        _cropLibDataOld[Hydroponics_CropType_Arugula] = plantData;
     }
 
-    {   HydroponicsCropData cropData(Hydroponics_CropType_Basil);
-        strncpy(&cropData.plantName[0], "Basil", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-        cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
-        cropData.isPrunningRequired = true;
-        _cropDataOld[Hydroponics_CropType_Basil] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_Asparagus);
+        strncpy(&plantData.plantName[0], "Asparagus", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.8;
+        plantData.ecRange[0][0] = 1.4; plantData.ecRange[0][1] = 1.8;
+        plantData.isPerennial = true;
+        plantData.isPruningRequired = true;
+        _cropLibDataOld[Hydroponics_CropType_Asparagus] = plantData;
     }
 
-    {   HydroponicsCropData cropData(Hydroponics_CropType_Bean);
-        strncpy(&cropData.plantName[0], "Bean (common)", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 6.0;
-        cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4; // alt: 2.0-4.0
-        cropData.isPrunningRequired = true;
-        _cropDataOld[Hydroponics_CropType_Bean] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_Basil);
+        strncpy(&plantData.plantName[0], "Basil", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+        plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.6;
+        plantData.isPruningRequired = true;
+        _cropLibDataOld[Hydroponics_CropType_Basil] = plantData;
     }
 
-    {   HydroponicsCropData cropData(Hydroponics_CropType_BeanBroad);
-        strncpy(&cropData.plantName[0], "Bean (broad)", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-        cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4; // alt: 1.8-2.2
-        cropData.isPrunningRequired = true;
-        _cropDataOld[Hydroponics_CropType_BeanBroad] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_Bean);
+        strncpy(&plantData.plantName[0], "Bean (common)", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 6.0;
+        plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4; // alt: 2.0-4.0
+        plantData.isPruningRequired = true;
+        _cropLibDataOld[Hydroponics_CropType_Bean] = plantData;
     }
 
-    {   HydroponicsCropData cropData(Hydroponics_CropType_Beetroot);
-        strncpy(&cropData.plantName[0], "Beetroot", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-        cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 5.0;
-        _cropDataOld[Hydroponics_CropType_Beetroot] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_BeanBroad);
+        strncpy(&plantData.plantName[0], "Bean (broad)", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+        plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4; // alt: 1.8-2.2
+        plantData.isPruningRequired = true;
+        _cropLibDataOld[Hydroponics_CropType_BeanBroad] = plantData;
+    }
+
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_Beetroot);
+        strncpy(&plantData.plantName[0], "Beetroot", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+        plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 5.0;
+        _cropLibDataOld[Hydroponics_CropType_Beetroot] = plantData;
     }
   
-    {   HydroponicsCropData cropData(Hydroponics_CropType_BlackCurrant);
-        strncpy(&cropData.plantName[0], "Black Currant", HYDRUINO_NAME_MAXSIZE);
-        cropData.phRange[0][0] = 6.0;
-        cropData.ecRange[0][0] = 1.4; cropData.ecRange[0][1] = 1.8;
-        _cropDataOld[Hydroponics_CropType_BlackCurrant] = cropData;
+    {   HydroponicsCropLibData plantData(Hydroponics_CropType_BlackCurrant);
+        strncpy(&plantData.plantName[0], "Black Currant", HYDRUINO_NAME_MAXSIZE);
+        plantData.phRange[0][0] = 6.0;
+        plantData.ecRange[0][0] = 1.4; plantData.ecRange[0][1] = 1.8;
+        _cropLibDataOld[Hydroponics_CropType_BlackCurrant] = plantData;
     }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Blueberry);
-    //     strncpy(&cropData.plantName[0], "Blueberry", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 4.0; cropData.phRange[0][1] = 5.0;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.0;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Blueberry] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Blueberry);
+    //     strncpy(&plantData.plantName[0], "Blueberry", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 4.0; plantData.phRange[0][1] = 5.0;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.0;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Blueberry] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_BokChoi);
-    //     strncpy(&cropData.plantName[0], "Bok-choi", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 1.5; cropData.ecRange[0][1] = 2.5;
-    //     _cropDataOld[Hydroponics_CropType_BokChoi] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_BokChoi);
+    //     strncpy(&plantData.plantName[0], "Bok-choi", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 1.5; plantData.ecRange[0][1] = 2.5;
+    //     _cropLibDataOld[Hydroponics_CropType_BokChoi] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Broccoli);
-    //     strncpy(&cropData.plantName[0], "Broccoli", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 2.8; cropData.ecRange[0][1] = 3.5;
-    //     _cropDataOld[Hydroponics_CropType_Broccoli] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Broccoli);
+    //     strncpy(&plantData.plantName[0], "Broccoli", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 2.8; plantData.ecRange[0][1] = 3.5;
+    //     _cropLibDataOld[Hydroponics_CropType_Broccoli] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_BrussellSprouts);
-    //     strncpy(&cropData.plantName[0], "Brussell Sprouts", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.5; cropData.phRange[0][1] = 7.5;
-    //     cropData.ecRange[0][0] = 2.5; cropData.ecRange[0][1] = 3.0;
-    //     _cropDataOld[Hydroponics_CropType_BrussellSprouts] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_BrusselsSprout);
+    //     strncpy(&plantData.plantName[0], "Brussell Sprouts", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.5; plantData.phRange[0][1] = 7.5;
+    //     plantData.ecRange[0][0] = 2.5; plantData.ecRange[0][1] = 3.0;
+    //     _cropLibDataOld[Hydroponics_CropType_BrusselsSprout] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Cabbage);
-    //     strncpy(&cropData.plantName[0], "Cabbage", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.5; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 2.5; cropData.ecRange[0][1] = 3.0;
-    //     _cropDataOld[Hydroponics_CropType_Cabbage] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Cabbage);
+    //     strncpy(&plantData.plantName[0], "Cabbage", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.5; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 2.5; plantData.ecRange[0][1] = 3.0;
+    //     _cropLibDataOld[Hydroponics_CropType_Cabbage] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Cannabis);
-    //     strncpy(&cropData.plantName[0], "Cannabis (generic)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.1;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 2.5;
-    //     cropData.isLargePlant = true;
-    //     _cropDataOld[Hydroponics_CropType_Cannabis] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Cannabis);
+    //     strncpy(&plantData.plantName[0], "Cannabis (generic)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.1;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 2.5;
+    //     plantData.isLargePlant = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Cannabis] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Capiscum);
-    //     strncpy(&cropData.plantName[0], "Capiscum", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.2;
-    //     _cropDataOld[Hydroponics_CropType_Capiscum] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Capsicum);
+    //     strncpy(&plantData.plantName[0], "Capsicum", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.2;
+    //     _cropLibDataOld[Hydroponics_CropType_Capsicum] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Carrots);
-    //     strncpy(&cropData.plantName[0], "Carrots", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.3;
-    //     cropData.ecRange[0][0] = 1.6; cropData.ecRange[0][1] = 2.0;
-    //     _cropDataOld[Hydroponics_CropType_Carrots] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Carrots);
+    //     strncpy(&plantData.plantName[0], "Carrots", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.3;
+    //     plantData.ecRange[0][0] = 1.6; plantData.ecRange[0][1] = 2.0;
+    //     _cropLibDataOld[Hydroponics_CropType_Carrots] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Catnip);
-    //     strncpy(&cropData.plantName[0], "Catnip", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
-    //     _cropDataOld[Hydroponics_CropType_Catnip] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Catnip);
+    //     strncpy(&plantData.plantName[0], "Catnip", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.6;
+    //     _cropLibDataOld[Hydroponics_CropType_Catnip] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Cauliflower);
-    //     strncpy(&cropData.plantName[0], "Cauliflower", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 0.5; cropData.ecRange[0][1] = 2.0;
-    //     _cropDataOld[Hydroponics_CropType_Cauliflower] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Cauliflower);
+    //     strncpy(&plantData.plantName[0], "Cauliflower", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 0.5; plantData.ecRange[0][1] = 2.0;
+    //     _cropLibDataOld[Hydroponics_CropType_Cauliflower] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Celery);
-    //     strncpy(&cropData.plantName[0], "Celery", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.3; cropData.phRange[0][1] = 6.7; // alt: 6.5
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
-    //     _cropDataOld[Hydroponics_CropType_Celery] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Celery);
+    //     strncpy(&plantData.plantName[0], "Celery", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.3; plantData.phRange[0][1] = 6.7; // alt: 6.5
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4;
+    //     _cropLibDataOld[Hydroponics_CropType_Celery] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Chamomile);
-    //     strncpy(&cropData.plantName[0], "Chamomile", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Chamomile] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Chamomile);
+    //     strncpy(&plantData.plantName[0], "Chamomile", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.6;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Chamomile] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Chickory);
-    //     strncpy(&cropData.plantName[0], "Chickory", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.4;
-    //     _cropDataOld[Hydroponics_CropType_Chickory] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Chicory);
+    //     strncpy(&plantData.plantName[0], "Chicory", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.4;
+    //     _cropLibDataOld[Hydroponics_CropType_Chicory] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Chives);
-    //     strncpy(&cropData.plantName[0], "Chives", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Chives] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Chives);
+    //     strncpy(&plantData.plantName[0], "Chives", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Chives] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Cilantro);
-    //     strncpy(&cropData.plantName[0], "Cilantro", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.5; cropData.phRange[0][1] = 6.7;
-    //     cropData.ecRange[0][0] = 1.3; cropData.ecRange[0][1] = 1.8;
-    //     _cropDataOld[Hydroponics_CropType_Cilantro] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Cilantro);
+    //     strncpy(&plantData.plantName[0], "Cilantro", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.5; plantData.phRange[0][1] = 6.7;
+    //     plantData.ecRange[0][0] = 1.3; plantData.ecRange[0][1] = 1.8;
+    //     _cropLibDataOld[Hydroponics_CropType_Cilantro] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Coriander);
-    //     strncpy(&cropData.plantName[0], "Coriander", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.8; cropData.phRange[0][1] = 6.4;
-    //     cropData.ecRange[0][0] = 1.2; cropData.ecRange[0][1] = 1.8;
-    //     _cropDataOld[Hydroponics_CropType_Coriander] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Coriander);
+    //     strncpy(&plantData.plantName[0], "Coriander", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.8; plantData.phRange[0][1] = 6.4;
+    //     plantData.ecRange[0][0] = 1.2; plantData.ecRange[0][1] = 1.8;
+    //     _cropLibDataOld[Hydroponics_CropType_Coriander] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_CornSweet);
-    //     strncpy(&cropData.plantName[0], "Corn (sweet)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0;
-    //     cropData.ecRange[0][0] = 1.6; cropData.ecRange[0][1] = 2.4;
-    //     cropData.isLargePlant = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_CornSweet] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_CornSweet);
+    //     strncpy(&plantData.plantName[0], "Corn (sweet)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0;
+    //     plantData.ecRange[0][0] = 1.6; plantData.ecRange[0][1] = 2.4;
+    //     plantData.isLargePlant = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_CornSweet] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Cucumber);
-    //     strncpy(&cropData.plantName[0], "Cucumber", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.8; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 1.7; cropData.ecRange[0][1] = 2.5; // alt: 1.5-3.0
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_Cucumber] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Cucumber);
+    //     strncpy(&plantData.plantName[0], "Cucumber", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.8; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 1.7; plantData.ecRange[0][1] = 2.5; // alt: 1.5-3.0
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Cucumber] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Dill);
-    //     strncpy(&cropData.plantName[0], "Dill", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.4;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
-    //     _cropDataOld[Hydroponics_CropType_Dill] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Dill);
+    //     strncpy(&plantData.plantName[0], "Dill", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.4;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.6;
+    //     _cropLibDataOld[Hydroponics_CropType_Dill] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Eggplant);
-    //     strncpy(&cropData.plantName[0], "Eggplant", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 2.5; cropData.ecRange[0][1] = 3.5;
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_Eggplant] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Eggplant);
+    //     strncpy(&plantData.plantName[0], "Eggplant", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 2.5; plantData.ecRange[0][1] = 3.5;
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Eggplant] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Endive);
-    //     strncpy(&cropData.plantName[0], "Endive", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.4;
-    //     _cropDataOld[Hydroponics_CropType_Endive] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Endive);
+    //     strncpy(&plantData.plantName[0], "Endive", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.4;
+    //     _cropLibDataOld[Hydroponics_CropType_Endive] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Fennel);
-    //     strncpy(&cropData.plantName[0], "Fennel", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.4; cropData.phRange[0][1] = 6.8;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.4;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Fennel] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Fennel);
+    //     strncpy(&plantData.plantName[0], "Fennel", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.4; plantData.phRange[0][1] = 6.8;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.4;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Fennel] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Fodder);
-    //     strncpy(&cropData.plantName[0], "Fodder", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.0;
-    //     _cropDataOld[Hydroponics_CropType_Fodder] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Fodder);
+    //     strncpy(&plantData.plantName[0], "Fodder", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.0;
+    //     _cropLibDataOld[Hydroponics_CropType_Fodder] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Flowers);
-    //     strncpy(&cropData.plantName[0], "Flowers (generic)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.5; cropData.ecRange[0][1] = 2.5;
-    //     cropData.isToxicToPets = true;
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_Flowers] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Flowers);
+    //     strncpy(&plantData.plantName[0], "Flowers (generic)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.5; plantData.ecRange[0][1] = 2.5;
+    //     plantData.isToxicToPets = true;
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Flowers] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Garlic);
-    //     strncpy(&cropData.plantName[0], "Garlic", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0;
-    //     cropData.ecRange[0][0] = 1.4; cropData.ecRange[0][1] = 1.8;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Garlic] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Garlic);
+    //     strncpy(&plantData.plantName[0], "Garlic", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0;
+    //     plantData.ecRange[0][0] = 1.4; plantData.ecRange[0][1] = 1.8;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Garlic] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Ginger);
-    //     strncpy(&cropData.plantName[0], "Ginger", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.8; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.5;
-    //     _cropDataOld[Hydroponics_CropType_Ginger] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Ginger);
+    //     strncpy(&plantData.plantName[0], "Ginger", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.8; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.5;
+    //     _cropLibDataOld[Hydroponics_CropType_Ginger] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Kale);
-    //     strncpy(&cropData.plantName[0], "Kale", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.25; cropData.ecRange[0][1] = 1.5;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Kale] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Kale);
+    //     strncpy(&plantData.plantName[0], "Kale", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.25; plantData.ecRange[0][1] = 1.5;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Kale] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Lavender);
-    //     strncpy(&cropData.plantName[0], "Lavender", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.4; cropData.phRange[0][1] = 6.8;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.4;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Lavender] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Lavender);
+    //     strncpy(&plantData.plantName[0], "Lavender", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.4; plantData.phRange[0][1] = 6.8;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.4;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Lavender] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Leek);
-    //     strncpy(&cropData.plantName[0], "Leek", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.5; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 1.4; cropData.ecRange[0][1] = 1.8;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Leek] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Leek);
+    //     strncpy(&plantData.plantName[0], "Leek", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.5; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 1.4; plantData.ecRange[0][1] = 1.8;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Leek] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_LemonBalm);
-    //     strncpy(&cropData.plantName[0], "Lemon Balm", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_LemonBalm] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_LemonBalm);
+    //     strncpy(&plantData.plantName[0], "Lemon Balm", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.6;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_LemonBalm] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Lettuce);
-    //     strncpy(&cropData.plantName[0], "Lettuce", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 1.2;
-    //     _cropDataOld[Hydroponics_CropType_Lettuce] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Lettuce);
+    //     strncpy(&plantData.plantName[0], "Lettuce", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 1.2;
+    //     _cropLibDataOld[Hydroponics_CropType_Lettuce] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Marrow);
-    //     strncpy(&cropData.plantName[0], "Marrow", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
-    //     _cropDataOld[Hydroponics_CropType_Marrow] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Marrow);
+    //     strncpy(&plantData.plantName[0], "Marrow", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4;
+    //     _cropLibDataOld[Hydroponics_CropType_Marrow] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Melon);
-    //     strncpy(&cropData.plantName[0], "Melon", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.5;
-    //     cropData.isLargePlant = true;
-    //     _cropDataOld[Hydroponics_CropType_Melon] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Melon);
+    //     strncpy(&plantData.plantName[0], "Melon", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.5;
+    //     plantData.isLargePlant = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Melon] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Mint);
-    //     strncpy(&cropData.plantName[0], "Mint", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.4;
-    //     cropData.isPerennial = true;
-    //     cropData.isInvasiveOrViner = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Mint] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Mint);
+    //     strncpy(&plantData.plantName[0], "Mint", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.4;
+    //     plantData.isPerennial = true;
+    //     plantData.isInvasiveOrViner = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Mint] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_MustardCress);
-    //     strncpy(&cropData.plantName[0], "Mustard Cress", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.2; cropData.ecRange[0][1] = 2.4;
-    //     _cropDataOld[Hydroponics_CropType_MustardCress] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_MustardCress);
+    //     strncpy(&plantData.plantName[0], "Mustard Cress", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.2; plantData.ecRange[0][1] = 2.4;
+    //     _cropLibDataOld[Hydroponics_CropType_MustardCress] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Okra);
-    //     strncpy(&cropData.plantName[0], "Okra", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.5;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.4;
-    //     _cropDataOld[Hydroponics_CropType_Okra] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Okra);
+    //     strncpy(&plantData.plantName[0], "Okra", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.5;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.4;
+    //     _cropLibDataOld[Hydroponics_CropType_Okra] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Onions);
-    //     strncpy(&cropData.plantName[0], "Onions", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.7;
-    //     cropData.ecRange[0][0] = 1.4; cropData.ecRange[0][1] = 1.8;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Onions] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Onions);
+    //     strncpy(&plantData.plantName[0], "Onions", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.7;
+    //     plantData.ecRange[0][0] = 1.4; plantData.ecRange[0][1] = 1.8;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Onions] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Oregano);
-    //     strncpy(&cropData.plantName[0], "Oregano", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.3;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Oregano] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Oregano);
+    //     strncpy(&plantData.plantName[0], "Oregano", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.3;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Oregano] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_PakChoi);
-    //     strncpy(&cropData.plantName[0], "Pak-choi", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 7.0;
-    //     cropData.ecRange[0][0] = 1.5; cropData.ecRange[0][1] = 2.0;
-    //     _cropDataOld[Hydroponics_CropType_PakChoi] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_PakChoi);
+    //     strncpy(&plantData.plantName[0], "Pak-choi", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 7.0;
+    //     plantData.ecRange[0][0] = 1.5; plantData.ecRange[0][1] = 2.0;
+    //     _cropLibDataOld[Hydroponics_CropType_PakChoi] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Parsley);
-    //     strncpy(&cropData.plantName[0], "Parsley", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 1.8;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Parsley] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Parsley);
+    //     strncpy(&plantData.plantName[0], "Parsley", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 1.8;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Parsley] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Parsnip);
-    //     strncpy(&cropData.plantName[0], "Parsnip", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0;
-    //     cropData.ecRange[0][0] = 1.4; cropData.ecRange[0][1] = 1.8;
-    //     _cropDataOld[Hydroponics_CropType_Parsnip] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Parsnip);
+    //     strncpy(&plantData.plantName[0], "Parsnip", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0;
+    //     plantData.ecRange[0][0] = 1.4; plantData.ecRange[0][1] = 1.8;
+    //     _cropLibDataOld[Hydroponics_CropType_Parsnip] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Pea);
-    //     strncpy(&cropData.plantName[0], "Pea (common)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 1.8;
-    //     _cropDataOld[Hydroponics_CropType_Pea] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Pea);
+    //     strncpy(&plantData.plantName[0], "Pea (common)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 1.8;
+    //     _cropLibDataOld[Hydroponics_CropType_Pea] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_PeaSugar);
-    //     strncpy(&cropData.plantName[0], "Pea (sugar)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.8; // alt: 6.0-7.0
-    //     cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 1.9; // alt: 0.8-1.8
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_PeaSugar] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_PeaSugar);
+    //     strncpy(&plantData.plantName[0], "Pea (sugar)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.8; // alt: 6.0-7.0
+    //     plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 1.9; // alt: 0.8-1.8
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_PeaSugar] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Pepino);
-    //     strncpy(&cropData.plantName[0], "Pepino", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 5.0;
-    //     _cropDataOld[Hydroponics_CropType_Pepino] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Pepino);
+    //     strncpy(&plantData.plantName[0], "Pepino", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 5.0;
+    //     _cropLibDataOld[Hydroponics_CropType_Pepino] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_PeppersBell);
-    //     strncpy(&cropData.plantName[0], "Peppers (bell)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.5; // alt: 2.0-3.0
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_PeppersBell] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_PeppersBell);
+    //     strncpy(&plantData.plantName[0], "Peppers (bell)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.5; // alt: 2.0-3.0
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_PeppersBell] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_PeppersHot);
-    //     strncpy(&cropData.plantName[0], "Peppers (hot)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 3.5; // alt: 3.0-3.5
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_PeppersHot] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_PeppersHot);
+    //     strncpy(&plantData.plantName[0], "Peppers (hot)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 3.5; // alt: 3.0-3.5
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_PeppersHot] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Potato);
-    //     strncpy(&cropData.plantName[0], "Potato (common)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.5;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Potato] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Potato);
+    //     strncpy(&plantData.plantName[0], "Potato (common)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.0; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.5;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Potato] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_PotatoSweet);
-    //     strncpy(&cropData.plantName[0], "Potato (sweet)", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 2.5;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_PotatoSweet] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_PotatoSweet);
+    //     strncpy(&plantData.plantName[0], "Potato (sweet)", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.0; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 2.5;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_PotatoSweet] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Pumpkin);
-    //     strncpy(&cropData.plantName[0], "Pumpkin", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 7.5; // alt: 5.0-7.5
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
-    //     cropData.isLargePlant = true;
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_Pumpkin] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Pumpkin);
+    //     strncpy(&plantData.plantName[0], "Pumpkin", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 7.5; // alt: 5.0-7.5
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4;
+    //     plantData.isLargePlant = true;
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Pumpkin] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Radish);
-    //     strncpy(&cropData.plantName[0], "Radish", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 1.6; cropData.ecRange[0][1] = 2.2;
-    //     _cropDataOld[Hydroponics_CropType_Radish] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Radish);
+    //     strncpy(&plantData.plantName[0], "Radish", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 1.6; plantData.ecRange[0][1] = 2.2;
+    //     _cropLibDataOld[Hydroponics_CropType_Radish] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Rhubarb);
-    //     strncpy(&cropData.plantName[0], "Rhubarb", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 1.6; cropData.ecRange[0][1] = 2.0;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Rhubarb] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Rhubarb);
+    //     strncpy(&plantData.plantName[0], "Rhubarb", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.0; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 1.6; plantData.ecRange[0][1] = 2.0;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Rhubarb] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Rosemary);
-    //     strncpy(&cropData.plantName[0], "Rosemary", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.0;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Rosemary] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Rosemary);
+    //     strncpy(&plantData.plantName[0], "Rosemary", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.0;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.6;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Rosemary] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Sage);
-    //     strncpy(&cropData.plantName[0], "Sage", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.6;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Sage] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Sage);
+    //     strncpy(&plantData.plantName[0], "Sage", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.6;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Sage] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Silverbeet);
-    //     strncpy(&cropData.plantName[0], "Silverbeet", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.3;
-    //     _cropDataOld[Hydroponics_CropType_Silverbeet] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Silverbeet);
+    //     strncpy(&plantData.plantName[0], "Silverbeet", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.3;
+    //     _cropLibDataOld[Hydroponics_CropType_Silverbeet] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Spinach);
-    //     strncpy(&cropData.plantName[0], "Spinach", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.6; // alt: 6.0-7.0
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.3;
-    //     _cropDataOld[Hydroponics_CropType_Spinach] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Spinach);
+    //     strncpy(&plantData.plantName[0], "Spinach", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.6; // alt: 6.0-7.0
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.3;
+    //     _cropLibDataOld[Hydroponics_CropType_Spinach] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Squash);
-    //     strncpy(&cropData.plantName[0], "Squash", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
-    //     cropData.isLargePlant = true;
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_Squash] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Squash);
+    //     strncpy(&plantData.plantName[0], "Squash", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4;
+    //     plantData.isLargePlant = true;
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Squash] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Sunflower);
-    //     strncpy(&cropData.plantName[0], "Sunflower", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.2; cropData.ecRange[0][1] = 1.8;
-    //     _cropDataOld[Hydroponics_CropType_Sunflower] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Sunflower);
+    //     strncpy(&plantData.plantName[0], "Sunflower", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.2; plantData.ecRange[0][1] = 1.8;
+    //     _cropLibDataOld[Hydroponics_CropType_Sunflower] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Strawberries);
-    //     strncpy(&cropData.plantName[0], "Strawberries", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 5.5;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.4;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Strawberries] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Strawberries);
+    //     strncpy(&plantData.plantName[0], "Strawberries", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.0; plantData.phRange[0][1] = 5.5;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.4;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Strawberries] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_SwissChard);
-    //     strncpy(&cropData.plantName[0], "Swiss Chard", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.3;
-    //     _cropDataOld[Hydroponics_CropType_SwissChard] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_SwissChard);
+    //     strncpy(&plantData.plantName[0], "Swiss Chard", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.3;
+    //     _cropLibDataOld[Hydroponics_CropType_SwissChard] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Taro);
-    //     strncpy(&cropData.plantName[0], "Taro", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 5.5;
-    //     cropData.ecRange[0][0] = 2.5; cropData.ecRange[0][1] = 3.0;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Taro] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Taro);
+    //     strncpy(&plantData.plantName[0], "Taro", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.0; plantData.phRange[0][1] = 5.5;
+    //     plantData.ecRange[0][0] = 2.5; plantData.ecRange[0][1] = 3.0;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Taro] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Tarragon);
-    //     strncpy(&cropData.plantName[0], "Tarragon", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.0; cropData.ecRange[0][1] = 1.8;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Tarragon] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Tarragon);
+    //     strncpy(&plantData.plantName[0], "Tarragon", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.0; plantData.ecRange[0][1] = 1.8;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Tarragon] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Thyme);
-    //     strncpy(&cropData.plantName[0], "Thyme", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.0; cropData.phRange[0][1] = 7.0;
-    //     cropData.ecRange[0][0] = 0.8; cropData.ecRange[0][1] = 1.6;
-    //     cropData.isPerennial = true;
-    //     _cropDataOld[Hydroponics_CropType_Thyme] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Thyme);
+    //     strncpy(&plantData.plantName[0], "Thyme", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.0; plantData.phRange[0][1] = 7.0;
+    //     plantData.ecRange[0][0] = 0.8; plantData.ecRange[0][1] = 1.6;
+    //     plantData.isPerennial = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Thyme] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Tomato);
-    //     strncpy(&cropData.plantName[0], "Tomato", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.5; cropData.phRange[0][1] = 6.5; // alt: 5.5-6.0
-    //     cropData.ecRange[0][0] = 2.0; cropData.ecRange[0][1] = 5.0;
-    //     cropData.isToxicToPets = true;
-    //     cropData.isPrunningRequired = true;
-    //     _cropDataOld[Hydroponics_CropType_Tomato] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Tomato);
+    //     strncpy(&plantData.plantName[0], "Tomato", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.5; plantData.phRange[0][1] = 6.5; // alt: 5.5-6.0
+    //     plantData.ecRange[0][0] = 2.0; plantData.ecRange[0][1] = 5.0;
+    //     plantData.isToxicToPets = true;
+    //     plantData.isPruningRequired = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Tomato] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Turnip);
-    //     strncpy(&cropData.plantName[0], "Turnip", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0; cropData.phRange[0][1] = 6.5;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
-    //     _cropDataOld[Hydroponics_CropType_Turnip] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Turnip);
+    //     strncpy(&plantData.plantName[0], "Turnip", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0; plantData.phRange[0][1] = 6.5;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4;
+    //     _cropLibDataOld[Hydroponics_CropType_Turnip] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Watercress);
-    //     strncpy(&cropData.plantName[0], "Watercress", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.5; cropData.phRange[0][1] = 6.8;
-    //     cropData.ecRange[0][0] = 0.4; cropData.ecRange[0][1] = 1.8;
-    //     cropData.isPerennial = true;
-    //     cropData.isToxicToPets = true;
-    //     _cropDataOld[Hydroponics_CropType_Watercress] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Watercress);
+    //     strncpy(&plantData.plantName[0], "Watercress", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.5; plantData.phRange[0][1] = 6.8;
+    //     plantData.ecRange[0][0] = 0.4; plantData.ecRange[0][1] = 1.8;
+    //     plantData.isPerennial = true;
+    //     plantData.isToxicToPets = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Watercress] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Watermelon);
-    //     strncpy(&cropData.plantName[0], "Watermelon", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 5.8;
-    //     cropData.ecRange[0][0] = 1.5; cropData.ecRange[0][1] = 2.4;
-    //     cropData.isLargePlant = true;
-    //     _cropDataOld[Hydroponics_CropType_Watermelon] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Watermelon);
+    //     strncpy(&plantData.plantName[0], "Watermelon", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 5.8;
+    //     plantData.ecRange[0][0] = 1.5; plantData.ecRange[0][1] = 2.4;
+    //     plantData.isLargePlant = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Watermelon] = plantData;
     // }
 
-    // {   HydroponicsCropData cropData(Hydroponics_CropType_Zucchini);
-    //     strncpy(&cropData.plantName[0], "Zucchini", HYDRUINO_NAME_MAXSIZE);
-    //     cropData.phRange[0][0] = 6.0;
-    //     cropData.ecRange[0][0] = 1.8; cropData.ecRange[0][1] = 2.4;
-    //     cropData.isLargePlant = true;
-    //     _cropDataOld[Hydroponics_CropType_Zucchini] = cropData;
+    // {   HydroponicsCropLibData plantData(Hydroponics_CropType_Zucchini);
+    //     strncpy(&plantData.plantName[0], "Zucchini", HYDRUINO_NAME_MAXSIZE);
+    //     plantData.phRange[0][0] = 6.0;
+    //     plantData.ecRange[0][0] = 1.8; plantData.ecRange[0][1] = 2.4;
+    //     plantData.isLargePlant = true;
+    //     _cropLibDataOld[Hydroponics_CropType_Zucchini] = plantData;
     // }
 
     validateEntries();
@@ -787,77 +658,77 @@ void HydroponicsCropsLibrary::validateEntries()
 
         // Ensure phase begin week is increasing
         for(cropPhaseIndex = (Hydroponics_CropPhase)1; cropPhaseIndex < Hydroponics_CropPhase_Count; cropPhaseIndex = (Hydroponics_CropPhase)((int)cropPhaseIndex + 1)) {
-            if (_cropDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex] <= _cropDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex-1]) {
-                _cropDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex] = _cropDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex-1] + 1;
+            if (_cropLibDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex] <= _cropLibDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex-1]) {
+                _cropLibDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex] = _cropLibDataOld[cropTypeIndex].phaseBeginWeek[cropPhaseIndex-1] + 1;
             }
         }
 
         // Check for empty pH/EC second value entries
         for(cropPhaseIndex = (Hydroponics_CropPhase)0; cropPhaseIndex < Hydroponics_CropPhase_Count; cropPhaseIndex = (Hydroponics_CropPhase)((int)cropPhaseIndex + 1)) {
-            if (_cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][0] > 0 &&
-                _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] == 0) {
-                _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] = _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][0];
+            if (_cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][0] > 0 &&
+                _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] == 0) {
+                _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] = _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][0];
             }
 
-            if (_cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0] > 0 &&
-                _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] == 0) {
-                _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] = _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0];
+            if (_cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0] > 0 &&
+                _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] == 0) {
+                _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] = _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0];
             }
         }
 
         // Advance previous phase entries if later phase is empty
         for(cropPhaseIndex = (Hydroponics_CropPhase)1; cropPhaseIndex < Hydroponics_CropPhase_Count; cropPhaseIndex = (Hydroponics_CropPhase)((int)cropPhaseIndex + 1)) {
-            if (_cropDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex] == 0 &&
-                _cropDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex-1] > 0) {
-                _cropDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex] = _cropDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex-1];
+            if (_cropLibDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex] == 0 &&
+                _cropLibDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex-1] > 0) {
+                _cropLibDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex] = _cropLibDataOld[cropTypeIndex].lightHoursPerDay[cropPhaseIndex-1];
             }
 
-            if (_cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][0] == 0 &&
-                _cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][1] == 0 &&
-                _cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][0] > 0 &&
-                _cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][1] > 0) {
-                _cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][0] = _cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][0];
-                _cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][1] = _cropDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][1];
+            if (_cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][0] == 0 &&
+                _cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][1] == 0 &&
+                _cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][0] > 0 &&
+                _cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][1] > 0) {
+                _cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][0] = _cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][0];
+                _cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex][1] = _cropLibDataOld[cropTypeIndex].feedIntervalMins[cropPhaseIndex-1][1];
             }
 
-            if (_cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][0] == 0 &&
-                _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] == 0 &&
-                _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][0] > 0 &&
-                _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][1] > 0) {
-                _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][0] = _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][0];
-                _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] = _cropDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][1];
+            if (_cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][0] == 0 &&
+                _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] == 0 &&
+                _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][0] > 0 &&
+                _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][1] > 0) {
+                _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][0] = _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][0];
+                _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex][1] = _cropLibDataOld[cropTypeIndex].phRange[cropPhaseIndex-1][1];
             }
 
-            if (_cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0] == 0 &&
-                _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] == 0 &&
-                _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][0] > 0 &&
-                _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][1] > 0) {
-                _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0] = _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][0];
-                _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] = _cropDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][1];
+            if (_cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0] == 0 &&
+                _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] == 0 &&
+                _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][0] > 0 &&
+                _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][1] > 0) {
+                _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][0] = _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][0];
+                _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex][1] = _cropLibDataOld[cropTypeIndex].ecRange[cropPhaseIndex-1][1];
             }
 
-            if (_cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][0] == 0 &&
-                _cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][1] == 0 &&
-                _cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][0] > 0 &&
-                _cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][1] > 0) {
-                _cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][0] = _cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][0];
-                _cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][1] = _cropDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][1];
+            if (_cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][0] == 0 &&
+                _cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][1] == 0 &&
+                _cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][0] > 0 &&
+                _cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][1] > 0) {
+                _cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][0] = _cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][0];
+                _cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex][1] = _cropLibDataOld[cropTypeIndex].waterTempRange[cropPhaseIndex-1][1];
             }
 
-            if (_cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][0] == 0 &&
-                _cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][1] == 0 &&
-                _cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][0] > 0 &&
-                _cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][1] > 0) {
-                _cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][0] = _cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][0];
-                _cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][1] = _cropDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][1];
+            if (_cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][0] == 0 &&
+                _cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][1] == 0 &&
+                _cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][0] > 0 &&
+                _cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][1] > 0) {
+                _cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][0] = _cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][0];
+                _cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex][1] = _cropLibDataOld[cropTypeIndex].airTempRange[cropPhaseIndex-1][1];
             }
         }
     }
 }
 
-const HydroponicsCropData *HydroponicsCropsLibrary::checkoutCropData(Hydroponics_CropType cropType)
+const HydroponicsCropLibData *HydroponicsCropsLibrary::checkoutCropData(Hydroponics_CropType cropType)
 {
-    HydroponicsCropsLibraryBook *book = _cropData.getByKey(cropType);
+    HydroponicsCropsLibraryBook *book = _plantData.getByKey(cropType);
 
     if (book) {
         book->count += 1;
@@ -865,82 +736,73 @@ const HydroponicsCropData *HydroponicsCropsLibrary::checkoutCropData(Hydroponics
         // TODO: Create from Flash PROGMEM conversion
         HydroponicsCropsLibraryBook tempBook;
 
-        memcpy(&(tempBook.data), &_cropDataOld[cropType], sizeof(HydroponicsCropData)); // remove after flash move
+        memcpy(&(tempBook.data), &_cropLibDataOld[cropType], sizeof(HydroponicsCropLibData)); // remove after flash move
         //deserializeJson(doc, F("TODO"));
         //book.data.fromJSONDocument(doc);
 
-        if (_cropData.add(tempBook)) {
-            book = _cropData.getByKey(cropType);
+        if (_plantData.add(tempBook)) {
+            book = _plantData.getByKey(cropType);
         }
     }
 
-    return book ? &(book->data) : NULL;
+    return book ? &(book->data) : nullptr;
 }
 
-void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropData *cropData)
+void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropLibData *plantData)
 {
-    //assert(cropData && "Invalid crop data");
-    HydroponicsCropsLibraryBook *book = _cropData.getByKey(cropData->cropType);
+    //assert(plantData && "Invalid crop data");
+    HydroponicsCropsLibraryBook *book = _plantData.getByKey(plantData->cropType);
     //assert(book && "No matching book for crop type");
 
     if (book) {
         book->count -= 1;
         if (book->count <= 0) {
-            _cropData.removeByKey(book->data.cropType);
+            _plantData.removeByKey(book->data.cropType);
         }
     }
 }
 
-// void HydroponicsCropsLibrary::setCustomCropData(const Hydroponics_CropType cropType, const HydroponicsCropData *cropData)
-// {
-//     //assert(cropType >= Hydroponics_CropType_Custom1 && cropType <= Hydroponics_CropType_Custom5 && "Invalid parameters");
-//     _cropDataOld[cropType] = *cropData;
-//     validateEntries();
-// }
 
-
-HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType, int positionIndex, time_t sowDate)
-    : _cropType(cropType), _positionIndex(positionIndex), _sowDate(sowDate),
-      _cropData(NULL), _growWeek(0), _cropPhase(Hydroponics_CropPhase_Undefined),
-      _key(HydroponicsCrop::getKeyFor(cropType, positionIndex))
+HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
+                                 Hydroponics_PositionIndex cropIndex,
+                                 Hydroponics_SubstrateType substrateType,
+                                 time_t sowDate)
+    : HydroponicsObject(HydroponicsIdentity(cropType, cropIndex)),
+      _substrateType(substrateType), _sowDate(sowDate),
+      _plantData(nullptr), _growWeek(0), _cropPhase(Hydroponics_CropPhase_Undefined)
 {
-    _cropData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
+    _plantData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
     recalcGrowWeekAndPhase();
 }
 
 HydroponicsCrop::~HydroponicsCrop()
 {
-    if (_cropData) { HydroponicsCropsLibrary::getInstance()->returnCropData(_cropData); _cropData = NULL; }
-}
-
-String HydroponicsCrop::getKey() const
-{
-    return _key;
-}
-
-String HydroponicsCrop::getKeyFor(Hydroponics_CropType cropType, int positionIndex)
-{
-    return stringForCropType(cropType, true) + String(positionIndex);
+    if (_plantData) { HydroponicsCropsLibrary::getInstance()->returnCropData(_plantData); _plantData = nullptr; }
 }
 
 Hydroponics_CropType HydroponicsCrop::getCropType() const
 {
-    return _cropType;
+    return _id.as.cropType;
 }
 
-const HydroponicsCropData *HydroponicsCrop::getCropData() const
+Hydroponics_PositionIndex HydroponicsCrop::getCropIndex() const
 {
-    return _cropData;
+    return _id.posIndex;
 }
 
-int HydroponicsCrop::getPositionIndex() const
+Hydroponics_SubstrateType HydroponicsCrop::getSubstrateType() const
 {
-    return _positionIndex;
+    return _substrateType;
 }
 
 time_t HydroponicsCrop::getSowDate() const
 {
     return _sowDate;
+}
+
+const HydroponicsCropLibData *HydroponicsCrop::getCropData() const
+{
+    return _plantData;
 }
 
 int HydroponicsCrop::getGrowWeek() const
@@ -951,12 +813,6 @@ int HydroponicsCrop::getGrowWeek() const
 Hydroponics_CropPhase HydroponicsCrop::getCropPhase() const
 {
     return _cropPhase;
-}
-
-void HydroponicsCrop::update()
-{
-    // TODO
-    recalcGrowWeekAndPhase();
 }
 
 void HydroponicsCrop::recalcGrowWeekAndPhase()

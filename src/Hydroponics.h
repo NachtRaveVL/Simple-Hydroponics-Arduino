@@ -38,7 +38,7 @@
 // Uncomment or -D this define to disable usage of the TaskScheduler library, which is used by default.
 //#define HYDRUINO_DISABLE_TASKSCHEDULER          // https://github.com/arkhipenko/TaskScheduler
 
-// Uncomment or -D this define to enable usage of the Scheduler library, iff TaskScheduler disabled, for SAM/SAMD architechtures only.
+// Uncomment or -D this define to enable usage of the Scheduler library, iff TaskScheduler disabled, for SAM/SAMD architectures only.
 //#define HYDRUINO_ENABLE_SCHEDULER               // https://github.com/arduino-libraries/Scheduler
 
 // Uncomment or -D this define to enable usage of the CoopTask library, iff both TaskScheduler/Scheduler disabled.
@@ -83,6 +83,7 @@
 #endif
 
 #include "ArduinoJson.h"                // JSON library
+#include "ArxSmartPtr.h"                // Shared pointer library
 #include "Callback.h"                   // Callback library
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
@@ -100,10 +101,14 @@
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
+#include "HydroponicsInterfaces.h"
 #include "HYdroponicsUtils.h"
+#include "HydroponicsDatas.h"
 #include "HydroponicsActuators.h"
-#include "HydroponicsCrops.h"
 #include "HydroponicsSensors.h"
+#include "HydroponicsCrops.h"
+#include "HydroponicsReservoirs.h"
+#include "HydroponicsRails.h"
 
 class Hydroponics {
 public:
@@ -130,8 +135,8 @@ public:
     // Initializes module. Typically called in setup().
     // See individual enums for more info.
     void init(Hydroponics_SystemMode systemMode = Hydroponics_SystemMode_Recycling,
-              Hydroponics_MeasurementMode measurementMode = Hydroponics_MeasurementMode_Default,
-              Hydroponics_LCDOutputMode lcdOutMode = Hydroponics_LCDOutputMode_Disabled,
+              Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Default,
+              Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);
     // Initializes module from EEPROM save, returning success flag
     bool initFromEEPROM();
@@ -156,69 +161,101 @@ public:
     void update();
 
 
-    // Actuator, sensor, and crop registration.
+    // Object Registration.
 
-    // Adds/removes acuator to/from system (ownership transfer - system will delete object upon class deconstruction unless unregistered)
-    bool registerActuator(HydroponicsActuator *actuator);
-    bool unregisterActuator(HydroponicsActuator *actuator);
+    // Adds/removes objects to/from system (ownership transfer)
+    bool registerObject(HydroponicsObject *obj);
+    bool unregisterObject(HydroponicsObject *obj);
 
-    // Convenience builders for actuators (unowned, NULL return = failure)
+    // Searches for object by key (nullptr return = no obj by that identity, index may use HYDRUINO_ATPOS_SEARCH* defines)
+    HydroponicsObject *findObjectByKey(HydroponicsIdentity identity) const;
+
+    inline HydroponicsActuator *findActuatorByKey(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
+        return reinterpret_cast<HydroponicsActuator *>(findObjectByKey(HydroponicsIdentity(actuatorType, actuatorIndex)));
+    }
+    inline HydroponicsSensor *findSensorByKey(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
+        return reinterpret_cast<HydroponicsSensor *>(findObjectByKey(HydroponicsIdentity(sensorType, sensorIndex)));
+    }
+    inline HydroponicsCrop *findCropByKey(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
+        return reinterpret_cast<HydroponicsCrop *>(findObjectByKey(HydroponicsIdentity(cropType, cropIndex)));
+    }
+    inline HydroponicsReservoir *findReservoirByKey(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
+        return reinterpret_cast<HydroponicsReservoir *>(findObjectByKey(HydroponicsIdentity(reservoirType, reservoirIndex)));
+    }
+    inline HydroponicsRail *findRailByKey(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
+        return reinterpret_cast<HydroponicsRail *>(findObjectByKey(HydroponicsIdentity(railType, railIndex)));
+    }
+
+    // Convenience builders for actuators (unowned, nullptr return = failure).
+
     HydroponicsRelayActuator *addGrowLightsRelay(byte outputPin);
-    HydroponicsRelayActuator *addWaterPumpRelay(byte outputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
+    HydroponicsRelayActuator *addWaterPumpRelay(byte outputPin);
     HydroponicsRelayActuator *addWaterHeaterRelay(byte outputPin);
     HydroponicsRelayActuator *addWaterAeratorRelay(byte outputPin);
     HydroponicsRelayActuator *addFanExhaustRelay(byte outputPin);
-    HydroponicsPWMActuator *addFanExhaustPWM(byte outputPin, byte writeBitResolution = 8);
-    HydroponicsRelayActuator *addPhUpPeristalticPumpRelay(byte outputPin);
-    HydroponicsRelayActuator *addPhDownPeristalticPumpRelay(byte outputPin);
-    HydroponicsRelayActuator *addNutrientPremixPeristalticPumpRelay(byte outputPin);
-    HydroponicsRelayActuator *addFreshWaterPeristalticPumpRelay(byte outputPin);
+    HydroponicsPWMActuator *addFanExhaustPWM(byte outputPin, byte outputBitRes = 8);
+    HydroponicsRelayActuator *addPeristalticPumpRelay(byte outputPin);
 
-    // Adds/removes sensor to/from system (ownership transfer)
-    bool registerSensor(HydroponicsSensor *sensor);
-    bool unregisterSensor(HydroponicsSensor *sensor);
+    // Convenience builders for common sensors (unowned, nullptr return = failure).
 
-    // Convenience builders for common sensors (unowned, NULL return = failure)
-    HydroponicsDHTSensor *addAirDHTTempHumiditySensor(byte inputPin, uint8_t dhtType = DHT12);
-    HydroponicsAnalogSensor *addAirCO2Sensor(byte inputPin, byte readBitResolution = 8);
-    HydroponicsAnalogSensor *addWaterPhMeter(byte inputPin, byte readBitResolution = 8);
-    HydroponicsAnalogSensor *addWaterTDSElectrode(byte inputPin, byte readBitResolution = 8);
-    HydroponicsDSSensor *addWaterDSTempSensor(byte inputPin, byte readBitResolution = 9);
-    HydroponicsAnalogSensor *addWaterPumpFlowSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsBinarySensor *addLowWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsBinarySensor *addHighWaterLevelIndicator(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater);
-    HydroponicsBinaryAnalogSensor *addLowWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsBinaryAnalogSensor *addHighWaterHeightMeter(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsBinaryAnalogSensor *addLowWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
-    HydroponicsBinaryAnalogSensor *addHighWaterUltrasonicSensor(byte inputPin, Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater, byte readBitResolution = 8);
+    // Adds a new binary level indicator to the system.
+    HydroponicsBinarySensor *addLevelIndicator(byte inputPin);                          // Digital input pin this sensor sits on
 
-    // Adds/removes crops to/from system (ownership transfer)
-    bool registerCrop(HydroponicsCrop *crop);
-    bool unregisterCrop(HydroponicsCrop *crop);
+    // Adds a new analog CO2 sensor to the system.
+    HydroponicsAnalogSensor *addCO2Sensor(byte inputPin,                                // Analog input pin this sensor sits on
+                                          byte inputBitRes = 8);                        // ADC bit resolution to use
+    // Adds a new analog PH meter to the system.
+    HydroponicsAnalogSensor *addPhMeter(byte inputPin,                                  // Analog input pin this sensor sits on
+                                        byte inputBitRes = 8);                          // ADC bit resolution to use
+    // Adds a new analog temperature sensor to the system.
+    HydroponicsAnalogSensor *addTempSensor(byte inputPin,                               // Analog input pin this sensor sits on
+                                           byte inputBitRes = 8);                       // ADC bit resolution to use
+    // Adds a new analog TDS electrode to the system.
+    HydroponicsAnalogSensor *addTDSElectrode(byte inputPin,                             // Analog input pin this sensor sits on
+                                             byte inputBitRes = 8);                     // ADC bit resolution to use
+    // Adds a new analog pump flow sensor to the system.
+    HydroponicsAnalogSensor *addPumpFlowSensor(byte inputPin,                           // Analog input pin this sensor sits on
+                                               byte inputBitRes = 8);                   // ADC bit resolution to use
+    // Adds a new analog water height meter to the system.
+    HydroponicsAnalogSensor *addWaterHeightMeter(byte inputPin,                         // Analog input pin this sensor sits on
+                                                 byte inputBitRes = 8);                 // ADC bit resolution to use
+    // Adds a new analog ultrasonic distance sensor to the system.
+    HydroponicsAnalogSensor *addUltrasonicDistanceSensor(byte inputPin,                 // Analog input pin this sensor sits on
+                                                         byte inputBitRes = 8);         // ADC bit resolution to use
 
-    // Convenience builders for crops (unowned, NULL return = failure)
-    HydroponicsCrop *addCropFromSowDate(const Hydroponics_CropType cropType, time_t sowDate, int positionIndex = -1);
-    HydroponicsCrop *addCropFromLastHarvest(const Hydroponics_CropType cropType, time_t lastHarvestDate, int positionIndex = -1);
+    // Adds a new digital DHT* OneWire temperature & humidity sensor to the system.
+    HydroponicsDHTOneWireSensor *addDHTTempHumiditySensor(byte inputPin,                // OneWire-based input pin this sensor sits on
+                                                          uint8_t dhtType = DHT12);     // Kind of DHT sensor (see DHT* defines)
+    // Adds a new digital DS18* OneWire submersible temperature sensor to the system.
+    HydroponicsDSOneWireSensor *addDSTemperatureSensor(byte inputPin,                   // OneWire-based input pin this sensor sits on
+                                                       byte inputBitRes = 12);          // OneWire bit resolution to use
+    // Adds a new digital TMP* OneWire soil moisture sensor to the system.
+    HydroponicsTMPOneWireSensor *addTMPSoilMoistureSensor(byte inputPin,                // OneWire-based input pin this sensor sits on
+                                                          byte inputBitRes = 12);       // OneWire bit resolution to use
+
+    // Convenience builders for crops (weak, nullptr return = failure, pos index may use HYDRUINO_ATPOS_SEARCH* defines)
+    HydroponicsCrop *addCropFromSowDate(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t sowDate);
+    HydroponicsCrop *addCropFromLastHarvest(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t lastHarvestDate);
 
 
     // Accessors.
 
-    static Hydroponics *getActiveInstance();                        // Currenty active Hydroponics instance (unowned)
+    static Hydroponics *getActiveInstance();                        // Currently active Hydroponics instance (unowned)
     uint32_t getI2CSpeed() const;                                   // i2c clock speed (Hz, default: 400kHz)
     uint32_t getSPISpeed() const;                                   // SPI clock speed (Hz, default: 4MHz)
     Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: Recycling)
     Hydroponics_MeasurementMode getMeasurementMode() const;         // System measurement mode (default: Imperial)
-    Hydroponics_LCDOutputMode getLCDOutputMode() const;             // System LCD output mode (default: disabled)
+    Hydroponics_DisplayOutputMode getDisplayOutputMode() const;     // System LCD output mode (default: disabled)
     Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
 
     EasyBuzzerClass *getPiezoBuzzer() const;                        // Piezo buzzer instance
-    I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazily instantiated, NULL return = failure/no device)
-    RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, NULL return = failure/no device)
-    SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, NULL return = failure/no device)
+    I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazily instantiated, nullptr return = failure/no device)
+    RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
+    SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
 
-    int getRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;         // Current number of relay devices registered with system, for the given rail (default params = from all rails)
-    int getActiveRelayCount(Hydroponics_RelayRail relayRail = Hydroponics_RelayRail_Undefined) const;   // Current number of active relay devices, for the given rail (default params = from all rails)
-    byte getMaxActiveRelayCount(Hydroponics_RelayRail relayRail) const;                                 // Maximum number of relay devices allowed active at a time, for the given rail (default: 2)
+    int getRelayCount(Hydroponics_RailType relayRail = Hydroponics_RailType_Undefined) const;         // Current number of relay devices registered with system, for the given rail (default params = from all rails)
+    int getActiveRelayCount(Hydroponics_RailType relayRail = Hydroponics_RailType_Undefined) const;   // Current number of active relay devices, for the given rail (default params = from all rails)
+    byte getMaxActiveRelayCount(Hydroponics_RailType relayRail) const;                                 // Maximum number of relay devices allowed active at a time, for the given rail (default: 2)
 
     int getActuatorCount() const;                                   // Current number of total actuators registered with system
     int getSensorCount() const;                                     // Current number of total sensors registered with system
@@ -226,20 +263,20 @@ public:
 
     String getSystemName() const;                                   // System display name (default: "Hydruino")
     uint32_t getPollingIntervalMillis() const;                      // System sensor polling interval (time between sensor reads) in milliseconds (default: 0 when disabled, 5000 when enabled)
-    float getReservoirVolume(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;  // Fluid reservoir volume, for given reservoir
-    float getPumpFlowRate(Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_FeedWater) const;     // Fluid pump flow rate, for given reservoir
+    float getReservoirVolume(Hydroponics_ReservoirType forFluidReservoir = Hydroponics_ReservoirType_FeedWater) const;    // Fluid reservoir volume, for given reservoir
+    float getPumpFlowRate(Hydroponics_ReservoirType forFluidReservoir = Hydroponics_ReservoirType_FeedWater) const;       // Fluid pump flow rate, for given reservoir
 
     int getControlInputRibbonPinCount();                            // Total number of pins being used for the current control input ribbon mode
     byte getControlInputPin(int ribbonPinIndex);                    // Control input pin mapped to ribbon pin index, or -1 (255) if not used
 
     // Mutators.
 
-    void setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RelayRail relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail. This is useful for managing power limits on your system.
+    void setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RailType relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail. This is useful for managing power limits on your system.
 
     void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE char limit)
     void setPollingIntervalMillis(uint32_t pollingIntMs);           // Sets system polling interval in milliseconds (does not enable polling, see enablePublishingTo* methods)
-    void setReservoirVolume(float reservoirVol, Hydroponics_FluidReservoir fluidReservoir); // Sets reservoir volume, for the given reservoir
-    void setPumpFlowRate(float pumpFlowRate, Hydroponics_FluidReservoir fluidReservoir);    // Sets pump flow rate, for the given reservoir
+    void setReservoirVolume(float reservoirVol, Hydroponics_ReservoirType forFluidReservoir);  // Sets reservoir volume, for the given reservoir
+    void setPumpFlowRate(float pumpFlowRate, Hydroponics_ReservoirType forFluidReservoir);     // Sets pump flow rate, for the given reservoir
 
     void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
 
@@ -279,6 +316,8 @@ protected:
 
     UserDelayFunc _uDelayMillisFunc;                        // User millisecond delay function
     UserDelayFunc _uDelayMicrosFunc;                        // User microsecond delay function
+
+    //BtreeList<String, shared_ptr<HydroponicsObject> > _objects; // Objects in system
 
     // Allocation & initialization.
 

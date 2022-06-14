@@ -12,69 +12,66 @@ class HydroponicsPWMActuator;
 
 #include "Hydroponics.h"
 
-// Hydroponic Actuator Base
-class HydroponicsActuator {
+// Hydroponics Actuator Base
+// This is the base class for all actuators, which defines how the actuator is identified and
+// where it lives. Other than that, consider it a pure virtual base class.
+class HydroponicsActuator : public HydroponicsObject {
 public:
-    HydroponicsActuator(byte outputPin,
-                        Hydroponics_ActuatorType actuatorType,
-                        Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
+    HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
+                        Hydroponics_PositionIndex actuatorIndex,
+                        byte outputPin = -1);
     virtual ~HydroponicsActuator();
 
     virtual void disableActuator() = 0;
     virtual void enableActuator() = 0;
-    void enableActuatorUntil(time_t disableDate);
+    void enableActuatorUntil(time_t disableDate);           // Will be refactored in future
     inline void enableActuatorFor(time_t enableTime) { enableActuatorUntil(now() + enableTime); }
 
     virtual void update();
 
-    String getKey() const;
-    static String getKeyFor(Hydroponics_ActuatorType actuatorType,
-                            Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined);
     byte getOutputPin() const;
     Hydroponics_ActuatorType getActuatorType() const;
-    Hydroponics_FluidReservoir getFluidReservoir() const;
+    Hydroponics_PositionIndex getActuatorIndex() const;
     bool getIsActuatorEnabled() const;
-    time_t getActuatorEnabledUntil() const;
+    time_t getActuatorEnabledUntil() const;                 // Will be refactored in future
 
 protected:
-    String _key;                                            // Identifier
     byte _outputPin;                                        // Output pin
-    Hydroponics_ActuatorType _actuatorType;                 // Actuator type
-    Hydroponics_FluidReservoir _fluidReservoir;             // Fluid reservoir type
     bool _enabled;                                          // Enabled flag
-    time_t _enabledUntil;                                   // Enabled until date (or 0 for undef)
+    time_t _enabledUntil;                                   // Enabled until date, else 0 = disabled // Will be refactored in future
 };
 
 
-// Relay-based Actuator
+// Relay-based Binary Actuator
+// This actuator acts as a standard on/off switch, typically paired with a variety of
+// different equipment from pumps to grow lights and heaters.
 class HydroponicsRelayActuator : public HydroponicsActuator {
 public:
-    HydroponicsRelayActuator(byte outputPin,
-                             Hydroponics_ActuatorType actuatorType,
-                             Hydroponics_RelayRail relayRail,
-                             Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined,
+    HydroponicsRelayActuator(Hydroponics_ActuatorType actuatorType,
+                             Hydroponics_PositionIndex actuatorIndex,
+                             byte outputPin,
                              bool activeLow = true);
     virtual ~HydroponicsRelayActuator();
 
     virtual void disableActuator();
     virtual void enableActuator();
 
-    Hydroponics_RelayRail getRelayRail() const;
     bool getActiveLow() const;
 
 protected:
-    Hydroponics_RelayRail _relayRail;                       // TODO
-    bool _activeLow;                                        // TODO
+    bool _activeLow;                                        // If pulling pin to a LOW state infers ACTIVE (default: true)
 };
 
 
-// PWM-based Actuator
+// PWM-based Variable Actuator
+// This actuator acts as a variable range dial, typically paired with a device that supports
+// PWM throttling of some kind, such as a powered exhaust fan, or variable level LEDs.
 class HydroponicsPWMActuator : public HydroponicsActuator {
 public:
-    HydroponicsPWMActuator(byte outputPin,
-                           Hydroponics_ActuatorType actuatorType,
-                           Hydroponics_FluidReservoir fluidReservoir = Hydroponics_FluidReservoir_Undefined,
-                           byte writeBitResolution = 8);
+    HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,
+                           Hydroponics_PositionIndex actuatorIndex,
+                           byte outputPin,
+                           byte outputBitResolution = 8);
     virtual ~HydroponicsPWMActuator();
 
     virtual void disableActuator();
@@ -86,13 +83,11 @@ public:
     void setPWMAmount(int amount);
 
     bool getIsActuatorEnabled(float tolerance) const;
-    int getPWMMaxAmount() const;
-    int getPWMBitResolution() const;
+    HydroponicsBitResolution getPWMResolution() const;
 
 protected:
     float _pwmAmount;                                       // TODO
-    int _pwmMaxAmount;                                      // TODO
-    byte _pwmBitRes;                                        // TODO
+    HydroponicsBitResolution _pwmResolution;                // PWM output resolution
 
     void applyPWM();
 };
