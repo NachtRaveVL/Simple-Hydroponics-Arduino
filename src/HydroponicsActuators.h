@@ -18,7 +18,7 @@ class HydroponicsPWMActuator;
 // where it lives, and what it's attached to.
 class HydroponicsActuator : public HydroponicsObject {
 public:
-    const enum { Relay, RelayPump, PWM, Unknown = -1 } classType;// Actuator class type (custom RTTI)
+    const enum { Relay, RelayPump, PWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
     inline bool isRelayClass() { return classType == Relay; }
     inline bool isRelayPumpClass() { return classType == RelayPump; }
     inline bool isPWMClass() { return classType == PWM; }

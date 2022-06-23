@@ -187,22 +187,22 @@ public:
     bool registerObject(shared_ptr<HydroponicsObject> obj);
     bool unregisterObject(shared_ptr<HydroponicsObject> obj);
 
-    // Searches for object by id key (nullptr return = no obj by that id, position index may use HYDRUINO_ATPOS_SEARCH* defines)
+    // Searches for object by id key (nullptr return = no obj by that id, position index may use HYDRUINO_POS_SEARCH* defines)
     shared_ptr<HydroponicsObject> objectById(HydroponicsIdentity id) const;
-    Hydroponics_PositionIndex firstPosition(HydroponicsIdentity id, bool taken = true);
-    inline Hydroponics_PositionIndex firstPositionTaken(HydroponicsIdentity id) { firstPosition(id, true); }
-    inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { firstPosition(id, false); }
-
+    Hydroponics_PositionIndex firstPosition(HydroponicsIdentity id, bool taken);
+    inline Hydroponics_PositionIndex firstPositionTaken(HydroponicsIdentity id) { return firstPosition(id, true); }
+    inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { return firstPosition(id, false); }
+ 
     inline shared_ptr<HydroponicsActuator> actuatorById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsActuator>(objectById(id)); }
-    inline shared_ptr<HydroponicsActuator> actuatorById(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsActuator>(objectById(HydroponicsIdentity(actuatorType, actuatorIndex))); }
+    inline shared_ptr<HydroponicsActuator> actuatorById(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsActuator>(objectById(HydroponicsIdentity(actuatorType, actuatorIndex))); }
     inline shared_ptr<HydroponicsSensor> sensorById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsSensor>(objectById(id)); }
-    inline shared_ptr<HydroponicsSensor> sensorById(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsSensor>(objectById(HydroponicsIdentity(sensorType, sensorIndex))); }
+    inline shared_ptr<HydroponicsSensor> sensorById(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsSensor>(objectById(HydroponicsIdentity(sensorType, sensorIndex))); }
     inline shared_ptr<HydroponicsCrop> cropById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsCrop>(objectById(id)); }
-    inline shared_ptr<HydroponicsCrop> cropById(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsCrop>(objectById(HydroponicsIdentity(cropType, cropIndex))); }
+    inline shared_ptr<HydroponicsCrop> cropById(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsCrop>(objectById(HydroponicsIdentity(cropType, cropIndex))); }
     inline shared_ptr<HydroponicsReservoir> reservoirById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsReservoir>(objectById(id)); }
-    inline shared_ptr<HydroponicsReservoir> reservoirById(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsReservoir>(objectById(HydroponicsIdentity(reservoirType, reservoirIndex))); }
+    inline shared_ptr<HydroponicsReservoir> reservoirById(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsReservoir>(objectById(HydroponicsIdentity(reservoirType, reservoirIndex))); }
     inline shared_ptr<HydroponicsRail> railById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(id)); }
-    inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
+    inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
 
     // Convenience builders for common actuators (shared, nullptr return = failure).
 
@@ -278,9 +278,8 @@ public:
     // Convenience builders for common reservoirs (shared, nullptr return = failure).
 
     // Adds a new simple fluid reservoir to the system using the given parameters.
-    shared_ptr<HydroponicsFluidReservoir> addFluidReservoir(Hydroponics_ReservoirType reservoirType,// Reservoir type
-                                                            float maxVolume = 5.0f,                 // Maximum volume
-                                                            Hydroponics_UnitsType maxVolumeUnits = Hydroponics_UnitsType_LiquidVolume_Gallons);// Maximum volume units
+    shared_ptr<HydroponicsFluidReservoir> addFluidReservoir(Hydroponics_ReservoirType reservoirType, // Reservoir type
+                                                            float maxVolume);                        // Maximum volume
 
     // Adds a drainage pipe to the system, which acts as an infinite reservoir.
     shared_ptr<HydroponicsInfiniteReservoir> addDrainagePipe();
@@ -318,7 +317,7 @@ public:
     String getSystemName() const;                                   // System display name (default: "Hydruino")
     uint32_t getPollingIntervalMillis() const;                      // System sensor polling interval (time between sensor reads), in milliseconds
     uint32_t getPollingFrameNumber() const;                         // System polling frame number for sensor frame tracking
-    bool isPollingFrameOld(uint32_t frame) const;             // Determines if a given frame # if out of date (true) or current (false)
+    bool isPollingFrameOld(uint32_t frame) const;                   // Determines if a given frame # if out of date (true) or current (false)
 
     int getControlInputRibbonPinCount();                            // Total number of pins being used for the current control input ribbon mode
     byte getControlInputPin(int ribbonPinIndex);                    // Control input pin mapped to ribbon pin index, or -1 (255) if not used

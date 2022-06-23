@@ -5,6 +5,7 @@
 
 #include "Hydroponics.h"
 #include <pins_arduino.h>
+#include <util/crc16.h>
 
 HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
     : // TODO: Determine which other architectures have variable bit res analog pins
@@ -31,7 +32,7 @@ Hydroponics_KeyType stringHash(const String &str)
 {
     Hydroponics_KeyType hash = 0;
     for(int index = 0; index < str.length(); ++index) {
-        hash += str[index] * pow(31, index);
+        hash = _crc16_update(hash, str[index]);
     }
     return hash != (Hydroponics_KeyType)-1 ? hash : 0;
 }
@@ -67,6 +68,7 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
     if (!cond) {
         msg = String(F("Assertion Failure (HARD): ")) + String(file) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
         logMessage(msg, true);
+        delay(10);
         abort();
     }
 }
@@ -905,10 +907,10 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
 
 String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool excludeSpecial)
 {
-    if (positionIndex >= 0 && positionIndex < HYDRUINO_ATPOS_MAXSIZE) {
-        return String(positionIndex + HYDRUINO_ATPOS_BEGFROM);
+    if (positionIndex >= 0 && positionIndex < HYDRUINO_POS_MAXSIZE) {
+        return String(positionIndex + HYDRUINO_POS_BEGFROM);
     } else if (!excludeSpecial) {
-        if (positionIndex == HYDRUINO_ATPOS_MAXSIZE) {
+        if (positionIndex == HYDRUINO_POS_MAXSIZE) {
             return F("PositionCount");
         } else {
             return F("PositionUndefined");
@@ -978,12 +980,12 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
 
 Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
 {
-    if (positionIndexStr == positionIndexToString(HYDRUINO_ATPOS_MAXSIZE)) {
-        return HYDRUINO_ATPOS_MAXSIZE;
+    if (positionIndexStr == positionIndexToString(HYDRUINO_POS_MAXSIZE)) {
+        return HYDRUINO_POS_MAXSIZE;
     } else if (positionIndexStr == positionIndexToString(-1)) {
         return -1;
     } else {
         int decode = positionIndexStr.toInt();
-        return decode >= 0 && decode < HYDRUINO_ATPOS_MAXSIZE ? decode : -1;
+        return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
     }
 }

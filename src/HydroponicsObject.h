@@ -32,19 +32,19 @@ struct HydroponicsIdentity {
 
     // Actuator id
     HydroponicsIdentity(Hydroponics_ActuatorType actuatorType,
-                        Hydroponics_PositionIndex positionIndex = -1);
+                        Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
     // Sensor id
     HydroponicsIdentity(Hydroponics_SensorType sensorType,
-                        Hydroponics_PositionIndex positionIndex = -1);
+                        Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
     // Crop id
     HydroponicsIdentity(Hydroponics_CropType cropType,
-                        Hydroponics_PositionIndex positionIndex = -1);
+                        Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
     // Reservoir id
     HydroponicsIdentity(Hydroponics_ReservoirType reservoirType,
-                        Hydroponics_PositionIndex positionIndex = -1);
+                        Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
     // Rail id
     HydroponicsIdentity(Hydroponics_RailType railType,
-                        Hydroponics_PositionIndex positionIndex = -1);
+                        Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
 
     union {
         Hydroponics_ActuatorType actuatorType;              // As actuator type enumeration

@@ -410,7 +410,7 @@ void Hydroponics::updateBuzzer()
 
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
-    HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_ATPOS_MAXSIZE, "Invalid position index");
+    HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, "Invalid position index");
     return _objects.insert(obj->getKey(), obj).second;
 }
 
@@ -426,12 +426,12 @@ bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
 
 shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) const
 {
-    if (id.posIndex == HYDRUINO_ATPOS_SEARCH_FROMBEG) {
-        while(++id.posIndex < HYDRUINO_ATPOS_MAXSIZE) {
+    if (id.posIndex == HYDRUINO_POS_SEARCH_FROMBEG) {
+        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
             auto obj = _objects.at(id.regenKey());
             if (obj) { return obj; }
         }
-    } else if (id.posIndex == HYDRUINO_ATPOS_SEARCH_FROMEND) {
+    } else if (id.posIndex == HYDRUINO_POS_SEARCH_FROMEND) {
         while(--id.posIndex >= 0) {
             auto obj = _objects.at(id.regenKey());
             if (obj) { return obj; }
@@ -446,17 +446,17 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
 
 Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, bool taken)
 {
-    if (id.posIndex != HYDRUINO_ATPOS_SEARCH_FROMEND) {
-        id.posIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG;
-        while(++id.posIndex < HYDRUINO_ATPOS_MAXSIZE) {
+    if (id.posIndex != HYDRUINO_POS_SEARCH_FROMEND) {
+        id.posIndex = HYDRUINO_POS_SEARCH_FROMBEG;
+        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
             auto obj = _objects.at(id.regenKey());
-            if (taken == (bool)obj) { return id.posIndex; }
+            if (taken == (obj != nullptr)) { return id.posIndex; }
         }
     } else {
-        id.posIndex = HYDRUINO_ATPOS_SEARCH_FROMEND;
+        id.posIndex = HYDRUINO_POS_SEARCH_FROMEND;
         while(--id.posIndex >= 0) {
             auto obj = _objects.at(id.regenKey());
-            if (taken == (bool)obj) { return id.posIndex; }
+            if (taken == (obj != nullptr)) { return id.posIndex; }
         }
     }
 
@@ -858,7 +858,7 @@ shared_ptr<HydroponicsSimpleCrop> Hydroponics::addCropFromLastHarvest(Hydroponic
     return crop;
 }
 
-shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics_ReservoirType reservoirType, float maxVolume, Hydroponics_UnitsType maxVolumeUnits)
+shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics_ReservoirType reservoirType, float maxVolume)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(reservoirType));
     HYDRUINO_SOFT_ASSERT((int)reservoirType >= 0 && reservoirType <= Hydroponics_ReservoirType_Count, "Invalid reservoir type");
@@ -869,7 +869,8 @@ shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics
         shared_ptr<HydroponicsFluidReservoir> reservoir(new HydroponicsFluidReservoir(
             reservoirType,
             positionIndex,
-            maxVolume, maxVolumeUnits
+            maxVolume,
+            positionIndex
         ));
         if (registerObject(reservoir)) { return reservoir; }
         else { reservoir = nullptr; }

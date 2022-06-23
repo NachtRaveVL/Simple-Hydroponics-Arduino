@@ -21,7 +21,7 @@
 #endif
 
 #define HYDRUINO_NAME_MAXSIZE               32                      // Naming character maximum size
-#define HYDRUINO_ATPOS_MAXSIZE              16                      // Position indicies maximum size
+#define HYDRUINO_POS_MAXSIZE                16                      // Position indicies maximum size
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
 #define HYDRUINO_LINKAGE_BASESIZE           4                       // Base growth factor for linkage list
 #define HYDRUINO_EEPROM_MEMORYSIZE          I2C_DEVICESIZE_24LC256  // Memory size for EEPROM (default: 256kb)
@@ -30,9 +30,9 @@
 typedef int8_t Hydroponics_PositionIndex;                           // Position indexing type
 typedef uint32_t Hydroponics_KeyType;                               // Key type
 
-#define HYDRUINO_ATPOS_SEARCH_FROMBEG       -1                      // Search from beginning to end, 0 up to MAXSIZE-1
-#define HYDRUINO_ATPOS_SEARCH_FROMEND       HYDRUINO_ATPOS_MAXSIZE  // Search from end to beginning, MAXSIZE-1 down to 0
-#define HYDRUINO_ATPOS_BEGFROM              1                       // Whenever position indexing starts at 1 or 0 (offset)
+#define HYDRUINO_POS_SEARCH_FROMBEG         -1                      // Search from beginning to end, 0 up to MAXSIZE-1
+#define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
+#define HYDRUINO_POS_BEGFROM                1                       // Whenever position indexing starts at 1 or 0 (offset)
 
 // Crop Type
 // Common crop types. Controls what pH, EC, etc. that a plant prefers.
