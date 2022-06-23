@@ -61,7 +61,7 @@ HydroponicsData::HydroponicsData(const char *ident, uint16_t version, uint16_t r
 {
     _size = sizeof(*this);
     HYDRUINO_SOFT_ASSERT(ident, "Invalid id");
-    strncpy(_ident.chars, ident, 4);
+    strncpy(_ident.chars, ident, sizeof(_ident.chars));
 }
 
 HydroponicsData::HydroponicsData(int16_t idType, int16_t classType, uint16_t version, uint16_t revision)
@@ -84,8 +84,8 @@ void HydroponicsData::fromBinaryStream(Stream *streamIn)
 
 void HydroponicsData::toJSONElement(JsonVariant &elementOut) const
 {
-    if (_ident.chars[0] > '\0' && _ident.chars[1] > '\0' && _ident.chars[2] > '\0' && _ident.chars[3] > '\0') {
-        elementOut[F("_ident")] = stringFromChars(_ident.chars, 4);
+    if (_ident.chars[0] == 'H') {
+        elementOut[F("_ident")] = stringFromChars(_ident.chars, sizeof(_ident.chars));
     } else {
         auto object = elementOut.createNestedObject(F("_ident"));
         object[F("type")] = _ident.object.idType;
@@ -98,9 +98,9 @@ void HydroponicsData::toJSONElement(JsonVariant &elementOut) const
 void HydroponicsData::fromJSONElement(JsonVariantConst &elementIn)
 {
     auto identObj = elementIn[F("_ident")];
-    const char *identStr = identObj.as<const char*>();
-    if (strlen(identStr) == 4) {
-        strncpy(_ident.chars, identStr, 4);
+    String identStr = identObj.as<String>();
+    if (identStr.length() == sizeof(_ident.chars)) {
+        strncpy(_ident.chars, identStr.c_str(), sizeof(_ident.chars));
     } else {
         _ident.object.idType = identObj[F("type")];
         _ident.object.classType = identObj[F("class")];
@@ -212,7 +212,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
       isPruningRequired(false), isToxicToPets(false)
 {
     _size = sizeof(*this);
-    memset(plantName, '\0', sizeof(plantName));
+    memset(cropName, '\0', sizeof(cropName));
     memset(phaseBeginWeek, 0, sizeof(phaseBeginWeek));
     memset(lightHoursPerDay, 0, sizeof(lightHoursPerDay));
     memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
@@ -230,7 +230,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
       isPruningRequired(false), isToxicToPets(false)
 {
     _size = sizeof(*this);
-    memset(plantName, '\0', sizeof(plantName));
+    memset(cropName, '\0', sizeof(cropName));
     memset(phaseBeginWeek, 0, sizeof(phaseBeginWeek));
     memset(lightHoursPerDay, 0, sizeof(lightHoursPerDay));
     memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
@@ -265,7 +265,7 @@ void HydroponicsCropsLibData::toJSONElement(JsonVariant &elementOut) const
     HydroponicsData::toJSONElement(elementOut);
 
     elementOut[F("cropType")] = cropTypeToString(cropType);
-    elementOut[F("plantName")] = stringFromChars(plantName, HYDRUINO_NAME_MAXSIZE);
+    elementOut[F("cropName")] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE);
 
     if (growWeeksToHarvest > 0) {
         elementOut[F("growWeeksToHarvest")] = growWeeksToHarvest;
@@ -349,8 +349,8 @@ void HydroponicsCropsLibData::fromJSONElement(JsonVariantConst &elementIn)
     HydroponicsData::fromJSONElement(elementIn);
 
     cropType = cropTypeFromString(elementIn[F("cropType")]);
-    String plantNameStr = elementIn[F("plantName")];
-    strncpy(plantName, plantNameStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    String cropNameStr = elementIn[F("cropName")];
+    strncpy(cropName, cropNameStr.c_str(), HYDRUINO_NAME_MAXSIZE);
 
     // TODO
 }
