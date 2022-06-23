@@ -6,21 +6,76 @@
 #include "Hydroponics.h"
 #include <pins_arduino.h>
 
-HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn)
-    : // TODO: Determine which other platforms have variable bit res analog pin reads
+HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
+    : // TODO: Determine which other architectures have variable bit res analog pins
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
           bitRes(constrain(bitResIn, 8, 12)), maxVal(1 << constrain(bitResIn, 8, 12))
       #else
           bitRes(8), maxVal(256)
       #endif
 {
-    //assert(bitRes == bitResIn && "Resolved resolution mismatch with passed resolution");
+    if (override) {
+        bitRes = bitResIn;
+        maxVal = 1 << bitResIn;
+    } else {
+        HYDRUINO_SOFT_ASSERT(bitRes == bitResIn, "Resolved resolution mismatch with passed resolution");
+    }
 }
 
+Hydroponics *getHydroponicsInstance()
+{
+    return Hydroponics::getActiveInstance();
+}
+
+Hydroponics_KeyType stringHash(const String &str)
+{
+    Hydroponics_KeyType hash = 0;
+    for(int index = 0; index < str.length(); ++index) {
+        hash += str[index] * pow(31, index);
+    }
+    return hash != (Hydroponics_KeyType)-1 ? hash : 0;
+}
+
+#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+
+void logMessage(String message, bool flushAfter)
+{
+    if (Serial) { Serial.println(message); }
+
+    auto hydroponics = getHydroponicsInstance();
+    if (hydroponics) {
+        hydroponics->forwardLogMessage(message, flushAfter);
+    }
+
+    if (flushAfter) {
+        if (Serial) { Serial.flush(); }
+        yield();
+    }
+}
+
+void softAssert(bool cond, String msg, const char *file, const char *func, int line)
+{
+    if (!cond) {
+        msg = String(F("Assertion Failure: ")) + String(file) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;    
+        logMessage(msg);
+        return;
+    }
+}
+
+void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
+{
+    if (!cond) {
+        msg = String(F("Assertion Failure (HARD): ")) + String(file) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
+        logMessage(msg, true);
+        abort();
+    }
+}
+
+#endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 
 bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut)
 {
-    if (!valueOut) return false;
+    if (!valueOut || unitsOut == Hydroponics_UnitsType_Undefined || unitsIn == unitsOut) return false;
 
     switch (unitsIn) {
         case Hydroponics_UnitsType_Temperature_Celsius:
@@ -287,11 +342,137 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
     return false;
 }
 
-void convertStdUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundNumDecPlaces)
+void convertStdUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces)
 {
     if (tryConvertStdUnits(*valueInOut, *unitsInOut, valueInOut, unitsOut)) {
         *unitsInOut = unitsOut;
-        *valueInOut = roundToDecPlaces(*valueInOut, roundNumDecPlaces);
+        *valueInOut = roundToDecimalPlaces(*valueInOut, roundToDecPlaces);
+    }
+}
+
+Hydroponics_UnitsType defaultTemperatureUnits(Hydroponics_MeasurementMode measureMode)
+{
+    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
+        auto hydroponics = getHydroponicsInstance();
+        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+            return Hydroponics_UnitsType_Temperature_Fahrenheit;
+        case Hydroponics_MeasurementMode_Metric:
+            return Hydroponics_UnitsType_Temperature_Celsius;
+        case Hydroponics_MeasurementMode_Scientific:
+            return Hydroponics_UnitsType_Temperature_Kelvin;
+        default:
+            return Hydroponics_UnitsType_Undefined;
+    }
+}
+
+Hydroponics_UnitsType defaultDistanceUnits(Hydroponics_MeasurementMode measureMode)
+{
+    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
+        auto hydroponics = getHydroponicsInstance();
+        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+            return Hydroponics_UnitsType_Distance_Meters;
+        case Hydroponics_MeasurementMode_Metric:
+        case Hydroponics_MeasurementMode_Scientific:
+            return Hydroponics_UnitsType_Distance_Meters;
+        default:
+            return Hydroponics_UnitsType_Undefined;
+    }
+}
+
+Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode)
+{
+    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
+        auto hydroponics = getHydroponicsInstance();
+        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+            return Hydroponics_UnitsType_Weight_Pounds;
+        case Hydroponics_MeasurementMode_Metric:
+        case Hydroponics_MeasurementMode_Scientific:
+            return Hydroponics_UnitsType_Weight_Kilogram;
+        default:
+            return Hydroponics_UnitsType_Undefined;
+    }
+}
+
+Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode)
+{
+    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
+        auto hydroponics = getHydroponicsInstance();
+        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+            return Hydroponics_UnitsType_LiquidVolume_Gallons;
+        case Hydroponics_MeasurementMode_Metric:
+        case Hydroponics_MeasurementMode_Scientific:
+            return Hydroponics_UnitsType_LiquidVolume_Liters;
+        default:
+            return Hydroponics_UnitsType_Undefined;
+    }
+}
+
+Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measureMode)
+{
+    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
+        auto hydroponics = getHydroponicsInstance();
+        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+            return Hydroponics_UnitsType_LiquidFlow_GallonsPerMin;
+        case Hydroponics_MeasurementMode_Metric:
+        case Hydroponics_MeasurementMode_Scientific:
+            return Hydroponics_UnitsType_LiquidFlow_LitersPerMin;
+        default:
+            return Hydroponics_UnitsType_Undefined;
+    }
+}
+
+Hydroponics_UnitsType defaultConcentrationUnits(Hydroponics_MeasurementMode measureMode)
+{
+    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
+        auto hydroponics = getHydroponicsInstance();
+        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+        case Hydroponics_MeasurementMode_Metric:
+        case Hydroponics_MeasurementMode_Scientific:
+            return Hydroponics_UnitsType_Concentration_EC;
+        default:
+            return Hydroponics_UnitsType_Undefined;
+    }
+}
+
+int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode)
+{
+    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
+        auto hydroponics = getHydroponicsInstance();
+        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+        case Hydroponics_MeasurementMode_Metric:
+            return 1;
+        case Hydroponics_MeasurementMode_Scientific:
+            return 2;
+        default:
+            return -1;
     }
 }
 
@@ -400,7 +581,7 @@ bool checkPinIsDigital(byte pin)
     return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin);
 }
 
-bool checkPinCanPWMOutput(byte pin)
+bool checkPinIsPWMOutput(byte pin)
 {
     return digitalPinHasPWM(pin);
 }

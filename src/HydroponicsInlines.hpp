@@ -1,6 +1,6 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
-    Hydroponics Inlines
+    Hydroponics Common Inlines
 */
 #ifndef HydroponicsInlines_HPP
 #define HydroponicsInlines_HPP
@@ -14,9 +14,9 @@ static inline bool isValidPin(byte pin) { return pin != -1; }
 static inline bool isFPEqual(float lhs, float rhs) { return fabsf(rhs - lhs) <= FLT_EPSILON; }
 
 // Rounds floating point value to the number of decimal places.
-static inline float roundToDecPlaces(float valueIn, int numDecPlaces) {
-    if (numDecPlaces >= 0) {
-        float shiftScaler = powf(10.0f, numDecPlaces);
+static inline float roundToDecimalPlaces(float valueIn, int decimalPlaces) {
+    if (decimalPlaces >= 0) {
+        float shiftScaler = powf(10.0f, decimalPlaces);
         return roundf(valueIn * shiftScaler) / shiftScaler;
     }
     return valueIn;

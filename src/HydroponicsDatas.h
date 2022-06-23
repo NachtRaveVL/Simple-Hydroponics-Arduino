@@ -9,34 +9,59 @@
 struct HydroponicsData;
 struct HydroponicsSystemData;
 struct HydroponicsCalibrationData;
-struct HydroponicsCropLibData;
-
-struct HydroponicsSensorMeasurement;
-struct HydroponicsBinarySensorMeasurement;
-struct HydroponicsAnalogSensorMeasurement;
-struct HydroponicsDHTOneWireSensorMeasurement;
+struct HydroponicsCropsLibData;
 
 #include "Hydroponics.h"
 
-// Base class for serializable (JSON+Binary) storage data.
+// Creates a new hydroponics data object corresponding to an input binary stream (ownership transfer - user code *must* delete returned data).
+extern HydroponicsData *dataFromBinaryStream(Stream *streamIn);
+
+// Creates a new hydroponics data object corresponding to an input JSON element (ownership transfer - user code *must* delete returned data).
+extern HydroponicsData *dataFromJSONElement(JsonVariantConst &elementIn);
+
+// Hydroponics Data Base Class
+// Base class for serializable (JSON+Binary) storage data, used to define the base
+// header of all data stored internally.
 // NOTE: NON-CONST VALUE TYPES ONLY. All data *MUST* be memcpy'able.
 struct HydroponicsData : public HydroponicsJSONSerializableInterface, public HydroponicsBinarySerializableInterface {
-    // Default constructor
+    HydroponicsData();                                          // Default constructor
     HydroponicsData(const char *ident,                          // 4-char identifier
+                    uint16_t version = 1,                       // Data structure version #
+                    uint16_t revision = 1);                     // Stored data revision #
+    HydroponicsData(int16_t idType,                             // ID type enum value
+                    int16_t classType,                          // Class type enum value
                     uint16_t version = 1,                       // Data structure version #
                     uint16_t revision = 1);                     // Stored data revision #
 
     virtual void toBinaryStream(Print *streamOut) const override;
     virtual void fromBinaryStream(Stream *streamIn) override;
-    virtual void toJSONDocument(JsonDocument *docOut) const override;
-    virtual void fromJSONDocument(JsonDocument *docIn) override;
+    virtual void toJSONElement(JsonVariant &elementOut) const override;
+    virtual void fromJSONElement(JsonVariantConst &elementIn) override;
 
-    char _ident[4];                                             // Data structure identifier
+    union {
+        char chars[4];                                          // Data structure 4-char identifier
+        struct {
+          int16_t idType;                                       // Object type enum value (e.g. actuator, sensor, etc.)
+          int16_t classType;                                    // Object class type enum value (e.g. pump, dht1w, etc.)
+        } object;
+    } _ident;                                                   // Identifier union
+    uint16_t _size;                                             // The size (in bytes) of the data
     uint16_t _version;                                          // Version # of data container
     uint16_t _revision;                                         // Revision # of stored data
+    bool _modified;                                             // Flag tracking modified status
 
-    inline void _bumpVer() { _version += 1; }
-    inline void _bumpRev() { _revision += 1; }
+    inline void _bumpRev() { _revision += 1; _setModded(); }
+    inline void _bumpRevIfNotAlreadyModded() { if (!_modified) { _bumpRev(); } } // Should be called before modifying data
+    inline void _setModded() { _modified = true; }              // Should be called after modifying any data
+    inline void _unsetModded() { _modified = false; }           // Should be called after save-out
+
+    inline void _copyFrom(const HydroponicsData *otherData) { memcpy(this, otherData, min(_size, otherData->_size)); _setModded(); }
+    inline void _copyTo(HydroponicsData *otherData) { if (otherData) { otherData->_copyFrom(this); } }
+
+    inline bool isSystemData() { return strncasecmp(_ident.chars, "HSYS", 4) == 0; }
+    inline bool isCalibrationData() { return strncasecmp(_ident.chars, "HSYS", 4) == 0; }
+    inline bool isCropsLibData() { return strncasecmp(_ident.chars, "HCLD", 4) == 0; }
+    inline bool isUnknownData() { return !isSystemData() && !isCalibrationData() && !isCropsLibData(); }
 };
 
 // User System Setup Data
@@ -44,10 +69,10 @@ struct HydroponicsData : public HydroponicsJSONSerializableInterface, public Hyd
 struct HydroponicsSystemData : public HydroponicsData {
     HydroponicsSystemData();                                    // Default constructor
 
-    virtual void toBinaryStream(Print *streamOut) const override;
-    virtual void fromBinaryStream(Stream *streamIn) override;
-    virtual void toJSONDocument(JsonDocument *docOut) const override;
-    virtual void fromJSONDocument(JsonDocument *docIn) override;
+    void toBinaryStream(Print *streamOut) const override;
+    void fromBinaryStream(Stream *streamIn) override;
+    void toJSONElement(JsonVariant &elementOut) const override;
+    void fromJSONElement(JsonVariantConst &elementIn) override;
 
     Hydroponics_SystemMode systemMode;                          // System type mode
     Hydroponics_MeasurementMode measureMode;                    // System measurement mode
@@ -57,11 +82,6 @@ struct HydroponicsSystemData : public HydroponicsData {
     char systemName[HYDRUINO_NAME_MAXSIZE];                     // System name
     int8_t timeZoneOffset;                                      // Timezone offset
     uint32_t pollingIntMs;                                      // Sensor polling interval (milliseconds)
-    byte maxActiveRelayCount[Hydroponics_RailType_Count];       // Total active relays on same rail per rail
-    float reservoirVol[Hydroponics_ReservoirType_Count];        // Total reservoir volume of each type
-    Hydroponics_UnitsType reservoirVolUnits;                    // Units of reservoir volume
-    float pumpFlowRate[Hydroponics_ReservoirType_Count];        // Pump flow rate for each reservoir
-    Hydroponics_UnitsType pumpFlowRateUnits;                    // Units of pump flow rate
 };
 
 // Sensor Calibration Data
@@ -75,10 +95,10 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     HydroponicsCalibrationData();
     HydroponicsCalibrationData(HydroponicsIdentity sensorId, Hydroponics_UnitsType calibUnits = Hydroponics_UnitsType_Undefined);
 
-    virtual void toBinaryStream(Print *streamOut) const override;
-    virtual void fromBinaryStream(Stream *streamIn) override;
-    virtual void toJSONDocument(JsonDocument *docOut) const override;
-    virtual void fromJSONDocument(JsonDocument *docIn) override;
+    void toBinaryStream(Print *streamOut) const override;
+    void fromBinaryStream(Stream *streamIn) override;
+    void toJSONElement(JsonVariant &elementOut) const override;
+    void fromJSONElement(JsonVariantConst &elementIn) override;
 
     // Transforms value from raw (or initial) value into calibrated (or transformed) value.
     inline float transform(float rawValue) const { return (rawValue * multiplier) + offset; }
@@ -128,14 +148,14 @@ struct HydroponicsCalibrationData : public HydroponicsData {
 
 // Crop Library Data
 // _ident: HCLD. Hydroponic crop library data.
-struct HydroponicsCropLibData : public HydroponicsData {
-    HydroponicsCropLibData();                                   // Default constructor
-    HydroponicsCropLibData(Hydroponics_CropType cropType);      // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
+struct HydroponicsCropsLibData : public HydroponicsData {
+    HydroponicsCropsLibData();                                   // Default constructor
+    HydroponicsCropsLibData(Hydroponics_CropType cropType);      // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
 
-    virtual void toBinaryStream(Print *streamOut) const override;
-    virtual void fromBinaryStream(Stream *streamIn) override;
-    virtual void toJSONDocument(JsonDocument *docOut) const override;
-    virtual void fromJSONDocument(JsonDocument *docIn) override;
+    void toBinaryStream(Print *streamOut) const override;
+    void fromBinaryStream(Stream *streamIn) override;
+    void toJSONElement(JsonVariant &elementOut) const override;
+    void fromJSONElement(JsonVariantConst &elementIn) override;
 
     Hydroponics_CropType cropType;                              // Crop type
     char plantName[HYDRUINO_NAME_MAXSIZE];                      // Name of plant
@@ -153,47 +173,6 @@ struct HydroponicsCropLibData : public HydroponicsData {
     bool isPerennial;                                           // Flag indicating plant grows back year after year
     bool isPruningRequired;                                     // Flag indicating plant benefits from active pruning
     bool isToxicToPets;                                         // Flag indicating plant toxicity to common house pets (cats + dogs)
-};
-
-// Sensor Data Measurement Base
-struct HydroponicsSensorMeasurement {
-    HydroponicsSensorMeasurement();
-    HydroponicsSensorMeasurement(time_t timestamp);
-
-    time_t timestamp;                                           // Time event recorded (UTC unix time)
-};
-
-// Binary Sensor Data Measurement
-struct HydroponicsBinarySensorMeasurement : public HydroponicsSensorMeasurement {
-    HydroponicsBinarySensorMeasurement();
-    HydroponicsBinarySensorMeasurement(bool state, time_t timestamp);
-
-    bool state;                                                 // Polled state
-};
-
-// Analog Sensor Data Measurement
-struct HydroponicsAnalogSensorMeasurement : public HydroponicsSensorMeasurement {
-    HydroponicsAnalogSensorMeasurement();
-    HydroponicsAnalogSensorMeasurement(float value, Hydroponics_UnitsType units, time_t timestamp);
-
-    float value;                                                // Polled value
-    Hydroponics_UnitsType units;                                // Units of value
-};
-
-// DHT Sensor Data Measurement
-struct HydroponicsDHTOneWireSensorMeasurement : public HydroponicsSensorMeasurement {
-    HydroponicsDHTOneWireSensorMeasurement();
-    HydroponicsDHTOneWireSensorMeasurement(float temperature, Hydroponics_UnitsType temperatureUnits,
-                                           float humidity, Hydroponics_UnitsType humidityUnits,
-                                           float heatIndex, Hydroponics_UnitsType heatIndexUnits,
-                                           time_t timestamp);
-
-    float temperature;                                          // Temperature value
-    Hydroponics_UnitsType temperatureUnits;                     // Units of temperature
-    float humidity;                                             // Humidity value
-    Hydroponics_UnitsType humidityUnits;                        // Units of humidity
-    float heatIndex;                                            // Heat index value
-    Hydroponics_UnitsType heatIndexUnits;                       // Units of heat index
 };
 
 #endif // /ifndef HydroponicsDatas_H

@@ -48,10 +48,6 @@
 #define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
 
-// Hookup Callouts
-// -PLEASE READ-
-// TODO.
-
 #if defined(ARDUINO) && ARDUINO >= 100
 #include <Arduino.h>
 #elif defined(__MBED__)
@@ -63,6 +59,18 @@
 #include <SPI.h>
 #include <SD.h>
 #include <Wire.h>
+#include <util/atomic.h>
+
+#if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
+#undef HYDRUINO_ENABLE_DEBUG_OUTPUT
+#endif
+#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+#define HYDRUINO_SOFT_ASSERT(cond,msg)  softAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
+#define HYDRUINO_HARD_ASSERT(cond,msg)  hardAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
+#else
+#define HYDRUINO_SOFT_ASSERT(cond,msg)  ((void)0)
+#define HYDRUINO_HARD_ASSERT(cond,msg)  ((void)0)
+#endif
 
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 #if !defined(HYDRUINO_DISABLE_TASKSCHEDULER)
@@ -83,6 +91,7 @@
 #endif
 
 #include "ArduinoJson.h"                // JSON library
+#include "ArxContainer.h"               // STL-like container library
 #include "ArxSmartPtr.h"                // Shared pointer library
 #include "Callback.h"                   // Callback library
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
@@ -99,11 +108,22 @@
 #include "TimeLib.h"                    // Time library
 #include "tcMenu.h"                     // tcMenu library
 
+#if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
+using namespace std;
+#else
+using namespace arx;
+#endif
+using namespace arx::stdx;
+
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
 #include "HydroponicsInterfaces.h"
-#include "HYdroponicsUtils.h"
+#include "HydroponicsObject.h"
+#include "HydroponicsUtils.hpp"
 #include "HydroponicsDatas.h"
+#include "HydroponicsCropsLibrary.h"
+#include "HydroponicsMeasurements.h"
+#include "HydroponicsTriggers.h"
 #include "HydroponicsActuators.h"
 #include "HydroponicsSensors.h"
 #include "HydroponicsCrops.h"
@@ -143,14 +163,14 @@ public:
     // Initializes module from MicroSD save, returning success flag
     bool initFromSDCard(String configFile = "hydruino.cfg");
 
-    // TODO: maybe?
+    // TODO: maybe like this?
     //bool initFromNetworkURL(wifiClient, serverData, configFile = "hydruino.cfg");
-    //void enableLoggingToSDCard(sd, logFilePrefix = "logs/sys");
-    //void enableLoggingToNetworkURL(netClient, urlData, logFilePrefix = "logs/sys");
-    //void enablePublishingToSDCard(sd, csvFilePrefix = "logs/dat");
-    //void enablePublishingToNetworkURL(netClient, urlData, csvFilePrefix = "logs/dat");
-    //void enablePublishingToMQTT(mqttBroker, deviceData);
-    //void enablePublishingToWebAPI(netClient, urlData, apiInterface);
+    //void enableSysLoggingToSDCard(sd, logFilePrefix = "logs/sys");
+    //void enableSysLoggingToNetworkURL(netClient, urlData, logFilePrefix = "logs/sys");
+    //void enableDataPublishingToSDCard(sd, csvFilePrefix = "logs/dat");
+    //void enableDataPublishingToNetworkURL(netClient, urlData, csvFilePrefix = "logs/dat");
+    //void enableDataPublishingToMQTT(mqttBroker, deviceData);
+    //void enableDataPublishingToWebAPI(netClient, urlData, apiInterface);
 
     // Launches system into operational mode. Typically called last in setup().
     // Once launch is called further system setup may no longer be available due to dependency constraints.
@@ -161,82 +181,118 @@ public:
     void update();
 
 
-    // Object Registration.
+    // Object Creation & Management.
 
-    // Adds/removes objects to/from system (ownership transfer)
-    bool registerObject(HydroponicsObject *obj);
-    bool unregisterObject(HydroponicsObject *obj);
+    // Adds/removes objects to/from system, returning success
+    bool registerObject(shared_ptr<HydroponicsObject> obj);
+    bool unregisterObject(shared_ptr<HydroponicsObject> obj);
 
-    // Searches for object by key (nullptr return = no obj by that identity, index may use HYDRUINO_ATPOS_SEARCH* defines)
-    HydroponicsObject *findObjectByKey(HydroponicsIdentity identity) const;
+    // Searches for object by id key (nullptr return = no obj by that id, position index may use HYDRUINO_ATPOS_SEARCH* defines)
+    shared_ptr<HydroponicsObject> objectById(HydroponicsIdentity id) const;
+    Hydroponics_PositionIndex firstPosition(HydroponicsIdentity id, bool taken = true);
+    inline Hydroponics_PositionIndex firstPositionTaken(HydroponicsIdentity id) { firstPosition(id, true); }
+    inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { firstPosition(id, false); }
 
-    inline HydroponicsActuator *findActuatorByKey(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
-        return reinterpret_cast<HydroponicsActuator *>(findObjectByKey(HydroponicsIdentity(actuatorType, actuatorIndex)));
-    }
-    inline HydroponicsSensor *findSensorByKey(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
-        return reinterpret_cast<HydroponicsSensor *>(findObjectByKey(HydroponicsIdentity(sensorType, sensorIndex)));
-    }
-    inline HydroponicsCrop *findCropByKey(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
-        return reinterpret_cast<HydroponicsCrop *>(findObjectByKey(HydroponicsIdentity(cropType, cropIndex)));
-    }
-    inline HydroponicsReservoir *findReservoirByKey(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
-        return reinterpret_cast<HydroponicsReservoir *>(findObjectByKey(HydroponicsIdentity(reservoirType, reservoirIndex)));
-    }
-    inline HydroponicsRail *findRailByKey(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const {
-        return reinterpret_cast<HydroponicsRail *>(findObjectByKey(HydroponicsIdentity(railType, railIndex)));
-    }
+    inline shared_ptr<HydroponicsActuator> actuatorById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsActuator>(objectById(id)); }
+    inline shared_ptr<HydroponicsActuator> actuatorById(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsActuator>(objectById(HydroponicsIdentity(actuatorType, actuatorIndex))); }
+    inline shared_ptr<HydroponicsSensor> sensorById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsSensor>(objectById(id)); }
+    inline shared_ptr<HydroponicsSensor> sensorById(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsSensor>(objectById(HydroponicsIdentity(sensorType, sensorIndex))); }
+    inline shared_ptr<HydroponicsCrop> cropById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsCrop>(objectById(id)); }
+    inline shared_ptr<HydroponicsCrop> cropById(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsCrop>(objectById(HydroponicsIdentity(cropType, cropIndex))); }
+    inline shared_ptr<HydroponicsReservoir> reservoirById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsReservoir>(objectById(id)); }
+    inline shared_ptr<HydroponicsReservoir> reservoirById(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsReservoir>(objectById(HydroponicsIdentity(reservoirType, reservoirIndex))); }
+    inline shared_ptr<HydroponicsRail> railById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(id)); }
+    inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
 
-    // Convenience builders for actuators (unowned, nullptr return = failure).
+    // Convenience builders for common actuators (shared, nullptr return = failure).
 
-    HydroponicsRelayActuator *addGrowLightsRelay(byte outputPin);
-    HydroponicsRelayActuator *addWaterPumpRelay(byte outputPin);
-    HydroponicsRelayActuator *addWaterHeaterRelay(byte outputPin);
-    HydroponicsRelayActuator *addWaterAeratorRelay(byte outputPin);
-    HydroponicsRelayActuator *addFanExhaustRelay(byte outputPin);
-    HydroponicsPWMActuator *addFanExhaustPWM(byte outputPin, byte outputBitRes = 8);
-    HydroponicsRelayActuator *addPeristalticPumpRelay(byte outputPin);
+    // Adds a new grow light relay to the system using the given parameters.
+    shared_ptr<HydroponicsRelayActuator> addGrowLightsRelay(byte outputPin);                        // Digital output pin this actuator sits on
+    // Adds a new water pump relay to the system using the given parameters.
+    shared_ptr<HydroponicsPumpRelayActuator> addWaterPumpRelay(byte outputPin);                     // Digital output pin this actuator sits on
+    // Adds a new water heater relay to the system using the given parameters.
+    shared_ptr<HydroponicsRelayActuator> addWaterHeaterRelay(byte outputPin);                       // Digital output pin this actuator sits on
+    // Adds a new water aerator relay to the system using the given parameters.
+    shared_ptr<HydroponicsRelayActuator> addWaterAeratorRelay(byte outputPin);                      // Digital output pin this actuator sits on
+    // Adds a new fan exhaust relay to the system using the given parameters.
+    shared_ptr<HydroponicsRelayActuator> addFanExhaustRelay(byte outputPin);                        // Digital output pin this actuator sits on
+    // Adds a new PWM-based fan exhaust to the system using the given parameters.
+    shared_ptr<HydroponicsPWMActuator> addFanExhaustPWM(byte outputPin,                             // PWM output pin this actuator sits on
+                                                        byte outputBitRes = 8);                     // PWM bit resolution to use (see bitRes notice)
+    // Adds a new peristaltic dosing pump relay to the system using the given parameters.
+    shared_ptr<HydroponicsPumpRelayActuator> addPeristalticPumpRelay(byte outputPin);               // Digital output pin this actuator sits on
 
-    // Convenience builders for common sensors (unowned, nullptr return = failure).
+    // Convenience builders for common sensors (shared, nullptr return = failure).
 
-    // Adds a new binary level indicator to the system.
-    HydroponicsBinarySensor *addLevelIndicator(byte inputPin);                          // Digital input pin this sensor sits on
+    // Adds a new binary level indicator to the system using the given parameters.
+    shared_ptr<HydroponicsBinarySensor> addLevelIndicator(byte inputPin);                           // Digital input pin this sensor sits on (can make interruptable)
 
-    // Adds a new analog CO2 sensor to the system.
-    HydroponicsAnalogSensor *addCO2Sensor(byte inputPin,                                // Analog input pin this sensor sits on
-                                          byte inputBitRes = 8);                        // ADC bit resolution to use
-    // Adds a new analog PH meter to the system.
-    HydroponicsAnalogSensor *addPhMeter(byte inputPin,                                  // Analog input pin this sensor sits on
-                                        byte inputBitRes = 8);                          // ADC bit resolution to use
-    // Adds a new analog temperature sensor to the system.
-    HydroponicsAnalogSensor *addTempSensor(byte inputPin,                               // Analog input pin this sensor sits on
-                                           byte inputBitRes = 8);                       // ADC bit resolution to use
-    // Adds a new analog TDS electrode to the system.
-    HydroponicsAnalogSensor *addTDSElectrode(byte inputPin,                             // Analog input pin this sensor sits on
-                                             byte inputBitRes = 8);                     // ADC bit resolution to use
-    // Adds a new analog pump flow sensor to the system.
-    HydroponicsAnalogSensor *addPumpFlowSensor(byte inputPin,                           // Analog input pin this sensor sits on
-                                               byte inputBitRes = 8);                   // ADC bit resolution to use
-    // Adds a new analog water height meter to the system.
-    HydroponicsAnalogSensor *addWaterHeightMeter(byte inputPin,                         // Analog input pin this sensor sits on
-                                                 byte inputBitRes = 8);                 // ADC bit resolution to use
-    // Adds a new analog ultrasonic distance sensor to the system.
-    HydroponicsAnalogSensor *addUltrasonicDistanceSensor(byte inputPin,                 // Analog input pin this sensor sits on
-                                                         byte inputBitRes = 8);         // ADC bit resolution to use
+    // Adds a new analog CO2 sensor to the system using the given parameters.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogCO2Sensor(byte inputPin,                           // Analog input pin this sensor sits on
+                                                           byte inputBitRes = 8);                   // ADC bit resolution to use
+    // Adds a new analog PH meter to the system using the given parameters.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogPhMeter(byte inputPin,                             // Analog input pin this sensor sits on
+                                                         byte inputBitRes = 8);                     // ADC bit resolution to use
+    // Adds a new analog temperature sensor to the system using the given parameters.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogTemperatureSensor(byte inputPin,                   // Analog input pin this sensor sits on
+                                                                   byte inputBitRes = 8);           // ADC bit resolution to use
+    // Adds a new analog TDS electrode to the system using the given parameters.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogTDSElectrode(byte inputPin,                        // Analog input pin this sensor sits on
+                                                              int ppmScale = 500,                   // PPM measurement scaling (EC/TDS = 500)
+                                                              byte inputBitRes = 8);                // ADC bit resolution to use
+    // Adds a new analog pump flow sensor to the system using the given parameters.
+    shared_ptr<HydroponicsAnalogSensor> addPWMPumpFlowSensor(byte inputPin,                         // Analog input pin this sensor sits on
+                                                             byte inputBitRes = 8);                 // ADC bit resolution to use
+    // Adds a new analog water height meter to the system using the given parameters.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogWaterHeightMeter(byte inputPin,                    // Analog input pin this sensor sits on
+                                                                  byte inputBitRes = 8);            // ADC bit resolution to use
+    // Adds a new analog ultrasonic distance sensor to the system using the given parameters.
+    shared_ptr<HydroponicsAnalogSensor> addUltrasonicDistanceSensor(byte inputPin,                  // Analog input pin this sensor sits on
+                                                                    byte inputBitRes = 8);          // ADC bit resolution to use
 
-    // Adds a new digital DHT* OneWire temperature & humidity sensor to the system.
-    HydroponicsDHTOneWireSensor *addDHTTempHumiditySensor(byte inputPin,                // OneWire-based input pin this sensor sits on
-                                                          uint8_t dhtType = DHT12);     // Kind of DHT sensor (see DHT* defines)
-    // Adds a new digital DS18* OneWire submersible temperature sensor to the system.
-    HydroponicsDSOneWireSensor *addDSTemperatureSensor(byte inputPin,                   // OneWire-based input pin this sensor sits on
-                                                       byte inputBitRes = 12);          // OneWire bit resolution to use
-    // Adds a new digital TMP* OneWire soil moisture sensor to the system.
-    HydroponicsTMPOneWireSensor *addTMPSoilMoistureSensor(byte inputPin,                // OneWire-based input pin this sensor sits on
-                                                          byte inputBitRes = 12);       // OneWire bit resolution to use
+    // TODO:
+    // addDigitalPHMeter
+    // addDigitalECMeter
 
-    // Convenience builders for crops (weak, nullptr return = failure, pos index may use HYDRUINO_ATPOS_SEARCH* defines)
-    HydroponicsCrop *addCropFromSowDate(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t sowDate);
-    HydroponicsCrop *addCropFromLastHarvest(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t lastHarvestDate);
+    // Adds a new digital DHT* OneWire temperature & humidity sensor to the system using the given parameters.
+    shared_ptr<HydroponicsDHTTempHumiditySensor> addDHTTempHumiditySensor(byte inputPin,            // OneWire digital input pin this sensor sits on
+                                                                          uint8_t dhtType = DHT12); // Kind of DHT sensor (see DHT* defines)
+    // Adds a new digital DS18* OneWire submersible temperature sensor to the system using the given parameters.
+    shared_ptr<HydroponicsDSTemperatureSensor> addDSTemperatureSensor(byte inputPin,                // OneWire digital input pin this sensor sits on
+                                                                      byte inputBitRes = 9);        // Sensor ADC bit resolution to use
+    // Adds a new digital TMP* OneWire soil moisture sensor to the system using the given parameters.
+    shared_ptr<HydroponicsTMPSoilMoistureSensor> addTMPSoilMoistureSensor(byte inputPin,            // OneWire digital input pin this sensor sits on
+                                                                          byte inputBitRes = 9);    // Sensor ADC bit resolution to use
 
+    // Convenience builders for common crops (shared, nullptr return = failure).
+
+    // Adds a new simple crop to the system using the given parameters.
+    shared_ptr<HydroponicsSimpleCrop> addCropFromSowDate(Hydroponics_CropType cropType,             // Crop type
+                                                         Hydroponics_SubstrateType substrateType,   // Substrate type
+                                                         time_t sowDate);                           // Sow date (UTC unix time)
+    // Adds a new simple crop to the system using the given parameters.
+    shared_ptr<HydroponicsSimpleCrop> addCropFromLastHarvest(Hydroponics_CropType cropType,         // Crop type
+                                                             Hydroponics_SubstrateType substrateType, // Substrate type
+                                                             time_t lastHarvestDate);               // Last harvest date (UTC unix time)
+
+    // Convenience builders for common reservoirs (shared, nullptr return = failure).
+
+    // Adds a new simple fluid reservoir to the system using the given parameters.
+    shared_ptr<HydroponicsFluidReservoir> addFluidReservoir(Hydroponics_ReservoirType reservoirType,// Reservoir type
+                                                            float maxVolume = 5.0f,                 // Maximum volume
+                                                            Hydroponics_UnitsType maxVolumeUnits = Hydroponics_UnitsType_LiquidVolume_Gallons);// Maximum volume units
+
+    // Adds a drainage pipe to the system, which acts as an infinite reservoir.
+    shared_ptr<HydroponicsInfiniteReservoir> addDrainagePipe();
+
+    // Adds a fresh water main to the system, which acts as an infinite reservoir.
+    shared_ptr<HydroponicsInfiniteReservoir> addWaterMainPipe();
+
+    // Convenience builders for common power rails (shared, nullptr return = failure).
+
+    // Adds a new relay power rail to the system using the given parameters.
+    shared_ptr<HydroponicsSimpleRail> addRelayPowerRail(Hydroponics_RailType railType,               // Rail type
+                                                        int maxActiveAtOnce = 2);                    // Maximum active devices
 
     // Accessors.
 
@@ -253,73 +309,56 @@ public:
     RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
 
-    int getRelayCount(Hydroponics_RailType relayRail = Hydroponics_RailType_Undefined) const;         // Current number of relay devices registered with system, for the given rail (default params = from all rails)
-    int getActiveRelayCount(Hydroponics_RailType relayRail = Hydroponics_RailType_Undefined) const;   // Current number of active relay devices, for the given rail (default params = from all rails)
-    byte getMaxActiveRelayCount(Hydroponics_RailType relayRail) const;                                 // Maximum number of relay devices allowed active at a time, for the given rail (default: 2)
-
     int getActuatorCount() const;                                   // Current number of total actuators registered with system
     int getSensorCount() const;                                     // Current number of total sensors registered with system
     int getCropCount() const;                                       // Current number of total crops registered with system
+    int getReservoirCount() const;                                  // Current number of total reservoirs registered with system
+    int getRailCount() const;                                       // Current number of total rails registered with system
 
     String getSystemName() const;                                   // System display name (default: "Hydruino")
-    uint32_t getPollingIntervalMillis() const;                      // System sensor polling interval (time between sensor reads) in milliseconds (default: 0 when disabled, 5000 when enabled)
-    float getReservoirVolume(Hydroponics_ReservoirType forFluidReservoir = Hydroponics_ReservoirType_FeedWater) const;    // Fluid reservoir volume, for given reservoir
-    float getPumpFlowRate(Hydroponics_ReservoirType forFluidReservoir = Hydroponics_ReservoirType_FeedWater) const;       // Fluid pump flow rate, for given reservoir
+    uint32_t getPollingIntervalMillis() const;                      // System sensor polling interval (time between sensor reads), in milliseconds
+    uint32_t getPollingFrameNumber() const;                         // System polling frame number for sensor frame tracking
+    bool isPollingFrameOld(uint32_t frame) const;             // Determines if a given frame # if out of date (true) or current (false)
 
     int getControlInputRibbonPinCount();                            // Total number of pins being used for the current control input ribbon mode
     byte getControlInputPin(int ribbonPinIndex);                    // Control input pin mapped to ribbon pin index, or -1 (255) if not used
 
     // Mutators.
 
-    void setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RailType relayRail);   // Sets maximum number of relay devices allowed active at a time, for the given rail. This is useful for managing power limits on your system.
-
     void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE char limit)
     void setPollingIntervalMillis(uint32_t pollingIntMs);           // Sets system polling interval in milliseconds (does not enable polling, see enablePublishingTo* methods)
-    void setReservoirVolume(float reservoirVol, Hydroponics_ReservoirType forFluidReservoir);  // Sets reservoir volume, for the given reservoir
-    void setPumpFlowRate(float pumpFlowRate, Hydroponics_ReservoirType forFluidReservoir);     // Sets pump flow rate, for the given reservoir
 
     void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
 
-    typedef void(*UserDelayFunc)(unsigned int);                     // Passes delay timeout (where 0 indicates inside long blocking call / yield attempt suggested)
-    // Sets user delay functions to call when a delay has to occur for processing to
-    // continue. User functions here can customize what this means - typically it would
-    // mean to call into a thread barrier() or yield() mechanism. Default implementation
-    // is to call yield() when timeout >= 1ms, unless multitasking is disabled.
-    void setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc);
-
 protected:
-    static Hydroponics *_activeInstance;                    // Current active instance (set after init)
+    static Hydroponics *_activeInstance;                            // Current active instance (set after init)
 
-    const byte _piezoBuzzerPin;                             // Piezo buzzer pin (default: disabled)
-    const byte _sdCardCSPin;                                // SD card cable select (CS) pin (default: disabled)
-    const byte _ctrlInputPin1;                              // Control input pin 1 (default: disabled)
-    const byte _eepromI2CAddr;                              // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
-    const byte _rtcI2CAddr;                                 // RTC i2c address, format: {A2,A1,A0} (default: B000)
-    const byte _lcdI2CAddr;                                 // LCD i2c address, format: {A2,A1,A0} (default: B000)
-    TwoWire* _i2cWire;                                      // Wire class instance (unowned) (default: Wire)
-    uint32_t _i2cSpeed;                                     // Controller's i2c clock speed (default: 400kHz)
-    uint32_t _spiSpeed;                                     // Controller's SPI clock speed (default: 4MHz)
+    const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: disabled)
+    const byte _sdCardCSPin;                                        // SD card cable select (CS) pin (default: disabled)
+    const byte _ctrlInputPin1;                                      // Control input pin 1 (default: disabled)
+    const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
+    const byte _rtcI2CAddr;                                         // RTC i2c address, format: {A2,A1,A0} (default: B000)
+    const byte _lcdI2CAddr;                                         // LCD i2c address, format: {A2,A1,A0} (default: B000)
+    TwoWire* _i2cWire;                                              // Wire class instance (unowned) (default: Wire)
+    uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
+    uint32_t _spiSpeed;                                             // Controller's SPI clock speed (default: 4MHz)
 
 #ifdef HYDRUINO_USE_TASKSCHEDULER
-    Scheduler _ts;                                          // Task scheduler
+    Scheduler _ts;                                                  // Task scheduler
 #endif
-    EasyBuzzerClass *_buzzer;                               // Piezo buzzer instance (unowned)
-    I2C_eeprom *_eeprom;                                    // EEPROM instance (owned, lazy)
-    RTC_DS3231 *_rtc;                                       // Real time clock instance (owned, lazy)
-    SDClass *_sd;                                           // SD card instance (owned/unowned, lazy)
-    bool _eepromBegan;                                      // Status of EEPROM begin()
-    bool _rtcBegan;                                         // Status of RTC begin() call
-    bool _rtcBattFail;                                      // Status of RTC battery failure flag
-    byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];   // Control input pin map
+    EasyBuzzerClass *_buzzer;                                       // Piezo buzzer instance (unowned)
+    I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
+    RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
+    SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
+    bool _eepromBegan;                                              // Status of EEPROM begin()
+    bool _rtcBegan;                                                 // Status of RTC begin() call
+    bool _rtcBattFail;                                              // Status of RTC battery failure flag
+    byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
+    uint32_t _pollingFrame;                                         // Polling frame #
 
-    HydroponicsSystemData *_systemData;                     // System data (owned, saved to storage)
+    HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
-    UserDelayFunc _uDelayMillisFunc;                        // User millisecond delay function
-    UserDelayFunc _uDelayMicrosFunc;                        // User microsecond delay function
-
-    //BtreeList<String, shared_ptr<HydroponicsObject> > _objects; // Objects in system
-
-    // Allocation & initialization.
+    arx::map<Hydroponics_KeyType, shared_ptr<HydroponicsObject> > _objects; // Shared object collection, key'ed by HydroponicsIdentity.
 
     void allocateEEPROM();
     void deallocateEEPROM();
@@ -329,19 +368,21 @@ protected:
     void deallocateSD();
     void commonInit();
 
-    // Runloops & update segmentation.
-
     friend void ::controlLoop();
     friend void ::dataLoop();
     friend void ::guiLoop();
     friend void ::miscLoop();
-    void updateActuators();
-    void updateBuzzer();
-    void updateCrops();
-    void updateLogging();
+    void updateObjects(int pass);
     void updateScheduling();
+    void updateLogging();
     void updateScreen();
-    void updateSensors();
+    void updateBuzzer();
+
+    #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+    void forwardLogMessage(String message, bool flushAfter = false);
+    //void forwardPublishData(paramsTODO);
+    friend void ::logMessage(String,bool);
+    #endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 };
 
 #endif // /ifndef Hydroponics_H
