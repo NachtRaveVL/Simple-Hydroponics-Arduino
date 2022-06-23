@@ -23,7 +23,7 @@
 #define HYDRUINO_NAME_MAXSIZE               32                      // Naming character maximum size
 #define HYDRUINO_POS_MAXSIZE                16                      // Position indicies maximum size
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
-#define HYDRUINO_LINKAGE_BASESIZE           4                       // Base growth factor for linkage list
+#define HYDRUINO_LINKAGE_MAXSIZE            16                      // Maximum size for linkage list
 #define HYDRUINO_EEPROM_MEMORYSIZE          I2C_DEVICESIZE_24LC256  // Memory size for EEPROM (default: 256kb)
 // TODO: Move HYDRUINO_EEPROM_MEMORYSIZE to input param on Hydroponics constructor.
 

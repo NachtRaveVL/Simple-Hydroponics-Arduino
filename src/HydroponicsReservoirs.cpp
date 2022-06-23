@@ -11,9 +11,15 @@ HydroponicsReservoir::HydroponicsReservoir(Hydroponics_ReservoirType reservoirTy
 
 HydroponicsReservoir::~HydroponicsReservoir()
 {
-    for (auto pairObj : getActuators()) { removeActuator(pairObj.second); }
-    for (auto pairObj : getSensors()) { removeSensor(pairObj.second); }
-    for (auto pairObj : getCrops()) { removeCrop(pairObj.second); }
+    {   auto actuators = getActuators();
+        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator(iter->second); }
+    }
+    {   auto sensors = getSensors();
+        for (auto iter = sensors.begin(); iter != sensors.end(); ++iter) { removeSensor(iter->second); }
+    }
+    {   auto crops = getCrops();
+        for (auto iter = crops.begin(); iter != crops.end(); ++iter) { removeCrop(iter->second); }
+    }
 }
 
 bool HydroponicsReservoir::addActuator(HydroponicsActuator *actuator)
@@ -29,10 +35,10 @@ bool HydroponicsReservoir::removeActuator(HydroponicsActuator *actuator)
 arx::map<Hydroponics_KeyType, HydroponicsActuator *> HydroponicsReservoir::getActuators() const
 {
     arx::map<Hydroponics_KeyType, HydroponicsActuator *> retVal;
-    for (auto pairObj : _links) {
-        auto obj = pairObj.second;
+    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isActuatorType()) {
-            retVal.insert(pairObj.first, (HydroponicsActuator *)obj);
+            retVal.insert(iter->first, (HydroponicsActuator *)obj);
         }
     }
     return retVal;
@@ -51,10 +57,10 @@ bool HydroponicsReservoir::removeSensor(HydroponicsSensor *sensor)
 arx::map<Hydroponics_KeyType, HydroponicsSensor *> HydroponicsReservoir::getSensors() const
 {
     arx::map<Hydroponics_KeyType, HydroponicsSensor *> retVal;
-    for (auto pairObj : _links) {
-        auto obj = pairObj.second;
+    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isSensorType()) {
-            retVal.insert(pairObj.first, (HydroponicsSensor *)obj);
+            retVal.insert(iter->first, (HydroponicsSensor *)obj);
         }
     }
     return retVal;
@@ -73,10 +79,10 @@ bool HydroponicsReservoir::removeCrop(HydroponicsCrop *crop)
 arx::map<Hydroponics_KeyType, HydroponicsCrop *> HydroponicsReservoir::getCrops() const
 {
     arx::map<Hydroponics_KeyType, HydroponicsCrop *> retVal;
-    for (auto pairObj : _links) {
-        auto obj = pairObj.second;
+    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isCropType()) {
-            retVal.insert(pairObj.first, (HydroponicsCrop *)obj);
+            retVal.insert(iter->first, (HydroponicsCrop *)obj);
         }
     }
     return retVal;
@@ -223,11 +229,11 @@ int HydroponicsFluidReservoir::getChannelNumber() const
 arx::map<Hydroponics_KeyType, HydroponicsPumpObjectInterface *> HydroponicsFluidReservoir::getInputPumpActuators() const
 {
     arx::map<Hydroponics_KeyType, HydroponicsPumpObjectInterface *> retVal;
-    for (auto pairObj : _links) {
-        auto obj = pairObj.second;
+    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isActuatorType() && ((HydroponicsActuator *)obj)->isAnyPumpClass() &&
             ((HydroponicsActuator *)obj)->getReservoir().get() == this) {
-            retVal.insert(pairObj.first, (HydroponicsPumpObjectInterface *)obj);
+            retVal.insert(iter->first, (HydroponicsPumpObjectInterface *)obj);
         }
     }
     return retVal;
@@ -236,11 +242,11 @@ arx::map<Hydroponics_KeyType, HydroponicsPumpObjectInterface *> HydroponicsFluid
 arx::map<Hydroponics_KeyType, HydroponicsPumpObjectInterface *> HydroponicsFluidReservoir::getOutputPumpActuators() const
 {
     arx::map<Hydroponics_KeyType, HydroponicsPumpObjectInterface *> retVal;
-    for (auto pairObj : _links) {
-        auto obj = pairObj.second;
+    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isActuatorType() && ((HydroponicsActuator *)obj)->isAnyPumpClass() &&
             ((HydroponicsPumpObjectInterface *)obj)->getOutputReservoir().get() == this) {
-            retVal.insert(pairObj.first, (HydroponicsPumpObjectInterface *)obj);
+            retVal.insert(iter->first, (HydroponicsPumpObjectInterface *)obj);
         }
     }
     return retVal;

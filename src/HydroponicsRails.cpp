@@ -12,7 +12,8 @@ HydroponicsRail::HydroponicsRail(Hydroponics_RailType railType, Hydroponics_Posi
 HydroponicsRail::~HydroponicsRail()
 {
     //discardFromTaskManager(&_capacitySignal);
-    for (auto pairObj : getActuators()) { removeActuator(pairObj.second); }
+    auto actuators = getActuators();
+    for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator(iter->second); }
 }
 
 bool HydroponicsRail::addActuator(HydroponicsActuator *actuator)
@@ -28,10 +29,10 @@ bool HydroponicsRail::removeActuator(HydroponicsActuator *actuator)
 arx::map<Hydroponics_KeyType, HydroponicsActuator *> HydroponicsRail::getActuators() const
 {
     arx::map<Hydroponics_KeyType, HydroponicsActuator *> retVal;
-    for (auto pairObj : _links) {
-        auto obj = pairObj.second;
+    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isActuatorType()) {
-            retVal.insert(pairObj.first, (HydroponicsActuator *)obj);
+            retVal.insert(iter->first, (HydroponicsActuator *)obj);
         }
     }
     return retVal;

@@ -54,10 +54,10 @@ bool HydroponicsCrop::removeSensor(HydroponicsSensor *sensor)
 arx::map<Hydroponics_KeyType, HydroponicsSensor *> HydroponicsCrop::getSensors()
 {
     arx::map<Hydroponics_KeyType, HydroponicsSensor *> retVal;
-    for (auto pairObj : _links) {
-        auto obj = pairObj.second;
+    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isSensorType()) {
-            retVal.insert(pairObj.first, (HydroponicsSensor *)obj);
+            retVal.insert(iter->first, (HydroponicsSensor *)obj);
         }
     }
     return retVal;
