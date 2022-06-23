@@ -38,6 +38,9 @@ extern Hydroponics *getHydroponicsInstance();
 // Computes a hash for a string using a fast and efficient hashing function.
 extern Hydroponics_KeyType stringHash(const String &str);
 
+// Returns a string from char array with an exact max length.
+extern String stringFromChars(const char *chars, size_t length);
+
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
 

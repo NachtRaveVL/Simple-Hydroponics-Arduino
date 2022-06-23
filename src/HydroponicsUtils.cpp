@@ -37,6 +37,15 @@ Hydroponics_KeyType stringHash(const String &str)
     return hash != (Hydroponics_KeyType)-1 ? hash : 0;
 }
 
+String stringFromChars(const char *chars, size_t length)
+{
+    String retVal;
+    for (size_t index = 0; index < length && chars[index] != '\0'; ++index) {
+        retVal.concat(chars[index]);
+    }
+    return retVal;
+}
+
 #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 
 void logMessage(String message, bool flushAfter)
