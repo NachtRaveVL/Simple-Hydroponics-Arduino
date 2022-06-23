@@ -88,7 +88,7 @@ public:
     const Hydroponics_KeyType getKey() const;               // Returns the unique key of the object.
 protected:
     HydroponicsIdentity _id;                                // Object id
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_LINKAGE_BASESIZE> _links; // Linked objects (weak)
+    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_LINKAGE_MAXSIZE> _links; // Linked objects (weak)
 
     bool addLinkage(HydroponicsObject *obj);
     bool removeLinkage(HydroponicsObject *obj);

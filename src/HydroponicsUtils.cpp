@@ -66,7 +66,11 @@ void logMessage(String message, bool flushAfter)
 void softAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        msg = String(F("Assertion Failure: ")) + String(file) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;    
+        String fileStr = String(file);
+        int fileTail = fileStr.lastIndexOf('\\');
+        fileTail = fileTail != -1 ? fileTail : fileStr.lastIndexOf('/');
+        if (fileTail != -1) { fileStr = fileStr.substring(fileTail+1); }
+        msg = String(F("Assertion Failure: ")) + fileStr + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;    
         logMessage(msg);
         return;
     }
@@ -75,7 +79,11 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
 void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        msg = String(F("Assertion Failure (HARD): ")) + String(file) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
+        String fileStr = String(file);
+        int fileTail = fileStr.lastIndexOf("\\");
+        fileTail = fileTail != -1 ? fileTail : fileStr.lastIndexOf("/");
+        if (fileTail != -1) { fileStr = fileStr.substring(fileTail+1); }
+        msg = String(F("Assertion Failure (HARD): ")) + fileStr + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
         logMessage(msg, true);
         delay(10);
         abort();

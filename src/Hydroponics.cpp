@@ -309,9 +309,9 @@ void Hydroponics::launch()
     ++_pollingFrame; // Forces all sensors to get a new initial measurement
 
     // Resolves all unlinked objects
-    for (auto pairObj : _objects) {
-        auto obj = pairObj.second;
-        if (obj) {
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
+        if (obj != nullptr) {
             obj->resolveLinks();
         }
     }
@@ -357,8 +357,8 @@ void Hydroponics::updateObjects(int pass)
 {
     switch(pass) {
         case 0: {
-            for (auto pairObj : _objects) {
-                auto obj = pairObj.second;
+            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+                auto obj = iter->second;
                 if (obj->isRailType() || obj->isReservoirType()) {
                     obj->update();
                 }
@@ -366,8 +366,8 @@ void Hydroponics::updateObjects(int pass)
         } break;
 
         case 1: {
-            for (auto pairObj : _objects) {
-                auto obj = pairObj.second;
+            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+                auto obj = iter->second;
                 if (obj->isActuatorType()) {
                     obj->update();
                 }
@@ -375,8 +375,8 @@ void Hydroponics::updateObjects(int pass)
         } break;
 
         case 2: {
-            for (auto pairObj : _objects) {
-                auto obj = pairObj.second;
+            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+                auto obj = iter->second;
                 if (obj->isSensorType()) {
                     obj->update();
                 }
@@ -1047,8 +1047,8 @@ SDClass *Hydroponics::getSDCard(bool begin)
 int Hydroponics::getActuatorCount() const
 {
     int retVal = 0;
-    for (auto pairObj : _objects) {
-        auto obj = pairObj.second;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isActuatorType()) {
             ++retVal;
         }
@@ -1059,8 +1059,8 @@ int Hydroponics::getActuatorCount() const
 int Hydroponics::getSensorCount() const
 {
     int retVal = 0;
-    for (auto pairObj : _objects) {
-        auto obj = pairObj.second;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isSensorType()) {
             ++retVal;
         }
@@ -1071,8 +1071,8 @@ int Hydroponics::getSensorCount() const
 int Hydroponics::getCropCount() const
 {
     int retVal = 0;
-    for (auto pairObj : _objects) {
-        auto obj = pairObj.second;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isCropType()) {
             ++retVal;
         }
@@ -1083,8 +1083,8 @@ int Hydroponics::getCropCount() const
 int Hydroponics::getReservoirCount() const
 {
     int retVal = 0;
-    for (auto pairObj : _objects) {
-        auto obj = pairObj.second;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isReservoirType()) {
             ++retVal;
         }
@@ -1095,8 +1095,8 @@ int Hydroponics::getReservoirCount() const
 int Hydroponics::getRailCount() const
 {
     int retVal = 0;
-    for (auto pairObj : _objects) {
-        auto obj = pairObj.second;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
         if (obj && obj->isRailType()) {
             ++retVal;
         }
