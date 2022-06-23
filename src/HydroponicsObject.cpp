@@ -67,7 +67,8 @@ Hydroponics_KeyType HydroponicsIdentity::regenKey()
             keyStr = String();
             break;
     }
-    return (key = stringHash(keyStr));
+    key = stringHash(keyStr);
+    return key;
 }
 
 
