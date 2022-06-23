@@ -51,13 +51,13 @@ HydroponicsData *dataFromJSONElement(JsonVariantConst &elementIn)
 
 
 HydroponicsData::HydroponicsData()
-    : _ident{{'\0'}}, _version(-1), _revision(-1), _modified(false)
+    : _ident{.chars={'\0','\0','\0','\0'}}, _version(-1), _revision(-1), _modified(false)
 {
     _size = sizeof(*this);
 }
 
 HydroponicsData::HydroponicsData(const char *ident, uint16_t version, uint16_t revision)
-    : _ident{{'\0'}}, _version(version), _revision(revision), _modified(false)
+    : _ident{.chars={'\0','\0','\0','\0'}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
     HYDRUINO_SOFT_ASSERT(ident, "Invalid id");
@@ -65,7 +65,7 @@ HydroponicsData::HydroponicsData(const char *ident, uint16_t version, uint16_t r
 }
 
 HydroponicsData::HydroponicsData(int16_t idType, int16_t classType, uint16_t version, uint16_t revision)
-    : _ident{{idType,classType}}, _version(version), _revision(revision), _modified(false)
+    : _ident{.object={idType,classType}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
 }
@@ -85,7 +85,7 @@ void HydroponicsData::fromBinaryStream(Stream *streamIn)
 void HydroponicsData::toJSONElement(JsonVariant &elementOut) const
 {
     if (_ident.chars[0] > '\0' && _ident.chars[1] > '\0' && _ident.chars[2] > '\0' && _ident.chars[3] > '\0') {
-        elementOut[F("_ident")] = _ident.chars;
+        elementOut[F("_ident")] = stringFromChars(_ident.chars, 4);
     } else {
         auto object = elementOut.createNestedObject(F("_ident"));
         object[F("type")] = _ident.object.idType;
@@ -114,7 +114,7 @@ HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData("HSYS", 1),
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
-      systemName{'\0'}, timeZoneOffset(0),
+      timeZoneOffset(0),
       pollingIntMs(0)
 {
     _size = sizeof(*this);
@@ -206,13 +206,15 @@ void HydroponicsCalibrationData::setFromTwoPoints(float point1MeasuredAt, float 
 
 HydroponicsCropsLibData::HydroponicsCropsLibData()
     : HydroponicsData("HCLD", 1),
-      cropType(Hydroponics_CropType_Undefined), plantName{'\0'},
+      cropType(Hydroponics_CropType_Undefined),
       growWeeksToHarvest(0), weeksBetweenHarvest(0),
-      phaseBeginWeek{0}, lightHoursPerDay{0},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPruningRequired(false), isToxicToPets(false)
 {
     _size = sizeof(*this);
+    memset(plantName, '\0', sizeof(plantName));
+    memset(phaseBeginWeek, 0, sizeof(phaseBeginWeek));
+    memset(lightHoursPerDay, 0, sizeof(lightHoursPerDay));
     memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
     memset(phRange, 0, sizeof(phRange));
     memset(ecRange, 0, sizeof(ecRange));
@@ -222,12 +224,15 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
 
 HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType cropTypeIn)
     : HydroponicsData("HCLD", 1),
-      cropType(cropTypeIn), plantName{'\0'},
+      cropType(cropTypeIn),
       growWeeksToHarvest(0), weeksBetweenHarvest(0),
-      phaseBeginWeek{0}, lightHoursPerDay{0},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPruningRequired(false), isToxicToPets(false)
 {
+    _size = sizeof(*this);
+    memset(plantName, '\0', sizeof(plantName));
+    memset(phaseBeginWeek, 0, sizeof(phaseBeginWeek));
+    memset(lightHoursPerDay, 0, sizeof(lightHoursPerDay));
     memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
     memset(phRange, 0, sizeof(phRange));
     memset(ecRange, 0, sizeof(ecRange));
@@ -260,7 +265,7 @@ void HydroponicsCropsLibData::toJSONElement(JsonVariant &elementOut) const
     HydroponicsData::toJSONElement(elementOut);
 
     elementOut[F("cropType")] = cropTypeToString(cropType);
-    elementOut[F("plantName")] = plantName;
+    elementOut[F("plantName")] = stringFromChars(plantName, HYDRUINO_NAME_MAXSIZE);
 
     if (growWeeksToHarvest > 0) {
         elementOut[F("growWeeksToHarvest")] = growWeeksToHarvest;
