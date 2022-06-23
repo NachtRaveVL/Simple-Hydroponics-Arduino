@@ -5,126 +5,10 @@
 
 #include "Hydroponics.h"
 
-static void uDelayMillisFuncDef(unsigned int timeout) {
-#ifndef HYDRUINO_DISABLE_MULTITASKING
-    if (timeout > 0) {
-        unsigned long currTime = millis();
-        unsigned long endTime = currTime + (unsigned long)timeout;
-        if (currTime < endTime) { // not overflowing
-            while (millis() < endTime)
-                yield();
-        } else { // overflowing
-            unsigned long begTime = currTime;
-            while (currTime >= begTime || currTime < endTime) {
-                yield();
-                currTime = millis();
-            }
-        }
-    } else {
-        yield();
-    }
-#else
-    delay(timeout);
-#endif
-}
-
-static void uDelayMicrosFuncDef(unsigned int timeout) {
-#ifndef HYDRUINO_DISABLE_MULTITASKING
-    if (timeout > 1000) {
-        unsigned long currTime = micros();
-        unsigned long endTime = currTime + (unsigned long)timeout;
-        if (currTime < endTime) { // not overflowing
-            while (micros() < endTime)
-                yield();
-        } else { // overflowing
-            unsigned long begTime = currTime;
-            while (currTime >= begTime || currTime < endTime) {
-                yield();
-                currTime = micros();
-            }
-        }
-    } else if (timeout > 0) {
-        delayMicroseconds(timeout);
-    } else {
-        yield();
-    }
-#else
-    delayMicroseconds(timeout);
-#endif
-}
-
-
 static RTC_DS3231 *_rtcSyncProvider = nullptr;
 time_t rtcNow() {
     return _rtcSyncProvider ? _rtcSyncProvider->now().unixtime() : 0;
 }
-
-
-HydroponicsObject::HydroponicsObject(HydroponicsIdentity id)
-    : _id(id)
-{ ; }
-
-HydroponicsObject::~HydroponicsObject()
-{ ; }
-
-void HydroponicsObject::update()
-{ ; }
-
-const HydroponicsIdentity HydroponicsObject::getId() const
-{
-    return _id;
-}
-
-const String HydroponicsObject::getKey() const
-{
-    return String(_id.key);
-}
-
-
-HydroponicsIdentity::HydroponicsIdentity()
-    : type(Unknown), as{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), key{'\0'}
-{ ; }
-
-// Actuator identity
-HydroponicsIdentity::HydroponicsIdentity(Hydroponics_ActuatorType actuatorTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Actuator), as{.actuatorType=actuatorTypeIn}, posIndex(positionIndex), key{'\0'}
-{
-    String keyStr = actuatorTypeToString(actuatorTypeIn, true) + positionIndexToString(positionIndex, true);
-    strncpy(key, keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
-}
-
-// Sensor identity
-HydroponicsIdentity::HydroponicsIdentity(Hydroponics_SensorType sensorTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Sensor), as{.sensorType=sensorTypeIn}, posIndex(positionIndex), key{'\0'}
-{
-    String keyStr = sensorTypeToString(sensorTypeIn, true) + positionIndexToString(positionIndex, true);
-    strncpy(key, keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
-}
-
-// Crop identity
-HydroponicsIdentity::HydroponicsIdentity(Hydroponics_CropType cropTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Crop), as{.cropType=cropTypeIn}, posIndex(positionIndex), key{'\0'}
-{
-    String keyStr = cropTypeToString(cropTypeIn, true) + positionIndexToString(positionIndex, true);
-    strncpy(key, keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
-}
-
-// Reservoir identity
-HydroponicsIdentity::HydroponicsIdentity(Hydroponics_ReservoirType reservoirTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Reservoir), as{.reservoirType=reservoirTypeIn}, posIndex(positionIndex), key{'\0'}
-{
-    String keyStr = reservoirTypeToString(reservoirTypeIn, true) + positionIndexToString(positionIndex, true);
-    strncpy(key, keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
-}
-
-// Rail identity
-HydroponicsIdentity::HydroponicsIdentity(Hydroponics_RailType railTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Rail), as{.railType=railTypeIn}, posIndex(positionIndex), key{'\0'}
-{
-    String keyStr = railTypeToString(railTypeIn, true) + positionIndexToString(positionIndex, true);
-    strncpy(key, keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
-}
-
 
 Hydroponics *Hydroponics::_activeInstance = nullptr;
 
@@ -132,12 +16,12 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, byte sdCardCSPin, byte controlInpu
                          byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress,
                          TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
-      _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1},
+      _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1}, _pollingFrame(0),
       _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
       _buzzer(&EasyBuzzer), _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
-      _systemData(nullptr),
-      _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
+      _systemData(nullptr)
 {
+    _activeInstance = this;
     if (isValidPin(_piezoBuzzerPin)) {
         _buzzer->setPin(_piezoBuzzerPin);
     }
@@ -152,13 +36,13 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
                          byte piezoBuzzerPin, byte sdCardCSPin, byte controlInputPin1,
                          byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
-      _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1},
+      _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1}, _pollingFrame(0),
       _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
       _buzzer(&EasyBuzzer), _eeprom(nullptr), _rtc(nullptr), _sd(nullptr),
       _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
-      _systemData(nullptr),
-      _uDelayMillisFunc(uDelayMillisFuncDef), _uDelayMicrosFunc(uDelayMicrosFuncDef)
+      _systemData(nullptr)
 {
+    _activeInstance = this;
     if (isValidPin(_piezoBuzzerPin)) {
         _buzzer->setPin(_piezoBuzzerPin);
     }
@@ -182,9 +66,10 @@ Hydroponics::~Hydroponics()
 
 void Hydroponics::allocateEEPROM()
 {
-    //assert(!_eeprom && "EEPROM already allocated");
-    _eeprom = new I2C_eeprom(_eepromI2CAddr, HYDRUINO_EEPROM_MEMORYSIZE, _i2cWire);
-    _eepromBegan = false;
+    if (!_eeprom) {
+        _eeprom = new I2C_eeprom(_eepromI2CAddr, HYDRUINO_EEPROM_MEMORYSIZE, _i2cWire);
+        _eepromBegan = false;
+    }
 }
 
 void Hydroponics::deallocateEEPROM()
@@ -194,10 +79,11 @@ void Hydroponics::deallocateEEPROM()
 
 void Hydroponics::allocateRTC()
 {
-    //assert(!_rtc && "RTC already allocated");
-    _rtc = new RTC_DS3231();
-    //assert(_rtcI2CAddr == B000 && "RTClib does not support i2c multi-addressing, only B000 may be used");
-    _rtcBegan = false;
+    if (!_rtc) {
+        _rtc = new RTC_DS3231();
+        HYDRUINO_HARD_ASSERT(_rtcI2CAddr == B000, "RTClib does not support i2c multi-addressing, only i2c address B000 may be used");
+        _rtcBegan = false;
+    }
 }
 
 void Hydroponics::deallocateRTC()
@@ -213,8 +99,9 @@ void Hydroponics::allocateSD()
     #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)) || defined(SD)
         _sd = &SD;
     #else
-        //assert(!_sd && "SD already allocated");
-        _sd = new SDClass();
+        if (!_sd) {
+            _sd = new SDClass();
+        }
     #endif
 }
 
@@ -232,17 +119,16 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
                        Hydroponics_DisplayOutputMode dispOutMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
-    //assert(!_systemData && "Controller already initialized");
-    //assert(!_activeInstance && "Controller already active");
+    HYDRUINO_SOFT_ASSERT(!_systemData, "Controller already initialized");
 
-    if (!_systemData && !_activeInstance) {
-        //assert((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count && "Invalid system mode");
-        //assert((int)measureMode >= 0 && measureMode < Hydroponics_MeasurementMode_Count && "Invalid measurement mode");
-        //assert((int)dispOutMode >= 0 && dispOutMode < Hydroponics_DisplayOutputMode_Count && "Invalid LCD output mode");
-        //assert((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count && "Invalid control input mode");
+    if (!_systemData) {
+        HYDRUINO_SOFT_ASSERT((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count, "Invalid system mode");
+        HYDRUINO_SOFT_ASSERT((int)measureMode >= 0 && measureMode < Hydroponics_MeasurementMode_Count, "Invalid measurement mode");
+        HYDRUINO_SOFT_ASSERT((int)dispOutMode >= 0 && dispOutMode < Hydroponics_DisplayOutputMode_Count, "Invalid LCD output mode");
+        HYDRUINO_SOFT_ASSERT((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count, "Invalid control input mode");
 
         _systemData = new HydroponicsSystemData();
-        //assert(_systemData && "Invalid system data store");
+        HYDRUINO_SOFT_ASSERT(_systemData, "Invalid system data store");
 
         if (_systemData) {
             _systemData->systemMode = systemMode;
@@ -257,10 +143,9 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
 
 bool Hydroponics::initFromEEPROM()
 {
-    //assert(!_systemData && "Controller already initialized");
-    //assert(!_activeInstance && "Controller already active");
+    HYDRUINO_SOFT_ASSERT(!_systemData, "Controller already initialized");
 
-    if (!_systemData && !_activeInstance) {
+    if (!_systemData) {
         auto *eeprom = getEEPROM(); // Forces begin, if not already
         if (eeprom) {
             // TODO
@@ -268,7 +153,7 @@ bool Hydroponics::initFromEEPROM()
             //if (systemData) { _systemData = systemData; }
         }
 
-        //assert(_systemData && "Invalid system data store");
+        HYDRUINO_SOFT_ASSERT(_systemData, "Invalid system data store");
         if (_systemData) {
             commonInit();
         }
@@ -280,23 +165,22 @@ bool Hydroponics::initFromEEPROM()
 
 bool Hydroponics::initFromSDCard(String configFile)
 {
-    //assert(!_systemData && "Controller already initialized");
-    //assert(!_activeInstance && "Controller already active");
+    HYDRUINO_SOFT_ASSERT(!_systemData, "Controller already initialized");
 
-    if (!_systemData && !_activeInstance) {
+    if (!_systemData) {
         auto *sd = getSDCard();
         if (sd) {
             auto config = sd->open(configFile);
             if (config && config.size()) {
                 // TODO
-                //auto *systemData = HydroponicsSystemData::fromJSONDocument(configToJSON);
+                //auto *systemData = HydroponicsSystemData::fromJSONElement(configToJSON);
                 //if (systemData) { _systemData = systemData; }
                 config.close();
             }
             sd->end();
         }
 
-        //assert(_systemData && "Invalid system data store");
+        HYDRUINO_SOFT_ASSERT(_systemData, "Invalid system data store");
         if (_systemData) {
             commonInit();
         }
@@ -308,22 +192,6 @@ bool Hydroponics::initFromSDCard(String configFile)
 
 void Hydroponics::commonInit()
 {
-    _activeInstance = this;
-
-    switch (getMeasurementMode()) {
-        default:
-        case Hydroponics_MeasurementMode_Imperial:
-            _systemData->reservoirVolUnits = Hydroponics_UnitsType_LiquidVolume_Gallons; 
-            _systemData->pumpFlowRateUnits = Hydroponics_UnitsType_LiquidFlow_GallonsPerMin;
-            break;
-
-        case Hydroponics_MeasurementMode_Metric:
-        case Hydroponics_MeasurementMode_Scientific:
-            _systemData->reservoirVolUnits = Hydroponics_UnitsType_LiquidVolume_Liters; 
-            _systemData->pumpFlowRateUnits = Hydroponics_UnitsType_LiquidFlow_LitersPerMin;
-            break;
-    }
-
     if ((_rtcSyncProvider = getRealTimeClock())) {
         setSyncProvider(rtcNow);
     }
@@ -395,11 +263,11 @@ void Hydroponics::commonInit()
 
 void controlLoop()
 {
-    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
-        hydroponics->updateCrops();
+        hydroponics->updateObjects(0);
         hydroponics->updateScheduling();
-        hydroponics->updateActuators();
+        hydroponics->updateObjects(1);
     }
 
     yield();
@@ -407,9 +275,9 @@ void controlLoop()
 
 void dataLoop()
 {
-    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
-        hydroponics->updateSensors();
+        hydroponics->updateObjects(2);
         hydroponics->updateLogging();
     }
 
@@ -418,7 +286,7 @@ void dataLoop()
 
 void guiLoop()
 {
-    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
         hydroponics->updateScreen();
     }
@@ -428,7 +296,7 @@ void guiLoop()
 
 void miscLoop()
 {
-    Hydroponics *hydroponics = Hydroponics::getActiveInstance();
+    auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
         hydroponics->updateBuzzer();
     }
@@ -438,6 +306,17 @@ void miscLoop()
 
 void Hydroponics::launch()
 {
+    ++_pollingFrame; // Forces all sensors to get a new initial measurement
+
+    // Resolves all unlinked objects
+    for (auto pairObj : _objects) {
+        auto obj = pairObj.second;
+        if (obj) {
+            obj->resolveLinks();
+        }
+    }
+
+    // Create main runloops
     #if defined(HYDRUINO_USE_TASKSCHEDULER)
         Task *controlTask = new Task(1000 * TASK_MILLISECOND, TASK_FOREVER, controlLoop, &_ts, true);
         Task *dataTask = new Task(100 * TASK_MILLISECOND, TASK_FOREVER, dataLoop, &_ts, true);
@@ -474,12 +353,51 @@ void Hydroponics::update()
     taskManager.runLoop(); // tcMenu uses this system to run its UI
 }
 
-void Hydroponics::updateActuators()
+void Hydroponics::updateObjects(int pass)
+{
+    switch(pass) {
+        case 0: {
+            for (auto pairObj : _objects) {
+                auto obj = pairObj.second;
+                if (obj->isRailType() || obj->isReservoirType()) {
+                    obj->update();
+                }
+            }
+        } break;
+
+        case 1: {
+            for (auto pairObj : _objects) {
+                auto obj = pairObj.second;
+                if (obj->isActuatorType()) {
+                    obj->update();
+                }
+            }
+        } break;
+
+        case 2: {
+            for (auto pairObj : _objects) {
+                auto obj = pairObj.second;
+                if (obj->isSensorType()) {
+                    obj->update();
+                }
+            }
+        } break;
+    }
+}
+
+void Hydroponics::updateScheduling()
 {
     // TODO
-    // for (auto actuator in actuators.copy()) {
-    //     actuator->update();
-    // }
+}
+
+void Hydroponics::updateLogging()
+{
+    // TODO
+}
+
+void Hydroponics::updateScreen()
+{
+    // TODO
 }
 
 void Hydroponics::updateBuzzer()
@@ -490,372 +408,530 @@ void Hydroponics::updateBuzzer()
     }
 }
 
-void Hydroponics::updateCrops()
+bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
-    // TODO
-    // for (auto crop in crops.copy()) {
-    //     crop->update();
-    // }
+    HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_ATPOS_MAXSIZE, "Invalid position index");
+    return _objects.insert(obj->getKey(), obj).second;
 }
 
-void Hydroponics::updateLogging()
+bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
 {
-    // TODO
+    auto iter = _objects.find(obj->getKey());
+    if (iter != _objects.end()) {
+        _objects.erase(iter);
+        return true;
+    }
+    return false;
 }
 
-void Hydroponics::updateScheduling()
+shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) const
 {
-    // TODO
+    if (id.posIndex == HYDRUINO_ATPOS_SEARCH_FROMBEG) {
+        while(++id.posIndex < HYDRUINO_ATPOS_MAXSIZE) {
+            auto obj = _objects.at(id.regenKey());
+            if (obj) { return obj; }
+        }
+    } else if (id.posIndex == HYDRUINO_ATPOS_SEARCH_FROMEND) {
+        while(--id.posIndex >= 0) {
+            auto obj = _objects.at(id.regenKey());
+            if (obj) { return obj; }
+        }
+    } else {
+        auto obj = _objects.at(id.key);
+        if (obj) { return obj; }
+    }
+
+    return shared_ptr<HydroponicsObject>(nullptr);
 }
 
-void Hydroponics::updateScreen()
+Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, bool taken)
 {
-    // TODO
+    if (id.posIndex != HYDRUINO_ATPOS_SEARCH_FROMEND) {
+        id.posIndex = HYDRUINO_ATPOS_SEARCH_FROMBEG;
+        while(++id.posIndex < HYDRUINO_ATPOS_MAXSIZE) {
+            auto obj = _objects.at(id.regenKey());
+            if (taken == (bool)obj) { return id.posIndex; }
+        }
+    } else {
+        id.posIndex = HYDRUINO_ATPOS_SEARCH_FROMEND;
+        while(--id.posIndex >= 0) {
+            auto obj = _objects.at(id.regenKey());
+            if (taken == (bool)obj) { return id.posIndex; }
+        }
+    }
+
+    return -1;
 }
 
-void Hydroponics::updateSensors()
-{
-    // TODO
-    // for (auto sensor in sensors.copy()) {
-    //     sensor->update();
-    // }
-}
-
-bool Hydroponics::registerObject(HydroponicsObject *obj)
-{
-    // TODO
-    return true;
-}
-
-bool Hydroponics::unregisterObject(HydroponicsObject *obj)
-{
-    // TODO
-    return true;
-}
-
-HydroponicsObject *Hydroponics::findObjectByKey(HydroponicsIdentity identity) const
-{
-    // TODO
-    return nullptr;
-}
-
-HydroponicsRelayActuator *Hydroponics::addGrowLightsRelay(byte outputPin)
+shared_ptr<HydroponicsRelayActuator> Hydroponics::addGrowLightsRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    //assert(outputPinIsDigital && "Output pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_GrowLights));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, "Output pin is not digital");
 
-    if (outputPinIsDigital) {
-        HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(Hydroponics_ActuatorType_GrowLights,
-                                                                          0, // TODO
-                                                                          outputPin);
+    if (outputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
+            Hydroponics_ActuatorType_GrowLights,
+            positionIndex,
+            outputPin
+        ));
         if (registerObject(actuator)) { return actuator; }
-        else { delete actuator; }
+        else { actuator = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsRelayActuator>(nullptr);
 }
 
-HydroponicsRelayActuator *Hydroponics::addWaterPumpRelay(byte outputPin)
+shared_ptr<HydroponicsPumpRelayActuator> Hydroponics::addWaterPumpRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    //assert(outputPinIsDigital && "Output pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterPump));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, "Output pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (outputPinIsDigital) {
-        HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(Hydroponics_ActuatorType_WaterPump,
-                                                                          0, // TODO
-                                                                          outputPin);
+    if (outputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsPumpRelayActuator> actuator(new HydroponicsPumpRelayActuator(
+            Hydroponics_ActuatorType_WaterPump,
+            positionIndex,
+            outputPin
+        ));
         if (registerObject(actuator)) { return actuator; }
-        else { delete actuator; }
+        else { actuator = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsRelayActuator>(nullptr);
 }
 
-HydroponicsRelayActuator *Hydroponics::addWaterHeaterRelay(byte outputPin)
+shared_ptr<HydroponicsRelayActuator> Hydroponics::addWaterHeaterRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    //assert(outputPinIsDigital && "Output pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterHeater));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, "Output pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (outputPinIsDigital) {
-        HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(Hydroponics_ActuatorType_WaterHeater,
-                                                                          0, // TODO
-                                                                          outputPin);
+    if (outputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
+            Hydroponics_ActuatorType_WaterHeater,
+            positionIndex,
+            outputPin
+        ));
         if (registerObject(actuator)) { return actuator; }
-        else { delete actuator; }
+        else { actuator = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsRelayActuator>(nullptr);
 }
 
-HydroponicsRelayActuator *Hydroponics::addWaterAeratorRelay(byte outputPin)
+shared_ptr<HydroponicsRelayActuator> Hydroponics::addWaterAeratorRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    //assert(outputPinIsDigital && "Output pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterAerator));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, "Output pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (outputPinIsDigital) {
-        HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(Hydroponics_ActuatorType_WaterAerator,
-                                                                          0, // TODO
-                                                                          outputPin);
+    if (outputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
+            Hydroponics_ActuatorType_WaterAerator,
+            positionIndex,
+            outputPin
+        ));
         if (registerObject(actuator)) { return actuator; }
-        else { delete actuator; }
+        else { actuator = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsRelayActuator>(nullptr);
 }
 
-HydroponicsRelayActuator *Hydroponics::addFanExhaustRelay(byte outputPin)
+shared_ptr<HydroponicsRelayActuator> Hydroponics::addFanExhaustRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    //assert(outputPinIsDigital && "Output pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, "Output pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (outputPinIsDigital) {
-        HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(Hydroponics_ActuatorType_FanExhaust,
-                                                                          0, // TODO
-                                                                          outputPin);
+    if (outputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
+            Hydroponics_ActuatorType_FanExhaust,
+            positionIndex,
+            outputPin
+        ));
         if (registerObject(actuator)) { return actuator; }
-        else { delete actuator; }
+        else { actuator = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsRelayActuator>(nullptr);
 }
 
-HydroponicsPWMActuator *Hydroponics::addFanExhaustPWM(byte outputPin, byte outputBitRes)
+shared_ptr<HydroponicsPWMActuator> Hydroponics::addFanExhaustPWM(byte outputPin, byte outputBitRes)
 {
-    bool outputPinIsPWM = checkPinCanPWMOutput(outputPin);
-    //assert(outputPinIsPWM && "Output pin does not support PWM");
+    bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
+    HYDRUINO_HARD_ASSERT(outputPinIsPWM, "Output pin does not support PWM");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (outputPinIsPWM) {
-        HydroponicsPWMActuator *actuator = new HydroponicsPWMActuator(Hydroponics_ActuatorType_FanExhaust,
-                                                                      0, // TODO
-                                                                      outputPin,
-                                                                      outputBitRes);
+    if (outputPinIsPWM && positionIndex != -1) {
+        shared_ptr<HydroponicsPWMActuator> actuator(new HydroponicsPWMActuator(
+            Hydroponics_ActuatorType_FanExhaust,
+            positionIndex,
+            outputPin, outputBitRes
+        ));
         if (registerObject(actuator)) { return actuator; }
-        else { delete actuator; }
+        else { actuator = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsPWMActuator>(nullptr);
 }
 
-HydroponicsRelayActuator *Hydroponics::addPeristalticPumpRelay(byte outputPin)
+shared_ptr<HydroponicsPumpRelayActuator> Hydroponics::addPeristalticPumpRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    //assert(outputPinIsDigital && "Output pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_PeristalticPump));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, "Output pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (outputPinIsDigital) {
-        HydroponicsRelayActuator *actuator = new HydroponicsRelayActuator(Hydroponics_ActuatorType_PeristalticPump,
-                                                                          0, // TODO
-                                                                          outputPin);
+    if (outputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsPumpRelayActuator> actuator(new HydroponicsPumpRelayActuator(
+            Hydroponics_ActuatorType_PeristalticPump,
+            positionIndex,
+            outputPin
+        ));
         if (registerObject(actuator)) { return actuator; }
-        else { delete actuator; }
+        else { actuator = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsPumpRelayActuator>(nullptr);
 }
 
-HydroponicsBinarySensor *Hydroponics::addLevelIndicator(byte inputPin)
+shared_ptr<HydroponicsBinarySensor> Hydroponics::addLevelIndicator(byte inputPin)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    //assert(inputPinIsDigital && "Input pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterLevelIndicator));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, "Input pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsDigital) {
-        HydroponicsBinarySensor *sensor = new HydroponicsBinarySensor(Hydroponics_SensorType_WaterLevelIndicator,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      true);
+    if (inputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsBinarySensor> sensor(new HydroponicsBinarySensor(
+            Hydroponics_SensorType_WaterLevelIndicator,
+            positionIndex,
+            inputPin
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsBinarySensor>(nullptr);
 }
 
-HydroponicsAnalogSensor *Hydroponics::addCO2Sensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogCO2Sensor(byte inputPin, byte inputBitRes = 8)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirCarbonDioxide));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, "Input pin is not analog");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(Hydroponics_SensorType_AirCarbonDioxide,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      inputBitRes);
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_AirCarbonDioxide,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsAnalogSensor>(nullptr);
 }
 
-HydroponicsAnalogSensor *Hydroponics::addPhMeter(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogPhMeter(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PotentialHydrogen));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, "Input pin is not analog");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(Hydroponics_SensorType_PotentialHydrogen,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      inputBitRes);
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_PotentialHydrogen,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsAnalogSensor>(nullptr);
 }
 
-HydroponicsAnalogSensor *Hydroponics::addTempSensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogTemperatureSensor(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, "Input pin is not analog");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(Hydroponics_SensorType_WaterTemperature,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      inputBitRes);
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_WaterTemperature,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsAnalogSensor>(nullptr);
 }
 
-HydroponicsAnalogSensor *Hydroponics::addTDSElectrode(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogTDSElectrode(byte inputPin, int ppmScale, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_TotalDissolvedSolids));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, "Input pin is not analog");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(Hydroponics_SensorType_TotalDissolvedSolids,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      inputBitRes);
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_TotalDissolvedSolids,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
+        if (ppmScale != 500) {
+            auto calibData = sensor->loadInputCalibration(true);
+            if (calibData) { calibData->setFromScale(ppmScale / 500.0f);
+                             calibData->calibUnits = Hydroponics_UnitsType_Concentration_EC; }
+        }
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsAnalogSensor>(nullptr);
 }
 
-HydroponicsAnalogSensor *Hydroponics::addPumpFlowSensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addPWMPumpFlowSensor(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterPumpFlowSensor));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, "Input pin is not analog");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(Hydroponics_SensorType_WaterPumpFlowSensor,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      inputBitRes);
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_WaterPumpFlowSensor,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsAnalogSensor>(nullptr);
 }
 
-HydroponicsAnalogSensor *Hydroponics::addWaterHeightMeter(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogWaterHeightMeter(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, "Input pin is not analog");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(Hydroponics_SensorType_WaterHeightMeter,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      inputBitRes);
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_WaterHeightMeter,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsAnalogSensor>(nullptr);
 }
 
-HydroponicsAnalogSensor *Hydroponics::addUltrasonicDistanceSensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addUltrasonicDistanceSensor(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, "Input pin is not analog");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsAnalogSensor *sensor = new HydroponicsAnalogSensor(Hydroponics_SensorType_WaterHeightMeter,
-                                                                      0, // TODO: Find next free index
-                                                                      inputPin,
-                                                                      inputBitRes);
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_WaterHeightMeter,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
+        auto calibData = sensor->loadInputCalibration(true);
+        if (calibData) { calibData->multiplier = -1.0f; calibData->offset = 1.0f;
+                         calibData->calibUnits = defaultSensorMeasurementUnits(sensor->getId().as.sensorType, getMeasurementMode()); }
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsAnalogSensor>(nullptr);
 }
 
-HydroponicsDHTOneWireSensor *Hydroponics::addDHTTempHumiditySensor(byte inputPin, uint8_t dhtType)
+shared_ptr<HydroponicsDHTTempHumiditySensor> Hydroponics::addDHTTempHumiditySensor(byte inputPin, uint8_t dhtType)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    //assert(inputPinIsDigital && "Input pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirTempHumidity));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, "Input pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsDigital) {
-        HydroponicsDHTOneWireSensor *sensor = new HydroponicsDHTOneWireSensor(0, // TODO: Find next free index
-                                                                              inputPin,
-                                                                              dhtType);
+    if (inputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsDHTTempHumiditySensor> sensor(new HydroponicsDHTTempHumiditySensor(
+            positionIndex,
+            inputPin,
+            dhtType
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsDHTTempHumiditySensor>(nullptr);
 }
 
-HydroponicsDSOneWireSensor *Hydroponics::addDSTemperatureSensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    //assert(inputPinIsDigital && "Input pin is not digital");
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, "Input pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsDigital) {
-        HydroponicsDSOneWireSensor *sensor = new HydroponicsDSOneWireSensor(0, // TODO: Find next free index
-                                                                            inputPin,
-                                                                            inputBitRes);
+    if (inputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsDSTemperatureSensor> sensor(new HydroponicsDSTemperatureSensor(
+            positionIndex,
+            inputPin, inputBitRes
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsDSTemperatureSensor>(nullptr);
 }
 
-HydroponicsTMPOneWireSensor *Hydroponics::addTMPSoilMoistureSensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsTMPSoilMoistureSensor> Hydroponics::addTMPSoilMoistureSensor(byte inputPin, byte inputBitRes)
 {
-    bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    //assert(inputPinIsAnalog && "Input pin is not analog");
+    bool inputPinIsDigital = checkPinIsDigital(inputPin);
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_SoilMoisture));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, "Input pin is not digital");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (inputPinIsAnalog) {
-        HydroponicsTMPOneWireSensor *sensor = new HydroponicsTMPOneWireSensor(0, // TODO: Find next free index
-                                                                              inputPin,
-                                                                              inputBitRes);
+    if (inputPinIsDigital && positionIndex != -1) {
+        shared_ptr<HydroponicsTMPSoilMoistureSensor> sensor(new HydroponicsTMPSoilMoistureSensor(
+            positionIndex,
+            inputPin, inputBitRes
+        ));
         if (registerObject(sensor)) { return sensor; }
-        else { delete sensor; }
+        else { sensor = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsTMPSoilMoistureSensor>(nullptr);
 }
 
-HydroponicsCrop *Hydroponics::addCropFromSowDate(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t sowDate)
+shared_ptr<HydroponicsSimpleCrop> Hydroponics::addCropFromSowDate(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t sowDate)
 {
-    //assert((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count && "Invalid crop type");
-    //assert(sowDate > 0 && "Invalid sow date");
-    Hydroponics_PositionIndex nextFreeIndex = 0; // TODO
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
+    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, "Invalid crop type");
+    HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, "Invalid substrate type");
+    HYDRUINO_SOFT_ASSERT(sowDate > 0, "Invalid sow date");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
 
-    if (nextFreeIndex >= 0 && nextFreeIndex < HYDRUINO_ATPOS_MAXSIZE) {
-        HydroponicsCrop *crop = new HydroponicsCrop(cropType, nextFreeIndex, substrateType, sowDate);
+    if (cropType < Hydroponics_CropType_Count && sowDate > 0 && positionIndex != -1) {
+        shared_ptr<HydroponicsSimpleCrop> crop(new HydroponicsSimpleCrop(
+            cropType,
+            positionIndex,
+            substrateType,
+            sowDate
+        ));
         if (registerObject(crop)) { return crop; }
-        else { delete crop; }
+        else { crop = nullptr; }
     }
 
-    return nullptr;
+    return shared_ptr<HydroponicsSimpleCrop>(nullptr);
 }
 
-HydroponicsCrop *Hydroponics::addCropFromLastHarvest(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t lastHarvestDate)
+shared_ptr<HydroponicsSimpleCrop> Hydroponics::addCropFromLastHarvest(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t lastHarvestDate)
 {
-    HydroponicsCropLibData plantData(cropType);
-    time_t sowDate = lastHarvestDate - (plantData.growWeeksToHarvest * SECS_PER_WEEK);
-    return addCropFromSowDate(cropType, substrateType, sowDate);
+    HydroponicsCropsLibData cropData(cropType);
+    time_t sowDate = lastHarvestDate - (cropData.growWeeksToHarvest * SECS_PER_WEEK);
+    auto crop = addCropFromSowDate(cropType, substrateType, sowDate);
+    return crop;
+}
+
+shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics_ReservoirType reservoirType, float maxVolume, Hydroponics_UnitsType maxVolumeUnits)
+{
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(reservoirType));
+    HYDRUINO_SOFT_ASSERT((int)reservoirType >= 0 && reservoirType <= Hydroponics_ReservoirType_Count, "Invalid reservoir type");
+    HYDRUINO_SOFT_ASSERT(maxVolume > 0.0f, "Invalid max volume");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
+
+    if (reservoirType < Hydroponics_ReservoirType_Count && maxVolume > 0.0f && positionIndex != -1) {
+        shared_ptr<HydroponicsFluidReservoir> reservoir(new HydroponicsFluidReservoir(
+            reservoirType,
+            positionIndex,
+            maxVolume, maxVolumeUnits
+        ));
+        if (registerObject(reservoir)) { return reservoir; }
+        else { reservoir = nullptr; }
+    }
+
+    return shared_ptr<HydroponicsFluidReservoir>(nullptr);
+}
+
+shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addDrainagePipe()
+{
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_DrainageWater));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
+
+    if (positionIndex != -1) {
+        shared_ptr<HydroponicsInfiniteReservoir> reservoir(new HydroponicsInfiniteReservoir(
+            Hydroponics_ReservoirType_DrainageWater,
+            positionIndex,
+            false
+        ));
+        if (registerObject(reservoir)) { return reservoir; }
+        else { reservoir = nullptr; }
+    }
+
+    return shared_ptr<HydroponicsInfiniteReservoir>(nullptr);
+}
+
+shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addWaterMainPipe()
+{
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_FreshWater));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
+
+    if (positionIndex != -1) {
+        shared_ptr<HydroponicsInfiniteReservoir> reservoir(new HydroponicsInfiniteReservoir(
+            Hydroponics_ReservoirType_FreshWater,
+            positionIndex,
+            true
+        ));
+        if (registerObject(reservoir)) { return reservoir; }
+        else { reservoir = nullptr; }
+    }
+
+    return shared_ptr<HydroponicsInfiniteReservoir>(nullptr);
+}
+
+shared_ptr<HydroponicsSimpleRail> Hydroponics::addRelayPowerRail(Hydroponics_RailType railType, int maxActiveAtOnce)
+{
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(railType));
+    HYDRUINO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydroponics_RailType_Count, "Invalid rail type");
+    HYDRUINO_SOFT_ASSERT(maxActiveAtOnce > 0, "Invalid max active at once");
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, "No more positions available");
+
+    if (railType < Hydroponics_RailType_Count && maxActiveAtOnce > 0) {
+        shared_ptr<HydroponicsSimpleRail> rail(new HydroponicsSimpleRail(
+            railType,
+            positionIndex,
+            maxActiveAtOnce
+        ));
+        if (registerObject(rail)) { return rail; }
+        else { rail = nullptr; }
+    }
+
+    return shared_ptr<HydroponicsSimpleRail>(nullptr);
 }
 
 Hydroponics *Hydroponics::getActiveInstance()
@@ -957,65 +1033,86 @@ SDClass *Hydroponics::getSDCard(bool begin)
     return _sd;
 }
 
-int Hydroponics::getRelayCount(Hydroponics_RailType relayRail) const
-{
-    // TODO
-    return 0;
-}
-
-int Hydroponics::getActiveRelayCount(Hydroponics_RailType relayRail) const
-{
-    // TODO
-    return 0;
-}
-
-byte Hydroponics::getMaxActiveRelayCount(Hydroponics_RailType relayRail) const
-{
-    // TODO assert params
-    //assert(_systemData && "System data not yet initialized");
-    return _systemData ? _systemData->maxActiveRelayCount[relayRail] : 0;
-}
-
 int Hydroponics::getActuatorCount() const
 {
-    // TODO
-    return 0;
+    int retVal = 0;
+    for (auto pairObj : _objects) {
+        auto obj = pairObj.second;
+        if (obj && obj->isActuatorType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
 }
 
 int Hydroponics::getSensorCount() const
 {
-    // TODO
-    return 0;
+    int retVal = 0;
+    for (auto pairObj : _objects) {
+        auto obj = pairObj.second;
+        if (obj && obj->isSensorType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
 }
 
 int Hydroponics::getCropCount() const
 {
-    // TODO
-    return 0;
+    int retVal = 0;
+    for (auto pairObj : _objects) {
+        auto obj = pairObj.second;
+        if (obj && obj->isCropType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
+}
+
+int Hydroponics::getReservoirCount() const
+{
+    int retVal = 0;
+    for (auto pairObj : _objects) {
+        auto obj = pairObj.second;
+        if (obj && obj->isReservoirType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
+}
+
+int Hydroponics::getRailCount() const
+{
+    int retVal = 0;
+    for (auto pairObj : _objects) {
+        auto obj = pairObj.second;
+        if (obj && obj->isRailType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
 }
 
 String Hydroponics::getSystemName() const
 {
-    //assert(_systemData && "System data not yet initialized");
+    HYDRUINO_SOFT_ASSERT(_systemData, "System data not yet initialized");
     return _systemData ? String(_systemData->systemName) : String();
 }
 
 uint32_t Hydroponics::getPollingIntervalMillis() const
 {
-    //assert(_systemData && "System data not yet initialized");
+    HYDRUINO_SOFT_ASSERT(_systemData, "System data not yet initialized");
     return _systemData ? _systemData->pollingIntMs : 0;
 }
 
-float Hydroponics::getReservoirVolume(Hydroponics_ReservoirType forFluidReservoir) const
+uint32_t Hydroponics::getPollingFrameNumber() const
 {
-    //assert(_systemData && "System data not yet initialized");
-    return _systemData ? _systemData->reservoirVol[forFluidReservoir] : 0;
+    return _pollingFrame;
 }
 
-float Hydroponics::getPumpFlowRate(Hydroponics_ReservoirType forFluidReservoir) const
+bool Hydroponics::isPollingFrameOld(uint32_t frame) const
 {
-    //assert(_systemData && "System data not yet initialized");
-    return _systemData ? _systemData->pumpFlowRate[forFluidReservoir] : 0;
+    return _pollingFrame > frame || (frame == UINT32_MAX && _pollingFrame < UINT32_MAX);
 }
 
 int Hydroponics::getControlInputRibbonPinCount()
@@ -1036,25 +1133,16 @@ int Hydroponics::getControlInputRibbonPinCount()
 byte Hydroponics::getControlInputPin(int ribbonPinIndex)
 {
     int ctrlInPinCount = getControlInputRibbonPinCount();
-    //assert(ctrlInPinCount > 0 && "Control input pinmap not used in this mode");
-    //assert(ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount && "Ribbon pin index out of range");
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, "Control input pinmap not used in this mode");
+    HYDRUINO_SOFT_ASSERT(ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount, "Ribbon pin index out of range");
 
     return _ctrlInputPinMap && ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInputPinMap[ribbonPinIndex] : -1;
-}
-
-void Hydroponics::setMaxActiveRelayCount(byte maxActiveCount, Hydroponics_RailType relayRail)
-{
-    // TODO assert params
-    //assert(_systemData && "System data not yet initialized");
-    if (_systemData) {
-        _systemData->maxActiveRelayCount[relayRail] = maxActiveCount;
-    }
 }
 
 void Hydroponics::setSystemName(String systemName)
 {
     // TODO assert params
-    //assert(_systemData && "System data not yet initialized");
+    HYDRUINO_SOFT_ASSERT(_systemData, "System data not yet initialized");
     if (_systemData) {
         strncpy(&_systemData->systemName[0], systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
         // TODO lcd update
@@ -1064,46 +1152,31 @@ void Hydroponics::setSystemName(String systemName)
 void Hydroponics::setPollingIntervalMillis(uint32_t pollingIntMs)
 {
     // TODO assert params
-    //assert(_systemData && "System data not yet initialized");
+    HYDRUINO_SOFT_ASSERT(_systemData, "System data not yet initialized");
     if (_systemData) {
         _systemData->pollingIntMs = pollingIntMs;
         // TODO adjust per sensor polling
     }
 }
 
-void Hydroponics::setReservoirVolume(float reservoirVol, Hydroponics_ReservoirType forFluidReservoir)
-{
-    // TODO assert params
-    //assert(_systemData && "System data not yet initialized");
-    if (_systemData) {
-        _systemData->reservoirVol[forFluidReservoir] = reservoirVol;
-        // TODO lcd update
-    }
-}
-
-void Hydroponics::setPumpFlowRate(float pumpFlowRate, Hydroponics_ReservoirType forFluidReservoir)
-{
-    // TODO assert params
-    //assert(_systemData && "System data not yet initialized");
-    if (_systemData) {
-        _systemData->pumpFlowRate[forFluidReservoir] = pumpFlowRate;
-        // TODO updates?
-    }
-}
-
 void Hydroponics::setControlInputPinMap(byte *pinMap)
 {
-    //assert(pinMap && "Invalid pinMap");
+    HYDRUINO_SOFT_ASSERT(pinMap, "Invalid pinMap");
     const int ctrlInPinCount = getControlInputRibbonPinCount();
-    //assert(ctrlInPinCount > 0 && "Control input pinmap not used in this mode");
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, "Control input pinmap not used in this mode");
 
-    for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
-        _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
+    if (pinMap && ctrlInPinCount) {
+        for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
+            _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
+        }
     }
 }
 
-void Hydroponics::setUserDelayFuncs(UserDelayFunc delayMillisFunc, UserDelayFunc delayMicrosFunc)
+#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+
+void Hydroponics::forwardLogMessage(String message, bool flushAfter = false)
 {
-    _uDelayMillisFunc = delayMillisFunc ? delayMillisFunc : uDelayMillisFuncDef;
-    _uDelayMicrosFunc = delayMicrosFunc ? delayMicrosFunc : uDelayMicrosFuncDef;
+    // TODO
 }
+
+#endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
