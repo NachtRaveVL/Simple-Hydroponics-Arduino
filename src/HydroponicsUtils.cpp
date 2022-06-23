@@ -30,9 +30,9 @@ Hydroponics *getHydroponicsInstance()
 
 Hydroponics_KeyType stringHash(const String &str)
 {
-    Hydroponics_KeyType hash = 0;
+    Hydroponics_KeyType hash = 5381;
     for(int index = 0; index < str.length(); ++index) {
-        hash = _crc16_update(hash, str[index]);
+        hash = ((hash << 5) + hash) + (Hydroponics_KeyType)str[index];
     }
     return hash != (Hydroponics_KeyType)-1 ? hash : 0;
 }

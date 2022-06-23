@@ -257,7 +257,7 @@ void Hydroponics::commonInit()
             case Hydroponics_ControlInputMode_Undefined:
                 Serial.print(getControlInputMode()); break;
         }
-        Serial.println("");
+        Serial.println();
     #endif
 }
 
@@ -428,17 +428,23 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
 {
     if (id.posIndex == HYDRUINO_POS_SEARCH_FROMBEG) {
         while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
-            auto obj = _objects.at(id.regenKey());
-            if (obj) { return obj; }
+            auto iter = _objects.find(id.regenKey());
+            if (iter != _objects.end()) {
+                return iter->second;
+            }
         }
     } else if (id.posIndex == HYDRUINO_POS_SEARCH_FROMEND) {
         while(--id.posIndex >= 0) {
-            auto obj = _objects.at(id.regenKey());
-            if (obj) { return obj; }
+            auto iter = _objects.find(id.regenKey());
+            if (iter != _objects.end()) {
+                return iter->second;
+            }
         }
     } else {
-        auto obj = _objects.at(id.key);
-        if (obj) { return obj; }
+        auto iter = _objects.find(id.key);
+        if (iter != _objects.end()) {
+            return iter->second;
+        }
     }
 
     return shared_ptr<HydroponicsObject>(nullptr);
@@ -449,14 +455,18 @@ Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, boo
     if (id.posIndex != HYDRUINO_POS_SEARCH_FROMEND) {
         id.posIndex = HYDRUINO_POS_SEARCH_FROMBEG;
         while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
-            auto obj = _objects.at(id.regenKey());
-            if (taken == (obj != nullptr)) { return id.posIndex; }
+            auto iter = _objects.find(id.regenKey());
+            if (taken == (iter != _objects.end())) {
+                return id.posIndex;
+            }
         }
     } else {
         id.posIndex = HYDRUINO_POS_SEARCH_FROMEND;
         while(--id.posIndex >= 0) {
-            auto obj = _objects.at(id.regenKey());
-            if (taken == (obj != nullptr)) { return id.posIndex; }
+            auto iter = _objects.find(id.regenKey());
+            if (taken == (iter != _objects.end())) {
+                return id.posIndex;
+            }
         }
     }
 

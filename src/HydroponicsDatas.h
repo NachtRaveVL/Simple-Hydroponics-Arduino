@@ -158,7 +158,7 @@ struct HydroponicsCropsLibData : public HydroponicsData {
     void fromJSONElement(JsonVariantConst &elementIn) override;
 
     Hydroponics_CropType cropType;                              // Crop type
-    char plantName[HYDRUINO_NAME_MAXSIZE];                      // Name of plant
+    char cropName[HYDRUINO_NAME_MAXSIZE];                       // Name of crop
     byte growWeeksToHarvest;                                    // How long it takes to grow before harvestable
     byte weeksBetweenHarvest;                                   // How long it takes between harvests, if applicable
     byte phaseBeginWeek[Hydroponics_CropPhase_Count];           // Which week the plating phase generally begins
