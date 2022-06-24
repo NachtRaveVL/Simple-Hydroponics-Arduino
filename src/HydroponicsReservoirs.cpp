@@ -105,7 +105,8 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(Hydroponics_ReservoirType r
                                                      int channel,
                                                      int classType)
     : HydroponicsReservoir(reservoirType, reservoirIndex, classType), _channel(channel),
-      _currVolume(0.0f), _maxVolume(maxVolume), _volumeUnits(defaultLiquidVolumeUnits())
+      _currVolume(0.0f), _maxVolume(maxVolume), _volumeUnits(defaultLiquidVolumeUnits()),
+      _filledTrigger{nullptr}, _emptyTrigger{nullptr}
 { ; }
 
 HydroponicsFluidReservoir::~HydroponicsFluidReservoir()
@@ -156,14 +157,14 @@ Hydroponics_UnitsType HydroponicsFluidReservoir::getVolumeUnits() const
 
 void HydroponicsFluidReservoir::update()
 {
-    HydroponicsReservoir::update();
+    HydroponicsObject::update();
     if (_filledTrigger) { _filledTrigger->update(); }
     if (_emptyTrigger) { _emptyTrigger->update(); }
 }
 
 void HydroponicsFluidReservoir::resolveLinks()
 {
-    HydroponicsReservoir::resolveLinks();
+    HydroponicsObject::resolveLinks();
     if (_filledTrigger) { _filledTrigger->attach(); }
     if (_emptyTrigger) { _emptyTrigger->attach(); }
 }

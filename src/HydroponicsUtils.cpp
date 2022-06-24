@@ -32,14 +32,14 @@ Hydroponics_KeyType stringHash(const String &str)
 {
     Hydroponics_KeyType hash = 5381;
     for(int index = 0; index < str.length(); ++index) {
-        hash = ((hash << 5) + hash) + (Hydroponics_KeyType)str[index];
+        hash = ((hash << 5) + hash) + (Hydroponics_KeyType)str[index]; // Good 'ol DJB2
     }
     return hash != (Hydroponics_KeyType)-1 ? hash : 0;
 }
 
 String stringFromChars(const char *chars, size_t length)
 {
-    String retVal;
+    String retVal = "";
     for (size_t index = 0; index < length && chars[index] != '\0'; ++index) {
         retVal.concat(chars[index]);
     }
@@ -63,14 +63,15 @@ void logMessage(String message, bool flushAfter)
     }
 }
 
+static String fileFromFullPath(String fullPath) {
+    int index = fullPath.lastIndexOf(HYDRUINO_PATH_SEPARATOR);
+    return index != -1 ? fullPath.substring(index+1) : fullPath;
+}
+
 void softAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        String fileStr = String(file);
-        int fileTail = fileStr.lastIndexOf('\\');
-        fileTail = fileTail != -1 ? fileTail : fileStr.lastIndexOf('/');
-        if (fileTail != -1) { fileStr = fileStr.substring(fileTail+1); }
-        msg = String(F("Assertion Failure: ")) + fileStr + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;    
+        msg = String(F("Assertion Failure: ")) + fileFromFullPath(String(file)) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;    
         logMessage(msg);
         return;
     }
@@ -79,13 +80,10 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
 void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        String fileStr = String(file);
-        int fileTail = fileStr.lastIndexOf("\\");
-        fileTail = fileTail != -1 ? fileTail : fileStr.lastIndexOf("/");
-        if (fileTail != -1) { fileStr = fileStr.substring(fileTail+1); }
-        msg = String(F("Assertion Failure (HARD): ")) + fileStr + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
+        msg = String(F("Assertion Failure (HARD): ")) + fileFromFullPath(String(file)) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
         logMessage(msg, true);
-        delay(10);
+        //getHydruinoInstance()->abort();
+        delay(1000);
         abort();
     }
 }

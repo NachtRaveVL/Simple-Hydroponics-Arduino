@@ -311,7 +311,7 @@ void Hydroponics::launch()
     // Resolves all unlinked objects
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         auto obj = iter->second;
-        if (obj != nullptr) {
+        if (obj) {
             obj->resolveLinks();
         }
     }
@@ -350,7 +350,7 @@ void Hydroponics::update()
         miscLoop();
     #endif
 
-    taskManager.runLoop(); // tcMenu uses this system to run its UI
+    taskManager.runLoop(); // tcMenu also uses this system to run its UI
 }
 
 void Hydroponics::updateObjects(int pass)
@@ -359,7 +359,7 @@ void Hydroponics::updateObjects(int pass)
         case 0: {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
-                if (obj->isRailType() || obj->isReservoirType()) {
+                if (obj && obj->isRailType() || obj->isReservoirType()) {
                     obj->update();
                 }
             }
@@ -368,7 +368,7 @@ void Hydroponics::updateObjects(int pass)
         case 1: {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
-                if (obj->isActuatorType()) {
+                if (obj && obj->isActuatorType()) {
                     obj->update();
                 }
             }
@@ -377,7 +377,7 @@ void Hydroponics::updateObjects(int pass)
         case 2: {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
-                if (obj->isSensorType()) {
+                if (obj && obj->isSensorType()) {
                     obj->update();
                 }
             }

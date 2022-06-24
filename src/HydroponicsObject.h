@@ -80,7 +80,7 @@ public:
 
     virtual void update();                                  // Called over intervals of time by runloop
     virtual void resolveLinks();                            // Called after unpack/during launch, to link delayed load objects
-    virtual void handleLowMem();                            // Called upon low memory condition to try and free memory up
+    virtual void handleLowMemory();                         // Called upon low memory condition to try and free memory up
 
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object.
 

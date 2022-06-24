@@ -734,7 +734,7 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropData(Hydropo
     if (iter != _cropsLibData.end()) {
         book = iter->second;
 
-        HYDRUINO_SOFT_ASSERT(book, "Failure getting crops lib book");
+        HYDRUINO_SOFT_ASSERT(book, "Failure accessing crops lib book");
         if (book) {
             book->count += 1;
         }
@@ -759,16 +759,18 @@ void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropsLibData *crop
 
     if (cropData) {
         auto iter = _cropsLibData.find(cropData->cropType);
-        HYDRUINO_SOFT_ASSERT(iter != _cropsLibData.end(), "No checked out book for crop type");
+        HYDRUINO_SOFT_ASSERT(iter != _cropsLibData.end(), "No check outs for crop type");
 
         if (iter != _cropsLibData.end()) {
             auto book = iter->second;
-            HYDRUINO_SOFT_ASSERT(book, "Failure getting crops lib book");
+            HYDRUINO_SOFT_ASSERT(book, "Failure accessing crops lib book");
 
             if (book) {
                 book->count -= 1;
+
                 if (book->count <= 0) {
                     _cropsLibData.erase(cropData->cropType);
+
                     delete book;
                 }
             }
