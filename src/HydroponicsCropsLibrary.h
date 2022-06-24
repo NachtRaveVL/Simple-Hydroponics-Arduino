@@ -34,19 +34,17 @@ public:
 
     // TODO
     //void setCustomCropData(const Hydroponics_CropType cropType, const HydroponicsCropsLibData *cropData);
-    // CallBack<CropUpdateData> *registerCallbackForCropUpdate();
-    static bool _libraryBuilt; // To be removed in near future
+    //Signal<TODO> getCropLibUpdateSignal();
 
 protected:
     static HydroponicsCropsLibrary *_instance;              // Shared instance
     arx::map<Hydroponics_CropType, HydroponicsCropsLibraryBook *> _cropsLibData; // Loaded crop library data
 
-    HydroponicsCropsLibData _cropsLibDataOld[Hydroponics_CropType_Count]; // To be removed in near future
-
     HydroponicsCropsLibrary();                              // Private constructor to force singleton
 
-    void buildLibrary(); // To be removed in near future
-    void validateEntries(); // To be removed in near future
+    void validateEntries(HydroponicsCropsLibData *cropsLibData);
+
+    String jsonStringForCrop(Hydroponics_CropType cropType);
 };
 
 #endif // /ifndef HydroponicsCrops_H
