@@ -41,9 +41,6 @@
 // Uncomment or -D this define to enable usage of the Scheduler library, iff TaskScheduler disabled, for SAM/SAMD architectures only.
 //#define HYDRUINO_ENABLE_SCHEDULER               // https://github.com/arduino-libraries/Scheduler
 
-// Uncomment or -D this define to enable usage of the CoopTask library, iff both TaskScheduler/Scheduler disabled.
-//#define HYDRUINO_ENABLE_COOPTASK                // https://github.com/dok-net/CoopTask
-
 // Uncomment or -D this define to enable debug output.
 #define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
@@ -80,10 +77,6 @@
 #elif defined(HYDRUINO_ENABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
 #include "Scheduler.h"
 #define HYDRUINO_USE_SCHEDULER
-#elif defined(HYDRUINO_ENABLE_COOPTASK)
-#include "CoopTask.h"
-#define HYDRUINO_USE_COOPTASK
-#define HYDRUINO_MAINLOOP()             runCoopTasks()
 #endif
 #endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
 #ifndef HYDRUINO_MAINLOOP
