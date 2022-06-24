@@ -33,6 +33,9 @@
 
 #define HYDRUINO_PATH_SEPARATOR             '\\'                    // Path separator (FIXME: put into macros)
 #define HYDRUINO_LOW_MEM_SIZE               512                     // How many bytes of free memory left spawns a handle low mem call
+#define HYDRUINO_CONTROL_LOOP_INTERVAL      100                     // Interval, in milliseconds, of control loop
+#define HYDRUINO_DATA_LOOP_INTERVAL         2000                    // Default interval, in milliseconds, of data loop
+#define HYDRUINO_MISC_LOOP_INTERVAL         5                       // Interval, in milliseconds, of misc loop
 
 typedef int8_t Hydroponics_PositionIndex;                           // Position indexing type
 typedef uint32_t Hydroponics_KeyType;                               // Key type

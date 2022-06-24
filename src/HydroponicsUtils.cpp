@@ -102,7 +102,8 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
     if (!cond) {
         msg = String(F("Assertion Failure (HARD): ")) + fileFromFullPath(String(file)) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
         logMessage(msg, true);
-        //getHydruinoInstance()->abort();
+        auto hydroponics = getHydroponicsInstance();
+        if (hydroponics) { hydroponics->suspend(); }
         delay(1000);
         abort();
     }

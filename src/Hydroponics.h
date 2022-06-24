@@ -169,6 +169,9 @@ public:
     // Once launch is called further system setup may no longer be available due to dependency constraints.
     void launch();
 
+    // Suspends the system from further operation. Resume by a call to launch().
+    void suspend();
+
     // Update method. Typically called last in loop().
     // By default this method simply calls into the active scheduler's main loop mechanism, unless multitasking is disabled in which case calls all runloops.
     void update();
@@ -340,6 +343,8 @@ protected:
     Task *_controlTask;                                             // Main control task
     Task *_dataTask;                                                // Data collection task (on polling interval)
     Task *_miscTask;                                                // Misc tasks
+#elif defined(HYDRUINO_USE_SCHEDULER)
+    bool _suspend;                                                  // Suspend tracking
 #endif
     EasyBuzzerClass *_buzzer;                                       // Piezo buzzer instance (unowned)
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
