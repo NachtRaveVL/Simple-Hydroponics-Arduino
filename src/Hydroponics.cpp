@@ -275,6 +275,9 @@ void controlLoop()
 {
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
+        #if defined(HYDRUINO_USE_SCHEDULER)
+            delay(100);
+        #endif
         hydroponics->updateObjects(0);
         hydroponics->updateScheduling();
         hydroponics->updateObjects(1);
@@ -287,6 +290,9 @@ void dataLoop()
 {
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
+        #if defined(HYDRUINO_USE_SCHEDULER)
+            delay(hydroponics->getPollingIntervalMillis());
+        #endif
         hydroponics->updateObjects(2);
         hydroponics->updateLogging();
     }
@@ -298,6 +304,9 @@ void miscLoop()
 {
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
+        #if defined(HYDRUINO_USE_SCHEDULER)
+            delay(5);
+        #endif
         hydroponics->updateBuzzer();
         hydroponics->checkMemoryState();
     }
@@ -332,10 +341,6 @@ void Hydroponics::launch()
         Scheduler.startLoop(controlLoop);
         Scheduler.startLoop(dataLoop);
         Scheduler.startLoop(miscLoop);
-    #elif defined(HYDRUINO_USE_COOPTASK)
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("controlLoop", controlLoop);
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("dataLoop", dataLoop);
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("miscLoop", miscLoop);
     #endif
 }
 
