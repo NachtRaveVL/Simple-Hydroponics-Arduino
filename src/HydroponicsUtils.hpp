@@ -75,7 +75,7 @@ template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {
     SignalFireTask<ParameterType,Slots> *fireTask = new SignalFireTask<ParameterType,Slots>(signal, fireParam);
-    HYDRUINO_SOFT_ASSERT(fireTask, "Failure allocating signal fire task");
+    HYDRUINO_SOFT_ASSERT(fireTask, F("Failure allocating signal fire task"));
     return fireTask != nullptr ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
 }
 

@@ -136,11 +136,11 @@ bool HydroponicsFluidReservoir::canActivate(shared_ptr<HydroponicsActuator> actu
 
     if (doEmptyCheck) {
         auto emptyState = getEmptyState();
-        HYDRUINO_SOFT_ASSERT(emptyState != Hydroponics_TriggerState_Disabled, "Cannot drain reservoir without empty state tracking");
+        HYDRUINO_SOFT_ASSERT(emptyState != Hydroponics_TriggerState_Disabled, F("Cannot drain reservoir without empty state tracking"));
         return (emptyState == Hydroponics_TriggerState_NotTriggered);
     } else {
         auto filledState = getFilledState();
-        HYDRUINO_SOFT_ASSERT(filledState != Hydroponics_TriggerState_Disabled, "Cannot fill reservoir without fill state tracking");
+        HYDRUINO_SOFT_ASSERT(filledState != Hydroponics_TriggerState_Disabled, F("Cannot fill reservoir without fill state tracking"));
         return (filledState == Hydroponics_TriggerState_NotTriggered);
     }
 }

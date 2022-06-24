@@ -19,7 +19,7 @@ HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
         bitRes = bitResIn;
         maxVal = 1 << bitResIn;
     } else {
-        HYDRUINO_SOFT_ASSERT(bitRes == bitResIn, "Resolved resolution mismatch with passed resolution");
+        HYDRUINO_SOFT_ASSERT(bitRes == bitResIn, F("Resolved resolution mismatch with passed resolution"));
     }
 }
 

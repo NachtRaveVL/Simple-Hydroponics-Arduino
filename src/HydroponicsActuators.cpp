@@ -40,7 +40,7 @@ void HydroponicsActuator::update()
 
 void HydroponicsActuator::enableActuatorUntil(time_t disableDate)
 {
-    HYDRUINO_SOFT_ASSERT(disableDate >= now(), "Disable date out of range");
+    HYDRUINO_SOFT_ASSERT(disableDate >= now(), F("Disable date out of range"));
     _enabledUntil = disableDate;
     enableActuator();
 }
@@ -250,7 +250,7 @@ shared_ptr<HydroponicsReservoir> HydroponicsPumpRelayActuator::getOutputReservoi
 
 void HydroponicsPumpRelayActuator::attachFlowRateSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_flowRateSensor, "Flow rate sensor not linked, failure attaching");
+    HYDRUINO_SOFT_ASSERT(_flowRateSensor, F("Flow rate sensor not linked, failure attaching"));
     if (_flowRateSensor) {
         auto methodSlot = MethodSlot<HydroponicsPumpRelayActuator, HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().attach(methodSlot);
@@ -259,7 +259,7 @@ void HydroponicsPumpRelayActuator::attachFlowRateSensor()
 
 void HydroponicsPumpRelayActuator::detachFlowRateSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_flowRateSensor, "Flow rate sensor not linked, failure detaching");
+    HYDRUINO_SOFT_ASSERT(_flowRateSensor, F("Flow rate sensor not linked, failure detaching"));
     if (_flowRateSensor) {
         auto methodSlot = MethodSlot<HydroponicsPumpRelayActuator, HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().attach(methodSlot);
@@ -334,7 +334,7 @@ int HydroponicsPWMActuator::getPWMAmount(int discard) const
 
 void HydroponicsPWMActuator::setPWMAmount(float amount)
 {
-    HYDRUINO_SOFT_ASSERT(amount >= 0.0f && amount <= 1.0f, "Amount out of range");
+    HYDRUINO_SOFT_ASSERT(amount >= 0.0f && amount <= 1.0f, F("Amount out of range"));
     _pwmAmount = constrain(amount, 0.0f, 1.0f);
 
     if (_enabled) {
@@ -345,7 +345,7 @@ void HydroponicsPWMActuator::setPWMAmount(float amount)
 
 void HydroponicsPWMActuator::setPWMAmount(int amount)
 {
-    HYDRUINO_SOFT_ASSERT(amount >= 0 && amount <= _pwmResolution.maxVal, "Amount out of range");
+    HYDRUINO_SOFT_ASSERT(amount >= 0 && amount <= _pwmResolution.maxVal, F("Amount out of range"));
     _pwmAmount = _pwmResolution.transform(amount);
 
     if (_enabled) {

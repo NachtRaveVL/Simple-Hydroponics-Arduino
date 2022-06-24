@@ -107,7 +107,7 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(HydroponicsMeasurem
 
             if (_toleranceUnits != Hydroponics_UnitsType_Undefined && measurementUnits != _toleranceUnits) {
                 convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
-                HYDRUINO_SOFT_ASSERT(measurementUnits == _toleranceUnits, "Failure converting measurement value to tolerance units");
+                HYDRUINO_SOFT_ASSERT(measurementUnits == _toleranceUnits, F("Failure converting measurement value to tolerance units"));
             }
 
             if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {
@@ -203,7 +203,7 @@ void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(HydroponicsMeasurem
 
         if (_toleranceUnits != Hydroponics_UnitsType_Undefined && measurementUnits != _toleranceUnits) {
             convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
-            HYDRUINO_SOFT_ASSERT(measurementUnits == _toleranceUnits, "Failure converting measurement value to tolerance units");
+            HYDRUINO_SOFT_ASSERT(measurementUnits == _toleranceUnits, F("Failure converting measurement value to tolerance units"));
         }
 
         if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {

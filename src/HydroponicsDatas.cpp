@@ -60,7 +60,7 @@ HydroponicsData::HydroponicsData(const char *ident, uint16_t version, uint16_t r
     : _ident{.chars={'\0','\0','\0','\0'}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
-    HYDRUINO_SOFT_ASSERT(ident, "Invalid id");
+    HYDRUINO_SOFT_ASSERT(ident, F("Invalid id"));
     strncpy(_ident.chars, ident, sizeof(_ident.chars));
 }
 
@@ -196,7 +196,7 @@ void HydroponicsCalibrationData::setFromTwoPoints(float point1MeasuredAt, float 
 {
     float aTerm = point2CalibratedTo - point1CalibratedTo;
     float bTerm = point2MeasuredAt - point1MeasuredAt;
-    HYDRUINO_SOFT_ASSERT(!isFPEqual(bTerm, 0.0f), "Invalid parameters");
+    HYDRUINO_SOFT_ASSERT(!isFPEqual(bTerm, 0.0f), F("Invalid parameters"));
     if (!isFPEqual(bTerm, 0.0f)) {
         multiplier = aTerm / bTerm;
         offset = ((aTerm * point2MeasuredAt) + (bTerm * point1CalibratedTo)) / bTerm;
