@@ -21,6 +21,8 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, byte sdCardCSPin, byte controlInpu
       _buzzer(&EasyBuzzer), _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
 #ifdef HYDRUINO_USE_TASKSCHEDULER
       _controlTask(nullptr), _dataTask(nullptr), _miscTask(nullptr),
+#elif defined(HYDRUINO_USE_SCHEDULER)
+      _suspend(false),
 #endif
       _systemData(nullptr)
 {
@@ -44,6 +46,8 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
       _buzzer(&EasyBuzzer), _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
 #ifdef HYDRUINO_USE_TASKSCHEDULER
       _controlTask(nullptr), _dataTask(nullptr), _miscTask(nullptr),
+#elif defined(HYDRUINO_USE_SCHEDULER)
+      _suspend(false),
 #endif
       _systemData(nullptr)
 {
@@ -276,7 +280,14 @@ void controlLoop()
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
         #if defined(HYDRUINO_USE_SCHEDULER)
-            delay(100);
+            if (hydroponics->_suspend) { yield(); return; }
+            {   static auto lastTimeCalled = millis();
+                const int delayPeriod = HYDRUINO_CONTROL_LOOP_INTERVAL;
+                int delayAmount = constrain(delayPeriod - (int)(millis() - lastTimeCalled), 0, delayPeriod);
+                lastTimeCalled = millis();
+                delay(delayAmount);
+            }
+            if (hydroponics->_suspend) { yield(); return; }
         #endif
         hydroponics->updateObjects(0);
         hydroponics->updateScheduling();
@@ -291,8 +302,16 @@ void dataLoop()
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
         #if defined(HYDRUINO_USE_SCHEDULER)
-            delay(hydroponics->getPollingIntervalMillis());
+            if (hydroponics->_suspend) { yield(); return; }
+            {   static auto lastTimeCalled = millis();
+                const int delayPeriod = hydroponics->getPollingIntervalMillis();
+                int delayAmount = constrain(delayPeriod - (int)(millis() - lastTimeCalled), 0, delayPeriod);
+                lastTimeCalled = millis();
+                delay(delayAmount);
+            }
+            if (hydroponics->_suspend) { yield(); return; }
         #endif
+        hydroponics->_pollingFrame++;
         hydroponics->updateObjects(2);
         hydroponics->updateLogging();
     }
@@ -305,7 +324,14 @@ void miscLoop()
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
         #if defined(HYDRUINO_USE_SCHEDULER)
-            delay(5);
+            if (hydroponics->_suspend) { yield(); return; }
+            {   static auto lastTimeCalled = millis();
+                const int delayPeriod = HYDRUINO_MISC_LOOP_INTERVAL;
+                int delayAmount = constrain(delayPeriod - (int)(millis() - lastTimeCalled), 0, delayPeriod);
+                lastTimeCalled = millis();
+                delay(delayAmount);
+            }
+            if (hydroponics->_suspend) { yield(); return; }
         #endif
         hydroponics->updateBuzzer();
         hydroponics->checkMemoryState();
@@ -318,7 +344,7 @@ void Hydroponics::launch()
 {
     ++_pollingFrame; // Forces all sensors to get a new initial measurement
 
-    // Ensures removal of unlinked objects
+    // Ensures linkage (and reverse linkage) of unlinked objects
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         auto obj = iter->second;
         if (obj) {
@@ -329,18 +355,46 @@ void Hydroponics::launch()
     // Create main runloops
     #if defined(HYDRUINO_USE_TASKSCHEDULER)
         if (!_controlTask) {
-            _controlTask = new Task(100 * TASK_MILLISECOND, TASK_FOREVER, controlLoop, &_ts, true);
+            _controlTask = new Task(HYDRUINO_CONTROL_LOOP_INTERVAL * TASK_MILLISECOND, TASK_FOREVER, controlLoop, &_ts, true);
+        } else {
+            _controlTask->enable();
         }
         if (!_dataTask) {
             _dataTask = new Task(getPollingIntervalMillis() * TASK_MILLISECOND, TASK_FOREVER, dataLoop, &_ts, true);
+        } else {
+            _dataTask->enable();
         }
         if (!_miscTask) {
-            _miscTask = new Task(5 * TASK_MILLISECOND, TASK_FOREVER, miscLoop, &_ts, true);
+            _miscTask = new Task(HYDRUINO_MISC_LOOP_INTERVAL * TASK_MILLISECOND, TASK_FOREVER, miscLoop, &_ts, true);
+        } else {
+            _miscTask->enable();
         }
     #elif defined(HYDRUINO_USE_SCHEDULER)
-        Scheduler.startLoop(controlLoop);
-        Scheduler.startLoop(dataLoop);
-        Scheduler.startLoop(miscLoop);
+        static bool loopsStarted = false;
+        if(!loopsStarted) {
+            Scheduler.startLoop(controlLoop);
+            Scheduler.startLoop(dataLoop);
+            Scheduler.startLoop(miscLoop);
+            loopsStarted = true;
+        }
+        _suspend = false;
+    #endif
+}
+
+void Hydroponics::suspend()
+{
+    #if defined(HYDRUINO_USE_TASKSCHEDULER)
+        if (_controlTask) {
+            _controlTask->disable();
+        }
+        if (_dataTask) {
+            _dataTask->disable();
+        }
+        if (_miscTask) {
+            _miscTask->disable();
+        }
+    #elif defined(HYDRUINO_USE_SCHEDULER)
+        _suspend = true;
     #endif
 }
 

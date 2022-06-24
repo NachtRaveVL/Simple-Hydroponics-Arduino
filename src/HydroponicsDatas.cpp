@@ -115,7 +115,7 @@ HydroponicsSystemData::HydroponicsSystemData()
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
       timeZoneOffset(0),
-      pollingIntMs(0)
+      pollingIntMs(HYDRUINO_DATA_LOOP_INTERVAL)
 {
     _size = sizeof(*this);
     auto defaultSysName = String(F("Hydruino"));
