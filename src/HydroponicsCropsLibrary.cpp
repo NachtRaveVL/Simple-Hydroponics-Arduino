@@ -734,14 +734,14 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropData(Hydropo
     if (iter != _cropsLibData.end()) {
         book = iter->second;
 
-        HYDRUINO_SOFT_ASSERT(book, "Failure accessing crops lib book");
+        HYDRUINO_SOFT_ASSERT(book, F("Failure accessing crops lib book"));
         if (book) {
             book->count += 1;
         }
     } else {
         book = new HydroponicsCropsLibraryBook();
 
-        HYDRUINO_SOFT_ASSERT(book, "Failure allocating new crops lib book");
+        HYDRUINO_SOFT_ASSERT(book, F("Failure allocating new crops lib book"));
         if (book) {
             book->data = _cropsLibDataOld[cropType]; // remove after flash move
             //deserializeJson(doc, F("TODO"));
@@ -755,15 +755,15 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropData(Hydropo
 
 void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropsLibData *cropData)
 {
-    HYDRUINO_SOFT_ASSERT(cropData, "Invalid crop data");
+    HYDRUINO_SOFT_ASSERT(cropData, F("Invalid crop data"));
 
     if (cropData) {
         auto iter = _cropsLibData.find(cropData->cropType);
-        HYDRUINO_SOFT_ASSERT(iter != _cropsLibData.end(), "No check outs for crop type");
+        HYDRUINO_SOFT_ASSERT(iter != _cropsLibData.end(), F("No check outs for crop type"));
 
         if (iter != _cropsLibData.end()) {
             auto book = iter->second;
-            HYDRUINO_SOFT_ASSERT(book, "Failure accessing crops lib book");
+            HYDRUINO_SOFT_ASSERT(book, F("Failure accessing crops lib book"));
 
             if (book) {
                 book->count -= 1;

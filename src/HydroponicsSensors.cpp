@@ -306,7 +306,7 @@ HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(Hydroponics_P
     : HydroponicsDigitalSensor(Hydroponics_SensorType_AirTempHumidity, sensorIndex, inputPin, classType),
       _dht(new DHT(inputPin, dhtType)), _computeHeatIndex(computeHeatIndex)
 {
-    HYDRUINO_SOFT_ASSERT(_dht, "DHT instance creation failure");
+    HYDRUINO_SOFT_ASSERT(_dht, F("DHT instance creation failure"));
     if (_dht) {
         _dht->begin();
     }
@@ -386,8 +386,8 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(Hydroponics_Posit
     : HydroponicsDigitalSensor(Hydroponics_SensorType_WaterTemperature, sensorIndex, inputPin, classType),
       _oneWire(new OneWire(inputPin)), _dt(new DallasTemperature())
 {
-    HYDRUINO_SOFT_ASSERT(_oneWire, "OneWire instance creation failure");
-    HYDRUINO_SOFT_ASSERT(_dt, "DallasTemperature instance creation failure");
+    HYDRUINO_SOFT_ASSERT(_oneWire, F("OneWire instance creation failure"));
+    HYDRUINO_SOFT_ASSERT(_dt, F("DallasTemperature instance creation failure"));
 
     if (_dt && _oneWire) {
         _dt->setOneWire(_oneWire);
@@ -395,7 +395,7 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(Hydroponics_Posit
         _dt->setWaitForConversion(true); // This makes calls blocking
         _dt->begin();
         _dt->setResolution(inputBitRes);
-        HYDRUINO_SOFT_ASSERT(_dt->getResolution() == inputBitRes, "Resolved resolution mismatch with passed resolution");
+        HYDRUINO_SOFT_ASSERT(_dt->getResolution() == inputBitRes, F("Resolved resolution mismatch with passed resolution"));
     }
 }
 
@@ -426,7 +426,7 @@ HydroponicsMeasurement *HydroponicsDSTemperatureSensor::getMeasurement(bool forc
         );
 
         bool deviceDisconnected = isFPEqual(tempRead, (readInFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C));
-        HYDRUINO_SOFT_ASSERT(!deviceDisconnected, "Measurement failed device disconnected");
+        HYDRUINO_SOFT_ASSERT(!deviceDisconnected, F("Measurement failed device disconnected"));
 
         if (!deviceDisconnected) {
             convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
@@ -466,7 +466,7 @@ HydroponicsTMPSoilMoistureSensor::HydroponicsTMPSoilMoistureSensor(Hydroponics_P
     : HydroponicsDigitalSensor(Hydroponics_SensorType_SoilMoisture, sensorIndex, inputPin, classType),
       _oneWire(new OneWire(inputPin))
 {
-    HYDRUINO_SOFT_ASSERT(_oneWire, "OneWire instance creation failure");
+    HYDRUINO_SOFT_ASSERT(_oneWire, F("OneWire instance creation failure"));
 }
 
 HydroponicsTMPSoilMoistureSensor::~HydroponicsTMPSoilMoistureSensor()

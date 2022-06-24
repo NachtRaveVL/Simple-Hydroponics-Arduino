@@ -127,7 +127,7 @@ void HydroponicsCrop::recalcGrowWeekAndPhase()
     _growWeek = dateSpan.days() / DAYS_PER_WEEK;
 
     if (!_cropsLibData) { checkoutCropsLibData(); }
-    HYDRUINO_SOFT_ASSERT(_cropsLibData, "Invalid crops lib data, unable to update growth cycle");
+    HYDRUINO_SOFT_ASSERT(_cropsLibData, F("Invalid crops lib data, unable to update growth cycle"));
 
     if (_cropsLibData) {
         for (int phaseIndex = 0; phaseIndex < (int)Hydroponics_CropPhase_Count; ++phaseIndex) {
