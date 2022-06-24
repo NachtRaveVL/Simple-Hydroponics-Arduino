@@ -239,12 +239,13 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
     memset(waterTempRange, 0, sizeof(waterTempRange));
     memset(airTempRange, 0, sizeof(airTempRange));
 
-    if (HydroponicsCropsLibrary::_libraryBuilt) {
-        auto *cropLibData = HydroponicsCropsLibrary::getInstance()->checkoutCropData(cropType);
-        if (cropLibData && this != cropLibData) {
-            memcpy(this, cropLibData, sizeof(HydroponicsCropsLibData));
+    auto cropsLibrary = HydroponicsCropsLibrary::getInstance();
+    if (cropsLibrary) {
+        auto cropsLibData = cropsLibrary->checkoutCropData(cropType);
+        if (cropsLibData && this != cropsLibData) {
+            *this = *cropsLibData;
         }
-        HydroponicsCropsLibrary::getInstance()->returnCropData(cropLibData);
+        cropsLibrary->returnCropData(cropsLibData);
     }
 }
 
