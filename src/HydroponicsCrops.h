@@ -30,7 +30,7 @@ public:
 
     virtual void update() override;
     virtual void resolveLinks() override;
-    virtual void handleLowMem() override;
+    virtual void handleLowMemory() override;
 
     virtual bool addSensor(HydroponicsSensor *sensor);
     virtual bool removeSensor(HydroponicsSensor *sensor);

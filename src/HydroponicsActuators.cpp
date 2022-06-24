@@ -181,7 +181,7 @@ HydroponicsPumpRelayActuator::~HydroponicsPumpRelayActuator()
 
 void HydroponicsPumpRelayActuator::resolveLinks()
 {
-    HydroponicsRelayActuator::resolveLinks();
+    HydroponicsActuator::resolveLinks();
     if (_flowRateSensor.needsResolved()) { getFlowRateSensor(); }
     if (_outputReservoir.needsResolved()) { getOutputReservoir(); }
 }

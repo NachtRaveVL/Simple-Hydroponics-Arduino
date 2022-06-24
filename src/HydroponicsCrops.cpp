@@ -12,7 +12,7 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
                                  int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(cropType, cropIndex)), classType((typeof(classType))classTypeIn),
       _substrateType(substrateType), _sowDate(sowDate),
-      _cropsLibData(nullptr), _growWeek(0), _cropPhase(Hydroponics_CropPhase_Undefined)
+      _cropsLibData{nullptr}, _growWeek(0), _cropPhase(Hydroponics_CropPhase_Undefined)
 {
     recalcGrowWeekAndPhase();
 }
@@ -35,9 +35,9 @@ void HydroponicsCrop::resolveLinks()
     if (_feedReservoir.needsResolved()) { getFeedReservoir(); }
 }
 
-void HydroponicsCrop::handleLowMem()
+void HydroponicsCrop::handleLowMemory()
 {
-    HydroponicsObject::handleLowMem();
+    HydroponicsObject::handleLowMemory();
     returnCropsLibData();
 }
 

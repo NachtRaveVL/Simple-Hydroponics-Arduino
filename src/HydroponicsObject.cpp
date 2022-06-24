@@ -85,7 +85,7 @@ void HydroponicsObject::update()
 void HydroponicsObject::resolveLinks()
 { ; }
 
-void HydroponicsObject::handleLowMem()
+void HydroponicsObject::handleLowMemory()
 {
     //_links.shrink_to_fit(); // not yet implemented library method
 }
