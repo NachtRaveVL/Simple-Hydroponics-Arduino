@@ -56,7 +56,11 @@
 #include <SPI.h>
 #include <SD.h>
 #include <Wire.h>
+#if defined(ESP32) || defined(ESP8266)
+typedef SDFileSystemClass SDClass;
+#else
 #include <util/atomic.h>
+#endif
 
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
 #undef HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -342,7 +346,7 @@ protected:
     Scheduler _ts;                                                  // Task scheduler
     Task *_controlTask;                                             // Main control task
     Task *_dataTask;                                                // Data collection task (on polling interval)
-    Task *_miscTask;                                                // Misc tasks
+    Task *_miscTask;                                                // Misc task
 #elif defined(HYDRUINO_USE_SCHEDULER)
     bool _suspend;                                                  // Suspend tracking
 #endif
@@ -376,7 +380,7 @@ protected:
     void updateLogging();
     void updateBuzzer();
 
-    void checkMemoryState();
+    void checkFreeMemory();
 
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
     void forwardLogMessage(String message, bool flushAfter = false);

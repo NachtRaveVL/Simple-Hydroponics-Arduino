@@ -5,7 +5,6 @@
 
 #include "Hydroponics.h"
 #include <pins_arduino.h>
-#include <util/crc16.h>
 
 HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
     : // TODO: Determine which other architectures have variable bit res analog pins

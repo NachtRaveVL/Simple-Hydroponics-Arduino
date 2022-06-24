@@ -334,7 +334,7 @@ void miscLoop()
             if (hydroponics->_suspend) { yield(); return; }
         #endif
         hydroponics->updateBuzzer();
-        hydroponics->checkMemoryState();
+        hydroponics->checkFreeMemory();
     }
 
     yield();
@@ -1087,8 +1087,11 @@ SDClass *Hydroponics::getSDCard(bool begin)
     }
 
     if (_sd && begin) {
-        // TODO ESP8266/ESP32 differences
-        bool sdBegan = _sd->begin(_spiSpeed, _sdCardCSPin);
+        #if defined(ESP32) || defined(ESP8266)
+            bool sdBegan = _sd->begin(_sdCardCSPin, SPI, _spiSpeed);
+        #else
+            bool sdBegan = _sd->begin(_spiSpeed, _sdCardCSPin);
+        #endif
 
         if (!sdBegan) {
             // TODO log failure/report not found?
@@ -1244,7 +1247,7 @@ void Hydroponics::setControlInputPinMap(byte *pinMap)
     }
 }
 
-void Hydroponics::checkMemoryState()
+void Hydroponics::checkFreeMemory()
 {
     int memLeft = freeMemory();
     if (memLeft != -1 && memLeft < HYDRUINO_LOW_MEM_SIZE) {
