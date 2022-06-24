@@ -106,7 +106,7 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(Hydroponics_ReservoirType r
                                                      int classType)
     : HydroponicsReservoir(reservoirType, reservoirIndex, classType), _channel(channel),
       _currVolume(0.0f), _maxVolume(maxVolume), _volumeUnits(defaultLiquidVolumeUnits()),
-      _filledTrigger{nullptr}, _emptyTrigger{nullptr}
+      _filledTrigger(nullptr), _emptyTrigger(nullptr)
 { ; }
 
 HydroponicsFluidReservoir::~HydroponicsFluidReservoir()

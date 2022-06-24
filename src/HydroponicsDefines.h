@@ -20,7 +20,6 @@
 #define max _max
 #endif
 
-#define HYDRUINO_PATH_SEPARATOR             '\\'                    // Path separator (FIXME: put into macros)
 #define HYDRUINO_NAME_MAXSIZE               32                      // Naming character maximum size
 #define HYDRUINO_POS_MAXSIZE                16                      // Position indicies maximum size
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
@@ -31,6 +30,9 @@
 #define HYDRUINO_POS_SEARCH_FROMBEG         -1                      // Search from beginning to end, 0 up to MAXSIZE-1
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
 #define HYDRUINO_POS_BEGFROM                1                       // Whenever position indexing starts at 1 or 0 (offset)
+
+#define HYDRUINO_PATH_SEPARATOR             '\\'                    // Path separator (FIXME: put into macros)
+#define HYDRUINO_LOW_MEM_SIZE               512                     // How many bytes of free memory left spawns a handle low mem call
 
 typedef int8_t Hydroponics_PositionIndex;                           // Position indexing type
 typedef uint32_t Hydroponics_KeyType;                               // Key type

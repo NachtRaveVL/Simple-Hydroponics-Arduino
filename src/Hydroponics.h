@@ -344,6 +344,9 @@ protected:
 
 #ifdef HYDRUINO_USE_TASKSCHEDULER
     Scheduler _ts;                                                  // Task scheduler
+    Task *_controlTask;                                             // Main control task
+    Task *_dataTask;                                                // Data collection task (on polling interval)
+    Task *_miscTask;                                                // Misc tasks
 #endif
     EasyBuzzerClass *_buzzer;                                       // Piezo buzzer instance (unowned)
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
@@ -369,13 +372,13 @@ protected:
 
     friend void ::controlLoop();
     friend void ::dataLoop();
-    friend void ::guiLoop();
     friend void ::miscLoop();
     void updateObjects(int pass);
     void updateScheduling();
     void updateLogging();
-    void updateScreen();
     void updateBuzzer();
+
+    void checkMemoryState();
 
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
     void forwardLogMessage(String message, bool flushAfter = false);

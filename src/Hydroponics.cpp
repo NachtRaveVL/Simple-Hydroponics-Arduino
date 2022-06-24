@@ -19,6 +19,9 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, byte sdCardCSPin, byte controlInpu
       _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1}, _pollingFrame(0),
       _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
       _buzzer(&EasyBuzzer), _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
+#ifdef HYDRUINO_USE_TASKSCHEDULER
+      _controlTask(nullptr), _dataTask(nullptr), _miscTask(nullptr),
+#endif
       _systemData(nullptr)
 {
     _activeInstance = this;
@@ -38,8 +41,10 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
       _piezoBuzzerPin(piezoBuzzerPin), _sdCardCSPin(sdCardCSPin), _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1}, _pollingFrame(0),
       _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
-      _buzzer(&EasyBuzzer), _eeprom(nullptr), _rtc(nullptr), _sd(nullptr),
-      _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
+      _buzzer(&EasyBuzzer), _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
+#ifdef HYDRUINO_USE_TASKSCHEDULER
+      _controlTask(nullptr), _dataTask(nullptr), _miscTask(nullptr),
+#endif
       _systemData(nullptr)
 {
     _activeInstance = this;
@@ -55,6 +60,11 @@ Hydroponics::Hydroponics(TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed,
 
 Hydroponics::~Hydroponics()
 {
+    #ifdef HYDRUINO_USE_TASKSCHEDULER
+        if (_controlTask) { _controlTask->abort(); delete _controlTask; _controlTask = nullptr; }
+        if (_dataTask) { _dataTask->abort(); delete _dataTask; _dataTask = nullptr; }
+        if (_miscTask) { _miscTask->abort(); delete _miscTask; _miscTask = nullptr; }
+    #endif
     if (this == _activeInstance) { _activeInstance = nullptr; }
     _i2cWire = nullptr;
     _buzzer = nullptr;
@@ -284,21 +294,12 @@ void dataLoop()
     yield();
 }
 
-void guiLoop()
-{
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) {
-        hydroponics->updateScreen();
-    }
-
-    yield();
-}
-
 void miscLoop()
 {
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) {
         hydroponics->updateBuzzer();
+        hydroponics->checkMemoryState();
     }
 
     yield();
@@ -308,7 +309,7 @@ void Hydroponics::launch()
 {
     ++_pollingFrame; // Forces all sensors to get a new initial measurement
 
-    // Resolves all unlinked objects
+    // Ensures removal of unlinked objects
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         auto obj = iter->second;
         if (obj) {
@@ -318,19 +319,22 @@ void Hydroponics::launch()
 
     // Create main runloops
     #if defined(HYDRUINO_USE_TASKSCHEDULER)
-        Task *controlTask = new Task(1000 * TASK_MILLISECOND, TASK_FOREVER, controlLoop, &_ts, true);
-        Task *dataTask = new Task(100 * TASK_MILLISECOND, TASK_FOREVER, dataLoop, &_ts, true);
-        Task *guiTask = new Task(20 * TASK_MILLISECOND, TASK_FOREVER, guiLoop, &_ts, true);
-        Task *miscTask = new Task(5 * TASK_MILLISECOND, TASK_FOREVER, miscLoop, &_ts, true);
+        if (!_controlTask) {
+            _controlTask = new Task(100 * TASK_MILLISECOND, TASK_FOREVER, controlLoop, &_ts, true);
+        }
+        if (!_dataTask) {
+            _dataTask = new Task(getPollingIntervalMillis() * TASK_MILLISECOND, TASK_FOREVER, dataLoop, &_ts, true);
+        }
+        if (!_miscTask) {
+            _miscTask = new Task(5 * TASK_MILLISECOND, TASK_FOREVER, miscLoop, &_ts, true);
+        }
     #elif defined(HYDRUINO_USE_SCHEDULER)
         Scheduler.startLoop(controlLoop);
         Scheduler.startLoop(dataLoop);
-        Scheduler.startLoop(guiLoop);
         Scheduler.startLoop(miscLoop);
     #elif defined(HYDRUINO_USE_COOPTASK)
         createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("controlLoop", controlLoop);
         createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("dataLoop", dataLoop);
-        createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("guiLoop", guiLoop);
         createCoopTask<void, CoopTaskStackAllocatorFromLoop<>>("miscLoop", miscLoop);
     #endif
 }
@@ -346,7 +350,6 @@ void Hydroponics::update()
     #else
         controlLoop();
         dataLoop();
-        guiLoop();
         miscLoop();
     #endif
 
@@ -391,11 +394,6 @@ void Hydroponics::updateScheduling()
 }
 
 void Hydroponics::updateLogging()
-{
-    // TODO
-}
-
-void Hydroponics::updateScreen()
 {
     // TODO
 }
@@ -1166,8 +1164,12 @@ void Hydroponics::setPollingIntervalMillis(uint32_t pollingIntMs)
     HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
     if (_systemData) {
         _systemData->pollingIntMs = pollingIntMs;
-        // TODO adjust per sensor polling
     }
+    #ifdef HYDRUINO_USE_TASKSCHEDULER
+        if (_dataTask) {
+            _dataTask->setInterval(getPollingIntervalMillis() * TASK_MILLISECOND);
+        }
+    #endif
 }
 
 void Hydroponics::setControlInputPinMap(byte *pinMap)
@@ -1179,6 +1181,19 @@ void Hydroponics::setControlInputPinMap(byte *pinMap)
     if (pinMap && ctrlInPinCount) {
         for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
             _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
+        }
+    }
+}
+
+void Hydroponics::checkMemoryState()
+{
+    int memLeft = freeMemory();
+    if (memLeft != -1 && memLeft < HYDRUINO_LOW_MEM_SIZE) {
+        for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+            auto obj = iter->second;
+            if (obj) {
+                obj->handleLowMemory();
+            }
         }
     }
 }

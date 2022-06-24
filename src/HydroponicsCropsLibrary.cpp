@@ -770,7 +770,6 @@ void HydroponicsCropsLibrary::returnCropData(const HydroponicsCropsLibData *crop
 
                 if (book->count <= 0) {
                     _cropsLibData.erase(cropData->cropType);
-
                     delete book;
                 }
             }
