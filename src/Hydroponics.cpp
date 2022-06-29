@@ -1359,7 +1359,7 @@ RTC_DS3231 *Hydroponics::getRealTimeClock(bool begin)
     if (_rtc && begin && !_rtcBegan) {
         _rtcBegan = _rtc->begin(_i2cWire);
 
-        HYDRUINO_SOFT_ASSERT(_eepromBegan, F("Failure beginning RTC"));
+        HYDRUINO_SOFT_ASSERT(_rtcBegan, F("Failure beginning RTC"));
         if (_rtcBegan) {
             _rtcBattFail = _rtc->lostPower();
         } else {
