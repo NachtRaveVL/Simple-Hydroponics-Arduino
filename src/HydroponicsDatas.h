@@ -7,98 +7,117 @@
 #define HydroponicsDatas_H
 
 struct HydroponicsData;
+struct HydroponicsSubData;
 struct HydroponicsSystemData;
 struct HydroponicsCalibrationData;
 struct HydroponicsCropsLibData;
 
 #include "Hydroponics.h"
 
-// Creates a new hydroponics data object corresponding to an input binary stream (ownership transfer - user code *must* delete returned data).
-extern HydroponicsData *dataFromBinaryStream(Stream *streamIn);
+// Serializes Hydroponics data structure to a binary output stream (essentially a memcpy), with optional skipBytes
+extern size_t serializeDataToBinaryStream(HydroponicsData *data, Stream *streamOut, size_t skipBytes = sizeof(void*));
+// Deserializes Hydroponics data structure from a binary input stream (essentially a memcpy), with optional skipBytes
+extern size_t deserializeDataFromBinaryStream(HydroponicsData *data, Stream *streamIn, size_t skipBytes = sizeof(void*));
 
-// Creates a new hydroponics data object corresponding to an input JSON element (ownership transfer - user code *must* delete returned data).
-extern HydroponicsData *dataFromJSONElement(JsonVariantConst &elementIn);
+// Creates a new hydroponics data object corresponding to a binary input stream (return ownership transfer - user code *must* delete returned data)
+extern HydroponicsData *newDataFromBinaryStream(Stream *streamIn);
+// Creates a new hydroponics data object corresponding to an input JSON element (return ownership transfer - user code *must* delete returned data)
+extern HydroponicsData *newDataFromJSONObject(JsonObjectConst &objectIn);
 
-// Hydroponics Data Base Class
+// Hydroponics Data Base
 // Base class for serializable (JSON+Binary) storage data, used to define the base
 // header of all data stored internally.
-// NOTE: NON-CONST VALUE TYPES ONLY. All data *MUST* be memcpy'able.
-struct HydroponicsData : public HydroponicsJSONSerializableInterface, public HydroponicsBinarySerializableInterface {
-    HydroponicsData();                                          // Default constructor
-    HydroponicsData(const char *ident,                          // 4-char identifier
-                    uint16_t version = 1,                       // Data structure version #
-                    uint16_t revision = 1);                     // Stored data revision #
-    HydroponicsData(int16_t idType,                             // ID type enum value
-                    int16_t classType,                          // Class type enum value
-                    uint16_t version = 1,                       // Data structure version #
-                    uint16_t revision = 1);                     // Stored data revision #
-
-    virtual void toBinaryStream(Print *streamOut) const override;
-    virtual void fromBinaryStream(Stream *streamIn) override;
-    virtual void toJSONElement(JsonVariant &elementOut) const override;
-    virtual void fromJSONElement(JsonVariantConst &elementIn) override;
-
+// NOTE: NON-CONST VALUE TYPES ONLY. All data *MUST* be directly memcpy'able.
+struct HydroponicsData : public HydroponicsJSONSerializableInterface {
     union {
         char chars[4];                                          // Data structure 4-char identifier
         struct {
-          int16_t idType;                                       // Object type enum value (e.g. actuator, sensor, etc.)
-          int16_t classType;                                    // Object class type enum value (e.g. pump, dht1w, etc.)
+          int8_t idType;                                        // Object ID type enum value (e.g. actuator, sensor, etc.)
+          int8_t objType;                                       // Object type enum value (e.g. actuatorType, sensorType, etc.)
+          int8_t posIndex;                                      // Object position index # (zero-ordinal)
+          int8_t classType;                                     // Object class type enum value (e.g. pump, dht1w, etc.)
         } object;
-    } _ident;                                                   // Identifier union
+    } id;                                                       // Identifier union
     uint16_t _size;                                             // The size (in bytes) of the data
-    uint16_t _version;                                          // Version # of data container
-    uint16_t _revision;                                         // Revision # of stored data
+    uint8_t _version;                                           // Version # of data container
+    uint8_t _revision;                                          // Revision # of stored data
     bool _modified;                                             // Flag tracking modified status
+
+    inline bool isStdData() const { return strncasecmp(id.chars, "H", 1) == 0; } // Standalone data
+    inline bool isSystemData() const { return strncasecmp(id.chars, "HSYS", 4) == 0; }
+    inline bool isCalibrationData() const { return strncasecmp(id.chars, "HSYS", 4) == 0; }
+    inline bool isCropsLibData() const { return strncasecmp(id.chars, "HCLD", 4) == 0; }
+    inline bool isObjData() const { return !isStdData() && id.object.idType >= 0; }
+    inline bool isUnknownData() const { return !isSystemData() && !isCalibrationData() && !isCropsLibData(); }
+
+    HydroponicsData();                                          // Default constructor
+    HydroponicsData(const char *id,                             // 4-char identifier
+                    uint8_t version = 1,                        // Data structure version #
+                    uint8_t revision = 1);                      // Stored data revision #
+    HydroponicsData(int8_t idType,                              // ID type enum value
+                    int8_t objType,                             // Object type enum value
+                    int8_t posIndex,                            // Object position index #
+                    int8_t classType,                           // Class type enum value
+                    uint8_t version = 1,                        // Data structure version #
+                    uint8_t revision = 1);                      // Stored data revision #
+    HydroponicsData(const HydroponicsIdentity &id);             // Identity constructor
+
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 
     inline void _bumpRev() { _revision += 1; _setModded(); }
     inline void _bumpRevIfNotAlreadyModded() { if (!_modified) { _bumpRev(); } } // Should be called before modifying data
     inline void _setModded() { _modified = true; }              // Should be called after modifying any data
     inline void _unsetModded() { _modified = false; }           // Should be called after save-out
+};
 
-    inline void _copyFrom(const HydroponicsData *otherData) { memcpy(this, otherData, min(_size, otherData->_size)); _setModded(); }
-    inline void _copyTo(HydroponicsData *otherData) { if (otherData) { otherData->_copyFrom(this); } }
+// Hydroponics Sub Data Base
+// Sub-data exists inside of regular data for smaller objects that don't require the
+// entire data object hierarchy, useful for triggers, measurements, etc.
+// NOTE: NON-CONST VALUE TYPES ONLY, NO VIRTUALS. All data *MUST* be directly memcpy'able.
+struct HydroponicsSubData {
+    int8_t type;
 
-    inline bool isSystemData() { return strncasecmp(_ident.chars, "HSYS", 4) == 0; }
-    inline bool isCalibrationData() { return strncasecmp(_ident.chars, "HSYS", 4) == 0; }
-    inline bool isCropsLibData() { return strncasecmp(_ident.chars, "HCLD", 4) == 0; }
-    inline bool isUnknownData() { return !isSystemData() && !isCalibrationData() && !isCropsLibData(); }
+    HydroponicsSubData();
+    void toJSONObject(JsonObject &objectOut) const;
+    void fromJSONObject(JsonObjectConst &objectIn);
 };
 
 // User System Setup Data
-// _ident: HSYS. Hydroponic system setup data.
+// id: HSYS. Hydroponic system setup data.
 struct HydroponicsSystemData : public HydroponicsData {
-    HydroponicsSystemData();                                    // Default constructor
-
-    void toBinaryStream(Print *streamOut) const override;
-    void fromBinaryStream(Stream *streamIn) override;
-    void toJSONElement(JsonVariant &elementOut) const override;
-    void fromJSONElement(JsonVariantConst &elementIn) override;
-
     Hydroponics_SystemMode systemMode;                          // System type mode
     Hydroponics_MeasurementMode measureMode;                    // System measurement mode
     Hydroponics_DisplayOutputMode dispOutMode;                  // System display output mode
     Hydroponics_ControlInputMode ctrlInMode;                    // System control input mode 
-
     char systemName[HYDRUINO_NAME_MAXSIZE];                     // System name
+    byte ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];        // Control input pinmap
     int8_t timeZoneOffset;                                      // Timezone offset
-    uint32_t pollingIntMs;                                      // Sensor polling interval (milliseconds)
+    uint32_t pollingInterval;                                   // Sensor polling interval, in milliseconds
+    time_t lastWaterChangeTime;                                 // Last water change time (recycling systems only)
+
+    HydroponicsSystemData();
+    void toJSONObject(JsonObject &objectOut) const override;
+    void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // Sensor Calibration Data
-// _ident: HCAL. Hydroponic sensor calibration data.
+// id: HCAL. Hydroponic sensor calibration data.
 // This class essentially controls a custom unit conversion mapping, and is used in
 // converting raw sensor data to more useful value and units for doing science with.
 // To convert from raw values to calibrated values, use transform(). To convert back to
 // raw values from calibrated values, use inverseTransform(). The setFrom* methods
-// allow you to easily set calibrated data using more user friendly of input.
+// allow you to easily set calibrated data in various formats.
 struct HydroponicsCalibrationData : public HydroponicsData {
+    char sensorName[HYDRUINO_NAME_MAXSIZE];                     // Sensor name this calibration belongs to
+    Hydroponics_UnitsType calibUnits;                           // Calibration output units
+    float multiplier, offset;                                   // Ax + B value transform
+
     HydroponicsCalibrationData();
     HydroponicsCalibrationData(HydroponicsIdentity sensorId, Hydroponics_UnitsType calibUnits = Hydroponics_UnitsType_Undefined);
 
-    void toBinaryStream(Print *streamOut) const override;
-    void fromBinaryStream(Stream *streamIn) override;
-    void toJSONElement(JsonVariant &elementOut) const override;
-    void fromJSONElement(JsonVariantConst &elementIn) override;
+    void toJSONObject(JsonObject &objectOut) const override;
+    void fromJSONObject(JsonObjectConst &objectIn) override;
 
     // Transforms value from raw (or initial) value into calibrated (or transformed) value.
     inline float transform(float rawValue) const { return (rawValue * multiplier) + offset; }
@@ -111,8 +130,8 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     // the normalized voltage signal measurement from the analogRead() function (after
     // taking into account appropiate bit resolution conversion). Calibrated-to values
     // are what each measurement-at value should map out to.
-    // For example, if your sensor should treat 0v (aka 0.0) as a pH of 2 and treat 5v
-    // (aka 1.0, or MCU max voltage) as a pH of 10, you would pass 0.0, 2.0, 1.0, 10.0.
+    // For example, if your sensor should treat 0v (aka 0.0) typeAs a pH of 2 and treat 5v
+    // (aka 1.0, or MCU max voltage) typeAs a pH of 10, you would pass 0.0, 2.0, 1.0, 10.0.
     // The final calculated curvature transform, for this example, would be y = 8x + 2.
     void setFromTwoPoints(float point1RawMeasuredAt,            // What normalized value point 1 measured in at [0.0,1.0]
                           float point1CalibratedTo,             // What value point 1 should be mapped to
@@ -140,39 +159,36 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     // Similar to setFromTwoPoints, but when the sensor has a known max scale.
     // This will map 0v to 0 and 5v (or MCU max voltage) to scale value.
     inline void setFromScale(float scale) { setFromRange(0.0, scale); }
-
-    HydroponicsIdentity sensorId;                               // Sensor Id this calibration belongs to
-    Hydroponics_UnitsType calibUnits;                           // Calibration output units
-    float multiplier, offset;                                   // Ax + B value transform
 };
 
 // Crop Library Data
-// _ident: HCLD. Hydroponic crop library data.
+// id: HCLD. Hydroponic crop library data.
 struct HydroponicsCropsLibData : public HydroponicsData {
-    HydroponicsCropsLibData();                                   // Default constructor
-    HydroponicsCropsLibData(Hydroponics_CropType cropType);      // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
-
-    void toBinaryStream(Print *streamOut) const override;
-    void fromBinaryStream(Stream *streamIn) override;
-    void toJSONElement(JsonVariant &elementOut) const override;
-    void fromJSONElement(JsonVariantConst &elementIn) override;
-
     Hydroponics_CropType cropType;                              // Crop type
     char cropName[HYDRUINO_NAME_MAXSIZE];                       // Name of crop
-    byte growWeeksToHarvest;                                    // How long it takes to grow before harvestable
-    byte weeksBetweenHarvest;                                   // How long it takes between harvests, if applicable
-    byte phaseBeginWeek[Hydroponics_CropPhase_Count];           // Which week the plating phase generally begins
-    byte lightHoursPerDay[Hydroponics_CropPhase_Count];         // How many light hours is needed per each day (in # hours)
-    byte feedIntervalMins[Hydroponics_CropPhase_Count][2];      // Feeding interval (on time / off time, or cooldown time) (in # mins)
-    float phRange[Hydroponics_CropPhase_Count][2];              // pH range acceptable ( min / max , or mid )
-    float ecRange[Hydroponics_CropPhase_Count][2];              // EC range ( min / max , or mid )
-    float waterTempRange[Hydroponics_CropPhase_Count][2];       // Water temperature range (in F)
-    float airTempRange[Hydroponics_CropPhase_Count][2];         // Air temperature range (in F)
-    bool isInvasiveOrViner;                                     // Flag indicating plant is invasive, will vine, and/or take over other plants
-    bool isLargePlant;                                          // Flag indicating plant requires proper supports
-    bool isPerennial;                                           // Flag indicating plant grows back year after year
-    bool isPruningRequired;                                     // Flag indicating plant benefits from active pruning
-    bool isToxicToPets;                                         // Flag indicating plant toxicity to common house pets (cats + dogs)
+    byte totalGrowWeeks;                                        // How long it takes to grow until harvestable, in weeks (default: 14)
+    byte lifeCycleWeeks;                                        // How long a perennials life cycle lasts, in weeks (default: 0)
+    byte phaseDurationWeeks[Hydroponics_CropPhase_MainCount];   // How many weeks each main crop phase lasts (seed,veg,bloom - default: 2,4,8)
+    byte dailyLightHours[Hydroponics_CropPhase_MainCount];      // How many light hours per day is needed per main stages (seed,veg,bloom or all - default: 20,18,12)
+    float phRange[2];                                           // Base acceptable pH range (min,max or mid - default: 6)
+    float ecRange[2];                                           // Base acceptable EC range (min,max or mid - default: 1)
+    float waterTempRange[2];                                    // Water temperature range (in C, min,max or mid - default: 25)
+    float airTempRange[2];                                      // Air temperature range (in C, min,max or mid - default: 25)
+    bool isInvasiveOrViner;                                     // Flag indicating plant is invasive, will vine, and/or take over other plants (default: false)
+    bool isLargePlant;                                          // Flag indicating plant requires proper supports (default: false)
+    bool isPerennial;                                           // Flag indicating plant grows back year after year (default: false)
+    bool isPruningRequired;                                     // Flag indicating plant benefits from active pruning (default: false)
+    bool isToxicToPets;                                         // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
+
+    HydroponicsCropsLibData();
+    HydroponicsCropsLibData(Hydroponics_CropType cropType);     // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
+
+    void toJSONObject(JsonObject &objectOut) const override;
+    void fromJSONObject(JsonObjectConst &objectIn) override;
 };
+
+// Internal use, but must contain all ways for all data types to be new'ed
+extern HydroponicsData *_allocateDataFromBaseDecode(const HydroponicsData &baseDecode);
+extern HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType);
 
 #endif // /ifndef HydroponicsDatas_H

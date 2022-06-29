@@ -5,108 +5,217 @@
 
 #include "Hydroponics.h"
 
-HydroponicsData *dataFromBinaryStream(Stream *streamIn)
+HydroponicsData *_allocateDataFromBaseDecode(const HydroponicsData &baseDecode)
 {
-    HydroponicsData baseDecode;
-    baseDecode.fromBinaryStream(streamIn);
+    HydroponicsData *retVal = nullptr;
 
-    if (baseDecode.isSystemData()) {
-        auto data = new HydroponicsSystemData();
-        data->fromBinaryStream(streamIn);
-        return data;
-    } else if (baseDecode.isCalibrationData()) {
-        auto data = new HydroponicsCalibrationData();
-        data->fromBinaryStream(streamIn);
-        return data;
-    } else if (baseDecode.isCropsLibData()) {
-        auto data = new HydroponicsCropsLibData();
-        data->fromBinaryStream(streamIn);
-        return data;
-    } else {
-        return new HydroponicsData(baseDecode);
+    if (baseDecode.isStdData()) {
+        if (baseDecode.isSystemData()) {
+            retVal = new HydroponicsSystemData();
+        } else if (baseDecode.isCalibrationData()) {
+            retVal = new HydroponicsCalibrationData();
+        } else if (baseDecode.isCropsLibData()) {
+            retVal = new HydroponicsCropsLibData();
+        }
+    } else if (baseDecode.isObjData()) {
+        retVal = _allocateDataForObjType(baseDecode.id.object.idType, baseDecode.id.object.classType);
     }
+
+    HYDRUINO_SOFT_ASSERT(retVal, F("Unknown data decode"));
+    if (retVal) {
+        retVal->id = baseDecode.id;
+        HYDRUINO_SOFT_ASSERT(retVal->_version == baseDecode._version, F("Data version mismatch")); // TODO: Version updaters
+        retVal->_revision = baseDecode._revision;
+        return retVal;
+    }
+    return new HydroponicsData(baseDecode);
 }
 
-HydroponicsData *dataFromJSONElement(JsonVariantConst &elementIn)
+HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
+{
+    switch (idType) {
+        case 0: // Actuator
+            switch(classType) {
+                case 0:
+                    return new HydroponicsRelayActuatorData();
+                case 1:
+                    return new HydroponicsPumpRelayActuatorData();
+                case 2:
+                    return new HydroponicsPWMActuatorData();
+                default: break;
+            }
+            break;
+
+        case 1: // Sensor
+            switch(classType) {
+                case 0:
+                    return new HydroponicsBinarySensorData();
+                case 1:
+                    return new HydroponicsAnalogSensorData();
+                case 3:
+                    return new HydroponicsDHTTempHumiditySensorData();
+                case 4:
+                    return new HydroponicsDSTemperatureSensorData();
+                case 5:
+                    return new HydroponicsTMPSoilMoistureSensorData();
+                default: break;
+            }
+            break;
+
+        case 2: // Crop
+            switch(classType) {
+                case 0:
+                    return new HydroponicsTimedCropData();
+                    break;
+                case 1:
+                    return new HydroponicsAdaptiveCropData();
+                default: break;
+            }
+            break;
+
+        case 3: // Reservoir
+            switch(classType) {
+                case 0:
+                    return new HydroponicsFluidReservoirData();
+                case 1:
+                    return new HydroponicsInfiniteReservoirData();
+                default: break;
+            }
+            break;
+
+        case 4: // Rail
+            switch(classType) {
+                case 0:
+                    return new HydroponicsSimpleRailData();
+                case 1:
+                    return new HydroponicsRegulatedRailData();
+                default: break;
+            }
+            break;
+
+        default: break;
+    }
+
+    return nullptr;
+}
+
+size_t serializeDataToBinaryStream(HydroponicsData *data, Stream *streamOut, size_t skipBytes)
+{
+    return streamOut->write((const byte *)((intptr_t)data + skipBytes), data->_size - skipBytes);
+}
+
+size_t deserializeDataFromBinaryStream(HydroponicsData *data, Stream *streamIn, size_t skipBytes)
+{
+    return streamIn->readBytes((byte *)((intptr_t)data + skipBytes), data->_size - skipBytes);
+}
+
+HydroponicsData *newDataFromBinaryStream(Stream *streamIn)
 {
     HydroponicsData baseDecode;
-    baseDecode.fromJSONElement(elementIn);
+    size_t readBytes = deserializeDataFromBinaryStream(&baseDecode, streamIn, sizeof(void*));
+    HYDRUINO_SOFT_ASSERT(readBytes == baseDecode._size - sizeof(void*), F("Failure reading data, unexpected read length"));
 
-    if (baseDecode.isSystemData()) {
-        auto data = new HydroponicsSystemData();
-        data->fromJSONElement(elementIn);
-        return data;
-    } else if (baseDecode.isCalibrationData()) {
-        auto data = new HydroponicsCalibrationData();
-        data->fromJSONElement(elementIn);
-        return data;
-    } else if (baseDecode.isCropsLibData()) {
-        auto data = new HydroponicsCropsLibData();
-        data->fromJSONElement(elementIn);
-        return data;
-    } else {
-        return new HydroponicsData(baseDecode);
+    if (readBytes) {
+        HydroponicsData *data = _allocateDataFromBaseDecode(baseDecode);
+        HYDRUINO_SOFT_ASSERT(data, F("Failure allocating data"));
+
+        if (data) {
+            readBytes += deserializeDataFromBinaryStream(data, streamIn, readBytes + sizeof(void*));
+            HYDRUINO_SOFT_ASSERT(readBytes == data->_size - sizeof(void*), F("Failure reading data, unexpected read length"));
+
+            return data;
+        }
     }
+
+    return nullptr;
+}
+
+HydroponicsData *newDataFromJSONObject(JsonObjectConst &objectIn)
+{
+    HydroponicsData baseDecode;
+    baseDecode.fromJSONObject(objectIn);
+
+    HydroponicsData *data = _allocateDataFromBaseDecode(baseDecode);
+    HYDRUINO_SOFT_ASSERT(data, F("Failure allocating data"));
+
+    if (data) {
+        data->fromJSONObject(objectIn);
+        return data;
+    }
+
+    return nullptr;
 }
 
 
 HydroponicsData::HydroponicsData()
-    : _ident{.chars={'\0','\0','\0','\0'}}, _version(-1), _revision(-1), _modified(false)
+    : id{.chars={'\0','\0','\0','\0'}}, _version(1), _revision(1), _modified(false)
 {
     _size = sizeof(*this);
 }
 
-HydroponicsData::HydroponicsData(const char *ident, uint16_t version, uint16_t revision)
-    : _ident{.chars={'\0','\0','\0','\0'}}, _version(version), _revision(revision), _modified(false)
+HydroponicsData::HydroponicsData(const char *idIn, uint8_t version, uint8_t revision)
+    : id{.chars={'\0','\0','\0','\0'}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
-    HYDRUINO_SOFT_ASSERT(ident, F("Invalid id"));
-    strncpy(_ident.chars, ident, sizeof(_ident.chars));
+    HYDRUINO_SOFT_ASSERT(idIn, F("Invalid id"));
+    strncpy(id.chars, idIn, sizeof(id.chars));
 }
 
-HydroponicsData::HydroponicsData(int16_t idType, int16_t classType, uint16_t version, uint16_t revision)
-    : _ident{.object={idType,classType}}, _version(version), _revision(revision), _modified(false)
+HydroponicsData::HydroponicsData(int8_t idType, int8_t objType, int8_t posIndex, int8_t classType, uint8_t version, uint8_t revision)
+    : id{.object={idType,objType,posIndex,classType}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
 }
 
-void HydroponicsData::toBinaryStream(Print *streamOut) const
+HydroponicsData::HydroponicsData(const HydroponicsIdentity &id)
+    : HydroponicsData(id.type, (int8_t)id.typeAs.actuatorType, id.posIndex, -1, 1, 1)
 {
-    // TODO: Endianness handling?
-    streamOut->write((const uint8_t *)((uintptr_t)this + (uintptr_t)sizeof(void*)), _size - sizeof(void*)); // Plus void* for vptr
+    _size = sizeof(*this);
 }
 
-void HydroponicsData::fromBinaryStream(Stream *streamIn)
+void HydroponicsData::toJSONObject(JsonObject &objectOut) const
 {
-    streamIn->readBytes((uint8_t *)((uintptr_t)this + (uintptr_t)sizeof(void*)), _size - sizeof(void*)); // Plus void* for vptr
-    // TODO: Endianness handling?
-}
-
-void HydroponicsData::toJSONElement(JsonVariant &elementOut) const
-{
-    if (_ident.chars[0] == 'H') {
-        elementOut[F("_ident")] = stringFromChars(_ident.chars, sizeof(_ident.chars));
+    if (this->isStdData()) {
+        objectOut[F("id")] = stringFromChars(id.chars, sizeof(id.chars));
     } else {
-        auto object = elementOut.createNestedObject(F("_ident"));
-        object[F("type")] = _ident.object.idType;
-        object[F("class")] = _ident.object.classType;
+        JsonObject object = objectOut.createNestedObject(F("id"));
+        object[F("type")] = id.object.idType;
+        object[F("obj")] = id.object.objType;
+        object[F("pos")] = id.object.posIndex;
+        object[F("cls")] = id.object.classType;
     }
-    elementOut[F("_version")] = _version;
-    elementOut[F("_revision")] = _revision;
+    if (_version > 1) { objectOut[F("_ver")] = _version; }
+    if (_revision > 1) { objectOut[F("_rev")] = _revision; }
 }
 
-void HydroponicsData::fromJSONElement(JsonVariantConst &elementIn)
+void HydroponicsData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    auto identObj = elementIn[F("_ident")];
-    String identStr = identObj.as<String>();
-    if (identStr.length() == sizeof(_ident.chars)) {
-        strncpy(_ident.chars, identStr.c_str(), sizeof(_ident.chars));
+    JsonVariantConst idVar = objectIn[F("id")];
+    if (idVar.is<const char *>()) {
+        strncpy(id.chars, idVar.as<const char *>(), sizeof(id.chars));
     } else {
-        _ident.object.idType = identObj[F("type")];
-        _ident.object.classType = identObj[F("class")];
+        id.object.idType = idVar[F("type")];
+        id.object.objType = idVar[F("obj")];
+        id.object.posIndex = idVar[F("pos")];
+        id.object.classType = idVar[F("cls")];
     }
-    _version = elementIn[F("_version")];
-    _revision = elementIn[F("_revision")];
+    _version = objectIn[F("_ver")] | _version;
+    _revision = objectIn[F("_rev")] | _revision;
+}
+
+
+HydroponicsSubData::HydroponicsSubData()
+    : type(-1)
+{ ; }
+
+void HydroponicsSubData::toJSONObject(JsonObject &objectOut) const
+{
+    if (type != -1) { objectOut[F("type")] = type; }
+}
+
+void HydroponicsSubData::fromJSONObject(JsonObjectConst &objectIn)
+{
+    type = objectIn[F("type")] | type;
 }
 
 
@@ -114,81 +223,80 @@ HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData("HSYS", 1),
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
-      timeZoneOffset(0),
-      pollingIntMs(HYDRUINO_DATA_LOOP_INTERVAL)
+      ctrlInputPinMap{0}, timeZoneOffset(0),
+      pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL)
 {
     _size = sizeof(*this);
-    auto defaultSysName = String(F("Hydruino"));
-    strncpy(systemName, defaultSysName.c_str(), HYDRUINO_NAME_MAXSIZE);
+    String defaultSysNameStr(F("Hydruino"));
+    strncpy(systemName, defaultSysNameStr.c_str(), HYDRUINO_NAME_MAXSIZE);
 }
 
-void HydroponicsSystemData::toBinaryStream(Print *streamOut) const
+void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
 {
-    // TODO: Endianness handling?
-    HydroponicsData::toBinaryStream(streamOut);
+    HydroponicsData::toJSONObject(objectOut);
+
+    objectOut[F("systemMode")] = systemMode;
+    objectOut[F("measureMode")] = measureMode;
+    objectOut[F("dispOutMode")] = dispOutMode;
+    objectOut[F("ctrlInMode")] = ctrlInMode;
+    if (systemName[0]) { objectOut[F("systemName")] = stringFromChars(systemName, HYDRUINO_NAME_MAXSIZE); }
+    if (timeZoneOffset != 0) { objectOut[F("timeZoneOffset")] = timeZoneOffset; }
+    if (pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[F("pollingInterval")] = pollingInterval; }
+    if (lastWaterChangeTime > DateTime((uint32_t)0).unixtime()) { objectOut[F("lastWaterChangeTime")] = lastWaterChangeTime; }
 }
 
-void HydroponicsSystemData::fromBinaryStream(Stream *streamIn)
+void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    HydroponicsData::fromBinaryStream(streamIn);
-    // TODO: Endianness handling?
-}
+    HydroponicsData::fromJSONObject(objectIn);
 
-void HydroponicsSystemData::toJSONElement(JsonVariant &elementOut) const
-{
-    HydroponicsData::toJSONElement(elementOut);
-
-    // TODO
-}
-
-void HydroponicsSystemData::fromJSONElement(JsonVariantConst &elementIn)
-{
-    HydroponicsData::fromJSONElement(elementIn);
-
-    // TODO
+    systemMode = objectIn[F("systemMode")] | systemMode;
+    measureMode = objectIn[F("measureMode")] | measureMode;
+    dispOutMode = objectIn[F("dispOutMode")] | dispOutMode;
+    ctrlInMode = objectIn[F("ctrlInMode")] | ctrlInMode;
+    const char *systemNameStr = objectIn[F("systemName")];
+    if (systemNameStr && systemNameStr[0]) { strncpy(systemName, systemNameStr, HYDRUINO_NAME_MAXSIZE); }
+    timeZoneOffset = objectIn[F("timeZoneOffset")] | timeZoneOffset;
+    pollingInterval = objectIn[F("pollingInterval")] | pollingInterval;
+    lastWaterChangeTime = objectIn[F("lastWaterChangeTime")] | lastWaterChangeTime;
 }
 
 
 HydroponicsCalibrationData::HydroponicsCalibrationData()
     : HydroponicsData("HCAL", 1),
-      sensorId(), calibUnits(Hydroponics_UnitsType_Undefined),
+      sensorName{0}, calibUnits(Hydroponics_UnitsType_Undefined),
       multiplier(1.0f), offset(0.0f)
 {
     _size = sizeof(*this);
 }
 
-HydroponicsCalibrationData::HydroponicsCalibrationData(HydroponicsIdentity sensorIdIn, Hydroponics_UnitsType calibUnitsIn)
+HydroponicsCalibrationData::HydroponicsCalibrationData(HydroponicsIdentity sensorId, Hydroponics_UnitsType calibUnitsIn)
     : HydroponicsData("HCAL", 1),
-      sensorId(sensorIdIn), calibUnits(calibUnitsIn),
+      sensorName{0}, calibUnits(calibUnitsIn),
       multiplier(1.0f), offset(0.0f)
 {
     _size = sizeof(*this);
+    strncpy(sensorName, sensorId.keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
 }
 
-void HydroponicsCalibrationData::toBinaryStream(Print *streamOut) const
+void HydroponicsCalibrationData::toJSONObject(JsonObject &objectOut) const
 {
-    // TODO: Endianness handling?
-    HydroponicsData::toBinaryStream(streamOut);
+    HydroponicsData::toJSONObject(objectOut);
+
+    if (sensorName[0]) { objectOut[F("sensorName")] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (calibUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("calibUnits")] = calibUnits; }
+    objectOut[F("multiplier")] = multiplier;
+    objectOut[F("offset")] = offset;
 }
 
-void HydroponicsCalibrationData::fromBinaryStream(Stream *streamIn)
+void HydroponicsCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    HydroponicsData::fromBinaryStream(streamIn);
-    // TODO: Endianness handling?
-}
+    HydroponicsData::fromJSONObject(objectIn);
 
-void HydroponicsCalibrationData::toJSONElement(JsonVariant &elementOut) const
-{
-    HydroponicsData::toJSONElement(elementOut);
-
-    // TODO
-}
-
-void HydroponicsCalibrationData::fromJSONElement(JsonVariantConst &elementIn)
-{
-    HydroponicsData::fromJSONElement(elementIn);
-
-    // TODO
+    const char *sensorNameStr = objectIn[F("sensorName")];
+    if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
+    calibUnits = objectIn[F("calibUnits")] | calibUnits;
+    multiplier = objectIn[F("multiplier")] | multiplier;
+    offset = objectIn[F("offset")] | offset;
 }
 
 void HydroponicsCalibrationData::setFromTwoPoints(float point1MeasuredAt, float point1CalibratedTo,
@@ -206,40 +314,28 @@ void HydroponicsCalibrationData::setFromTwoPoints(float point1MeasuredAt, float 
 
 HydroponicsCropsLibData::HydroponicsCropsLibData()
     : HydroponicsData("HCLD", 1),
-      cropType(Hydroponics_CropType_Undefined),
-      growWeeksToHarvest(0), weeksBetweenHarvest(0),
+      cropType(Hydroponics_CropType_Undefined), cropName{0},
+      totalGrowWeeks(14), lifeCycleWeeks(0),
+      dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
+      phRange{6,6}, ecRange{1,1}, waterTempRange{25,25}, airTempRange{25,25},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPruningRequired(false), isToxicToPets(false)
 {
     _size = sizeof(*this);
-    memset(cropName, '\0', sizeof(cropName));
-    memset(phaseBeginWeek, 0, sizeof(phaseBeginWeek));
-    memset(lightHoursPerDay, 0, sizeof(lightHoursPerDay));
-    memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
-    memset(phRange, 0, sizeof(phRange));
-    memset(ecRange, 0, sizeof(ecRange));
-    memset(waterTempRange, 0, sizeof(waterTempRange));
-    memset(airTempRange, 0, sizeof(airTempRange));
 }
 
 HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType cropTypeIn)
     : HydroponicsData("HCLD", 1),
-      cropType(cropTypeIn),
-      growWeeksToHarvest(0), weeksBetweenHarvest(0),
+      cropType(cropTypeIn), cropName{0},
+      totalGrowWeeks(0), lifeCycleWeeks(0),
+      dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
+      phRange{6,6}, ecRange{1,1}, waterTempRange{25,25}, airTempRange{25,25},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPruningRequired(false), isToxicToPets(false)
 {
     _size = sizeof(*this);
-    memset(cropName, '\0', sizeof(cropName));
-    memset(phaseBeginWeek, 0, sizeof(phaseBeginWeek));
-    memset(lightHoursPerDay, 0, sizeof(lightHoursPerDay));
-    memset(feedIntervalMins, 0, sizeof(feedIntervalMins));
-    memset(phRange, 0, sizeof(phRange));
-    memset(ecRange, 0, sizeof(ecRange));
-    memset(waterTempRange, 0, sizeof(waterTempRange));
-    memset(airTempRange, 0, sizeof(airTempRange));
 
-    auto cropsLibrary = HydroponicsCropsLibrary::getInstance();
+    auto cropsLibrary = getCropsLibraryInstance();
     if (cropsLibrary) {
         auto cropsLibData = cropsLibrary->checkoutCropData(cropType);
         if (cropsLibData && this != cropsLibData) {
@@ -249,94 +345,87 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
     }
 }
 
-void HydroponicsCropsLibData::toBinaryStream(Print *streamOut) const
+void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 {
-    // TODO: Endianness handling?
-    HydroponicsData::toBinaryStream(streamOut);
-}
+    HydroponicsData::toJSONObject(objectOut);
 
-void HydroponicsCropsLibData::fromBinaryStream(Stream *streamIn)
-{
-    HydroponicsData::fromBinaryStream(streamIn);
-    // TODO: Endianness handling?
-}
+    objectOut[F("cropType")] = cropTypeToString(cropType);
+    if (cropName[0]) { objectOut[F("cropName")] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE); }
 
-void HydroponicsCropsLibData::toJSONElement(JsonVariant &elementOut) const
-{
-    HydroponicsData::toJSONElement(elementOut);
-
-    elementOut[F("cropType")] = cropTypeToString(cropType);
-    elementOut[F("cropName")] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE);
-
-    if (growWeeksToHarvest > 0) {
-        elementOut[F("growWeeksToHarvest")] = growWeeksToHarvest;
+    int mainPhaseTotalWeeks = phaseDurationWeeks[0] + phaseDurationWeeks[1] + phaseDurationWeeks[2];
+    HYDRUINO_SOFT_ASSERT(totalGrowWeeks == 0 || mainPhaseTotalWeeks == totalGrowWeeks, F("Total grow weeks mismatch, failure exporting totalGrowWeeks"));
+    if (totalGrowWeeks > 0) {
+        objectOut[F("totalGrowWeeks")] = totalGrowWeeks;
+    } else if (mainPhaseTotalWeeks > 0 && mainPhaseTotalWeeks != 14) {
+        objectOut[F("totalGrowWeeks")] = mainPhaseTotalWeeks;
     }
-    if (weeksBetweenHarvest > 0) {
-        elementOut[F("weeksBetweenHarvest")] = weeksBetweenHarvest;
-    }
-    if (lightHoursPerDay[0] > 0) {
-        elementOut[F("lightHoursPerDay")] = lightHoursPerDay[0];
+    if (lifeCycleWeeks > 0) {
+        objectOut[F("lifeCycleWeeks")] = lifeCycleWeeks;
     }
 
-    if (phaseBeginWeek[(int)Hydroponics_CropPhase_Count-1] > (int)Hydroponics_CropPhase_Count-1) {
-        auto phaseBegArray = elementOut.createNestedArray(F("phaseBeginWeek"));
-        for (int phaseIndex = 0; phaseIndex < (int)Hydroponics_CropPhase_Count; ++phaseIndex) {
-            phaseBegArray.add(phaseBeginWeek[phaseIndex]);
+    if (dailyLightHours[0] != 20 && dailyLightHours[1] != 18 && dailyLightHours[2] != 12) {
+        HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure exporting dailyLightHours"));
+        if (dailyLightHours[1] != 0 && dailyLightHours[1] != dailyLightHours[0] &&
+            dailyLightHours[2] != 0 && dailyLightHours[2] != dailyLightHours[0]) {
+            JsonObject dailyLightHoursObj = objectOut.createNestedObject(F("dailyLightHours"));
+            dailyLightHoursObj[F("seed")] = dailyLightHours[0];
+            dailyLightHoursObj[F("grow")] = dailyLightHours[1];
+            dailyLightHoursObj[F("bloom")] = dailyLightHours[2];
+        } else {
+            objectOut[F("dailyLightHours")] = dailyLightHours[0];
         }
     }
 
-    if (feedIntervalMins[0][0] > 0 || feedIntervalMins[0][1] > 0) {
-        if (!isFPEqual(feedIntervalMins[0][0], feedIntervalMins[0][1])) {
-            auto feedIntrvlObj = elementOut.createNestedObject(F("feedIntervalMins"));
-            feedIntrvlObj[F("on")] = feedIntervalMins[0][0];
-            feedIntrvlObj[F("off")] = feedIntervalMins[0][1];
+    if (phaseDurationWeeks[0] != 2 && phaseDurationWeeks[1] != 4 && phaseDurationWeeks[2] != 8) {
+        HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure exporting phaseDurationWeeks"));
+        JsonObject phaseDurationWeeksObj = objectOut.createNestedObject(F("phaseDurationWeeks"));
+        phaseDurationWeeksObj[F("seed")] = phaseDurationWeeks[0];
+        phaseDurationWeeksObj[F("grow")] = phaseDurationWeeks[1];
+        phaseDurationWeeksObj[F("bloom")] = phaseDurationWeeks[2];
+    }
+
+    if (!isFPEqual(phRange[0], 6) && !isFPEqual(phRange[1], 6)) {
+        if (!isFPEqual(phRange[0], phRange[1])) {
+            JsonObject phRangeObj = objectOut.createNestedObject(F("phRange"));
+            phRangeObj[F("min")] = phRange[0];
+            phRangeObj[F("max")] = phRange[1];
         } else {
-            elementOut[F("feedIntervalMins")] = feedIntervalMins[0][0];
+            objectOut[F("phRange")] = phRange[0];
         }
     }
 
-    if (phRange[0][0] > 0 || phRange[0][1] > 0) {
-        if (!isFPEqual(phRange[0][0], phRange[0][1])) {
-            auto phRangeObj = elementOut.createNestedObject(F("phRange"));
-            phRangeObj[F("min")] = phRange[0][0];
-            phRangeObj[F("max")] = phRange[0][1];
+    if (!isFPEqual(ecRange[0], 1) && !isFPEqual(ecRange[1], 1)) {
+        if (!isFPEqual(ecRange[0], ecRange[1])) {
+            JsonObject ecRangeObj = objectOut.createNestedObject(F("ecRange"));
+            ecRangeObj[F("min")] = ecRange[0];
+            ecRangeObj[F("max")] = ecRange[1];
         } else {
-            elementOut[F("phRange")] = phRange[0][0];
+            objectOut[F("ecRange")] = ecRange[0];
         }
     }
 
-    if (ecRange[0][0] > 0 || ecRange[0][1] > 0) {
-        if (!isFPEqual(ecRange[0][0], ecRange[0][1])) {
-            auto ecRangeObj = elementOut.createNestedObject(F("ecRange"));
-            ecRangeObj[F("min")] = ecRange[0][0];
-            ecRangeObj[F("max")] = ecRange[0][1];
+    if (!isFPEqual(waterTempRange[0], 25) && !isFPEqual(waterTempRange[1], 25)) {
+        if (!isFPEqual(waterTempRange[0], waterTempRange[1])) {
+            JsonObject waterTempRangeObj = objectOut.createNestedObject(F("waterTempRange"));
+            waterTempRangeObj[F("min")] = waterTempRange[0];
+            waterTempRangeObj[F("max")] = waterTempRange[1];
         } else {
-            elementOut[F("ecRange")] = ecRange[0][0];
+            objectOut[F("waterTempRange")] = waterTempRange[0];
         }
     }
 
-    if (waterTempRange[0][0] > 0 || waterTempRange[0][1] > 0) {
-        if (!isFPEqual(waterTempRange[0][0], waterTempRange[0][1])) {
-            auto waterTempRangeObj = elementOut.createNestedObject(F("waterTempRange"));
-            waterTempRangeObj[F("min")] = waterTempRange[0][0];
-            waterTempRangeObj[F("max")] = waterTempRange[0][1];
+    if (!isFPEqual(airTempRange[0], 25) && !isFPEqual(airTempRange[1], 25)) {
+        if (!isFPEqual(airTempRange[0], airTempRange[1])) {
+            JsonObject airTempRangeObj = objectOut.createNestedObject(F("airTempRange"));
+            airTempRangeObj[F("min")] = airTempRange[0];
+            airTempRangeObj[F("max")] = airTempRange[1];
         } else {
-            elementOut[F("waterTempRange")] = waterTempRange[0][0];
-        }
-    }
-
-    if (airTempRange[0][0] > 0 || airTempRange[0][1] > 0) {
-        if (!isFPEqual(airTempRange[0][0], airTempRange[0][1])) {
-            auto airTempRangeObj = elementOut.createNestedObject(F("airTempRange"));
-            airTempRangeObj[F("min")] = airTempRange[0][0];
-            airTempRangeObj[F("max")] = airTempRange[0][1];
-        } else {
-            elementOut[F("airTempRange")] = airTempRange[0][0];
+            objectOut[F("airTempRange")] = airTempRange[0];
         }
     }
 
     if (isInvasiveOrViner || isLargePlant || isPerennial || isPruningRequired || isToxicToPets) {
-        auto flagsArray = elementOut.createNestedArray(F("flags"));
+        auto flagsArray = objectOut.createNestedArray(F("flags"));
         if (isInvasiveOrViner) { flagsArray.add(F("invasive")); }
         if (isLargePlant) { flagsArray.add(F("large")); }
         if (isPerennial) { flagsArray.add(F("perennial")); }
@@ -345,13 +434,55 @@ void HydroponicsCropsLibData::toJSONElement(JsonVariant &elementOut) const
     }
 }
 
-void HydroponicsCropsLibData::fromJSONElement(JsonVariantConst &elementIn)
+void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    HydroponicsData::fromJSONElement(elementIn);
+    HydroponicsData::fromJSONObject(objectIn);
 
-    cropType = cropTypeFromString(elementIn[F("cropType")]);
-    String cropNameStr = elementIn[F("cropName")];
-    strncpy(cropName, cropNameStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    cropType = cropTypeFromString(objectIn[F("cropType")]);
+    const char *cropNameStr = objectIn[F("cropName")];
+    if (cropNameStr && cropNameStr[0]) { strncpy(cropName, cropNameStr, HYDRUINO_NAME_MAXSIZE); }
 
-    // TODO
+    totalGrowWeeks = objectIn[F("totalGrowWeeks")] | totalGrowWeeks;
+    lifeCycleWeeks = objectIn[F("lifeCycleWeeks")] | lifeCycleWeeks;
+
+    {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure importing dailyLightHours"));
+        JsonVariantConst dailyLightHoursVar = objectIn[F("dailyLightHours")];
+        dailyLightHours[0] = dailyLightHoursVar[F("seed")] | dailyLightHoursVar[0] | dailyLightHoursVar | dailyLightHours[0];
+        dailyLightHours[1] = dailyLightHoursVar[F("grow")] | dailyLightHoursVar[1] | dailyLightHoursVar | dailyLightHours[1];
+        dailyLightHours[2] = dailyLightHoursVar[F("bloom")] | dailyLightHoursVar[2] | dailyLightHoursVar | dailyLightHours[2];
+    }
+
+    {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure importing phaseDurationWeeks"));
+        JsonVariantConst phaseDurationWeeksVar = objectIn[F("phaseDurationWeeks")];
+        phaseDurationWeeks[0] = phaseDurationWeeksVar[F("seed")] | phaseDurationWeeksVar[0] | phaseDurationWeeks[0];
+        phaseDurationWeeks[1] = phaseDurationWeeksVar[F("grow")] | phaseDurationWeeksVar[1] | phaseDurationWeeks[1];
+        phaseDurationWeeks[2] = phaseDurationWeeksVar[F("bloom")] | phaseDurationWeeksVar[2] | phaseDurationWeeks[2];
+    }
+
+    {   JsonVariantConst phRangeVar = objectIn[F("phRange")];
+        phRange[0] = phRangeVar[F("min")] | phRangeVar[0] | phRangeVar | phRange[0];
+        phRange[1] = phRangeVar[F("max")] | phRangeVar[1] | phRangeVar | phRange[1];
+    }
+    {   JsonVariantConst ecRangeVar = objectIn[F("ecRange")];
+        ecRange[0] = ecRangeVar[F("min")] | ecRangeVar[0] | ecRangeVar | ecRange[0];
+        ecRange[1] = ecRangeVar[F("max")] | ecRangeVar[1] | ecRangeVar | ecRange[1];
+    }
+    {   JsonVariantConst waterTempRangeVar = objectIn[F("waterTempRange")];
+        waterTempRange[0] = waterTempRangeVar[F("min")] | waterTempRangeVar[0] | waterTempRangeVar | waterTempRange[0];
+        waterTempRange[1] = waterTempRangeVar[F("max")] | waterTempRangeVar[1] | waterTempRangeVar | waterTempRange[1];
+    }
+    {   JsonVariantConst airTempRangeVar = objectIn[F("airTempRange")];
+        airTempRange[0] = airTempRangeVar[F("min")] | airTempRangeVar[0] | airTempRangeVar | airTempRange[0];
+        airTempRange[1] = airTempRangeVar[F("max")] | airTempRangeVar[1] | airTempRangeVar | airTempRange[1];
+    }
+
+    {   JsonArrayConst flagsArray = objectIn[F("flags")];
+        for (String flagStr : flagsArray) {
+            if (flagStr.equalsIgnoreCase(F("invasive"))) { isInvasiveOrViner = true; }
+            if (flagStr.equalsIgnoreCase(F("large"))) { isLargePlant = true; }
+            if (flagStr.equalsIgnoreCase(F("perennial"))) { isPerennial = true; }
+            if (flagStr.equalsIgnoreCase(F("pruning"))) { isPruningRequired = true; }
+            if (flagStr.equalsIgnoreCase(F("toxic"))) { isToxicToPets = true; }
+        }
+    }
 }
