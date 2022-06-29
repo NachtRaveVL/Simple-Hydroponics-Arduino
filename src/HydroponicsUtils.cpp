@@ -915,7 +915,7 @@ String cropTypeToString(Hydroponics_CropType cropType, bool excludeSpecial)
             return F("CustomCrop7");
         case Hydroponics_CropType_Custom8:
             return F("CustomCrop8");
-        case (Hydroponics_CropType)82://Hydroponics_CropType_Count:
+        case Hydroponics_CropType_Count:
             return !excludeSpecial ? F("CropCount") : F("");
         case Hydroponics_CropType_Undefined:
             break;

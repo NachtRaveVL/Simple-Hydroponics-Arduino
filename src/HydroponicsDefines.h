@@ -142,8 +142,7 @@ enum Hydroponics_CropType {
     Hydroponics_CropType_Custom7,                           // Custom crop 7
     Hydroponics_CropType_Custom8,                           // Custom crop 8
 
-    // FIXME: Need to change storage of crop data to PROGMEM. Capping CropType count until fixed.
-    Hydroponics_CropType_Count = 10,                        // Internal use only
+    Hydroponics_CropType_Count,                             // Internal use only
     Hydroponics_CropType_CustomCount = 8,                   // Internal use only
     Hydroponics_CropType_Undefined = -1                     // Internal use only
 };
