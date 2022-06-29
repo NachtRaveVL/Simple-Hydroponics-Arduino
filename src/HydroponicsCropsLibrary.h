@@ -21,30 +21,52 @@ struct HydroponicsCropsLibraryBook;
 // All crop data is internally stored as JSON strings in the Flash PROGMEM memory space.
 class HydroponicsCropsLibrary {
 public:
-    // Returns the singleton instance of this library.
+    // Returns the singleton instance of the library
     static HydroponicsCropsLibrary *getInstance();
 
-    // Checks out the crop data for this crop, created via the JSON from PROGMEM if needed
-    // (nullptr return = failure). Increments crop data ref count by one.
+    // Checks out the crop data for this crop from the library, created via the JSON from
+    // PROGMEM if needed (nullptr return = failure). Increments crop data ref count by one.
     const HydroponicsCropsLibData *checkoutCropData(Hydroponics_CropType cropType);
 
-    // Returns crop data back to system, to delete when no longer used. Decrements crop
+    // Returns crop data back to the library, to delete when no longer used. Decrements crop
     // data internal ref count by one, deleting on zero.
     void returnCropData(const HydroponicsCropsLibData *cropData);
 
-    // TODO
-    //void setCustomCropData(const Hydroponics_CropType cropType, const HydroponicsCropsLibData *cropData);
-    //Signal<TODO> getCropLibUpdateSignal();
+    // Adds/updates custom crop data to the library, returning success flag
+    bool setCustomCropData(const HydroponicsCropsLibData *cropData);
+
+    // Drops/removes custom crop data from the library, returning success flag
+    bool dropCustomCropData(const HydroponicsCropsLibData *cropData);
+
+    // Returns if there are custom crops in the library
+    bool hasCustomCrops();
+
+    // Signal when custom crops are added/updated in the library
+    Signal<Hydroponics_CropType> &getCustomCropSignal();
 
 protected:
-    static HydroponicsCropsLibrary *_instance;              // Shared instance
-    arx::map<Hydroponics_CropType, HydroponicsCropsLibraryBook *> _cropsLibData; // Loaded crop library data
-
-    HydroponicsCropsLibrary();                              // Private constructor to force singleton
-
-    void validateEntries(HydroponicsCropsLibData *cropsLibData);
+    arx::map<Hydroponics_CropType, HydroponicsCropsLibraryBook *> _cropsData; // Loaded crop library data
+    bool _hasCustomCrops;                                   // Has custom crops flag
+    Signal<Hydroponics_CropType> _cropDataSignal;           // Custom crop data updated signal    
 
     String jsonStringForCrop(Hydroponics_CropType cropType);
+    bool updateHasCustom();
+
+private:
+    static HydroponicsCropsLibrary *_instance;              // Shared instance
+    HydroponicsCropsLibrary() = default;                    // Private constructor to force singleton
+    friend class Hydroponics;
 };
 
-#endif // /ifndef HydroponicsCrops_H
+// Crops Library Book
+struct HydroponicsCropsLibraryBook {
+    HydroponicsCropsLibraryBook();
+    HydroponicsCropsLibraryBook(const HydroponicsCropsLibData &data);
+    Hydroponics_CropType getKey() const;
+    HydroponicsCropsLibData data;
+    int count;
+};
+
+inline HydroponicsCropsLibrary *getCropsLibraryInstance() { return HydroponicsCropsLibrary::getInstance(); }
+
+#endif // /ifndef HydroponicsCropsLibrary_H

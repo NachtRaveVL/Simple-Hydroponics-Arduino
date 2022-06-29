@@ -18,25 +18,27 @@ struct HydroponicsDLinkObject {
 
     HydroponicsDLinkObject() : id(), obj(nullptr) { ; }
     template<class U>
-    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs) : id(rhs.id), obj(rhs.obj) { ; }
+    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs) : id(rhs.id), obj(reinterpret_pointer_cast<T>(rhs.obj)) { ; }
     HydroponicsDLinkObject(HydroponicsIdentity idIn) : id(idIn), obj(nullptr) { ; }
     template<class U>
-    HydroponicsDLinkObject(shared_ptr<T> objIn) : id(objIn->getId()), obj(reinterpret_pointer_cast<T>(objIn)) { ; }
+    HydroponicsDLinkObject(shared_ptr<U> objIn) : id(objIn->getId()), obj(reinterpret_pointer_cast<T>(objIn)) { ; }
+    HydroponicsDLinkObject(const char *keyStrIn) : HydroponicsDLinkObject(HydroponicsIdentity(String(keyStrIn))) { ; }
     ~HydroponicsDLinkObject() { obj = nullptr; }
 
     inline bool isId() const { return !obj; }
     inline bool isObj() const { return (bool)obj; }
     inline bool needsResolved() const { return !obj && (bool)id; }
     inline bool resolveIfNeeded() { return !obj ? (bool)getObj() : false; }
-    operator bool() const { return (bool)obj; }
+    inline operator bool() const { return (bool)obj; }
 
     HydroponicsIdentity getId() const { return obj ? obj->getId() : id;  }
     Hydroponics_KeyType getKey() const { return obj ? obj->getId().key : id.key; }
 
     shared_ptr<T> getObj() { if (!obj && (bool)id) { auto hydroponics = getHydroponicsInstance();
-                                                     obj = (hydroponics ? hydroponics->objectById(id) : nullptr); }
+                                                     obj = (hydroponics ? hydroponics->objectById(id) : nullptr);
+                                                     if (obj) { id = obj->getId(); } }
                              return obj; }
-    T* operator->() { return getObj().get(); }
+    inline T* operator->() { return getObj().get(); }
 
     template<class U>
     HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { id = rhs.id; obj = reinterpret_pointer_cast<T>(rhs.obj); }
@@ -49,13 +51,16 @@ struct HydroponicsDLinkObject {
     bool operator==(const HydroponicsIdentity rhs) const { return id.key == rhs.key; }
     template<class U>
     bool operator==(shared_ptr<U> rhs) const { return id.key == rhs->getId().key; }
+    bool operator==(HydroponicsObject *rhs) const { return id.key == rhs->getId().key; }
 
     template<class U>
     bool operator!=(const HydroponicsDLinkObject<U> &rhs) const { return id.key != rhs->getId().key; }
     bool operator!=(const HydroponicsIdentity rhs) const { return id.key != rhs.key; }
     template<class U>
     bool operator!=(shared_ptr<U> rhs) const { return id.key != rhs->getId().key; }
+    bool operator!=(HydroponicsObject *rhs) const { return id.key != rhs->getId().key; }
 };
+
 
 // Signal Fire Task
 // This class holds onto the passed signal and parameter to pass it along to the signal's
@@ -76,7 +81,7 @@ taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterTy
 {
     SignalFireTask<ParameterType,Slots> *fireTask = new SignalFireTask<ParameterType,Slots>(signal, fireParam);
     HYDRUINO_SOFT_ASSERT(fireTask, F("Failure allocating signal fire task"));
-    return fireTask != nullptr ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
 }
 
 #endif // /ifndef HydroponicsUtils_HPP

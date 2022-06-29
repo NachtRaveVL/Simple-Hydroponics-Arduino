@@ -9,31 +9,40 @@
 class HydroponicsTrigger;
 class HydroponicsMeasurementValueTrigger;
 class HydroponicsMeasurementRangeTrigger;
-class HydroponicsEstimatedVolumeTrigger;
+
+struct HydroponicsTriggerSubData;
 
 #include "Hydroponics.h"
+
+// Creates trigger object from passed trigger sub data (return ownership transfer - user code *must* delete returned object)
+extern HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData *dataIn);
+
 
 // Hydroponics Trigger Base
 // This is the base class for all triggers, which are used to alert the system
 // to some change in a tracked property.
-class HydroponicsTrigger
-{
+class HydroponicsTrigger : public HydroponicsSubObject, public HydroponicsTriggerObjectInterface {
 public:
-    const enum { MeasureValue, MeasureRange, EstimatedVol, Unknown = -1 } type;     // Trigger type (custom RTTI)
+    const enum { MeasureValue, MeasureRange, Unknown = -1 } type; // Trigger type (custom RTTI)
     inline bool isMeasureValueType() { return type == MeasureValue; }
     inline bool isMeasureRangeType() { return type == MeasureRange; }
-    inline bool isEstimatedVolType() { return type == EstimatedVol; }
-    inline bool isUnknownType() { return type == Unknown; }
+    inline bool isUnknownType() { return type <= Unknown; }
 
     HydroponicsTrigger(int type = Unknown);
+    HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn);
     virtual ~HydroponicsTrigger();
 
-    virtual void update();
+    void saveToData(HydroponicsSubData *dataOut) const override;
+    virtual void saveToData(HydroponicsTriggerSubData *dataOut) const;
 
-    virtual void attach() = 0;
-    virtual void detach() = 0;
+    virtual void update() override;
+    virtual void resolveLinks() override;
+    virtual void handleLowMemory() override;
 
-    Hydroponics_TriggerState getTriggerState() const;
+    virtual void attachTrigger() = 0;
+    virtual void detachTrigger() = 0;
+    virtual Hydroponics_TriggerState getTriggerState() const override;
+
     Signal<Hydroponics_TriggerState> &getTriggerSignal();
 
 protected:
@@ -50,24 +59,30 @@ protected:
 // directly to measured units, otherwise units can be explicitly set.
 class HydroponicsMeasurementValueTrigger : public HydroponicsTrigger {
 public:
-    HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float tolerance, bool activeBelow, int measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float tolerance, bool triggerBelow, int measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float tolerance, bool triggerBelow, int measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementValueTrigger();
 
-    void attach() override;
-    void detach() override;
+    void saveToData(HydroponicsTriggerSubData *dataOut) const override;
+
+    void resolveLinks() override;
+
+    void attachTrigger() override;
+    void detachTrigger() override;
 
     void setToleranceUnits(Hydroponics_UnitsType units);
     Hydroponics_UnitsType getToleranceUnits() const;
 
-    shared_ptr<HydroponicsSensor> getSensor() const;
+    shared_ptr<HydroponicsSensor> getSensor();
     float getTolerance() const;
-    bool getActiveBelow() const;
+    bool getTriggerBelow() const;
 
 protected:
-    shared_ptr<HydroponicsSensor> _sensor;                  // Attached sensor
+    HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
     float _tolerance;                                       // Tolerance limit
     Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
-    bool _activeBelow;                                      // Active below flag
+    bool _triggerBelow;                                     // Trigger below flag
     int8_t _measurementRow;                                 // Measurement data row to check against
 
     void handleSensorMeasure(HydroponicsMeasurement *measurement);
@@ -82,66 +97,57 @@ protected:
 // units, otherwise units can be explicitly set.
 class HydroponicsMeasurementRangeTrigger : public HydroponicsTrigger {
 public:
-    HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOnOutside = true, int measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside = true, int measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside = true, int measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementRangeTrigger();
 
-    void attach() override;
-    void detach() override;
+    void saveToData(HydroponicsTriggerSubData *dataOut) const override;
+
+    void resolveLinks() override;
+
+    void attachTrigger() override;
+    void detachTrigger() override;
 
     void setToleranceUnits(Hydroponics_UnitsType units);
     Hydroponics_UnitsType getToleranceUnits() const;
 
-    shared_ptr<HydroponicsSensor> getSensor() const;
+    shared_ptr<HydroponicsSensor> getSensor();
     float getToleranceLow() const;
     float getToleranceHigh() const;
 
 protected:
+    HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
     float _toleranceLow;                                    // Low value tolerance
     float _toleranceHigh;                                   // High value tolerance
     Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
-    bool _triggerOnOutside;                                 // Trigger on outside flag
+    bool _triggerOutside;                                   // Trigger on outside flag
     int8_t _measurementRow;                                 // Measurement data row to check against
-    shared_ptr<HydroponicsSensor> _sensor;                  // Attached sensor
 
     void handleSensorMeasure(HydroponicsMeasurement *measurement);
 };
 
 
-// Reservoir Estimated Volume From Pump Flow Trigger
-// This trigger attempts to estimate the time it would take for a pump to drain or
-// fill a known volume of liquid with a known constant (or sensed) flow rate. It
-// isn't as precise as a filled/empty indicator, but it's better for systems that
-// avoid having to include such and instead can operate fine just using estimations.
-// Better if equipped with  It can be set up as either triggering on empty or filled
-// status, and triggering on input or output reservoir relative to the pump. Utilized
-// reservoir must have explicitly set a known initial volume, and pump actuator must
-// have explicitly set a constant flow rate or have a sensed flow rate.
-/* TODO
-class HydroponicsEstimatedVolumeTrigger : public HydroponicsTrigger
-{
-public:
-    HydroponicsEstimatedVolumeTrigger(shared_ptr<HydroponicsActuator> pumpActuator, bool triggerOnEmpty = true, bool triggerOnInput = true);
-    ~HydroponicsEstimatedVolumeTrigger();
+// Combined Trigger Serialization Sub Data
+struct HydroponicsTriggerSubData : public HydroponicsSubData {
+    char sensorName[HYDRUINO_NAME_MAXSIZE];
+    union {
+        struct {
+            float tolerance;
+            bool triggerBelow;
+        } measureValue;
+        struct {
+            float toleranceLow;
+            float toleranceHigh;
+            bool triggerOutside;
+        } measureRange;
+    } dataAs;
+    Hydroponics_UnitsType toleranceUnits;
+    int8_t measurementRow;
 
-    void update() override;
-
-    void attach() override;
-    void detach() override;
-
-    shared_ptr<HydroponicsActuator> getPumpActuator() const;
-    bool getTriggerOnEmpty() const;
-    bool getTriggerOnInput() const;
-    shared_ptr<HydroponicsSensor> getFlowRateSensor() const;
-    shared_ptr<HydroponicsReservoir> getInputReservoir() const;
-    shared_ptr<HydroponicsReservoir> getOutputReservoir() const;
-
-protected:
-    shared_ptr<HydroponicsActuator> _pumpActuator;          // Attached pump actuator
-    bool _triggerOnEmpty;                                   // Trigger on empty flag
-    bool _triggerOnInput;                                   // Trigger on input flag
-
-    void handlePumpActivation(HydroponicsActuator *actuator);
-    void handleFlowRateMeasure(HydroponicsMeasurement *measurement);
-};*/
+    HydroponicsTriggerSubData();
+    void toJSONObject(JsonObject &objectOut) const;
+    void fromJSONObject(JsonObjectConst &objectIn);
+};
 
 #endif // /ifndef HydroponicsTriggers_H

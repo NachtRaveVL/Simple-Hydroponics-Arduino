@@ -6,46 +6,336 @@
 #ifndef HydroponicsInterfaces_H
 #define HydroponicsInterfaces_H
 
-struct HydroponicsSerializableInterface;
 struct HydroponicsJSONSerializableInterface;
 
+class HydroponicsActuatorAttachmentsInterface;
+class HydroponicsSensorAttachmentsInterface;
+class HydroponicsCropAttachmentsInterface;
+class HydroponicsRailAttachmentsInterface;
+class HydroponicsReservoirAttachmentsInterface;
+
+class HydroponicsActuatorAttachmentInterface;
+class HydroponicsSensorAttachmentInterface;
+class HydroponicsCropAttachmentInterface;
+class HydroponicsRailAttachmentInterface;
+class HydroponicsReservoirAttachmentInterface;
+
+class HydroponicsActuatorObjectInterface;
+class HydroponicsSensorObjectInterface;
+class HydroponicsCropObjectInterface;
+class HydroponicsRailObjectInterface;
+class HydroponicsReservoirObjectInterface;
+
+class HydroponicsTriggerObjectInterface;
+class HydroponicsPumpObjectInterface;
+
+class HydroponicsFlowAwareInterface;
+class HydroponicsVolumeAwareInterface;
+class HydroponicsPowerAwareInterface;
+class HydroponicsWaterTemperatureAwareInterface;
+class HydroponicsWaterPHAwareInterface;
+class HydroponicsWaterConcentrationAwareInterface;
+class HydroponicsSoilMoistureAwareInterface;
+class HydroponicsSoilTemperatureAwareInterface;
+class HydroponicsAirTemperatureAwareInterface;
+class HydroponicsAirHumidityAwareInterface;
+class HydroponicsAirCO2AwareInterface;
+
 #include "Hydroponics.h"
-
-
-
-// Binary Serializable Interface
-struct HydroponicsBinarySerializableInterface {
-    // Given a byte stream to write to, writes self to binary format.
-    virtual void toBinaryStream(Print *streamOut) const = 0;
-
-    // Given a byte stream to read from, reads overtop self from binary format.
-    virtual void fromBinaryStream(Stream *streamIn) = 0;
-};
 
 // JSON Serializable Interface
 struct HydroponicsJSONSerializableInterface {
     // Given a JSON element to fill in, writes self to JSON format.
-    virtual void toJSONElement(JsonVariant &elementOut) const = 0;
+    virtual void toJSONObject(JsonObject &objectOut) const = 0;
 
     // Given a JSON element to read from, reads overtop self from JSON format.
-    virtual void fromJSONElement(JsonVariantConst &elementIn) = 0;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) = 0;
+};
+
+
+// Actuator Attachments Interface
+class HydroponicsActuatorAttachmentsInterface {
+public:
+    virtual bool addActuator(HydroponicsActuator *actuator) = 0;
+    virtual bool removeActuator(HydroponicsActuator *actuator) = 0;
+    virtual bool hasActuator(HydroponicsActuator *actuator) const = 0;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsActuator *> getActuators() const = 0;
+};
+
+// Sensor Attachments Interface
+class HydroponicsSensorAttachmentsInterface {
+public:
+    virtual bool addSensor(HydroponicsSensor *sensor) = 0;
+    virtual bool removeSensor(HydroponicsSensor *sensor) = 0;
+    virtual bool hasSensor(HydroponicsSensor *sensor) const = 0;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsSensor *> getSensors() const = 0;
+};
+
+// Crop Attachments Interface
+class HydroponicsCropAttachmentsInterface {
+public:
+    virtual bool addCrop(HydroponicsCrop *crop) = 0;
+    virtual bool removeCrop(HydroponicsCrop *crop) = 0;
+    virtual bool hasCrop(HydroponicsCrop *crop) const = 0;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsCrop *> getCrops() const = 0;
+};
+
+// Reservoir Attachments Interface
+class HydroponicsReservoirAttachmentsInterface {
+public:
+    virtual bool addReservoir(HydroponicsReservoir *reservoir) = 0;
+    virtual bool removeReservoir(HydroponicsReservoir *reservoir) = 0;
+    virtual bool hasReservoir(HydroponicsReservoir *reservoir) const = 0;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsReservoir *> getReservoirs() const = 0;
+};
+
+// Rail Attachments Interface
+class HydroponicsRailAttachmentsInterface {
+public:
+    virtual bool addRail(HydroponicsRail *rail) = 0;
+    virtual bool removeRail(HydroponicsRail *rail) = 0;
+    virtual bool hasRail(HydroponicsRail *rail) const = 0;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsRail *> getRails() const = 0;
+};
+
+
+// Actuator Attachment Interface
+class HydroponicsActuatorAttachmentInterface {
+public:
+    virtual void setActuator(HydroponicsIdentity actuatorId) = 0;
+    virtual void setActuator(shared_ptr<HydroponicsActuator> actuator) = 0;
+    virtual shared_ptr<HydroponicsActuator> getActuator() = 0;
+};
+
+// Sensor Attachment Interface
+class HydroponicsSensorAttachmentInterface {
+public:
+    virtual void setSensor(HydroponicsIdentity sensorId) = 0;
+    virtual void setSensor(shared_ptr<HydroponicsSensor> sensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getSensor() = 0;
+};
+
+// Crop Attachment Interface
+class HydroponicsCropAttachmentInterface {
+public:
+    virtual void setCrop(HydroponicsIdentity cropId) = 0;
+    virtual void setCrop(shared_ptr<HydroponicsCrop> crop) = 0;
+    virtual shared_ptr<HydroponicsCrop> getCrop() = 0;
+};
+
+// Reservoir Attachment Interface
+class HydroponicsReservoirAttachmentInterface {
+public:
+    virtual void setReservoir(HydroponicsIdentity reservoirId) = 0;
+    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) = 0;
+    virtual shared_ptr<HydroponicsReservoir> getReservoir() = 0;
+};
+
+// Rail Attachment Interface
+class HydroponicsRailAttachmentInterface {
+public:
+    virtual void setRail(HydroponicsIdentity powerRailId) = 0;
+    virtual void setRail(shared_ptr<HydroponicsRail> powerRail) = 0;
+    virtual shared_ptr<HydroponicsRail> getRail() = 0;
+};
+
+
+// Actuator Object Interface
+class HydroponicsActuatorObjectInterface {
+public:
+    virtual bool enableActuator(bool override = false, float intensity = 1.0f) = 0;
+    virtual void disableAt(time_t disableTime) = 0;
+    inline void disableAfter(TimeSpan timeSpan) { disableAt(now() + (time_t)timeSpan.totalseconds()); }
+    virtual void disableActuator() = 0;
+    virtual bool getCanEnable() = 0;
+    virtual bool getIsEnabled(float tolerance = 0.5) const = 0;
+};
+
+// Sensor Object Interface
+class HydroponicsSensorObjectInterface {
+public:
+    virtual void takeMeasurement(bool override = false) = 0;
+    virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
+    virtual bool getIsTakingMeasurement() const = 0;
+    virtual bool getNeedsPolling() const = 0;
+};
+
+// Crop Object Interface
+class HydroponicsCropObjectInterface {
+public:
+    virtual bool getNeedsFeeding() const = 0;
+};
+
+// Reservoir Object Interface
+class HydroponicsReservoirObjectInterface {
+public:
+    virtual bool canActivate(HydroponicsActuator *actuator) const = 0;
+    virtual bool getIsFull() const = 0;
+    virtual bool getIsEmpty() const = 0;
+};
+
+// Rail Object Interface
+class HydroponicsRailObjectInterface {
+public:
+    virtual bool canActivate(HydroponicsActuator *actuator) const = 0;
+    virtual float getCapacity() const = 0;
+};
+
+
+// Trigger Object Interface
+class HydroponicsTriggerObjectInterface {
+public:
+    virtual void attachTrigger() = 0;
+    virtual void detachTrigger() = 0;
+    virtual Hydroponics_TriggerState getTriggerState() const = 0;
 };
 
 // Pump Object Interface
-class HydroponicsPumpObjectInterface {
+class HydroponicsPumpObjectInterface : public HydroponicsReservoirAttachmentInterface {
 public:
-    virtual void setContinuousFlowRate(float flowRate, Hydroponics_UnitsType flowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
-    virtual void setContinuousFlowRate(HydroponicsSingleMeasurement flowRate) = 0;
+    virtual bool canPump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void pump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) = 0;
+
+    virtual void setOutputReservoir(HydroponicsIdentity outputReservoirId) = 0;
+    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> outputReservoir) = 0;
+    virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() = 0;
+};
+
+
+// Flow Rate Aware Interface
+class HydroponicsFlowAwareInterface {
+public:
+    virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) = 0;
     virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() const = 0;
 
     virtual void setFlowRateSensor(HydroponicsIdentity flowRateSensorId) = 0;
     virtual void setFlowRateSensor(shared_ptr<HydroponicsSensor> flowRateSensor) = 0;
     virtual shared_ptr<HydroponicsSensor> getFlowRateSensor() = 0;
-    virtual const HydroponicsSingleMeasurement &getInstantaneousFlowRate() const = 0;
 
-    virtual void setOutputReservoir(HydroponicsIdentity outputReservoirId) = 0;
-    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> outputReservoir) = 0;
-    virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() = 0;
+    virtual void setInstantaneousFlowRate(float instFlowRate, Hydroponics_UnitsType instFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setInstantaneousFlowRate(HydroponicsSingleMeasurement instFlowRate) = 0;
+    virtual const HydroponicsSingleMeasurement &getInstantaneousFlowRate() const = 0;
+};
+
+// Liquid Volume Aware Interface
+class HydroponicsVolumeAwareInterface {
+public:
+    virtual void setVolumeSensor(HydroponicsIdentity volumeSensorId) = 0;
+    virtual void setVolumeSensor(shared_ptr<HydroponicsSensor> volumeSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getVolumeSensor() = 0;
+
+    virtual void setLiquidVolume(float liquidVolume, Hydroponics_UnitsType liquidVolumeUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setLiquidVolume(HydroponicsSingleMeasurement liquidVolume) = 0;
+    virtual const HydroponicsSingleMeasurement &getLiquidVolume() const = 0;
+};
+
+// Power Aware Interface
+class HydroponicsPowerAwareInterface {
+public:
+    virtual void setPowerSensor(HydroponicsIdentity powerSensorId) = 0;
+    virtual void setPowerSensor(shared_ptr<HydroponicsSensor> powerSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getPowerSensor() = 0;
+
+    virtual void setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setPowerDraw(HydroponicsSingleMeasurement powerDraw) = 0;
+    virtual const HydroponicsSingleMeasurement &getPowerDraw() const = 0;
+};
+
+// Water Temperature Aware Interface
+class HydroponicsWaterTemperatureAwareInterface {
+public:
+    virtual void setWaterTempSensor(HydroponicsIdentity waterTempSensorId) = 0;
+    virtual void setWaterTempSensor(shared_ptr<HydroponicsSensor> waterTempSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getWaterTempSensor() = 0;
+
+    virtual void setWaterTemperature(float airTemperature, Hydroponics_UnitsType waterTemperatureUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setWaterTemperature(HydroponicsSingleMeasurement waterTemperature) = 0;
+    virtual const HydroponicsSingleMeasurement &getWaterTemperature() const = 0;
+};
+
+// Water pH Aware Interface
+class HydroponicsWaterPHAwareInterface {
+public:
+    virtual void setWaterPHSensor(HydroponicsIdentity waterPHSensorId) = 0;
+    virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> waterPHSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getWaterPHSensor() = 0;
+
+    virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setWaterPH(HydroponicsSingleMeasurement waterPH) = 0;
+    virtual const HydroponicsSingleMeasurement &getWaterPH() const = 0;
+};
+
+// Water TDS Concentration Aware Interface
+class HydroponicsWaterConcentrationAwareInterface {
+public:
+    virtual void setWaterTDSSensor(HydroponicsIdentity waterTDSSensorId) = 0;
+    virtual void setWaterTDSSensor(shared_ptr<HydroponicsSensor> waterTDSSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getWaterTDSSensor() = 0;
+
+    virtual void setWaterTDS(float waterTDS, Hydroponics_UnitsType waterTDSUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setWaterTDS(HydroponicsSingleMeasurement waterTDS) = 0;
+    virtual const HydroponicsSingleMeasurement &getWaterTDS() const = 0;
+};
+
+// Soil Moisture Aware Interface
+class HydroponicsSoilMoistureAwareInterface {
+public:
+    virtual void setMoistureSensor(HydroponicsIdentity moistureSensorId) = 0;
+    virtual void setMoistureSensor(shared_ptr<HydroponicsSensor> moistureSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getMoistureSensor() = 0;
+
+    virtual void setSoilMoisture(float soilMoisture, Hydroponics_UnitsType soilMoistureUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setSoilMoisture(HydroponicsSingleMeasurement soilMoisture) = 0;
+    virtual const HydroponicsSingleMeasurement &getSoilMoisture() const = 0;
+};
+
+// Soil Temperature Aware Interface
+class HydroponicsSoilTemperatureAwareInterface {
+public:
+    virtual void setSoilTempSensor(HydroponicsIdentity soilTempSensorId) = 0;
+    virtual void setSoilTempSensor(shared_ptr<HydroponicsSensor> soilTempSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getSoilTempSensor() = 0;
+
+    virtual void setSoilTemperature(float soilTemperature, Hydroponics_UnitsType soilTemperatureUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setSoilTemperature(HydroponicsSingleMeasurement soilTemperature) = 0;
+    virtual const HydroponicsSingleMeasurement &getSoilTemperature() const = 0;
+};
+
+// Air Temperature Aware Interface
+class HydroponicsAirTemperatureAwareInterface {
+public:
+    virtual void setAirTempSensor(HydroponicsIdentity airTempSensorId) = 0;
+    virtual void setAirTempSensor(shared_ptr<HydroponicsSensor> airTempSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getAirTempSensor() = 0;
+
+    virtual void setAirTemperature(float airTemperature, Hydroponics_UnitsType airTemperatureUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setAirTemperature(HydroponicsSingleMeasurement airTemperature) = 0;
+    virtual const HydroponicsSingleMeasurement &getAirTemperature() const = 0;
+};
+
+// Air Humidity Aware Interface
+class HydroponicsAirHumidityAwareInterface {
+public:
+    virtual void setAirHumiditySensor(HydroponicsIdentity airTempSensorId) = 0;
+    virtual void setAirHumiditySensor(shared_ptr<HydroponicsSensor> airTempSensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getAirHumiditySensor() = 0;
+
+    virtual void setAirHumidity(float airHumidity, Hydroponics_UnitsType airHumidityUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setAirHumidity(HydroponicsSingleMeasurement airHumidity) = 0;
+    virtual const HydroponicsSingleMeasurement &getAirHumidity() const = 0;
+};
+
+// Air CO2 Aware Interface
+class HydroponicsAirCO2AwareInterface {
+public:
+    virtual void setAirCO2Sensor(HydroponicsIdentity airCO2SensorId) = 0;
+    virtual void setAirCO2Sensor(shared_ptr<HydroponicsSensor> airCO2Sensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getAirCO2Sensor() = 0;
+
+    virtual void setAirCO2Concentration(float airCO2Concentration, Hydroponics_UnitsType airCO2ConcentrationUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setAirCO2Concentration(HydroponicsSingleMeasurement airCO2Concentration) = 0;
+    virtual const HydroponicsSingleMeasurement &getAirCO2Concentration() const = 0;
 };
 
 #endif // /ifndef HydroponicsInterfaces_H

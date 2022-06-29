@@ -17,6 +17,10 @@ template<typename ParameterType, int Slots> class SignalFireTask;
 // This class is mainly used to calculate analog pin range boundaries. If override flag
 // is not set then architecture check is made that may truncate passed bit resolution.
 struct HydroponicsBitResolution {
+    byte bitRes;                                // Bit resolution (# of bits)
+    int maxVal;                                 // Maximum value (2 ^ (# of bits))
+
+    // Convenience constructor
     HydroponicsBitResolution(byte bitRes, bool override = false);
 
     // Transforms value from raw integer (or initial) value into normalized raw (or transformed) value.
@@ -24,9 +28,6 @@ struct HydroponicsBitResolution {
 
     // Inverse transforms value from normalized raw (or transformed) value back into raw integer (or initial) value.
     inline int inverseTransform(float rawValue) const { return constrain((int)((float)maxVal * rawValue), 0, maxVal); }
-
-    byte bitRes;                                // Bit resolution (# of bits)
-    int maxVal;                                 // Maximum value (2 ^ (# of bits))
 };
 
 
@@ -71,23 +72,37 @@ extern void hardAssert(bool cond, String msg, const char *file, const char *func
 // Tries to convert value from one unit to another (if supported), returning conversion status.
 extern bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut);
 // Attempts to convert value in-place from one unit to another, and if successful then assigns those values back overtop of source, with optional decimal place rounding.
-extern void convertStdUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = -1);
+extern bool convertStdUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = -1);
 
-extern Hydroponics_UnitsType defaultTemperatureUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);      // Returns default temperature units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultDistanceUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);         // Returns default distance units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);           // Returns default weight units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);     // Returns default liquid volume units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);       // Returns default liquid flow units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultConcentrationUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);    // Returns default concentration units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);                   // Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+// Returns default temperature units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultTemperatureUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default distance units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultDistanceUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default weight units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default liquid volume units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default liquid flow units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default concentration units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultConcentrationUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 
 // Pins & Checks
 
-extern bool checkPinIsAnalogInput(byte pin);    // Checks to see if the pin is an analog input pin.
-extern bool checkPinIsAnalogOutput(byte pin);   // Checks to see if the pin is an analog output pin.
-extern bool checkPinIsDigital(byte pin);        // Checks to see if the pin is a standard digital (non-analog) pin.
-extern bool checkPinIsPWMOutput(byte pin);      // Checks to see if the pin can produce a PWM output signal.
-extern bool checkPinCanInterrupt(byte pin);     // Checks to see if the pin can be set up with an ISR to handle level changes.
+// Checks to see if the pin is an analog input pin.
+extern bool checkPinIsAnalogInput(byte pin);
+// Checks to see if the pin is an analog output pin.
+extern bool checkPinIsAnalogOutput(byte pin);
+// Checks to see if the pin is a standard digital (non-analog) pin.
+extern bool checkPinIsDigital(byte pin);
+// Checks to see if the pin can produce a digital PWM output signal.
+extern bool checkPinIsPWMOutput(byte pin);
+// Checks to see if the pin can be set up with an ISR to handle digital level changes.
+extern bool checkPinCanInterrupt(byte pin);
 
 // Enum & String Conversions
 
