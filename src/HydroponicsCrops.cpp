@@ -135,7 +135,7 @@ shared_ptr<HydroponicsReservoir> HydroponicsCrop::getFeedReservoir()
 
 Hydroponics_CropType HydroponicsCrop::getCropType() const
 {
-    return _id.typeAs.cropType;
+    return _id.objTypeAs.cropType;
 }
 
 Hydroponics_PositionIndex HydroponicsCrop::getCropIndex() const
@@ -213,7 +213,7 @@ void HydroponicsCrop::checkoutCropsLibData()
     if (!_cropsData) {
         auto cropLib = getCropsLibraryInstance();
         if (cropLib) {
-            _cropsData = cropLib->checkoutCropData(_id.typeAs.cropType);
+            _cropsData = cropLib->checkoutCropData(_id.objTypeAs.cropType);
         }
     }
 }

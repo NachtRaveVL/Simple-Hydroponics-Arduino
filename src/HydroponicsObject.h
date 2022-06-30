@@ -37,7 +37,7 @@ struct HydroponicsIdentity {
         Hydroponics_CropType cropType;                      // As crop type enumeration
         Hydroponics_ReservoirType reservoirType;            // As reservoir type enumeration
         Hydroponics_RailType railType;                      // As rail type enumeration
-    } typeAs;                                               // Enumeration type union
+    } objTypeAs;                                               // Enumeration type union
     Hydroponics_PositionIndex posIndex;                     // Position index
     String keyStr;                                          // String key
     Hydroponics_KeyType key;                                // UInt Key
@@ -66,7 +66,7 @@ struct HydroponicsIdentity {
                         Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
 
     // Data constructor
-    HydroponicsIdentity(const HydroponicsData *data);
+    HydroponicsIdentity(const HydroponicsData *dataIn);
 
     // String constructor
     HydroponicsIdentity(String name);

@@ -826,6 +826,266 @@ Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, boo
     return -1;
 }
 
+Hydroponics *Hydroponics::getActiveInstance()
+{
+    return _activeInstance;
+}
+
+uint32_t Hydroponics::getI2CSpeed() const
+{
+    return _i2cSpeed;
+}
+
+uint32_t Hydroponics::getSPISpeed() const
+{
+    return _spiSpeed;
+}
+
+Hydroponics_SystemMode Hydroponics::getSystemMode() const
+{
+    return _systemData ? _systemData->systemMode : Hydroponics_SystemMode_Undefined;
+}
+
+Hydroponics_MeasurementMode Hydroponics::getMeasurementMode() const
+{
+    return _systemData ? _systemData->measureMode : Hydroponics_MeasurementMode_Undefined;
+}
+
+Hydroponics_DisplayOutputMode Hydroponics::getDisplayOutputMode() const
+{
+    return _systemData ? _systemData->dispOutMode : Hydroponics_DisplayOutputMode_Undefined;
+}
+
+Hydroponics_ControlInputMode Hydroponics::getControlInputMode() const
+{
+    return _systemData ? _systemData->ctrlInMode : Hydroponics_ControlInputMode_Undefined;
+}
+
+I2C_eeprom *Hydroponics::getEEPROM(bool begin)
+{
+    if (!_eeprom) { allocateEEPROM(); }
+
+    if (_eeprom && begin && !_eepromBegan) {
+        _eepromBegan = _eeprom->begin();
+
+        if (!_eepromBegan) { deallocateEEPROM(); }
+    }
+
+    return _eeprom && (!begin || _eepromBegan) ? _eeprom : nullptr;
+}
+
+RTC_DS3231 *Hydroponics::getRealTimeClock(bool begin)
+{
+    if (!_rtc) { allocateRTC(); }
+
+    if (_rtc && begin && !_rtcBegan) {
+        _rtcBegan = _rtc->begin(_i2cWire);
+
+        if (_rtcBegan) {
+            _rtcBattFail = _rtc->lostPower();
+        } else {
+            deallocateRTC();
+        }
+    }
+
+    return _rtc && (!begin || _rtcBegan) ? _rtc : nullptr;
+}
+
+SDClass *Hydroponics::getSDCard(bool begin)
+{
+    if (!_sd) { allocateSD(); }
+
+    if (_sd && begin) {
+        #if defined(ESP32) || defined(ESP8266)
+            bool sdBegan = _sd->begin(_sdCardCSPin, SPI, _spiSpeed);
+        #else
+            bool sdBegan = _sd->begin(_spiSpeed, _sdCardCSPin);
+        #endif
+
+        if (!sdBegan) { deallocateSD(); }
+
+        return _sd && sdBegan ? _sd : nullptr;
+    }
+
+    return _sd;
+}
+
+int Hydroponics::getActuatorCount() const
+{
+    int retVal = 0;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
+        if (obj && obj->isActuatorType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
+}
+
+int Hydroponics::getSensorCount() const
+{
+    int retVal = 0;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
+        if (obj && obj->isSensorType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
+}
+
+int Hydroponics::getCropCount() const
+{
+    int retVal = 0;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
+        if (obj && obj->isCropType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
+}
+
+int Hydroponics::getReservoirCount() const
+{
+    int retVal = 0;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
+        if (obj && obj->isReservoirType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
+}
+
+int Hydroponics::getRailCount() const
+{
+    int retVal = 0;
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        auto obj = iter->second;
+        if (obj && obj->isRailType()) {
+            ++retVal;
+        }
+    }
+    return retVal;
+}
+
+String Hydroponics::getSystemName() const
+{
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    return _systemData ? String(_systemData->systemName) : String();
+}
+
+uint32_t Hydroponics::getPollingInterval() const
+{
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    return _systemData ? _systemData->pollingInterval : 0;
+}
+
+uint32_t Hydroponics::getPollingFrame() const
+{
+    return _pollingFrame;
+}
+
+bool Hydroponics::isPollingFrameOld(uint32_t frame) const
+{
+    return _pollingFrame > frame || (frame == UINT32_MAX && _pollingFrame < UINT32_MAX);
+}
+
+DateTime Hydroponics::getLastWaterChange() const
+{
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    return _systemData ? _systemData->lastWaterChangeTime : (time_t)0;
+}
+
+int Hydroponics::getControlInputRibbonPinCount()
+{
+    switch (getControlInputMode()) {
+        case Hydroponics_ControlInputMode_2x2Matrix:
+        case Hydroponics_ControlInputMode_4xButton:
+            return 4;
+        case Hydroponics_ControlInputMode_6xButton:
+            return 6;
+        case Hydroponics_ControlInputMode_RotaryEncoder:
+            return 5;
+        default:
+            return 0;
+    }
+}
+
+byte Hydroponics::getControlInputPin(int ribbonPinIndex)
+{
+    int ctrlInPinCount = getControlInputRibbonPinCount();
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, F("Control input pinmap not used in this mode"));
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), F("Ribbon pin index out of range"));
+    byte *ctrlInputPinMap = (_systemData ? &(_systemData->ctrlInputPinMap[0]) : &_ctrlInputPinMap[0]);
+
+    return ctrlInputPinMap && ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? ctrlInputPinMap[ribbonPinIndex] : -1;
+}
+
+void Hydroponics::setSystemName(String systemName)
+{
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    if (_systemData) {
+        _systemData->_bumpRevIfNotAlreadyModded();
+        strncpy(&_systemData->systemName[0], systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
+        // TODO system name or just lcd update signal
+    }
+}
+
+void Hydroponics::setPollingInterval(uint32_t pollingInterval)
+{
+    // TODO assert params
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    if (_systemData) {
+        _systemData->_bumpRevIfNotAlreadyModded();
+        _systemData->pollingInterval = pollingInterval;
+    }
+    #ifdef HYDRUINO_USE_TASKSCHEDULER
+        if (_dataTask) {
+            _dataTask->setInterval(getPollingInterval() * TASK_MILLISECOND);
+        }
+    #endif
+}
+
+void Hydroponics::setControlInputPinMap(byte *pinMap)
+{
+    HYDRUINO_SOFT_ASSERT(pinMap, F("Invalid pinMap"));
+    const int ctrlInPinCount = getControlInputRibbonPinCount();
+    HYDRUINO_SOFT_ASSERT(!pinMap || (ctrlInPinCount > 0), F("Control input pinmap not used in this mode"));
+
+    if (pinMap && ctrlInPinCount) {
+        for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
+            _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
+            if (_systemData) {
+                _systemData->_bumpRevIfNotAlreadyModded();
+                _systemData->ctrlInputPinMap[ribbonPinIndex] = _ctrlInputPinMap[ribbonPinIndex];
+            }
+        }
+    }
+}
+
+void Hydroponics::checkFreeMemory()
+{
+    int memLeft = freeMemory();
+    if (memLeft != -1 && memLeft < HYDRUINO_LOW_MEM_SIZE) {
+        for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+            auto obj = iter->second;
+            if (obj) { obj->handleLowMemory(); }
+        }
+    }
+}
+
+#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+
+void Hydroponics::forwardLogMessage(String message, bool flushAfter = false)
+{
+    // TODO
+}
+
+#endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+
+
 shared_ptr<HydroponicsRelayActuator> Hydroponics::addGrowLightsRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
@@ -1196,7 +1456,10 @@ shared_ptr<HydroponicsTMPSoilMoistureSensor> Hydroponics::addTMPSoilMoistureSens
     return nullptr;
 }
 
-shared_ptr<HydroponicsTimedCrop> Hydroponics::addCropFromSowDate(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t sowDate)
+shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedCrop(Hydroponics_CropType cropType,
+                                                              Hydroponics_SubstrateType substrateType,
+                                                              time_t sowDate,
+                                                              byte minsOnPerHour)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
@@ -1204,8 +1467,45 @@ shared_ptr<HydroponicsTimedCrop> Hydroponics::addCropFromSowDate(Hydroponics_Cro
     HYDRUINO_SOFT_ASSERT(sowDate > DateTime((uint32_t)0).unixtime(), F("Invalid sow date"));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
 
-    if (cropType < Hydroponics_CropType_Count && sowDate > 0 && positionIndex != -1) {
+    if (cropType < Hydroponics_CropType_Count && sowDate > DateTime((uint32_t)0).unixtime() && positionIndex != -1) {
         shared_ptr<HydroponicsTimedCrop> crop(new HydroponicsTimedCrop(
+            cropType,
+            positionIndex,
+            substrateType,
+            sowDate,
+            TimeSpan(0,0,constrain(minsOnPerHour,0,60),0),
+            TimeSpan(0,0,60-constrain(minsOnPerHour,0,60),0)
+        ));
+        if (registerObject(crop)) { return crop; }
+        else { crop = nullptr; }
+    }
+
+    return nullptr;
+}
+
+shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedPerennialCrop(Hydroponics_CropType cropType,
+                                                                       Hydroponics_SubstrateType substrateType,
+                                                                       time_t lastHarvestDate,
+                                                                       byte minsOnPerHour)
+{
+    HydroponicsCropsLibData cropData(cropType);
+    time_t sowDate = lastHarvestDate - (cropData.totalGrowWeeks * SECS_PER_WEEK);
+    auto crop = addTimerFedCrop(cropType, substrateType, sowDate, minsOnPerHour);
+    return crop;
+}
+
+shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedCrop(Hydroponics_CropType cropType,
+                                                                    Hydroponics_SubstrateType substrateType,
+                                                                    time_t sowDate)
+{
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
+    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
+    HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, F("Invalid substrate type"));
+    HYDRUINO_SOFT_ASSERT(sowDate > DateTime((uint32_t)0).unixtime(), F("Invalid sow date"));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+
+    if (cropType < Hydroponics_CropType_Count && sowDate > DateTime((uint32_t)0).unixtime() && positionIndex != -1) {
+        shared_ptr<HydroponicsAdaptiveCrop> crop(new HydroponicsAdaptiveCrop(
             cropType,
             positionIndex,
             substrateType,
@@ -1218,11 +1518,13 @@ shared_ptr<HydroponicsTimedCrop> Hydroponics::addCropFromSowDate(Hydroponics_Cro
     return nullptr;
 }
 
-shared_ptr<HydroponicsTimedCrop> Hydroponics::addCropFromLastHarvest(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, time_t lastHarvestDate)
+shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedPerennialCrop(Hydroponics_CropType cropType,
+                                                                             Hydroponics_SubstrateType substrateType,
+                                                                             time_t lastHarvestDate)
 {
     HydroponicsCropsLibData cropData(cropType);
     time_t sowDate = lastHarvestDate - (cropData.totalGrowWeeks * SECS_PER_WEEK);
-    auto crop = addCropFromSowDate(cropType, substrateType, sowDate);
+    auto crop = addAdaptiveFedCrop(cropType, substrateType, sowDate);
     return crop;
 }
 
@@ -1244,7 +1546,7 @@ shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics
         else { reservoir = nullptr; }
     }
 
-    return shared_ptr<HydroponicsFluidReservoir>(nullptr);
+    return nullptr;
 }
 
 shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addDrainagePipe()
@@ -1262,10 +1564,10 @@ shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addDrainagePipe()
         else { reservoir = nullptr; }
     }
 
-    return shared_ptr<HydroponicsInfiniteReservoir>(nullptr);
+    return nullptr;
 }
 
-shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addWaterMainPipe()
+shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addFreshWaterMain()
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_FreshWater));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
@@ -1280,10 +1582,10 @@ shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addWaterMainPipe()
         else { reservoir = nullptr; }
     }
 
-    return shared_ptr<HydroponicsInfiniteReservoir>(nullptr);
+    return nullptr;
 }
 
-shared_ptr<HydroponicsSimpleRail> Hydroponics::addRelayPowerRail(Hydroponics_RailType railType, int maxActiveAtOnce)
+shared_ptr<HydroponicsSimpleRail> Hydroponics::addSimplePowerRail(Hydroponics_RailType railType, int maxActiveAtOnce)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(railType));
     HYDRUINO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydroponics_RailType_Count, F("Invalid rail type"));
@@ -1300,269 +1602,25 @@ shared_ptr<HydroponicsSimpleRail> Hydroponics::addRelayPowerRail(Hydroponics_Rai
         else { rail = nullptr; }
     }
 
-    return shared_ptr<HydroponicsSimpleRail>(nullptr);
+    return nullptr;
 }
 
-Hydroponics *Hydroponics::getActiveInstance()
+shared_ptr<HydroponicsRegulatedRail> Hydroponics::addRegulatedPowerRail(Hydroponics_RailType railType, float maxPower)
 {
-    return _activeInstance;
-}
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(railType));
+    HYDRUINO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydroponics_RailType_Count, F("Invalid rail type"));
+    HYDRUINO_SOFT_ASSERT(maxPower > 0, F("Invalid max power"));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
 
-uint32_t Hydroponics::getI2CSpeed() const
-{
-    return _i2cSpeed;
-}
-
-uint32_t Hydroponics::getSPISpeed() const
-{
-    return _spiSpeed;
-}
-
-Hydroponics_SystemMode Hydroponics::getSystemMode() const
-{
-    return _systemData ? _systemData->systemMode : Hydroponics_SystemMode_Undefined;
-}
-
-Hydroponics_MeasurementMode Hydroponics::getMeasurementMode() const
-{
-    return _systemData ? _systemData->measureMode : Hydroponics_MeasurementMode_Undefined;
-}
-
-Hydroponics_DisplayOutputMode Hydroponics::getDisplayOutputMode() const
-{
-    return _systemData ? _systemData->dispOutMode : Hydroponics_DisplayOutputMode_Undefined;
-}
-
-Hydroponics_ControlInputMode Hydroponics::getControlInputMode() const
-{
-    return _systemData ? _systemData->ctrlInMode : Hydroponics_ControlInputMode_Undefined;
-}
-
-I2C_eeprom *Hydroponics::getEEPROM(bool begin)
-{
-    if (!_eeprom) { allocateEEPROM(); }
-
-    if (_eeprom && begin && !_eepromBegan) {
-        _eepromBegan = _eeprom->begin();
-
-        HYDRUINO_SOFT_ASSERT(_eepromBegan, F("Failure beginning EEPROM"));
-        if (!_eepromBegan) { deallocateEEPROM(); }
+    if (railType < Hydroponics_RailType_Count && maxPower > 0) {
+        shared_ptr<HydroponicsRegulatedRail> rail(new HydroponicsRegulatedRail(
+            railType,
+            positionIndex,
+            maxPower
+        ));
+        if (registerObject(rail)) { return rail; }
+        else { rail = nullptr; }
     }
 
-    return _eeprom && (!begin || _eepromBegan) ? _eeprom : nullptr;
+    return nullptr;
 }
-
-RTC_DS3231 *Hydroponics::getRealTimeClock(bool begin)
-{
-    if (!_rtc) { allocateRTC(); }
-
-    if (_rtc && begin && !_rtcBegan) {
-        _rtcBegan = _rtc->begin(_i2cWire);
-
-        HYDRUINO_SOFT_ASSERT(_rtcBegan, F("Failure beginning RTC"));
-        if (_rtcBegan) {
-            _rtcBattFail = _rtc->lostPower();
-        } else {
-            deallocateRTC();
-        }
-    }
-
-    return _rtc && (!begin || _rtcBegan) ? _rtc : nullptr;
-}
-
-SDClass *Hydroponics::getSDCard(bool begin)
-{
-    if (!_sd) { allocateSD(); }
-
-    if (_sd && begin) {
-        #if defined(ESP32) || defined(ESP8266)
-            bool sdBegan = _sd->begin(_sdCardCSPin, SPI, _spiSpeed);
-        #else
-            bool sdBegan = _sd->begin(_spiSpeed, _sdCardCSPin);
-        #endif
-
-        HYDRUINO_SOFT_ASSERT(sdBegan, F("Failure beginning SD card"));
-        if (!sdBegan) { deallocateSD(); }
-
-        return _sd && sdBegan ? _sd : nullptr;
-    }
-
-    return _sd;
-}
-
-int Hydroponics::getActuatorCount() const
-{
-    int retVal = 0;
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj && obj->isActuatorType()) {
-            ++retVal;
-        }
-    }
-    return retVal;
-}
-
-int Hydroponics::getSensorCount() const
-{
-    int retVal = 0;
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj && obj->isSensorType()) {
-            ++retVal;
-        }
-    }
-    return retVal;
-}
-
-int Hydroponics::getCropCount() const
-{
-    int retVal = 0;
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj && obj->isCropType()) {
-            ++retVal;
-        }
-    }
-    return retVal;
-}
-
-int Hydroponics::getReservoirCount() const
-{
-    int retVal = 0;
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj && obj->isReservoirType()) {
-            ++retVal;
-        }
-    }
-    return retVal;
-}
-
-int Hydroponics::getRailCount() const
-{
-    int retVal = 0;
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj && obj->isRailType()) {
-            ++retVal;
-        }
-    }
-    return retVal;
-}
-
-String Hydroponics::getSystemName() const
-{
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
-    return _systemData ? String(_systemData->systemName) : String();
-}
-
-uint32_t Hydroponics::getPollingInterval() const
-{
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
-    return _systemData ? _systemData->pollingInterval : 0;
-}
-
-uint32_t Hydroponics::getPollingFrame() const
-{
-    return _pollingFrame;
-}
-
-bool Hydroponics::isPollingFrameOld(uint32_t frame) const
-{
-    return _pollingFrame > frame || (frame == UINT32_MAX && _pollingFrame < UINT32_MAX);
-}
-
-DateTime Hydroponics::getLastWaterChange() const
-{
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
-    return _systemData ? _systemData->lastWaterChangeTime : (time_t)0;
-}
-
-int Hydroponics::getControlInputRibbonPinCount()
-{
-    switch (getControlInputMode()) {
-        case Hydroponics_ControlInputMode_2x2Matrix:
-        case Hydroponics_ControlInputMode_4xButton:
-            return 4;
-        case Hydroponics_ControlInputMode_6xButton:
-            return 6;
-        case Hydroponics_ControlInputMode_RotaryEncoder:
-            return 5;
-        default:
-            return 0;
-    }
-}
-
-byte Hydroponics::getControlInputPin(int ribbonPinIndex)
-{
-    int ctrlInPinCount = getControlInputRibbonPinCount();
-    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, F("Control input pinmap not used in this mode"));
-    HYDRUINO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), F("Ribbon pin index out of range"));
-
-    if (_systemData) {
-        return _systemData->ctrlInputPinMap && ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _systemData->ctrlInputPinMap[ribbonPinIndex] : -1;
-    }
-    return _ctrlInputPinMap && ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInputPinMap[ribbonPinIndex] : -1;
-}
-
-void Hydroponics::setSystemName(String systemName)
-{
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
-    if (_systemData) {
-        _systemData->_bumpRevIfNotAlreadyModded();
-        strncpy(&_systemData->systemName[0], systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
-        // TODO system name or just lcd update signal
-    }
-}
-
-void Hydroponics::setPollingInterval(uint32_t pollingInterval)
-{
-    // TODO assert params
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
-    if (_systemData) {
-        _systemData->_bumpRevIfNotAlreadyModded();
-        _systemData->pollingInterval = pollingInterval;
-    }
-    #ifdef HYDRUINO_USE_TASKSCHEDULER
-        if (_dataTask) {
-            _dataTask->setInterval(getPollingInterval() * TASK_MILLISECOND);
-        }
-    #endif
-}
-
-void Hydroponics::setControlInputPinMap(byte *pinMap)
-{
-    HYDRUINO_SOFT_ASSERT(pinMap, F("Invalid pinMap"));
-    const int ctrlInPinCount = getControlInputRibbonPinCount();
-    HYDRUINO_SOFT_ASSERT(!pinMap || (ctrlInPinCount > 0), F("Control input pinmap not used in this mode"));
-
-    if (pinMap && ctrlInPinCount) {
-        for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
-            _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
-            if (_systemData) {
-                _systemData->_bumpRevIfNotAlreadyModded();
-                _systemData->ctrlInputPinMap[ribbonPinIndex] = _ctrlInputPinMap[ribbonPinIndex];
-            }
-        }
-    }
-}
-
-void Hydroponics::checkFreeMemory()
-{
-    int memLeft = freeMemory();
-    if (memLeft != -1 && memLeft < HYDRUINO_LOW_MEM_SIZE) {
-        for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-            auto obj = iter->second;
-            if (obj) { obj->handleLowMemory(); }
-        }
-    }
-}
-
-#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-
-void Hydroponics::forwardLogMessage(String message, bool flushAfter = false)
-{
-    // TODO
-}
-
-#endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT

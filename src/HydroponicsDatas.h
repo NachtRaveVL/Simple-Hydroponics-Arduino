@@ -130,8 +130,8 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     // the normalized voltage signal measurement from the analogRead() function (after
     // taking into account appropiate bit resolution conversion). Calibrated-to values
     // are what each measurement-at value should map out to.
-    // For example, if your sensor should treat 0v (aka 0.0) typeAs a pH of 2 and treat 5v
-    // (aka 1.0, or MCU max voltage) typeAs a pH of 10, you would pass 0.0, 2.0, 1.0, 10.0.
+    // For example, if your sensor should treat 0v (aka 0.0) as a pH of 2 and treat 5v
+    // (aka 1.0, or MCU max voltage) as a pH of 10, you would pass 0.0, 2.0, 1.0, 10.0.
     // The final calculated curvature transform, for this example, would be y = 8x + 2.
     void setFromTwoPoints(float point1RawMeasuredAt,            // What normalized value point 1 measured in at [0.0,1.0]
                           float point1CalibratedTo,             // What value point 1 should be mapped to

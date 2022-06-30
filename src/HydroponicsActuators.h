@@ -79,7 +79,7 @@ protected:
 
 
 // Relay-based Binary Actuator
-// This actuator acts typeAs a standard on/off switch, typically paired with a variety of
+// This actuator acts as a standard on/off switch, typically paired with a variety of
 // different equipment from pumps to grow lights and heaters.
 class HydroponicsRelayActuator : public HydroponicsActuator {
 public:
@@ -106,7 +106,7 @@ protected:
 
 
 // Pump-based Relay Actuator
-// This actuator acts typeAs a water pump, and typeAs such can attach to reservoirs
+// This actuator acts as a water pump, and as such can attach to reservoirs
 class HydroponicsPumpRelayActuator : public HydroponicsRelayActuator, public HydroponicsPumpObjectInterface, public HydroponicsFlowAwareInterface {
 public:
     HydroponicsPumpRelayActuator(Hydroponics_ActuatorType actuatorType,
@@ -161,8 +161,8 @@ protected:
 
 
 // PWM-based Variable Actuator
-// This actuator acts typeAs a variable range dial, typically paired with a device that supports
-// PWM throttling of some kind, such typeAs a powered exhaust fan, or variable level LEDs.
+// This actuator acts as a variable range dial, typically paired with a device that supports
+// PWM throttling of some kind, such as a powered exhaust fan, or variable level LEDs.
 class HydroponicsPWMActuator : public HydroponicsActuator {
 public:
     HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,

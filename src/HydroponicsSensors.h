@@ -99,7 +99,7 @@ protected:
 
 // Simple Binary Sensor
 // This class can both read from and assign interrupt routines to a digital input signal,
-// allowing it to act typeAs an on/off switch of sorts. Examples include water level indicators.
+// allowing it to act as an on/off switch of sorts. Examples include water level indicators.
 class HydroponicsBinarySensor : public HydroponicsSensor {
 public:
     HydroponicsBinarySensor(Hydroponics_SensorType sensorType,
@@ -116,7 +116,7 @@ public:
     void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
     Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
-    // TODO reg typeAs isr
+    // TODO reg as isr
     //bool tryRegisterAsISR();
 
     bool getActiveLow() const;

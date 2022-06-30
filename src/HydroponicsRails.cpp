@@ -114,7 +114,7 @@ arx::map<Hydroponics_KeyType, HydroponicsSensor *> HydroponicsRail::getSensors()
 
 Hydroponics_RailType HydroponicsRail::getRailType() const
 {
-    return _id.typeAs.railType;
+    return _id.objTypeAs.railType;
 }
 
 Hydroponics_PositionIndex HydroponicsRail::getRailIndex() const

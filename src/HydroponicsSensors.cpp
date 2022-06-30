@@ -183,7 +183,7 @@ byte HydroponicsSensor::getInputPin() const
 
 Hydroponics_SensorType HydroponicsSensor::getSensorType() const
 {
-    return _id.typeAs.sensorType;
+    return _id.objTypeAs.sensorType;
 }
 
 Hydroponics_PositionIndex HydroponicsSensor::getSensorIndex() const
@@ -330,7 +330,7 @@ void HydroponicsAnalogSensor::takeMeasurement(bool override)
 
         Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits
                                                                                               : (_calibrationData && _calibrationData->calibUnits != Hydroponics_UnitsType_Undefined ? _calibrationData->calibUnits
-                                                                                                                                                                                     : defaultMeasureUnitsForSensorType(_id.typeAs.sensorType));
+                                                                                                                                                                                     : defaultMeasureUnitsForSensorType(_id.objTypeAs.sensorType));
 
         #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
             analogReadResolution(_inputResolution.bitRes);
@@ -697,7 +697,7 @@ void HydroponicsTMPSoilMoistureSensor::takeMeasurement(bool override)
     if (override || getNeedsPolling()) {
         _isTakingMeasure = true;
 
-        Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits : defaultMeasureUnitsForSensorType(_id.typeAs.sensorType);
+        Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits : defaultMeasureUnitsForSensorType(_id.objTypeAs.sensorType);
 
         //auto rawRead = TODO();
         //auto timestamp = now();
