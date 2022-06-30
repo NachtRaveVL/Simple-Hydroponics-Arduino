@@ -56,11 +56,12 @@ protected:
 // This trigger simply checks a measured value against a set tolerance value and is
 // useful for simple comparisons that control triggering. Initializes as disabled
 // until updated with first measurement, and with undefined units that compares
-// directly to measured units, otherwise units can be explicitly set.
+// directly to measured units, otherwise units can be explicitly set. Can also
+// set an additive value that a measurement must go past in order to detrigger.
 class HydroponicsMeasurementValueTrigger : public HydroponicsTrigger {
 public:
-    HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float tolerance, bool triggerBelow, int measurementRow = 0);
-    HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float tolerance, bool triggerBelow, int measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float triggerTolerance, bool triggerBelow = true, float detriggerTolerance = 0, int measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float triggerTolerance, bool triggerBelow = true, float detriggerTolerance = 0, int measurementRow = 0);
     HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementValueTrigger();
 
@@ -75,12 +76,14 @@ public:
     Hydroponics_UnitsType getToleranceUnits() const;
 
     shared_ptr<HydroponicsSensor> getSensor();
-    float getTolerance() const;
+    float getTriggerTolerance() const;
+    float getDetriggerTolerance() const;
     bool getTriggerBelow() const;
 
 protected:
     HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
-    float _tolerance;                                       // Tolerance limit
+    float _triggerTolerance;                                // Trigger tolerance limit
+    float _detriggerTolerance;                              // Detrigger tolerance additive
     Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
     bool _triggerBelow;                                     // Trigger below flag
     int8_t _measurementRow;                                 // Measurement data row to check against
@@ -94,11 +97,12 @@ protected:
 // useful for ranged measurements that need to stay inside of (or outside of) a
 // known range before triggering. Initializes as disabled until updated with
 // first measurement, and with undefined units that compares directly to measured
-// units, otherwise units can be explicitly set.
+// units, otherwise units can be explicitly set. Can also set an additive value
+// that a measurement must go past in order to detrigger.
 class HydroponicsMeasurementRangeTrigger : public HydroponicsTrigger {
 public:
-    HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside = true, int measurementRow = 0);
-    HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside = true, int measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside = true, float detriggerTolerance = 0, int measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside = true, float detriggerTolerance = 0, int measurementRow = 0);
     HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementRangeTrigger();
 
@@ -113,13 +117,15 @@ public:
     Hydroponics_UnitsType getToleranceUnits() const;
 
     shared_ptr<HydroponicsSensor> getSensor();
-    float getToleranceLow() const;
-    float getToleranceHigh() const;
+    float getTriggerToleranceLow() const;
+    float getTriggerToleranceHigh() const;
+    float getDetriggerTolerance() const;
 
 protected:
     HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
-    float _toleranceLow;                                    // Low value tolerance
-    float _toleranceHigh;                                   // High value tolerance
+    float _triggerToleranceLow;                             // Low value tolerance
+    float _triggerToleranceHigh;                            // High value tolerance
+    float _detriggerTolerance;                              // Detrigger tolerance additive
     Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
     bool _triggerOutside;                                   // Trigger on outside flag
     int8_t _measurementRow;                                 // Measurement data row to check against
@@ -142,6 +148,7 @@ struct HydroponicsTriggerSubData : public HydroponicsSubData {
             bool triggerOutside;
         } measureRange;
     } dataAs;
+    float detriggerTolerance;
     Hydroponics_UnitsType toleranceUnits;
     int8_t measurementRow;
 

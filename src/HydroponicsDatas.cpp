@@ -317,7 +317,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
       cropType(Hydroponics_CropType_Undefined), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6,6}, ecRange{1,1}, waterTempRange{25,25}, airTempRange{25,25},
+      phRange{6,6}, ecRange{1.8,2.4}, waterTempRange{25,25}, airTempRange{25,25},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPruningRequired(false), isToxicToPets(false)
 {
@@ -329,7 +329,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
       cropType(cropTypeIn), cropName{0},
       totalGrowWeeks(0), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6,6}, ecRange{1,1}, waterTempRange{25,25}, airTempRange{25,25},
+      phRange{6,6}, ecRange{1.8,2.4}, waterTempRange{25,25}, airTempRange{25,25},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
       isPruningRequired(false), isToxicToPets(false)
 {
@@ -353,17 +353,17 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
     if (cropName[0]) { objectOut[F("cropName")] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE); }
 
     int mainPhaseTotalWeeks = phaseDurationWeeks[0] + phaseDurationWeeks[1] + phaseDurationWeeks[2];
-    HYDRUINO_SOFT_ASSERT(totalGrowWeeks == 0 || mainPhaseTotalWeeks == totalGrowWeeks, F("Total grow weeks mismatch, failure exporting totalGrowWeeks"));
-    if (totalGrowWeeks > 0 && totalGrowWeeks != 14) {
+    HYDRUINO_SOFT_ASSERT(!totalGrowWeeks || mainPhaseTotalWeeks == totalGrowWeeks, F("Total grow weeks mismatch, failure exporting totalGrowWeeks"));
+    if (totalGrowWeeks && totalGrowWeeks != 14) {
         objectOut[F("totalGrowWeeks")] = totalGrowWeeks;
     } else if (!totalGrowWeeks && mainPhaseTotalWeeks > 0 && mainPhaseTotalWeeks != 14) {
         objectOut[F("totalGrowWeeks")] = mainPhaseTotalWeeks;
     }
-    if (lifeCycleWeeks > 0) {
+    if (lifeCycleWeeks) {
         objectOut[F("lifeCycleWeeks")] = lifeCycleWeeks;
     }
 
-    if (dailyLightHours[0] != 20 && dailyLightHours[1] != 18 && dailyLightHours[2] != 12) {
+    if (!(dailyLightHours[0] == 20 && dailyLightHours[1] == 18 && dailyLightHours[2] == 12)) {
         HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure exporting dailyLightHours"));
         if (dailyLightHours[1] != 0 && dailyLightHours[1] != dailyLightHours[0] &&
             dailyLightHours[2] != 0 && dailyLightHours[2] != dailyLightHours[0]) {
@@ -376,7 +376,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (phaseDurationWeeks[0] != 2 && phaseDurationWeeks[1] != 4 && phaseDurationWeeks[2] != 8) {
+    if (!(phaseDurationWeeks[0] == 2 && phaseDurationWeeks[1] == 4 && phaseDurationWeeks[2] == 8)) {
         HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure exporting phaseDurationWeeks"));
         JsonObject phaseDurationWeeksObj = objectOut.createNestedObject(F("phaseDurationWeeks"));
         phaseDurationWeeksObj[F("seed")] = phaseDurationWeeks[0];
@@ -384,7 +384,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         phaseDurationWeeksObj[F("bloom")] = phaseDurationWeeks[2];
     }
 
-    if (!isFPEqual(phRange[0], 6) && !isFPEqual(phRange[1], 6)) {
+    if (!(isFPEqual(phRange[0], 6) && isFPEqual(phRange[1], 6))) {
         if (!isFPEqual(phRange[0], phRange[1])) {
             JsonObject phRangeObj = objectOut.createNestedObject(F("phRange"));
             phRangeObj[F("min")] = phRange[0];
@@ -394,7 +394,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (!isFPEqual(ecRange[0], 1) && !isFPEqual(ecRange[1], 1)) {
+    if (!(isFPEqual(ecRange[0], 1.8) && isFPEqual(ecRange[1], 2.4))) {
         if (!isFPEqual(ecRange[0], ecRange[1])) {
             JsonObject ecRangeObj = objectOut.createNestedObject(F("ecRange"));
             ecRangeObj[F("min")] = ecRange[0];
@@ -404,7 +404,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (!isFPEqual(waterTempRange[0], 25) && !isFPEqual(waterTempRange[1], 25)) {
+    if (!(isFPEqual(waterTempRange[0], 25) && isFPEqual(waterTempRange[1], 25))) {
         if (!isFPEqual(waterTempRange[0], waterTempRange[1])) {
             JsonObject waterTempRangeObj = objectOut.createNestedObject(F("waterTempRange"));
             waterTempRangeObj[F("min")] = waterTempRange[0];
@@ -414,7 +414,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (!isFPEqual(airTempRange[0], 25) && !isFPEqual(airTempRange[1], 25)) {
+    if (!(isFPEqual(airTempRange[0], 25) && isFPEqual(airTempRange[1], 25))) {
         if (!isFPEqual(airTempRange[0], airTempRange[1])) {
             JsonObject airTempRangeObj = objectOut.createNestedObject(F("airTempRange"));
             airTempRangeObj[F("min")] = airTempRange[0];
