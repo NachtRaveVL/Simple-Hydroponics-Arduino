@@ -17,10 +17,10 @@ void setup() {
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else
     hydroController.init();
 
-    // Adds our relay power rail typeAs standard AC. This will manage how many active devices can be turned on at the same time.
-    auto relayPower = hydroController.addRelayPowerRail(Hydroponics_RailType_ACPower);
+    // Adds our relay power rail as standard AC. This will manage how many active devices can be turned on at the same time.
+    auto relayPower = hydroController.addSimplePowerRail(Hydroponics_RailType_ACPower);
 
-    // Adds the 4 gallon main water reservoir typeAs Channel #1. This will contain sensors and feed crops.
+    // Adds the 4 gallon main water reservoir as Channel #1. This will contain sensors and feed crops.
     auto feedWater = hydroController.addFluidReservoir(Hydroponics_ReservoirType_FeedWater, 4);
     feedWater->setVolumeUnits(Hydroponics_UnitsType_LiquidVolume_Gallons);
     feedWater->setChannelNumber(1);
@@ -30,8 +30,8 @@ void setup() {
     aerator->setRail(relayPower);
     aerator->setReservoir(feedWater);
 
-    // Add some lettuce that we planted in clay pebbles on LettuceSowDate, and link it to the feed water reservoir.
-    auto lettuce = hydroController.addCropFromSowDate((Hydroponics_CropType)0, Hydroponics_SubstrateType_ClayPebbles, LettuceSowDate.unixtime());
+    // Add some lettuce, set to feed on a timer, that we planted in clay pebbles on LettuceSowDate, and link it to the feed water reservoir.
+    auto lettuce = hydroController.addTimerFedCrop((Hydroponics_CropType)0, Hydroponics_SubstrateType_ClayPebbles, LettuceSowDate.unixtime());
     lettuce->setFeedReservoir(feedWater);
 
     // Launches controller into main operation.

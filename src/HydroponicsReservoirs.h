@@ -138,7 +138,7 @@ protected:
 
 // Infinite Pipe Reservoir
 // An infinite pipe reservoir is like your standard water main - it's not technically
-// unlimited, but you can act like it is. Used for reservoirs that should behave typeAs
+// unlimited, but you can act like it is. Used for reservoirs that should behave as
 // alwaysFilled (e.g. water mains) or not (e.g. drainage pipes).
 class HydroponicsInfiniteReservoir : public HydroponicsReservoir {
 public:

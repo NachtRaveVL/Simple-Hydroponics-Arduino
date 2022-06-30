@@ -145,7 +145,7 @@ arx::map<Hydroponics_KeyType, HydroponicsCrop *> HydroponicsReservoir::getCrops(
 
 Hydroponics_ReservoirType HydroponicsReservoir::getReservoirType() const
 {
-    return _id.typeAs.reservoirType;
+    return _id.objTypeAs.reservoirType;
 }
 
 Hydroponics_PositionIndex HydroponicsReservoir::getReservoirIndex() const
@@ -257,7 +257,7 @@ bool HydroponicsFluidReservoir::getIsFull() const
 bool HydroponicsFluidReservoir::getIsEmpty() const
 {
     return _emptyTrigger ? _emptyTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered
-                         : _volume.value <= (_id.typeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_RES_FEED_EMPTY_FRACTION
+                         : _volume.value <= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_RES_FEED_EMPTY_FRACTION
                                                                                                              : 0) + FLT_EPSILON;
 }
 

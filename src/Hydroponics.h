@@ -32,7 +32,7 @@
 
 // NOTE: It is recommended to use custom build flags instead of editing this file directly.
 
-// Uncomment or -D this define to completely disable usage of any multitasking commands, such typeAs yield(), typeAs well typeAs libraries.
+// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), as well as libraries.
 //#define HYDRUINO_DISABLE_MULTITASKING
 
 // Uncomment or -D this define to disable usage of the TaskScheduler library, which is used by default.
@@ -191,7 +191,7 @@ public:
     void update();
 
 
-    // Object Creation & Management.
+    // Object Registration.
 
     // Adds/removes objects to/from system, returning success
     bool registerObject(shared_ptr<HydroponicsObject> obj);
@@ -214,94 +214,138 @@ public:
     inline shared_ptr<HydroponicsRail> railById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(id)); }
     inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
 
+
+    // Object Factory.
+
     // Convenience builders for common actuators (shared, nullptr return = failure).
 
     // Adds a new grow light relay to the system using the given parameters.
+    // Grow lights are essential to almost all plants and are used to mimic natural sun rhythms.
     shared_ptr<HydroponicsRelayActuator> addGrowLightsRelay(byte outputPin);                        // Digital output pin this actuator sits on
     // Adds a new water pump relay to the system using the given parameters.
+    // Water pumps are used to feed crops and move liquids around from one reservoir to another.
     shared_ptr<HydroponicsPumpRelayActuator> addWaterPumpRelay(byte outputPin);                     // Digital output pin this actuator sits on
     // Adds a new water heater relay to the system using the given parameters.
+    // Water heaters can keep feed water heated during colder months and save off root damage.
     shared_ptr<HydroponicsRelayActuator> addWaterHeaterRelay(byte outputPin);                       // Digital output pin this actuator sits on
     // Adds a new water aerator relay to the system using the given parameters.
+    // Water aerators can help plants grow while also discouraging pathogens from taking root.
     shared_ptr<HydroponicsRelayActuator> addWaterAeratorRelay(byte outputPin);                      // Digital output pin this actuator sits on
     // Adds a new fan exhaust relay to the system using the given parameters.
+    // Fan exhausts can move air around to modify nearby CO2 levels that plants use to breathe.
     shared_ptr<HydroponicsRelayActuator> addFanExhaustRelay(byte outputPin);                        // Digital output pin this actuator sits on
     // Adds a new PWM-based fan exhaust to the system using the given parameters.
+    // PWM fan exhausts allow a graduated adaptive speed control to manage CO2 levels.
     shared_ptr<HydroponicsPWMActuator> addFanExhaustPWM(byte outputPin,                             // PWM output pin this actuator sits on
                                                         byte outputBitRes = 8);                     // PWM bit resolution to use
     // Adds a new peristaltic dosing pump relay to the system using the given parameters.
+    // Peristaltic pumps allow proper dosing of nutrients and other additives.
     shared_ptr<HydroponicsPumpRelayActuator> addPeristalticPumpRelay(byte outputPin);               // Digital output pin this actuator sits on
 
     // Convenience builders for common sensors (shared, nullptr return = failure).
 
     // Adds a new binary level indicator to the system using the given parameters.
+    // Level indicators can be used to control filled/empty status of a liquid reservoir.
     shared_ptr<HydroponicsBinarySensor> addLevelIndicator(byte inputPin);                           // Digital input pin this sensor sits on (can make interruptable)
 
     // Adds a new analog CO2 sensor to the system using the given parameters.
+    // CO2 sensors are used to control and measure the amount of CO2 plants have available.
     shared_ptr<HydroponicsAnalogSensor> addAnalogCO2Sensor(byte inputPin,                           // Analog input pin this sensor sits on
                                                            byte inputBitRes = 8);                   // ADC bit resolution to use
     // Adds a new analog PH meter to the system using the given parameters.
+    // pH meters are vital in ensuring the proper alkalinity of the feed water.
     shared_ptr<HydroponicsAnalogSensor> addAnalogPhMeter(byte inputPin,                             // Analog input pin this sensor sits on
                                                          byte inputBitRes = 8);                     // ADC bit resolution to use
     // Adds a new analog temperature sensor to the system using the given parameters.
+    // Temperature sensors improve measurement precision as well as ensure proper water conditions.
     shared_ptr<HydroponicsAnalogSensor> addAnalogTemperatureSensor(byte inputPin,                   // Analog input pin this sensor sits on
                                                                    byte inputBitRes = 8);           // ADC bit resolution to use
     // Adds a new analog TDS electrode to the system using the given parameters.
+    // TDS electrodes are vital in ensuring the proper nutrition levels of the feed water.
     shared_ptr<HydroponicsAnalogSensor> addAnalogTDSElectrode(byte inputPin,                        // Analog input pin this sensor sits on
                                                               int ppmScale = 500,                   // PPM measurement scaling (default: 500, aka TDS/PPM500)
                                                               byte inputBitRes = 8);                // ADC bit resolution to use
     // Adds a new analog pump flow sensor to the system using the given parameters.
+    // Flow sensors allow for more precise liquid volume pumping calculations to be performed.
     shared_ptr<HydroponicsAnalogSensor> addPWMPumpFlowSensor(byte inputPin,                         // Analog input pin this sensor sits on
                                                              byte inputBitRes = 8);                 // ADC bit resolution to use
     // Adds a new analog water height meter to the system using the given parameters.
+    // Water height meters can determine the filled/empty status of a liquid reservoir.
     shared_ptr<HydroponicsAnalogSensor> addAnalogWaterHeightMeter(byte inputPin,                    // Analog input pin this sensor sits on
                                                                   byte inputBitRes = 8);            // ADC bit resolution to use
     // Adds a new analog ultrasonic distance sensor to the system using the given parameters.
+    // Downward-facing ultrasonic distance sensors call also determine filled/empty status.
     shared_ptr<HydroponicsAnalogSensor> addUltrasonicDistanceSensor(byte inputPin,                  // Analog input pin this sensor sits on
                                                                     byte inputBitRes = 8);          // ADC bit resolution to use
 
-    // TODO:
-    // addDigitalPHMeter
-    // addDigitalECMeter
+    // TODO: addPowerSensor
 
     // Adds a new digital DHT* OneWire temperature & humidity sensor to the system using the given parameters.
+    // Uses the DHT library. A very common digital sensor, included in most Arduino starter kits.
     shared_ptr<HydroponicsDHTTempHumiditySensor> addDHTTempHumiditySensor(byte inputPin,            // OneWire digital input pin this sensor sits on
                                                                           byte dhtType = DHT12); // Kind of DHT sensor (see DHT* defines)
     // Adds a new digital DS18* OneWire submersible temperature sensor to the system using the given parameters.
+    // Uses the DallasTemperature library. A specialized submersible sensor meant for long-term usage.
     shared_ptr<HydroponicsDSTemperatureSensor> addDSTemperatureSensor(byte inputPin,                // OneWire digital input pin this sensor sits on
                                                                       byte inputBitRes = 9);        // Sensor ADC bit resolution to use
     // Adds a new digital TMP* OneWire soil moisture sensor to the system using the given parameters.
+    // Uses the XXXTODO library. A blah blah blah blah todo.
     shared_ptr<HydroponicsTMPSoilMoistureSensor> addTMPSoilMoistureSensor(byte inputPin,            // OneWire digital input pin this sensor sits on
                                                                           byte inputBitRes = 9);    // Sensor ADC bit resolution to use
 
+    // TODO: addDigitalPHMeter, addDigitalECMeter, addDigitalCO2Sensor
+
     // Convenience builders for common crops (shared, nullptr return = failure).
 
-    // Adds a new simple crop to the system using the given parameters.
-    shared_ptr<HydroponicsTimedCrop> addCropFromSowDate(Hydroponics_CropType cropType,             // Crop type
-                                                         Hydroponics_SubstrateType substrateType,   // Substrate type
-                                                         time_t sowDate);                           // Sow date (UTC unix time)
-    // Adds a new simple crop to the system using the given parameters.
-    shared_ptr<HydroponicsTimedCrop> addCropFromLastHarvest(Hydroponics_CropType cropType,         // Crop type
-                                                             Hydroponics_SubstrateType substrateType, // Substrate type
-                                                             time_t lastHarvestDate);               // Last harvest date (UTC unix time)
+    // Adds a new simple timer-fed crop to the system using the given parameters.
+    // Timer fed crops use a simple on/off timer for driving their feeding signal.
+    shared_ptr<HydroponicsTimedCrop> addTimerFedCrop(Hydroponics_CropType cropType,                 // Crop type
+                                                     Hydroponics_SubstrateType substrateType,       // Substrate type (use Undefined enum to not have feeding times slightly altered due to substrate type)
+                                                     time_t sowDate,                                // Sow date
+                                                     byte minsOnPerHour = 15);                      // Feeding on-time interval, in mins per hour
+    // Adds a new simple timer-fed crop to the system using the given parameters (perennials only).
+    // Perennials that grow back are easier to define from their last end-of-harvest date instead of when they were planted.
+    shared_ptr<HydroponicsTimedCrop> addTimerFedPerennialCrop(Hydroponics_CropType cropType,        // Crop type
+                                                              Hydroponics_SubstrateType substrateType, // Substrate type
+                                                              time_t lastHarvestDate,               // Last harvest date
+                                                              byte minsOnPerHour = 15);             // Feeding on-time interval, in mins per hour
+
+    // Adds a new adaptive trigger-fed crop to the system using the given parameters.
+    // Adaptive crops use soil based sensors, such as moisture sensors, to drive their feeding signal.
+    shared_ptr<HydroponicsAdaptiveCrop> addAdaptiveFedCrop(Hydroponics_CropType cropType,           // Crop type
+                                                           Hydroponics_SubstrateType substrateType, // Substrate type (use Undefined enum to not have feeding times slightly altered due to substrate type)
+                                                           time_t sowDate);                         // Sow date
+    // Adds a new adaptive trigger-fed crop to the system using the given parameters (perennials only).
+    // Perennials that grow back are easier to define from their last end-of-harvest date instead of when they were planted.
+    shared_ptr<HydroponicsAdaptiveCrop> addAdaptiveFedPerennialCrop(Hydroponics_CropType cropType,  // Crop type
+                                                                    Hydroponics_SubstrateType substrateType, // Substrate type (use Undefined enum to not have feeding times slightly altered due to substrate type)
+                                                                    time_t lastHarvestDate);        // Last harvest date
 
     // Convenience builders for common reservoirs (shared, nullptr return = failure).
 
     // Adds a new simple fluid reservoir to the system using the given parameters.
+    // Fluid reservoirs are basically just buckets of some liquid solution. Nothing too fancy.
     shared_ptr<HydroponicsFluidReservoir> addFluidReservoir(Hydroponics_ReservoirType reservoirType, // Reservoir type
                                                             float maxVolume);                        // Maximum volume
 
-    // Adds a drainage pipe to the system, which acts typeAs an infinite reservoir.
+    // Adds a drainage pipe to the system using the given parameters.
+    // Drainage pipes are never-filled infinite reservoirs that can always be pumped into.
     shared_ptr<HydroponicsInfiniteReservoir> addDrainagePipe();
-
-    // Adds a fresh water main to the system, which acts typeAs an infinite reservoir.
-    shared_ptr<HydroponicsInfiniteReservoir> addWaterMainPipe();
+    // Adds a fresh water main to the system using the given parameters.
+    // Fresh water mains are always-filled infinite reservoirs that can always be pumped from.
+    shared_ptr<HydroponicsInfiniteReservoir> addFreshWaterMain();
 
     // Convenience builders for common power rails (shared, nullptr return = failure).
 
-    // Adds a new relay power rail to the system using the given parameters.
-    shared_ptr<HydroponicsSimpleRail> addRelayPowerRail(Hydroponics_RailType railType,               // Rail type
-                                                        int maxActiveAtOnce = 2);                    // Maximum active devices
+    // Adds a new simple power rail to the system using the given parameters.
+    // Simple power rail uses a max active at once counting strategy to manage energy consumption.
+    shared_ptr<HydroponicsSimpleRail> addSimplePowerRail(Hydroponics_RailType railType,             // Rail type
+                                                         int maxActiveAtOnce = 2);                  // Maximum active devices
+
+    // Adds a new regulated power rail to the system using the given parameters.
+    // Regulated power rails can use a power meter to measure energy consumption to limit overdraw.
+    shared_ptr<HydroponicsRegulatedRail> addRegulatedPowerRail(Hydroponics_RailType railType,       // Rail type
+                                                               float maxPower);                     // Maximum allowed power
 
     // Accessors.
 
@@ -338,7 +382,7 @@ public:
     void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE size limit)
     void setPollingInterval(uint32_t pollingInterval);              // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
 
-    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers typeAs default
+    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
 
 protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init)

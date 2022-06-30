@@ -174,8 +174,8 @@ enum Hydroponics_CropPhase {
 // System Run Mode
 // Specifies the general tank setup, fluid levels, and waste connection defaults.
 enum Hydroponics_SystemMode {
-    Hydroponics_SystemMode_Recycling,                       // System consistently recycles water in main feed water reservoir, treating feed water reservoirs typeAs initially filled, and expects water changes every 2-3 weeks. Default setting.
-    Hydroponics_SystemMode_DrainToWaste,                    // System fills feed reservoir before feeding (with pH/feed premix topoff prior), treating feed water reservoirs typeAs initially empty, and expects feed pumps to output to drain.
+    Hydroponics_SystemMode_Recycling,                       // System consistently recycles water in main feed water reservoir, treating feed water reservoirs as initially filled, and expects water changes every 2-3 weeks. Default setting.
+    Hydroponics_SystemMode_DrainToWaste,                    // System fills feed reservoir before feeding (with pH/feed premix topoff prior), treating feed water reservoirs as initially empty, and expects feed pumps to output to drain.
 
     Hydroponics_SystemMode_Count,                           // Internal use only
     Hydroponics_SystemMode_Undefined = -1                   // Internal use only

@@ -138,7 +138,7 @@ byte HydroponicsActuator::getOutputPin() const
 
 Hydroponics_ActuatorType HydroponicsActuator::getActuatorType() const
 {
-    return _id.typeAs.actuatorType;
+    return _id.objTypeAs.actuatorType;
 }
 
 Hydroponics_PositionIndex HydroponicsActuator::getActuatorIndex() const

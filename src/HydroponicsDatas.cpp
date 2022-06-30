@@ -168,7 +168,7 @@ HydroponicsData::HydroponicsData(int8_t idType, int8_t objType, int8_t posIndex,
 }
 
 HydroponicsData::HydroponicsData(const HydroponicsIdentity &id)
-    : HydroponicsData(id.type, (int8_t)id.typeAs.actuatorType, id.posIndex, -1, 1, 1)
+    : HydroponicsData(id.type, (int8_t)id.objTypeAs.actuatorType, id.posIndex, -1, 1, 1)
 {
     _size = sizeof(*this);
 }
@@ -354,9 +354,9 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 
     int mainPhaseTotalWeeks = phaseDurationWeeks[0] + phaseDurationWeeks[1] + phaseDurationWeeks[2];
     HYDRUINO_SOFT_ASSERT(totalGrowWeeks == 0 || mainPhaseTotalWeeks == totalGrowWeeks, F("Total grow weeks mismatch, failure exporting totalGrowWeeks"));
-    if (totalGrowWeeks > 0) {
+    if (totalGrowWeeks > 0 && totalGrowWeeks != 14) {
         objectOut[F("totalGrowWeeks")] = totalGrowWeeks;
-    } else if (mainPhaseTotalWeeks > 0 && mainPhaseTotalWeeks != 14) {
+    } else if (!totalGrowWeeks && mainPhaseTotalWeeks > 0 && mainPhaseTotalWeeks != 14) {
         objectOut[F("totalGrowWeeks")] = mainPhaseTotalWeeks;
     }
     if (lifeCycleWeeks > 0) {
