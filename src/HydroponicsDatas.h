@@ -171,7 +171,7 @@ struct HydroponicsCropsLibData : public HydroponicsData {
     byte phaseDurationWeeks[Hydroponics_CropPhase_MainCount];   // How many weeks each main crop phase lasts (seed,veg,bloom - default: 2,4,8)
     byte dailyLightHours[Hydroponics_CropPhase_MainCount];      // How many light hours per day is needed per main stages (seed,veg,bloom or all - default: 20,18,12)
     float phRange[2];                                           // Base acceptable pH range (min,max or mid - default: 6)
-    float ecRange[2];                                           // Base acceptable EC range (min,max or mid - default: 1)
+    float ecRange[2];                                           // Base acceptable EC range (min,max or mid - default: 1.8,2.4)
     float waterTempRange[2];                                    // Water temperature range (in C, min,max or mid - default: 25)
     float airTempRange[2];                                      // Air temperature range (in C, min,max or mid - default: 25)
     bool isInvasiveOrViner;                                     // Flag indicating plant is invasive, will vine, and/or take over other plants (default: false)
