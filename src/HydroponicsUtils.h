@@ -33,14 +33,38 @@ struct HydroponicsBitResolution {
 
 // Helpers & Misc
 
-// Returns the active hydroponics instance.
+// Returns the active hydroponics instance. Not guaranteed to be non-null.
 extern Hydroponics *getHydroponicsInstance();
 
-// Computes a hash for a string using a fast and efficient hashing function.
-extern Hydroponics_KeyType stringHash(const String &str);
+// Computes a hash for a string using a fast and efficient (read as: good enough for our use) hashing algorithm.
+extern Hydroponics_KeyType stringHash(String string);
 
 // Returns a string from char array with an exact max length.
-extern String stringFromChars(const char *chars, size_t length);
+// Null array or invalid length will abort function before encoding occurs, returning "null".
+extern String stringFromChars(const char *charsIn, size_t length);
+
+// Encodes a T-typed array to a comma-separated string.
+// Null array or invalid length will abort function before encoding occurs, returning "null".
+template<typename T>
+String commaStringFromArray(const T *arrayIn, size_t length);
+// Decodes a comma-separated string back to a T-typed array.
+// Last value read is repeated on through to last element, with no commas being treated as single value being applied to all elements.
+// Empty string, string value of "null", null array, or invalid length will abort function before decoding.
+template<typename T>
+void commaStringToArray(String stringIn, T *arrayOut, size_t length);
+// Decodes a comma-separated JSON variant, if not null, object, or array, back to a T-typed array.
+// Acts as a redirect for JSON variants so that they receive the additional checks before being converted to string.
+template<typename T>
+void commaStringToArray(JsonVariantConst &variantIn, T *arrayOut, size_t length);
+
+// Returns # of occurrences of character in string.
+int occurrencesInString(String string, char singleChar);
+// Returns # of occurrences of substring in string.
+int occurrencesInString(String string, String subString);
+// Returns # of occurrences of character in string, ignoring case.
+int occurrencesInStringIgnoreCase(String string, char singleChar);
+// Returns # of occurrences of substring in string, ignoring case.
+int occurrencesInStringIgnoreCase(String string, String subString);
 
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
 extern int freeMemory();
@@ -140,5 +164,13 @@ extern Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr);
 extern String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool excludeSpecial = false);
 // Converts back to position index from string
 extern Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr);
+
+
+// Explicit Specializations
+
+template<> String commaStringFromArray<float>(const float *arrayIn, size_t length);
+template<> String commaStringFromArray<double>(const double *arrayIn, size_t length);
+template<> void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length);
+template<> void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length);
 
 #endif // /ifndef HydroponicsUtils_H

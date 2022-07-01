@@ -194,22 +194,21 @@ void HydroponicsMeasurementData::toJSONObject(JsonObject &objectOut) const
             objectOut[F("units")] = dataAs.singleMeasure.units;
             break;
         case 2: { // Double
-            JsonArray valuesArray = objectOut.createNestedArray(F("values"));
-            valuesArray[0] = dataAs.doubleMeasure.value[0];
-            valuesArray[1] = dataAs.doubleMeasure.value[1];
-            JsonArray unitsArray = objectOut.createNestedArray(F("units"));
-            unitsArray[0] = dataAs.doubleMeasure.units[0];
-            unitsArray[1] = dataAs.doubleMeasure.units[1];
+            objectOut[F("values")] = commaStringFromArray(dataAs.doubleMeasure.value, 2);
+            if (dataAs.doubleMeasure.units[0] != dataAs.doubleMeasure.units[1]) {
+                objectOut[F("units")] = commaStringFromArray(dataAs.doubleMeasure.units, 2);
+            } else {
+                objectOut[F("units")] = dataAs.doubleMeasure.units[0];
+            }
         } break;
         case 3: { // Triple
-            JsonArray valuesArray = objectOut.createNestedArray(F("values"));
-            valuesArray[0] = dataAs.tripleMeasure.value[0];
-            valuesArray[1] = dataAs.tripleMeasure.value[1];
-            valuesArray[2] = dataAs.tripleMeasure.value[2];
-            JsonArray unitsArray = objectOut.createNestedArray(F("units"));
-            unitsArray[0] = dataAs.tripleMeasure.units[0];
-            unitsArray[1] = dataAs.tripleMeasure.units[1];
-            unitsArray[2] = dataAs.tripleMeasure.units[2];
+            objectOut[F("values")] = commaStringFromArray(dataAs.tripleMeasure.value, 3);
+            if (dataAs.tripleMeasure.units[0] != dataAs.tripleMeasure.units[1] ||
+                dataAs.tripleMeasure.units[0] != dataAs.tripleMeasure.units[2]) {
+                objectOut[F("units")] = commaStringFromArray(dataAs.tripleMeasure.units, 3);
+            } else {
+                objectOut[F("units")] = dataAs.tripleMeasure.units[0];
+            }
         } break;
         default: break;
     }
@@ -228,10 +227,13 @@ void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn)
             fromJSONObject(objectIn);
             break;
         default: {
-            JsonArrayConst valuesArray = objectIn[F("values")];
-            if (!valuesArray.isNull()) { fromJSONValuesArray(valuesArray); }
-            JsonArrayConst unitsArray = objectIn[F("units")];
-            if (!unitsArray.isNull()) { fromJSONUnitsArray(unitsArray); }
+            JsonVariantConst valuesVar = objectIn[F("values")] | objectIn[F("vals")];
+            if (valuesVar.is<JsonArrayConst>()) { JsonArrayConst valuesArray = valuesVar; fromJSONValuesArray(valuesArray); }
+            else { fromJSONValuesString(valuesVar); }
+
+            JsonVariantConst unitsVar = objectIn[F("units")] | objectIn[F("unit")];
+            if (unitsVar.is<JsonArrayConst>()) { JsonArrayConst unitsArray = unitsVar; fromJSONUnitsArray(unitsArray); }
+            else { fromJSONUnitsString(unitsVar); }
         } break;
     }
     timestamp = objectIn[F("timestamp")] | timestamp;
@@ -245,8 +247,15 @@ void HydroponicsMeasurementData::fromJSONVariant(JsonVariantConst &variantIn)
     } else if (variantIn.is<JsonArrayConst>()) {
         JsonArrayConst variantArray = variantIn;
         fromJSONArray(variantArray);
-    } else {
+    } else if (variantIn.is<const char *>()) {
+        const char *valuesIn = variantIn.as<const char*>();
+        type = occurrencesInString(valuesIn, ',') + 1;
+        fromJSONValuesString(valuesIn);
+    } else if (variantIn.is<float>() || variantIn.is<int>()) {
+        type = 1;
         setValue(variantIn, 0);
+    } else {
+        HYDRUINO_SOFT_ASSERT(false, F("Unsupported measurement JSON"));
     }
 }
 
@@ -281,6 +290,15 @@ void HydroponicsMeasurementData::fromJSONValuesArray(JsonArrayConst &valuesIn)
     }
 }
 
+void HydroponicsMeasurementData::fromJSONValuesString(const char *valuesIn)
+{
+    float values[3]; commaStringToArray(valuesIn, values, type);
+
+    for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
+        setValue(values[rowIndex], rowIndex);
+    }
+}
+
 void HydroponicsMeasurementData::fromJSONUnitsArray(JsonArrayConst &unitsIn)
 {
     for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
@@ -288,20 +306,29 @@ void HydroponicsMeasurementData::fromJSONUnitsArray(JsonArrayConst &unitsIn)
     }
 }
 
+void HydroponicsMeasurementData::fromJSONUnitsString(const char *unitsIn)
+{
+    int units[3]; commaStringToArray(unitsIn, units, type);
+
+    for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
+        setUnits(units[rowIndex], rowIndex);
+    }
+}
+
 void HydroponicsMeasurementData::setValue(float value, int rowIndex)
 {
     switch (type) {
         case 0: // Binary
-            dataAs.binaryMeasure.state = value;
+            if (rowIndex == 0) { dataAs.binaryMeasure.state = value; }
             break;
         case 1: // Single
-            dataAs.singleMeasure.value = value;
+            if (rowIndex == 0) { dataAs.singleMeasure.value = value; }
             break;
         case 2: // Double
-            dataAs.doubleMeasure.value[rowIndex] = value;
+            if (rowIndex >= 0 && rowIndex < 2) { dataAs.doubleMeasure.value[rowIndex] = value; }
             break;
         case 3: // Triple
-            dataAs.tripleMeasure.value[rowIndex] = value;
+            if (rowIndex >= 0 && rowIndex < 3) { dataAs.tripleMeasure.value[rowIndex] = value; }
             break;
         default: break;
     }
@@ -311,13 +338,13 @@ void HydroponicsMeasurementData::setUnits(Hydroponics_UnitsType units, int rowIn
 {
     switch (type) {
         case 1: // Single
-            dataAs.singleMeasure.units = units;
+            if (rowIndex == 0) { dataAs.singleMeasure.units = units; }
             break;
         case 2: // Double
-            dataAs.doubleMeasure.units[rowIndex] = units;
+            if (rowIndex >= 0 && rowIndex < 2) { dataAs.doubleMeasure.units[rowIndex] = units; }
             break;
         case 3: // Triple
-            dataAs.tripleMeasure.units[rowIndex] = units;
+            if (rowIndex >= 0 && rowIndex < 3) { dataAs.tripleMeasure.units[rowIndex] = units; }
             break;
         default: break;
     }

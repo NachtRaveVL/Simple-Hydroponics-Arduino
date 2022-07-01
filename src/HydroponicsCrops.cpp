@@ -377,7 +377,7 @@ void HydroponicsCropData::toJSONObject(JsonObject &objectOut) const
     HydroponicsObjectData::toJSONObject(objectOut);
 
     if (substrateType != Hydroponics_SubstrateType_Undefined) { objectOut[F("substrateType")] = substrateType; }
-    if (sowDate > DateTime((uint32_t)0).unixtime()) { objectOut[F("sowDate")] = sowDate; }
+    if (sowDate > DateTime().unixtime()) { objectOut[F("sowDate")] = sowDate; }
     if (feedReservoirName[0]) { objectOut[F("feedReservoirName")] = stringFromChars(feedReservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
@@ -400,10 +400,8 @@ void HydroponicsTimedCropData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsCropData::toJSONObject(objectOut);
 
-    if (lastFeedingTime > DateTime((uint32_t)0).unixtime()) { objectOut[F("lastFeedingTime")] = lastFeedingTime; }
-    JsonObject feedTimingMinsObj = objectOut.createNestedObject(F("feedTimingMins"));
-    feedTimingMinsObj[F("on")] = feedTimingMins[0];
-    feedTimingMinsObj[F("off")] = feedTimingMins[1];
+    if (lastFeedingTime > DateTime().unixtime()) { objectOut[F("lastFeedingTime")] = lastFeedingTime; }
+    objectOut[F("feedTimingMins")] = commaStringFromArray(feedTimingMins, 2);
 }
 
 void HydroponicsTimedCropData::fromJSONObject(JsonObjectConst &objectIn)
@@ -411,6 +409,7 @@ void HydroponicsTimedCropData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsCropData::fromJSONObject(objectIn);
     lastFeedingTime = objectIn[F("lastFeedingTime")] | lastFeedingTime;
     JsonVariantConst feedTimingMinsVar = objectIn[F("feedTimingMins")];
+    commaStringToArray(feedTimingMinsVar, feedTimingMins, 2);
     feedTimingMins[0] = feedTimingMinsVar[F("on")] | feedTimingMinsVar[0] | feedTimingMins[0];
     feedTimingMins[1] = feedTimingMinsVar[F("off")] | feedTimingMinsVar[1] | feedTimingMins[1];
 }

@@ -302,13 +302,15 @@ public:
     shared_ptr<HydroponicsTimedCrop> addTimerFedCrop(Hydroponics_CropType cropType,                 // Crop type
                                                      Hydroponics_SubstrateType substrateType,       // Substrate type (use Undefined enum to not have feeding times slightly altered due to substrate type)
                                                      time_t sowDate,                                // Sow date
-                                                     byte minsOnPerHour = 15);                      // Feeding on-time interval, in mins per hour
+                                                     byte minsOn = 15,                              // Feeding signal on-time interval, in minutes
+                                                     byte minsOff = 45);                            // Feeding signal off-time interval, in minutes
     // Adds a new simple timer-fed crop to the system using the given parameters (perennials only).
     // Perennials that grow back are easier to define from their last end-of-harvest date instead of when they were planted.
     shared_ptr<HydroponicsTimedCrop> addTimerFedPerennialCrop(Hydroponics_CropType cropType,        // Crop type
                                                               Hydroponics_SubstrateType substrateType, // Substrate type
                                                               time_t lastHarvestDate,               // Last harvest date
-                                                              byte minsOnPerHour = 15);             // Feeding on-time interval, in mins per hour
+                                                              byte minsOn = 15,                     // Feeding signal on-time interval, in minutes
+                                                              byte minsOff = 45);                   // Feeding signal off-time interval, in minutes
 
     // Adds a new adaptive trigger-fed crop to the system using the given parameters.
     // Adaptive crops use soil based sensors, such as moisture sensors, to drive their feeding signal.

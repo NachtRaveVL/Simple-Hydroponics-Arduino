@@ -27,20 +27,145 @@ Hydroponics *getHydroponicsInstance()
     return Hydroponics::getActiveInstance();
 }
 
-Hydroponics_KeyType stringHash(const String &str)
+Hydroponics_KeyType stringHash(String string)
 {
     Hydroponics_KeyType hash = 5381;
-    for(int index = 0; index < str.length(); ++index) {
-        hash = ((hash << 5) + hash) + (Hydroponics_KeyType)str[index]; // Good 'ol DJB2
+    for(int index = 0; index < string.length(); ++index) {
+        hash = ((hash << 5) + hash) + (Hydroponics_KeyType)string[index]; // Good 'ol DJB2
     }
-    return hash != (Hydroponics_KeyType)-1 ? hash : 0;
+    return hash != (Hydroponics_KeyType)-1 ? hash : 5381;
 }
 
-String stringFromChars(const char *chars, size_t length)
+String stringFromChars(const char *charsIn, size_t length)
 {
+    if (!charsIn || !length) { return String(F("null")); }
     String retVal = "";
-    for (size_t index = 0; index < length && chars[index] != '\0'; ++index) {
-        retVal.concat(chars[index]);
+    for (size_t index = 0; index < length && charsIn[index] != '\0'; ++index) {
+        retVal.concat(charsIn[index]);
+    }
+    return retVal.length() ? retVal : String(F("null"));
+}
+
+template<>
+String commaStringFromArray<float>(const float *arrayIn, size_t length)
+{
+    if (!arrayIn || !length) { return String(F("null")); }
+    String retVal = "";
+    for (size_t index = 0; index < length; ++index) {
+        if (retVal.length()) { retVal.concat(','); }
+
+        String floatString = String(arrayIn[index], 6);
+        int trimIndex = floatString.length() - 1;
+
+        while (floatString[trimIndex] == '0' && trimIndex > 0) { trimIndex--; }
+        if (floatString[trimIndex] == '.' && trimIndex > 0) { trimIndex--; }
+        if (trimIndex < floatString.length() - 1) {
+            floatString = floatString.substring(0, trimIndex+1);
+        }
+
+        retVal += floatString;
+    }
+    return retVal.length() ? retVal : String(F("null"));
+}
+
+template<>
+String commaStringFromArray<double>(const double *arrayIn, size_t length)
+{
+    if (!arrayIn || !length) { return String(F("null")); }
+    String retVal = "";
+    for (size_t index = 0; index < length; ++index) {
+        if (retVal.length()) { retVal.concat(','); }
+
+        String doubleString = String(arrayIn[index], 14);
+        int trimIndex = doubleString.length() - 1;
+
+        while (doubleString[trimIndex] == '0' && trimIndex > 0) { trimIndex--; }
+        if (doubleString[trimIndex] == '.' && trimIndex > 0) { trimIndex--; }
+        if (trimIndex < doubleString.length() - 1) {
+            doubleString = doubleString.substring(0, trimIndex+1);
+        }
+
+        retVal += doubleString;
+    }
+    return retVal.length() ? retVal : String(F("null"));
+}
+
+template<>
+void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length)
+{
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
+    int lastSepPos = -1;
+    for (size_t index = 0; index < length; ++index) {
+        int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
+        if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
+        String subString = stringIn.substring(lastSepPos+1, nextSepPos);
+        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+
+        arrayOut[index] = subString.toFloat();
+    }
+}
+
+template<>
+void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length)
+{
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
+    int lastSepPos = -1;
+    for (size_t index = 0; index < length; ++index) {
+        int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
+        if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
+        String subString = stringIn.substring(lastSepPos+1, nextSepPos);
+        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+
+        arrayOut[index] = subString.toDouble();
+    }
+}
+
+int occurrencesInString(String string, char singleChar)
+{
+    int retVal = 0;
+    int posIndex = string.indexOf(singleChar);
+    while (posIndex != -1) {
+        retVal++;
+        posIndex = string.indexOf(singleChar, posIndex+1);
+    }
+    return retVal;
+}
+
+int occurrencesInString(String string, String subString)
+{
+    int retVal = 0;
+    int posIndex = string.indexOf(subString[0]);
+    while (posIndex != -1) {
+        if (subString.equals(string.substring(posIndex, posIndex + subString.length()))) {
+            retVal++;
+            posIndex += subString.length();
+        }
+        posIndex = string.indexOf(subString[0], posIndex+1);
+    }
+    return retVal;
+}
+
+int occurrencesInStringIgnoreCase(String string, char singleChar)
+{
+    int retVal = 0;
+    int posIndex = min(string.indexOf(tolower(singleChar)), string.indexOf(toupper(singleChar)));
+    while (posIndex != -1) {
+        retVal++;
+        posIndex = min(string.indexOf(tolower(singleChar), posIndex+1), string.indexOf(toupper(singleChar), posIndex+1));
+    }
+    return retVal;
+}
+
+int occurrencesInStringIgnoreCase(String string, String subString)
+{
+    int retVal = 0;
+    int posIndex = min(string.indexOf(tolower(subString[0])), string.indexOf(toupper(subString[0])));
+    while (posIndex != -1) {
+        if (subString.equalsIgnoreCase(string.substring(posIndex, posIndex + subString.length()))) {
+            retVal++;
+            posIndex += subString.length();
+        }
+        posIndex = min(string.indexOf(tolower(subString[0]), posIndex+1), string.indexOf(toupper(subString[0]), posIndex+1));
     }
     return retVal;
 }
