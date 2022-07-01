@@ -76,6 +76,40 @@ private:
     ParameterType _param;
 };
 
+template<typename T>
+String commaStringFromArray(const T *arrayIn, size_t length)
+{
+    if (!arrayIn || !length) { return String(F("null")); }
+    String retVal = "";
+    for (size_t index = 0; index < length; ++index) {
+        if (retVal.length()) { retVal.concat(','); }
+        retVal += String(arrayIn[index]);
+    }
+    return retVal.length() ? retVal : String(F("null"));
+}
+
+template<typename T>
+void commaStringToArray(String stringIn, T *arrayOut, size_t length)
+{
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
+    int lastSepPos = -1;
+    for (size_t index = 0; index < length; ++index) {
+        int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
+        if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
+        String subString = stringIn.substring(lastSepPos+1, nextSepPos);
+        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+
+        arrayOut[index] = static_cast<T>(subString.toInt());
+    }
+}
+
+template<typename T>
+void commaStringToArray(JsonVariantConst &variantIn, T *arrayOut, size_t length)
+{
+    if (variantIn.isNull() || variantIn.is<JsonObjectConst>() || variantIn.is<JsonArrayConst>()) { return; }
+    commaStringToArray<T>(variantIn.as<String>(), arrayOut, length);
+}
+
 template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {

@@ -866,9 +866,10 @@ void HydroponicsDHTTempHumiditySensorData::fromJSONObject(JsonObjectConst &objec
     dhtType = objectIn[F("dhtType")] | dhtType;
     computeHeatIndex = objectIn[F("computeHeatIndex")] | computeHeatIndex;
     JsonVariantConst measurementUnitsVar = objectIn[F("measurementUnits")];
-    measurementUnits[0] = measurementUnitsVar[0] | measurementUnitsVar | measurementUnits[0];
+    commaStringToArray(measurementUnitsVar, measurementUnits, 3);
+    measurementUnits[0] = measurementUnitsVar[0] | measurementUnits[0];
     measurementUnits[1] = measurementUnitsVar[1] | measurementUnits[1];
-    measurementUnits[2] = measurementUnitsVar[2] | measurementUnitsVar | measurementUnits[2];
+    measurementUnits[2] = measurementUnitsVar[2] | measurementUnits[2];
 }
 
 HydroponicsDSTemperatureSensorData::HydroponicsDSTemperatureSensorData()

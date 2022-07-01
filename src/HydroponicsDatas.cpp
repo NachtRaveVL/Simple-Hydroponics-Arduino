@@ -113,7 +113,7 @@ HydroponicsData *newDataFromBinaryStream(Stream *streamIn)
 {
     HydroponicsData baseDecode;
     size_t readBytes = deserializeDataFromBinaryStream(&baseDecode, streamIn, sizeof(void*));
-    HYDRUINO_SOFT_ASSERT(readBytes == baseDecode._size - sizeof(void*), F("Failure reading data, unexpected read length"));
+    HYDRUINO_SOFT_ASSERT(readBytes == baseDecode._size - sizeof(void*), F("Failure importing data, unexpected read length"));
 
     if (readBytes) {
         HydroponicsData *data = _allocateDataFromBaseDecode(baseDecode);
@@ -121,7 +121,7 @@ HydroponicsData *newDataFromBinaryStream(Stream *streamIn)
 
         if (data) {
             readBytes += deserializeDataFromBinaryStream(data, streamIn, readBytes + sizeof(void*));
-            HYDRUINO_SOFT_ASSERT(readBytes == data->_size - sizeof(void*), F("Failure reading data, unexpected read length"));
+            HYDRUINO_SOFT_ASSERT(readBytes == data->_size - sizeof(void*), F("Failure importing data, unexpected read length"));
 
             return data;
         }
@@ -176,13 +176,10 @@ HydroponicsData::HydroponicsData(const HydroponicsIdentity &id)
 void HydroponicsData::toJSONObject(JsonObject &objectOut) const
 {
     if (this->isStdData()) {
-        objectOut[F("id")] = stringFromChars(id.chars, sizeof(id.chars));
+        objectOut[F("type")] = stringFromChars(id.chars, sizeof(id.chars));
     } else {
-        JsonObject object = objectOut.createNestedObject(F("id"));
-        object[F("type")] = id.object.idType;
-        object[F("obj")] = id.object.objType;
-        object[F("pos")] = id.object.posIndex;
-        object[F("cls")] = id.object.classType;
+        int8_t typeVals[4] = {id.object.idType, id.object.objType, id.object.posIndex, id.object.classType};
+        objectOut[F("type")] = commaStringFromArray(typeVals, 4);
     }
     if (_version > 1) { objectOut[F("_ver")] = _version; }
     if (_revision > 1) { objectOut[F("_rev")] = _revision; }
@@ -190,14 +187,17 @@ void HydroponicsData::toJSONObject(JsonObject &objectOut) const
 
 void HydroponicsData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    JsonVariantConst idVar = objectIn[F("id")];
-    if (idVar.is<const char *>()) {
-        strncpy(id.chars, idVar.as<const char *>(), sizeof(id.chars));
-    } else {
-        id.object.idType = idVar[F("type")];
-        id.object.objType = idVar[F("obj")];
-        id.object.posIndex = idVar[F("pos")];
-        id.object.classType = idVar[F("cls")];
+    JsonVariantConst idVar = objectIn[F("type")];
+    const char *idStr = idVar.as<const char *>();
+    if (idStr && idStr[0] == 'H') {
+        strncpy(id.chars, idStr, sizeof(id.chars));
+    } else if (idStr) {
+        int8_t typeVals[4];
+        commaStringToArray(idStr, typeVals, 4);
+        id.object.idType = typeVals[0];
+        id.object.objType = typeVals[1];
+        id.object.posIndex = typeVals[2];
+        id.object.classType = typeVals[3];
     }
     _version = objectIn[F("_ver")] | _version;
     _revision = objectIn[F("_rev")] | _revision;
@@ -242,7 +242,7 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
     if (systemName[0]) { objectOut[F("systemName")] = stringFromChars(systemName, HYDRUINO_NAME_MAXSIZE); }
     if (timeZoneOffset != 0) { objectOut[F("timeZoneOffset")] = timeZoneOffset; }
     if (pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[F("pollingInterval")] = pollingInterval; }
-    if (lastWaterChangeTime > DateTime((uint32_t)0).unixtime()) { objectOut[F("lastWaterChangeTime")] = lastWaterChangeTime; }
+    if (lastWaterChangeTime > DateTime().unixtime()) { objectOut[F("lastWaterChangeTime")] = lastWaterChangeTime; }
 }
 
 void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
@@ -327,7 +327,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
 HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType cropTypeIn)
     : HydroponicsData("HCLD", 1),
       cropType(cropTypeIn), cropName{0},
-      totalGrowWeeks(0), lifeCycleWeeks(0),
+      totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
       phRange{6,6}, ecRange{1.8,2.4}, waterTempRange{25,25}, airTempRange{25,25},
       isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
@@ -349,14 +349,14 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    objectOut[F("cropType")] = cropTypeToString(cropType);
+    objectOut[F("id")] = cropTypeToString(cropType);
     if (cropName[0]) { objectOut[F("cropName")] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE); }
 
     int mainPhaseTotalWeeks = phaseDurationWeeks[0] + phaseDurationWeeks[1] + phaseDurationWeeks[2];
-    HYDRUINO_SOFT_ASSERT(!totalGrowWeeks || mainPhaseTotalWeeks == totalGrowWeeks, F("Total grow weeks mismatch, failure exporting totalGrowWeeks"));
+    HYDRUINO_SOFT_ASSERT(!totalGrowWeeks || !mainPhaseTotalWeeks || mainPhaseTotalWeeks == totalGrowWeeks, F("Total grow weeks mismatch, failure exporting totalGrowWeeks"));
     if (totalGrowWeeks && totalGrowWeeks != 14) {
         objectOut[F("totalGrowWeeks")] = totalGrowWeeks;
-    } else if (!totalGrowWeeks && mainPhaseTotalWeeks > 0 && mainPhaseTotalWeeks != 14) {
+    } else if (!totalGrowWeeks && mainPhaseTotalWeeks && mainPhaseTotalWeeks != 14) {
         objectOut[F("totalGrowWeeks")] = mainPhaseTotalWeeks;
     }
     if (lifeCycleWeeks) {
@@ -367,10 +367,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure exporting dailyLightHours"));
         if (dailyLightHours[1] != 0 && dailyLightHours[1] != dailyLightHours[0] &&
             dailyLightHours[2] != 0 && dailyLightHours[2] != dailyLightHours[0]) {
-            JsonObject dailyLightHoursObj = objectOut.createNestedObject(F("dailyLightHours"));
-            dailyLightHoursObj[F("seed")] = dailyLightHours[0];
-            dailyLightHoursObj[F("grow")] = dailyLightHours[1];
-            dailyLightHoursObj[F("bloom")] = dailyLightHours[2];
+            objectOut[F("dailyLightHours")] = commaStringFromArray(dailyLightHours, 3);
         } else {
             objectOut[F("dailyLightHours")] = dailyLightHours[0];
         }
@@ -378,17 +375,12 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 
     if (!(phaseDurationWeeks[0] == 2 && phaseDurationWeeks[1] == 4 && phaseDurationWeeks[2] == 8)) {
         HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure exporting phaseDurationWeeks"));
-        JsonObject phaseDurationWeeksObj = objectOut.createNestedObject(F("phaseDurationWeeks"));
-        phaseDurationWeeksObj[F("seed")] = phaseDurationWeeks[0];
-        phaseDurationWeeksObj[F("grow")] = phaseDurationWeeks[1];
-        phaseDurationWeeksObj[F("bloom")] = phaseDurationWeeks[2];
+        objectOut[F("phaseDurationWeeks")] = commaStringFromArray(phaseDurationWeeks, 3);
     }
 
     if (!(isFPEqual(phRange[0], 6) && isFPEqual(phRange[1], 6))) {
         if (!isFPEqual(phRange[0], phRange[1])) {
-            JsonObject phRangeObj = objectOut.createNestedObject(F("phRange"));
-            phRangeObj[F("min")] = phRange[0];
-            phRangeObj[F("max")] = phRange[1];
+            objectOut[F("phRange")] = commaStringFromArray(phRange, 2);
         } else {
             objectOut[F("phRange")] = phRange[0];
         }
@@ -396,9 +388,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 
     if (!(isFPEqual(ecRange[0], 1.8) && isFPEqual(ecRange[1], 2.4))) {
         if (!isFPEqual(ecRange[0], ecRange[1])) {
-            JsonObject ecRangeObj = objectOut.createNestedObject(F("ecRange"));
-            ecRangeObj[F("min")] = ecRange[0];
-            ecRangeObj[F("max")] = ecRange[1];
+            objectOut[F("ecRange")] = commaStringFromArray(ecRange, 2);
         } else {
             objectOut[F("ecRange")] = ecRange[0];
         }
@@ -406,9 +396,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 
     if (!(isFPEqual(waterTempRange[0], 25) && isFPEqual(waterTempRange[1], 25))) {
         if (!isFPEqual(waterTempRange[0], waterTempRange[1])) {
-            JsonObject waterTempRangeObj = objectOut.createNestedObject(F("waterTempRange"));
-            waterTempRangeObj[F("min")] = waterTempRange[0];
-            waterTempRangeObj[F("max")] = waterTempRange[1];
+            objectOut[F("waterTempRange")] = commaStringFromArray(waterTempRange, 2);
         } else {
             objectOut[F("waterTempRange")] = waterTempRange[0];
         }
@@ -416,21 +404,20 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 
     if (!(isFPEqual(airTempRange[0], 25) && isFPEqual(airTempRange[1], 25))) {
         if (!isFPEqual(airTempRange[0], airTempRange[1])) {
-            JsonObject airTempRangeObj = objectOut.createNestedObject(F("airTempRange"));
-            airTempRangeObj[F("min")] = airTempRange[0];
-            airTempRangeObj[F("max")] = airTempRange[1];
+            objectOut[F("airTempRange")] = commaStringFromArray(airTempRange, 2);
         } else {
             objectOut[F("airTempRange")] = airTempRange[0];
         }
     }
 
     if (isInvasiveOrViner || isLargePlant || isPerennial || isPruningRequired || isToxicToPets) {
-        auto flagsArray = objectOut.createNestedArray(F("flags"));
-        if (isInvasiveOrViner) { flagsArray.add(F("invasive")); }
-        if (isLargePlant) { flagsArray.add(F("large")); }
-        if (isPerennial) { flagsArray.add(F("perennial")); }
-        if (isPruningRequired) { flagsArray.add(F("pruning")); }
-        if (isToxicToPets) { flagsArray.add(F("toxic")); }
+        String flagsString = "";
+        if (isInvasiveOrViner) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("invasive")); }
+        if (isLargePlant) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("large")); }
+        if (isPerennial) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("perennial")); }
+        if (isPruningRequired) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("pruning")); }
+        if (isToxicToPets) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("toxic")); }
+        objectOut[F("flags")] = flagsString;
     }
 }
 
@@ -438,7 +425,7 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsData::fromJSONObject(objectIn);
 
-    cropType = cropTypeFromString(objectIn[F("cropType")]);
+    cropType = cropTypeFromString(objectIn[F("id")] | objectIn[F("cropType")]);
     const char *cropNameStr = objectIn[F("cropName")];
     if (cropNameStr && cropNameStr[0]) { strncpy(cropName, cropNameStr, HYDRUINO_NAME_MAXSIZE); }
 
@@ -447,42 +434,59 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
 
     {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure importing dailyLightHours"));
         JsonVariantConst dailyLightHoursVar = objectIn[F("dailyLightHours")];
-        dailyLightHours[0] = dailyLightHoursVar[F("seed")] | dailyLightHoursVar[0] | dailyLightHoursVar | dailyLightHours[0];
-        dailyLightHours[1] = dailyLightHoursVar[F("grow")] | dailyLightHoursVar[1] | dailyLightHoursVar | dailyLightHours[1];
-        dailyLightHours[2] = dailyLightHoursVar[F("bloom")] | dailyLightHoursVar[2] | dailyLightHoursVar | dailyLightHours[2];
+        commaStringToArray(dailyLightHoursVar, dailyLightHours, 3);
+        dailyLightHours[0] = dailyLightHoursVar[F("seed")] | dailyLightHoursVar[0] | dailyLightHours[0];
+        dailyLightHours[1] = dailyLightHoursVar[F("grow")] | dailyLightHoursVar[1] | dailyLightHours[1];
+        dailyLightHours[2] = dailyLightHoursVar[F("bloom")] | dailyLightHoursVar[2] | dailyLightHours[2];
     }
 
     {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, F("Main phase count mismatch, failure importing phaseDurationWeeks"));
         JsonVariantConst phaseDurationWeeksVar = objectIn[F("phaseDurationWeeks")];
+        commaStringToArray(phaseDurationWeeksVar, phaseDurationWeeks, 3);
         phaseDurationWeeks[0] = phaseDurationWeeksVar[F("seed")] | phaseDurationWeeksVar[0] | phaseDurationWeeks[0];
         phaseDurationWeeks[1] = phaseDurationWeeksVar[F("grow")] | phaseDurationWeeksVar[1] | phaseDurationWeeks[1];
         phaseDurationWeeks[2] = phaseDurationWeeksVar[F("bloom")] | phaseDurationWeeksVar[2] | phaseDurationWeeks[2];
     }
 
     {   JsonVariantConst phRangeVar = objectIn[F("phRange")];
-        phRange[0] = phRangeVar[F("min")] | phRangeVar[0] | phRangeVar | phRange[0];
-        phRange[1] = phRangeVar[F("max")] | phRangeVar[1] | phRangeVar | phRange[1];
+        commaStringToArray(phRangeVar, phRange, 2);
+        phRange[0] = phRangeVar[F("min")] | phRangeVar[0] | phRange[0];
+        phRange[1] = phRangeVar[F("max")] | phRangeVar[1] | phRange[1];
     }
     {   JsonVariantConst ecRangeVar = objectIn[F("ecRange")];
-        ecRange[0] = ecRangeVar[F("min")] | ecRangeVar[0] | ecRangeVar | ecRange[0];
-        ecRange[1] = ecRangeVar[F("max")] | ecRangeVar[1] | ecRangeVar | ecRange[1];
+        commaStringToArray(ecRangeVar, ecRange, 2);
+        ecRange[0] = ecRangeVar[F("min")] | ecRangeVar[0] | ecRange[0];
+        ecRange[1] = ecRangeVar[F("max")] | ecRangeVar[1] | ecRange[1];
     }
     {   JsonVariantConst waterTempRangeVar = objectIn[F("waterTempRange")];
-        waterTempRange[0] = waterTempRangeVar[F("min")] | waterTempRangeVar[0] | waterTempRangeVar | waterTempRange[0];
-        waterTempRange[1] = waterTempRangeVar[F("max")] | waterTempRangeVar[1] | waterTempRangeVar | waterTempRange[1];
+        commaStringToArray(waterTempRangeVar, waterTempRange, 2);
+        waterTempRange[0] = waterTempRangeVar[F("min")] | waterTempRangeVar[0] | waterTempRange[0];
+        waterTempRange[1] = waterTempRangeVar[F("max")] | waterTempRangeVar[1] | waterTempRange[1];
     }
     {   JsonVariantConst airTempRangeVar = objectIn[F("airTempRange")];
-        airTempRange[0] = airTempRangeVar[F("min")] | airTempRangeVar[0] | airTempRangeVar | airTempRange[0];
-        airTempRange[1] = airTempRangeVar[F("max")] | airTempRangeVar[1] | airTempRangeVar | airTempRange[1];
+        commaStringToArray(airTempRangeVar, airTempRange, 2);
+        airTempRange[0] = airTempRangeVar[F("min")] | airTempRangeVar[0] | airTempRange[0];
+        airTempRange[1] = airTempRangeVar[F("max")] | airTempRangeVar[1] | airTempRange[1];
     }
 
-    {   JsonArrayConst flagsArray = objectIn[F("flags")];
-        for (String flagStr : flagsArray) {
-            if (flagStr.equalsIgnoreCase(F("invasive"))) { isInvasiveOrViner = true; }
-            if (flagStr.equalsIgnoreCase(F("large"))) { isLargePlant = true; }
-            if (flagStr.equalsIgnoreCase(F("perennial"))) { isPerennial = true; }
-            if (flagStr.equalsIgnoreCase(F("pruning"))) { isPruningRequired = true; }
-            if (flagStr.equalsIgnoreCase(F("toxic"))) { isToxicToPets = true; }
+    {   JsonVariantConst flagsVar = objectIn[F("flags")];
+
+        if (flagsVar.is<JsonArrayConst>()) {
+            JsonArrayConst flagsArray = flagsVar;
+            for (String flagStr : flagsArray) {
+                if (flagStr.equalsIgnoreCase(F("invasive"))) { isInvasiveOrViner = true; }
+                if (flagStr.equalsIgnoreCase(F("large"))) { isLargePlant = true; }
+                if (flagStr.equalsIgnoreCase(F("perennial"))) { isPerennial = true; }
+                if (flagStr.equalsIgnoreCase(F("pruning"))) { isPruningRequired = true; }
+                if (flagStr.equalsIgnoreCase(F("toxic"))) { isToxicToPets = true; }
+            }
+        } else if (!flagsVar.isNull()) {
+            String flagsString = String(F(",")) + objectIn[F("flags")].as<String>() + String(F(","));
+            isInvasiveOrViner = occurrencesInStringIgnoreCase(flagsString, F(",invasive,"));
+            isLargePlant = occurrencesInStringIgnoreCase(flagsString, F(",large,"));
+            isPerennial = occurrencesInStringIgnoreCase(flagsString, F(",perennial,"));
+            isPruningRequired = occurrencesInStringIgnoreCase(flagsString, F(",pruning,"));
+            isToxicToPets = occurrencesInStringIgnoreCase(flagsString, F(",toxic,"));
         }
     }
 }

@@ -144,7 +144,9 @@ private:
     void fromJSONObjectsArray(JsonArrayConst &objectsIn);
     void fromJSONObject(JsonObjectConst &objectIn, int rowIndex);
     void fromJSONValuesArray(JsonArrayConst &valuesIn);
+    void fromJSONValuesString(const char *valuesIn);
     void fromJSONUnitsArray(JsonArrayConst &unitsIn);
+    void fromJSONUnitsString(const char *unitsIn);
     void setValue(float value, int rowIndex);
     void setUnits(Hydroponics_UnitsType units, int rowIndex);
 };

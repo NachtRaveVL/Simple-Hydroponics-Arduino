@@ -213,71 +213,47 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), F("Invalid stream or no data present"));
 
     if (!_systemData && streamIn && streamIn->available()) {
-        StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
-        deserializeJson(doc, *streamIn);
 
-        HYDRUINO_SOFT_ASSERT(doc.size(), F("Failure reading, expected json data"));
-        if (doc.size()) {
-            {   JsonObjectConst systemDataObj = doc[F("system")];
-                HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromJSONObject(systemDataObj);
+        {   StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc; deserializeJson(doc, *streamIn);
+            JsonObjectConst systemDataObj = doc.as<JsonObjectConst>();
+            HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromJSONObject(systemDataObj);
 
-                HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), F("Failure reading system data"));
-                if (systemData && systemData->isSystemData()) {
-                    _systemData = systemData; // From this point, this will be used as check for success continue
+            HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), F("Failure importing system data"));
+            if (systemData && systemData->isSystemData()) {
+                _systemData = systemData; // From this point, this will be used as check for success continue
+            } else {
+                if (systemData) { delete systemData; }
+            }
+        }
+
+        if (_systemData) {
+            while (streamIn->available()) {
+                StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc; deserializeJson(doc, *streamIn);
+                JsonObjectConst dataObj = doc.as<JsonObjectConst>();
+                HydroponicsData *data = newDataFromJSONObject(dataObj);
+
+                HYDRUINO_SOFT_ASSERT(data && (data->isStdData() || data->isObjData()), F("Failure importing data"));
+                if (data && data->isStdData()) {
+                    if (data->isCalibrationData()) {
+                        getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
+                    } else if (data->isCropsLibData()) {
+                        getCropsLibraryInstance()->setCustomCropData((HydroponicsCropsLibData *)data);
+                    }
+                    delete data; data = nullptr;
+                } else if (data && data->isObjData()) {
+                    HydroponicsObject *obj = newObjectFromData(data);
+                    delete data; data = nullptr;
+
+                    if (!(obj && !obj->isUnknownType() && _objects.insert(obj->getId().key, shared_ptr<HydroponicsObject>(obj)).second)) {
+                        HYDRUINO_SOFT_ASSERT(false, F("Failure creating object"));
+                        if (obj) { delete obj; }
+                        delete _systemData; _systemData = nullptr;
+                        break;
+                    }
                 } else {
-                    if (systemData) { delete systemData; }
-                }
-            }
-
-            if (_systemData) {
-                JsonArrayConst userCalibsArray = doc[F("calibrations")];
-                for (JsonObjectConst userCalibDataRef : userCalibsArray) {
-                    HydroponicsCalibrationData userCalibData;
-                    userCalibData.fromJSONObject(userCalibDataRef);
-
-                    if (!(userCalibData.isCalibrationData() && getCalibrationsStoreInstance()->setUserCalibrationData(&userCalibData))) {
-                        HYDRUINO_SOFT_ASSERT(false, F("Failure reading user calibration data"));
-                        delete _systemData; _systemData = nullptr;
-                        break;
-                    }
-                }
-            }
-
-            if (_systemData) {
-                JsonArrayConst customCropsArray = doc[F("crops")];
-                for (JsonObjectConst customCropDataRef : customCropsArray) {
-                    HydroponicsCropsLibData customCropData;
-                    customCropData.fromJSONObject(customCropDataRef);
-
-                    if (!(customCropData.isCropsLibData() && getCropsLibraryInstance()->setCustomCropData(&customCropData))) {
-                        HYDRUINO_SOFT_ASSERT(false, F("Failure reading custom crop data"));
-                        delete _systemData; _systemData = nullptr;
-                        break;
-                    }
-                }
-            }
-
-            if (_systemData) {
-                JsonArrayConst objectsArray = doc[F("objects")];
-                for (JsonObjectConst objectDataObj : objectsArray) {
-                    HydroponicsData *objectData = newDataFromJSONObject(objectDataObj);
-
-                    HYDRUINO_SOFT_ASSERT(objectData && objectData->isObjData(), F("Failure reading object data"));
-                    if (objectData && objectData->isObjData()) {
-                        HydroponicsObject *obj = newObjectFromData(objectData);
-                        delete objectData;
-
-                        if (!(obj && !obj->isUnknownType() && _objects.insert(obj->getId().key, shared_ptr<HydroponicsObject>(obj)).second)) {
-                            HYDRUINO_SOFT_ASSERT(false, F("Failure creating object"));
-                            if (obj) { delete obj; }
-                            delete _systemData; _systemData = nullptr;
-                            break;
-                        }
-                    } else {
-                        if (objectData) { delete objectData; }
-                        delete _systemData; _systemData = nullptr;
-                        break;
-                    }
+                    if (data) { delete data; data = nullptr; }
+                    delete _systemData; _systemData = nullptr;
+                    break;
                 }
             }
         }
@@ -298,67 +274,73 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
     HYDRUINO_SOFT_ASSERT(streamOut, F("Invalid stream"));
 
     if (_systemData && streamOut) {
-        StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+        {   StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
 
-        {   JsonObject systemDataObj = doc.createNestedObject(F("system"));
+            JsonObject systemDataObj = doc.to<JsonObject>();
             _systemData->toJSONObject(systemDataObj);
-            HYDRUINO_SOFT_ASSERT(systemDataObj.size(), F("Failure writing system data"));
-            if (!systemDataObj.size()) { return false; }
+
+            if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
+                HYDRUINO_SOFT_ASSERT(false, F("Failure exporting system data"));
+                return false;
+            }
         }
 
         if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
             auto calibsStore = getCalibrationsStoreInstance();
-            JsonArray userCalibrationsArray = doc.createNestedArray(F("calibrations"));
 
             for (auto iter = calibsStore->_calibrationData.begin(); iter != calibsStore->_calibrationData.end(); ++iter) {
-                JsonObject calibDataObj = userCalibrationsArray.createNestedObject();
-                iter->second->toJSONObject(calibDataObj);
-                userCalibrationsArray.add(calibDataObj);
-            }
+                StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
 
-            HYDRUINO_SOFT_ASSERT(userCalibrationsArray.size() == calibsStore->_calibrationData.size(), F("Failure writing user calibration data"));
-            if (!userCalibrationsArray.size()) { return false; }
+                JsonObject calibDataObj = doc.to<JsonObject>();
+                iter->second->toJSONObject(calibDataObj);
+
+                if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
+                    HYDRUINO_SOFT_ASSERT(false, F("Failure exporting user calibration data"));
+                    return false;
+                }
+            }
         }
 
         if (getCropsLibraryInstance()->hasCustomCrops()) {
             auto cropsLib = getCropsLibraryInstance();
-            JsonArray customCropsArray = doc.createNestedArray(F("crops"));
-
+            
             for (auto iter = cropsLib->_cropsData.begin(); iter != cropsLib->_cropsData.end(); ++iter) {
                 if (iter->first >= Hydroponics_CropType_Custom1) {
-                    JsonObject cropDataObj = customCropsArray.createNestedObject();
+                    StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+
+                    JsonObject cropDataObj = doc.to<JsonObject>();
                     iter->second->data.toJSONObject(cropDataObj);
-                    customCropsArray.add(cropDataObj);
+
+                    if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
+                        HYDRUINO_SOFT_ASSERT(false, F("Failure exporting custom crop data"));
+                        return false;
+                    }
                 }
             }
-
-            HYDRUINO_SOFT_ASSERT(customCropsArray.size(), F("Failure writing custom crop data"));
-            if (!customCropsArray.size()) { return false; }
         }
 
         if (_objects.size()) {
-            JsonArray objectsArray = doc.createNestedArray(F("objects"));
-
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroponicsData *data = iter->second->saveToData();
 
                 HYDRUINO_SOFT_ASSERT(data && data->isObjData(), F("Failure saving object to data"));
                 if (data && data->isObjData()) {
-                    JsonObject objectDataObj = objectsArray.createNestedObject();
+                    StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+                    JsonObject objectDataObj = doc.to<JsonObject>();
                     data->toJSONObject(objectDataObj);
-                    objectsArray.add(objectDataObj);
+                    delete data; data = nullptr;
+
+                    if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
+                        HYDRUINO_SOFT_ASSERT(false, F("Failure exporting object data"));
+                        return false;
+                    }
                 }
-                if (data) { delete data; }
+                if (data) { delete data; data = nullptr; }
             }
-
-            HYDRUINO_SOFT_ASSERT(objectsArray.size() == _objects.size(), F("Failure writing objects"));
-            if (!objectsArray.size()) { return false; }
         }
 
-        if (compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut)) {
-            commonPostSave();
-            return true;
-        }
+        commonPostSave();
+        return true;
     }
 
     return false;
@@ -372,7 +354,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
     if (!_systemData && streamIn && streamIn->available()) {
         {   HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromBinaryStream(streamIn);
 
-            HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), F("Failure reading system data"));
+            HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), F("Failure importing system data"));
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
             } else if (systemData) {
@@ -384,17 +366,17 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             while (streamIn->available()) {
                 HydroponicsData *data = newDataFromBinaryStream(streamIn);
 
-                HYDRUINO_SOFT_ASSERT(data && (data->isStdData() || data->isObjData()), F("Failure reading data"));
+                HYDRUINO_SOFT_ASSERT(data && (data->isStdData() || data->isObjData()), F("Failure importing data"));
                 if (data && data->isStdData()) {
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
                     } else if (data->isCropsLibData()) {
                         getCropsLibraryInstance()->setCustomCropData((HydroponicsCropsLibData *)data);
                     }
-                    delete data;
+                    delete data; data = nullptr;
                 } else if (data && data->isObjData()) {
                     HydroponicsObject *obj = newObjectFromData(data);
-                    delete data;
+                    delete data; data = nullptr;
 
                     if (!(obj && !obj->isUnknownType() && _objects.insert(obj->getId().key, shared_ptr<HydroponicsObject>(obj)).second)) {
                         HYDRUINO_SOFT_ASSERT(false, F("Failure creating object"));
@@ -403,7 +385,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                         break;
                     }
                 } else {
-                    if (data) { delete data; }    
+                    if (data) { delete data; data = nullptr; }    
                     delete _systemData; _systemData = nullptr;
                     break;
                 }
@@ -426,7 +408,11 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
     HYDRUINO_SOFT_ASSERT(streamOut, F("Invalid stream"));
 
     if (_systemData && streamOut) {
-        serializeDataToBinaryStream(_systemData, streamOut);
+        {   size_t bytesWritten = serializeDataToBinaryStream(_systemData, streamOut);
+
+            HYDRUINO_SOFT_ASSERT(!bytesWritten, F("Failure exporting system data"));
+            if (!bytesWritten) { return false; }
+        }
 
         if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
             auto calibsStore = getCalibrationsStoreInstance();
@@ -436,7 +422,7 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
-            HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure writing user calibration data"));
+            HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure exporting user calibration data"));
             if (!bytesWritten) { return false; }
         }
 
@@ -450,7 +436,7 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
                 }
             }
 
-            HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure writing custom crop data"));
+            HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure exporting custom crop data"));
             if (!bytesWritten) { return false; }
         }
 
@@ -461,11 +447,12 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
                 HYDRUINO_SOFT_ASSERT(data && data->isObjData(), F("Failure saving object to data"));
                 if (data && data->isObjData()) {
                     size_t bytesWritten = serializeDataToBinaryStream(data, streamOut);
+                    delete data; data = nullptr;
 
-                    HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure writing object data"));
+                    HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure exporting object data"));
                     if (!bytesWritten) { return false; }
                 } else {
-                    if (data) { delete data; }
+                    if (data) { delete data; data = nullptr; }
                     return false;
                 }
             }
@@ -656,16 +643,19 @@ void Hydroponics::launch()
     #if defined(HYDRUINO_USE_TASKSCHEDULER)
         if (!_controlTask) {
             _controlTask = new Task(HYDRUINO_CONTROL_LOOP_INTERVAL * TASK_MILLISECOND, TASK_FOREVER, controlLoop, &_ts, true);
+            HYDRUINO_HARD_ASSERT(_controlTask, F("Failure allocating control task loop"));
         } else {
             _controlTask->enable();
         }
         if (!_dataTask) {
             _dataTask = new Task(getPollingInterval() * TASK_MILLISECOND, TASK_FOREVER, dataLoop, &_ts, true);
+            HYDRUINO_HARD_ASSERT(_dataTask, F("Failure allocating data task loop"));
         } else {
             _dataTask->enable();
         }
         if (!_miscTask) {
             _miscTask = new Task(HYDRUINO_MISC_LOOP_INTERVAL * TASK_MILLISECOND, TASK_FOREVER, miscLoop, &_ts, true);
+            HYDRUINO_HARD_ASSERT(_miscTask, F("Failure allocating misc task loop"));
         } else {
             _miscTask->enable();
         }
@@ -1459,22 +1449,22 @@ shared_ptr<HydroponicsTMPSoilMoistureSensor> Hydroponics::addTMPSoilMoistureSens
 shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedCrop(Hydroponics_CropType cropType,
                                                               Hydroponics_SubstrateType substrateType,
                                                               time_t sowDate,
-                                                              byte minsOnPerHour)
+                                                              byte minsOn, byte minsOff)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
     HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, F("Invalid substrate type"));
-    HYDRUINO_SOFT_ASSERT(sowDate > DateTime((uint32_t)0).unixtime(), F("Invalid sow date"));
+    HYDRUINO_SOFT_ASSERT(sowDate > DateTime().unixtime(), F("Invalid sow date"));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
 
-    if (cropType < Hydroponics_CropType_Count && sowDate > DateTime((uint32_t)0).unixtime() && positionIndex != -1) {
+    if (cropType < Hydroponics_CropType_Count && sowDate > DateTime().unixtime() && positionIndex != -1) {
         shared_ptr<HydroponicsTimedCrop> crop(new HydroponicsTimedCrop(
             cropType,
             positionIndex,
             substrateType,
             sowDate,
-            TimeSpan(0,0,constrain(minsOnPerHour,0,60),0),
-            TimeSpan(0,0,60-constrain(minsOnPerHour,0,60),0)
+            TimeSpan(0,0,minsOn,0),
+            TimeSpan(0,0,minsOff,0)
         ));
         if (registerObject(crop)) { return crop; }
         else { crop = nullptr; }
@@ -1486,11 +1476,11 @@ shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedCrop(Hydroponics_CropTy
 shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedPerennialCrop(Hydroponics_CropType cropType,
                                                                        Hydroponics_SubstrateType substrateType,
                                                                        time_t lastHarvestDate,
-                                                                       byte minsOnPerHour)
+                                                                       byte minsOn, byte minsOff)
 {
     HydroponicsCropsLibData cropData(cropType);
     time_t sowDate = lastHarvestDate - (cropData.totalGrowWeeks * SECS_PER_WEEK);
-    auto crop = addTimerFedCrop(cropType, substrateType, sowDate, minsOnPerHour);
+    auto crop = addTimerFedCrop(cropType, substrateType, sowDate, minsOn, minsOff);
     return crop;
 }
 
@@ -1501,10 +1491,10 @@ shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedCrop(Hydroponics_
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
     HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, F("Invalid substrate type"));
-    HYDRUINO_SOFT_ASSERT(sowDate > DateTime((uint32_t)0).unixtime(), F("Invalid sow date"));
+    HYDRUINO_SOFT_ASSERT(sowDate > DateTime().unixtime(), F("Invalid sow date"));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
 
-    if (cropType < Hydroponics_CropType_Count && sowDate > DateTime((uint32_t)0).unixtime() && positionIndex != -1) {
+    if (cropType < Hydroponics_CropType_Count && sowDate > DateTime().unixtime() && positionIndex != -1) {
         shared_ptr<HydroponicsAdaptiveCrop> crop(new HydroponicsAdaptiveCrop(
             cropType,
             positionIndex,

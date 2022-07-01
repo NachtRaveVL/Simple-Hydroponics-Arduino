@@ -135,8 +135,8 @@ void HydroponicsObject::handleLowMemory()
 
 HydroponicsData *HydroponicsObject::saveToData()
 {
-    auto data = allocateData();
-    if (data) { saveToData(data); }
+    auto data = this->allocateData();
+    if (data) { this->saveToData(data); }
     return data;
 }
 
@@ -196,13 +196,13 @@ void HydroponicsObjectData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    if (name[0]) { objectOut[F("name")] = stringFromChars(name, HYDRUINO_NAME_MAXSIZE); }
+    if (name[0]) { objectOut[F("id")] = stringFromChars(name, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsObjectData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsData::fromJSONObject(objectIn);
 
-    const char *nameStr = objectIn[F("name")];
+    const char *nameStr = objectIn[F("id")];
     if (nameStr && nameStr[0]) { strncpy(name, nameStr, HYDRUINO_NAME_MAXSIZE); }
 }
