@@ -10,8 +10,10 @@
 // Checks if pin is valid or not.
 static inline bool isValidPin(byte pin) { return pin != -1; }
 
-// Checks if two floating point values are equal with respect to defined error epsilon.
+// Checks if two single-precision floating point values are equal with respect to defined error epsilon.
 static inline bool isFPEqual(float lhs, float rhs) { return fabsf(rhs - lhs) <= FLT_EPSILON; }
+// Checks if two double-precision floating point values are equal with respect to defined error epsilon.
+static inline bool isFPEqual(double lhs, double rhs) { return fabs(rhs - lhs) <= DBL_EPSILON; }
 
 // Rounds floating point value to the number of decimal places.
 static inline float roundToDecimalPlaces(float valueIn, int decimalPlaces) {

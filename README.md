@@ -26,9 +26,9 @@ In the most basic sense, automating crops is basically turning a bunch of relays
 
 You can pretty much do everything this controller does using the Cloud, a few IoT sensors, and some ingenuity - very little coding required. You can literally, right now, do everything this controller can, on a RasPi with similar little effort. In fact, several of these bigger hydroponic controller setups have existed for RasPi and others for quite some time now, with well established and tested code bases, full web interfaces, custom phone apps, and more.
 
-Few have seen the value in putting to use the heaps of old, cheap, slow Arduino Megas and UNOs that we all have laying around doing absolutely nothing. But as time has passed, the prices of microcontrollers have sharply risen. Add in a global chip manufacturing crisis, a pandemic, massive inflation, food shortages, etc., it then becomes a little more apparent that it's overkill to use a costly RasPi 4 to turn a bunch of relays on and off, as cool as RasPi 4 is.
+Few have seen the value in putting to use the heaps of old, cheap, slow Arduinos that we all have laying around doing absolutely nothing. But as time has passed, the prices of MCUs have sharply risen. Add in a global chip manufacturing crisis, a pandemic, massive inflation, food shortages, etc., it then becomes a little more apparent that it's overkill to use a costly RasPi to turn a bunch of relays on and off.
 
-For devices at scale in today's world, a cheap, readily available, reliable MCU can meet these new challenges. You don't need the shiny fast red sports car version when you're turning on and off switches. And that's where the ever trustworthy Arduino comes in, with its 16 MHz of pure relay switching joy that doesn't need an internet connection to function.
+For devices at scale in today's world, a cheap, readily available, reliable MCU can meet these new challenges. You don't need the shiny fast red sports car version when you're turning on and off switches. Be it Arduino, ESP32, RasPico, or others, cheaper MCUs have exploded in popularity, and rightfully so. This project aims to take advantage of these while keeping costs down so that everyone can more easily access hydroponics.
 
 ## Controller Setup
 
@@ -36,7 +36,7 @@ For devices at scale in today's world, a cheap, readily available, reliable MCU 
 
 The easiest way to install this controller is to utilize the Arduino IDE library manager, or through a package manager such as PlatformIO. Otherwise, simply download this controller and extract its files into a `Simple-Hydroponics-Arduino` folder in your Arduino custom libraries folder, typically found in your `[My ]Documents\Arduino\libraries` folder (Windows), or `~/Documents/Arduino/libraries/` folder (Linux/OSX).
 
-From there, you can make a local copy of one of the examples based on the kind of system setup you want to use. If you are unsure of which, we recommend the full system example, as it contains all the necessary code to make a fully configurable system without any code modification necessary. Other examples can also be used if a more lean install is desired, at the cost of functionality.
+From there, you can make a local copy of one of the examples based on the kind of system setup you want to use. If you are unsure of which, we recommend the full system example, as it contains all the necessary code to make a fully configurable system without any code modification necessary. Other examples can also be used if a more lean install is desired.
 
 ### Header Defines
 
@@ -111,17 +111,17 @@ OneWire devices can be chained together on the same shared data lines (no flippi
 
 ### Sensors
 
-* If able to set in hardware, ensure pH and TDS meters use EC (mS/cm), aka PPM(500) or PPM(TDS). EC is considered a normalized measurement, while PPM can be split into different categories depending on sensor chemistry in use. PPM based sensors operating in a non-EC/PPM(500)/PPM(TDS)-based mode will need to have their PPM scale explicitly set.
+* If able to set in hardware, ensure pH and TDS meters use EC (mS/cm), aka PPM(500) or PPM(TDS). EC is considered a normalized measurement, while PPM can be split into different scale categories depending on sensor chemistry in use. PPM based sensors operating in a non-EC/PPM(500)/PPM(TDS)-based mode will need to have their PPM scale explicitly set.
 * Many different kinds of hobbyist sensors label its analog output `AO` (or `Ao`), and OneWire data `DO` (or `Do`, `DQ`, `Dq`) - however, always check your specific sensor's datasheet.
-  * Sensor pins used for event triggering when measurements go above/below a pre-set tolerance can be safely ignored, as the software implementation of this mechanism is more versatile and less costly.
-* Some meters (such as pH, but also seen on others) may also have additional `To` (or `TO`) pin for an analog temperature output to use in sensor value refinement. These can be set up as additional analog water temp sensors and then tied to the pH meter object later on.
-* CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, not to mention require `Vcc` for the heating element (5v @ 130mA for MQ-135), so cannot use parasitic power mode. Then to calibrate, you have to set it outside for a while and then calibrate its voltage to the current global CO2 level.
+  * Sensor pins used for event triggering when measurements go above/below a pre-set tolerance can be safely ignored, as the software implementation of this mechanism is more versatile.
+* Some meters (such as pH, but also seen on others) may also have additional `To` (or `TO`) pin for an analog temperature output to use in sensor value refinement. These can be set up as additional analog water temperature sensors and then tied to the pH meter object later on.
+* CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, not to mention require `Vcc` for the heating element (5v @ 130mA for MQ-135) thus cannot use parasitic power mode. Then to calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
 
 We also ask that our users report any broken sensors (outside of bad calibration data) for us to consider adding support to (also consider sponsoring our work on [Patreon](www.patreon.com/nachtrave)).
 
 ## Memory Callouts
 
-The total number of objects (sensors, pumps, relays, probes, etc.) that the controller can support at once depends on how much free memory your MCU has available, with larger memory scaling with cost. We're currently targeting Mega2560 at minimum for this time, with hopes that we can still cram it into an UNO when we're finished.
+The total number of objects (sensors, pumps, relays, probes, etc.) that the controller can support at once depends on how much free memory your MCU has available, with larger memory scaling with cost. We're currently targeting Mega2560 at minimum at this time.
 
 ## Example Usage
 

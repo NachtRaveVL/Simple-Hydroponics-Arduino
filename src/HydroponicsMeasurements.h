@@ -15,9 +15,15 @@ struct HydroponicsTripleMeasurement;
 struct HydroponicsMeasurementData;
 
 #include "Hydroponics.h"
+#include "HydroponicsData.h"
 
 // Creates measurement object from passed trigger sub data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasurementData *dataIn);
+
+// Gets the value of a measurement at a specified row (with optional binary true value).
+extern float measurementValueAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, float binTrue = 1.0f);
+// Gets the units of a measurement at a specified row (with optional binary units).
+extern Hydroponics_UnitsType measurementUnitsAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
 
 
 // Sensor Data Measurement Base
@@ -68,7 +74,7 @@ struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
 
-    inline HydroponicsSingleMeasurement asSingleMeasurement(int row) { return HydroponicsSingleMeasurement(state ? 1.0f : 0.0f, Hydroponics_UnitsType_Raw_0_1, timestamp, frame); }
+    inline HydroponicsSingleMeasurement asSingleMeasurement(float onValue = 1.0f, Hydroponics_UnitsType valueUnits = Hydroponics_UnitsType_Raw_0_1) { return HydroponicsSingleMeasurement(state ? onValue : 0.0f, valueUnits, timestamp, frame); }
 };
 
 // Double Sensor Data Measurement

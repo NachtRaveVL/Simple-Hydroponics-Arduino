@@ -8,9 +8,9 @@
 HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjData(), F("Invalid data"));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), F("Invalid data"));
 
-    if (dataIn && dataIn->isObjData()) {
+    if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.idType) {
             case 0: // Actuator
                 return newActuatorObjectFromData((HydroponicsActuatorData *)dataIn);
@@ -90,19 +90,19 @@ Hydroponics_KeyType HydroponicsIdentity::regenKey()
 {
     switch(type) {
         case Actuator:
-            keyStr = actuatorTypeToString(objTypeAs.actuatorType, true) + positionIndexToString(posIndex, true);
+            keyStr = actuatorTypeToString(objTypeAs.actuatorType, true) + F("-") + positionIndexToString(posIndex, true);
             break;
         case Sensor:
-            keyStr = sensorTypeToString(objTypeAs.sensorType, true) + positionIndexToString(posIndex, true);
+            keyStr = sensorTypeToString(objTypeAs.sensorType, true) + F("-") + positionIndexToString(posIndex, true);
             break;
         case Crop:
-            keyStr = cropTypeToString(objTypeAs.cropType, true) + positionIndexToString(posIndex, true);
+            keyStr = cropTypeToString(objTypeAs.cropType, true) + F("-") + positionIndexToString(posIndex, true);
             break;
         case Reservoir:
-            keyStr = reservoirTypeToString(objTypeAs.reservoirType, true) + positionIndexToString(posIndex, true);
+            keyStr = reservoirTypeToString(objTypeAs.reservoirType, true) + F("-") + positionIndexToString(posIndex, true);
             break;
         case Rail:
-            keyStr = railTypeToString(objTypeAs.railType, true) + positionIndexToString(posIndex, true);
+            keyStr = railTypeToString(objTypeAs.railType, true) + F("-") + positionIndexToString(posIndex, true);
             break;
         default: break;
     }
@@ -143,6 +143,11 @@ HydroponicsData *HydroponicsObject::saveToData()
 bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
 {
     return (_links.find(obj->_id) != _links.end());
+}
+
+const arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsObject::getLinkages() const
+{
+    return _links;
 }
 
 const HydroponicsIdentity &HydroponicsObject::getId() const

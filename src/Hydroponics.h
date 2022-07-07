@@ -115,20 +115,24 @@ using namespace arx::stdx;
 #include "HydroponicsDefines.h"
 #include "HydroponicsInlines.hpp"
 #include "HydroponicsInterfaces.h"
-#include "HydroponicsDatas.h"
+#include "HydroponicsData.h"
 #include "HydroponicsObject.h"
+#include "HydroponicsMeasurements.h"
 #include "HydroponicsUtils.hpp"
+#include "HydroponicsDatas.h"
 #include "HydroponicsCropsLibrary.h"
 #include "HydroponicsCalibrationsStore.h"
-#include "HydroponicsMeasurements.h"
 #include "HydroponicsStreams.h"
 #include "HydroponicsTriggers.h"
+#include "HydroponicsBalancers.h"
 #include "HydroponicsActuators.h"
 #include "HydroponicsSensors.h"
 #include "HydroponicsCrops.h"
 #include "HydroponicsReservoirs.h"
 #include "HydroponicsRails.h"
+#include "HydroponicsScheduler.h"
 
+// Hydroponics Controller
 class Hydroponics {
 public:
     // Library constructor. Typically called during class instantiation, before setup().
@@ -190,6 +194,14 @@ public:
     // By default this method simply calls into the active scheduler's main loop mechanism, unless multitasking is disabled in which case calls all runloops.
     void update();
 
+    // Custom Additives.
+
+    // Sets custom additive data, returning success flag.
+    bool setCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
+    // Drops custom additive data, returning success flag.
+    bool dropCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
+    // Returns custom additive data (if any), else nullptr.
+    const HydroponicsCustomAdditiveData *getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const;
 
     // Object Registration.
 
@@ -290,7 +302,7 @@ public:
                                                                       byte inputBitRes = 9);        // Sensor ADC bit resolution to use
     // Adds a new digital TMP* OneWire soil moisture sensor to the system using the given parameters.
     // Uses the XXXTODO library. A blah blah blah blah todo.
-    shared_ptr<HydroponicsTMPSoilMoistureSensor> addTMPSoilMoistureSensor(byte inputPin,            // OneWire digital input pin this sensor sits on
+    shared_ptr<HydroponicsTMPMoistureSensor> addTMPMoistureSensor(byte inputPin,            // OneWire digital input pin this sensor sits on
                                                                           byte inputBitRes = 9);    // Sensor ADC bit resolution to use
 
     // TODO: addDigitalPHMeter, addDigitalECMeter, addDigitalCO2Sensor
@@ -300,41 +312,47 @@ public:
     // Adds a new simple timer-fed crop to the system using the given parameters.
     // Timer fed crops use a simple on/off timer for driving their feeding signal.
     shared_ptr<HydroponicsTimedCrop> addTimerFedCrop(Hydroponics_CropType cropType,                 // Crop type
-                                                     Hydroponics_SubstrateType substrateType,       // Substrate type (use Undefined enum to not have feeding times slightly altered due to substrate type)
-                                                     time_t sowDate,                                // Sow date
+                                                     Hydroponics_SubstrateType substrateType,       // Substrate type
+                                                     DateTime sowDate,                              // Sow date
                                                      byte minsOn = 15,                              // Feeding signal on-time interval, in minutes
                                                      byte minsOff = 45);                            // Feeding signal off-time interval, in minutes
     // Adds a new simple timer-fed crop to the system using the given parameters (perennials only).
     // Perennials that grow back are easier to define from their last end-of-harvest date instead of when they were planted.
     shared_ptr<HydroponicsTimedCrop> addTimerFedPerennialCrop(Hydroponics_CropType cropType,        // Crop type
                                                               Hydroponics_SubstrateType substrateType, // Substrate type
-                                                              time_t lastHarvestDate,               // Last harvest date
+                                                              DateTime lastHarvestDate,             // Last harvest date
                                                               byte minsOn = 15,                     // Feeding signal on-time interval, in minutes
                                                               byte minsOff = 45);                   // Feeding signal off-time interval, in minutes
 
     // Adds a new adaptive trigger-fed crop to the system using the given parameters.
     // Adaptive crops use soil based sensors, such as moisture sensors, to drive their feeding signal.
     shared_ptr<HydroponicsAdaptiveCrop> addAdaptiveFedCrop(Hydroponics_CropType cropType,           // Crop type
-                                                           Hydroponics_SubstrateType substrateType, // Substrate type (use Undefined enum to not have feeding times slightly altered due to substrate type)
-                                                           time_t sowDate);                         // Sow date
+                                                           Hydroponics_SubstrateType substrateType, // Substrate type
+                                                           DateTime sowDate);                       // Sow date
     // Adds a new adaptive trigger-fed crop to the system using the given parameters (perennials only).
     // Perennials that grow back are easier to define from their last end-of-harvest date instead of when they were planted.
     shared_ptr<HydroponicsAdaptiveCrop> addAdaptiveFedPerennialCrop(Hydroponics_CropType cropType,  // Crop type
-                                                                    Hydroponics_SubstrateType substrateType, // Substrate type (use Undefined enum to not have feeding times slightly altered due to substrate type)
-                                                                    time_t lastHarvestDate);        // Last harvest date
+                                                                    Hydroponics_SubstrateType substrateType, // Substrate type
+                                                                    DateTime lastHarvestDate);      // Last harvest date
 
     // Convenience builders for common reservoirs (shared, nullptr return = failure).
 
     // Adds a new simple fluid reservoir to the system using the given parameters.
-    // Fluid reservoirs are basically just buckets of some liquid solution. Nothing too fancy.
+    // Fluid reservoirs are basically just buckets of some liquid solution with a known or measurable volume.
     shared_ptr<HydroponicsFluidReservoir> addFluidReservoir(Hydroponics_ReservoirType reservoirType, // Reservoir type
                                                             float maxVolume);                        // Maximum volume
 
+    // Adds a new feed reservoir to the system using the given parameters.
+    // Feed reservoirs, aka channels, are the reservoirs used to feed crops and provide a central point for managing feeding.
+    shared_ptr<HydroponicsFeedReservoir> addFeedWaterReservoir(float maxVolume,                     // Maximum volume
+                                                               DateTime lastChangeDate = DateTime((uint32_t)now()), // Last water change date
+                                                               DateTime lastPruningDate = DateTime((uint32_t)0)); // Last pruning date
+
     // Adds a drainage pipe to the system using the given parameters.
-    // Drainage pipes are never-filled infinite reservoirs that can always be pumped into.
+    // Drainage pipes are never-filled infinite reservoirs that can always be pumped/drained into.
     shared_ptr<HydroponicsInfiniteReservoir> addDrainagePipe();
     // Adds a fresh water main to the system using the given parameters.
-    // Fresh water mains are always-filled infinite reservoirs that can always be pumped from.
+    // Fresh water mains are always-filled infinite reservoirs that can always be pumped/sourced from.
     shared_ptr<HydroponicsInfiniteReservoir> addFreshWaterMain();
 
     // Convenience builders for common power rails (shared, nullptr return = failure).
@@ -348,6 +366,13 @@ public:
     // Regulated power rails can use a power meter to measure energy consumption to limit overdraw.
     shared_ptr<HydroponicsRegulatedRail> addRegulatedPowerRail(Hydroponics_RailType railType,       // Rail type
                                                                float maxPower);                     // Maximum allowed power
+
+    // Mutators.
+
+    void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE size limit)
+    void setTimeZoneOffset(int8_t timeZoneOffset);                  // Sets system time zone offset from UTC
+    void setPollingInterval(uint32_t pollingInterval);              // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
+    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
 
     // Accessors.
 
@@ -364,27 +389,17 @@ public:
     RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
 
-    int getActuatorCount() const;                                   // Current number of total actuators registered with system
-    int getSensorCount() const;                                     // Current number of total sensors registered with system
-    int getCropCount() const;                                       // Current number of total crops registered with system
-    int getReservoirCount() const;                                  // Current number of total reservoirs registered with system
-    int getRailCount() const;                                       // Current number of total power rails registered with system
-
+    bool getIsInOperationalMode() const;                            // Whenever the system is in operational mode (has been launched), or not
     String getSystemName() const;                                   // System display name (default: "Hydruino")
+    int8_t getTimeZoneOffset() const;                               // System time zone offset from UTC
+    bool getRTCBatteryFailure() const;                              // Whenever the system booted up with RTC battery failure flag set
     uint32_t getPollingInterval() const;                            // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
     uint32_t getPollingFrame() const;                               // System polling frame number for sensor frame tracking
-    bool isPollingFrameOld(uint32_t frame) const;                   // Determines if a given frame # if out of date (true) or current (false)
-    DateTime getLastWaterChange() const;                            // Time of last water change, if tracked (recycling system only)
+    bool getIsPollingFrameOld(uint32_t frame) const;                // Determines if a given frame # if out of date (true) or current (false)
+    int getControlInputRibbonPinCount() const;                      // Total number of pins being used for the current control input ribbon mode
+    byte getControlInputPin(int ribbonPinIndex) const;              // Control input pin mapped to ribbon pin index, or -1 (255) if not used
 
-    int getControlInputRibbonPinCount();                            // Total number of pins being used for the current control input ribbon mode
-    byte getControlInputPin(int ribbonPinIndex);                    // Control input pin mapped to ribbon pin index, or -1 (255) if not used
-
-    // Mutators.
-
-    void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE size limit)
-    void setPollingInterval(uint32_t pollingInterval);              // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
-
-    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
+    void notifyRTCTimeUpdated();                                    // Called when RTC time is updated, unsets battery failure flag and sets rescheduling flag
 
 protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init)
@@ -406,7 +421,8 @@ protected:
     Task *_dataTask;                                                // Data collection task (on polling interval)
     Task *_miscTask;                                                // Misc task
 #elif defined(HYDRUINO_USE_SCHEDULER)
-    bool _suspend;                                                  // Suspend tracking
+    bool _loopsStarted;                                             // Loops started flag
+    bool _suspend;                                                  // Suspend operation flag
 #endif
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
@@ -414,12 +430,17 @@ protected:
     bool _eepromBegan;                                              // Status of EEPROM begin()
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
-    byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map (aliasing for systemData until created)
+    byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
 
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
     uint32_t _pollingFrame;                                         // Polling frame #
 
     arx::map<Hydroponics_KeyType, shared_ptr<HydroponicsObject> > _objects; // Shared object collection, key'ed by HydroponicsIdentity.
+    arx::map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *> _additives; // Custom additives data
+
+    HydroponicsScheduler _scheduler;
+    friend class HydroponicsScheduler;
+    friend HydroponicsScheduler *::getSchedulerInstance();
 
     void allocateEEPROM();
     void deallocateEEPROM();
@@ -435,11 +456,10 @@ protected:
     friend void ::dataLoop();
     friend void ::miscLoop();
     void updateObjects(int pass);
-    void updateScheduling();
-    void updateLogging();
+
+    shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
 
     void checkFreeMemory();
-
     //void forwardPublishData(paramsTODO);
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
     void forwardLogMessage(String message, bool flushAfter = false);

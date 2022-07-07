@@ -8,9 +8,9 @@
 HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjData(), F("Invalid data"));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), F("Invalid data"));
 
-    if (dataIn && dataIn->isObjData()) {
+    if (dataIn && dataIn->isObjectData()) {
         switch(dataIn->id.object.classType) {
             case 0: // Binary
                 return new HydroponicsBinarySensor((const HydroponicsBinarySensorData *)dataIn);
@@ -22,7 +22,7 @@ HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn)
             case 4: // DS1W
                 return new HydroponicsDSTemperatureSensor((const HydroponicsDSTemperatureSensorData *)dataIn);
             case 5: // TMP1W
-                return new HydroponicsTMPSoilMoistureSensor((const HydroponicsTMPSoilMoistureSensorData *)dataIn);
+                return new HydroponicsTMPMoistureSensor((const HydroponicsTMPMoistureSensorData *)dataIn);
             default: break;
         }
     }
@@ -113,7 +113,7 @@ bool HydroponicsSensor::getNeedsPolling() const
 {
     auto hydroponics = getHydroponicsInstance();
     auto latestMeasurement = getLatestMeasurement();
-    return hydroponics && latestMeasurement ? hydroponics->isPollingFrameOld(latestMeasurement->frame) : false;
+    return hydroponics && latestMeasurement ? hydroponics->getIsPollingFrameOld(latestMeasurement->frame) : false;
 }
 
 void HydroponicsSensor::setCrop(HydroponicsIdentity cropId)
@@ -191,7 +191,7 @@ Hydroponics_PositionIndex HydroponicsSensor::getSensorIndex() const
     return _id.posIndex;
 }
 
-Signal<HydroponicsMeasurement *> &HydroponicsSensor::getMeasurementSignal()
+Signal<const HydroponicsMeasurement *> &HydroponicsSensor::getMeasurementSignal()
 {
     return _measureSignal;
 }
@@ -253,7 +253,7 @@ void HydroponicsBinarySensor::takeMeasurement(bool override)
         bool stateChanged = _lastMeasurement.state != newMeasurement.state;
         _lastMeasurement = newMeasurement;
 
-        scheduleSignalFireOnce<HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+        scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
         if (stateChanged) {
             scheduleSignalFireOnce<bool>(_stateSignal, _lastMeasurement.state);
         }
@@ -353,7 +353,7 @@ void HydroponicsAnalogSensor::takeMeasurement(bool override)
         convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
 
         _lastMeasurement = newMeasurement;
-        scheduleSignalFireOnce<HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+        scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
 
         _isTakingMeasure = false;
     }
@@ -532,7 +532,7 @@ void HydroponicsDHTTempHumiditySensor::takeMeasurement(bool override)
         }
 
         _lastMeasurement = newMeasurement;
-        scheduleSignalFireOnce<HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+        scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
 
         _isTakingMeasure = false;
     }
@@ -633,20 +633,18 @@ void HydroponicsDSTemperatureSensor::takeMeasurement(bool override = false)
             timestamp
         );
 
-        bool deviceDisconnected = isFPEqual(tempRead, (readInFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C));
+        bool deviceDisconnected = isFPEqual(tempRead, (float)(readInFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C));
         HYDRUINO_SOFT_ASSERT(!deviceDisconnected, F("Measurement failed device disconnected"));
 
         if (!deviceDisconnected) {
             convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
 
             _lastMeasurement = newMeasurement;
-            scheduleSignalFireOnce<HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+            scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
         }
 
         _isTakingMeasure = false;
     }
-
-    return &_lastMeasurement;
 }
 
 const HydroponicsMeasurement *HydroponicsDSTemperatureSensor::getLatestMeasurement() const
@@ -678,21 +676,21 @@ void HydroponicsDSTemperatureSensor::saveToData(HydroponicsData *dataOut) const
 }
 
 
-HydroponicsTMPSoilMoistureSensor::HydroponicsTMPSoilMoistureSensor(Hydroponics_PositionIndex sensorIndex,
+HydroponicsTMPMoistureSensor::HydroponicsTMPMoistureSensor(Hydroponics_PositionIndex sensorIndex,
                                                                    byte inputPin, byte inputBitRes,
                                                                    int classType)
     : HydroponicsDigitalSensor(Hydroponics_SensorType_SoilMoisture, sensorIndex, inputPin, true, classType),
       _inputBitRes(inputBitRes)
 { ; }
 
-HydroponicsTMPSoilMoistureSensor::HydroponicsTMPSoilMoistureSensor(const HydroponicsTMPSoilMoistureSensorData *dataIn)
+HydroponicsTMPMoistureSensor::HydroponicsTMPMoistureSensor(const HydroponicsTMPMoistureSensorData *dataIn)
     : HydroponicsDigitalSensor(dataIn, true), _inputBitRes(dataIn->inputBitRes)
 { ; }
 
-HydroponicsTMPSoilMoistureSensor::~HydroponicsTMPSoilMoistureSensor()
+HydroponicsTMPMoistureSensor::~HydroponicsTMPMoistureSensor()
 { ; }
 
-void HydroponicsTMPSoilMoistureSensor::takeMeasurement(bool override)
+void HydroponicsTMPMoistureSensor::takeMeasurement(bool override)
 {
     if (override || getNeedsPolling()) {
         _isTakingMeasure = true;
@@ -708,38 +706,38 @@ void HydroponicsTMPSoilMoistureSensor::takeMeasurement(bool override)
         //convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
 
         //_lastMeasurement = newMeasurement;
-        scheduleSignalFireOnce<HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+        scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
 
         _isTakingMeasure = false;
     }
 }
 
-const HydroponicsMeasurement *HydroponicsTMPSoilMoistureSensor::getLatestMeasurement() const
+const HydroponicsMeasurement *HydroponicsTMPMoistureSensor::getLatestMeasurement() const
 {
     return &_lastMeasurement;
 }
 
-void HydroponicsTMPSoilMoistureSensor::setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow)
+void HydroponicsTMPMoistureSensor::setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow)
 {
     _measurementUnits = measurementUnits;
 }
 
-Hydroponics_UnitsType HydroponicsTMPSoilMoistureSensor::getMeasurementUnits(int measurementRow) const
+Hydroponics_UnitsType HydroponicsTMPMoistureSensor::getMeasurementUnits(int measurementRow) const
 {
     return _measurementUnits;
 }
 
-OneWire &HydroponicsTMPSoilMoistureSensor::getOneWire() const
+OneWire &HydroponicsTMPMoistureSensor::getOneWire() const
 {
     return *_oneWire;
 }
 
-void HydroponicsTMPSoilMoistureSensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsTMPMoistureSensor::saveToData(HydroponicsData *dataOut) const
 {
     HydroponicsDigitalSensor::saveToData(dataOut);
 
-    ((HydroponicsTMPSoilMoistureSensorData *)dataOut)->inputBitRes = _inputBitRes;
-    ((HydroponicsTMPSoilMoistureSensorData *)dataOut)->measurementUnits = _measurementUnits;
+    ((HydroponicsTMPMoistureSensorData *)dataOut)->inputBitRes = _inputBitRes;
+    ((HydroponicsTMPMoistureSensorData *)dataOut)->measurementUnits = _measurementUnits;
 }
 
 
@@ -894,13 +892,13 @@ void HydroponicsDSTemperatureSensorData::fromJSONObject(JsonObjectConst &objectI
     measurementUnits = objectIn[F("measurementUnits")] | measurementUnits;
 }
 
-HydroponicsTMPSoilMoistureSensorData::HydroponicsTMPSoilMoistureSensorData()
+HydroponicsTMPMoistureSensorData::HydroponicsTMPMoistureSensorData()
     : HydroponicsDigitalSensorData(), inputBitRes(9), measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     _size = sizeof(*this);
 }
 
-void HydroponicsTMPSoilMoistureSensorData::toJSONObject(JsonObject &objectOut) const
+void HydroponicsTMPMoistureSensorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsDigitalSensorData::toJSONObject(objectOut);
 
@@ -908,7 +906,7 @@ void HydroponicsTMPSoilMoistureSensorData::toJSONObject(JsonObject &objectOut) c
     if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = measurementUnits; }
 }
 
-void HydroponicsTMPSoilMoistureSensorData::fromJSONObject(JsonObjectConst &objectIn)
+void HydroponicsTMPMoistureSensorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsDigitalSensorData::fromJSONObject(objectIn);
 

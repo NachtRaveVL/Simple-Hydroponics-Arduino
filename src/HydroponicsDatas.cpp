@@ -1,6 +1,6 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
-    Hydroponics Data Objects
+    Hydroponics Datas
 */
 
 #include "Hydroponics.h"
@@ -9,15 +9,17 @@ HydroponicsData *_allocateDataFromBaseDecode(const HydroponicsData &baseDecode)
 {
     HydroponicsData *retVal = nullptr;
 
-    if (baseDecode.isStdData()) {
+    if (baseDecode.isStandardData()) {
         if (baseDecode.isSystemData()) {
             retVal = new HydroponicsSystemData();
         } else if (baseDecode.isCalibrationData()) {
             retVal = new HydroponicsCalibrationData();
         } else if (baseDecode.isCropsLibData()) {
             retVal = new HydroponicsCropsLibData();
+        } else if (baseDecode.isAdditiveData()) {
+            retVal = new HydroponicsCustomAdditiveData();
         }
-    } else if (baseDecode.isObjData()) {
+    } else if (baseDecode.isObjectData()) {
         retVal = _allocateDataForObjType(baseDecode.id.object.idType, baseDecode.id.object.classType);
     }
 
@@ -36,11 +38,11 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
     switch (idType) {
         case 0: // Actuator
             switch(classType) {
-                case 0:
+                case 0: // Relay
                     return new HydroponicsRelayActuatorData();
-                case 1:
+                case 1: // Pump Relay
                     return new HydroponicsPumpRelayActuatorData();
-                case 2:
+                case 2: // PWM
                     return new HydroponicsPWMActuatorData();
                 default: break;
             }
@@ -48,26 +50,25 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
 
         case 1: // Sensor
             switch(classType) {
-                case 0:
+                case 0: // Binary
                     return new HydroponicsBinarySensorData();
-                case 1:
+                case 1: // Analog
                     return new HydroponicsAnalogSensorData();
-                case 3:
+                case 3: // DHT
                     return new HydroponicsDHTTempHumiditySensorData();
-                case 4:
+                case 4: // DS
                     return new HydroponicsDSTemperatureSensorData();
-                case 5:
-                    return new HydroponicsTMPSoilMoistureSensorData();
+                case 5: // TMP
+                    return new HydroponicsTMPMoistureSensorData();
                 default: break;
             }
             break;
 
         case 2: // Crop
             switch(classType) {
-                case 0:
+                case 0: // Timed
                     return new HydroponicsTimedCropData();
-                    break;
-                case 1:
+                case 1: // Adaptive
                     return new HydroponicsAdaptiveCropData();
                 default: break;
             }
@@ -75,9 +76,11 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
 
         case 3: // Reservoir
             switch(classType) {
-                case 0:
+                case 0: // Fluid
                     return new HydroponicsFluidReservoirData();
-                case 1:
+                case 1: // Feed
+                    return new HydroponicsFeedReservoirData();
+                case 2: // Pipe
                     return new HydroponicsInfiniteReservoirData();
                 default: break;
             }
@@ -85,9 +88,9 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
 
         case 4: // Rail
             switch(classType) {
-                case 0:
+                case 0: // Simple
                     return new HydroponicsSimpleRailData();
-                case 1:
+                case 1: // Regulated
                     return new HydroponicsRegulatedRailData();
                 default: break;
             }
@@ -99,132 +102,11 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
     return nullptr;
 }
 
-size_t serializeDataToBinaryStream(HydroponicsData *data, Stream *streamOut, size_t skipBytes)
-{
-    return streamOut->write((const byte *)((intptr_t)data + skipBytes), data->_size - skipBytes);
-}
-
-size_t deserializeDataFromBinaryStream(HydroponicsData *data, Stream *streamIn, size_t skipBytes)
-{
-    return streamIn->readBytes((byte *)((intptr_t)data + skipBytes), data->_size - skipBytes);
-}
-
-HydroponicsData *newDataFromBinaryStream(Stream *streamIn)
-{
-    HydroponicsData baseDecode;
-    size_t readBytes = deserializeDataFromBinaryStream(&baseDecode, streamIn, sizeof(void*));
-    HYDRUINO_SOFT_ASSERT(readBytes == baseDecode._size - sizeof(void*), F("Failure importing data, unexpected read length"));
-
-    if (readBytes) {
-        HydroponicsData *data = _allocateDataFromBaseDecode(baseDecode);
-        HYDRUINO_SOFT_ASSERT(data, F("Failure allocating data"));
-
-        if (data) {
-            readBytes += deserializeDataFromBinaryStream(data, streamIn, readBytes + sizeof(void*));
-            HYDRUINO_SOFT_ASSERT(readBytes == data->_size - sizeof(void*), F("Failure importing data, unexpected read length"));
-
-            return data;
-        }
-    }
-
-    return nullptr;
-}
-
-HydroponicsData *newDataFromJSONObject(JsonObjectConst &objectIn)
-{
-    HydroponicsData baseDecode;
-    baseDecode.fromJSONObject(objectIn);
-
-    HydroponicsData *data = _allocateDataFromBaseDecode(baseDecode);
-    HYDRUINO_SOFT_ASSERT(data, F("Failure allocating data"));
-
-    if (data) {
-        data->fromJSONObject(objectIn);
-        return data;
-    }
-
-    return nullptr;
-}
-
-
-HydroponicsData::HydroponicsData()
-    : id{.chars={'\0','\0','\0','\0'}}, _version(1), _revision(1), _modified(false)
-{
-    _size = sizeof(*this);
-}
-
-HydroponicsData::HydroponicsData(const char *idIn, uint8_t version, uint8_t revision)
-    : id{.chars={'\0','\0','\0','\0'}}, _version(version), _revision(revision), _modified(false)
-{
-    _size = sizeof(*this);
-    HYDRUINO_SOFT_ASSERT(idIn, F("Invalid id"));
-    strncpy(id.chars, idIn, sizeof(id.chars));
-}
-
-HydroponicsData::HydroponicsData(int8_t idType, int8_t objType, int8_t posIndex, int8_t classType, uint8_t version, uint8_t revision)
-    : id{.object={idType,objType,posIndex,classType}}, _version(version), _revision(revision), _modified(false)
-{
-    _size = sizeof(*this);
-}
-
-HydroponicsData::HydroponicsData(const HydroponicsIdentity &id)
-    : HydroponicsData(id.type, (int8_t)id.objTypeAs.actuatorType, id.posIndex, -1, 1, 1)
-{
-    _size = sizeof(*this);
-}
-
-void HydroponicsData::toJSONObject(JsonObject &objectOut) const
-{
-    if (this->isStdData()) {
-        objectOut[F("type")] = stringFromChars(id.chars, sizeof(id.chars));
-    } else {
-        int8_t typeVals[4] = {id.object.idType, id.object.objType, id.object.posIndex, id.object.classType};
-        objectOut[F("type")] = commaStringFromArray(typeVals, 4);
-    }
-    if (_version > 1) { objectOut[F("_ver")] = _version; }
-    if (_revision > 1) { objectOut[F("_rev")] = _revision; }
-}
-
-void HydroponicsData::fromJSONObject(JsonObjectConst &objectIn)
-{
-    JsonVariantConst idVar = objectIn[F("type")];
-    const char *idStr = idVar.as<const char *>();
-    if (idStr && idStr[0] == 'H') {
-        strncpy(id.chars, idStr, sizeof(id.chars));
-    } else if (idStr) {
-        int8_t typeVals[4];
-        commaStringToArray(idStr, typeVals, 4);
-        id.object.idType = typeVals[0];
-        id.object.objType = typeVals[1];
-        id.object.posIndex = typeVals[2];
-        id.object.classType = typeVals[3];
-    }
-    _version = objectIn[F("_ver")] | _version;
-    _revision = objectIn[F("_rev")] | _revision;
-}
-
-
-HydroponicsSubData::HydroponicsSubData()
-    : type(-1)
-{ ; }
-
-void HydroponicsSubData::toJSONObject(JsonObject &objectOut) const
-{
-    if (type != -1) { objectOut[F("type")] = type; }
-}
-
-void HydroponicsSubData::fromJSONObject(JsonObjectConst &objectIn)
-{
-    type = objectIn[F("type")] | type;
-}
-
-
 HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData("HSYS", 1),
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
-      ctrlInputPinMap{0}, timeZoneOffset(0),
-      pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL)
+      systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL)
 {
     _size = sizeof(*this);
     String defaultSysNameStr(F("Hydruino"));
@@ -242,7 +124,8 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
     if (systemName[0]) { objectOut[F("systemName")] = stringFromChars(systemName, HYDRUINO_NAME_MAXSIZE); }
     if (timeZoneOffset != 0) { objectOut[F("timeZoneOffset")] = timeZoneOffset; }
     if (pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[F("pollingInterval")] = pollingInterval; }
-    if (lastWaterChangeTime > DateTime().unixtime()) { objectOut[F("lastWaterChangeTime")] = lastWaterChangeTime; }
+    JsonObject schedulerObj = objectOut.createNestedObject(F("scheduler"));
+    scheduler.toJSONObject(schedulerObj); if (!schedulerObj.size()) { objectOut.remove(F("scheduler")); }
 }
 
 void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
@@ -257,7 +140,8 @@ void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
     if (systemNameStr && systemNameStr[0]) { strncpy(systemName, systemNameStr, HYDRUINO_NAME_MAXSIZE); }
     timeZoneOffset = objectIn[F("timeZoneOffset")] | timeZoneOffset;
     pollingInterval = objectIn[F("pollingInterval")] | pollingInterval;
-    lastWaterChangeTime = objectIn[F("lastWaterChangeTime")] | lastWaterChangeTime;
+    JsonObjectConst schedulerObj = objectIn[F("scheduler")];
+    if (!schedulerObj.isNull()) { scheduler.fromJSONObject(schedulerObj); }
 }
 
 
@@ -317,9 +201,10 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
       cropType(Hydroponics_CropType_Undefined), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6,6}, ecRange{1.8,2.4}, waterTempRange{25,25}, airTempRange{25,25},
-      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
-      isPruningRequired(false), isToxicToPets(false)
+      phRange{6,6}, tdsRange{1.8,2.4}, nightlyFeedMultiplier(1),
+      waterTempRange{25,25}, airTempRange{25,25},
+      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false), isToxicToPets(false),
+      isPruningNeeded(false), isSprayingNeeded(false)
 {
     _size = sizeof(*this);
 }
@@ -329,19 +214,20 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
       cropType(cropTypeIn), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6,6}, ecRange{1.8,2.4}, waterTempRange{25,25}, airTempRange{25,25},
-      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false),
-      isPruningRequired(false), isToxicToPets(false)
+      phRange{6,6}, tdsRange{1.8,2.4}, nightlyFeedMultiplier(1),
+      waterTempRange{25,25}, airTempRange{25,25},
+      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false), isToxicToPets(false),
+      isPruningNeeded(false), isSprayingNeeded(false)
 {
     _size = sizeof(*this);
 
     auto cropsLibrary = getCropsLibraryInstance();
     if (cropsLibrary) {
-        auto cropsLibData = cropsLibrary->checkoutCropData(cropType);
+        auto cropsLibData = cropsLibrary->checkoutCropsData(cropType);
         if (cropsLibData && this != cropsLibData) {
             *this = *cropsLibData;
         }
-        cropsLibrary->returnCropData(cropsLibData);
+        cropsLibrary->returnCropsData(cropsLibData);
     }
 }
 
@@ -378,7 +264,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         objectOut[F("phaseDurationWeeks")] = commaStringFromArray(phaseDurationWeeks, 3);
     }
 
-    if (!(isFPEqual(phRange[0], 6) && isFPEqual(phRange[1], 6))) {
+    if (!(isFPEqual(phRange[0], 6.0f) && isFPEqual(phRange[1], 6.0f))) {
         if (!isFPEqual(phRange[0], phRange[1])) {
             objectOut[F("phRange")] = commaStringFromArray(phRange, 2);
         } else {
@@ -386,15 +272,17 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (!(isFPEqual(ecRange[0], 1.8) && isFPEqual(ecRange[1], 2.4))) {
-        if (!isFPEqual(ecRange[0], ecRange[1])) {
-            objectOut[F("ecRange")] = commaStringFromArray(ecRange, 2);
+    if (!(isFPEqual(tdsRange[0], 1.8f) && isFPEqual(tdsRange[1], 2.4f))) {
+        if (!isFPEqual(tdsRange[0], tdsRange[1])) {
+            objectOut[F("tdsRange")] = commaStringFromArray(tdsRange, 2);
         } else {
-            objectOut[F("ecRange")] = ecRange[0];
+            objectOut[F("tdsRange")] = tdsRange[0];
         }
     }
 
-    if (!(isFPEqual(waterTempRange[0], 25) && isFPEqual(waterTempRange[1], 25))) {
+    if (!isFPEqual(nightlyFeedMultiplier, 1.0f)) { objectOut[F("nightlyFeedMultiplier")] = nightlyFeedMultiplier; }
+
+    if (!(isFPEqual(waterTempRange[0], 25.0f) && isFPEqual(waterTempRange[1], 25.0f))) {
         if (!isFPEqual(waterTempRange[0], waterTempRange[1])) {
             objectOut[F("waterTempRange")] = commaStringFromArray(waterTempRange, 2);
         } else {
@@ -402,7 +290,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (!(isFPEqual(airTempRange[0], 25) && isFPEqual(airTempRange[1], 25))) {
+    if (!(isFPEqual(airTempRange[0], 25.0f) && isFPEqual(airTempRange[1], 25.0f))) {
         if (!isFPEqual(airTempRange[0], airTempRange[1])) {
             objectOut[F("airTempRange")] = commaStringFromArray(airTempRange, 2);
         } else {
@@ -410,13 +298,14 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (isInvasiveOrViner || isLargePlant || isPerennial || isPruningRequired || isToxicToPets) {
+    if (isInvasiveOrViner || isLargePlant || isPerennial || isToxicToPets || isPruningNeeded || isSprayingNeeded) {
         String flagsString = "";
         if (isInvasiveOrViner) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("invasive")); }
         if (isLargePlant) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("large")); }
         if (isPerennial) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("perennial")); }
-        if (isPruningRequired) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("pruning")); }
         if (isToxicToPets) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("toxic")); }
+        if (isPruningNeeded) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("pruning")); }
+        if (isSprayingNeeded) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("spraying")); }
         objectOut[F("flags")] = flagsString;
     }
 }
@@ -454,10 +343,15 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
         phRange[1] = phRangeVar[F("max")] | phRangeVar[1] | phRange[1];
     }
     {   JsonVariantConst ecRangeVar = objectIn[F("ecRange")];
-        commaStringToArray(ecRangeVar, ecRange, 2);
-        ecRange[0] = ecRangeVar[F("min")] | ecRangeVar[0] | ecRange[0];
-        ecRange[1] = ecRangeVar[F("max")] | ecRangeVar[1] | ecRange[1];
+        JsonVariantConst tdsRangeVar = objectIn[F("tdsRange")];
+        commaStringToArray(ecRangeVar, tdsRange, 2);
+        commaStringToArray(tdsRangeVar, tdsRange, 2);
+        tdsRange[0] = tdsRangeVar[F("min")] | tdsRangeVar[0] | ecRangeVar[F("min")] | ecRangeVar[0] | tdsRange[0];
+        tdsRange[1] = tdsRangeVar[F("max")] | tdsRangeVar[1] | ecRangeVar[F("max")] | ecRangeVar[1] | tdsRange[1];
     }
+
+    nightlyFeedMultiplier = objectIn[F("nightlyFeedMultiplier")] | nightlyFeedMultiplier;
+
     {   JsonVariantConst waterTempRangeVar = objectIn[F("waterTempRange")];
         commaStringToArray(waterTempRangeVar, waterTempRange, 2);
         waterTempRange[0] = waterTempRangeVar[F("min")] | waterTempRangeVar[0] | waterTempRange[0];
@@ -477,16 +371,62 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
                 if (flagStr.equalsIgnoreCase(F("invasive"))) { isInvasiveOrViner = true; }
                 if (flagStr.equalsIgnoreCase(F("large"))) { isLargePlant = true; }
                 if (flagStr.equalsIgnoreCase(F("perennial"))) { isPerennial = true; }
-                if (flagStr.equalsIgnoreCase(F("pruning"))) { isPruningRequired = true; }
                 if (flagStr.equalsIgnoreCase(F("toxic"))) { isToxicToPets = true; }
+                if (flagStr.equalsIgnoreCase(F("pruning"))) { isPruningNeeded = true; }
+                if (flagStr.equalsIgnoreCase(F("spraying"))) { isSprayingNeeded = true; }
             }
         } else if (!flagsVar.isNull()) {
             String flagsString = String(F(",")) + objectIn[F("flags")].as<String>() + String(F(","));
             isInvasiveOrViner = occurrencesInStringIgnoreCase(flagsString, F(",invasive,"));
             isLargePlant = occurrencesInStringIgnoreCase(flagsString, F(",large,"));
             isPerennial = occurrencesInStringIgnoreCase(flagsString, F(",perennial,"));
-            isPruningRequired = occurrencesInStringIgnoreCase(flagsString, F(",pruning,"));
             isToxicToPets = occurrencesInStringIgnoreCase(flagsString, F(",toxic,"));
+            isPruningNeeded = occurrencesInStringIgnoreCase(flagsString, F(",pruning,"));
+            isSprayingNeeded = occurrencesInStringIgnoreCase(flagsString, F(",spraying,"));
         }
+    }
+}
+
+HydroponicsCustomAdditiveData::HydroponicsCustomAdditiveData()
+    : HydroponicsData("HCAL", 1), additiveName{0}, weeklyDosingRates{1}
+{
+    _size = sizeof(*this);
+}
+
+HydroponicsCustomAdditiveData::HydroponicsCustomAdditiveData(Hydroponics_ReservoirType reservoirType)
+    : HydroponicsData("HCAL", 1), additiveName{0}, weeklyDosingRates{0}
+{
+    _size = sizeof(*this);
+
+    auto hydroponics = getHydroponicsInstance();
+    if (hydroponics) { 
+        auto additiveData = hydroponics->getCustomAdditiveData(reservoirType);
+        if (additiveData && this != additiveData) {
+            *this = *additiveData;
+        }
+    }
+}
+
+void HydroponicsCustomAdditiveData::toJSONObject(JsonObject &objectOut) const
+{
+    HydroponicsData::toJSONObject(objectOut);
+
+    objectOut[F("id")] = reservoirTypeToString(reservoirType);
+    if (additiveName[0]) { objectOut[F("additiveName")] = stringFromChars(additiveName, HYDRUINO_NAME_MAXSIZE); }
+    bool hasWeeklyDosings = arrayEqualsAll(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 0.0f);
+    if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX); }
+}
+
+void HydroponicsCustomAdditiveData::fromJSONObject(JsonObjectConst &objectIn)
+{
+    HydroponicsData::fromJSONObject(objectIn);
+
+    reservoirType = reservoirTypeFromString(objectIn[F("id")] | objectIn[F("reservoirType")]);
+    const char *additiveNameStr = objectIn[F("additiveName")];
+    if (additiveNameStr && additiveNameStr[0]) { strncpy(additiveName, additiveNameStr, HYDRUINO_NAME_MAXSIZE); }
+    JsonVariantConst weeklyDosingRatesVar = objectIn[F("weeklyDosingRates")];
+    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX);
+    for (int weekIndex = 0; weekIndex < HYDRUINO_CROP_GROWEEKS_MAX; ++weekIndex) { 
+        weeklyDosingRates[weekIndex] = weeklyDosingRatesVar[weekIndex] | weeklyDosingRates[weekIndex];
     }
 }

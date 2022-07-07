@@ -13,6 +13,7 @@ class HydroponicsMeasurementRangeTrigger;
 struct HydroponicsTriggerSubData;
 
 #include "Hydroponics.h"
+#include "HydroponicsObject.h"
 
 // Creates trigger object from passed trigger sub data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData *dataIn);
@@ -24,15 +25,15 @@ extern HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerS
 class HydroponicsTrigger : public HydroponicsSubObject, public HydroponicsTriggerObjectInterface {
 public:
     const enum { MeasureValue, MeasureRange, Unknown = -1 } type; // Trigger type (custom RTTI)
-    inline bool isMeasureValueType() { return type == MeasureValue; }
-    inline bool isMeasureRangeType() { return type == MeasureRange; }
-    inline bool isUnknownType() { return type <= Unknown; }
+    inline bool isMeasureValueType() const { return type == MeasureValue; }
+    inline bool isMeasureRangeType() const { return type == MeasureRange; }
+    inline bool isUnknownType() const { return type <= Unknown; }
 
-    HydroponicsTrigger(int type = Unknown);
+    HydroponicsTrigger(HydroponicsIdentity sensorId, int measurementRow = 0, int type = Unknown);
+    HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, int measurementRow = 0, int type = Unknown);
     HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn);
     virtual ~HydroponicsTrigger();
 
-    void saveToData(HydroponicsSubData *dataOut) const override;
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const;
 
     virtual void update() override;
@@ -43,12 +44,21 @@ public:
     virtual void detachTrigger() = 0;
     virtual Hydroponics_TriggerState getTriggerState() const override;
 
+    void setToleranceUnits(Hydroponics_UnitsType units);
+    Hydroponics_UnitsType getToleranceUnits() const;
+
+    shared_ptr<HydroponicsSensor> getSensor();
+    int getMeasurementRow() const;
+
     Signal<Hydroponics_TriggerState> &getTriggerSignal();
 
 protected:
-    Hydroponics_TriggerState _triggerState;                 // Trigger state
-    Signal<Hydroponics_TriggerState> _triggerSignal;        // Trigger signal
+    HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
+    int8_t _measurementRow;                                 // Measurement data row to check against
     bool _attached;                                         // Attached flag
+    Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
+    Hydroponics_TriggerState _triggerState;                 // Current trigger state
+    Signal<Hydroponics_TriggerState> _triggerSignal;        // Trigger signal
 };
 
 
@@ -67,28 +77,21 @@ public:
 
     void saveToData(HydroponicsTriggerSubData *dataOut) const override;
 
-    void resolveLinks() override;
-
     void attachTrigger() override;
     void detachTrigger() override;
 
-    void setToleranceUnits(Hydroponics_UnitsType units);
-    Hydroponics_UnitsType getToleranceUnits() const;
+    void setTriggerTolerance(float tolerance);
 
-    shared_ptr<HydroponicsSensor> getSensor();
     float getTriggerTolerance() const;
     float getDetriggerTolerance() const;
     bool getTriggerBelow() const;
 
 protected:
-    HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
     float _triggerTolerance;                                // Trigger tolerance limit
     float _detriggerTolerance;                              // Detrigger tolerance additive
-    Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
     bool _triggerBelow;                                     // Trigger below flag
-    int8_t _measurementRow;                                 // Measurement data row to check against
 
-    void handleSensorMeasure(HydroponicsMeasurement *measurement);
+    void handleSensorMeasure(const HydroponicsMeasurement *measurement);
 };
 
 
@@ -108,35 +111,30 @@ public:
 
     void saveToData(HydroponicsTriggerSubData *dataOut) const override;
 
-    void resolveLinks() override;
-
     void attachTrigger() override;
     void detachTrigger() override;
 
-    void setToleranceUnits(Hydroponics_UnitsType units);
-    Hydroponics_UnitsType getToleranceUnits() const;
+    void setTriggerToleranceMid(float toleranceMid);
 
-    shared_ptr<HydroponicsSensor> getSensor();
     float getTriggerToleranceLow() const;
     float getTriggerToleranceHigh() const;
     float getDetriggerTolerance() const;
+    bool getTriggerOutside() const;
 
 protected:
-    HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
     float _triggerToleranceLow;                             // Low value tolerance
     float _triggerToleranceHigh;                            // High value tolerance
     float _detriggerTolerance;                              // Detrigger tolerance additive
-    Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
     bool _triggerOutside;                                   // Trigger on outside flag
-    int8_t _measurementRow;                                 // Measurement data row to check against
 
-    void handleSensorMeasure(HydroponicsMeasurement *measurement);
+    void handleSensorMeasure(const HydroponicsMeasurement *measurement);
 };
 
 
 // Combined Trigger Serialization Sub Data
 struct HydroponicsTriggerSubData : public HydroponicsSubData {
     char sensorName[HYDRUINO_NAME_MAXSIZE];
+    int8_t measurementRow;
     union {
         struct {
             float tolerance;
@@ -150,7 +148,6 @@ struct HydroponicsTriggerSubData : public HydroponicsSubData {
     } dataAs;
     float detriggerTolerance;
     Hydroponics_UnitsType toleranceUnits;
-    int8_t measurementRow;
 
     HydroponicsTriggerSubData();
     void toJSONObject(JsonObject &objectOut) const;

@@ -26,11 +26,11 @@ public:
 
     // Checks out the crop data for this crop from the library, created via the JSON from
     // PROGMEM if needed (nullptr return = failure). Increments crop data ref count by one.
-    const HydroponicsCropsLibData *checkoutCropData(Hydroponics_CropType cropType);
+    const HydroponicsCropsLibData *checkoutCropsData(Hydroponics_CropType cropType);
 
     // Returns crop data back to the library, to delete when no longer used. Decrements crop
     // data internal ref count by one, deleting on zero.
-    void returnCropData(const HydroponicsCropsLibData *cropData);
+    void returnCropsData(const HydroponicsCropsLibData *cropData);
 
     // Adds/updates custom crop data to the library, returning success flag
     bool setCustomCropData(const HydroponicsCropsLibData *cropData);

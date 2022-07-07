@@ -27,12 +27,12 @@ extern HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorD
 class HydroponicsActuator : public HydroponicsObject, public HydroponicsActuatorObjectInterface, public HydroponicsRailAttachmentInterface, public HydroponicsReservoirAttachmentInterface {
 public:
     const enum { Relay, RelayPump, PWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
-    inline bool isRelayClass() { return classType == Relay; }
-    inline bool isRelayPumpClass() { return classType == RelayPump; }
-    inline bool isPWMClass() { return classType == PWM; }
-    inline bool isUnknownClass() { return classType <= Unknown; }
-    inline bool isAnyPumpClass() { return isRelayPumpClass(); }
-    inline bool isAnyRelayClass() { return isRelayClass() || isRelayPumpClass(); }
+    inline bool isRelayClass() const { return classType == Relay; }
+    inline bool isRelayPumpClass() const { return classType == RelayPump; }
+    inline bool isPWMClass() const { return classType == PWM; }
+    inline bool isUnknownClass() const { return classType <= Unknown; }
+    inline bool isAnyPumpClass() const { return isRelayPumpClass(); }
+    inline bool isAnyRelayClass() const { return isRelayClass() || isRelayPumpClass(); }
 
     HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
                         Hydroponics_PositionIndex actuatorIndex,
@@ -156,7 +156,7 @@ protected:
 
     void attachFlowRateSensor();
     void detachFlowRateSensor();
-    void handleFlowRateMeasure(HydroponicsMeasurement *measurement);
+    void handleFlowRateMeasure(const HydroponicsMeasurement *measurement);
 };
 
 
