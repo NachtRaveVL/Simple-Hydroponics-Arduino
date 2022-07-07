@@ -86,23 +86,28 @@ HydroponicsIdentity::HydroponicsIdentity(String name)
     regenKey();
 }
 
+HydroponicsIdentity::HydroponicsIdentity(const char *name)
+    : HydroponicsIdentity(String(name))
+{ ; }
+
 Hydroponics_KeyType HydroponicsIdentity::regenKey()
 {
+    String sep = F(".");
     switch(type) {
         case Actuator:
-            keyStr = actuatorTypeToString(objTypeAs.actuatorType, true) + F("-") + positionIndexToString(posIndex, true);
+            keyStr = actuatorTypeToString(objTypeAs.actuatorType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Sensor:
-            keyStr = sensorTypeToString(objTypeAs.sensorType, true) + F("-") + positionIndexToString(posIndex, true);
+            keyStr = sensorTypeToString(objTypeAs.sensorType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Crop:
-            keyStr = cropTypeToString(objTypeAs.cropType, true) + F("-") + positionIndexToString(posIndex, true);
+            keyStr = cropTypeToString(objTypeAs.cropType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Reservoir:
-            keyStr = reservoirTypeToString(objTypeAs.reservoirType, true) + F("-") + positionIndexToString(posIndex, true);
+            keyStr = reservoirTypeToString(objTypeAs.reservoirType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Rail:
-            keyStr = railTypeToString(objTypeAs.railType, true) + F("-") + positionIndexToString(posIndex, true);
+            keyStr = railTypeToString(objTypeAs.railType, true) + sep + positionIndexToString(posIndex, true);
             break;
         default: break;
     }

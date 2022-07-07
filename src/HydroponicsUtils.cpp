@@ -1233,7 +1233,7 @@ String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool exclu
 
 Hydroponics_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= (int)Hydroponics_ActuatorType_Count; ++typeIndex) {
+    for (int typeIndex = 0; typeIndex <= Hydroponics_ActuatorType_Count; ++typeIndex) {
         if (actuatorTypeStr == actuatorTypeToString((Hydroponics_ActuatorType)typeIndex)) {
             return (Hydroponics_ActuatorType)typeIndex;
         }
@@ -1243,7 +1243,7 @@ Hydroponics_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 
 Hydroponics_SensorType sensorTypeFromString(String sensorTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= (int)Hydroponics_SensorType_Count; ++typeIndex) {
+    for (int typeIndex = 0; typeIndex <= Hydroponics_SensorType_Count; ++typeIndex) {
         if (sensorTypeStr == sensorTypeToString((Hydroponics_SensorType)typeIndex)) {
             return (Hydroponics_SensorType)typeIndex;
         }
@@ -1253,7 +1253,7 @@ Hydroponics_SensorType sensorTypeFromString(String sensorTypeStr)
 
 Hydroponics_CropType cropTypeFromString(String cropTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= (int)Hydroponics_CropType_Count; ++typeIndex) {
+    for (int typeIndex = 0; typeIndex <= Hydroponics_CropType_Count; ++typeIndex) {
         if (cropTypeStr == cropTypeToString((Hydroponics_CropType)typeIndex)) {
             return (Hydroponics_CropType)typeIndex;
         }
@@ -1263,7 +1263,7 @@ Hydroponics_CropType cropTypeFromString(String cropTypeStr)
 
 Hydroponics_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= (int)Hydroponics_ReservoirType_Count; ++typeIndex) {
+    for (int typeIndex = 0; typeIndex <= Hydroponics_ReservoirType_Count; ++typeIndex) {
         if (reservoirTypeStr == reservoirTypeToString((Hydroponics_ReservoirType)typeIndex)) {
             return (Hydroponics_ReservoirType)typeIndex;
         }
@@ -1272,7 +1272,7 @@ Hydroponics_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
 }
 
 Hydroponics_RailType railTypeFromString(String railTypeStr) {
-    for (int typeIndex = 0; typeIndex <= (int)Hydroponics_RailType_Count; ++typeIndex) {
+    for (int typeIndex = 0; typeIndex <= Hydroponics_RailType_Count; ++typeIndex) {
         if (railTypeStr == railTypeToString((Hydroponics_RailType)typeIndex)) {
             return (Hydroponics_RailType)typeIndex;
         }
@@ -1282,7 +1282,7 @@ Hydroponics_RailType railTypeFromString(String railTypeStr) {
 
 Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
 {
-    for (int typeIndex = 0; typeIndex <= (int)Hydroponics_UnitsType_Count; ++typeIndex) {
+    for (int typeIndex = 0; typeIndex <= Hydroponics_UnitsType_Count; ++typeIndex) {
         if (unitsSymbolStr == unitsTypeToSymbol((Hydroponics_UnitsType)typeIndex)) {
             return (Hydroponics_UnitsType)typeIndex;
         }
@@ -1301,7 +1301,7 @@ Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
     } else if (positionIndexStr == positionIndexToString(-1)) {
         return -1;
     } else {
-        int decode = positionIndexStr.toInt();
+        int8_t decode = positionIndexStr.toInt();
         return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
     }
 }

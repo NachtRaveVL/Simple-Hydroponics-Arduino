@@ -96,12 +96,11 @@ void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cro
 
 bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *cropData)
 {
-    HYDRUINO_SOFT_ASSERT(cropData && cropData->cropType >= (int)Hydroponics_CropType_CustomCrop1, F("Invalid custom crop data"));
     HYDRUINO_SOFT_ASSERT(cropData, F("Invalid custom crop data"));
     HYDRUINO_SOFT_ASSERT(!cropData || (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
-                         cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), F("Invalid crop type"));
+                                       cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), F("Invalid crop type"));
 
-    if (cropData && cropData->cropType >= (int)Hydroponics_CropType_CustomCrop1 &&
+    if (cropData && cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
         cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
         Hydroponics_CropType cropType = cropData->cropType;
         auto iter = _cropsData.find(cropType);
@@ -134,7 +133,7 @@ bool HydroponicsCropsLibrary::dropCustomCropData(const HydroponicsCropsLibData *
     HYDRUINO_SOFT_ASSERT(!cropData || (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
                          cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), F("Invalid crop type"));
 
-    if (cropData && cropData->cropType >= (int)Hydroponics_CropType_CustomCrop1 &&
+    if (cropData && cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
         cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
         Hydroponics_CropType cropType = cropData->cropType;
         auto iter = _cropsData.find(cropType);

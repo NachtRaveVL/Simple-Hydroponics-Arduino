@@ -388,7 +388,7 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
       _phSensor(dataIn->phSensorName), _tdsSensor(dataIn->tdsSensorName), _tempSensor(dataIn->tempSensorName),
       _phBalancer(nullptr), _tdsBalancer(nullptr), _tempBalancer(nullptr)
 {
-    if (_lastFeedingDate > DateTime().unixtime()) {
+    if (_lastFeedingDate) {
         DateTime lastFeeding = DateTime((uint32_t)_lastFeedingDate);
         auto hydroponics = getHydroponicsInstance();
         lastFeeding = lastFeeding + TimeSpan(0, hydroponics ? hydroponics->getTimeZoneOffset() : 0, 0, 0);
@@ -723,7 +723,7 @@ void HydroponicsFeedReservoir::setupTDSBalancer()
 
             for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
                  reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount;
-                 reservoirType = (int)reservoirType + 1) {
+                 reservoirType = reservoirType + 1) {
                 if (getHydroponicsInstance()->getCustomAdditiveData(reservoirType)) {
                     nutrientPumps = linksFilterPumpActuatorsByInputReservoirType(pumps, reservoirType);
 
@@ -1076,9 +1076,9 @@ void HydroponicsFeedReservoirData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsFluidReservoirData::toJSONObject(objectOut);
 
-    if (lastChangeDate > DateTime().unixtime()) { objectOut[F("lastChangeDate")] = lastChangeDate; }
-    if (lastPruningDate > DateTime().unixtime()) { objectOut[F("lastPruningDate")] = lastPruningDate; }
-    if (lastFeedingDate > DateTime().unixtime()) { objectOut[F("lastFeedingDate")] = lastFeedingDate; }
+    if (lastChangeDate) { objectOut[F("lastChangeDate")] = lastChangeDate; }
+    if (lastPruningDate) { objectOut[F("lastPruningDate")] = lastPruningDate; }
+    if (lastFeedingDate) { objectOut[F("lastFeedingDate")] = lastFeedingDate; }
     if (numFeedingsToday > 0) { objectOut[F("numFeedingsToday")] = numFeedingsToday; }
     if (tdsUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("tdsUnits")] = tdsUnits; }
     if (tempUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("tempUnits")] = tempUnits; }
