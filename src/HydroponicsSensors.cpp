@@ -225,14 +225,18 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
       _activeLow(activeLow)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
-    pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+    if (isValidPin(_inputPin)) {
+        pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+    }
 }
 
 HydroponicsBinarySensor::HydroponicsBinarySensor(const HydroponicsBinarySensorData *dataIn)
     : HydroponicsSensor(dataIn), _activeLow(dataIn->activeLow)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
-    pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+    if (isValidPin(_inputPin)) {
+        pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+    }
 }
 
 HydroponicsBinarySensor::~HydroponicsBinarySensor()
@@ -242,7 +246,7 @@ HydroponicsBinarySensor::~HydroponicsBinarySensor()
 
 void HydroponicsBinarySensor::takeMeasurement(bool override)
 {
-    if (override || getNeedsPolling()) {
+    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
         _isTakingMeasure = true;
 
         auto rawRead = digitalRead(_inputPin);
@@ -301,7 +305,9 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(Hydroponics_SensorType sensorTy
       _inputResolution(inputBitRes), _measurementUnits(defaultMeasureUnitsForSensorType(sensorType))
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
-    pinMode(_inputPin, INPUT);
+    if (isValidPin(_inputPin)) {
+        pinMode(_inputPin, INPUT);
+    }
 }
 
 HydroponicsAnalogSensor::HydroponicsAnalogSensor(const HydroponicsAnalogSensorData *dataIn)
@@ -310,7 +316,9 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(const HydroponicsAnalogSensorDa
       _tempSensor(dataIn->tempSensorName)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
-    pinMode(_inputPin, INPUT);
+    if (isValidPin(_inputPin)) {
+        pinMode(_inputPin, INPUT);
+    }
 }
 
 HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
@@ -325,7 +333,7 @@ void HydroponicsAnalogSensor::resolveLinks()
 
 void HydroponicsAnalogSensor::takeMeasurement(bool override)
 {
-    if (override || getNeedsPolling()) {
+    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
         _isTakingMeasure = true;
 
         Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits
@@ -336,7 +344,7 @@ void HydroponicsAnalogSensor::takeMeasurement(bool override)
             analogReadResolution(_inputResolution.bitRes);
         #endif
 
-        auto rawRead = analogRead(_inputPin);
+        auto rawRead = analogRead(_inputPin); // TODO: switch to analog read async lib?
         auto timestamp = now();
 
         HydroponicsSingleMeasurement newMeasurement(
@@ -417,7 +425,7 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(Hydroponics_SensorType sensor
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType), _oneWire(nullptr)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
-    if (allocate1W) {
+    if (allocate1W && isValidPin(_inputPin)) {
         _oneWire = new OneWire(_inputPin);
         HYDRUINO_SOFT_ASSERT(_oneWire, F("Failure creating OneWire instance"));
     }
@@ -427,7 +435,7 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(const HydroponicsDigitalSenso
     : HydroponicsSensor(dataIn), _oneWire(nullptr)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
-    if (allocate1W) {
+    if (allocate1W && isValidPin(_inputPin)) {
         _oneWire = new OneWire(_inputPin);
         HYDRUINO_SOFT_ASSERT(_oneWire, F("Failure creating OneWire instance"));
     }
@@ -485,7 +493,7 @@ HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(Hydroponics_P
       _measurementUnits{defaultTemperatureUnits(), Hydroponics_UnitsType_Percentile_0_100, defaultTemperatureUnits()}
 {
     HYDRUINO_SOFT_ASSERT(_dht, F("Failure creating DHT instance"));
-    if (_dht) { _dht->begin(); }
+    if (_dht && isValidPin(_inputPin)) { _dht->begin(); }
 }
 
 HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(const HydroponicsDHTTempHumiditySensorData *dataIn)
@@ -494,7 +502,7 @@ HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(const Hydropo
       _measurementUnits{dataIn->measurementUnits[0],dataIn->measurementUnits[1],dataIn->measurementUnits[2]}
 {
     HYDRUINO_SOFT_ASSERT(_dht, F("Failure creating DHT instance"));
-    if (_dht) { _dht->begin(); }
+    if (_dht && isValidPin(_inputPin)) { _dht->begin(); }
 }
 
 HydroponicsDHTTempHumiditySensor::~HydroponicsDHTTempHumiditySensor()
@@ -504,7 +512,7 @@ HydroponicsDHTTempHumiditySensor::~HydroponicsDHTTempHumiditySensor()
 
 void HydroponicsDHTTempHumiditySensor::takeMeasurement(bool override)
 {
-    if (override || getNeedsPolling()) {
+    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
         _isTakingMeasure = true;
 
         Hydroponics_UnitsType unitsOut[3] = { _measurementUnits[0] != Hydroponics_UnitsType_Undefined ? _measurementUnits[0] : defaultTemperatureUnits(),
@@ -583,7 +591,7 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(Hydroponics_Posit
 {
     HYDRUINO_SOFT_ASSERT(_dt, F("DallasTemperature instance creation failure"));
 
-    if (_dt && _oneWire) {
+    if (_dt && _oneWire && isValidPin(_inputPin)) {
         _dt->setOneWire(_oneWire);
         //_dt->setPullupPin(pullupPin); // TODO: needed?
         _dt->setWaitForConversion(true); // This makes calls blocking
@@ -599,7 +607,7 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(const Hydroponics
 {
     HYDRUINO_SOFT_ASSERT(_dt, F("DallasTemperature instance creation failure"));
 
-    if (_dt && _oneWire) {
+    if (_dt && _oneWire && isValidPin(_inputPin)) {
         _dt->setOneWire(_oneWire);
         //_dt->setPullupPin(pullupPin); // TODO: needed?
         _dt->setWaitForConversion(true); // This makes calls blocking
@@ -616,7 +624,7 @@ HydroponicsDSTemperatureSensor::~HydroponicsDSTemperatureSensor()
 
 void HydroponicsDSTemperatureSensor::takeMeasurement(bool override = false)
 {
-    if (override || getNeedsPolling()) {
+    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
         _isTakingMeasure = true;
 
         Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits : defaultTemperatureUnits();
@@ -692,7 +700,7 @@ HydroponicsTMPMoistureSensor::~HydroponicsTMPMoistureSensor()
 
 void HydroponicsTMPMoistureSensor::takeMeasurement(bool override)
 {
-    if (override || getNeedsPolling()) {
+    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
         _isTakingMeasure = true;
 
         Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits : defaultMeasureUnitsForSensorType(_id.objTypeAs.sensorType);

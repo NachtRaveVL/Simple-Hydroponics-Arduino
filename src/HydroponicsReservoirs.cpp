@@ -722,7 +722,7 @@ void HydroponicsFeedReservoir::setupTDSBalancer()
             }
 
             for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
-                 reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount;
+                 reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount;
                  reservoirType = reservoirType + 1) {
                 if (getHydroponicsInstance()->getCustomAdditiveData(reservoirType)) {
                     nutrientPumps = linksFilterPumpActuatorsByInputReservoirType(pumps, reservoirType);

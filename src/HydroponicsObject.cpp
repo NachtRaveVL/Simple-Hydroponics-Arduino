@@ -141,6 +141,7 @@ void HydroponicsObject::handleLowMemory()
 HydroponicsData *HydroponicsObject::saveToData()
 {
     auto data = this->allocateData();
+    HYDRUINO_SOFT_ASSERT(data, F("Failure allocating object data"));
     if (data) { this->saveToData(data); }
     return data;
 }
@@ -160,7 +161,7 @@ const HydroponicsIdentity &HydroponicsObject::getId() const
     return _id;
 }
 
-const Hydroponics_KeyType HydroponicsObject::getKey() const
+Hydroponics_KeyType HydroponicsObject::getKey() const
 {
     return _id.key;
 }

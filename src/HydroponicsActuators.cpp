@@ -34,7 +34,9 @@ HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
       _outputPin(outputPin), _disableTime(0)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), F("Invalid output pin"));
-    pinMode(_outputPin, OUTPUT);
+    if (isValidPin(_outputPin)) {
+        pinMode(_outputPin, OUTPUT);
+    }
 }
 
 HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
@@ -43,7 +45,9 @@ HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
       _rail(dataIn->railName), _reservoir(dataIn->reservoirName)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), F("Invalid output pin"));
-    pinMode(_outputPin, OUTPUT);
+    if (isValidPin(_outputPin)) {
+        pinMode(_outputPin, OUTPUT);
+    }
 }
 
 HydroponicsActuator::~HydroponicsActuator()
@@ -178,13 +182,17 @@ HydroponicsRelayActuator::HydroponicsRelayActuator(Hydroponics_ActuatorType actu
     : HydroponicsActuator(actuatorType, actuatorIndex, outputPin, classType),
       _activeLow(activeLow), _enabled(false)
 {
-    digitalWrite(_outputPin, _activeLow ? HIGH : LOW); // Disable on start
+    if (isValidPin(_outputPin)) {
+        digitalWrite(_outputPin, _activeLow ? HIGH : LOW); // Disable on start
+    }
 }
 
 HydroponicsRelayActuator::HydroponicsRelayActuator(const HydroponicsRelayActuatorData *dataIn)
     : HydroponicsActuator(dataIn), _activeLow(dataIn->activeLow), _enabled(false)
 {
-    digitalWrite(_outputPin, _activeLow ? HIGH : LOW); // Disable on start
+    if (isValidPin(_outputPin)) {
+        digitalWrite(_outputPin, _activeLow ? HIGH : LOW); // Disable on start
+    }
 }
 
 HydroponicsRelayActuator::~HydroponicsRelayActuator()
@@ -192,31 +200,35 @@ HydroponicsRelayActuator::~HydroponicsRelayActuator()
 
 bool HydroponicsRelayActuator::enableActuator(bool override, float intensity)
 {
-    bool wasEnabledBefore = _enabled;
-    bool canEnable = _enabled || override || getCanEnable();
+    if (isValidPin(_outputPin)) {
+        bool wasEnabledBefore = _enabled;
+        bool canEnable = _enabled || override || getCanEnable();
 
-    if (!_enabled && canEnable) {
-        _enabled = true;
-        digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
-    }
+        if (!_enabled && canEnable) {
+            _enabled = true;
+            digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
+        }
 
-    if (_enabled != wasEnabledBefore) {
-        scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+        if (_enabled != wasEnabledBefore) {
+            scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+        }
     }
 }
 
 void HydroponicsRelayActuator::disableActuator()
 {
-    bool wasEnabledBefore = _enabled;
+    if (isValidPin(_outputPin)) {
+        bool wasEnabledBefore = _enabled;
 
-    if (_enabled) {
-        _enabled = false;
-        _disableTime = 0;
-        digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
-    }
+        if (_enabled) {
+            _enabled = false;
+            _disableTime = 0;
+            digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+        }
 
-    if (_enabled != wasEnabledBefore) {
-        scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+        if (_enabled != wasEnabledBefore) {
+            scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+        }
     }
 }
 
@@ -416,7 +428,7 @@ void HydroponicsPumpRelayActuator::saveToData(HydroponicsData *dataOut) const
         strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->flowRateSensorName, _flowRateSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     ((HydroponicsPumpRelayActuatorData *)dataOut)->flowRateUnits = _flowRateUnits;
-    if (!_contFlowRate.isUnknownType()) {
+    if (!isFPEqual(_contFlowRate.value, 0.0f)) {
         _contFlowRate.saveToData(&(((HydroponicsPumpRelayActuatorData *)dataOut)->contFlowRate));
     }
 }
@@ -552,10 +564,12 @@ void HydroponicsPWMActuator::saveToData(HydroponicsData *dataOut) const
 
 void HydroponicsPWMActuator::applyPWM()
 {
-    #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-        analogWriteResolution(_pwmResolution.bitRes);
-    #endif
-    analogWrite(_outputPin, _enabled ? getPWMAmount(0) : 0);
+    if (isValidPin(_outputPin)) {
+        #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+            analogWriteResolution(_pwmResolution.bitRes);
+        #endif
+        analogWrite(_outputPin, _enabled ? getPWMAmount(0) : 0);
+    }
 }
 
 
