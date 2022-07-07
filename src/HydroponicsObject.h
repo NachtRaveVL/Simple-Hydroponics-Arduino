@@ -75,7 +75,7 @@ struct HydroponicsIdentity {
     // Used to update key value after modification, returning new key by convenience
     Hydroponics_KeyType regenKey();
 
-    inline operator bool() const { return key != (Hydroponics_KeyType)-1; }
+    inline operator bool() const { return key != (Hydroponics_KeyType)-1 && keyStr.length(); }
     inline bool operator==(const HydroponicsIdentity &otherId) const { return key == otherId.key; }
     inline bool operator!=(const HydroponicsIdentity &otherId) const { return key != otherId.key; }
 };
@@ -106,7 +106,7 @@ public:
     const arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getLinkages() const;
 
     const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object.
-    const Hydroponics_KeyType getKey() const;               // Returns the unique key of the object.
+    Hydroponics_KeyType getKey() const;                     // Returns the unique key of the object.
 
 protected:
     HydroponicsIdentity _id;                                // Object id

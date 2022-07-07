@@ -785,10 +785,10 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
 {
     HYDRUINO_SOFT_ASSERT(customAdditiveData, F("Invalid custom additive data"));
     HYDRUINO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                         customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount), F("Invalid reservoir type"));
+                         customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), F("Invalid reservoir type"));
 
     if (customAdditiveData && customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-        customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount) {
+        customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
         auto iter = _additives.find(customAdditiveData->reservoirType);
         bool retVal = false;
 
@@ -817,10 +817,10 @@ bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *cu
 {
     HYDRUINO_SOFT_ASSERT(customAdditiveData, F("Invalid custom additive data"));
     HYDRUINO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount), F("Invalid reservoir type"));
+                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), F("Invalid reservoir type"));
 
     if (customAdditiveData && customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-        customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount) {
+        customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
         auto iter = _additives.find(customAdditiveData->reservoirType);
         bool retVal = false;
 
@@ -841,10 +841,10 @@ bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *cu
 const HydroponicsCustomAdditiveData *Hydroponics::getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const
 {
     HYDRUINO_SOFT_ASSERT(reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount, F("Invalid reservoir type"));
+                         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount, F("Invalid reservoir type"));
 
     if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-        reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount) {
+        reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
         auto iter = _additives.find(reservoirType);
 
         if (iter != _additives.end()) {

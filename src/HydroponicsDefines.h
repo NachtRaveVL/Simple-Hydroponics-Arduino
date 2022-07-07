@@ -294,7 +294,7 @@ enum Hydroponics_ReservoirType {
     Hydroponics_ReservoirType_CustomAdditive16,             // Custom additive 16 solution
 
     Hydroponics_ReservoirType_Count,                        // Internal use only
-    Hydroponics_ReservoirType_CustomCount = 16,             // Internal use only
+    Hydroponics_ReservoirType_CustomAdditiveCount = 16,     // Internal use only
     Hydroponics_ReservoirType_Undefined = -1                // Internal use only
 };
 
@@ -307,7 +307,6 @@ enum Hydroponics_RailType {
     Hydroponics_RailType_DC12V,                             // 12v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
 
     Hydroponics_RailType_Count,                             // Internal use only
-    Hydroponics_RailType_CustomCount,                       // Internal use only
     Hydroponics_RailType_Undefined = -1                     // Internal use only
 };
 

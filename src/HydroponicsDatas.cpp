@@ -159,7 +159,9 @@ HydroponicsCalibrationData::HydroponicsCalibrationData(HydroponicsIdentity senso
       multiplier(1.0f), offset(0.0f)
 {
     _size = sizeof(*this);
-    strncpy(sensorName, sensorId.keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    if (sensorId) {
+        strncpy(sensorName, sensorId.keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    }
 }
 
 void HydroponicsCalibrationData::toJSONObject(JsonObject &objectOut) const

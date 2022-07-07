@@ -260,7 +260,7 @@ void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn)
             dataAs.binaryMeasure.state = objectIn[F("state")] | false;
             break;
         case 1: // Single
-            fromJSONObject(objectIn);
+            fromJSONObject(objectIn, 0);
             break;
         default: {
             JsonVariantConst valuesVar = objectIn[F("values")] | objectIn[F("vals")];

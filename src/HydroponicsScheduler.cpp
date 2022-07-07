@@ -507,7 +507,7 @@ void HydroponicsScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, 
             _schedulerData->weeklyDosingRates[weekIndex] = dosingRate;
 
             setNeedsRescheduling();
-        } else if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 && reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount) {
+        } else if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 && reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
             HydroponicsCustomAdditiveData newAdditiveData(reservoirType);
             newAdditiveData._bumpRevIfNotAlreadyModded();
             newAdditiveData.weeklyDosingRates[weekIndex] = dosingRate;
@@ -556,7 +556,7 @@ void HydroponicsScheduler::setFlushWeek(int weekIndex)
         _schedulerData->weeklyDosingRates[weekIndex] = 0;
 
         for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
-             reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount;
+             reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount;
              reservoirType = reservoirType + 1) {
             auto additiveData = getHydroponicsInstance()->getCustomAdditiveData(reservoirType);
             if (additiveData) {
@@ -617,11 +617,11 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsFeedReservoir *feed
     HYDRUINO_SOFT_ASSERT(_schedulerData, F("Scheduler data not yet initialized"));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || feedReservoir, F("Invalid feed reservoir"));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || !feedReservoir || (reservoirType >= Hydroponics_ReservoirType_NutrientPremix &&
-                                                               reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount), F("Invalid reservoir type"));
+                                                               reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), F("Invalid reservoir type"));
 
     if (_schedulerData && feedReservoir &&
         (reservoirType >= Hydroponics_ReservoirType_NutrientPremix &&
-         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount)) {
+         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount)) {
         auto crops = feedReservoir->getCrops();
         float totalWeights = 0;
         float totalDosing = 0;
@@ -668,7 +668,7 @@ float HydroponicsScheduler::getWeeklyDosingRate(int weekIndex, Hydroponics_Reser
     if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX) {
         if (reservoirType == Hydroponics_ReservoirType_NutrientPremix) {
             return _schedulerData->weeklyDosingRates[weekIndex];
-        } else if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 && reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount) {
+        } else if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 && reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
             auto additiveDate = getHydroponicsInstance()->getCustomAdditiveData(reservoirType);
             return additiveDate ? additiveDate->weeklyDosingRates[weekIndex] : 0.0f;
         } else {
