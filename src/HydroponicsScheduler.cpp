@@ -373,9 +373,9 @@ void HydroponicsLighting::setupStaging()
 
     time_t time = now();
     stage = Init;
-    if (time >= sprayStart) { stage = (int)stage + 1; }
-    if (time >= lightStart) { stage = (int)stage + 1; }
-    if (time >= lightEnd) { stage = (int)stage + 1; }
+    if (time >= sprayStart) { stage = stage + 1; }
+    if (time >= lightStart) { stage = stage + 1; }
+    if (time >= lightEnd) { stage = stage + 1; }
 
     switch(stage) {
         case Spray:
@@ -557,7 +557,7 @@ void HydroponicsScheduler::setFlushWeek(int weekIndex)
 
         for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
              reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomCount;
-             reservoirType = (int)reservoirType + 1) {
+             reservoirType = reservoirType + 1) {
             auto additiveData = getHydroponicsInstance()->getCustomAdditiveData(reservoirType);
             if (additiveData) {
                 HydroponicsCustomAdditiveData newAdditiveData = *additiveData;
@@ -629,19 +629,17 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsFeedReservoir *feed
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
             auto crop = (HydroponicsCrop *)(cropIter->second);
             if (crop) {
-                int weekIndex = constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1);
-
                 if (reservoirType <= Hydroponics_ReservoirType_NutrientPremix) {
                     totalWeights += crop->getFeedingWeight();
-                    totalDosing += _schedulerData->weeklyDosingRates[weekIndex];
+                    totalDosing += _schedulerData->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1)];
                 } else if (reservoirType < Hydroponics_ReservoirType_CustomAdditive1) {
                     totalWeights += crop->getFeedingWeight();
                     totalDosing += _schedulerData->standardDosingRates[reservoirType - Hydroponics_ReservoirType_FreshWater];
-                } else if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1) {
+                } else {
                     auto additiveData = getHydroponicsInstance()->getCustomAdditiveData(reservoirType);
                     if (additiveData) {
                         totalWeights += crop->getFeedingWeight();
-                        totalDosing += additiveData->weeklyDosingRates[weekIndex];
+                        totalDosing += additiveData->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1)];
                     }
                 }
             }

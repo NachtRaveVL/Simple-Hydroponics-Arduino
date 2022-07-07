@@ -1553,10 +1553,10 @@ shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedCrop(Hydroponics_CropTy
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
     HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, F("Invalid substrate type"));
-    HYDRUINO_SOFT_ASSERT(sowDate.unixtime() > DateTime().unixtime(), F("Invalid sow date"));
+    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), F("Invalid sow date"));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
 
-    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() > DateTime().unixtime() && positionIndex != -1) {
+    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() && positionIndex != -1) {
         shared_ptr<HydroponicsTimedCrop> crop(new HydroponicsTimedCrop(
             cropType,
             positionIndex,
@@ -1590,10 +1590,10 @@ shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedCrop(Hydroponics_
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
     HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, F("Invalid substrate type"));
-    HYDRUINO_SOFT_ASSERT(sowDate.unixtime() > DateTime().unixtime(), F("Invalid sow date"));
+    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), F("Invalid sow date"));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
 
-    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() > DateTime().unixtime() && positionIndex != -1) {
+    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() && positionIndex != -1) {
         shared_ptr<HydroponicsAdaptiveCrop> crop(new HydroponicsAdaptiveCrop(
             cropType,
             positionIndex,
@@ -1641,7 +1641,7 @@ shared_ptr<HydroponicsFeedReservoir> Hydroponics::addFeedWaterReservoir(float ma
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_FeedWater));
     HYDRUINO_SOFT_ASSERT(maxVolume > 0.0f, F("Invalid max volume"));
-    HYDRUINO_SOFT_ASSERT(lastChangeDate.unixtime() > DateTime().unixtime(), F("Invalid last water change date"));
+    HYDRUINO_SOFT_ASSERT(lastChangeDate.unixtime(), F("Invalid last water change date"));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
 
     if (maxVolume > 0.0f && positionIndex != -1) {

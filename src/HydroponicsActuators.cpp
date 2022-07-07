@@ -162,6 +162,12 @@ void HydroponicsActuator::saveToData(HydroponicsData *dataOut) const
 
     dataOut->id.object.classType = (int8_t)classType;
     ((HydroponicsActuatorData *)dataOut)->outputPin = _outputPin;
+    if (_reservoir.getId()) {
+        strncpy(((HydroponicsActuatorData *)dataOut)->reservoirName, _reservoir.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    }
+    if (_rail.getId()) {
+        strncpy(((HydroponicsActuatorData *)dataOut)->railName, _rail.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    }
 }
 
 

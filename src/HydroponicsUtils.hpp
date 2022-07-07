@@ -23,13 +23,13 @@ struct HydroponicsDLinkObject {
     template<class U>
     HydroponicsDLinkObject(shared_ptr<U> objIn) : id(objIn->getId()), obj(reinterpret_pointer_cast<T>(objIn)) { ; }
     HydroponicsDLinkObject(const char *keyStrIn) : HydroponicsDLinkObject(HydroponicsIdentity(String(keyStrIn))) { ; }
-    ~HydroponicsDLinkObject() { obj = nullptr; }
+    ~HydroponicsDLinkObject() { ; }
 
     inline bool isId() const { return !obj; }
     inline bool isObj() const { return (bool)obj; }
     inline bool needsResolved() const { return !obj && (bool)id; }
     inline bool resolveIfNeeded() { return !obj ? (bool)getObj() : false; }
-    inline operator bool() const { return (bool)obj; }
+    inline operator bool() const { return isObj(); }
 
     HydroponicsIdentity getId() const { return obj ? obj->getId() : id;  }
     Hydroponics_KeyType getKey() const { return obj ? obj->getId().key : id.key; }
