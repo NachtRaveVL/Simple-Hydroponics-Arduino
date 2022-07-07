@@ -27,6 +27,42 @@ HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasure
     return nullptr;
 }
 
+float measurementValueAt(const HydroponicsMeasurement *measurementIn, int rowIndex, float binTrue)
+{
+    if (measurementIn) {
+        switch (measurementIn->type) {
+            case 0: // Binary
+                if (rowIndex == 0) { return ((HydroponicsBinaryMeasurement *)measurementIn)->state ? binTrue : 0.0f; }
+            case 1: // Single
+                if (rowIndex == 0) { return ((HydroponicsSingleMeasurement *)measurementIn)->value; }
+            case 2: // Double
+                if (rowIndex > 0 && rowIndex < 2) { return ((HydroponicsDoubleMeasurement *)measurementIn)->value[rowIndex]; }
+            case 3: // Triple
+                if (rowIndex > 0 && rowIndex < 3) { return ((HydroponicsTripleMeasurement *)measurementIn)->value[rowIndex]; }
+            default: break;
+        }
+    }
+    return 0.0f;
+}
+
+Hydroponics_UnitsType measurementUnitsAt(const HydroponicsMeasurement *measurementIn, int rowIndex, Hydroponics_UnitsType binUnits)
+{
+    if (measurementIn) {
+        switch (measurementIn->type) {
+            case 0: // Binary
+                if (rowIndex == 0) { return binUnits; }
+            case 1: // Single
+                if (rowIndex == 0) { return ((HydroponicsSingleMeasurement *)measurementIn)->units; }
+            case 2: // Double
+                if (rowIndex > 0 && rowIndex < 2) { return ((HydroponicsDoubleMeasurement *)measurementIn)->units[rowIndex]; }
+            case 3: // Triple
+                if (rowIndex > 0 && rowIndex < 3) { return ((HydroponicsTripleMeasurement *)measurementIn)->units[rowIndex]; }
+            default: break;
+        }
+    }
+    return Hydroponics_UnitsType_Undefined;
+}
+
 
 HydroponicsMeasurement::HydroponicsMeasurement()
     : type(Unknown)
@@ -311,7 +347,7 @@ void HydroponicsMeasurementData::fromJSONUnitsString(const char *unitsIn)
     int units[3]; commaStringToArray(unitsIn, units, type);
 
     for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
-        setUnits(units[rowIndex], rowIndex);
+        setUnits((Hydroponics_UnitsType)units[rowIndex], rowIndex);
     }
 }
 

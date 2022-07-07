@@ -27,6 +27,26 @@ Hydroponics *getHydroponicsInstance()
     return Hydroponics::getActiveInstance();
 }
 
+HydroponicsScheduler *getSchedulerInstance()
+{
+    auto hydroponics = Hydroponics::getActiveInstance();
+    return hydroponics ? &(hydroponics->_scheduler) : nullptr;
+}
+
+DateTime getCurrentTime()
+{
+    auto hydroponics = Hydroponics::getActiveInstance();
+    return DateTime((uint32_t)(now() + ((hydroponics ? hydroponics->getTimeZoneOffset() : 0L) * SECS_PER_HOUR)));
+}
+
+time_t getCurrentDayStartTime()
+{
+    auto hydroponics = Hydroponics::getActiveInstance();
+    long timeZoneSecs = (hydroponics ? hydroponics->getTimeZoneOffset() : 0L) * SECS_PER_HOUR;
+    DateTime currTime = DateTime((uint32_t)(now() + timeZoneSecs));
+    return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime() + timeZoneSecs;
+}
+
 Hydroponics_KeyType stringHash(String string)
 {
     Hydroponics_KeyType hash = 5381;
@@ -168,6 +188,28 @@ int occurrencesInStringIgnoreCase(String string, String subString)
         posIndex = min(string.indexOf(tolower(subString[0]), posIndex+1), string.indexOf(toupper(subString[0]), posIndex+1));
     }
     return retVal;
+}
+
+template<>
+bool arrayEqualsAll<float>(const float *arrayIn, size_t length, float value)
+{
+    for (size_t index = 0; index < length; ++index) {
+        if (!isFPEqual(arrayIn[index], value)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template<>
+bool arrayEqualsAll<double>(const double *arrayIn, size_t length, double value)
+{
+    for (size_t index = 0; index < length; ++index) {
+        if (!isFPEqual(arrayIn[index], value)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // See: https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory
@@ -609,7 +651,7 @@ Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode
     }
 }
 
-Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode)
+Hydroponics_UnitsType defaultWaterVolumeUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
         auto hydroponics = getHydroponicsInstance();
@@ -844,21 +886,21 @@ String sensorTypeToString(Hydroponics_SensorType sensorType, bool excludeSpecial
         case Hydroponics_SensorType_AirCarbonDioxide:
             return F("AirCO2");
         case Hydroponics_SensorType_PotentialHydrogen:
-            return F("PHMeter");
+            return F("WaterPH");
         case Hydroponics_SensorType_TotalDissolvedSolids:
-            return F("TDSMeter");
+            return F("WaterTDS");
         case Hydroponics_SensorType_WaterTemperature:
             return F("WaterTemp");
         case Hydroponics_SensorType_SoilMoisture:
             return F("SoilMoisture");
         case Hydroponics_SensorType_WaterPumpFlowSensor:
-            return F("FlowSensor");
+            return F("PumpFlow");
         case Hydroponics_SensorType_WaterLevelIndicator:
             return F("LevelIndicator");
         case Hydroponics_SensorType_WaterHeightMeter:
-            return F("HeightMeter");
+            return F("WaterHeight");
         case Hydroponics_SensorType_PowerUsageMeter:
-            return F("PowerMeter");
+            return F("PowerUsage");
         case Hydroponics_SensorType_Count:
             return !excludeSpecial ? F("SensorCount") : F("");
         case Hydroponics_SensorType_Undefined:
@@ -1024,21 +1066,21 @@ String cropTypeToString(Hydroponics_CropType cropType, bool excludeSpecial)
             return F("Watermelon");
         case Hydroponics_CropType_Zucchini:
             return F("Zucchini");
-        case Hydroponics_CropType_Custom1:
+        case Hydroponics_CropType_CustomCrop1:
             return F("CustomCrop1");
-        case Hydroponics_CropType_Custom2:
+        case Hydroponics_CropType_CustomCrop2:
             return F("CustomCrop2");
-        case Hydroponics_CropType_Custom3:
+        case Hydroponics_CropType_CustomCrop3:
             return F("CustomCrop3");
-        case Hydroponics_CropType_Custom4:
+        case Hydroponics_CropType_CustomCrop4:
             return F("CustomCrop4");
-        case Hydroponics_CropType_Custom5:
+        case Hydroponics_CropType_CustomCrop5:
             return F("CustomCrop5");
-        case Hydroponics_CropType_Custom6:
+        case Hydroponics_CropType_CustomCrop6:
             return F("CustomCrop6");
-        case Hydroponics_CropType_Custom7:
+        case Hydroponics_CropType_CustomCrop7:
             return F("CustomCrop7");
-        case Hydroponics_CropType_Custom8:
+        case Hydroponics_CropType_CustomCrop8:
             return F("CustomCrop8");
         case Hydroponics_CropType_Count:
             return !excludeSpecial ? F("CropCount") : F("");
@@ -1106,10 +1148,14 @@ String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool exclu
 String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial)
 {
     switch (railType) {
-        case Hydroponics_RailType_ACPower:
-            return F("ACPowerRail");
-        case Hydroponics_RailType_DCPower:
-            return F("DCPowerRail");
+        case Hydroponics_RailType_AC110V:
+            return F("AC110V");
+        case Hydroponics_RailType_AC220V:
+            return F("AC220V");
+        case Hydroponics_RailType_DC5V:
+            return F("DC5V");
+        case Hydroponics_RailType_DC12V:
+            return F("DC12V");
         case Hydroponics_ReservoirType_Count:
             return !excludeSpecial ? F("RailCount") : F("");
         case Hydroponics_ReservoirType_Undefined:
@@ -1128,25 +1174,25 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
         case Hydroponics_UnitsType_Temperature_Kelvin:
             return F("°K");
         case Hydroponics_UnitsType_Distance_Meters:
-            return F("m");
+            return F("M");
         case Hydroponics_UnitsType_Distance_Feet:
             return F("ft");
         case Hydroponics_UnitsType_Weight_Kilogram:
-            return F("kg");
+            return F("Kg");
         case Hydroponics_UnitsType_Weight_Pounds:
             return F("lbs");
         case Hydroponics_UnitsType_LiquidVolume_Liters:
-            return F("l");
+            return F("L");
         case Hydroponics_UnitsType_LiquidVolume_Gallons:
-            return F("g");
+            return F("gal");
         case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
-            return F("l/m");
+            return F("L/min");
         case Hydroponics_UnitsType_LiquidFlow_GallonsPerMin:
-            return F("g/m");
+            return F("gal/min");
         case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter:
             return F("mL/L");
         case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon:
-            return F("mL/G");
+            return F("mL/gal");
         case Hydroponics_UnitsType_Power_Wattage:
             return F("W");
         case Hydroponics_UnitsType_pHScale_0_14:

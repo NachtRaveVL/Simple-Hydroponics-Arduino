@@ -35,6 +35,13 @@ struct HydroponicsBitResolution {
 
 // Returns the active hydroponics instance. Not guaranteed to be non-null.
 extern Hydroponics *getHydroponicsInstance();
+// Returns the active scheduler instance. Not guaranteed to be non-null.
+extern HydroponicsScheduler *getSchedulerInstance();
+
+// Returns current time, with proper time zone offset based on active hydroponics instance.
+DateTime getCurrentTime();
+// Returns the UTC unix time that today started, accounting for time zone offset based on active hydroponics instance.
+time_t getCurrentDayStartTime();
 
 // Computes a hash for a string using a fast and efficient (read as: good enough for our use) hashing algorithm.
 extern Hydroponics_KeyType stringHash(String string);
@@ -65,6 +72,10 @@ int occurrencesInString(String string, String subString);
 int occurrencesInStringIgnoreCase(String string, char singleChar);
 // Returns # of occurrences of substring in string, ignoring case.
 int occurrencesInStringIgnoreCase(String string, String subString);
+
+// Returns whenever all elements of an array are equal to the specified value, or not.
+template<typename T>
+bool arrayEqualsAll(const T *arrayIn, size_t length, T value);
 
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
 extern int freeMemory();
@@ -105,7 +116,7 @@ extern Hydroponics_UnitsType defaultDistanceUnits(Hydroponics_MeasurementMode me
 // Returns default weight units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default liquid volume units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+extern Hydroponics_UnitsType defaultWaterVolumeUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default liquid flow units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
@@ -114,6 +125,37 @@ extern Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementM
 extern Hydroponics_UnitsType defaultConcentrationUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+
+// Linkages Filtering
+
+// Returns links list filtered down to actuators.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterActuators(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
+// Returns links list filtered down to actuators by type.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterActuatorsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ActuatorType actuatorType);
+// Returns links list filtered down to sensors.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterSensors(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
+// Returns links list filtered down to sensors by type.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterSensorsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_SensorType sensorType);
+// Returns links list filtered down to crops.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterCrops(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
+// Returns links list filtered down to crops by type.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterCropsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_CropType cropType);
+// Returns links list filtered down to reservoirs.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterReservoirs(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
+// Returns links list filtered down to reservoirs by type.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterReservoirsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType);
+// Returns links list filtered down to rails.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterRails(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
+// Returns links list filtered down to rails by type.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterRailsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_RailType railType);
+// Returns links list filtered down to pump actuators by source reservoir.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByInputReservoir(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, HydroponicsReservoir *inputReservoir);
+// Returns links list filtered down to pump actuators by source reservoir type.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByInputReservoirType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType);
+// Returns links list filtered down to pump actuators by destination reservoir.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByOutputReservoir(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, HydroponicsReservoir *outputReservoir);
+// Returns links list filtered down to pump actuators by destination reservoir type.
+template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByOutputReservoirType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType);
 
 // Pins & Checks
 
@@ -165,12 +207,13 @@ extern String positionIndexToString(Hydroponics_PositionIndex positionIndex, boo
 // Converts back to position index from string
 extern Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr);
 
-
 // Explicit Specializations
 
 template<> String commaStringFromArray<float>(const float *arrayIn, size_t length);
 template<> String commaStringFromArray<double>(const double *arrayIn, size_t length);
 template<> void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length);
 template<> void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length);
+template<> bool arrayEqualsAll<float>(const float *arrayIn, size_t length, float value);
+template<> bool arrayEqualsAll<double>(const double *arrayIn, size_t length, double value);
 
 #endif // /ifndef HydroponicsUtils_H

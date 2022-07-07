@@ -12,7 +12,7 @@ class HydroponicsAnalogSensor;
 class HydroponicsDigitalSensor;
 class HydroponicsDHTTempHumiditySensor;
 class HydroponicsDSTemperatureSensor;
-class HydroponicsTMPSoilMoistureSensor;
+class HydroponicsTMPMoistureSensor;
 
 struct HydroponicsSensorData;
 struct HydroponicsBinarySensorData;
@@ -20,7 +20,7 @@ struct HydroponicsAnalogSensorData;
 struct HydroponicsDigitalSensorData;
 struct HydroponicsDHTTempHumiditySensorData;
 struct HydroponicsDSTemperatureSensorData;
-struct HydroponicsTMPSoilMoistureSensorData;
+struct HydroponicsTMPMoistureSensorData;
 
 #include "Hydroponics.h"
 
@@ -38,15 +38,15 @@ extern Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_Sensor
 class HydroponicsSensor : public HydroponicsObject, public HydroponicsSensorObjectInterface, public HydroponicsCropAttachmentInterface, public HydroponicsReservoirAttachmentInterface {
 public:
     const enum { Binary, Analog, Digital, DHT1W, DS1W, TMP1W, Unknown = -1 } classType; // Sensor class type (custom RTTI)
-    inline bool isBinaryClass() { return classType == Binary; }
-    inline bool isAnalogClass() { return classType == Analog; }
-    inline bool isDigitalClass() { return classType == Digital; }
-    inline bool isDHTClass() { return classType == DHT1W; }
-    inline bool isDSClassType() { return classType == DS1W; }
-    inline bool isTMPClass() { return classType == TMP1W; }
-    inline bool isUnknownClass() { return classType <= Unknown; }
-    inline bool isAnyAnalogClass() { return isAnalogClass(); }
-    inline bool isAnyDigitalClass() { return isDigitalClass() || isDHTClass() || isDSClassType() || isTMPClass(); }
+    inline bool isBinaryClass() const { return classType == Binary; }
+    inline bool isAnalogClass() const { return classType == Analog; }
+    inline bool isDigitalClass() const { return classType == Digital; }
+    inline bool isDHTClass() const { return classType == DHT1W; }
+    inline bool isDSClassType() const { return classType == DS1W; }
+    inline bool isTMPClass() const { return classType == TMP1W; }
+    inline bool isUnknownClass() const { return classType <= Unknown; }
+    inline bool isAnyAnalogClass() const { return isAnalogClass(); }
+    inline bool isAnyDigitalClass() const { return isDigitalClass() || isDHTClass() || isDSClassType() || isTMPClass(); }
 
     HydroponicsSensor(Hydroponics_SensorType sensorType,
                       Hydroponics_PositionIndex sensorIndex,
@@ -82,7 +82,7 @@ public:
     Hydroponics_SensorType getSensorType() const;
     Hydroponics_PositionIndex getSensorIndex() const;
 
-    Signal<HydroponicsMeasurement *> &getMeasurementSignal();
+    Signal<const HydroponicsMeasurement *> &getMeasurementSignal();
 
 protected:
     byte _inputPin;                                         // Input pin
@@ -90,7 +90,7 @@ protected:
     HydroponicsDLinkObject<HydroponicsCrop> _crop;          // Crop linkage
     HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
     const HydroponicsCalibrationData *_calibrationData;     // Calibration data
-    Signal<HydroponicsMeasurement *> _measureSignal;        // New measurement signal
+    Signal<const HydroponicsMeasurement *> _measureSignal;        // New measurement signal
 
     HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) const override;
@@ -259,14 +259,14 @@ protected:
 
 // Digital TMP* Soil Moisture Sensor
 // This class is for working with TMP* OneWire-based soil moisture sensors.
-class HydroponicsTMPSoilMoistureSensor : public HydroponicsDigitalSensor {
+class HydroponicsTMPMoistureSensor : public HydroponicsDigitalSensor {
 public:
-    HydroponicsTMPSoilMoistureSensor(Hydroponics_PositionIndex sensorIndex,
+    HydroponicsTMPMoistureSensor(Hydroponics_PositionIndex sensorIndex,
                                      byte inputPin,
                                      byte inputBitRes = 9,
                                      int classType = TMP1W);
-    HydroponicsTMPSoilMoistureSensor(const HydroponicsTMPSoilMoistureSensorData *dataIn);
-    virtual ~HydroponicsTMPSoilMoistureSensor();
+    HydroponicsTMPMoistureSensor(const HydroponicsTMPMoistureSensorData *dataIn);
+    virtual ~HydroponicsTMPMoistureSensor();
 
     void takeMeasurement(bool override = false) override;
     const HydroponicsMeasurement *getLatestMeasurement() const override;
@@ -349,11 +349,11 @@ struct HydroponicsDSTemperatureSensorData : public HydroponicsDigitalSensorData 
 };
 
 // TMP Moisture Sensor Serialization Data
-struct HydroponicsTMPSoilMoistureSensorData : public HydroponicsDigitalSensorData {
+struct HydroponicsTMPMoistureSensorData : public HydroponicsDigitalSensorData {
     byte inputBitRes;
     Hydroponics_UnitsType measurementUnits;
 
-    HydroponicsTMPSoilMoistureSensorData();
+    HydroponicsTMPMoistureSensorData();
     void toJSONObject(JsonObject &objectOut) const override;
     void fromJSONObject(JsonObjectConst &objectIn) override;
 };

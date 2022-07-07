@@ -42,12 +42,12 @@ bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalib
         if (iter == _calibrationData.end()) {
             auto calibData = new HydroponicsCalibrationData();
 
-            HYDRUINO_SOFT_ASSERT(calibData, F("Failure allocating new calibration data"));
+            HYDRUINO_SOFT_ASSERT(calibData, F("Failure allocating calibration data"));
             if (calibData) {
                 *calibData = *calibrationData;
                 retVal = _calibrationData.insert(key, calibData).second;
             }
-        } else if (iter->second != calibrationData) {
+        } else {
             *(iter->second) = *calibrationData;
             retVal = true;
         }
@@ -69,7 +69,7 @@ bool HydroponicsCalibrationsStore::dropUserCalibrationData(const HydroponicsCali
         auto iter = _calibrationData.find(key);
 
         if (iter != _calibrationData.end()) {
-            delete iter->second;
+            if (iter->second) { delete iter->second; }
             _calibrationData.erase(iter);
 
             scheduleSignalFireOnce<Hydroponics_KeyType>(_calibrationSignal, key);

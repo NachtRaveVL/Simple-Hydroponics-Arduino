@@ -8,9 +8,9 @@
 HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjData(), F("Invalid data"));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), F("Invalid data"));
 
-    if (dataIn && dataIn->isObjData()) {
+    if (dataIn && dataIn->isObjectData()) {
         switch(dataIn->id.object.classType) {
             case 0: // Simple
                 return new HydroponicsSimpleRail((const HydroponicsSimpleRailData *)dataIn);
@@ -36,10 +36,10 @@ HydroponicsRail::~HydroponicsRail()
 {
     //discardFromTaskManager(&_capacitySignal);
     {   auto actuators = getActuators();
-        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator(iter->second); }
+        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
     }
     {   auto sensors = getSensors();
-        for (auto iter = sensors.begin(); iter != sensors.end(); ++iter) { removeSensor(iter->second); }
+        for (auto iter = sensors.begin(); iter != sensors.end(); ++iter) { removeSensor((HydroponicsSensor *)(iter->second)); }
     }
 }
 
@@ -73,16 +73,9 @@ bool HydroponicsRail::hasActuator(HydroponicsActuator *actuator) const
     return hasLinkage(actuator);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsActuator *> HydroponicsRail::getActuators() const
+arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsRail::getActuators() const
 {
-    arx::map<Hydroponics_KeyType, HydroponicsActuator *> retVal;
-    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj && obj->isActuatorType()) {
-            retVal.insert(iter->first, (HydroponicsActuator *)obj);
-        }
-    }
-    return retVal;
+    return linksFilterActuators(_links);
 }
 
 bool HydroponicsRail::addSensor(HydroponicsSensor *sensor)
@@ -100,16 +93,9 @@ bool HydroponicsRail::hasSensor(HydroponicsSensor *sensor) const
     return hasLinkage(sensor);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsSensor *> HydroponicsRail::getSensors() const
+arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsRail::getSensors() const
 {
-    arx::map<Hydroponics_KeyType, HydroponicsSensor *> retVal;
-    for (auto iter = _links.begin(); iter != _links.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj && obj->isSensorType()) {
-            retVal.insert(iter->first, (HydroponicsSensor *)obj);
-        }
-    }
-    return retVal;
+    return linksFilterSensors(_links);
 }
 
 Hydroponics_RailType HydroponicsRail::getRailType() const
@@ -300,12 +286,26 @@ shared_ptr<HydroponicsSensor> HydroponicsRegulatedRail::getPowerSensor()
 void HydroponicsRegulatedRail::setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits)
 {
     _powerDraw.value = powerDraw;
-    _powerDraw.units = powerDrawUnits != Hydroponics_UnitsType_Undefined ? powerDrawUnits : Hydroponics_UnitsType_Power_Wattage;
+    _powerDraw.units = powerDrawUnits != Hydroponics_UnitsType_Undefined ? powerDrawUnits
+                                                                         : (_powerUnits != Hydroponics_UnitsType_Undefined ? _powerUnits
+                                                                                                                           : Hydroponics_UnitsType_Power_Wattage);
+
+    if (_powerDraw.units != Hydroponics_UnitsType_Undefined && _powerUnits != Hydroponics_UnitsType_Undefined &&
+        _powerDraw.units != _powerUnits) {
+        convertStdUnits(&_powerDraw.value, &_powerDraw.units, _powerUnits);
+        HYDRUINO_SOFT_ASSERT(_powerDraw.units == _powerUnits, F("Failure converting measurement value to power units"));
+    }
 }
 
 void HydroponicsRegulatedRail::setPowerDraw(HydroponicsSingleMeasurement powerDraw)
 {
     _powerDraw = powerDraw;
+
+    if (_powerDraw.units != Hydroponics_UnitsType_Undefined && _powerUnits != Hydroponics_UnitsType_Undefined &&
+        _powerDraw.units != _powerUnits) {
+        convertStdUnits(&_powerDraw.value, &_powerDraw.units, _powerUnits);
+        HYDRUINO_SOFT_ASSERT(_powerDraw.units == _powerUnits, F("Failure converting measurement value to power units"));
+    }
 }
 
 const HydroponicsSingleMeasurement &HydroponicsRegulatedRail::getPowerDraw() const
@@ -349,7 +349,7 @@ void HydroponicsRegulatedRail::attachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(_powerSensor, F("Power sensor not linked, failure attaching"));
     if (_powerSensor) {
-        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, HydroponicsMeasurement *>(this, &handlePowerMeasure);
+        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, const HydroponicsMeasurement *>(this, &handlePowerMeasure);
         _powerSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -358,23 +358,16 @@ void HydroponicsRegulatedRail::detachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(_powerSensor, F("Power sensor not linked, failure detaching"));
     if (_powerSensor) {
-        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, HydroponicsMeasurement *>(this, &handlePowerMeasure);
-        _powerSensor->getMeasurementSignal().attach(methodSlot);
+        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, const HydroponicsMeasurement *>(this, &handlePowerMeasure);
+        _powerSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
 
-void HydroponicsRegulatedRail::handlePowerMeasure(HydroponicsMeasurement *measurement)
+void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *measurement)
 {
     if (measurement) {
-        if (measurement->isBinaryType()) {
-            setPowerDraw(((HydroponicsBinaryMeasurement *)measurement)->state ? _maxPower : 0.0f, _powerUnits);
-        } else if (measurement->isSingleType()) {
-            setPowerDraw(*((HydroponicsSingleMeasurement *)measurement));
-        } else if (measurement->isDoubleType()) {
-            setPowerDraw(((HydroponicsDoubleMeasurement *)measurement)->asSingleMeasurement(0)); // TODO: Correct row reference, based on sensor
-        } else if (measurement->isTripleType()) {
-            setPowerDraw(((HydroponicsTripleMeasurement *)measurement)->asSingleMeasurement(0)); // TODO: Correct row reference, based on sensor
-        }
+        setPowerDraw(measurementValueAt(measurement, 0, _maxPower), // TODO: Correct row reference, based on sensor
+                     measurementUnitsAt(measurement, 0, _powerUnits));
     }
 }
 

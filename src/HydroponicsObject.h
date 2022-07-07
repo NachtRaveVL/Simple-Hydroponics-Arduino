@@ -13,7 +13,7 @@ class HydroponicsSubObject;
 struct HydroponicsObjectData;
 
 #include "Hydroponics.h"
-#include "HydroponicsDatas.h"
+#include "HydroponicsData.h"
 
 // Creates object from passed object data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
@@ -37,7 +37,7 @@ struct HydroponicsIdentity {
         Hydroponics_CropType cropType;                      // As crop type enumeration
         Hydroponics_ReservoirType reservoirType;            // As reservoir type enumeration
         Hydroponics_RailType railType;                      // As rail type enumeration
-    } objTypeAs;                                               // Enumeration type union
+    } objTypeAs;                                            // Enumeration type union
     Hydroponics_PositionIndex posIndex;                     // Position index
     String keyStr;                                          // String key
     Hydroponics_KeyType key;                                // UInt Key
@@ -102,13 +102,14 @@ public:
     HydroponicsData *saveToData();                          // Saves object state to proper backing data
 
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object.
+    const arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getLinkages() const;
 
     const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object.
     const Hydroponics_KeyType getKey() const;               // Returns the unique key of the object.
 
 protected:
     HydroponicsIdentity _id;                                // Object id
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> _links; // Linked objects (weak)
+    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> _links; // Linked objects (strong)
 
     bool addLinkage(HydroponicsObject *obj);
     bool removeLinkage(HydroponicsObject *obj);
@@ -126,8 +127,6 @@ private:
 // but want to replicate some of the same functionality. Not required to be inherited from.
 class HydroponicsSubObject {
 public:
-    virtual void saveToData(HydroponicsSubData *dataOut) const = 0;
-
     virtual void update() = 0;
     virtual void resolveLinks() = 0;
     virtual void handleLowMemory() = 0;

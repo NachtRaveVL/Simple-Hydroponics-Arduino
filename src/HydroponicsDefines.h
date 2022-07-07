@@ -6,8 +6,12 @@
 #ifndef HydroponicsDefines_H
 #define HydroponicsDefines_H
 
+
 #ifndef FLT_EPSILON
-#define FLT_EPSILON                         0.00001f                // Floating point error tolerance
+#define FLT_EPSILON                         0.00001f                // Single-precision floating point error tolerance
+#endif
+#ifndef DBL_EPSILON
+#define DBL_EPSILON                         0.0000000000001         // Double-precision floating point error tolerance
 #endif
 #ifndef ENABLED
 #define ENABLED                             0x1                     // Enabled define (convenience)
@@ -27,6 +31,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
 #define HYDRUINO_OBJ_LINKS_MAXSIZE          ARX_MAP_DEFAULT_SIZE    // Maximum size for object linkage list (per obj)
+#define HYDRUINO_BAL_ACTOBJECTS_MAXSIZE     8                       // Maximum size for balancer actuator list (per inc/dec)
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        64                      // Maximum size for system objects list (max # of objs in system)
 #define HYDRUINO_JSON_DOC_MAXSIZE           256                     // Maximum JSON document size (serialization bytes)
 
@@ -39,11 +44,18 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
 #define HYDRUINO_POS_BEGFROM                1                       // Whenever displayed position indexing starts at 1 or 0 (aka display offset)
 
-#define HYDRUINO_RES_FEED_EMPTY_FRACTION    0.2                     // What fraction of a feed reservoir's volume is to be considered empty (to account for pumps, heaters, etc.)
+#define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2                     // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+#define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9                     // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 
-#define HYDRUINO_PH_VAL_RANGE_HALF          1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH
-#define HYDRUINO_EC_VAL_RANGE_HALF          0.5                     // How far to go, in either direction, to form a range when EC is expressed as a single number, in EC
-#define HYDRUINO_TEMP_VAL_RANGE_HALF        5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C
+#define HYDRUINO_CROP_PH_RANGE_HALF         1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH
+#define HYDRUINO_CROP_EC_RANGE_HALF         0.5                     // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC
+#define HYDRUINO_CROP_TEMP_RANGE_HALF       5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C
+#define HYDRUINO_CROP_NIGHT_BEGIN_HR        22                      // Hour of the day night begins (for night feeding multiplier)
+#define HYDRUINO_CROP_NIGHT_END_HR          6                       // Hour of the day night ends (for night feeding multiplier)
+#define HYDRUINO_CROP_GROWEEKS_MAX          16                      // Maximum grow weeks to support scheduling up to
+#define HYDRUINO_CROP_GROWEEKS_MIN          8                       // Minimum grow weeks to support scheduling up to
+
+#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8                     // What percentage of crops need to have their feeding signal on/off for scheduler to register as such.
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
@@ -123,7 +135,7 @@ enum Hydroponics_CropType {
     Hydroponics_CropType_Squash,                            // Squash crop
     Hydroponics_CropType_Sunflower,                         // Sunflower crop
     Hydroponics_CropType_Strawberries,                      // Strawberries crop
-    Hydroponics_CropType_SwissChard,                        // Swiss chard crop
+    Hydroponics_CropType_SwissChard,                        // Swiss Chard crop
     Hydroponics_CropType_Taro,                              // Taro crop
     Hydroponics_CropType_Tarragon,                          // Tarragon crop
     Hydroponics_CropType_Thyme,                             // Thyme crop
@@ -133,17 +145,17 @@ enum Hydroponics_CropType {
     Hydroponics_CropType_Watermelon,                        // Watermelon crop
     Hydroponics_CropType_Zucchini,                          // Zucchini crop
 
-    Hydroponics_CropType_Custom1,                           // Custom crop 1
-    Hydroponics_CropType_Custom2,                           // Custom crop 2
-    Hydroponics_CropType_Custom3,                           // Custom crop 3
-    Hydroponics_CropType_Custom4,                           // Custom crop 4
-    Hydroponics_CropType_Custom5,                           // Custom crop 5
-    Hydroponics_CropType_Custom6,                           // Custom crop 6
-    Hydroponics_CropType_Custom7,                           // Custom crop 7
-    Hydroponics_CropType_Custom8,                           // Custom crop 8
+    Hydroponics_CropType_CustomCrop1,                       // Custom crop 1
+    Hydroponics_CropType_CustomCrop2,                       // Custom crop 2
+    Hydroponics_CropType_CustomCrop3,                       // Custom crop 3
+    Hydroponics_CropType_CustomCrop4,                       // Custom crop 4
+    Hydroponics_CropType_CustomCrop5,                       // Custom crop 5
+    Hydroponics_CropType_CustomCrop6,                       // Custom crop 6
+    Hydroponics_CropType_CustomCrop7,                       // Custom crop 7
+    Hydroponics_CropType_CustomCrop8,                       // Custom crop 8
 
     Hydroponics_CropType_Count,                             // Internal use only
-    Hydroponics_CropType_CustomCount = 8,                   // Internal use only
+    Hydroponics_CropType_CustomCropCount = 8,               // Internal use only
     Hydroponics_CropType_Undefined = -1                     // Internal use only
 };
 
@@ -174,8 +186,8 @@ enum Hydroponics_CropPhase {
 // System Run Mode
 // Specifies the general tank setup, fluid levels, and waste connection defaults.
 enum Hydroponics_SystemMode {
-    Hydroponics_SystemMode_Recycling,                       // System consistently recycles water in main feed water reservoir, treating feed water reservoirs as initially filled, and expects water changes every 2-3 weeks. Default setting.
-    Hydroponics_SystemMode_DrainToWaste,                    // System fills feed reservoir before feeding (with pH/feed premix topoff prior), treating feed water reservoirs as initially empty, and expects feed pumps to output to drain.
+    Hydroponics_SystemMode_Recycling,                       // System consistently recycles water in main feed water reservoir. Default setting, applicable to a wide range of NFT and DWC setups.
+    Hydroponics_SystemMode_DrainToWaste,                    // System refills feed reservoir every time before feeding (with pH/feed premix topoff), and requires a drainage pipe (as feed pump output) or drainage pump (from feed reservoir to drainage pipe).
 
     Hydroponics_SystemMode_Count,                           // Internal use only
     Hydroponics_SystemMode_Undefined = -1                   // Internal use only
@@ -198,10 +210,10 @@ enum Hydroponics_MeasurementMode {
 // Currently, all ouput devices must ultimately be supported by tcMenu.
 enum Hydroponics_DisplayOutputMode {
     Hydroponics_DisplayOutputMode_Disabled,                 // No display output
-    Hydroponics_DisplayOutputMode_20x4LCD,                  // 20x4 i2c LCD (with layout EN, RW, RS, BL, Data)
-    Hydroponics_DisplayOutputMode_20x4LCD_Swapped,          // 20x4 i2c LCD (with EN<->RS swapped layout RS, RW, EN, BL, Data)
-    Hydroponics_DisplayOutputMode_16x2LCD,                  // 16x2 i2c LCD (with layout EN, RW, RS, BL, Data)
-    Hydroponics_DisplayOutputMode_16x2LCD_Swapped,          // 16x2 i2c LCD (with EN<->RS swapped layout RS, RW, EN, BL, Data)
+    Hydroponics_DisplayOutputMode_20x4LCD,                  // 20x4 i2c LCD (with layout: EN, RW, RS, BL, Data)
+    Hydroponics_DisplayOutputMode_20x4LCD_Swapped,          // 20x4 i2c LCD (with EN<->RS swapped, layout: RS, RW, EN, BL, Data)
+    Hydroponics_DisplayOutputMode_16x2LCD,                  // 16x2 i2c LCD (with layout: EN, RW, RS, BL, Data)
+    Hydroponics_DisplayOutputMode_16x2LCD_Swapped,          // 16x2 i2c LCD (with EN<->RS swapped, layout: RS, RW, EN, BL, Data)
 
     Hydroponics_DisplayOutputMode_Count,                    // Internal use only
     Hydroponics_DisplayOutputMode_Undefined = -1            // Internal use only
@@ -225,11 +237,12 @@ enum Hydroponics_ControlInputMode {
 // Control actuator type. Specifies the various controllable equipment and their usage.
 enum Hydroponics_ActuatorType {
     Hydroponics_ActuatorType_GrowLights,                    // Grow lights actuator
-    Hydroponics_ActuatorType_WaterPump,                     // Water pump actuator (feed or drainage reservoir only)
-    Hydroponics_ActuatorType_PeristalticPump,               // Peristaltic pump actuator (pH-up/down, nutrient, or fresh water reservoirs only)
+    Hydroponics_ActuatorType_WaterPump,                     // Water pump actuator (feed or drainage/main-water pipe reservoirs only)
+    Hydroponics_ActuatorType_PeristalticPump,               // Peristaltic pump actuator (pH-up/down, nutrient, fresh water, or custom additive reservoirs only)
     Hydroponics_ActuatorType_WaterHeater,                   // Water heater actuator (feed reservoir only)
     Hydroponics_ActuatorType_WaterAerator,                  // Water aerator actuator (feed reservoir only)
-    Hydroponics_ActuatorType_FanExhaust,                    // Fan exhaust relay actuator
+    Hydroponics_ActuatorType_WaterSprayer,                  // Water sprayer actuator (feed reservoir only, uses crop linkages - assumes infinite water source)
+    Hydroponics_ActuatorType_FanExhaust,                    // Fan exhaust/circulation relay actuator (feed reservoir only, uses crop linkages)
 
     Hydroponics_ActuatorType_Count,                         // Internal use only
     Hydroponics_ActuatorType_Undefined = -1                 // Internal use only
@@ -246,8 +259,8 @@ enum Hydroponics_SensorType {
     Hydroponics_SensorType_SoilMoisture,                    // Soil moisture sensor (analog/digital)
     Hydroponics_SensorType_WaterPumpFlowSensor,             // Water pump flow hall sensor (analog(PWM))
     Hydroponics_SensorType_WaterLevelIndicator,             // Water level indicator (binary)
-    Hydroponics_SensorType_WaterHeightMeter,                // Water height meter (analog/digital)
-    Hydroponics_SensorType_PowerUsageMeter,                 // Power usage meter (analog/digital)
+    Hydroponics_SensorType_WaterHeightMeter,                // Water height meter (analog)
+    Hydroponics_SensorType_PowerUsageMeter,                 // Power usage meter (analog)
 
     Hydroponics_SensorType_Count,                           // Internal use only
     Hydroponics_SensorType_Undefined = -1                   // Internal use only
@@ -256,9 +269,9 @@ enum Hydroponics_SensorType {
 // Reservoir Type
 // Common fluid containers. Specifies the various operational containers.
 enum Hydroponics_ReservoirType {
-    Hydroponics_ReservoirType_FeedWater,                    // Feed water (aka main water reservoir)
+    Hydroponics_ReservoirType_FeedWater,                    // Feed water
     Hydroponics_ReservoirType_DrainageWater,                // Drainage water
-    Hydroponics_ReservoirType_NutrientPremix,               // Base nutrient premix
+    Hydroponics_ReservoirType_NutrientPremix,               // Base nutrient premix (A or B iff mixed 1:1)
     Hydroponics_ReservoirType_FreshWater,                   // Fresh water
     Hydroponics_ReservoirType_PhUpSolution,                 // pH-Up solution
     Hydroponics_ReservoirType_PhDownSolution,               // pH-Down solution
@@ -285,11 +298,13 @@ enum Hydroponics_ReservoirType {
     Hydroponics_ReservoirType_Undefined = -1                // Internal use only
 };
 
-// Relay Power Rail
-// Common powered relay rails. Specifies an isolated operational power rail.
+// Power Rail
+// Common power rails. Specifies an isolated operational power rail unit.
 enum Hydroponics_RailType {
-    Hydroponics_RailType_ACPower,                           // AC-based power rail, for pumps, lights, heaters, etc.
-    Hydroponics_RailType_DCPower,                           // DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
+    Hydroponics_RailType_AC110V,                            // 110~120V AC-based power rail, for pumps, lights, heaters, etc.
+    Hydroponics_RailType_AC220V,                            // 110~120V AC-based power rail, for pumps, lights, heaters, etc.
+    Hydroponics_RailType_DC5V,                              // 5v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
+    Hydroponics_RailType_DC12V,                             // 12v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
 
     Hydroponics_RailType_Count,                             // Internal use only
     Hydroponics_RailType_CustomCount,                       // Internal use only
@@ -305,6 +320,17 @@ enum Hydroponics_TriggerState {
 
     Hydroponics_TriggerState_Count,                         // Internal use only
     Hydroponics_TriggerState_Undefined = -1                 // Internal use only
+};
+
+// Balancing State
+// Common balancing states. Specifies balance or which direction of imbalance.
+enum Hydroponics_BalancingState {
+    Hydroponics_BalancingState_TooLow,                      // Too low / needs inc
+    Hydroponics_BalancingState_Balanced,                    // Balanced state
+    Hydroponics_BalancingState_TooHigh,                     // Too high / needs dec
+
+    Hydroponics_BalancingState_Count,                       // Internal use only
+    Hydroponics_BalancingState_Undefined = -1               // Internal use only
 };
 
 
@@ -343,6 +369,7 @@ enum Hydroponics_UnitsType {
 
 
 class Hydroponics;
+class HydroponicsScheduler;
 struct HydroponicsIdentity;
 class HydroponicsObject;
 class HydroponicsSubObject;
@@ -357,5 +384,6 @@ struct HydroponicsSubData;
 struct HydroponicsMeasurement;
 struct HydroponicsSingleMeasurement;
 class HydroponicsTrigger;
+class HydroponicsBalancer;
 
 #endif // /ifndef HydroponicsDefines_H

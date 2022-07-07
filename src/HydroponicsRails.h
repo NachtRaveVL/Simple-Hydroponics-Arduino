@@ -26,9 +26,9 @@ extern HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 class HydroponicsRail : public HydroponicsObject, public HydroponicsRailObjectInterface, public HydroponicsActuatorAttachmentsInterface, public HydroponicsSensorAttachmentsInterface {
 public:
     const enum { Simple, Regulated, Unknown = -1 } classType; // Power rail class (custom RTTI)
-    inline bool isSimpleClass() { return classType == Simple; }
-    inline bool isRegulatedClass() { return classType == Regulated; }
-    inline bool isUnknownClass() { return classType <= Unknown; }
+    inline bool isSimpleClass() const { return classType == Simple; }
+    inline bool isRegulatedClass() const { return classType == Regulated; }
+    inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroponicsRail(Hydroponics_RailType railType,
                     Hydroponics_PositionIndex railIndex,
@@ -46,12 +46,12 @@ public:
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
     bool hasActuator(HydroponicsActuator *actuator) const override;
-    arx::map<Hydroponics_KeyType, HydroponicsActuator *> getActuators() const override;
+    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getActuators() const override;
 
     virtual bool addSensor(HydroponicsSensor *sensor) override;
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
     bool hasSensor(HydroponicsSensor *sensor) const override;
-    arx::map<Hydroponics_KeyType, HydroponicsSensor *> getSensors() const override;
+    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getSensors() const override;
 
     Hydroponics_RailType getRailType() const;
     Hydroponics_PositionIndex getRailIndex() const;
@@ -134,14 +134,14 @@ protected:
     float _maxPower;                                      // Maximum power
     Hydroponics_UnitsType _powerUnits;                    // Power units preferred
     HydroponicsDLinkObject<HydroponicsSensor> _powerSensor; // Power sensor linkage
-    HydroponicsSingleMeasurement _powerDraw;              // Instantaneous power rate
+    HydroponicsSingleMeasurement _powerDraw;              // Current power draw
     HydroponicsTrigger *_limitTrigger;                    // Power limit trigger (owned)
 
     void saveToData(HydroponicsData *dataOut) const override;
 
     void attachPowerSensor();
     void detachPowerSensor();
-    void handlePowerMeasure(HydroponicsMeasurement *measurement);
+    void handlePowerMeasure(const HydroponicsMeasurement *measurement);
     void handleLimitTrigger(Hydroponics_TriggerState triggerState);
 };
 
