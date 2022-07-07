@@ -38,15 +38,6 @@ HydroponicsReservoir::~HydroponicsReservoir()
 {
     //discardFromTaskManager(&_filledSignal);
     //discardFromTaskManager(&_emptySignal);
-    {   auto actuators = getActuators();
-        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
-    }
-    {   auto sensors = getSensors();
-        for (auto iter = sensors.begin(); iter != sensors.end(); ++iter) { removeSensor((HydroponicsSensor *)(iter->second)); }
-    }
-    {   auto crops = getCrops();
-        for (auto iter = crops.begin(); iter != crops.end(); ++iter) { removeCrop((HydroponicsCrop *)(iter->second)); }
-    }
 }
 
 void HydroponicsReservoir::update()
@@ -655,20 +646,19 @@ void HydroponicsFeedReservoir::setupPHBalancer()
         {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> incActuators;
             auto waterPumps = linksFilterPumpActuatorsByInputReservoirType(_links, Hydroponics_ReservoirType_PhUpSolution);
             auto phUpPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_PeristalticPump);
+            float dosingRate = getSchedulerInstance()->getCombinedDosingRate(this, Hydroponics_ReservoirType_PhUpSolution);
 
             if (phUpPumps.size()) {
                 for (auto pumpIter = phUpPumps.begin(); pumpIter != phUpPumps.end(); ++pumpIter) {
                     auto pump = (HydroponicsActuator *)(pumpIter->second);
-                    // TODO: dosing scale factor
-                    if (pump) { incActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), 1.0f)); }
+                    if (pump) { incActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), dosingRate)); }
                 }
             } else if (waterPumps.size()) {
                 phUpPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_WaterPump);
 
                 for (auto pumpIter = phUpPumps.begin(); pumpIter != phUpPumps.end(); ++pumpIter) {
                     auto pump = (HydroponicsActuator *)(pumpIter->second);
-                    // TODO: dosing scale factor
-                    if (pump) { incActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), 1.0f)); }
+                    if (pump) { incActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), dosingRate)); }
                 }
             }
 
@@ -678,20 +668,19 @@ void HydroponicsFeedReservoir::setupPHBalancer()
         {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> decActuators;
             auto waterPumps = linksFilterPumpActuatorsByInputReservoirType(_links, Hydroponics_ReservoirType_PhDownSolution);
             auto phDownPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_PeristalticPump);
+            float dosingRate = getSchedulerInstance()->getCombinedDosingRate(this, Hydroponics_ReservoirType_PhDownSolution);
 
             if (phDownPumps.size()) {
                 for (auto pumpIter = phDownPumps.begin(); pumpIter != phDownPumps.end(); ++pumpIter) {
                     auto pump = (HydroponicsActuator *)(pumpIter->second);
-                    // TODO: dosing scale factor
-                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), 1.0f)); }
+                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), dosingRate)); }
                 }
             } else if (waterPumps.size()) {
                 phDownPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_WaterPump);
 
                 for (auto pumpIter = phDownPumps.begin(); pumpIter != phDownPumps.end(); ++pumpIter) {
                     auto pump = (HydroponicsActuator *)(pumpIter->second);
-                    // TODO: dosing scale factor
-                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), 1.0f)); }
+                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), dosingRate)); }
                 }
             }
 
@@ -752,18 +741,19 @@ void HydroponicsFeedReservoir::setupTDSBalancer()
         {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> decActuators;
             auto pumps = linksFilterPumpActuatorsByInputReservoirType(_links, Hydroponics_ReservoirType_FreshWater);
             auto dilutionPumps = linksFilterActuatorsByType(pumps, Hydroponics_ActuatorType_PeristalticPump);
+            float dosingRate = getSchedulerInstance()->getCombinedDosingRate(this, Hydroponics_ReservoirType_FreshWater);
 
             if (dilutionPumps.size()) {
                 for (auto pumpIter = dilutionPumps.begin(); pumpIter != dilutionPumps.end(); ++pumpIter) {
                     auto pump = (HydroponicsActuator *)(pumpIter->second);
-                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), 1.0f)); }
+                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), dosingRate)); }
                 }
             } else if (pumps.size()) {
                 dilutionPumps = linksFilterActuatorsByType(pumps, Hydroponics_ActuatorType_WaterPump);
 
                 for (auto pumpIter = dilutionPumps.begin(); pumpIter != dilutionPumps.end(); ++pumpIter) {
                     auto pump = (HydroponicsActuator *)(pumpIter->second);
-                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), 1.0f)); }
+                    if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(pump->getId()), dosingRate)); }
                 }
             }
 

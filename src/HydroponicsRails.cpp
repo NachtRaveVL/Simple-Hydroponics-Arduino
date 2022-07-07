@@ -35,12 +35,6 @@ HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
 HydroponicsRail::~HydroponicsRail()
 {
     //discardFromTaskManager(&_capacitySignal);
-    {   auto actuators = getActuators();
-        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
-    }
-    {   auto sensors = getSensors();
-        for (auto iter = sensors.begin(); iter != sensors.end(); ++iter) { removeSensor((HydroponicsSensor *)(iter->second)); }
-    }
 }
 
 void HydroponicsRail::update()
@@ -138,7 +132,11 @@ HydroponicsSimpleRail::HydroponicsSimpleRail(const HydroponicsSimpleRailData *da
 { ; }
 
 HydroponicsSimpleRail::~HydroponicsSimpleRail()
-{ ; }
+{
+    {   auto actuators = getActuators();
+        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
+    }
+}
 
 bool HydroponicsSimpleRail::canActivate(HydroponicsActuator *actuator) const
 {
