@@ -125,7 +125,7 @@ void HydroponicsCrop::setFeedReservoir(shared_ptr<HydroponicsFeedReservoir> rese
 shared_ptr<HydroponicsFeedReservoir> HydroponicsCrop::getFeedReservoir()
 {
     if (_feedReservoir.resolveIfNeeded()) { _feedReservoir->addCrop(this); }
-    return reinterpret_pointer_cast<HydroponicsFeedReservoir>(_feedReservoir.getObj());
+    return static_pointer_cast<HydroponicsFeedReservoir>(_feedReservoir.getObj());
 }
 
 void HydroponicsCrop::setFeedingWeight(float weight)
@@ -193,7 +193,7 @@ HydroponicsData *HydroponicsCrop::allocateData() const
     return _allocateDataForObjType((int8_t)_id.type, (int8_t)classType);
 }
 
-void HydroponicsCrop::saveToData(HydroponicsData *dataOut) const
+void HydroponicsCrop::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsObject::saveToData(dataOut);
 
@@ -293,7 +293,7 @@ TimeSpan HydroponicsTimedCrop::getFeedTimeOff() const
     return TimeSpan(_feedTimingMins[1] * SECS_PER_MIN);
 }
 
-void HydroponicsTimedCrop::saveToData(HydroponicsData *dataOut) const
+void HydroponicsTimedCrop::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsCrop::saveToData(dataOut);
 
@@ -428,7 +428,7 @@ const HydroponicsTrigger *HydroponicsAdaptiveCrop::getFeedingTrigger() const
     return _feedingTrigger;
 }
 
-void HydroponicsAdaptiveCrop::saveToData(HydroponicsData *dataOut) const
+void HydroponicsAdaptiveCrop::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsCrop::saveToData(dataOut);
 

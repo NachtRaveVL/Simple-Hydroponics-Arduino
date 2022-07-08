@@ -112,7 +112,7 @@ HydroponicsData *HydroponicsRail::allocateData() const
     return _allocateDataForObjType((int8_t)_id.type, (int8_t)classType);
 }
 
-void HydroponicsRail::saveToData(HydroponicsData *dataOut) const
+void HydroponicsRail::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsObject::saveToData(dataOut);
 
@@ -173,7 +173,7 @@ int HydroponicsSimpleRail::getActiveCount()
     return _activeCount;
 }
 
-void HydroponicsSimpleRail::saveToData(HydroponicsData *dataOut) const
+void HydroponicsSimpleRail::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsRail::saveToData(dataOut);
 
@@ -329,7 +329,7 @@ float HydroponicsRegulatedRail::getMaxPower() const
     return _maxPower;
 }
 
-void HydroponicsRegulatedRail::saveToData(HydroponicsData *dataOut) const
+void HydroponicsRegulatedRail::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsRail::saveToData(dataOut);
 

@@ -135,6 +135,8 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
             _systemData->dispOutMode = dispOutMode;
             _systemData->ctrlInMode = ctrlInMode;
 
+            _scheduler.initFromData(&(_systemData->scheduler));
+
             commonInit();
         }
     }  
@@ -345,7 +347,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 
         if (_objects.size()) {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                HydroponicsData *data = iter->second->saveToData();
+                HydroponicsData *data = iter->second->newSaveData();
 
                 HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), F("Failure saving object to data"));
                 if (data && data->isObjectData()) {
@@ -485,7 +487,7 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
 
         if (_objects.size()) {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                HydroponicsData *data = iter->second->saveToData();
+                HydroponicsData *data = iter->second->newSaveData();
 
                 HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), F("Failure saving object to data"));
                 if (data && data->isObjectData()) {
@@ -624,7 +626,7 @@ void controlLoop()
             if (hydroponics->_suspend) { yield(); return; }
         #endif
         hydroponics->updateObjects(0);
-        hydroponics->_scheduler.update();
+        getSchedulerInstance()->update();
         //hydroponics->_actQueue.update();
     }
 
@@ -769,7 +771,7 @@ void Hydroponics::updateObjects(int pass)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
                 if (obj && obj->isSensorType()) {
-                    auto sensorObj = reinterpret_pointer_cast<HydroponicsSensor>(obj);
+                    auto sensorObj = static_pointer_cast<HydroponicsSensor>(obj);
                     if (sensorObj && sensorObj->getNeedsPolling()) {
                         sensorObj->takeMeasurement(true);
                     }
@@ -921,6 +923,15 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdent
             return iter->second;
         }
     }
+}
+
+shared_ptr<HydroponicsObject> Hydroponics::objectByKey(Hydroponics_KeyType key) const
+{
+    auto iter = _objects.find(key);
+    if (iter != _objects.end()) {
+        return iter->second;
+    }
+    return nullptr;
 }
 
 Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, bool taken)

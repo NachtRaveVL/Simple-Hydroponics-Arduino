@@ -16,12 +16,12 @@ public:
     HydroponicsEEPROMStream();
     HydroponicsEEPROMStream(size_t dataAddress, size_t dataSize);
 
-    int available() override;
-    int read() override;
-    int peek() override;
-    void flush() override;
-    size_t write(const uint8_t *buffer, size_t size) override;
-    size_t write(uint8_t data) override;
+    virtual int available() override;
+    virtual int read() override;
+    virtual int peek() override;
+    virtual void flush() override;
+    virtual size_t write(const uint8_t *buffer, size_t size) override;
+    virtual size_t write(uint8_t data) override;
 
 private:
     I2C_eeprom *_eeprom;

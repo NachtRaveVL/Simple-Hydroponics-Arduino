@@ -45,13 +45,13 @@ public:
 
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
-    bool hasActuator(HydroponicsActuator *actuator) const override;
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getActuators() const override;
+    virtual bool hasActuator(HydroponicsActuator *actuator) const override;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getActuators() const override;
 
     virtual bool addSensor(HydroponicsSensor *sensor) override;
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
-    bool hasSensor(HydroponicsSensor *sensor) const override;
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getSensors() const override;
+    virtual bool hasSensor(HydroponicsSensor *sensor) const override;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getSensors() const override;
 
     Hydroponics_RailType getRailType() const;
     Hydroponics_PositionIndex getRailIndex() const;
@@ -61,8 +61,8 @@ public:
 protected:
     Signal<HydroponicsRail *> _capacitySignal;              // Capacity changed signal
 
-    HydroponicsData *allocateData() const override;
-    virtual void saveToData(HydroponicsData *dataOut) const override;
+    virtual HydroponicsData *allocateData() const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 // Simple Power Rail
@@ -78,11 +78,11 @@ public:
     HydroponicsSimpleRail(const HydroponicsSimpleRailData *dataIn);
     virtual ~HydroponicsSimpleRail();
 
-    bool canActivate(HydroponicsActuator *actuator) const override;
-    float getCapacity() const override;
+    virtual bool canActivate(HydroponicsActuator *actuator) const override;
+    virtual float getCapacity() const override;
 
-    bool addActuator(HydroponicsActuator *actuator) override;
-    bool removeActuator(HydroponicsActuator *actuator) override;
+    virtual bool addActuator(HydroponicsActuator *actuator) override;
+    virtual bool removeActuator(HydroponicsActuator *actuator) override;
 
     int getActiveCount();
 
@@ -90,7 +90,7 @@ protected:
     int _activeCount;                                       // Current active count
     int _maxActiveAtOnce;                                   // Max active count
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 
     void handleActivation(HydroponicsActuator *actuator);
 };
@@ -107,23 +107,23 @@ public:
     HydroponicsRegulatedRail(const HydroponicsRegulatedRailData *dataIn);
     virtual ~HydroponicsRegulatedRail();
 
-    void update() override;
-    void resolveLinks() override;
-    void handleLowMemory() override;
+    virtual void update() override;
+    virtual void resolveLinks() override;
+    virtual void handleLowMemory() override;
 
-    bool canActivate(HydroponicsActuator *actuator) const override;
-    float getCapacity() const override;
+    virtual bool canActivate(HydroponicsActuator *actuator) const override;
+    virtual float getCapacity() const override;
 
     void setPowerUnits(Hydroponics_UnitsType powerUnits);
     Hydroponics_UnitsType getPowerUnits() const;
 
-    void setPowerSensor(HydroponicsIdentity powerSensorId) override;
-    void setPowerSensor(shared_ptr<HydroponicsSensor> powerSensor) override;
-    shared_ptr<HydroponicsSensor> getPowerSensor() override;
+    virtual void setPowerSensor(HydroponicsIdentity powerSensorId) override;
+    virtual void setPowerSensor(shared_ptr<HydroponicsSensor> powerSensor) override;
+    virtual shared_ptr<HydroponicsSensor> getPowerSensor() override;
 
-    void setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits = Hydroponics_UnitsType_Undefined) override;
-    void setPowerDraw(HydroponicsSingleMeasurement powerDraw) override;
-    const HydroponicsSingleMeasurement &getPowerDraw() const override;
+    virtual void setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setPowerDraw(HydroponicsSingleMeasurement powerDraw) override;
+    virtual const HydroponicsSingleMeasurement &getPowerDraw() const override;
 
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
     const HydroponicsTrigger *getLimitTrigger() const;
@@ -137,7 +137,7 @@ protected:
     HydroponicsSingleMeasurement _powerDraw;              // Current power draw
     HydroponicsTrigger *_limitTrigger;                    // Power limit trigger (owned)
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 
     void attachPowerSensor();
     void detachPowerSensor();
@@ -160,8 +160,8 @@ struct HydroponicsSimpleRailData : public HydroponicsRailData
     int maxActiveAtOnce;
 
     HydroponicsSimpleRailData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // Regulated Rail Serialization Data
@@ -173,8 +173,8 @@ struct HydroponicsRegulatedRailData : public HydroponicsRailData
     HydroponicsTriggerSubData limitTrigger;
 
     HydroponicsRegulatedRailData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 #endif // /ifndef HydroponicsRails_H

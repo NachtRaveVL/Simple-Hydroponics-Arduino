@@ -140,7 +140,7 @@ HydroponicsData *HydroponicsReservoir::allocateData() const
     return _allocateDataForObjType((int8_t)_id.type, (int8_t)classType);
 }
 
-void HydroponicsReservoir::saveToData(HydroponicsData *dataOut) const
+void HydroponicsReservoir::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsObject::saveToData(dataOut);
 
@@ -326,7 +326,7 @@ float HydroponicsFluidReservoir::getMaxVolume()
     return _maxVolume;
 }
 
-void HydroponicsFluidReservoir::saveToData(HydroponicsData *dataOut) const
+void HydroponicsFluidReservoir::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsReservoir::saveToData(dataOut);
 
@@ -723,7 +723,7 @@ void HydroponicsFeedReservoir::setupTDSBalancer()
 
             for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
                  reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount;
-                 reservoirType = reservoirType + 1) {
+                 reservoirType = (Hydroponics_ReservoirType)((int)reservoirType + 1)) {
                 if (getHydroponicsInstance()->getCustomAdditiveData(reservoirType)) {
                     nutrientPumps = linksFilterPumpActuatorsByInputReservoirType(pumps, reservoirType);
 
@@ -874,7 +874,7 @@ void HydroponicsFeedReservoir::notifyDayChanged()
     _numFeedingsToday = 0;
 }
 
-void HydroponicsFeedReservoir::saveToData(HydroponicsData *dataOut) const
+void HydroponicsFeedReservoir::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsFluidReservoir::saveToData(dataOut);
 
@@ -1003,7 +1003,7 @@ bool HydroponicsInfiniteReservoir::getIsEmpty() const
     return !_alwaysFilled;
 }
 
-void HydroponicsInfiniteReservoir::saveToData(HydroponicsData *dataOut) const
+void HydroponicsInfiniteReservoir::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsReservoir::saveToData(dataOut);
 

@@ -138,11 +138,11 @@ void HydroponicsObject::handleLowMemory()
     //_links.shrink_to_fit(); // not yet implemented library method
 }
 
-HydroponicsData *HydroponicsObject::saveToData()
+HydroponicsData *HydroponicsObject::newSaveData()
 {
-    auto data = this->allocateData();
+    auto data = allocateData();
     HYDRUINO_SOFT_ASSERT(data, F("Failure allocating object data"));
-    if (data) { this->saveToData(data); }
+    if (data) { saveToData(data); }
     return data;
 }
 
@@ -183,10 +183,11 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 
 HydroponicsData *HydroponicsObject::allocateData() const
 {
+    HYDRUINO_HARD_ASSERT(false, F("Missing method"));
     return new HydroponicsData();
 }
 
-void HydroponicsObject::saveToData(HydroponicsData *dataOut) const
+void HydroponicsObject::saveToData(HydroponicsData *dataOut)
 {
     dataOut->id.object.idType = (int8_t)_id.type;
     dataOut->id.object.objType = (int8_t)_id.objTypeAs.actuatorType;

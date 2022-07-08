@@ -75,10 +75,10 @@ public:
     HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementValueTrigger();
 
-    void saveToData(HydroponicsTriggerSubData *dataOut) const override;
+    virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
 
-    void attachTrigger() override;
-    void detachTrigger() override;
+    virtual void attachTrigger() override;
+    virtual void detachTrigger() override;
 
     void setTriggerTolerance(float tolerance);
 
@@ -109,10 +109,10 @@ public:
     HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementRangeTrigger();
 
-    void saveToData(HydroponicsTriggerSubData *dataOut) const override;
+    virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
 
-    void attachTrigger() override;
-    void detachTrigger() override;
+    virtual void attachTrigger() override;
+    virtual void detachTrigger() override;
 
     void setTriggerToleranceMid(float toleranceMid);
 
@@ -150,8 +150,8 @@ struct HydroponicsTriggerSubData : public HydroponicsSubData {
     Hydroponics_UnitsType toleranceUnits;
 
     HydroponicsTriggerSubData();
-    void toJSONObject(JsonObject &objectOut) const;
-    void fromJSONObject(JsonObjectConst &objectIn);
+    virtual void toJSONObject(JsonObject &objectOut) const;
+    virtual void fromJSONObject(JsonObjectConst &objectIn);
 };
 
 #endif // /ifndef HydroponicsTriggers_H

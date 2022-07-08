@@ -51,13 +51,13 @@ public:
     virtual bool getCanEnable() override;
     virtual bool getIsEnabled(float tolerance = 0.5) const = 0;
 
-    void setRail(HydroponicsIdentity powerRailId) override;
-    void setRail(shared_ptr<HydroponicsRail> powerRail) override;
-    shared_ptr<HydroponicsRail> getRail() override;
+    virtual void setRail(HydroponicsIdentity powerRailId) override;
+    virtual void setRail(shared_ptr<HydroponicsRail> powerRail) override;
+    virtual shared_ptr<HydroponicsRail> getRail() override;
 
-    void setReservoir(HydroponicsIdentity reservoirId) override;
-    void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
-    shared_ptr<HydroponicsReservoir> getReservoir() override;
+    virtual void setReservoir(HydroponicsIdentity reservoirId) override;
+    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
+    virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
 
     byte getOutputPin() const;
     Hydroponics_ActuatorType getActuatorType() const;
@@ -73,8 +73,8 @@ protected:
     HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
     Signal<HydroponicsActuator *> _activateSignal;          // Activation update signal
 
-    HydroponicsData *allocateData() const override;
-    virtual void saveToData(HydroponicsData *dataOut) const override;
+    virtual HydroponicsData *allocateData() const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -91,9 +91,9 @@ public:
     HydroponicsRelayActuator(const HydroponicsRelayActuatorData *dataIn);
     virtual ~HydroponicsRelayActuator();
 
-    bool enableActuator(bool override = false, float intensity = 1.0f) override;
-    void disableActuator() override;
-    bool getIsEnabled(float tolerance = 0.5) const override;
+    virtual bool enableActuator(bool override = false, float intensity = 1.0f) override;
+    virtual void disableActuator() override;
+    virtual bool getIsEnabled(float tolerance = 0.5) const override;
 
     bool getActiveLow() const;
 
@@ -101,7 +101,7 @@ protected:
     bool _enabled;                                          // Enabled state flag
     bool _activeLow;                                        // If pulling pin to a LOW state infers ACTIVE (default: true)
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -117,33 +117,33 @@ public:
     HydroponicsPumpRelayActuator(const HydroponicsPumpRelayActuatorData *dataIn);
     virtual ~HydroponicsPumpRelayActuator();
 
-    void resolveLinks() override;
+    virtual void resolveLinks() override;
 
-    bool canPump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
-    void pump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual bool canPump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void pump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
 
-    void setReservoir(HydroponicsIdentity reservoirId) override;
-    void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
-    shared_ptr<HydroponicsReservoir> getReservoir() override;
+    virtual void setReservoir(HydroponicsIdentity reservoirId) override;
+    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
+    virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
 
-    void setOutputReservoir(HydroponicsIdentity outputReservoirId) override;
-    void setOutputReservoir(shared_ptr<HydroponicsReservoir> outputReservoir) override;
-    shared_ptr<HydroponicsReservoir> getOutputReservoir() override;
+    virtual void setOutputReservoir(HydroponicsIdentity outputReservoirId) override;
+    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> outputReservoir) override;
+    virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() override;
 
     void setFlowRateUnits(Hydroponics_UnitsType flowRateUnits);
     Hydroponics_UnitsType getFlowRateUnits() const;
 
-    void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
-    void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) override;
-    const HydroponicsSingleMeasurement &getContinuousFlowRate() const override;
+    virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) override;
+    virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() const override;
 
-    void setFlowRateSensor(HydroponicsIdentity flowRateSensorId) override;
-    void setFlowRateSensor(shared_ptr<HydroponicsSensor> flowRateSensor) override;
-    shared_ptr<HydroponicsSensor> getFlowRateSensor() override;
+    virtual void setFlowRateSensor(HydroponicsIdentity flowRateSensorId) override;
+    virtual void setFlowRateSensor(shared_ptr<HydroponicsSensor> flowRateSensor) override;
+    virtual shared_ptr<HydroponicsSensor> getFlowRateSensor() override;
 
-    void setInstantaneousFlowRate(float instFlowRate, Hydroponics_UnitsType instFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
-    void setInstantaneousFlowRate(HydroponicsSingleMeasurement instFlowRate) override;
-    const HydroponicsSingleMeasurement &getInstantaneousFlowRate() const override;
+    virtual void setInstantaneousFlowRate(float instFlowRate, Hydroponics_UnitsType instFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setInstantaneousFlowRate(HydroponicsSingleMeasurement instFlowRate) override;
+    virtual const HydroponicsSingleMeasurement &getInstantaneousFlowRate() const override;
 
 protected:
     HydroponicsDLinkObject<HydroponicsReservoir> _outputReservoir; // Output reservoir linkage
@@ -152,7 +152,7 @@ protected:
     HydroponicsSingleMeasurement _contFlowRate;             // Continuous flow rate
     HydroponicsSingleMeasurement _instFlowRate;             // Instantaneous flow rate
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 
     void attachFlowRateSensor();
     void detachFlowRateSensor();
@@ -173,9 +173,9 @@ public:
     HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn);
     virtual ~HydroponicsPWMActuator();
 
-    bool enableActuator(bool override = false, float intensity = 1.0f) override;
-    void disableActuator() override;
-    bool getIsEnabled(float tolerance = 0.5) const override;
+    virtual bool enableActuator(bool override = false, float intensity = 1.0f) override;
+    virtual void disableActuator() override;
+    virtual bool getIsEnabled(float tolerance = 0.5) const override;
 
     float getPWMAmount() const;
     int getPWMAmount(int) const;
@@ -189,7 +189,7 @@ protected:
     float _pwmAmount;                                       // Current set PWM amount
     HydroponicsBitResolution _pwmResolution;                // PWM output resolution
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 
     void applyPWM();
 };
@@ -213,8 +213,8 @@ struct HydroponicsRelayActuatorData : public HydroponicsActuatorData
     bool activeLow;
 
     HydroponicsRelayActuatorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // Pump Relay Actuator Serialization Data
@@ -226,8 +226,8 @@ struct HydroponicsPumpRelayActuatorData : public HydroponicsRelayActuatorData
     HydroponicsMeasurementData contFlowRate;
 
     HydroponicsPumpRelayActuatorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // PWM Actuator Serialization Data
@@ -236,8 +236,8 @@ struct HydroponicsPWMActuatorData : public HydroponicsActuatorData
     byte outputBitResolution;
 
     HydroponicsPWMActuatorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 #endif // /ifndef HydroponicsActuators_H
