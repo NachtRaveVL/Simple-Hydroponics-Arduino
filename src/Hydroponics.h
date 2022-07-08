@@ -44,6 +44,9 @@
 // Uncomment or -D this define to enable debug output.
 #define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
+// Uncomment or -D this define to specifically disable debug assertions (saves a lot of memory on error statements)
+#define HYDRUINO_DISABLE_DEBUG_ASSERTIONS
+
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include <Arduino.h>
@@ -65,7 +68,7 @@ typedef SDFileSystemClass SDClass;
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
 #undef HYDRUINO_ENABLE_DEBUG_OUTPUT
 #endif
-#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+#if defined(HYDRUINO_ENABLE_DEBUG_OUTPUT) && !defined(HYDRUINO_DISABLE_DEBUG_ASSERTIONS)
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  softAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
 #define HYDRUINO_HARD_ASSERT(cond,msg)  hardAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
 #else

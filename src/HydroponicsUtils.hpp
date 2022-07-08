@@ -122,6 +122,12 @@ bool arrayEqualsAll(const T *arrayIn, size_t length, T value)
     return true;
 }
 
+template<typename T>
+T mapValue(T value, T inMin, T inMax, T outMin, T outMax)
+{
+    return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
+
 template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {

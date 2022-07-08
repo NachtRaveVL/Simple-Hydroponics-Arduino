@@ -340,7 +340,7 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsSubData::toJSONObject(objectOut);
 
-    objectOut[F("sensorName")] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE);
+    if (sensorName[0]) { objectOut[F("sensorName")] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
     if (measurementRow > 0) { objectOut[F("measurementRow")] = measurementRow; }
     switch (type) {
         case 0: // MeasureValue

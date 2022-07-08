@@ -793,7 +793,7 @@ void HydroponicsScheduler::broadcastDayChange() const
 
 
 HydroponicsSchedulerSubData::HydroponicsSchedulerSubData()
-    : HydroponicsSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, standardDosingRates{1}, totalFeedingsDay(0), preFeedAeratorMins(30), preLightSprayMins(60)
+    : HydroponicsSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, standardDosingRates{1.0f,0.5f,0.5f}, totalFeedingsDay(0), preFeedAeratorMins(30), preLightSprayMins(60)
 { ; }
 
 void HydroponicsSchedulerSubData::toJSONObject(JsonObject &objectOut) const
@@ -803,7 +803,7 @@ void HydroponicsSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     if (!isFPEqual(baseFeedMultiplier, 1.0f)) { objectOut[F("baseFeedMultiplier")] = baseFeedMultiplier; }
     bool hasWeeklyDosings = arrayEqualsAll(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 1.0f);
     if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX); }
-    bool hasStandardDosings = arrayEqualsAll(standardDosingRates, 3, 1.0f);
+    bool hasStandardDosings = !isFPEqual(standardDosingRates[0], 1.0f) || !isFPEqual(standardDosingRates[1], 0.5f) || !isFPEqual(standardDosingRates[2], 0.5f);
     if (hasStandardDosings) { objectOut[F("standardDosingRates")] = commaStringFromArray(standardDosingRates, 3); }
     if (totalFeedingsDay > 0) { objectOut[F("totalFeedingsDay")] = totalFeedingsDay; }
     if (preFeedAeratorMins != 30) { objectOut[F("preFeedAeratorMins")] = preFeedAeratorMins; }
