@@ -125,7 +125,7 @@ void HydroponicsBalancer::disableIncActuators()
 {
     for (auto actIter = _incActuators.begin(); actIter != _incActuators.end(); ++actIter) {
         auto actuator = actIter->second.first;
-        if (actuator->getIsEnabled()) { actuator->disableActuator(); }
+        if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
     }
 }
 
@@ -133,7 +133,7 @@ void HydroponicsBalancer::disableDecActuators()
 {
     for (auto actIter = _decActuators.begin(); actIter != _decActuators.end(); ++actIter) {
         auto actuator = actIter->second.first;
-        if (actuator->getIsEnabled()) { actuator->disableActuator(); }
+        if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
     }
 }
 
@@ -214,7 +214,11 @@ HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<Hydrop
 HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, int measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing)
 {
-    // TODO
+    if (volumeUnits != Hydroponics_UnitsType_LiquidVolume_Gallons) {
+        convertStdUnits(&reservoirVolume, &volumeUnits, Hydroponics_UnitsType_LiquidVolume_Gallons);
+    }
+    _baseDosingMillis = mapValue<float>(reservoirVolume, 5, 30, 500, 3000);
+    _mixTimeMins = mapValue<float>(reservoirVolume, 30, 200, 10, 30);
 }
 
 HydroponicsTimedDosingBalancer::~HydroponicsTimedDosingBalancer()

@@ -852,8 +852,8 @@ void HydroponicsDHTTempHumiditySensorData::toJSONObject(JsonObject &objectOut) c
     HydroponicsDigitalSensorData::toJSONObject(objectOut);
 
     if (dhtType != DHT12) { objectOut[F("dhtType")] = dhtType; }
-    objectOut[F("computeHeatIndex")] = computeHeatIndex;
-    if (measurementUnits[0] != Hydroponics_UnitsType_Undefined || measurementUnits[0] != Hydroponics_UnitsType_Undefined || measurementUnits[0] != Hydroponics_UnitsType_Undefined) {
+    if (computeHeatIndex != false) { objectOut[F("computeHeatIndex")] = computeHeatIndex; }
+    if (measurementUnits[0] != Hydroponics_UnitsType_Undefined || measurementUnits[1] != Hydroponics_UnitsType_Undefined || measurementUnits[2] != Hydroponics_UnitsType_Undefined) {
         if (measurementUnits[0] != measurementUnits[2] || measurementUnits[1] != Hydroponics_UnitsType_Percentile_0_100) {
             JsonArray measurementUnitsArray = objectOut.createNestedArray(F("measurementUnits"));
             measurementUnitsArray[0] = measurementUnits[0];

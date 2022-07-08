@@ -602,7 +602,7 @@ void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsRelayActuatorData::HydroponicsRelayActuatorData()
-    : HydroponicsActuatorData(), activeLow(false)
+    : HydroponicsActuatorData(), activeLow(true)
 {
     _size = sizeof(*this);
 }
@@ -611,7 +611,7 @@ void HydroponicsRelayActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsActuatorData::toJSONObject(objectOut);
 
-    objectOut[F("activeLow")] = activeLow;
+    if (activeLow != true) { objectOut[F("activeLow")] = activeLow; }
 }
 
 void HydroponicsRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -655,7 +655,7 @@ void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsPWMActuatorData::HydroponicsPWMActuatorData()
-    : HydroponicsActuatorData(), outputBitResolution(0)
+    : HydroponicsActuatorData(), outputBitResolution(8)
 {
     _size = sizeof(*this);
 }
@@ -664,7 +664,7 @@ void HydroponicsPWMActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsActuatorData::toJSONObject(objectOut);
 
-    objectOut[F("outputBitResolution")] = outputBitResolution;
+    if (outputBitResolution != 8) { objectOut[F("outputBitResolution")] = outputBitResolution; }
 }
 
 void HydroponicsPWMActuatorData::fromJSONObject(JsonObjectConst &objectIn)

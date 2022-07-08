@@ -77,6 +77,10 @@ int occurrencesInStringIgnoreCase(String string, String subString);
 template<typename T>
 bool arrayEqualsAll(const T *arrayIn, size_t length, T value);
 
+// Similar to the standard map function, but does it on any type.
+template<typename T>
+T mapValue(T value, T inMin, T inMax, T outMin, T outMax);
+
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
 extern int freeMemory();
 

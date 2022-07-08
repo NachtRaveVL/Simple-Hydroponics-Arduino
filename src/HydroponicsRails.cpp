@@ -401,7 +401,7 @@ void HydroponicsSimpleRailData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsRailData::toJSONObject(objectOut);
 
-    objectOut[F("maxActiveAtOnce")] = maxActiveAtOnce;
+    if (maxActiveAtOnce != 2) { objectOut[F("maxActiveAtOnce")] = maxActiveAtOnce; }
 }
 
 void HydroponicsSimpleRailData::fromJSONObject(JsonObjectConst &objectIn)
