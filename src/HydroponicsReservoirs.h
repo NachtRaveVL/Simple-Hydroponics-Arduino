@@ -51,18 +51,18 @@ public:
 
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
-    bool hasActuator(HydroponicsActuator *actuator) const override;
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getActuators() const override;
+    virtual bool hasActuator(HydroponicsActuator *actuator) const override;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getActuators() const override;
 
     virtual bool addSensor(HydroponicsSensor *sensor) override;
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
-    bool hasSensor(HydroponicsSensor *sensor) const override;
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getSensors() const override;
+    virtual bool hasSensor(HydroponicsSensor *sensor) const override;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getSensors() const override;
 
     virtual bool addCrop(HydroponicsCrop *crop) override;
     virtual bool removeCrop(HydroponicsCrop *crop) override;
-    bool hasCrop(HydroponicsCrop *crop) const override;
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getCrops() const override;
+    virtual bool hasCrop(HydroponicsCrop *crop) const override;
+    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getCrops() const override;
 
     Hydroponics_ReservoirType getReservoirType() const;
     Hydroponics_PositionIndex getReservoirIndex() const;
@@ -74,8 +74,8 @@ protected:
     Signal<HydroponicsReservoir *> _filledSignal;           // Filled state signal
     Signal<HydroponicsReservoir *> _emptySignal;            // Empty state signal
 
-    HydroponicsData *allocateData() const override;
-    virtual void saveToData(HydroponicsData *dataOut) const override;
+    virtual HydroponicsData *allocateData() const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -93,24 +93,24 @@ public:
     HydroponicsFluidReservoir(const HydroponicsFluidReservoirData *dataIn);
     virtual ~HydroponicsFluidReservoir();
 
-    void update() override;
-    void resolveLinks() override;
-    void handleLowMemory() override;
+    virtual void update() override;
+    virtual void resolveLinks() override;
+    virtual void handleLowMemory() override;
 
-    bool canActivate(HydroponicsActuator *actuator) const override;
-    bool getIsFull() const override;
-    bool getIsEmpty() const override;
+    virtual bool canActivate(HydroponicsActuator *actuator) const override;
+    virtual bool getIsFull() const override;
+    virtual bool getIsEmpty() const override;
 
     void setVolumeUnits(Hydroponics_UnitsType volumeUnits);
     Hydroponics_UnitsType getVolumeUnits() const;
 
-    void setVolumeSensor(HydroponicsIdentity volumeSensorId) override;
-    void setVolumeSensor(shared_ptr<HydroponicsSensor> volumeSensor) override;
-    shared_ptr<HydroponicsSensor> getVolumeSensor() override;
+    virtual void setVolumeSensor(HydroponicsIdentity volumeSensorId) override;
+    virtual void setVolumeSensor(shared_ptr<HydroponicsSensor> volumeSensor) override;
+    virtual shared_ptr<HydroponicsSensor> getVolumeSensor() override;
 
-    void setWaterVolume(float waterVolume, Hydroponics_UnitsType waterVolumeUnits = Hydroponics_UnitsType_Undefined) override;
-    void setWaterVolume(HydroponicsSingleMeasurement waterVolume) override;
-    const HydroponicsSingleMeasurement &getWaterVolume() const override;
+    virtual void setWaterVolume(float waterVolume, Hydroponics_UnitsType waterVolumeUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setWaterVolume(HydroponicsSingleMeasurement waterVolume) override;
+    virtual const HydroponicsSingleMeasurement &getWaterVolume() const override;
 
     void setFilledTrigger(HydroponicsTrigger *filledTrigger);
     const HydroponicsTrigger *getFilledTrigger() const;
@@ -128,7 +128,7 @@ protected:
     HydroponicsTrigger *_filledTrigger;                     // Filled trigger (owned)
     HydroponicsTrigger *_emptyTrigger;                      // Empty trigger (owned)
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 
     void attachWaterVolumeSensor();
     void detachWaterVolumeSensor();
@@ -148,9 +148,9 @@ public:
     HydroponicsFeedReservoir(const HydroponicsFeedReservoirData *dataIn);
     virtual ~HydroponicsFeedReservoir();
 
-    void update() override;
-    void resolveLinks() override;
-    void handleLowMemory() override;
+    virtual void update() override;
+    virtual void resolveLinks() override;
+    virtual void handleLowMemory() override;
 
     void setTDSUnits(Hydroponics_UnitsType tdsUnits);
     Hydroponics_UnitsType getTDSUnits() const;
@@ -158,29 +158,29 @@ public:
     void setTemperatureUnits(Hydroponics_UnitsType tempUnits);
     Hydroponics_UnitsType getTemperatureUnits() const;
 
-    void setWaterPHSensor(HydroponicsIdentity phSensorId) override;
-    void setWaterPHSensor(shared_ptr<HydroponicsSensor> phSensor) override;
-    shared_ptr<HydroponicsSensor> getWaterPHSensor() override;
+    virtual void setWaterPHSensor(HydroponicsIdentity phSensorId) override;
+    virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> phSensor) override;
+    virtual shared_ptr<HydroponicsSensor> getWaterPHSensor() override;
 
-    void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_pHScale_0_14) override;
-    void setWaterPH(HydroponicsSingleMeasurement waterPH) override;
-    const HydroponicsSingleMeasurement &getWaterPH() const override;
+    virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_pHScale_0_14) override;
+    virtual void setWaterPH(HydroponicsSingleMeasurement waterPH) override;
+    virtual const HydroponicsSingleMeasurement &getWaterPH() const override;
 
-    void setWaterTDSSensor(HydroponicsIdentity tdsSensorId) override;
-    void setWaterTDSSensor(shared_ptr<HydroponicsSensor> tdsSensor) override;
-    shared_ptr<HydroponicsSensor> getWaterTDSSensor() override;
+    virtual void setWaterTDSSensor(HydroponicsIdentity tdsSensorId) override;
+    virtual void setWaterTDSSensor(shared_ptr<HydroponicsSensor> tdsSensor) override;
+    virtual shared_ptr<HydroponicsSensor> getWaterTDSSensor() override;
 
-    void setWaterTDS(float waterTDS, Hydroponics_UnitsType waterTDSUnits = Hydroponics_UnitsType_Undefined) override;
-    void setWaterTDS(HydroponicsSingleMeasurement waterTDS) override;
-    const HydroponicsSingleMeasurement &getWaterTDS() const override;
+    virtual void setWaterTDS(float waterTDS, Hydroponics_UnitsType waterTDSUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setWaterTDS(HydroponicsSingleMeasurement waterTDS) override;
+    virtual const HydroponicsSingleMeasurement &getWaterTDS() const override;
 
-    void setWaterTempSensor(HydroponicsIdentity waterTempSensorId) override;
-    void setWaterTempSensor(shared_ptr<HydroponicsSensor> waterTempSensor) override;
-    shared_ptr<HydroponicsSensor> getWaterTempSensor() override;
+    virtual void setWaterTempSensor(HydroponicsIdentity waterTempSensorId) override;
+    virtual void setWaterTempSensor(shared_ptr<HydroponicsSensor> waterTempSensor) override;
+    virtual shared_ptr<HydroponicsSensor> getWaterTempSensor() override;
 
-    void setWaterTemperature(float waterTemperature, Hydroponics_UnitsType waterTempUnits = Hydroponics_UnitsType_Undefined) override;
-    void setWaterTemperature(HydroponicsSingleMeasurement waterTemperature) override;
-    const HydroponicsSingleMeasurement &getWaterTemperature() const override;
+    virtual void setWaterTemperature(float waterTemperature, Hydroponics_UnitsType waterTempUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setWaterTemperature(HydroponicsSingleMeasurement waterTemperature) override;
+    virtual const HydroponicsSingleMeasurement &getWaterTemperature() const override;
 
     HydroponicsBalancer *setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);
     void setWaterPHBalancer(HydroponicsBalancer *phBalancer);
@@ -225,7 +225,7 @@ protected:
     HydroponicsBalancer *_tdsBalancer;                      // TDS balancer (assigned by scheduler when needed)
     HydroponicsBalancer *_tempBalancer;                     // Temperature balancer (assigned by scheduler when needed)
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 
     void setupPHBalancer();
     void setupTDSBalancer();
@@ -256,14 +256,14 @@ public:
     HydroponicsInfiniteReservoir(const HydroponicsInfiniteReservoirData *dataIn);
     virtual ~HydroponicsInfiniteReservoir();
 
-    bool canActivate(HydroponicsActuator *actuator) const override;
-    bool getIsFull() const override;
-    bool getIsEmpty() const override;
+    virtual bool canActivate(HydroponicsActuator *actuator) const override;
+    virtual bool getIsFull() const override;
+    virtual bool getIsEmpty() const override;
 
 protected:
     bool _alwaysFilled;                                     // Always filled flag
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -283,8 +283,8 @@ struct HydroponicsFluidReservoirData : public HydroponicsReservoirData {
     HydroponicsTriggerSubData emptyTrigger;
 
     HydroponicsFluidReservoirData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // Feed Water Reservoir Serialization Data
@@ -300,8 +300,8 @@ struct HydroponicsFeedReservoirData : public HydroponicsFluidReservoirData {
     char tempSensorName[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsFeedReservoirData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // Infinite Pipe Reservoir Serialization Data
@@ -309,8 +309,8 @@ struct HydroponicsInfiniteReservoirData : public HydroponicsReservoirData {
     bool alwaysFilled;
 
     HydroponicsInfiniteReservoirData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 #endif // /ifndef HydroponicsReservoirs_H

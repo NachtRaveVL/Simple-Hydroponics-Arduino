@@ -28,8 +28,8 @@ struct HydroponicsSystemData : public HydroponicsData {
     HydroponicsSchedulerSubData scheduler;                      // Scheduler subdata
 
     HydroponicsSystemData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 
@@ -48,8 +48,8 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     HydroponicsCalibrationData();
     HydroponicsCalibrationData(HydroponicsIdentity sensorId, Hydroponics_UnitsType calibUnits = Hydroponics_UnitsType_Undefined);
 
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 
     // Transforms value from raw (or initial) value into calibrated (or transformed) value.
     inline float transform(float rawValue) const { return (rawValue * multiplier) + offset; }
@@ -117,8 +117,8 @@ struct HydroponicsCropsLibData : public HydroponicsData {
 
     HydroponicsCropsLibData();
     HydroponicsCropsLibData(Hydroponics_CropType cropType);     // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 
@@ -131,8 +131,8 @@ struct HydroponicsCustomAdditiveData : public HydroponicsData {
 
     HydroponicsCustomAdditiveData();
     HydroponicsCustomAdditiveData(Hydroponics_ReservoirType reservoirType); // Convenience constructor, copies data from Hydroponics system then returns, good for temporary objects.
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 

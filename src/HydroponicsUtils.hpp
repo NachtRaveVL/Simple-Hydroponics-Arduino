@@ -18,33 +18,33 @@ struct HydroponicsDLinkObject {
 
     HydroponicsDLinkObject() : id(), obj(nullptr) { ; }
     template<class U>
-    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs) : id(rhs.id), obj(reinterpret_pointer_cast<T>(rhs.obj)) { ; }
+    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs) : id(rhs.id), obj(static_pointer_cast<T>(rhs.obj)) { ; }
     HydroponicsDLinkObject(HydroponicsIdentity idIn) : id(idIn), obj(nullptr) { ; }
     template<class U>
-    HydroponicsDLinkObject(shared_ptr<U> objIn) : id(objIn->getId()), obj(reinterpret_pointer_cast<T>(objIn)) { ; }
+    HydroponicsDLinkObject(shared_ptr<U> objIn) : id(objIn->getId()), obj(static_pointer_cast<T>(objIn)) { ; }
     HydroponicsDLinkObject(const char *keyStrIn) : HydroponicsDLinkObject(HydroponicsIdentity(String(keyStrIn))) { ; }
     ~HydroponicsDLinkObject() { ; }
 
     inline bool isId() const { return !obj; }
     inline bool isObj() const { return (bool)obj; }
-    inline bool needsResolved() const { return !obj && (bool)id; }
-    inline bool resolveIfNeeded() { return !obj ? (bool)getObj() : false; }
+    inline bool needsResolved() const { return (!obj && (bool)id); }
+    inline bool resolveIfNeeded() { return (!obj ? (bool)getObj() : false); }
     inline operator bool() const { return isObj(); }
 
     HydroponicsIdentity getId() const { return obj ? obj->getId() : id;  }
     Hydroponics_KeyType getKey() const { return obj ? obj->getId().key : id.key; }
 
     shared_ptr<T> getObj() { if (!obj && (bool)id) { auto hydroponics = getHydroponicsInstance();
-                                                     obj = (hydroponics ? hydroponics->objectById(id) : nullptr);
-                                                     if (obj) { id = obj->getId(); } }
+                                                     if (hydroponics) { obj = hydroponics->objectById(id); }
+                                                     if (isObj()) { id = obj->getId(); } }
                              return obj; }
     inline T* operator->() { return getObj().get(); }
 
     template<class U>
-    HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { id = rhs.id; obj = reinterpret_pointer_cast<T>(rhs.obj); }
+    HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { id = rhs.id; obj = static_pointer_cast<T>(rhs.obj); }
     HydroponicsDLinkObject<T> &operator=(const HydroponicsIdentity rhs) { id = rhs; obj = nullptr; }
     template<class U>
-    HydroponicsDLinkObject<T> &operator=(shared_ptr<U> rhs) { obj = reinterpret_pointer_cast<T>(rhs); id = obj->getId(); }
+    HydroponicsDLinkObject<T> &operator=(shared_ptr<U> rhs) { obj = static_pointer_cast<T>(rhs); id = obj->getId(); }
 
     template<class U>
     bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return id.key == rhs->getId().key; }

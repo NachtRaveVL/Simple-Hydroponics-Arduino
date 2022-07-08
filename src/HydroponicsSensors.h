@@ -67,13 +67,13 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) = 0;
     virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const = 0;
 
-    void setCrop(HydroponicsIdentity cropId) override;
-    void setCrop(shared_ptr<HydroponicsCrop> crop) override;
-    shared_ptr<HydroponicsCrop> getCrop() override;
+    virtual void setCrop(HydroponicsIdentity cropId) override;
+    virtual void setCrop(shared_ptr<HydroponicsCrop> crop) override;
+    virtual shared_ptr<HydroponicsCrop> getCrop() override;
 
-    void setReservoir(HydroponicsIdentity reservoirId) override;
-    void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
-    shared_ptr<HydroponicsReservoir> getReservoir() override;
+    virtual void setReservoir(HydroponicsIdentity reservoirId) override;
+    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
+    virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
 
     void setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData);
     const HydroponicsCalibrationData *getUserCalibrationData() const;
@@ -92,8 +92,8 @@ protected:
     const HydroponicsCalibrationData *_calibrationData;     // Calibration data
     Signal<const HydroponicsMeasurement *> _measureSignal;        // New measurement signal
 
-    HydroponicsData *allocateData() const override;
-    virtual void saveToData(HydroponicsData *dataOut) const override;
+    virtual HydroponicsData *allocateData() const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -110,11 +110,11 @@ public:
     HydroponicsBinarySensor(const HydroponicsBinarySensorData *dataIn);
     virtual ~HydroponicsBinarySensor();
 
-    void takeMeasurement(bool override = false) override;
-    const HydroponicsMeasurement *getLatestMeasurement() const override;
+    virtual void takeMeasurement(bool override = false) override;
+    virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
     // TODO reg as isr
     //bool tryRegisterAsISR();
@@ -129,7 +129,7 @@ protected:
     HydroponicsBinaryMeasurement _lastMeasurement;          // Latest successful measurement
     Signal<bool> _stateSignal;                              // State changed signal
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -149,11 +149,11 @@ public:
 
     virtual void resolveLinks() override;
 
-    void takeMeasurement(bool override = false) override;
-    const HydroponicsMeasurement *getLatestMeasurement() const override;
+    virtual void takeMeasurement(bool override = false) override;
+    virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
     void setTemperatureSensor(HydroponicsIdentity sensorId);
     void setTemperatureSensor(shared_ptr<HydroponicsSensor> sensor);
@@ -167,7 +167,7 @@ protected:
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
     HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor linkage
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -193,7 +193,7 @@ protected:
     OneWire *_oneWire;                                      // OneWire comm instance (owned)
     HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor linkage
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -209,11 +209,11 @@ public:
     HydroponicsDHTTempHumiditySensor(const HydroponicsDHTTempHumiditySensorData *dataIn);
     virtual ~HydroponicsDHTTempHumiditySensor();
 
-    void takeMeasurement(bool override = false) override;
-    const HydroponicsMeasurement *getLatestMeasurement() const override;
+    virtual void takeMeasurement(bool override = false) override;
+    virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
     void setComputeHeatIndex(bool computeHeatIndex);
     bool getComputeHeatIndex() const;
@@ -225,7 +225,7 @@ protected:
     HydroponicsTripleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits[3];             // Measurement units preferred
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -240,11 +240,11 @@ public:
     HydroponicsDSTemperatureSensor(const HydroponicsDSTemperatureSensorData *dataIn);
     virtual ~HydroponicsDSTemperatureSensor();
 
-    void takeMeasurement(bool override = false) override;
-    const HydroponicsMeasurement *getLatestMeasurement() const override;
+    virtual void takeMeasurement(bool override = false) override;
+    virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
     OneWire &getOneWire() const;
 
@@ -253,7 +253,7 @@ protected:
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -268,11 +268,11 @@ public:
     HydroponicsTMPMoistureSensor(const HydroponicsTMPMoistureSensorData *dataIn);
     virtual ~HydroponicsTMPMoistureSensor();
 
-    void takeMeasurement(bool override = false) override;
-    const HydroponicsMeasurement *getLatestMeasurement() const override;
+    virtual void takeMeasurement(bool override = false) override;
+    virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
     OneWire &getOneWire() const;
 
@@ -282,7 +282,7 @@ protected:
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
-    void saveToData(HydroponicsData *dataOut) const override;
+    virtual void saveToData(HydroponicsData *dataOut) override;
 };
 
 
@@ -303,8 +303,8 @@ struct HydroponicsBinarySensorData : public HydroponicsSensorData {
     //TODO: bool registerISR;
 
     HydroponicsBinarySensorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // Analog Sensor Serialization Data
@@ -314,8 +314,8 @@ struct HydroponicsAnalogSensorData : public HydroponicsSensorData {
     char tempSensorName[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsAnalogSensorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // Digital Sensor Serialization Data
@@ -334,8 +334,8 @@ struct HydroponicsDHTTempHumiditySensorData : public HydroponicsDigitalSensorDat
     Hydroponics_UnitsType measurementUnits[3];
 
     HydroponicsDHTTempHumiditySensorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // DS Temp Sensor Serialization Data
@@ -344,8 +344,8 @@ struct HydroponicsDSTemperatureSensorData : public HydroponicsDigitalSensorData 
     Hydroponics_UnitsType measurementUnits;
 
     HydroponicsDSTemperatureSensorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 // TMP Moisture Sensor Serialization Data
@@ -354,8 +354,8 @@ struct HydroponicsTMPMoistureSensorData : public HydroponicsDigitalSensorData {
     Hydroponics_UnitsType measurementUnits;
 
     HydroponicsTMPMoistureSensorData();
-    void toJSONObject(JsonObject &objectOut) const override;
-    void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void toJSONObject(JsonObject &objectOut) const override;
+    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 #endif // /ifndef HydroponicsSensors_H

@@ -211,20 +211,21 @@ public:
 
     // Searches for object by id key (nullptr return = no obj by that id, position index may use HYDRUINO_POS_SEARCH* defines)
     shared_ptr<HydroponicsObject> objectById(HydroponicsIdentity id) const;
+    shared_ptr<HydroponicsObject> objectByKey(Hydroponics_KeyType key) const;
     Hydroponics_PositionIndex firstPosition(HydroponicsIdentity id, bool taken);
     inline Hydroponics_PositionIndex firstPositionTaken(HydroponicsIdentity id) { return firstPosition(id, true); }
     inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { return firstPosition(id, false); }
  
-    inline shared_ptr<HydroponicsActuator> actuatorById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsActuator>(objectById(id)); }
-    inline shared_ptr<HydroponicsActuator> actuatorById(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsActuator>(objectById(HydroponicsIdentity(actuatorType, actuatorIndex))); }
-    inline shared_ptr<HydroponicsSensor> sensorById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsSensor>(objectById(id)); }
-    inline shared_ptr<HydroponicsSensor> sensorById(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsSensor>(objectById(HydroponicsIdentity(sensorType, sensorIndex))); }
-    inline shared_ptr<HydroponicsCrop> cropById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsCrop>(objectById(id)); }
-    inline shared_ptr<HydroponicsCrop> cropById(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsCrop>(objectById(HydroponicsIdentity(cropType, cropIndex))); }
-    inline shared_ptr<HydroponicsReservoir> reservoirById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsReservoir>(objectById(id)); }
-    inline shared_ptr<HydroponicsReservoir> reservoirById(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsReservoir>(objectById(HydroponicsIdentity(reservoirType, reservoirIndex))); }
-    inline shared_ptr<HydroponicsRail> railById(HydroponicsIdentity id) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(id)); }
-    inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return reinterpret_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
+    inline shared_ptr<HydroponicsActuator> actuatorById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsActuator>(objectById(id)); }
+    inline shared_ptr<HydroponicsActuator> actuatorById(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsActuator>(objectById(HydroponicsIdentity(actuatorType, actuatorIndex))); }
+    inline shared_ptr<HydroponicsSensor> sensorById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsSensor>(objectById(id)); }
+    inline shared_ptr<HydroponicsSensor> sensorById(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsSensor>(objectById(HydroponicsIdentity(sensorType, sensorIndex))); }
+    inline shared_ptr<HydroponicsCrop> cropById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsCrop>(objectById(id)); }
+    inline shared_ptr<HydroponicsCrop> cropById(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsCrop>(objectById(HydroponicsIdentity(cropType, cropIndex))); }
+    inline shared_ptr<HydroponicsReservoir> reservoirById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsReservoir>(objectById(id)); }
+    inline shared_ptr<HydroponicsReservoir> reservoirById(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsReservoir>(objectById(HydroponicsIdentity(reservoirType, reservoirIndex))); }
+    inline shared_ptr<HydroponicsRail> railById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsRail>(objectById(id)); }
+    inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
 
 
     // Object Factory.

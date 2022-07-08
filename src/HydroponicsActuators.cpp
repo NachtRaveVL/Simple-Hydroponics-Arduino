@@ -160,7 +160,7 @@ HydroponicsData *HydroponicsActuator::allocateData() const
     return _allocateDataForObjType((int8_t)_id.type, (int8_t)classType);
 }
 
-void HydroponicsActuator::saveToData(HydroponicsData *dataOut) const
+void HydroponicsActuator::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsObject::saveToData(dataOut);
 
@@ -196,7 +196,9 @@ HydroponicsRelayActuator::HydroponicsRelayActuator(const HydroponicsRelayActuato
 }
 
 HydroponicsRelayActuator::~HydroponicsRelayActuator()
-{ ; }
+{
+    disableActuator();
+}
 
 bool HydroponicsRelayActuator::enableActuator(bool override, float intensity)
 {
@@ -242,7 +244,7 @@ bool HydroponicsRelayActuator::getActiveLow() const
     return _activeLow;
 }
 
-void HydroponicsRelayActuator::saveToData(HydroponicsData *dataOut) const
+void HydroponicsRelayActuator::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsActuator::saveToData(dataOut);
 
@@ -417,7 +419,7 @@ const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getInstantaneo
     return _instFlowRate;
 }
 
-void HydroponicsPumpRelayActuator::saveToData(HydroponicsData *dataOut) const
+void HydroponicsPumpRelayActuator::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsRelayActuator::saveToData(dataOut);
 
@@ -555,7 +557,7 @@ HydroponicsBitResolution HydroponicsPWMActuator::getPWMResolution() const
     return _pwmResolution;
 }
 
-void HydroponicsPWMActuator::saveToData(HydroponicsData *dataOut) const
+void HydroponicsPWMActuator::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsActuator::saveToData(dataOut);
 

@@ -100,7 +100,7 @@ public:
     virtual void resolveLinks();                            // Called after unpack/during launch, to link delayed load objects
     virtual void handleLowMemory();                         // Called upon low memory condition to try and free memory up
 
-    HydroponicsData *saveToData();                          // Saves object state to proper backing data
+    HydroponicsData *newSaveData();                         // Saves object state to proper backing data
 
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object.
     const arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getLinkages() const;
@@ -116,7 +116,7 @@ protected:
     bool removeLinkage(HydroponicsObject *obj);
 
     virtual HydroponicsData *allocateData() const;          // Only up to base type classes (sensor, crop, etc.) does this need overriden
-    virtual void saveToData(HydroponicsData *dataOut) const; // *ALL* derived classes must override and implement
+    virtual void saveToData(HydroponicsData *dataOut);      // *ALL* derived classes must override and implement
 
 private:
     HydroponicsObject() = default;                          // Private constructor to disable derived/public access

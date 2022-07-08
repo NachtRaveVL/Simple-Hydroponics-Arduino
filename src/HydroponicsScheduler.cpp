@@ -373,9 +373,9 @@ void HydroponicsLighting::setupStaging()
 
     time_t time = now();
     stage = Init;
-    if (time >= sprayStart) { stage = stage + 1; }
-    if (time >= lightStart) { stage = stage + 1; }
-    if (time >= lightEnd) { stage = stage + 1; }
+    if (time >= sprayStart) { stage = (typeof(stage))((int)stage + 1); }
+    if (time >= lightStart) { stage = (typeof(stage))((int)stage + 1); }
+    if (time >= lightEnd) { stage = (typeof(stage))((int)stage + 1); }
 
     switch(stage) {
         case Spray:
@@ -557,7 +557,7 @@ void HydroponicsScheduler::setFlushWeek(int weekIndex)
 
         for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
              reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount;
-             reservoirType = reservoirType + 1) {
+             reservoirType = (Hydroponics_ReservoirType)((int)reservoirType + 1)) {
             auto additiveData = getHydroponicsInstance()->getCustomAdditiveData(reservoirType);
             if (additiveData) {
                 HydroponicsCustomAdditiveData newAdditiveData = *additiveData;
@@ -727,9 +727,9 @@ void HydroponicsScheduler::performScheduling()
 {
     for (auto iter = getHydroponicsInstance()->_objects.begin(); iter != getHydroponicsInstance()->_objects.end(); ++iter) {
         if (iter->second && iter->second->isReservoirType()) {
-            auto reservoir = reinterpret_pointer_cast<HydroponicsReservoir>(iter->second);
+            auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
             if (reservoir && reservoir->isFeedClass()) {
-                auto feedReservoir = reinterpret_pointer_cast<HydroponicsFeedReservoir>(iter->second);
+                auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
 
                 if (feedReservoir) {
                     {   auto feedingIter = _feedings.find(feedReservoir->getId().key);
@@ -778,13 +778,13 @@ void HydroponicsScheduler::broadcastDayChange() const
     for (auto iter = getHydroponicsInstance()->_objects.begin(); iter != getHydroponicsInstance()->_objects.end(); ++iter) {
         if (iter->second) {
             if (iter->second->isReservoirType()) {
-                auto reservoir = reinterpret_pointer_cast<HydroponicsReservoir>(iter->second);
+                auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
                 if (reservoir && reservoir->isFeedClass()) {
-                    auto feedReservoir = reinterpret_pointer_cast<HydroponicsFeedReservoir>(iter->second);
+                    auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
                     if (feedReservoir) { feedReservoir->notifyDayChanged(); }
                 }
             } else if (iter->second->isCropType()) {
-                auto crop = reinterpret_pointer_cast<HydroponicsCrop>(iter->second);
+                auto crop = static_pointer_cast<HydroponicsCrop>(iter->second);
                 if (crop) { crop->notifyDayChanged(); }
             }
         }

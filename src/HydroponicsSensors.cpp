@@ -201,7 +201,7 @@ HydroponicsData *HydroponicsSensor::allocateData() const
     return _allocateDataForObjType((int8_t)_id.type, (int8_t)classType);
 }
 
-void HydroponicsSensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsObject::saveToData(dataOut);
 
@@ -289,7 +289,7 @@ Signal<bool> &HydroponicsBinarySensor::getStateSignal()
     return _stateSignal;
 }
 
-void HydroponicsBinarySensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsBinarySensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsSensor::saveToData(dataOut);
 
@@ -407,7 +407,7 @@ HydroponicsBitResolution HydroponicsAnalogSensor::getInputResolution() const
     return _inputResolution;
 }
 
-void HydroponicsAnalogSensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsAnalogSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsSensor::saveToData(dataOut);
 
@@ -473,7 +473,7 @@ shared_ptr<HydroponicsSensor> HydroponicsDigitalSensor::getTemperatureSensor()
     return _tempSensor.getObj();
 }
 
-void HydroponicsDigitalSensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsDigitalSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsSensor::saveToData(dataOut);
 
@@ -571,7 +571,7 @@ bool HydroponicsDHTTempHumiditySensor::getComputeHeatIndex() const
     return _computeHeatIndex;
 }
 
-void HydroponicsDHTTempHumiditySensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsDHTTempHumiditySensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsDigitalSensor::saveToData(dataOut);
 
@@ -675,18 +675,18 @@ OneWire &HydroponicsDSTemperatureSensor::getOneWire() const
     return *_oneWire;
 }
 
-void HydroponicsDSTemperatureSensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsDSTemperatureSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsDigitalSensor::saveToData(dataOut);
 
-    ((HydroponicsDSTemperatureSensorData *)dataOut)->inputBitRes = _dt->getResolution();
+    ((HydroponicsDSTemperatureSensorData *)dataOut)->inputBitRes = _dt ? _dt->getResolution() : 9;
     ((HydroponicsDSTemperatureSensorData *)dataOut)->measurementUnits = _measurementUnits;
 }
 
 
 HydroponicsTMPMoistureSensor::HydroponicsTMPMoistureSensor(Hydroponics_PositionIndex sensorIndex,
-                                                                   byte inputPin, byte inputBitRes,
-                                                                   int classType)
+                                                           byte inputPin, byte inputBitRes,
+                                                           int classType)
     : HydroponicsDigitalSensor(Hydroponics_SensorType_SoilMoisture, sensorIndex, inputPin, true, classType),
       _inputBitRes(inputBitRes)
 { ; }
@@ -740,7 +740,7 @@ OneWire &HydroponicsTMPMoistureSensor::getOneWire() const
     return *_oneWire;
 }
 
-void HydroponicsTMPMoistureSensor::saveToData(HydroponicsData *dataOut) const
+void HydroponicsTMPMoistureSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsDigitalSensor::saveToData(dataOut);
 

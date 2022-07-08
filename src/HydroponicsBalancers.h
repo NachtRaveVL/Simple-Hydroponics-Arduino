@@ -71,7 +71,7 @@ public:
     HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float edgeOffset = 0, float edgeLength = 0, int measurementRow = 0);
     virtual ~HydroponicsLinearEdgeBalancer();
 
-    void update() override;
+    virtual void update() override;
 
     float getEdgeOffset() const;
     float getEdgeLength() const;
@@ -89,7 +89,7 @@ public:
     HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, int measurementRow = 0);
     virtual ~HydroponicsTimedDosingBalancer();
 
-    void update() override;
+    virtual void update() override;
 
     void setDosingDrift(float dosingDrift);
 
