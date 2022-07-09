@@ -44,7 +44,7 @@ public:
     virtual void detachTrigger() = 0;
     virtual Hydroponics_TriggerState getTriggerState() const override;
 
-    void setToleranceUnits(Hydroponics_UnitsType units);
+    void setToleranceUnits(Hydroponics_UnitsType toleranceUnits);
     Hydroponics_UnitsType getToleranceUnits() const;
 
     shared_ptr<HydroponicsSensor> getSensor();
@@ -56,9 +56,12 @@ protected:
     HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
     int8_t _measurementRow;                                 // Measurement data row to check against
     bool _attached;                                         // Attached flag
+    bool _needsSensorUpdate;                                // Needs sensor measure update call tracking flag
     Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
     Hydroponics_TriggerState _triggerState;                 // Current trigger state
     Signal<Hydroponics_TriggerState> _triggerSignal;        // Trigger signal
+
+    virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) = 0;
 };
 
 
@@ -91,7 +94,7 @@ protected:
     float _detriggerTolerance;                              // Detrigger tolerance additive
     bool _triggerBelow;                                     // Trigger below flag
 
-    void handleSensorMeasure(const HydroponicsMeasurement *measurement);
+    virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) override;
 };
 
 
@@ -127,7 +130,7 @@ protected:
     float _detriggerTolerance;                              // Detrigger tolerance additive
     bool _triggerOutside;                                   // Trigger on outside flag
 
-    void handleSensorMeasure(const HydroponicsMeasurement *measurement);
+    virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) override;
 };
 
 

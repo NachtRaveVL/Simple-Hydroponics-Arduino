@@ -579,6 +579,10 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
             }
             break;
 
+        case Hydroponics_UnitsType_Undefined:
+            *valueOut = valueIn;
+            return true;
+
         default:
             break;
     }

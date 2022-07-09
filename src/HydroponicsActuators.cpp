@@ -84,8 +84,8 @@ void HydroponicsActuator::disableAt(time_t disableTime)
 
 bool HydroponicsActuator::getCanEnable()
 {
-    if (_rail && !_rail->canActivate(this)) { return false; }
-    if (_reservoir && !_reservoir->canActivate(this)) { return false; }
+    if (getRail() && !_rail->canActivate(this)) { return false; }
+    if (getReservoir() && !_reservoir->canActivate(this)) { return false; }
     return true;
 }
 
@@ -257,19 +257,28 @@ HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(Hydroponics_ActuatorT
                                                            byte outputPin, bool activeLow,
                                                            int classType)
     :  HydroponicsRelayActuator(actuatorType, actuatorIndex, outputPin, activeLow, classType),
-       _flowRateUnits(defaultLiquidFlowUnits())
+       _flowRateUnits(defaultLiquidFlowUnits()), _needsFlowRate(true)
 { ; }
 
 HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(const HydroponicsPumpRelayActuatorData *dataIn)
-    : HydroponicsRelayActuator(dataIn),
+    : HydroponicsRelayActuator(dataIn), _needsFlowRate(true),
       _outputReservoir(dataIn->outputReservoirName), _flowRateSensor(dataIn->flowRateSensorName),
-      _flowRateUnits(defaultLiquidFlowUnits()), _contFlowRate(&(dataIn->contFlowRate))
+      _flowRateUnits(dataIn->flowRateUnits), _contFlowRate(&(dataIn->contFlowRate))
 { ; }
 
 HydroponicsPumpRelayActuator::~HydroponicsPumpRelayActuator()
 {
     if (_flowRateSensor) { detachFlowRateSensor(); }
     if (_outputReservoir) { _outputReservoir->removeActuator(this); }
+}
+
+void HydroponicsPumpRelayActuator::update()
+{
+    HydroponicsActuator::update();
+
+    if (_needsFlowRate && getFlowRateSensor()) {
+        handleFlowRateMeasure(_flowRateSensor->getLatestMeasurement());
+    }
 }
 
 void HydroponicsPumpRelayActuator::resolveLinks()
@@ -282,13 +291,34 @@ void HydroponicsPumpRelayActuator::resolveLinks()
 
 bool HydroponicsPumpRelayActuator::canPump(float volume, Hydroponics_UnitsType volumeUnits)
 {
-    // TODO
+    if (getReservoir()) {
+        // TODO
+    }
     return false;
 }
 
-void HydroponicsPumpRelayActuator::pump(float volume, Hydroponics_UnitsType volumeUnits)
+bool HydroponicsPumpRelayActuator::pump(float volume, Hydroponics_UnitsType volumeUnits)
 {
-    // TODO
+    if (getReservoir()) {
+        // TODO
+    }
+    return false;
+}
+
+bool HydroponicsPumpRelayActuator::canPump(time_t timeMillis)
+{
+    if (getReservoir()) {
+        // TODO
+    }
+    return false;
+}
+
+bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
+{
+    if (getReservoir()) {
+        // TODO
+    }
+    return false;
 }
 
 void HydroponicsPumpRelayActuator::setReservoir(HydroponicsIdentity reservoirId) {
@@ -328,7 +358,12 @@ shared_ptr<HydroponicsReservoir> HydroponicsPumpRelayActuator::getOutputReservoi
 
 void HydroponicsPumpRelayActuator::setFlowRateUnits(Hydroponics_UnitsType flowRateUnits)
 {
-    _flowRateUnits = flowRateUnits;
+    if (_flowRateUnits != flowRateUnits) {
+        _flowRateUnits = flowRateUnits;
+
+        convertStdUnits(&_contFlowRate.value, &_contFlowRate.units, _flowRateUnits);
+        convertStdUnits(&_instFlowRate.value, &_instFlowRate.units, _flowRateUnits);
+    }
 }
 
 Hydroponics_UnitsType HydroponicsPumpRelayActuator::getFlowRateUnits() const
@@ -342,26 +377,20 @@ void HydroponicsPumpRelayActuator::setContinuousFlowRate(float contFlowRate, Hyd
     _contFlowRate.units = contFlowRateUnits != Hydroponics_UnitsType_Undefined ? contFlowRateUnits
                                                                                : (_flowRateUnits != Hydroponics_UnitsType_Undefined ? _flowRateUnits
                                                                                                                                     : defaultLiquidFlowUnits());
+    _contFlowRate.updateTimestamp();
+    _contFlowRate.updateFrame(1);
 
-    if (_contFlowRate.units != Hydroponics_UnitsType_Undefined && _flowRateUnits != Hydroponics_UnitsType_Undefined &&
-        _contFlowRate.units != _flowRateUnits) {
-        convertStdUnits(&_contFlowRate.value, &_contFlowRate.units, _flowRateUnits);
-        HYDRUINO_SOFT_ASSERT(_contFlowRate.units == _flowRateUnits, F("Failure converting measurement value to flow rate units"));
-    }
+    convertStdUnits(&_contFlowRate.value, &_contFlowRate.units, _flowRateUnits);
 }
 
 void HydroponicsPumpRelayActuator::setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate)
 {
     _contFlowRate = contFlowRate;
 
-    if (_contFlowRate.units != Hydroponics_UnitsType_Undefined && _flowRateUnits != Hydroponics_UnitsType_Undefined &&
-        _contFlowRate.units != _flowRateUnits) {
-        convertStdUnits(&_contFlowRate.value, &_contFlowRate.units, _flowRateUnits);
-        HYDRUINO_SOFT_ASSERT(_contFlowRate.units == _flowRateUnits, F("Failure converting measurement value to flow rate units"));
-    }
+    convertStdUnits(&_contFlowRate.value, &_contFlowRate.units, _flowRateUnits);
 }
 
-const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getContinuousFlowRate() const
+const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getContinuousFlowRate()
 {
     return _contFlowRate;
 }
@@ -371,6 +400,7 @@ void HydroponicsPumpRelayActuator::setFlowRateSensor(HydroponicsIdentity flowRat
     if (_flowRateSensor != flowRateSensorId) {
         if (_flowRateSensor) { detachFlowRateSensor(); }
         _flowRateSensor = flowRateSensorId;
+        _needsFlowRate = true;
     }
 }
 
@@ -380,6 +410,7 @@ void HydroponicsPumpRelayActuator::setFlowRateSensor(shared_ptr<HydroponicsSenso
         if (_flowRateSensor) { detachFlowRateSensor(); }
         _flowRateSensor = flowRateSensor;
         if (_flowRateSensor) { attachFlowRateSensor(); }
+        _needsFlowRate = true;
     }
 }
 
@@ -395,27 +426,24 @@ void HydroponicsPumpRelayActuator::setInstantaneousFlowRate(float instFlowRate, 
     _instFlowRate.units = instFlowRateUnits != Hydroponics_UnitsType_Undefined ? instFlowRateUnits
                                                                                : (_flowRateUnits != Hydroponics_UnitsType_Undefined ? _flowRateUnits
                                                                                                                                     : defaultLiquidFlowUnits());
+    _instFlowRate.updateTimestamp();
+    _instFlowRate.updateFrame(1);
 
-    if (_instFlowRate.units != Hydroponics_UnitsType_Undefined && _flowRateUnits != Hydroponics_UnitsType_Undefined &&
-        _instFlowRate.units != _flowRateUnits) {
-        convertStdUnits(&_instFlowRate.value, &_instFlowRate.units, _flowRateUnits);
-        HYDRUINO_SOFT_ASSERT(_instFlowRate.units == _flowRateUnits, F("Failure converting measurement value to flow rate units"));
-    }
+    convertStdUnits(&_instFlowRate.value, &_instFlowRate.units, _flowRateUnits);
 }
 
 void HydroponicsPumpRelayActuator::setInstantaneousFlowRate(HydroponicsSingleMeasurement instFlowRate)
 {
     _instFlowRate = instFlowRate;
 
-    if (_instFlowRate.units != Hydroponics_UnitsType_Undefined && _flowRateUnits != Hydroponics_UnitsType_Undefined &&
-        _instFlowRate.units != _flowRateUnits) {
-        convertStdUnits(&_instFlowRate.value, &_instFlowRate.units, _flowRateUnits);
-        HYDRUINO_SOFT_ASSERT(_instFlowRate.units == _flowRateUnits, F("Failure converting measurement value to flow rate units"));
-    }
+    convertStdUnits(&_instFlowRate.value, &_instFlowRate.units, _flowRateUnits);
 }
 
-const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getInstantaneousFlowRate() const
+const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getInstantaneousFlowRate()
 {
+    if (_needsFlowRate && getFlowRateSensor()) {
+        handleFlowRateMeasure(_flowRateSensor->getLatestMeasurement());
+    }
     return _instFlowRate;
 }
 
@@ -437,8 +465,8 @@ void HydroponicsPumpRelayActuator::saveToData(HydroponicsData *dataOut)
 
 void HydroponicsPumpRelayActuator::attachFlowRateSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_flowRateSensor, F("Flow rate sensor not linked, failure attaching"));
-    if (_flowRateSensor) {
+    HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), F("Flow rate sensor not linked, failure attaching"));
+    if (getFlowRateSensor()) {
         auto methodSlot = MethodSlot<HydroponicsPumpRelayActuator, const HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -446,8 +474,8 @@ void HydroponicsPumpRelayActuator::attachFlowRateSensor()
 
 void HydroponicsPumpRelayActuator::detachFlowRateSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_flowRateSensor, F("Flow rate sensor not linked, failure detaching"));
-    if (_flowRateSensor) {
+    HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), F("Flow rate sensor not linked, failure detaching"));
+    if (getFlowRateSensor()) {
         auto methodSlot = MethodSlot<HydroponicsPumpRelayActuator, const HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -455,9 +483,9 @@ void HydroponicsPumpRelayActuator::detachFlowRateSensor()
 
 void HydroponicsPumpRelayActuator::handleFlowRateMeasure(const HydroponicsMeasurement *measurement)
 {
-    if (measurement) {
-        setInstantaneousFlowRate(measurementValueAt(measurement, 0, _contFlowRate.value), // TODO: Correct row reference, based on sensor
-                                 measurementUnitsAt(measurement, 0, _flowRateUnits));
+    if (measurement && measurement->frame && getIsEnabled()) {
+        _needsFlowRate = false;
+        setInstantaneousFlowRate(singleMeasurementAt(measurement, 0, _contFlowRate.value, _flowRateUnits)); // TODO: Correct row reference, based on sensor
     }
 }
 

@@ -374,7 +374,11 @@ const HydroponicsMeasurement *HydroponicsAnalogSensor::getLatestMeasurement() co
 
 void HydroponicsAnalogSensor::setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow)
 {
-    _measurementUnits = measurementUnits;
+    if (_measurementUnits != measurementUnits) {
+        _measurementUnits = measurementUnits;
+
+        convertStdUnits(&_lastMeasurement.value, &_lastMeasurement.units, _measurementUnits);
+    }
 }
 
 Hydroponics_UnitsType HydroponicsAnalogSensor::getMeasurementUnits(int measurementRow) const
@@ -553,7 +557,11 @@ const HydroponicsMeasurement *HydroponicsDHTTempHumiditySensor::getLatestMeasure
 
 void HydroponicsDHTTempHumiditySensor::setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow)
 {
-    _measurementUnits[measurementRow] = measurementUnits;
+    if (_measurementUnits[measurementRow] != measurementUnits) {
+        _measurementUnits[measurementRow] = measurementUnits;
+
+        convertStdUnits(&_lastMeasurement.value[measurementRow], &_lastMeasurement.units[measurementRow], _measurementUnits[measurementRow]);
+    }
 }
 
 Hydroponics_UnitsType HydroponicsDHTTempHumiditySensor::getMeasurementUnits(int measurementRow) const
@@ -662,7 +670,11 @@ const HydroponicsMeasurement *HydroponicsDSTemperatureSensor::getLatestMeasureme
 
 void HydroponicsDSTemperatureSensor::setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow)
 {
-    _measurementUnits = measurementUnits;
+    if (_measurementUnits != measurementUnits) {
+        _measurementUnits = measurementUnits;
+
+        convertStdUnits(&_lastMeasurement.value, &_lastMeasurement.units, _measurementUnits);
+    }
 }
 
 Hydroponics_UnitsType HydroponicsDSTemperatureSensor::getMeasurementUnits(int measurementRow) const
@@ -727,7 +739,11 @@ const HydroponicsMeasurement *HydroponicsTMPMoistureSensor::getLatestMeasurement
 
 void HydroponicsTMPMoistureSensor::setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow)
 {
-    _measurementUnits = measurementUnits;
+    if (_measurementUnits != measurementUnits) {
+        _measurementUnits = measurementUnits;
+
+        convertStdUnits(&_lastMeasurement.value, &_lastMeasurement.units, _measurementUnits);
+    }
 }
 
 Hydroponics_UnitsType HydroponicsTMPMoistureSensor::getMeasurementUnits(int measurementRow) const

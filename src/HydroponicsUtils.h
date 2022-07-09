@@ -176,6 +176,8 @@ extern bool checkPinCanInterrupt(byte pin);
 
 // Enum & String Conversions
 
+inline Hydroponics_TriggerState triggerStateFromBool(bool value) { return value ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered; }
+
 // Converts from actuator type enum to string, with optional exclude for special types (instead returning "").
 extern String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeSpecial = false);
 // Converts back to actuator type enum from string.

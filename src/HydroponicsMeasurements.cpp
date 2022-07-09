@@ -63,20 +63,36 @@ Hydroponics_UnitsType measurementUnitsAt(const HydroponicsMeasurement *measureme
     return Hydroponics_UnitsType_Undefined;
 }
 
+HydroponicsSingleMeasurement singleMeasurementAt(const HydroponicsMeasurement *measurementIn, int rowIndex, float binTrue, Hydroponics_UnitsType binUnits)
+{
+    if (measurementIn) {
+        switch (measurementIn->type) {
+            case 0: // Binary
+                if (rowIndex == 0) { return ((HydroponicsBinaryMeasurement *)measurementIn)->asSingleMeasurement(binTrue, binUnits); }
+            case 1: // Single
+                if (rowIndex == 0) { return HydroponicsSingleMeasurement(*((HydroponicsSingleMeasurement *)measurementIn)); }
+            case 2: // Double
+                if (rowIndex > 0 && rowIndex < 2) { return ((HydroponicsDoubleMeasurement *)measurementIn)->asSingleMeasurement(rowIndex); }
+            case 3: // Triple
+                if (rowIndex > 0 && rowIndex < 3) { return ((HydroponicsTripleMeasurement *)measurementIn)->asSingleMeasurement(rowIndex); }
+            default: break;
+        }
+    }
+    {   HydroponicsSingleMeasurement retVal;
+        retVal.frame = 0; // force fails frame checks
+        return retVal;
+    }
+}
+
 
 HydroponicsMeasurement::HydroponicsMeasurement()
-    : type(Unknown)
-{
-    auto hydroponics = getHydroponicsInstance();
-    frame = (hydroponics ? hydroponics->getPollingFrame() : 0);
-    timestamp = now();
-}
+    : type(Unknown), frame(0), timestamp(now())
+{ ; }
 
 HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn)
     : type((typeof(type))typeIn), timestamp(timestampIn)
 {
-    auto hydroponics = getHydroponicsInstance();
-    frame = (hydroponics ? hydroponics->getPollingFrame() : 0);
+    updateFrame();
 }
 
 HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn, uint32_t frameIn)
@@ -84,13 +100,19 @@ HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn, u
 { ; }
 
 HydroponicsMeasurement::HydroponicsMeasurement(const HydroponicsMeasurementData *dataIn)
-    : type((typeof(type))(dataIn->type)), timestamp(dataIn->timestamp), frame(0)
+    : type((typeof(type))(dataIn->type)), timestamp(dataIn->timestamp), frame(1)
 { ; }
 
 void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut) const
 {
     dataOut->type = (int8_t)type;
     dataOut->timestamp = timestamp;
+}
+
+void HydroponicsMeasurement::updateFrame(int minFrame)
+{
+    auto hydroponics = getHydroponicsInstance();
+    frame = max(minFrame, hydroponics ? hydroponics->getPollingFrame() : 0);
 }
 
 

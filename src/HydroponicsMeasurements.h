@@ -24,7 +24,8 @@ extern HydroponicsMeasurement *newMeasurementObjectFromSubData(const Hydroponics
 extern float measurementValueAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, float binTrue = 1.0f);
 // Gets the units of a measurement at a specified row (with optional binary units).
 extern Hydroponics_UnitsType measurementUnitsAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
-
+// Gets the single measurement of a measurement (with optional binary true value / units).
+extern HydroponicsSingleMeasurement singleMeasurementAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
 
 // Sensor Data Measurement Base
 struct HydroponicsMeasurement {
@@ -39,11 +40,14 @@ struct HydroponicsMeasurement {
     uint32_t frame;                                             // Polling frame #
 
     HydroponicsMeasurement();
-    HydroponicsMeasurement(int type, time_t timestamp = -1);
+    HydroponicsMeasurement(int type, time_t timestamp = 0);
     HydroponicsMeasurement(int type, time_t timestamp, uint32_t frame);
     HydroponicsMeasurement(const HydroponicsMeasurementData *dataIn);
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
+
+    inline void updateTimestamp() { timestamp = now(); }
+    void updateFrame(int minFrame = 0);
 };
 
 // Single Sensor Data Measurement
@@ -74,7 +78,7 @@ struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
 
-    inline HydroponicsSingleMeasurement asSingleMeasurement(float onValue = 1.0f, Hydroponics_UnitsType valueUnits = Hydroponics_UnitsType_Raw_0_1) { return HydroponicsSingleMeasurement(state ? onValue : 0.0f, valueUnits, timestamp, frame); }
+    inline HydroponicsSingleMeasurement asSingleMeasurement(float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1) { return HydroponicsSingleMeasurement(state ? binTrue : 0.0f, binUnits, timestamp, frame); }
 };
 
 // Double Sensor Data Measurement

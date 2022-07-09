@@ -44,7 +44,7 @@
 // Uncomment or -D this define to enable debug output.
 #define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
-// Uncomment or -D this define to specifically disable debug assertions (saves a lot of memory on error statements)
+// Uncomment or -D this define to specifically disable debug assertions (saves a lot on memory).
 #define HYDRUINO_DISABLE_DEBUG_ASSERTIONS
 
 
@@ -230,7 +230,6 @@ public:
     inline shared_ptr<HydroponicsRail> railById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsRail>(objectById(id)); }
     inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
 
-
     // Object Factory.
 
     // Convenience builders for common actuators (shared, nullptr return = failure).
@@ -393,7 +392,7 @@ public:
     RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
 
-    bool getIsInOperationalMode() const;                            // Whenever the system is in operational mode (has been launched), or not
+    bool getInOperationalMode() const;                            // Whenever the system is in operational mode (has been launched), or not
     String getSystemName() const;                                   // System display name (default: "Hydruino")
     int8_t getTimeZoneOffset() const;                               // System time zone offset from UTC
     bool getRTCBatteryFailure() const;                              // Whenever the system booted up with RTC battery failure flag set
@@ -402,6 +401,8 @@ public:
     bool getIsPollingFrameOld(uint32_t frame) const;                // Determines if a given frame # if out of date (true) or current (false)
     int getControlInputRibbonPinCount() const;                      // Total number of pins being used for the current control input ribbon mode
     byte getControlInputPin(int ribbonPinIndex) const;              // Control input pin mapped to ribbon pin index, or -1 (255) if not used
+
+    // Misc.
 
     void notifyRTCTimeUpdated();                                    // Called when RTC time is updated, unsets battery failure flag and sets rescheduling flag
 
@@ -431,7 +432,7 @@ protected:
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
-    bool _eepromBegan;                                              // Status of EEPROM begin()
+    bool _eepromBegan;                                              // Status of EEPROM begin() call
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
     byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map

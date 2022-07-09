@@ -44,18 +44,20 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
 #define HYDRUINO_POS_BEGFROM                1                       // Whenever displayed position indexing starts at 1 or 0 (aka display offset)
 
-#define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2                     // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
-#define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9                     // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+#define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+#define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 
 #define HYDRUINO_CROP_PH_RANGE_HALF         1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH
-#define HYDRUINO_CROP_EC_RANGE_HALF         0.5                     // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC
+#define HYDRUINO_CROP_EC_RANGE_HALF         0.5f                    // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC
 #define HYDRUINO_CROP_TEMP_RANGE_HALF       5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C
 #define HYDRUINO_CROP_NIGHT_BEGIN_HR        22                      // Hour of the day night begins (for night feeding multiplier)
 #define HYDRUINO_CROP_NIGHT_END_HR          6                       // Hour of the day night ends (for night feeding multiplier)
 #define HYDRUINO_CROP_GROWEEKS_MAX          16                      // Maximum grow weeks to support scheduling up to
 #define HYDRUINO_CROP_GROWEEKS_MIN          8                       // Minimum grow weeks to support scheduling up to
 
-#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8                     // What percentage of crops need to have their feeding signal on/off for scheduler to register as such.
+#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                     // What percentage of crops need to have their feeding signal on/off for scheduler to register as such.
+#define HYDRUINO_DOSETIME_MIN_FRACTION      0.5f                     // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint.
+#define HYDRUINO_DOSETIME_MAX_FRACTION      1.5f                     // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint.
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
@@ -323,13 +325,13 @@ enum Hydroponics_TriggerState {
 
 // Balancing State
 // Common balancing states. Specifies balance or which direction of imbalance.
-enum Hydroponics_BalancingState {
-    Hydroponics_BalancingState_TooLow,                      // Too low / needs inc
-    Hydroponics_BalancingState_Balanced,                    // Balanced state
-    Hydroponics_BalancingState_TooHigh,                     // Too high / needs dec
+enum Hydroponics_BalancerState {
+    Hydroponics_BalancerState_TooLow,                      // Too low state / needs incremented
+    Hydroponics_BalancerState_Balanced,                    // Balanced state
+    Hydroponics_BalancerState_TooHigh,                     // Too high state / needs decremented
 
-    Hydroponics_BalancingState_Count,                       // Internal use only
-    Hydroponics_BalancingState_Undefined = -1               // Internal use only
+    Hydroponics_BalancerState_Count,                       // Internal use only
+    Hydroponics_BalancerState_Undefined = -1               // Internal use only
 };
 
 

@@ -26,17 +26,17 @@ HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData 
 
 
 HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, int measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _sensor(sensorId), _measurementRow(measurementRow), _attached(false),
+    : type((typeof(type))typeIn), _sensor(sensorId), _measurementRow(measurementRow), _attached(false), _needsSensorUpdate(true),
       _toleranceUnits(Hydroponics_UnitsType_Undefined), _triggerState(Hydroponics_TriggerState_Disabled)
 { ; }
 
 HydroponicsTrigger::HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, int measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _sensor(sensor), _measurementRow(measurementRow), _attached(false),
+    : type((typeof(type))typeIn), _sensor(sensor), _measurementRow(measurementRow), _attached(false), _needsSensorUpdate(true),
       _toleranceUnits(Hydroponics_UnitsType_Undefined), _triggerState(Hydroponics_TriggerState_Disabled)
 { ; }
 
 HydroponicsTrigger::HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn)
-    : type((typeof(type))(dataIn->type)), _sensor(dataIn->sensorName), _measurementRow(dataIn->measurementRow), _attached(false),
+    : type((typeof(type))(dataIn->type)), _sensor(dataIn->sensorName), _measurementRow(dataIn->measurementRow), _attached(false), _needsSensorUpdate(true),
       _toleranceUnits(dataIn->toleranceUnits), _triggerState(Hydroponics_TriggerState_Disabled)
 { ; }
 
@@ -58,11 +58,19 @@ void HydroponicsTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
 void HydroponicsTrigger::update()
 {
     if (!_attached) { attachTrigger(); }
+
+    if (_needsSensorUpdate && getSensor()) {
+        handleSensorMeasure(_sensor->getLatestMeasurement());
+
+        if (_needsSensorUpdate && !_sensor->getIsTakingMeasurement()) {
+            _sensor->takeMeasurement(true);
+        }
+    }
 }
 
 void HydroponicsTrigger::resolveLinks()
 {
-    _sensor.resolveIfNeeded();
+    if (_sensor.needsResolved()) { getSensor(); }
     if (!_attached) { attachTrigger(); }
 }
 
@@ -74,9 +82,11 @@ Hydroponics_TriggerState HydroponicsTrigger::getTriggerState() const
     return _triggerState;
 }
 
-void HydroponicsTrigger::setToleranceUnits(Hydroponics_UnitsType units)
+void HydroponicsTrigger::setToleranceUnits(Hydroponics_UnitsType toleranceUnits)
 {
-    _toleranceUnits = units;
+    if (_toleranceUnits != toleranceUnits) {
+        _toleranceUnits = toleranceUnits;
+    }
 }
 
 Hydroponics_UnitsType HydroponicsTrigger::getToleranceUnits() const
@@ -132,7 +142,7 @@ void HydroponicsMeasurementValueTrigger::saveToData(HydroponicsTriggerSubData *d
 
 void HydroponicsMeasurementValueTrigger::attachTrigger()
 {
-    if (!_attached) {
+    if (!_attached && getSensor()) {
         auto methodSlot = MethodSlot<HydroponicsMeasurementValueTrigger, const HydroponicsMeasurement *>(this, &handleSensorMeasure);
         _sensor->getMeasurementSignal().attach(methodSlot);
         _attached = true;
@@ -141,7 +151,7 @@ void HydroponicsMeasurementValueTrigger::attachTrigger()
 
 void HydroponicsMeasurementValueTrigger::detachTrigger()
 {
-    if (_attached) {
+    if (_attached && getSensor()) {
         auto methodSlot = MethodSlot<HydroponicsMeasurementValueTrigger, const HydroponicsMeasurement *>(this, &handleSensorMeasure);
         _sensor->getMeasurementSignal().detach(methodSlot);
         _attached = false;
@@ -153,9 +163,7 @@ void HydroponicsMeasurementValueTrigger::setTriggerTolerance(float tolerance)
     if (!isFPEqual(_triggerTolerance, tolerance)) {
         _triggerTolerance = tolerance;
 
-        if (_triggerState != Hydroponics_TriggerState_Disabled && getSensor()) {
-            handleSensorMeasure(getSensor()->getLatestMeasurement());
-        }
+        _needsSensorUpdate = true;
     }
 }
 
@@ -176,8 +184,8 @@ bool HydroponicsMeasurementValueTrigger::getTriggerBelow() const
 
 void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMeasurement *measurement)
 {
-    if (measurement) {
-        bool fromDisabled = (_triggerState == Hydroponics_TriggerState_Disabled);
+    if (measurement && measurement->frame) {
+        _needsSensorUpdate = false;
         bool newState = (_triggerState == Hydroponics_TriggerState_Triggered);
 
         if (measurement->isBinaryType()) {
@@ -186,10 +194,7 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMe
             auto measurementValue = measurementValueAt(measurement, _measurementRow);
             auto measurementUnits = measurementUnitsAt(measurement, _measurementRow);
 
-            if (_toleranceUnits != Hydroponics_UnitsType_Undefined && measurementUnits != _toleranceUnits) {
-                convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
-                HYDRUINO_SOFT_ASSERT(measurementUnits == _toleranceUnits, F("Failure converting measurement value to tolerance units"));
-            }
+            convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
             if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {
                 float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTolerance : 0);
@@ -198,12 +203,10 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMe
             }
         }
 
-        if (newState != (_triggerState == Hydroponics_TriggerState_Triggered) || fromDisabled) {
+        if ((_triggerState == Hydroponics_TriggerState_Disabled) ||
+            (newState != (_triggerState == Hydroponics_TriggerState_Triggered))) {
             _triggerState = newState ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered;
-
-            if (!fromDisabled) {
-                scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
-            }
+            scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
         }
     }
 }
@@ -246,7 +249,7 @@ void HydroponicsMeasurementRangeTrigger::saveToData(HydroponicsTriggerSubData *d
 
 void HydroponicsMeasurementRangeTrigger::attachTrigger()
 {
-    if (!_attached) {
+    if (!_attached && getSensor()) {
         auto methodSlot = MethodSlot<HydroponicsMeasurementRangeTrigger, const HydroponicsMeasurement *>(this, &handleSensorMeasure);
         _sensor->getMeasurementSignal().attach(methodSlot);
         _attached = true;
@@ -255,7 +258,7 @@ void HydroponicsMeasurementRangeTrigger::attachTrigger()
 
 void HydroponicsMeasurementRangeTrigger::detachTrigger()
 {
-    if (_attached) {
+    if (_attached && getSensor()) {
         auto methodSlot = MethodSlot<HydroponicsMeasurementRangeTrigger, const HydroponicsMeasurement *>(this, &handleSensorMeasure);
         _sensor->getMeasurementSignal().detach(methodSlot);
         _attached = false;
@@ -270,9 +273,7 @@ void HydroponicsMeasurementRangeTrigger::setTriggerToleranceMid(float toleranceM
         _triggerToleranceLow = toleranceMid - toleranceRangeHalf;
         _triggerToleranceHigh = toleranceMid + toleranceRangeHalf;
 
-        if (_triggerState != Hydroponics_TriggerState_Disabled && getSensor()) {
-            handleSensorMeasure(getSensor()->getLatestMeasurement());
-        }
+        _needsSensorUpdate = true;
     }
 }
 
@@ -298,16 +299,13 @@ bool HydroponicsMeasurementRangeTrigger::getTriggerOutside() const
 
 void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMeasurement *measurement)
 {
-    if (measurement) {
-        bool fromDisabled = (_triggerState == Hydroponics_TriggerState_Disabled);
+    if (measurement && measurement->frame) {
+        _needsSensorUpdate = false;
         bool newState = (_triggerState == Hydroponics_TriggerState_Triggered);
         auto measurementValue = measurementValueAt(measurement, _measurementRow);
         auto measurementUnits = measurementUnitsAt(measurement, _measurementRow);
 
-        if (_toleranceUnits != Hydroponics_UnitsType_Undefined && measurementUnits != _toleranceUnits) {
-            convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
-            HYDRUINO_SOFT_ASSERT(measurementUnits == _toleranceUnits, F("Failure converting measurement value to tolerance units"));
-        }
+        convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
         if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {
             float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTolerance : 0);
@@ -321,12 +319,10 @@ void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMe
             }
         }
 
-        if (newState != (_triggerState == Hydroponics_TriggerState_Triggered) || fromDisabled) {
+        if ((_triggerState == Hydroponics_TriggerState_Disabled) ||
+            (newState != (_triggerState == Hydroponics_TriggerState_Triggered))) {
             _triggerState = newState ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered;
-
-            if (!fromDisabled) {
-                scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
-            }
+            scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
         }
     }
 }

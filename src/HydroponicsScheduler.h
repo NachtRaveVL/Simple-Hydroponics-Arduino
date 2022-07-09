@@ -9,9 +9,65 @@
 
 class HydroponicsScheduler;
 struct HydroponicsSchedulerSubData;
+struct HydroponicsFeeding;
+struct HydroponicsLighting;
 
 #include "Hydroponics.h"
 #include "HydroponicsReservoirs.h"
+
+// Hydroponics Scheduler
+class HydroponicsScheduler : public HydroponicsSubObject {
+public:
+    HydroponicsScheduler();
+    virtual ~HydroponicsScheduler();
+    void initFromData(HydroponicsSchedulerSubData *dataIn);
+
+    virtual void update() override;
+    virtual void resolveLinks() override;
+    virtual void handleLowMemory() override;
+
+    void setupPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *phBalancer);
+    void setupTDSBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tdsBalancer);
+    void setupTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tempBalancer);
+
+    void setBaseFeedMultiplier(float feedMultiplier);
+    void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
+    void setStandardDosingRate(float dosingRate, Hydroponics_ReservoirType reservoirType);
+    void setLastWeekAsFlush(Hydroponics_CropType cropType);
+    void setLastWeekAsFlush(HydroponicsCrop *crop);
+    void setFlushWeek(int weekIndex);
+    void setTotalFeedingsDay(unsigned int feedingsDay);
+    void setPreFeedAeratorMins(unsigned int aeratorMins);
+    void setPreLightSprayMins(unsigned int sprayMins);
+
+    void setNeedsScheduling();
+
+    float getCombinedDosingRate(HydroponicsReservoir *reservoir, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
+
+    float getBaseFeedMultiplier() const;
+    float getWeeklyDosingRate(int weekIndex, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix) const;
+    float getStandardDosingRate(Hydroponics_ReservoirType reservoirType) const;
+    bool getIsFlushWeek(int weekIndex);
+    unsigned int getTotalFeedingsDay() const;
+    unsigned int getPreFeedAeratorMins() const;
+    unsigned int getPreLightSprayMins() const;
+    bool getInDaytimeMode() const;
+
+protected:
+    HydroponicsSchedulerSubData *_schedulerData;            // Scheduler data (strong, saved to storage via system data)
+
+    bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
+    bool _needsScheduling;                                  // Needs rescheduling tracking flag
+    int _lastDayNum;                                        // Last day number tracking for daily rescheduling
+    arx::map<Hydroponics_KeyType, HydroponicsFeeding *> _feedings; // Feedings in progress
+    arx::map<Hydroponics_KeyType, HydroponicsLighting *> _lightings; // Lightings in progress
+
+    friend class Hydroponics;
+
+    void performScheduling();
+    void broadcastDayChange() const;
+};
+
 
 // Hydroponics Scheduler Feeding Stage Tracking
 struct HydroponicsFeeding {
@@ -58,54 +114,6 @@ struct HydroponicsLighting {
     inline bool isDone() const { return stage == Done; }
 };
 
-// Hydroponics Scheduler
-class HydroponicsScheduler : public HydroponicsSubObject {
-public:
-    HydroponicsScheduler();
-    virtual ~HydroponicsScheduler();
-    void initFromData(HydroponicsSchedulerSubData *dataIn);
-
-    virtual void update() override;
-    virtual void resolveLinks() override;
-    virtual void handleLowMemory() override;
-
-    void setBaseFeedMultiplier(float feedMultiplier);
-    void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
-    void setStandardDosingRate(float dosingRate, Hydroponics_ReservoirType reservoirType);
-    void setLastWeekAsFlush(Hydroponics_CropType cropType);
-    void setLastWeekAsFlush(HydroponicsCrop *crop);
-    void setFlushWeek(int weekIndex);
-    void setTotalFeedingsDay(unsigned int feedingsDay);
-    void setPreFeedAeratorMins(unsigned int aeratorMins);
-    void setPreLightSprayMins(unsigned int sprayMins);
-
-    void setNeedsRescheduling();
-
-    float getCombinedDosingRate(HydroponicsFeedReservoir *feedReservoir, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
-
-    float getBaseFeedMultiplier() const;
-    float getWeeklyDosingRate(int weekIndex, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix) const;
-    float getStandardDosingRate(Hydroponics_ReservoirType reservoirType) const;
-    bool getIsFlushWeek(int weekIndex);
-    unsigned int getTotalFeedingsDay() const;
-    unsigned int getPreFeedAeratorMins() const;
-    unsigned int getPreLightSprayMins() const;
-    bool getInDaytimeMode() const;
-
-protected:
-    HydroponicsSchedulerSubData *_schedulerData;            // Scheduler data (strong, saved to storage via system data)
-
-    bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
-    bool _needsRescheduling;                                // Needs rescheduling tracking flag
-    int _lastDayNum;                                        // Last day number tracking for daily rescheduling
-    arx::map<Hydroponics_KeyType, HydroponicsFeeding *> _feedings; // Feedings in progress
-    arx::map<Hydroponics_KeyType, HydroponicsLighting *> _lightings; // Lightings in progress
-
-    friend class Hydroponics;
-
-    void performScheduling();
-    void broadcastDayChange() const;
-};
 
 // Scheduler Serialization Sub Data
 // A part of HSYS system data.

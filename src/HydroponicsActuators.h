@@ -117,10 +117,13 @@ public:
     HydroponicsPumpRelayActuator(const HydroponicsPumpRelayActuatorData *dataIn);
     virtual ~HydroponicsPumpRelayActuator();
 
+    virtual void update() override;
     virtual void resolveLinks() override;
 
     virtual bool canPump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
-    virtual void pump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual bool pump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual bool canPump(time_t timeMillis) override;
+    virtual bool pump(time_t timeMillis) override;
 
     virtual void setReservoir(HydroponicsIdentity reservoirId) override;
     virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
@@ -135,7 +138,7 @@ public:
 
     virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) override;
-    virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() const override;
+    virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() override;
 
     virtual void setFlowRateSensor(HydroponicsIdentity flowRateSensorId) override;
     virtual void setFlowRateSensor(shared_ptr<HydroponicsSensor> flowRateSensor) override;
@@ -143,12 +146,13 @@ public:
 
     virtual void setInstantaneousFlowRate(float instFlowRate, Hydroponics_UnitsType instFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setInstantaneousFlowRate(HydroponicsSingleMeasurement instFlowRate) override;
-    virtual const HydroponicsSingleMeasurement &getInstantaneousFlowRate() const override;
+    virtual const HydroponicsSingleMeasurement &getInstantaneousFlowRate() override;
 
 protected:
     HydroponicsDLinkObject<HydroponicsReservoir> _outputReservoir; // Output reservoir linkage
     HydroponicsDLinkObject<HydroponicsSensor> _flowRateSensor; // Flow rate sensor linkage
     Hydroponics_UnitsType _flowRateUnits;                   // Flow rate units preferred
+    bool _needsFlowRate;                                    // Needs flow rate update tracking flag
     HydroponicsSingleMeasurement _contFlowRate;             // Continuous flow rate
     HydroponicsSingleMeasurement _instFlowRate;             // Instantaneous flow rate
 
