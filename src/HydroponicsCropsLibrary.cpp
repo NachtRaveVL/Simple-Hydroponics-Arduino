@@ -56,7 +56,7 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydrop
 
             HYDRUINO_SOFT_ASSERT(book, F("Failure allocating crops lib book"));
             if (book) {
-                {   StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+                {   StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                     deserializeJson(doc, jsonStringForCrop(cropType));
                     auto cropsLibDataObj = doc.as<JsonObjectConst>();
                     book->data.fromJSONObject(cropsLibDataObj);

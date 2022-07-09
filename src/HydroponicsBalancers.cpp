@@ -69,7 +69,7 @@ Hydroponics_UnitsType HydroponicsBalancer::getTargetUnits() const
     return _targetUnits;
 }
 
-void HydroponicsBalancer::setIncrementActuators(const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> &incActuators)
+void HydroponicsBalancer::setIncrementActuators(const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> &incActuators)
 {
     for (auto actIter = _incActuators.begin(); actIter != _incActuators.end(); ++actIter) {
         if (incActuators.find(actIter->first) == incActuators.end()) {
@@ -81,7 +81,7 @@ void HydroponicsBalancer::setIncrementActuators(const arx::map<Hydroponics_KeyTy
     _incActuators = incActuators;
 }
 
-void HydroponicsBalancer::setDecrementActuators(const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> &decActuators)
+void HydroponicsBalancer::setDecrementActuators(const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> &decActuators)
 {
     for (auto actIter = _decActuators.begin(); actIter != _decActuators.end(); ++actIter) {
         if (decActuators.find(actIter->first) == decActuators.end()) {
@@ -93,12 +93,12 @@ void HydroponicsBalancer::setDecrementActuators(const arx::map<Hydroponics_KeyTy
     _decActuators = decActuators;
 }
 
-const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> &HydroponicsBalancer::getIncrementActuators()
+const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> &HydroponicsBalancer::getIncrementActuators()
 {
     return _incActuators;
 }
 
-const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> &HydroponicsBalancer::getDecrementActuators()
+const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> &HydroponicsBalancer::getDecrementActuators()
 {
     return _decActuators;
 }

@@ -209,12 +209,14 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
     : HydroponicsRail(dataIn), _needsPowerUpdate(true),
       _maxPower(dataIn->maxPower), _powerUnits(dataIn->powerUnits),
       _powerSensor(dataIn->powerSensorName), _limitTrigger(newTriggerObjectFromSubData(&(dataIn->limitTrigger)))
-{ ; }
+{
+    if (_limitTrigger) { attachLimitTrigger(); }
+}
 
 HydroponicsRegulatedRail::~HydroponicsRegulatedRail()
 {
     if (_powerSensor) { detachPowerSensor(); }
-    if (_limitTrigger) { delete _limitTrigger; _limitTrigger = nullptr; }
+    if (_limitTrigger) { detachLimitTrigger(); delete _limitTrigger; _limitTrigger = nullptr; }
 }
 
 void HydroponicsRegulatedRail::update()
@@ -322,8 +324,9 @@ const HydroponicsSingleMeasurement &HydroponicsRegulatedRail::getPowerDraw()
 void HydroponicsRegulatedRail::setLimitTrigger(HydroponicsTrigger *limitTrigger)
 {
     if (_limitTrigger != limitTrigger) {
-        if (_limitTrigger) { delete _limitTrigger; }
+        if (_limitTrigger) { detachLimitTrigger(); delete _limitTrigger; }
         _limitTrigger = limitTrigger;
+        if (_limitTrigger) { attachLimitTrigger(); }
     }
 }
 
@@ -374,6 +377,24 @@ void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *
     if (measurement && measurement->frame) {
         _needsPowerUpdate = false;
         setPowerDraw(singleMeasurementAt(measurement, 0, _maxPower, _powerUnits)); // TODO: Correct row reference, based on sensor
+    }
+}
+
+void HydroponicsRegulatedRail::attachLimitTrigger()
+{
+    HYDRUINO_SOFT_ASSERT(_limitTrigger, F("Limit trigger not linked, failure attaching"));
+    if (_limitTrigger) {
+        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, Hydroponics_TriggerState>(this, &handleLimitTrigger);
+        _limitTrigger->getTriggerSignal().attach(methodSlot);
+    }
+}
+
+void HydroponicsRegulatedRail::detachLimitTrigger()
+{
+    HYDRUINO_SOFT_ASSERT(_limitTrigger, F("Limit trigger not linked, failure detaching"));
+    if (_limitTrigger) {
+        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, Hydroponics_TriggerState>(this, &handleLimitTrigger);
+        _limitTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
 
