@@ -31,11 +31,11 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
 #define HYDRUINO_OBJ_LINKS_MAXSIZE          ARX_MAP_DEFAULT_SIZE    // Maximum size for object linkage list (per obj)
-#define HYDRUINO_BAL_ACTOBJECTS_MAXSIZE     8                       // Maximum size for balancer actuator list (per inc/dec)
+#define HYDRUINO_BAL_ACTUATORS_MAXSIZE      8                       // Maximum size for balancer actuator list (per inc/dec)
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        64                      // Maximum size for system objects list (max # of objs in system)
-#define HYDRUINO_JSON_DOC_MAXSIZE           256                     // Maximum JSON document size (serialization bytes)
+#define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document size (serialization bytes)
 
-#define HYDRUINO_LOW_MEM_SIZE               512                     // How many bytes of free memory left spawns a handle low mem call to all objects
+#define HYDRUINO_LOW_MEM_SIZE               1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
 #define HYDRUINO_CONTROL_LOOP_INTERVAL      100                     // Run interval of main control loop, in milliseconds
 #define HYDRUINO_DATA_LOOP_INTERVAL         2000                    // Default run interval of data loop, in milliseconds
 #define HYDRUINO_MISC_LOOP_INTERVAL         25                      // Run interval of misc loop, in milliseconds
@@ -55,9 +55,9 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_CROP_GROWEEKS_MAX          16                      // Maximum grow weeks to support scheduling up to
 #define HYDRUINO_CROP_GROWEEKS_MIN          8                       // Minimum grow weeks to support scheduling up to
 
-#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                     // What percentage of crops need to have their feeding signal on/off for scheduler to register as such.
-#define HYDRUINO_DOSETIME_MIN_FRACTION      0.5f                     // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint.
-#define HYDRUINO_DOSETIME_MAX_FRACTION      1.5f                     // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint.
+#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal on/off for scheduler to register as such.
+#define HYDRUINO_DOSETIME_MIN_FRACTION      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint.
+#define HYDRUINO_DOSETIME_MAX_FRACTION      1.5f                    // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint.
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines

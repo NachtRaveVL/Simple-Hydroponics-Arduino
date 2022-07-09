@@ -219,7 +219,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
 
     if (!_systemData && streamIn && streamIn->available()) {
 
-        {   StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+        {   StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
             deserializeJson(doc, *streamIn);
             JsonObjectConst systemDataObj = doc.as<JsonObjectConst>();
             HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromJSONObject(systemDataObj);
@@ -237,7 +237,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
 
         if (_systemData) {
             while (streamIn->available()) {
-                StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+                StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                 deserializeJson(doc, *streamIn);
                 JsonObjectConst dataObj = doc.as<JsonObjectConst>();
                 HydroponicsData *data = newDataFromJSONObject(dataObj);
@@ -286,7 +286,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
     HYDRUINO_SOFT_ASSERT(streamOut, F("Invalid stream"));
 
     if (_systemData && streamOut) {
-        {   StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+        {   StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
             JsonObject systemDataObj = doc.to<JsonObject>();
             _systemData->toJSONObject(systemDataObj);
@@ -301,7 +301,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             auto calibsStore = getCalibrationsStoreInstance();
 
             for (auto iter = calibsStore->_calibrationData.begin(); iter != calibsStore->_calibrationData.end(); ++iter) {
-                StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+                StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                 JsonObject calibDataObj = doc.to<JsonObject>();
                 iter->second->toJSONObject(calibDataObj);
@@ -318,7 +318,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             
             for (auto iter = cropsLib->_cropsData.begin(); iter != cropsLib->_cropsData.end(); ++iter) {
                 if (iter->first >= Hydroponics_CropType_CustomCrop1) {
-                    StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+                    StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                     JsonObject cropDataObj = doc.to<JsonObject>();
                     iter->second->data.toJSONObject(cropDataObj);
@@ -333,7 +333,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 
         if (_additives.size()) {
             for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
-                StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+                StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                 JsonObject additiveDataObj = doc.to<JsonObject>();
                 iter->second->toJSONObject(additiveDataObj);
@@ -351,7 +351,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 
                 HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), F("Failure saving object to data"));
                 if (data && data->isObjectData()) {
-                    StaticJsonDocument<HYDRUINO_JSON_DOC_MAXSIZE> doc;
+                    StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                     JsonObject objectDataObj = doc.to<JsonObject>();
                     data->toJSONObject(objectDataObj);

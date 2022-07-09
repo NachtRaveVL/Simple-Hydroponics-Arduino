@@ -319,7 +319,7 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
 HydroponicsAdaptiveCrop::~HydroponicsAdaptiveCrop()
 {
     if (_moistureSensor) { detachSoilMoistureSensor(); }
-    if (_feedingTrigger) { delete _feedingTrigger; _feedingTrigger = nullptr; }
+    if (_feedingTrigger) { detachFeedingTrigger(); delete _feedingTrigger; _feedingTrigger = nullptr; }
 }
 
 void HydroponicsAdaptiveCrop::update()
@@ -422,8 +422,9 @@ const HydroponicsSingleMeasurement &HydroponicsAdaptiveCrop::getSoilMoisture()
 void HydroponicsAdaptiveCrop::setFeedingTrigger(HydroponicsTrigger *feedingTrigger)
 {
     if (_feedingTrigger != feedingTrigger) {
-        if (_feedingTrigger) { delete _feedingTrigger; }
+        if (_feedingTrigger) { detachFeedingTrigger(); delete _feedingTrigger; }
         _feedingTrigger = feedingTrigger;
+        if (_feedingTrigger) { attachFeedingTrigger(); }
     }
 }
 
@@ -468,6 +469,31 @@ void HydroponicsAdaptiveCrop::handleSoilMoistureMeasure(const HydroponicsMeasure
     if (measurement && measurement->frame) {
         _needsSoilMoisture = false;
         setSoilMoisture(singleMeasurementAt(measurement, 0)); // TODO: Correct row reference, based on sensor
+    }
+}
+
+void HydroponicsAdaptiveCrop::attachFeedingTrigger()
+{
+    HYDRUINO_SOFT_ASSERT(_feedingTrigger, F("Feeding trigger not linked, failure attaching"));
+    if (_feedingTrigger) {
+        auto methodSlot = MethodSlot<HydroponicsAdaptiveCrop, Hydroponics_TriggerState>(this, &handleFeedingTrigger);
+        _feedingTrigger->getTriggerSignal().attach(methodSlot);
+    }
+}
+
+void HydroponicsAdaptiveCrop::detachFeedingTrigger()
+{
+    HYDRUINO_SOFT_ASSERT(_feedingTrigger, F("Feeding trigger not linked, failure detaching"));
+    if (_feedingTrigger) {
+        auto methodSlot = MethodSlot<HydroponicsAdaptiveCrop, Hydroponics_TriggerState>(this, &handleFeedingTrigger);
+        _feedingTrigger->getTriggerSignal().detach(methodSlot);
+    }
+}
+
+void HydroponicsAdaptiveCrop::handleFeedingTrigger(Hydroponics_TriggerState triggerState)
+{
+    if (triggerState != Hydroponics_TriggerState_Undefined) {
+        scheduleSignalFireOnce<HydroponicsCrop *>(_feedingSignal, this);
     }
 }
 

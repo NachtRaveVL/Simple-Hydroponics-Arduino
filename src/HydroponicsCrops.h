@@ -172,6 +172,9 @@ protected:
     void attachSoilMoistureSensor();
     void detachSoilMoistureSensor();
     void handleSoilMoistureMeasure(const HydroponicsMeasurement *measurement);
+    void attachFeedingTrigger();
+    void detachFeedingTrigger();
+    void handleFeedingTrigger(Hydroponics_TriggerState triggerState);
 };
 
 

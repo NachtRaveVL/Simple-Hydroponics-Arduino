@@ -143,6 +143,8 @@ protected:
     void attachPowerSensor();
     void detachPowerSensor();
     void handlePowerMeasure(const HydroponicsMeasurement *measurement);
+    void attachLimitTrigger();
+    void detachLimitTrigger();
     void handleLimitTrigger(Hydroponics_TriggerState triggerState);
 };
 

@@ -70,7 +70,7 @@ void HydroponicsScheduler::handleLowMemory()
 void HydroponicsScheduler::setupPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *phBalancer)
 {
     if (reservoir && phBalancer) {
-        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> incActuators;
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> incActuators;
             auto waterPumps = linksFilterPumpActuatorsByInputReservoirType(reservoir->getLinkages(), Hydroponics_ReservoirType_PhUpSolution);
             auto phUpPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_PeristalticPump);
             float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_PhUpSolution);
@@ -92,7 +92,7 @@ void HydroponicsScheduler::setupPHBalancer(HydroponicsReservoir *reservoir, Hydr
             phBalancer->setIncrementActuators(incActuators);
         }
 
-        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> decActuators;
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> decActuators;
             auto waterPumps = linksFilterPumpActuatorsByInputReservoirType(reservoir->getLinkages(), Hydroponics_ReservoirType_PhDownSolution);
             auto phDownPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_PeristalticPump);
             float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_PhDownSolution);
@@ -119,7 +119,7 @@ void HydroponicsScheduler::setupPHBalancer(HydroponicsReservoir *reservoir, Hydr
 void HydroponicsScheduler::setupTDSBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tdsBalancer)
 {
     if (reservoir && tdsBalancer) {
-        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> incActuators;
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> incActuators;
             auto pumps = linksFilterPumpActuatorsByOutputReservoir(reservoir->getLinkages(), reservoir);
             auto nutrientPumps = linksFilterPumpActuatorsByInputReservoirType(pumps, Hydroponics_ReservoirType_NutrientPremix);
 
@@ -146,7 +146,7 @@ void HydroponicsScheduler::setupTDSBalancer(HydroponicsReservoir *reservoir, Hyd
             tdsBalancer->setIncrementActuators(incActuators);
         }
 
-        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> decActuators;
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> decActuators;
             auto pumps = linksFilterPumpActuatorsByInputReservoirType(reservoir->getLinkages(), Hydroponics_ReservoirType_FreshWater);
             auto dilutionPumps = linksFilterActuatorsByType(pumps, Hydroponics_ActuatorType_PeristalticPump);
             float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_FreshWater);
@@ -173,7 +173,7 @@ void HydroponicsScheduler::setupTDSBalancer(HydroponicsReservoir *reservoir, Hyd
 void HydroponicsScheduler::setupTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tempBalancer)
 {
     if (reservoir && tempBalancer) {
-        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> incActuators;
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> incActuators;
             auto heaters = linksFilterActuatorsByType(reservoir->getLinkages(), Hydroponics_ActuatorType_WaterHeater);
 
             for (auto heaterIter = heaters.begin(); heaterIter != heaters.end(); ++heaterIter) {
@@ -184,7 +184,7 @@ void HydroponicsScheduler::setupTempBalancer(HydroponicsReservoir *reservoir, Hy
             tempBalancer->setIncrementActuators(incActuators);
         }
 
-        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> decActuators;
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> decActuators;
             tempBalancer->setDecrementActuators(decActuators);
         }
     }
