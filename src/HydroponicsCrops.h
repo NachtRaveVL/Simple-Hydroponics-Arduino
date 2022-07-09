@@ -155,7 +155,7 @@ public:
 
     virtual void setSoilMoisture(float soilMoisture, Hydroponics_UnitsType soilMoistureUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setSoilMoisture(HydroponicsSingleMeasurement soilMoisture) override;
-    virtual const HydroponicsSingleMeasurement &getSoilMoisture() const override;
+    virtual const HydroponicsSingleMeasurement &getSoilMoisture() override;
 
     void setFeedingTrigger(HydroponicsTrigger *feedingTrigger);
     const HydroponicsTrigger *getFeedingTrigger() const;
@@ -163,6 +163,7 @@ public:
 protected:
     Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred (else default)
     HydroponicsDLinkObject<HydroponicsSensor> _moistureSensor; // Soil moisture sensor
+    bool _needsSoilMoisture;                                // Needs soil moisture update tracking flag
     HydroponicsSingleMeasurement _soilMoisture;             // Soil moisture measurement
     HydroponicsTrigger *_feedingTrigger;                    // Feeding trigger (owned)
 

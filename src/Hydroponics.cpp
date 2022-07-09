@@ -767,7 +767,7 @@ void Hydroponics::updateObjects(int pass)
         } break;
 
         case 1: {
-            _pollingFrame++;
+            _pollingFrame++; if (_pollingFrame == 0) { _pollingFrame = 1; }
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
                 if (obj && obj->isSensorType()) {
@@ -859,8 +859,9 @@ const HydroponicsCustomAdditiveData *Hydroponics::getCustomAdditiveData(Hydropon
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
     HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, F("Invalid position index"));
-    if(_objects.insert(obj->getKey(), obj).second) {
-        _scheduler.setNeedsRescheduling();
+    if(obj && _objects.insert(obj->getKey(), obj).second) {
+        _scheduler.setNeedsScheduling();
+        if (getInOperationalMode()) { obj->resolveLinks(); }
         return true;
     }
     return false;
@@ -871,7 +872,7 @@ bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
     auto iter = _objects.find(obj->getKey());
     if (iter != _objects.end()) {
         _objects.erase(iter);
-        _scheduler.setNeedsRescheduling();
+        _scheduler.setNeedsScheduling();
         return true;
     }
     return false;
@@ -1088,7 +1089,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
     return _sd;
 }
 
-bool Hydroponics::getIsInOperationalMode() const
+bool Hydroponics::getInOperationalMode() const
 {
     #if defined(HYDRUINO_USE_TASKSCHEDULER)
         return _controlTask && _controlTask->isEnabled();
@@ -1157,7 +1158,7 @@ byte Hydroponics::getControlInputPin(int ribbonPinIndex) const
 void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
-    _scheduler.setNeedsRescheduling();
+    _scheduler.setNeedsScheduling();
 }
 
 void Hydroponics::checkFreeMemory()

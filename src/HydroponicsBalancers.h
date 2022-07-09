@@ -25,14 +25,14 @@ public:
     virtual ~HydroponicsBalancer();
 
     virtual void setTargetSetpoint(float targetSetpoint) override;
-    virtual Hydroponics_BalancingState getBalanceState() const override;
-    inline bool getIsBalanced() const { return getBalanceState() == Hydroponics_BalancingState_Balanced; }
+    virtual Hydroponics_BalancerState getBalancerState() const override;
+    inline bool getIsBalanced() const { return getBalancerState() == Hydroponics_BalancerState_Balanced; }
 
     virtual void update() override;
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    void setTargetUnits(Hydroponics_UnitsType units);
+    void setTargetUnits(Hydroponics_UnitsType targetUnits);
     Hydroponics_UnitsType getTargetUnits() const;
 
     void setIncrementActuators(const arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> &incActuators);
@@ -46,13 +46,18 @@ public:
     float getTargetSetpoint() const;
     float getTargetRange() const;
 
+    Signal<Hydroponics_BalancerState> &getBalancerSignal();
+
 protected:
     HydroponicsMeasurementRangeTrigger *_rangeTrigger;      // Target range trigger
     float _targetSetpoint;                                  // Target setpoint value
     float _targetRange;                                     // Target range value
     bool _enabled;                                          // Enabled flag
+    bool _needsTriggerUpdate;                               // Needs trigger update tracking flag
     Hydroponics_UnitsType _targetUnits;                     // Target units
-    Hydroponics_BalancingState _balanceState;               // Current balance state
+    Hydroponics_BalancerState _balancerState;               // Current balancer state
+    Signal<Hydroponics_BalancerState> _balancerSignal;      // Balancer signal
+
     arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> _incActuators; // Increment actuators
     arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTOBJECTS_MAXSIZE> _decActuators; // Decrement actuators
 
@@ -91,11 +96,8 @@ public:
 
     virtual void update() override;
 
-    void setDosingDrift(float dosingDrift);
-
     time_t getBaseDosingMillis() const;
     unsigned int getMixTimeMins() const;
-    float getDosingDrift() const;
 
 protected:
     uint8_t _mixTimeMins;
@@ -103,7 +105,9 @@ protected:
 
     time_t _lastDosingTime;
     float _lastDosingValue;
-    float _dosingDrift;
+    time_t _lastDosingMillis;
+    Hydroponics_BalancerState _lastDosingDir;
+    int8_t _nextDosingActuatorIndex;
 
     void performDosing();
 };

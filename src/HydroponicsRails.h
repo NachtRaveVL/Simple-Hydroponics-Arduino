@@ -40,7 +40,7 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool canActivate(HydroponicsActuator *actuator) const = 0;
+    virtual bool canActivate(HydroponicsActuator *actuator) = 0;
     virtual float getCapacity() const = 0;
 
     virtual bool addActuator(HydroponicsActuator *actuator) override;
@@ -78,7 +78,7 @@ public:
     HydroponicsSimpleRail(const HydroponicsSimpleRailData *dataIn);
     virtual ~HydroponicsSimpleRail();
 
-    virtual bool canActivate(HydroponicsActuator *actuator) const override;
+    virtual bool canActivate(HydroponicsActuator *actuator) override;
     virtual float getCapacity() const override;
 
     virtual bool addActuator(HydroponicsActuator *actuator) override;
@@ -111,7 +111,7 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool canActivate(HydroponicsActuator *actuator) const override;
+    virtual bool canActivate(HydroponicsActuator *actuator) override;
     virtual float getCapacity() const override;
 
     void setPowerUnits(Hydroponics_UnitsType powerUnits);
@@ -123,7 +123,7 @@ public:
 
     virtual void setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setPowerDraw(HydroponicsSingleMeasurement powerDraw) override;
-    virtual const HydroponicsSingleMeasurement &getPowerDraw() const override;
+    virtual const HydroponicsSingleMeasurement &getPowerDraw() override;
 
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
     const HydroponicsTrigger *getLimitTrigger() const;
@@ -131,11 +131,12 @@ public:
     float getMaxPower() const;
 
 protected:
-    float _maxPower;                                      // Maximum power
-    Hydroponics_UnitsType _powerUnits;                    // Power units preferred
+    float _maxPower;                                        // Maximum power
+    Hydroponics_UnitsType _powerUnits;                      // Power units preferred
     HydroponicsDLinkObject<HydroponicsSensor> _powerSensor; // Power sensor linkage
-    HydroponicsSingleMeasurement _powerDraw;              // Current power draw
-    HydroponicsTrigger *_limitTrigger;                    // Power limit trigger (owned)
+    bool _needsPowerUpdate;                                 // Needs power draw update tracking flag
+    HydroponicsSingleMeasurement _powerDraw;                // Current power draw
+    HydroponicsTrigger *_limitTrigger;                      // Power limit trigger (owned)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
