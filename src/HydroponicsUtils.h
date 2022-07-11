@@ -64,6 +64,13 @@ void commaStringToArray(String stringIn, T *arrayOut, size_t length);
 template<typename T>
 void commaStringToArray(JsonVariantConst &variantIn, T *arrayOut, size_t length);
 
+// Encodes a byte array to hexadecimal string.
+extern String hexStringFromBytes(const byte *bytesIn, size_t length);
+// Decodes a hexadecimal string back to a byte array.
+extern void hexStringToBytes(String stringIn, byte *bytesOut, size_t length);
+// Decodes a hexadecimal JSON variant, if not null, object, or array, back to a byte array.
+extern void hexStringToBytes(JsonVariantConst &variantIn, byte *bytesOut, size_t length);
+
 // Returns # of occurrences of character in string.
 int occurrencesInString(String string, char singleChar);
 // Returns # of occurrences of substring in string.
@@ -75,7 +82,7 @@ int occurrencesInStringIgnoreCase(String string, String subString);
 
 // Returns whenever all elements of an array are equal to the specified value, or not.
 template<typename T>
-bool arrayEqualsAll(const T *arrayIn, size_t length, T value);
+bool arrayElementsEqual(const T *arrayIn, size_t length, T value);
 
 // Similar to the standard map function, but does it on any type.
 template<typename T>
@@ -176,6 +183,7 @@ extern bool checkPinCanInterrupt(byte pin);
 
 // Enum & String Conversions
 
+// Converts from boolean value to triggered/not-triggered trigger state.
 inline Hydroponics_TriggerState triggerStateFromBool(bool value) { return value ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered; }
 
 // Converts from actuator type enum to string, with optional exclude for special types (instead returning "").
@@ -219,7 +227,7 @@ template<> String commaStringFromArray<float>(const float *arrayIn, size_t lengt
 template<> String commaStringFromArray<double>(const double *arrayIn, size_t length);
 template<> void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length);
 template<> void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length);
-template<> bool arrayEqualsAll<float>(const float *arrayIn, size_t length, float value);
-template<> bool arrayEqualsAll<double>(const double *arrayIn, size_t length, double value);
+template<> bool arrayElementsEqual<float>(const float *arrayIn, size_t length, float value);
+template<> bool arrayElementsEqual<double>(const double *arrayIn, size_t length, double value);
 
 #endif // /ifndef HydroponicsUtils_H

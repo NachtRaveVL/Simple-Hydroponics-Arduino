@@ -190,6 +190,26 @@ void HydroponicsScheduler::setupTempBalancer(HydroponicsReservoir *reservoir, Hy
     }
 }
 
+void setupCO2Balancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *co2Balancer)
+{
+    if (reservoir && co2Balancer) {
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> incActuators;
+            auto fans = linksFilterActuatorsByType(reservoir->getLinkages(), Hydroponics_ActuatorType_FanExhaust);
+
+            for (auto fanIter = fans.begin(); fanIter != fans.end(); ++fanIter) {
+                auto fan = (HydroponicsActuator *)(fanIter->second);
+                if (fan) { incActuators.insert(fanIter->first, arx::make_pair(getHydroponicsInstance()->actuatorById(fan->getId()), 1.0f)); }
+            }
+
+            co2Balancer->setIncrementActuators(incActuators);
+        }
+
+        {   arx::map<Hydroponics_KeyType, arx::pair<shared_ptr<HydroponicsActuator>, float>, HYDRUINO_BAL_ACTUATORS_MAXSIZE> decActuators;
+            co2Balancer->setDecrementActuators(decActuators);
+        }
+    }
+}
+
 void HydroponicsScheduler::setBaseFeedMultiplier(float baseFeedMultiplier)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, F("Scheduler data not yet initialized"));
@@ -527,9 +547,9 @@ void HydroponicsFeeding::recalcFeeding()
 {
     float totalWeights = 0;
     float totalSetpoints[3] = {0};
-    auto linkedCrops = feedRes->getCrops();
+    auto crops = feedRes->getCrops();
 
-    for (auto cropIter = linkedCrops.begin(); cropIter != linkedCrops.end(); ++cropIter) {
+    for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
         auto crop = (HydroponicsCrop *)(cropIter->second);
         auto cropsLibData = crop ? getCropsLibraryInstance()->checkoutCropsData(crop->getCropType()) : nullptr;
 
@@ -574,14 +594,17 @@ void HydroponicsFeeding::setupStaging()
 
     if (stage == PreFeed) {
         if (feedRes->getWaterPHSensor()) {
-            feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_pHScale_0_14);
+            auto phBalancer = feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_pHScale_0_14);
+            getSchedulerInstance()->setupPHBalancer(feedRes.get(), phBalancer);
         }
         if (feedRes->getWaterTDSSensor()) {
-            feedRes->setWaterTDSBalancer(tdsSetpoint, Hydroponics_UnitsType_Concentration_EC);
+            auto tdsBalancer = feedRes->setWaterTDSBalancer(tdsSetpoint, Hydroponics_UnitsType_Concentration_EC);
+            getSchedulerInstance()->setupTDSBalancer(feedRes.get(), tdsBalancer);
         }
     }
     if ((stage == PreFeed || stage == Feed) && feedRes->getWaterTempSensor()) {
-        feedRes->setWaterTempBalancer(tempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+        auto tempBalancer = feedRes->setWaterTempBalancer(tempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+        getSchedulerInstance()->setupTempBalancer(feedRes.get(), tempBalancer);
     }
     if (feedRes->getWaterPHBalancer()) {
         feedRes->getWaterPHBalancer()->setEnabled(stage == PreFeed);
@@ -701,13 +724,13 @@ void HydroponicsFeeding::update()
         case Init: {
             if (!canFeedAfter || now() >= canFeedAfter) {
                 int cropsHungry = 0;
-                auto linkedCrops = feedRes->getCrops();
-                for (auto cropIter = linkedCrops.begin(); cropIter != linkedCrops.end(); ++cropIter) {
+                auto crops = feedRes->getCrops();
+                for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
                     auto crop = (HydroponicsCrop *)(cropIter->second);
                     if (crop->getNeedsFeeding()) { cropsHungry++; }
                 }
 
-                if (cropsHungry / (float)linkedCrops.size() >= HYDRUINO_SCHEDULER_FEED_FRACTION - FLT_EPSILON) {
+                if (cropsHungry / (float)crops.size() >= HYDRUINO_SCHEDULER_FEED_FRACTION - FLT_EPSILON) {
                     stage = TopOff; stageStart = now();
                     setupStaging();
                 }
@@ -739,13 +762,13 @@ void HydroponicsFeeding::update()
 
         case Feed: {
             int cropsFed = 0;
-            auto linkedCrops = feedRes->getCrops();
-            for (auto cropIter = linkedCrops.begin(); cropIter != linkedCrops.end(); ++cropIter) {
+            auto crops = feedRes->getCrops();
+            for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
                 auto crop = (HydroponicsCrop *)(cropIter->second);
                 if (!crop->getNeedsFeeding()) { cropsFed++; }
             }
 
-            if (cropsFed / (float)linkedCrops.size() >= HYDRUINO_SCHEDULER_FEED_FRACTION - FLT_EPSILON) {
+            if (cropsFed / (float)crops.size() >= HYDRUINO_SCHEDULER_FEED_FRACTION - FLT_EPSILON) {
                 stage = (getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? Drain : Done);
                 stageStart = now();
                 setupStaging();
@@ -774,9 +797,9 @@ void HydroponicsFeeding::update()
 
 void HydroponicsFeeding::broadcastFeedingBegan()
 {
-    auto linkedCrops = feedRes->getCrops();
+    auto crops = feedRes->getCrops();
     feedRes->notifyFeedingBegan();
-    for (auto cropIter = linkedCrops.begin(); cropIter != linkedCrops.end(); ++cropIter) {
+    for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
         auto crop = (HydroponicsCrop *)(cropIter->second);
         crop->notifyFeedingBegan();
     }
@@ -784,9 +807,9 @@ void HydroponicsFeeding::broadcastFeedingBegan()
 
 void HydroponicsFeeding::broadcastFeedingEnded()
 {
-    auto linkedCrops = feedRes->getCrops();
+    auto crops = feedRes->getCrops();
     feedRes->notifyFeedingEnded();
-    for (auto cropIter = linkedCrops.begin(); cropIter != linkedCrops.end(); ++cropIter) {
+    for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
         auto crop = (HydroponicsCrop *)(cropIter->second);
         crop->notifyFeedingEnded();
     }
@@ -816,10 +839,10 @@ void HydroponicsLighting::recalcLighting()
 {
     float totalWeights = 0;
     int totalLightHours = 0;
-    auto linkedCrops = feedRes->getCrops();
+    auto crops = feedRes->getCrops();
     bool sprayingNeeded = false;
 
-    for (auto cropIter = linkedCrops.begin(); cropIter != linkedCrops.end(); ++cropIter) {
+    for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
         auto crop = (HydroponicsCrop *)(cropIter->second);
         Hydroponics_CropPhase cropPhase = crop ? crop->getCropPhase() : Hydroponics_CropPhase_Undefined;
 
@@ -924,7 +947,7 @@ void HydroponicsSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     // purposeful no call to base method (ignores type)
 
     if (!isFPEqual(baseFeedMultiplier, 1.0f)) { objectOut[F("baseFeedMultiplier")] = baseFeedMultiplier; }
-    bool hasWeeklyDosings = arrayEqualsAll(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 1.0f);
+    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 1.0f);
     if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX); }
     bool hasStandardDosings = !isFPEqual(standardDosingRates[0], 1.0f) || !isFPEqual(standardDosingRates[1], 0.5f) || !isFPEqual(standardDosingRates[2], 0.5f);
     if (hasStandardDosings) { objectOut[F("standardDosingRates")] = commaStringFromArray(standardDosingRates, 3); }

@@ -154,7 +154,7 @@ public:
 // Sensor Object Interface
 class HydroponicsSensorObjectInterface {
 public:
-    virtual void takeMeasurement(bool override = false) = 0;
+    virtual bool takeMeasurement(bool override = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
     virtual bool getIsTakingMeasurement() const = 0;
     virtual bool getNeedsPolling() const = 0;

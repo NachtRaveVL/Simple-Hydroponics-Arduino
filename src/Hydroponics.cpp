@@ -52,6 +52,7 @@ Hydroponics::~Hydroponics()
     #endif
     while (_objects.size()) { _objects.erase(_objects.begin()); }
     while (_additives.size()) { dropCustomAdditiveData(_additives.begin()->second); }
+    while (_oneWires.size()) { delete _oneWires.begin()->second; _oneWires.erase(_oneWires.begin()); }
     deallocateEEPROM();
     deallocateRTC();
     deallocateSD();
@@ -856,6 +857,32 @@ const HydroponicsCustomAdditiveData *Hydroponics::getCustomAdditiveData(Hydropon
     return nullptr;
 }
 
+bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
+{
+    time_t start = millis();
+    while (1) {
+        bool gotLock = false;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            auto iter = _pinLocks.find(pin);
+            if (iter == _pinLocks.end()) {
+                gotLock = _pinLocks.insert(pin, (byte)true).second;
+            }
+        }
+        if (gotLock) { return true; }
+        else if (millis() - start >= waitMillis) { return false; }
+        else { yield(); }
+    }
+}
+
+void Hydroponics::returnPinLock(byte pin)
+{
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        _pinLocks.erase(pin);
+    }
+}
+
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
     HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, F("Invalid position index"));
@@ -924,15 +951,6 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdent
             return iter->second;
         }
     }
-}
-
-shared_ptr<HydroponicsObject> Hydroponics::objectByKey(Hydroponics_KeyType key) const
-{
-    auto iter = _objects.find(key);
-    if (iter != _objects.end()) {
-        return iter->second;
-    }
-    return nullptr;
 }
 
 Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, bool taken)
@@ -1087,6 +1105,22 @@ SDClass *Hydroponics::getSDCard(bool begin)
     }
 
     return _sd;
+}
+
+OneWire *Hydroponics::getOneWireForPin(byte pin)
+{
+    auto wireIter = _oneWires.find(pin);
+    if (wireIter != _oneWires.end()) {
+        return wireIter->second;
+    } else {
+        OneWire *oneWire = new OneWire(pin);
+        if (oneWire && _oneWires.insert(pin, oneWire).second) {
+            return oneWire;
+        } else if (oneWire) {
+            delete oneWire;
+        }
+    }
+    return nullptr;
 }
 
 bool Hydroponics::getInOperationalMode() const
@@ -1426,6 +1460,7 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogTDSElectrode(byte inpu
                 userCalibData.calibUnits = Hydroponics_UnitsType_Concentration_EC;
                 sensor->setUserCalibrationData(&userCalibData);
             }
+
             return sensor;
         } else { sensor = nullptr; }
     }
@@ -1487,10 +1522,11 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addUltrasonicDistanceSensor(byt
             inputPin, inputBitRes
         ));
         if (registerObject(sensor)) {
-            HydroponicsCalibrationData userCalibData(sensor->getId());
-            userCalibData.multiplier = -1.0f; userCalibData.offset = 1.0f;
-            userCalibData.calibUnits = Hydroponics_UnitsType_Raw_0_1;
-            sensor->setUserCalibrationData(&userCalibData);
+            {   HydroponicsCalibrationData userCalibData(sensor->getId());
+                userCalibData.multiplier = -1.0f; userCalibData.offset = 1.0f;
+                userCalibData.calibUnits = Hydroponics_UnitsType_Raw_0_1;
+                sensor->setUserCalibrationData(&userCalibData);
+            }
 
             return sensor;
         } else { sensor = nullptr; }
@@ -1519,7 +1555,7 @@ shared_ptr<HydroponicsDHTTempHumiditySensor> Hydroponics::addDHTTempHumiditySens
     return nullptr;
 }
 
-shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(byte inputPin, byte inputBitRes, byte pullupPin)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
@@ -1531,8 +1567,11 @@ shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(b
             positionIndex,
             inputPin, inputBitRes
         ));
-        if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
+        if (registerObject(sensor)) {
+            if (isValidPin(pullupPin)) { sensor->setPullupPin(pullupPin); }
+
+            return sensor;
+        } else { sensor = nullptr; }
     }
 
     return nullptr;

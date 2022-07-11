@@ -29,6 +29,7 @@ public:
     void setupPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *phBalancer);
     void setupTDSBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tdsBalancer);
     void setupTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tempBalancer);
+    void setupCO2Balancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *co2Balancer);
 
     void setBaseFeedMultiplier(float feedMultiplier);
     void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);

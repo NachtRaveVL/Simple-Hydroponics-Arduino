@@ -236,10 +236,6 @@ protected:
     HydroponicsBalancer *_tdsBalancer;                      // TDS balancer (assigned by scheduler when needed)
     HydroponicsBalancer *_tempBalancer;                     // Temperature balancer (assigned by scheduler when needed)
 
-    void setupPHBalancer();
-    void setupTDSBalancer();
-    void setupTempBalancer();
-
     virtual void saveToData(HydroponicsData *dataOut) override;
 
     void attachPHSensor();

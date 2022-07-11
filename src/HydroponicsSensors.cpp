@@ -244,9 +244,9 @@ HydroponicsBinarySensor::~HydroponicsBinarySensor()
     //discardFromTaskManager(&_stateSignal);
 }
 
-void HydroponicsBinarySensor::takeMeasurement(bool override)
+bool HydroponicsBinarySensor::takeMeasurement(bool override)
 {
-    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
+    if (isValidPin(_inputPin) && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
         auto rawRead = digitalRead(_inputPin);
@@ -263,7 +263,9 @@ void HydroponicsBinarySensor::takeMeasurement(bool override)
         }
 
         _isTakingMeasure = false;
+        return true;
     }
+    return false;
 }
 
 const HydroponicsMeasurement *HydroponicsBinarySensor::getLatestMeasurement() const
@@ -331,9 +333,9 @@ void HydroponicsAnalogSensor::resolveLinks()
     if (_tempSensor.needsResolved()) { getTemperatureSensor(); }
 }
 
-void HydroponicsAnalogSensor::takeMeasurement(bool override)
+bool HydroponicsAnalogSensor::takeMeasurement(bool override)
 {
-    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
+    if (isValidPin(_inputPin) && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
         Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits
@@ -364,7 +366,9 @@ void HydroponicsAnalogSensor::takeMeasurement(bool override)
         scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
 
         _isTakingMeasure = false;
+        return true;
     }
+    return false;
 }
 
 const HydroponicsMeasurement *HydroponicsAnalogSensor::getLatestMeasurement() const
@@ -423,38 +427,105 @@ void HydroponicsAnalogSensor::saveToData(HydroponicsData *dataOut)
 
 HydroponicsDigitalSensor::HydroponicsDigitalSensor(Hydroponics_SensorType sensorType,
                                                    Hydroponics_PositionIndex sensorIndex,
-                                                   byte inputPin,
+                                                   byte inputPin, byte inputBitRes,
                                                    bool allocate1W,
                                                    int classType)
-    : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType), _oneWire(nullptr)
+    : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType), _inputBitRes(inputBitRes), _oneWire(nullptr), _wirePosIndex(-1), _wireDevAddress{0}
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
     if (allocate1W && isValidPin(_inputPin)) {
-        _oneWire = new OneWire(_inputPin);
+        auto hydroponics = getHydroponicsInstance();
+        _oneWire = hydroponics ? hydroponics->getOneWireForPin(_inputPin) : nullptr;
         HYDRUINO_SOFT_ASSERT(_oneWire, F("Failure creating OneWire instance"));
     }
 }
 
 HydroponicsDigitalSensor::HydroponicsDigitalSensor(const HydroponicsDigitalSensorData *dataIn, bool allocate1W)
-    : HydroponicsSensor(dataIn), _oneWire(nullptr)
+    : HydroponicsSensor(dataIn), _inputBitRes(dataIn->inputBitRes), _oneWire(nullptr), _wirePosIndex(-1), _wireDevAddress{0}
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
     if (allocate1W && isValidPin(_inputPin)) {
-        _oneWire = new OneWire(_inputPin);
+        auto hydroponics = getHydroponicsInstance();
+        _oneWire = hydroponics ? hydroponics->getOneWireForPin(_inputPin) : nullptr;
         HYDRUINO_SOFT_ASSERT(_oneWire, F("Failure creating OneWire instance"));
+
+        if (!arrayElementsEqual<uint8_t>(dataIn->wireDevAddress, 8, 0)) {
+            _wirePosIndex = -10 - dataIn->wirePosIndex;
+            memcpy(_wireDevAddress, dataIn->wireDevAddress, 8);
+        } else {
+            _wirePosIndex = dataIn->wirePosIndex;
+        }
     }
 }
 
 HydroponicsDigitalSensor::~HydroponicsDigitalSensor()
-{
-    if (_oneWire) { delete _oneWire; }
-}
+{ ; }
 
 void HydroponicsDigitalSensor::resolveLinks()
 {
     HydroponicsSensor::resolveLinks();
 
     if (_tempSensor.needsResolved()) { getTemperatureSensor(); }
+    if (!(_wirePosIndex >= 0)) { resolveDeviceAddress(); }
+}
+
+bool HydroponicsDigitalSensor::setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex)
+{
+    wirePosIndex = constrain(wirePosIndex, 0, 63);
+    if (_oneWire && wirePosIndex >= 0 && (_wirePosIndex != wirePosIndex || arrayElementsEqual<uint8_t>(_wireDevAddress, 8, 0)) &&
+        getHydroponicsInstance()->tryGetPinLock(_inputPin)) {
+        Hydroponics_PositionIndex posIndex = 0;
+        uint8_t devAddress[8];
+
+        _oneWire->reset_search();
+        while (posIndex <= wirePosIndex && _oneWire->search(devAddress)) {
+            if (posIndex == wirePosIndex && _oneWire->crc8(devAddress, 7) == devAddress[7]) {
+                _wirePosIndex = posIndex;
+                memcpy(_wireDevAddress, devAddress, 8);
+
+                getHydroponicsInstance()->returnPinLock(_inputPin);
+                return true;
+            }
+            posIndex++;
+        }
+
+        getHydroponicsInstance()->returnPinLock(_inputPin);
+    }
+    return false;
+}
+
+Hydroponics_PositionIndex HydroponicsDigitalSensor::getWirePositionIndex() const
+{
+    return _wirePosIndex >= 0 ? _wirePosIndex : -1;
+}
+
+bool HydroponicsDigitalSensor::setWireDeviceAddress(const uint8_t wireDevAddress[8])
+{
+    if (_oneWire && !arrayElementsEqual<uint8_t>(wireDevAddress, 8, 0) && (_wirePosIndex < 0 || memcmp(_wireDevAddress, wireDevAddress, 8) != 0) &&
+        _oneWire->crc8(wireDevAddress, 7) == wireDevAddress[7] && getHydroponicsInstance()->tryGetPinLock(_inputPin)) {
+        Hydroponics_PositionIndex posIndex = 0;
+        uint8_t devAddress[8];
+
+        _oneWire->reset_search();
+        while (_oneWire->search(devAddress)) {
+            if (memcmp(devAddress, wireDevAddress, 8) == 0) {
+                _wirePosIndex = posIndex;
+                memcpy(_wireDevAddress, devAddress, 8);
+
+                getHydroponicsInstance()->returnPinLock(_inputPin);
+                return true;
+            }
+            posIndex++;
+        }
+
+        getHydroponicsInstance()->returnPinLock(_inputPin);
+    }
+    return false;
+}
+
+const uint8_t *HydroponicsDigitalSensor::getWireDeviceAddress() const
+{
+    return _wireDevAddress;
 }
 
 void HydroponicsDigitalSensor::setTemperatureSensor(HydroponicsIdentity sensorId)
@@ -477,12 +548,35 @@ shared_ptr<HydroponicsSensor> HydroponicsDigitalSensor::getTemperatureSensor()
     return _tempSensor.getObj();
 }
 
+OneWire *HydroponicsDigitalSensor::getOneWire()
+{
+    return _oneWire;
+}
+
+void HydroponicsDigitalSensor::resolveDeviceAddress()
+{
+    if (_oneWire && !(_wirePosIndex >= 0)) {
+        setWireDeviceAddress(_wireDevAddress);
+        if (_wirePosIndex == -1) {
+            setWirePositionIndex(0);
+            if (!(_wirePosIndex >= 0)) { _wirePosIndex = -2; } // disable further resolves
+        } else if (_wirePosIndex > -74 && _wirePosIndex <= -10) {
+            Hydroponics_PositionIndex posIndex = -_wirePosIndex - 10;
+            setWirePositionIndex(posIndex);
+            if (!(_wirePosIndex >= 0)) { _wirePosIndex = -74 - posIndex; } // disables further resolves
+        }
+    }
+}
+
 void HydroponicsDigitalSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsSensor::saveToData(dataOut);
 
+    ((HydroponicsDigitalSensorData *)dataOut)->inputBitRes = _inputBitRes;
+    ((HydroponicsDigitalSensorData *)dataOut)->wirePosIndex = _wirePosIndex > -10 ? _wirePosIndex : (_wirePosIndex > -74 ? -_wirePosIndex - 10 : -_wirePosIndex - 74);
+    memcpy(((HydroponicsDigitalSensorData *)dataOut)->wireDevAddress, _wireDevAddress, 8);
     if (_tempSensor.getId()) {
-        strncpy(((HydroponicsAnalogSensorData *)dataOut)->tempSensorName, _tempSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsDigitalSensorData *)dataOut)->tempSensorName, _tempSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
 }
 
@@ -492,12 +586,13 @@ HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(Hydroponics_P
                                                                    byte dhtType,
                                                                    bool computeHeatIndex,
                                                                    int classType)
-    : HydroponicsDigitalSensor(Hydroponics_SensorType_AirTempHumidity, sensorIndex, inputPin, false, classType),
+    : HydroponicsDigitalSensor(Hydroponics_SensorType_AirTempHumidity, sensorIndex, inputPin, 9, false, classType),
       _dht(new DHT(inputPin, dhtType)), _dhtType(dhtType), _computeHeatIndex(computeHeatIndex),
       _measurementUnits{defaultTemperatureUnits(), Hydroponics_UnitsType_Percentile_0_100, defaultTemperatureUnits()}
 {
     HYDRUINO_SOFT_ASSERT(_dht, F("Failure creating DHT instance"));
-    if (_dht && isValidPin(_inputPin)) { _dht->begin(); }
+    if (isValidPin(_inputPin) && _dht) { _dht->begin(); }
+    else if (_dht) { delete _dht; _dht = nullptr; }
 }
 
 HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(const HydroponicsDHTTempHumiditySensorData *dataIn)
@@ -506,7 +601,8 @@ HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(const Hydropo
       _measurementUnits{dataIn->measurementUnits[0],dataIn->measurementUnits[1],dataIn->measurementUnits[2]}
 {
     HYDRUINO_SOFT_ASSERT(_dht, F("Failure creating DHT instance"));
-    if (_dht && isValidPin(_inputPin)) { _dht->begin(); }
+    if (isValidPin(_inputPin) && _dht) { _dht->begin(); }
+    else if (_dht) { delete _dht; _dht = nullptr; }
 }
 
 HydroponicsDHTTempHumiditySensor::~HydroponicsDHTTempHumiditySensor()
@@ -514,39 +610,56 @@ HydroponicsDHTTempHumiditySensor::~HydroponicsDHTTempHumiditySensor()
     if (_dht) { delete _dht; _dht = nullptr; }
 }
 
-void HydroponicsDHTTempHumiditySensor::takeMeasurement(bool override)
+bool HydroponicsDHTTempHumiditySensor::takeMeasurement(bool override)
 {
-    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
+    if (getHydroponicsInstance() && _dht && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
-        Hydroponics_UnitsType unitsOut[3] = { _measurementUnits[0] != Hydroponics_UnitsType_Undefined ? _measurementUnits[0] : defaultTemperatureUnits(),
-                                              _measurementUnits[1] != Hydroponics_UnitsType_Undefined ? _measurementUnits[1] : Hydroponics_UnitsType_Percentile_0_100,
-                                              _measurementUnits[2] != Hydroponics_UnitsType_Undefined ? _measurementUnits[2] : defaultTemperatureUnits() };
-        bool readInFahrenheit = unitsOut[0] == Hydroponics_UnitsType_Temperature_Fahrenheit;
-        Hydroponics_UnitsType readUnits = readInFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit
-                                                           : Hydroponics_UnitsType_Temperature_Celsius;
-
-        auto tempRead = _dht->readTemperature(readInFahrenheit, true);
-        auto humidRead = _dht->readHumidity(true);
-        auto timestamp = now();
-
-        HydroponicsTripleMeasurement newMeasurement(
-            tempRead, readUnits, humidRead, Hydroponics_UnitsType_Percentile_0_100,
-            _computeHeatIndex ? _dht->computeHeatIndex(tempRead, humidRead, readInFahrenheit) : 0.0f,
-            _computeHeatIndex ? readUnits : Hydroponics_UnitsType_Undefined,
-            timestamp
-        );
-
-        convertStdUnits(&newMeasurement.value[0], &newMeasurement.units[0], unitsOut[0]);
-        convertStdUnits(&newMeasurement.value[1], &newMeasurement.units[1], unitsOut[1]);
-        if (_computeHeatIndex) {
-            convertStdUnits(&newMeasurement.value[2], &newMeasurement.units[2], unitsOut[2]);
+        if (scheduleObjectMethodCallOnce<HydroponicsDHTTempHumiditySensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) != TASKMGR_INVALIDID) {
+            return true;
+        } else {
+            _isTakingMeasure = false;
         }
+    }
+    return false;
+}
 
-        _lastMeasurement = newMeasurement;
-        scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+void HydroponicsDHTTempHumiditySensor::_takeMeasurement(int)
+{
+    if (_isTakingMeasure && _dht) {
+        if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
+            Hydroponics_UnitsType unitsOut[3] = { _measurementUnits[0] != Hydroponics_UnitsType_Undefined ? _measurementUnits[0] : defaultTemperatureUnits(),
+                                                  _measurementUnits[1] != Hydroponics_UnitsType_Undefined ? _measurementUnits[1] : Hydroponics_UnitsType_Percentile_0_100,
+                                                  _measurementUnits[2] != Hydroponics_UnitsType_Undefined ? _measurementUnits[2] : defaultTemperatureUnits() };
+            bool readInFahrenheit = unitsOut[0] == Hydroponics_UnitsType_Temperature_Fahrenheit;
+            Hydroponics_UnitsType readUnits = readInFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit
+                                                               : Hydroponics_UnitsType_Temperature_Celsius;
 
-        _isTakingMeasure = false;
+            auto tempRead = _dht->readTemperature(readInFahrenheit, true);
+            auto humidRead = _dht->readHumidity(true);
+            auto timestamp = now();
+
+            HydroponicsTripleMeasurement newMeasurement(
+                tempRead, readUnits, humidRead, Hydroponics_UnitsType_Percentile_0_100,
+                _computeHeatIndex ? _dht->computeHeatIndex(tempRead, humidRead, readInFahrenheit) : 0.0f,
+                _computeHeatIndex ? readUnits : Hydroponics_UnitsType_Undefined,
+                timestamp
+            );
+
+            convertStdUnits(&newMeasurement.value[0], &newMeasurement.units[0], unitsOut[0]);
+            convertStdUnits(&newMeasurement.value[1], &newMeasurement.units[1], unitsOut[1]);
+            if (_computeHeatIndex) {
+                convertStdUnits(&newMeasurement.value[2], &newMeasurement.units[2], unitsOut[2]);
+            }
+
+            _lastMeasurement = newMeasurement;
+            scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+
+            getHydroponicsInstance()->returnPinLock(_inputPin);
+            _isTakingMeasure = false;
+        } else if (scheduleObjectMethodCallOnce<HydroponicsDHTTempHumiditySensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) == TASKMGR_INVALIDID) {
+            _isTakingMeasure = false;
+        }
     }
 }
 
@@ -567,6 +680,26 @@ void HydroponicsDHTTempHumiditySensor::setMeasurementUnits(Hydroponics_UnitsType
 Hydroponics_UnitsType HydroponicsDHTTempHumiditySensor::getMeasurementUnits(int measurementRow) const
 {
     return _measurementUnits[measurementRow];
+}
+
+bool HydroponicsDHTTempHumiditySensor::setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex)
+{
+    return false;
+}
+
+Hydroponics_PositionIndex HydroponicsDHTTempHumiditySensor::getWirePositionIndex() const
+{
+    return -1;
+}
+
+bool HydroponicsDHTTempHumiditySensor::setWireDeviceAddress(const uint8_t wireDevAddress[8])
+{
+    return false;
+}
+
+const uint8_t *HydroponicsDHTTempHumiditySensor::getWireDeviceAddress() const
+{
+    return nullptr;
 }
 
 void HydroponicsDHTTempHumiditySensor::setComputeHeatIndex(bool computeHeatIndex)
@@ -594,35 +727,34 @@ void HydroponicsDHTTempHumiditySensor::saveToData(HydroponicsData *dataOut)
 HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(Hydroponics_PositionIndex sensorIndex,
                                                                byte inputPin, byte inputBitRes,
                                                                int classType)
-    : HydroponicsDigitalSensor(Hydroponics_SensorType_WaterTemperature, sensorIndex, inputPin, true, classType),
-      _dt(new DallasTemperature()), _measurementUnits(defaultTemperatureUnits())
+    : HydroponicsDigitalSensor(Hydroponics_SensorType_WaterTemperature, sensorIndex, inputPin, inputBitRes, true, classType),
+      _dt(new DallasTemperature()), _pullupPin(-1), _measurementUnits(defaultTemperatureUnits())
 {
     HYDRUINO_SOFT_ASSERT(_dt, F("DallasTemperature instance creation failure"));
 
-    if (_dt && _oneWire && isValidPin(_inputPin)) {
+    if (isValidPin(_inputPin) && _oneWire && _dt) {
         _dt->setOneWire(_oneWire);
-        //_dt->setPullupPin(pullupPin); // TODO: needed?
-        _dt->setWaitForConversion(true); // This makes calls blocking
+        _dt->setWaitForConversion(true); // reads will be done in their own task
         _dt->begin();
-        _dt->setResolution(inputBitRes);
+        if (_dt->getResolution() != inputBitRes) { _dt->setResolution(inputBitRes); }
         HYDRUINO_SOFT_ASSERT(_dt->getResolution() == inputBitRes, F("Resolved resolution mismatch with passed resolution"));
-    }
+    } else if (_dt) { delete _dt; _dt = nullptr; }
 }
 
 HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(const HydroponicsDSTemperatureSensorData *dataIn)
     : HydroponicsDigitalSensor(dataIn, true),
-      _dt(new DallasTemperature()), _measurementUnits(dataIn->measurementUnits)
+      _dt(new DallasTemperature()), _pullupPin(dataIn->pullupPin), _measurementUnits(dataIn->measurementUnits)
 {
     HYDRUINO_SOFT_ASSERT(_dt, F("DallasTemperature instance creation failure"));
 
-    if (_dt && _oneWire && isValidPin(_inputPin)) {
+    if (isValidPin(_inputPin) && _oneWire && _dt) {
         _dt->setOneWire(_oneWire);
-        //_dt->setPullupPin(pullupPin); // TODO: needed?
-        _dt->setWaitForConversion(true); // This makes calls blocking
+        if (isValidPin(_pullupPin)) { _dt->setPullupPin(_pullupPin); }
+        _dt->setWaitForConversion(true); // reads will be done in their own task
         _dt->begin();
-        _dt->setResolution(dataIn->inputBitRes);
+        if (_dt->getResolution() != dataIn->inputBitRes) { _dt->setResolution(dataIn->inputBitRes); }
         HYDRUINO_SOFT_ASSERT(_dt->getResolution() == dataIn->inputBitRes, F("Resolved resolution mismatch with passed resolution"));
-    }
+    } else if (_dt) { delete _dt; _dt = nullptr; }
 }
 
 HydroponicsDSTemperatureSensor::~HydroponicsDSTemperatureSensor()
@@ -630,36 +762,59 @@ HydroponicsDSTemperatureSensor::~HydroponicsDSTemperatureSensor()
     if (_dt) { delete _dt; _dt = nullptr; }
 }
 
-void HydroponicsDSTemperatureSensor::takeMeasurement(bool override = false)
+bool HydroponicsDSTemperatureSensor::takeMeasurement(bool override)
 {
-    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
+    if (!(_wirePosIndex >= 0)) { resolveDeviceAddress(); }
+
+    if (_dt && _wirePosIndex >= 0 && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
-        Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits : defaultTemperatureUnits();
-        bool readInFahrenheit = _measurementUnits == Hydroponics_UnitsType_Temperature_Fahrenheit;
-        Hydroponics_UnitsType readUnits = readInFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit
-                                                           : Hydroponics_UnitsType_Temperature_Celsius;
-
-        auto tempRead = readInFahrenheit ? _dt->getTempFByIndex(0) : _dt->getTempCByIndex(0); // TODO: Multiple devices on same OneWire line
-        auto timestamp = now();
-
-        HydroponicsSingleMeasurement newMeasurement(
-            tempRead,
-            readUnits,
-            timestamp
-        );
-
-        bool deviceDisconnected = isFPEqual(tempRead, (float)(readInFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C));
-        HYDRUINO_SOFT_ASSERT(!deviceDisconnected, F("Measurement failed device disconnected"));
-
-        if (!deviceDisconnected) {
-            convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
-
-            _lastMeasurement = newMeasurement;
-            scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+        if (scheduleObjectMethodCallOnce<HydroponicsDSTemperatureSensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) != TASKMGR_INVALIDID) {
+            return true;
+        } else {
+            _isTakingMeasure = false;
         }
+    }
+    return false;
+}
 
-        _isTakingMeasure = false;
+void HydroponicsDSTemperatureSensor::_takeMeasurement(int)
+{
+    if (_isTakingMeasure && _dt) {
+        if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
+            if (_dt->requestTemperaturesByAddress(_wireDevAddress)) {
+                Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits : defaultTemperatureUnits();
+                bool readInFahrenheit = _measurementUnits == Hydroponics_UnitsType_Temperature_Fahrenheit;
+                Hydroponics_UnitsType readUnits = readInFahrenheit ? Hydroponics_UnitsType_Temperature_Fahrenheit
+                                                                   : Hydroponics_UnitsType_Temperature_Celsius;
+
+                auto tempRead = readInFahrenheit ? _dt->getTempF(_wireDevAddress) : _dt->getTempC(_wireDevAddress);
+                auto timestamp = now();
+
+                HydroponicsSingleMeasurement newMeasurement(
+                    tempRead,
+                    readUnits,
+                    timestamp
+                );
+
+                bool deviceDisconnected = isFPEqual(tempRead, (float)(readInFahrenheit ? DEVICE_DISCONNECTED_F : DEVICE_DISCONNECTED_C));
+                HYDRUINO_SOFT_ASSERT(!deviceDisconnected, F("Measurement failed, device disconnected"));
+
+                if (!deviceDisconnected) {
+                    convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
+
+                    _lastMeasurement = newMeasurement;
+                    scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+                }
+            } else {
+                HYDRUINO_SOFT_ASSERT(false, F("Measurement failed, device disconnected"));
+            }
+
+            getHydroponicsInstance()->returnPinLock(_inputPin);
+            _isTakingMeasure = false;
+        } else if (scheduleObjectMethodCallOnce<HydroponicsDSTemperatureSensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) == TASKMGR_INVALIDID) {
+            _isTakingMeasure = false;
+        }
     }
 }
 
@@ -682,16 +837,25 @@ Hydroponics_UnitsType HydroponicsDSTemperatureSensor::getMeasurementUnits(int me
     return _measurementUnits;
 }
 
-OneWire &HydroponicsDSTemperatureSensor::getOneWire() const
+void HydroponicsDSTemperatureSensor::setPullupPin(byte pullupPin)
 {
-    return *_oneWire;
+    if (_pullupPin != pullupPin) {
+        _pullupPin = pullupPin;
+
+        if (_dt) { _dt->setPullupPin(_pullupPin); }
+    }
+}
+
+byte HydroponicsDSTemperatureSensor::getPullupPin() const
+{
+    return _pullupPin;
 }
 
 void HydroponicsDSTemperatureSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsDigitalSensor::saveToData(dataOut);
 
-    ((HydroponicsDSTemperatureSensorData *)dataOut)->inputBitRes = _dt ? _dt->getResolution() : 9;
+    ((HydroponicsDSTemperatureSensorData *)dataOut)->pullupPin = _pullupPin;
     ((HydroponicsDSTemperatureSensorData *)dataOut)->measurementUnits = _measurementUnits;
 }
 
@@ -699,20 +863,20 @@ void HydroponicsDSTemperatureSensor::saveToData(HydroponicsData *dataOut)
 HydroponicsTMPMoistureSensor::HydroponicsTMPMoistureSensor(Hydroponics_PositionIndex sensorIndex,
                                                            byte inputPin, byte inputBitRes,
                                                            int classType)
-    : HydroponicsDigitalSensor(Hydroponics_SensorType_SoilMoisture, sensorIndex, inputPin, true, classType),
-      _inputBitRes(inputBitRes)
+    : HydroponicsDigitalSensor(Hydroponics_SensorType_SoilMoisture, sensorIndex, inputPin, inputBitRes, true, classType),
+      _measurementUnits(Hydroponics_UnitsType_Undefined)
 { ; }
 
 HydroponicsTMPMoistureSensor::HydroponicsTMPMoistureSensor(const HydroponicsTMPMoistureSensorData *dataIn)
-    : HydroponicsDigitalSensor(dataIn, true), _inputBitRes(dataIn->inputBitRes)
+    : HydroponicsDigitalSensor(dataIn, true), _measurementUnits(dataIn->measurementUnits)
 { ; }
 
 HydroponicsTMPMoistureSensor::~HydroponicsTMPMoistureSensor()
 { ; }
 
-void HydroponicsTMPMoistureSensor::takeMeasurement(bool override)
+bool HydroponicsTMPMoistureSensor::takeMeasurement(bool override)
 {
-    if (isValidPin(_inputPin) && (override || getNeedsPolling())) {
+    if (_oneWire && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
         Hydroponics_UnitsType unitsOut = _measurementUnits != Hydroponics_UnitsType_Undefined ? _measurementUnits : defaultMeasureUnitsForSensorType(_id.objTypeAs.sensorType);
@@ -729,7 +893,9 @@ void HydroponicsTMPMoistureSensor::takeMeasurement(bool override)
         scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
 
         _isTakingMeasure = false;
+        return true;
     }
+    return false;
 }
 
 const HydroponicsMeasurement *HydroponicsTMPMoistureSensor::getLatestMeasurement() const
@@ -751,16 +917,10 @@ Hydroponics_UnitsType HydroponicsTMPMoistureSensor::getMeasurementUnits(int meas
     return _measurementUnits;
 }
 
-OneWire &HydroponicsTMPMoistureSensor::getOneWire() const
-{
-    return *_oneWire;
-}
-
 void HydroponicsTMPMoistureSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsDigitalSensor::saveToData(dataOut);
 
-    ((HydroponicsTMPMoistureSensorData *)dataOut)->inputBitRes = _inputBitRes;
     ((HydroponicsTMPMoistureSensorData *)dataOut)->measurementUnits = _measurementUnits;
 }
 
@@ -837,7 +997,7 @@ void HydroponicsAnalogSensorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsDigitalSensorData::HydroponicsDigitalSensorData()
-    : HydroponicsSensorData(), tempSensorName{0}
+    : HydroponicsSensorData(), inputBitRes(9), wirePosIndex(-1), wireDevAddress{0}, tempSensorName{0}
 {
     _size = sizeof(*this);
 }
@@ -846,6 +1006,9 @@ void HydroponicsDigitalSensorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsSensorData::toJSONObject(objectOut);
 
+    if (inputBitRes != 9) { objectOut[F("inputBitRes")] = inputBitRes; }
+    if (wirePosIndex >= 0) { objectOut[F("wirePosIndex")] = wirePosIndex; }
+    if (!arrayElementsEqual<uint8_t>(wireDevAddress, 8, 0)) { objectOut[F("wireDevAddress")] = hexStringFromBytes(wireDevAddress, 8); }
     if (tempSensorName[0]) { objectOut[F("tempSensorName")] = stringFromChars(tempSensorName, HYDRUINO_NAME_MAXSIZE); }
 }
 
@@ -853,6 +1016,13 @@ void HydroponicsDigitalSensorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsSensorData::fromJSONObject(objectIn);
 
+    inputBitRes = objectIn[F("inputBitRes")] | inputBitRes;
+    wirePosIndex = objectIn[F("wirePosIndex")] | wirePosIndex;
+    JsonVariantConst wireDevAddressVar = objectIn[F("wireDevAddress")];
+    hexStringToBytes(wireDevAddressVar, wireDevAddress, 8);
+    for (int addrIndex = 0; addrIndex < 8; ++addrIndex) { 
+        wireDevAddress[addrIndex] = wireDevAddressVar[addrIndex] | wireDevAddress[addrIndex];
+    }
     const char *tempSensorNameStr = objectIn[F("tempSensorName")];
     if (tempSensorNameStr && tempSensorNameStr[0]) { strncpy(tempSensorName, tempSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
 }
@@ -871,10 +1041,7 @@ void HydroponicsDHTTempHumiditySensorData::toJSONObject(JsonObject &objectOut) c
     if (computeHeatIndex != false) { objectOut[F("computeHeatIndex")] = computeHeatIndex; }
     if (measurementUnits[0] != Hydroponics_UnitsType_Undefined || measurementUnits[1] != Hydroponics_UnitsType_Undefined || measurementUnits[2] != Hydroponics_UnitsType_Undefined) {
         if (measurementUnits[0] != measurementUnits[2] || measurementUnits[1] != Hydroponics_UnitsType_Percentile_0_100) {
-            JsonArray measurementUnitsArray = objectOut.createNestedArray(F("measurementUnits"));
-            measurementUnitsArray[0] = measurementUnits[0];
-            measurementUnitsArray[1] = measurementUnits[1];
-            measurementUnitsArray[2] = measurementUnits[2];
+            objectOut[F("measurementUnits")] = commaStringFromArray(measurementUnits, 3);
         } else {
             objectOut[F("measurementUnits")] = measurementUnits[0];
         }
@@ -895,7 +1062,7 @@ void HydroponicsDHTTempHumiditySensorData::fromJSONObject(JsonObjectConst &objec
 }
 
 HydroponicsDSTemperatureSensorData::HydroponicsDSTemperatureSensorData()
-    : HydroponicsDigitalSensorData(), inputBitRes(9), measurementUnits(Hydroponics_UnitsType_Undefined)
+    : HydroponicsDigitalSensorData(), pullupPin(-1), measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     _size = sizeof(*this);
 }
@@ -904,7 +1071,7 @@ void HydroponicsDSTemperatureSensorData::toJSONObject(JsonObject &objectOut) con
 {
     HydroponicsDigitalSensorData::toJSONObject(objectOut);
 
-    if (inputBitRes != 9) { objectOut[F("inputBitRes")] = inputBitRes; }
+    if (isValidPin(pullupPin)) { objectOut[F("pullupPin")] = pullupPin; }
     if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = measurementUnits; }
 }
 
@@ -912,12 +1079,12 @@ void HydroponicsDSTemperatureSensorData::fromJSONObject(JsonObjectConst &objectI
 {
     HydroponicsDigitalSensorData::fromJSONObject(objectIn);
 
-    inputBitRes = objectIn[F("inputBitRes")] | inputBitRes;
+    pullupPin = objectIn[F("pullupPin")] | pullupPin;
     measurementUnits = objectIn[F("measurementUnits")] | measurementUnits;
 }
 
 HydroponicsTMPMoistureSensorData::HydroponicsTMPMoistureSensorData()
-    : HydroponicsDigitalSensorData(), inputBitRes(9), measurementUnits(Hydroponics_UnitsType_Undefined)
+    : HydroponicsDigitalSensorData(), measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     _size = sizeof(*this);
 }
@@ -926,7 +1093,6 @@ void HydroponicsTMPMoistureSensorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsDigitalSensorData::toJSONObject(objectOut);
 
-    if (inputBitRes != 9) { objectOut[F("inputBitRes")] = inputBitRes; }
     if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = measurementUnits; }
 }
 
@@ -934,6 +1100,5 @@ void HydroponicsTMPMoistureSensorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsDigitalSensorData::fromJSONObject(objectIn);
 
-    inputBitRes = objectIn[F("inputBitRes")] | inputBitRes;
     measurementUnits = objectIn[F("measurementUnits")] | measurementUnits;
 }

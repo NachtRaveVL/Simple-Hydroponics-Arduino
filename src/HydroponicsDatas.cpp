@@ -415,7 +415,7 @@ void HydroponicsCustomAdditiveData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[F("id")] = reservoirTypeToString(reservoirType);
     if (additiveName[0]) { objectOut[F("additiveName")] = stringFromChars(additiveName, HYDRUINO_NAME_MAXSIZE); }
-    bool hasWeeklyDosings = arrayEqualsAll(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 0.0f);
+    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 0.0f);
     if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX); }
 }
 
