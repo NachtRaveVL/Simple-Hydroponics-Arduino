@@ -553,7 +553,7 @@ float HydroponicsPWMActuator::getPWMAmount() const
     return _pwmAmount;
 }
 
-int HydroponicsPWMActuator::getPWMAmount(int discard) const
+int HydroponicsPWMActuator::getPWMAmount(int) const
 {
     return _pwmResolution.inverseTransform(_pwmAmount);
 }

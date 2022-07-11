@@ -140,6 +140,34 @@ void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length
     }
 }
 
+String hexStringFromBytes(const byte *bytesIn, size_t length)
+{
+    if (!bytesIn || !length) { return String(F("null")); }
+    String retVal = "";
+    for (size_t index = 0; index < length; ++index) {
+        String valStr = String(bytesIn[index], 16);
+        if (valStr.length() == 1) { valStr = String('0') + valStr; }
+        retVal += valStr;
+    }
+    return retVal.length() ? retVal : String(F("null"));
+}
+
+void hexStringToBytes(String stringIn, byte *bytesOut, size_t length)
+{
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
+    for (size_t index = 0; index < length; ++index) {
+        String valStr = stringIn.substring(index*2,(index+1)*2);
+        if (valStr.length() == 2) { bytesOut[index] = strtoul(valStr.c_str(), nullptr, 16); }
+        else { bytesOut[index] = 0; }
+    }
+}
+
+void hexStringToBytes(JsonVariantConst &variantIn, byte *bytesOut, size_t length)
+{
+    if (variantIn.isNull() || variantIn.is<JsonObjectConst>() || variantIn.is<JsonArrayConst>()) { return; }
+    hexStringToBytes(variantIn.as<String>(), bytesOut, length);
+}
+
 int occurrencesInString(String string, char singleChar)
 {
     int retVal = 0;
@@ -191,7 +219,7 @@ int occurrencesInStringIgnoreCase(String string, String subString)
 }
 
 template<>
-bool arrayEqualsAll<float>(const float *arrayIn, size_t length, float value)
+bool arrayElementsEqual<float>(const float *arrayIn, size_t length, float value)
 {
     for (size_t index = 0; index < length; ++index) {
         if (!isFPEqual(arrayIn[index], value)) {
@@ -202,7 +230,7 @@ bool arrayEqualsAll<float>(const float *arrayIn, size_t length, float value)
 }
 
 template<>
-bool arrayEqualsAll<double>(const double *arrayIn, size_t length, double value)
+bool arrayElementsEqual<double>(const double *arrayIn, size_t length, double value)
 {
     for (size_t index = 0; index < length; ++index) {
         if (!isFPEqual(arrayIn[index], value)) {

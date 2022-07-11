@@ -723,13 +723,12 @@ const HydroponicsSingleMeasurement &HydroponicsFeedReservoir::getWaterTemperatur
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits)
 {
     if (!_phBalancer && getWaterPHSensor()) {
-        _phBalancer = new HydroponicsTimedDosingBalancer(getWaterPHSensor(), phSetpoint, HYDRUINO_CROP_PH_RANGE_HALF, _waterVolume.value, _volumeUnits);
+        _phBalancer = new HydroponicsTimedDosingBalancer(getWaterPHSensor(), phSetpoint, HYDRUINO_CROP_PH_RANGE_HALF, _maxVolume, _volumeUnits);
         HYDRUINO_SOFT_ASSERT(_phBalancer, F("Failure allocating pH balancer"));
     }
     if (_phBalancer) {
         _phBalancer->setTargetSetpoint(phSetpoint);
         _phBalancer->setTargetUnits(phSetpointUnits);
-        setupPHBalancer();
     }
     return _phBalancer;
 }
@@ -739,14 +738,7 @@ void HydroponicsFeedReservoir::setWaterPHBalancer(HydroponicsBalancer *phBalance
     if (_phBalancer != phBalancer) {
         if (_phBalancer) { delete _phBalancer; }
         _phBalancer = phBalancer;
-        if (_phBalancer) { setupPHBalancer(); }
     }
-}
-
-void HydroponicsFeedReservoir::setupPHBalancer()
-{
-    auto scheduler = getSchedulerInstance();
-    if (_phBalancer && scheduler) { scheduler->setupPHBalancer(this, _phBalancer); }
 }
 
 HydroponicsBalancer *HydroponicsFeedReservoir::getWaterPHBalancer() const
@@ -757,21 +749,14 @@ HydroponicsBalancer *HydroponicsFeedReservoir::getWaterPHBalancer() const
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits)
 {
     if (!_tdsBalancer && getWaterTDSSensor()) {
-        _tdsBalancer = new HydroponicsTimedDosingBalancer(getWaterTDSSensor(), tdsSetpoint, HYDRUINO_CROP_EC_RANGE_HALF, _waterVolume.value, _volumeUnits);
+        _tdsBalancer = new HydroponicsTimedDosingBalancer(getWaterTDSSensor(), tdsSetpoint, HYDRUINO_CROP_EC_RANGE_HALF, _maxVolume, _volumeUnits);
         HYDRUINO_SOFT_ASSERT(_tdsBalancer, F("Failure allocating TDS balancer"));
     }
     if (_tdsBalancer) {
         _tdsBalancer->setTargetSetpoint(tdsSetpoint);
         _tdsBalancer->setTargetUnits(tdsSetpointUnits);
-        setupTDSBalancer();
     }
     return _tdsBalancer;
-}
-
-void HydroponicsFeedReservoir::setupTDSBalancer()
-{
-    auto scheduler = getSchedulerInstance();
-    if (_tdsBalancer && scheduler) { scheduler->setupTDSBalancer(this, _tdsBalancer); }
 }
 
 void HydroponicsFeedReservoir::setWaterTDSBalancer(HydroponicsBalancer *tdsBalancer)
@@ -779,7 +764,6 @@ void HydroponicsFeedReservoir::setWaterTDSBalancer(HydroponicsBalancer *tdsBalan
     if (_tdsBalancer != tdsBalancer) {
         if (_tdsBalancer) { delete _tdsBalancer; }
         _tdsBalancer = tdsBalancer;
-        if (_tdsBalancer) { setupTDSBalancer(); }
     }
 }
 
@@ -798,7 +782,6 @@ HydroponicsBalancer *HydroponicsFeedReservoir::setWaterTempBalancer(float tempSe
     if (_tempBalancer) {
         _tempBalancer->setTargetSetpoint(tempSetpoint);
         _tempBalancer->setTargetUnits(tempSetpointUnits);
-        setupTempBalancer();
     }
     return _tempBalancer;
 }
@@ -808,14 +791,7 @@ void HydroponicsFeedReservoir::setWaterTempBalancer(HydroponicsBalancer *tempBal
     if (_tempBalancer != tempBalancer) {
         if (_tempBalancer) { delete _tempBalancer; }
         _tempBalancer = tempBalancer;
-        if (_tempBalancer) { setupTempBalancer(); }
     }
-}
-
-void HydroponicsFeedReservoir::setupTempBalancer()
-{
-    auto scheduler = getSchedulerInstance();
-    if (_tempBalancer && scheduler) { scheduler->setupTempBalancer(this, _tempBalancer); }
 }
 
 HydroponicsBalancer *HydroponicsFeedReservoir::getWaterTempBalancer() const

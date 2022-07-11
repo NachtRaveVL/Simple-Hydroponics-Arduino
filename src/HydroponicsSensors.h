@@ -59,7 +59,7 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual void takeMeasurement(bool override = false) = 0;
+    virtual bool takeMeasurement(bool override = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
     virtual bool getIsTakingMeasurement() const override;
     virtual bool getNeedsPolling() const override;
@@ -110,7 +110,7 @@ public:
     HydroponicsBinarySensor(const HydroponicsBinarySensorData *dataIn);
     virtual ~HydroponicsBinarySensor();
 
-    virtual void takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool override = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
@@ -149,7 +149,7 @@ public:
 
     virtual void resolveLinks() override;
 
-    virtual void takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool override = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
@@ -177,7 +177,7 @@ class HydroponicsDigitalSensor : public HydroponicsSensor {
 public:
     HydroponicsDigitalSensor(Hydroponics_SensorType sensorType,
                              Hydroponics_PositionIndex sensorIndex,
-                             byte inputPin = -1,
+                             byte inputPin = -1, byte inputBitRes = 9,
                              bool allocate1W = false,
                              int classType = Digital);
     HydroponicsDigitalSensor(const HydroponicsDigitalSensorData *dataIn, bool allocate1W = false);
@@ -185,13 +185,26 @@ public:
 
     virtual void resolveLinks() override;
 
+    virtual bool setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex);
+    virtual Hydroponics_PositionIndex getWirePositionIndex() const;
+
+    virtual bool setWireDeviceAddress(const uint8_t wireDevAddress[8]);
+    virtual const uint8_t *getWireDeviceAddress() const;
+
     void setTemperatureSensor(HydroponicsIdentity sensorId);
     void setTemperatureSensor(shared_ptr<HydroponicsSensor> sensor);
     shared_ptr<HydroponicsSensor> getTemperatureSensor();
 
+    OneWire *getOneWire();
+
 protected:
-    OneWire *_oneWire;                                      // OneWire comm instance (owned)
+    byte _inputBitRes;                                      // Input bit resolution
+    OneWire *_oneWire;                                      // OneWire comm instance (strong, nullptr when not used)
+    Hydroponics_PositionIndex _wirePosIndex;                // OneWire sensor position index
+    uint8_t _wireDevAddress[8];                             // OneWire sensor device address
     HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor linkage
+
+    void resolveDeviceAddress();
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -209,11 +222,17 @@ public:
     HydroponicsDHTTempHumiditySensor(const HydroponicsDHTTempHumiditySensorData *dataIn);
     virtual ~HydroponicsDHTTempHumiditySensor();
 
-    virtual void takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool override = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+
+    virtual bool setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex) override; // disabled
+    virtual Hydroponics_PositionIndex getWirePositionIndex() const override; // disabled
+
+    virtual bool setWireDeviceAddress(const uint8_t wireDevAddress[8]) override; // disabled
+    virtual const uint8_t *getWireDeviceAddress() const override; // disabled
 
     void setComputeHeatIndex(bool computeHeatIndex);
     bool getComputeHeatIndex() const;
@@ -224,6 +243,8 @@ protected:
     bool _computeHeatIndex;                                 // Flag to compute heat index
     HydroponicsTripleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits[3];             // Measurement units preferred
+
+    void _takeMeasurement(int);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -240,18 +261,22 @@ public:
     HydroponicsDSTemperatureSensor(const HydroponicsDSTemperatureSensorData *dataIn);
     virtual ~HydroponicsDSTemperatureSensor();
 
-    virtual void takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool override = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
-    OneWire &getOneWire() const;
+    void setPullupPin(byte pullupPin);
+    byte getPullupPin() const;
 
 protected:
     DallasTemperature *_dt;                                 // DallasTemperature instance (owned)
+    byte _pullupPin;                                        // Pullup pin (if used, else -1)
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
+
+    void _takeMeasurement(int);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -262,23 +287,20 @@ protected:
 class HydroponicsTMPMoistureSensor : public HydroponicsDigitalSensor {
 public:
     HydroponicsTMPMoistureSensor(Hydroponics_PositionIndex sensorIndex,
-                                     byte inputPin,
-                                     byte inputBitRes = 9,
-                                     int classType = TMP1W);
+                                 byte inputPin,
+                                 byte inputBitRes = 9,
+                                 int classType = TMP1W);
     HydroponicsTMPMoistureSensor(const HydroponicsTMPMoistureSensorData *dataIn);
     virtual ~HydroponicsTMPMoistureSensor();
 
-    virtual void takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool override = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
-    OneWire &getOneWire() const;
-
 protected:
     // TODO: Find class for working with this one
-    byte _inputBitRes;                                      // Input bit resolution
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
@@ -320,6 +342,9 @@ struct HydroponicsAnalogSensorData : public HydroponicsSensorData {
 
 // Digital Sensor Serialization Data
 struct HydroponicsDigitalSensorData : public HydroponicsSensorData {
+    byte inputBitRes;
+    Hydroponics_PositionIndex wirePosIndex;
+    uint8_t wireDevAddress[8];
     char tempSensorName[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsDigitalSensorData();
@@ -340,7 +365,7 @@ struct HydroponicsDHTTempHumiditySensorData : public HydroponicsDigitalSensorDat
 
 // DS Temp Sensor Serialization Data
 struct HydroponicsDSTemperatureSensorData : public HydroponicsDigitalSensorData {
-    byte inputBitRes;
+    byte pullupPin;
     Hydroponics_UnitsType measurementUnits;
 
     HydroponicsDSTemperatureSensorData();
@@ -350,7 +375,6 @@ struct HydroponicsDSTemperatureSensorData : public HydroponicsDigitalSensorData 
 
 // TMP Moisture Sensor Serialization Data
 struct HydroponicsTMPMoistureSensorData : public HydroponicsDigitalSensorData {
-    byte inputBitRes;
     Hydroponics_UnitsType measurementUnits;
 
     HydroponicsTMPMoistureSensorData();

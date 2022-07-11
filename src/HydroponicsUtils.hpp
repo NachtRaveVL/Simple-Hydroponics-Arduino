@@ -70,11 +70,45 @@ class SignalFireTask : public Executable {
 public:
     SignalFireTask(Signal<ParameterType,Slots> &signal, ParameterType &param) : _signal(&signal), _param(param) { ; }
     virtual ~SignalFireTask() { ; }
+
     void exec() override { _signal->fire(_param); }
 private:
     Signal<ParameterType, Slots> *_signal;
     ParameterType _param;
 };
+
+template<typename ParameterType, int Slots>
+taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam)
+{
+    SignalFireTask<ParameterType,Slots> *fireTask = new SignalFireTask<ParameterType,Slots>(signal, fireParam);
+    HYDRUINO_SOFT_ASSERT(fireTask, F("Failure allocating signal fire task"));
+    return fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+}
+
+
+// Method Slot Task
+template<class ObjectType, typename ParameterType>
+class MethodSlotCallTask : public Executable {
+public:
+    typedef void (ObjectType::*FunctPtr)(ParameterType);
+
+    MethodSlotCallTask(shared_ptr<ObjectType> object, FunctPtr method, ParameterType callParam) : _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
+    virtual ~MethodSlotCallTask() { ; }
+
+    void exec() override { _methodSlot(_callParam); }
+private:
+    shared_ptr<ObjectType> _object;
+    MethodSlot<ObjectType,ParameterType> _methodSlot;
+    ParameterType _callParam;
+};
+
+template<class ObjectType, typename ParameterType>
+taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, typename MethodSlotCallTask<ObjectType,ParameterType>::FunctPtr method, ParameterType callParam)
+{
+    MethodSlotCallTask<ObjectType,ParameterType> *callTask = object ? new MethodSlotCallTask<ObjectType,ParameterType>(object, method, callParam) : nullptr;
+    HYDRUINO_SOFT_ASSERT(!object || callTask, F("Failure allocating object method call task"));
+    return callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+}
 
 
 template<typename T>
@@ -112,7 +146,7 @@ void commaStringToArray(JsonVariantConst &variantIn, T *arrayOut, size_t length)
 }
 
 template<typename T>
-bool arrayEqualsAll(const T *arrayIn, size_t length, T value)
+bool arrayElementsEqual(const T *arrayIn, size_t length, T value)
 {
     for (size_t index = 0; index < length; ++index) {
         if (!(arrayIn[index] == value)) {
@@ -126,14 +160,6 @@ template<typename T>
 T mapValue(T value, T inMin, T inMax, T outMin, T outMax)
 {
     return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-}
-
-template<typename ParameterType, int Slots>
-taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam)
-{
-    SignalFireTask<ParameterType,Slots> *fireTask = new SignalFireTask<ParameterType,Slots>(signal, fireParam);
-    HYDRUINO_SOFT_ASSERT(fireTask, F("Failure allocating signal fire task"));
-    return fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
 }
 
 

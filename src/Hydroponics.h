@@ -206,6 +206,13 @@ public:
     // Returns custom additive data (if any), else nullptr.
     const HydroponicsCustomAdditiveData *getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const;
 
+    // Pin Locks.
+
+    // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
+    bool tryGetPinLock(byte pin, time_t waitMillis = 250);
+    // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
+    void returnPinLock(byte pin);
+
     // Object Registration.
 
     // Adds/removes objects to/from system, returning success
@@ -214,7 +221,6 @@ public:
 
     // Searches for object by id key (nullptr return = no obj by that id, position index may use HYDRUINO_POS_SEARCH* defines)
     shared_ptr<HydroponicsObject> objectById(HydroponicsIdentity id) const;
-    shared_ptr<HydroponicsObject> objectByKey(Hydroponics_KeyType key) const;
     Hydroponics_PositionIndex firstPosition(HydroponicsIdentity id, bool taken);
     inline Hydroponics_PositionIndex firstPositionTaken(HydroponicsIdentity id) { return firstPosition(id, true); }
     inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { return firstPosition(id, false); }
@@ -298,15 +304,16 @@ public:
     // Adds a new digital DHT* OneWire temperature & humidity sensor to the system using the given parameters.
     // Uses the DHT library. A very common digital sensor, included in most Arduino starter kits.
     shared_ptr<HydroponicsDHTTempHumiditySensor> addDHTTempHumiditySensor(byte inputPin,            // OneWire digital input pin this sensor sits on
-                                                                          byte dhtType = DHT12); // Kind of DHT sensor (see DHT* defines)
+                                                                          byte dhtType = DHT12);    // Kind of DHT sensor (see DHT* defines)
     // Adds a new digital DS18* OneWire submersible temperature sensor to the system using the given parameters.
     // Uses the DallasTemperature library. A specialized submersible sensor meant for long-term usage.
     shared_ptr<HydroponicsDSTemperatureSensor> addDSTemperatureSensor(byte inputPin,                // OneWire digital input pin this sensor sits on
-                                                                      byte inputBitRes = 9);        // Sensor ADC bit resolution to use
+                                                                      byte inputBitRes = 9,         // Sensor ADC bit resolution to use
+                                                                      byte pullupPin = -1);         // Strong pullup pin (if used, else -1)
     // Adds a new digital TMP* OneWire soil moisture sensor to the system using the given parameters.
     // Uses the XXXTODO library. A blah blah blah blah todo.
-    shared_ptr<HydroponicsTMPMoistureSensor> addTMPMoistureSensor(byte inputPin,            // OneWire digital input pin this sensor sits on
-                                                                          byte inputBitRes = 9);    // Sensor ADC bit resolution to use
+    shared_ptr<HydroponicsTMPMoistureSensor> addTMPMoistureSensor(byte inputPin,                    // OneWire digital input pin this sensor sits on
+                                                                  byte inputBitRes = 9);            // Sensor ADC bit resolution to use
 
     // TODO: addDigitalPHMeter, addDigitalECMeter, addDigitalCO2Sensor
 
@@ -391,8 +398,9 @@ public:
     I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazily instantiated, nullptr return = failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
+    OneWire *getOneWireForPin(byte pin);                            // OneWire instance for given pin (lazily instantiated - cannot be destroyed once grabbed)
 
-    bool getInOperationalMode() const;                            // Whenever the system is in operational mode (has been launched), or not
+    bool getInOperationalMode() const;                              // Whenever the system is in operational mode (has been launched), or not
     String getSystemName() const;                                   // System display name (default: "Hydruino")
     int8_t getTimeZoneOffset() const;                               // System time zone offset from UTC
     bool getRTCBatteryFailure() const;                              // Whenever the system booted up with RTC battery failure flag set
@@ -440,10 +448,12 @@ protected:
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
     uint32_t _pollingFrame;                                         // Polling frame #
 
-    arx::map<Hydroponics_KeyType, shared_ptr<HydroponicsObject> > _objects; // Shared object collection, key'ed by HydroponicsIdentity.
-    arx::map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *> _additives; // Custom additives data
+    arx::map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
+    arx::map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount> _additives; // Custom additives data
+    arx::map<byte, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE> _oneWires; // pin->OneWire list
+    arx::map<byte, byte> _pinLocks;                                 // Pin locks list (existence = locked)
 
-    HydroponicsScheduler _scheduler;
+    HydroponicsScheduler _scheduler;                                // Scheduler piggy-back instance
     friend class HydroponicsScheduler;
     friend HydroponicsScheduler *::getSchedulerInstance();
 
