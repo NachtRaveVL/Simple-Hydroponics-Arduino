@@ -143,6 +143,7 @@ public:
                             Hydroponics_PositionIndex sensorIndex,
                             byte inputPin,
                             byte inputBitRes = 8,
+                            bool inputInversion = false,
                             int classType = Analog);
     HydroponicsAnalogSensor(const HydroponicsAnalogSensorData *dataIn);
     virtual ~HydroponicsAnalogSensor();
@@ -160,12 +161,16 @@ public:
     shared_ptr<HydroponicsSensor> getTemperatureSensor();
 
     HydroponicsBitResolution getInputResolution() const;
+    bool getInputInversion() const;
 
 protected:
     HydroponicsBitResolution _inputResolution;              // Analog input resolution
+    bool _inputInversion;                                   // Analog input inversion
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
     HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor linkage
+
+    void _takeMeasurement(int);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -332,6 +337,7 @@ struct HydroponicsBinarySensorData : public HydroponicsSensorData {
 // Analog Sensor Serialization Data
 struct HydroponicsAnalogSensorData : public HydroponicsSensorData {
     byte inputBitRes;
+    bool inputInversion;
     Hydroponics_UnitsType measurementUnits;
     char tempSensorName[HYDRUINO_NAME_MAXSIZE];
 

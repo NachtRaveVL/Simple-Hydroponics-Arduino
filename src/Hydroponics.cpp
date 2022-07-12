@@ -1391,7 +1391,7 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogCO2Sensor(byte inputPi
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_AirCarbonDioxide,
             positionIndex,
-            inputPin, inputBitRes
+            inputPin, inputBitRes, true
         ));
         if (registerObject(sensor)) { return sensor; }
         else { sensor = nullptr; }
@@ -1519,17 +1519,10 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addUltrasonicDistanceSensor(byt
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_WaterHeightMeter,
             positionIndex,
-            inputPin, inputBitRes
+            inputPin, inputBitRes, true
         ));
-        if (registerObject(sensor)) {
-            {   HydroponicsCalibrationData userCalibData(sensor->getId());
-                userCalibData.multiplier = -1.0f; userCalibData.offset = 1.0f;
-                userCalibData.calibUnits = Hydroponics_UnitsType_Raw_0_1;
-                sensor->setUserCalibrationData(&userCalibData);
-            }
-
-            return sensor;
-        } else { sensor = nullptr; }
+        if (registerObject(sensor)) { return sensor; }
+        else { sensor = nullptr; }
     }
 
     return nullptr;
