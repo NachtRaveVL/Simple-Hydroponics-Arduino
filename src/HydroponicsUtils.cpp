@@ -1252,7 +1252,7 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
 String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool excludeSpecial)
 {
     if (positionIndex >= 0 && positionIndex < HYDRUINO_POS_MAXSIZE) {
-        return String(positionIndex + HYDRUINO_POS_BEGFROM);
+        return String(positionIndex + HYDRUINO_POS_EXPORT_BEGFROM);
     } else if (!excludeSpecial) {
         if (positionIndex == HYDRUINO_POS_MAXSIZE) {
             return F("PositionCount");
