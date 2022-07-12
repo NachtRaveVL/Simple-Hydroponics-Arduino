@@ -360,8 +360,11 @@ void HydroponicsAnalogSensor::_takeMeasurement(int)
             #endif
 
             unsigned int rawRead = 0;
-            #if HYDRUINO_SENSOR_ANALOGREAD_SAMPLES > 0
+            #if HYDRUINO_SENSOR_ANALOGREAD_SAMPLES > 1
                 for (int sampleIndex = 0; sampleIndex < HYDRUINO_SENSOR_ANALOGREAD_SAMPLES; ++sampleIndex) {
+                    #if HYDRUINO_SENSOR_ANALOGREAD_SMPDELAY > 0
+                        if (sampleIndex) { delay(HYDRUINO_SENSOR_ANALOGREAD_SMPDELAY); }
+                    #endif
                     rawRead += analogRead(_inputPin);
                 }
                 rawRead /= HYDRUINO_SENSOR_ANALOGREAD_SAMPLES;

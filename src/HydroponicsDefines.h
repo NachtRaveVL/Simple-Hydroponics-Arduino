@@ -43,7 +43,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_POS_SEARCH_FROMBEG         -1                      // Search from beginning to end, 0 up to MAXSIZE-1
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
-#define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported position indexing starts at 1 or 0 (aka display offset)
+#define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported/user-facing position indexing starts at 1 or 0 (aka display offset)
 
 #define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 #define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
@@ -56,7 +56,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_CROP_GROWEEKS_MAX          16                      // Maximum grow weeks to support scheduling up to
 #define HYDRUINO_CROP_GROWEEKS_MIN          8                       // Minimum grow weeks to support scheduling up to
 
-#define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  20                      // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
+#define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
+#define HYDRUINO_SENSOR_ANALOGREAD_SMPDELAY 0                       // Delay time between samples, or 0 to disable delay
 
 #define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal on/off for scheduler to register as such
 #define HYDRUINO_DOSETIME_MIN_FRACTION      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
