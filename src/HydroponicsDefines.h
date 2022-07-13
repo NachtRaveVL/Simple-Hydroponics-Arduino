@@ -330,9 +330,9 @@ enum Hydroponics_TriggerState {
 // Balancing State
 // Common balancing states. Specifies balance or which direction of imbalance.
 enum Hydroponics_BalancerState {
-    Hydroponics_BalancerState_TooLow,                      // Too low state / needs incremented
+    Hydroponics_BalancerState_TooLow,                      // Too low / needs incremented state
     Hydroponics_BalancerState_Balanced,                    // Balanced state
-    Hydroponics_BalancerState_TooHigh,                     // Too high state / needs decremented
+    Hydroponics_BalancerState_TooHigh,                     // Too high / needs decremented state
 
     Hydroponics_BalancerState_Count,                       // Internal use only
     Hydroponics_BalancerState_Undefined = -1               // Internal use only

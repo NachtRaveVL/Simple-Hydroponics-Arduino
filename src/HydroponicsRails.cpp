@@ -151,7 +151,7 @@ float HydroponicsSimpleRail::getCapacity() const
 bool HydroponicsSimpleRail::addActuator(HydroponicsActuator *actuator)
 {
     if (HydroponicsRail::addActuator(actuator)) {
-        auto methodSlot = MethodSlot<HydroponicsSimpleRail, HydroponicsActuator *>(this, &handleActivation);
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
         actuator->getActivationSignal().attach(methodSlot);
         return true;
     }
@@ -161,7 +161,7 @@ bool HydroponicsSimpleRail::addActuator(HydroponicsActuator *actuator)
 bool HydroponicsSimpleRail::removeActuator(HydroponicsActuator *actuator)
 {
     if (HydroponicsRail::removeActuator(actuator)) {
-        auto methodSlot = MethodSlot<HydroponicsSimpleRail, HydroponicsActuator *>(this, &handleActivation);
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
         actuator->getActivationSignal().detach(methodSlot);
         return true;
     }
@@ -193,7 +193,7 @@ void HydroponicsSimpleRail::handleActivation(HydroponicsActuator *actuator)
     bool hasSpaceAfter = _activeCount < _maxActiveAtOnce;
 
     if (hadSpaceBefore != hasSpaceAfter) {
-        scheduleSignalFireOnce<HydroponicsRail *>(_capacitySignal, this);
+        scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
     }
 }
 
@@ -358,7 +358,7 @@ void HydroponicsRegulatedRail::attachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(_powerSensor, F("Power sensor not linked, failure attaching"));
     if (_powerSensor) {
-        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, const HydroponicsMeasurement *>(this, &handlePowerMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
         _powerSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -367,7 +367,7 @@ void HydroponicsRegulatedRail::detachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(_powerSensor, F("Power sensor not linked, failure detaching"));
     if (_powerSensor) {
-        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, const HydroponicsMeasurement *>(this, &handlePowerMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
         _powerSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -384,7 +384,7 @@ void HydroponicsRegulatedRail::attachLimitTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_limitTrigger, F("Limit trigger not linked, failure attaching"));
     if (_limitTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, Hydroponics_TriggerState>(this, &handleLimitTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleLimitTrigger);
         _limitTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -393,7 +393,7 @@ void HydroponicsRegulatedRail::detachLimitTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_limitTrigger, F("Limit trigger not linked, failure detaching"));
     if (_limitTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsRegulatedRail, Hydroponics_TriggerState>(this, &handleLimitTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleLimitTrigger);
         _limitTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
@@ -401,7 +401,7 @@ void HydroponicsRegulatedRail::detachLimitTrigger()
 void HydroponicsRegulatedRail::handleLimitTrigger(Hydroponics_TriggerState triggerState)
 {
     if (triggerState != Hydroponics_TriggerState_Undefined) {
-        scheduleSignalFireOnce<HydroponicsRail *>(_capacitySignal, this);
+        scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
     }
 }
 

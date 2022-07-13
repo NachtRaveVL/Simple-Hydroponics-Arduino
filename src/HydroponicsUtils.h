@@ -31,6 +31,65 @@ struct HydroponicsBitResolution {
 };
 
 
+// Actuator Precise Timed Enable Task
+class ActuatorTimedEnableTask : public Executable {
+    public:
+    taskid_t taskId;
+    ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis);
+    virtual ~ActuatorTimedEnableTask();
+
+    void exec() override;
+private:
+    shared_ptr<HydroponicsActuator> _actuator;
+    float _enableIntensity;
+    time_t _enableTimeMillis;
+};
+
+// Scheduling
+
+// This will schedule an actuator to enable on the next TaskManagerIO runloop using the given intensity and enable time millis.
+// Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
+taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis);
+
+// This will schedule an actuator to enable on the next TaskManagerIO runloop using the given enable time millis.
+// Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
+taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, time_t enableTimeMillis);
+
+// This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter.
+// Object is captured, if not nullptr. Returns taskId or TASKMGR_INVALIDID on error.
+template<typename ParameterType, int Slots>
+taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam);
+
+// This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter, w/o capturing object.
+// Returns taskId or TASKMGR_INVALIDID on error.
+template<typename ParameterType, int Slots>
+taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam);
+
+// This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter.
+// Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
+template<class ObjectType, typename ParameterType>
+taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
+
+// This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter, w/o capturing object.
+// Returns taskId or TASKMGR_INVALIDID on error.
+template<class ObjectType, typename ParameterType>
+taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
+
+// This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
+// Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
+template<class ObjectType>
+taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
+
+// This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
+// Returns taskId or TASKMGR_INVALIDID on error.
+template<class ObjectType>
+taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (ObjectType::*method)(taskid_t));
+
+// Given a valid task id, makes the task repeating.
+void enableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
+// Given a valid task id, makes the task non-repeating.
+void disableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
+
 // Helpers & Misc
 
 // Returns the active hydroponics instance. Not guaranteed to be non-null.
@@ -93,10 +152,6 @@ extern int freeMemory();
 
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
-
-// This will schedule a signal's fire method on the next TaskManagerIO runloop using the given parameter.
-template<typename ParameterType, int Slots>
-taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam);
 
 #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 
@@ -180,6 +235,9 @@ extern bool checkPinIsDigital(byte pin);
 extern bool checkPinIsPWMOutput(byte pin);
 // Checks to see if the pin can be set up with an ISR to handle digital level changes.
 extern bool checkPinCanInterrupt(byte pin);
+
+// Sets random seed to an appropriate backing, in order: RTC's time, last analog pin's read (x4 to form 32-bit seed), or micros from system start.
+extern void setRandomSeed();
 
 // Enum & String Conversions
 

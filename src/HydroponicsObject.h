@@ -105,8 +105,9 @@ public:
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object.
     const arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getLinkages() const;
 
-    const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object.
-    Hydroponics_KeyType getKey() const;                     // Returns the unique key of the object.
+    const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object
+    Hydroponics_KeyType getKey() const;                     // Returns the unique key of the object
+    shared_ptr<HydroponicsObject> getSharedPtr() const;     // Returns the shared_ptr instance of the object
 
 protected:
     HydroponicsIdentity _id;                                // Object id

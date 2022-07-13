@@ -48,11 +48,11 @@ void HydroponicsReservoir::update()
 
     if (_filledState != triggerStateFromBool(getIsFilled())) {
         _filledState = triggerStateFromBool(getIsFilled());
-        scheduleSignalFireOnce<HydroponicsReservoir *>(_filledSignal, this);
+        scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _filledSignal, this);
     }
     if (_emptyState != triggerStateFromBool(getIsEmpty())) {
         _emptyState = triggerStateFromBool(getIsEmpty());
-        scheduleSignalFireOnce<HydroponicsReservoir *>(_emptySignal, this);
+        scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _emptySignal, this);
     }
 }
 
@@ -372,7 +372,7 @@ void HydroponicsFluidReservoir::attachFilledTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_filledTrigger, F("Filled trigger not linked, failure attaching"));
     if (_filledTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsFluidReservoir, Hydroponics_TriggerState>(this, &handleFilledTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFilledTrigger);
         _filledTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -381,7 +381,7 @@ void HydroponicsFluidReservoir::detachFilledTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_filledTrigger, F("Filled trigger not linked, failure detaching"));
     if (_filledTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsFluidReservoir, Hydroponics_TriggerState>(this, &handleFilledTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFilledTrigger);
         _filledTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
@@ -394,7 +394,7 @@ void HydroponicsFluidReservoir::handleFilledTrigger(Hydroponics_TriggerState tri
     }
     if (triggerState != Hydroponics_TriggerState_Disabled && _filledState != triggerState) {
         _filledState = triggerState;
-        scheduleSignalFireOnce<HydroponicsReservoir *>(_filledSignal, this);
+        scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _filledSignal, this);
     }
 }
 
@@ -402,7 +402,7 @@ void HydroponicsFluidReservoir::attachEmptyTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_emptyTrigger, F("Empty trigger not linked, failure attaching"));
     if (_emptyTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsFluidReservoir, Hydroponics_TriggerState>(this, &handleEmptyTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleEmptyTrigger);
         _emptyTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -411,7 +411,7 @@ void HydroponicsFluidReservoir::detachEmptyTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_emptyTrigger, F("Empty trigger not linked, failure detaching"));
     if (_emptyTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsFluidReservoir, Hydroponics_TriggerState>(this, &handleEmptyTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleEmptyTrigger);
         _emptyTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
@@ -424,7 +424,7 @@ void HydroponicsFluidReservoir::handleEmptyTrigger(Hydroponics_TriggerState trig
     }
     if (triggerState != Hydroponics_TriggerState_Disabled && _emptyState != triggerState) {
         _emptyState = triggerState;
-        scheduleSignalFireOnce<HydroponicsReservoir *>(_emptySignal, this);
+        scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _emptySignal, this);
     }
 }
 
@@ -432,7 +432,7 @@ void HydroponicsFluidReservoir::attachWaterVolumeSensor()
 {
     HYDRUINO_SOFT_ASSERT(getVolumeSensor(), F("Volume sensor not linked, failure attaching"));
     if (getVolumeSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsFluidReservoir, const HydroponicsMeasurement *>(this, &handleWaterVolumeMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterVolumeMeasure);
         _volumeSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -441,7 +441,7 @@ void HydroponicsFluidReservoir::detachWaterVolumeSensor()
 {
     HYDRUINO_SOFT_ASSERT(getVolumeSensor(), F("Volume sensor not linked, failure detaching"));
     if (getVolumeSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsFluidReservoir, const HydroponicsMeasurement *>(this, &handleWaterVolumeMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterVolumeMeasure);
         _volumeSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -873,7 +873,7 @@ void HydroponicsFeedReservoir::attachPHSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterPHSensor(), F("PH sensor not linked, failure attaching"));
     if (getWaterPHSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsFeedReservoir, const HydroponicsMeasurement *>(this, &handlePHMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePHMeasure);
         _phSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -882,7 +882,7 @@ void HydroponicsFeedReservoir::detachPHSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterPHSensor(), F("PH sensor not linked, failure detaching"));
     if (getWaterPHSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsFeedReservoir, const HydroponicsMeasurement *>(this, &handlePHMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePHMeasure);
         _phSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -899,7 +899,7 @@ void HydroponicsFeedReservoir::attachTDSSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTDSSensor(), F("TDS sensor not linked, failure attaching"));
     if (getWaterTDSSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsFeedReservoir, const HydroponicsMeasurement *>(this, &handleTDSMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleTDSMeasure);
         _tdsSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -908,7 +908,7 @@ void HydroponicsFeedReservoir::detachTDSSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTDSSensor(), F("TDS sensor not linked, failure detaching"));
     if (getWaterTDSSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsFeedReservoir, const HydroponicsMeasurement *>(this, &handleTDSMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleTDSMeasure);
         _tdsSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -925,7 +925,7 @@ void HydroponicsFeedReservoir::attachWaterTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(_tempSensor, F("Temperature sensor not linked, failure attaching"));
     if (_tempSensor) {
-        auto methodSlot = MethodSlot<HydroponicsFeedReservoir, const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
         _tempSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -934,7 +934,7 @@ void HydroponicsFeedReservoir::detachWaterTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(_tempSensor, F("Temperature sensor not linked, failure detaching"));
     if (_tempSensor) {
-        auto methodSlot = MethodSlot<HydroponicsFeedReservoir, const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
         _tempSensor->getMeasurementSignal().detach(methodSlot);
     }
 }

@@ -63,6 +63,7 @@ protected:
 
     void disableIncActuators();
     void disableDecActuators();
+    virtual void handleBalancerState();
 
     void attachRangeTrigger();
     void detachRangeTrigger();
@@ -105,9 +106,9 @@ protected:
 
     time_t _lastDosingTime;
     float _lastDosingValue;
-    time_t _lastDosingMillis;
-    Hydroponics_BalancerState _lastDosingDir;
-    int8_t _nextDosingActuatorIndex;
+    time_t _dosingMillis;
+    Hydroponics_BalancerState _dosingDir;
+    int8_t _dosingActIndex;
 
     void performDosing();
 };

@@ -55,9 +55,9 @@
 #else
 #include <WProgram.h>
 #endif
-#include <assert.h>
 #include <SPI.h>
 #include <SD.h>
+#include <WiFi.h>
 #include <Wire.h>
 #if defined(ESP32) || defined(ESP8266)
 typedef SDFileSystemClass SDClass;
@@ -147,8 +147,9 @@ public:
                 byte eepromI2CAddress = B000,
                 byte rtcI2CAddress = B000,                  // only B000 can be used atm
                 byte lcdI2CAddress = B000,
-                TwoWire& i2cWire = Wire, uint32_t i2cSpeed = 400000U,
-                uint32_t spiSpeed = 4000000U);
+                TwoWire &i2cWire = Wire, uint32_t i2cSpeed = 400000U,
+                uint32_t spiSpeed = 4000000U,
+                WiFiClass &wifi = WiFi);
     ~Hydroponics();
 
     // Initializes default empty system. Typically called in setup().
@@ -225,17 +226,6 @@ public:
     inline Hydroponics_PositionIndex firstPositionTaken(HydroponicsIdentity id) { return firstPosition(id, true); }
     inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { return firstPosition(id, false); }
  
-    inline shared_ptr<HydroponicsActuator> actuatorById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsActuator>(objectById(id)); }
-    inline shared_ptr<HydroponicsActuator> actuatorById(Hydroponics_ActuatorType actuatorType, Hydroponics_PositionIndex actuatorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsActuator>(objectById(HydroponicsIdentity(actuatorType, actuatorIndex))); }
-    inline shared_ptr<HydroponicsSensor> sensorById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsSensor>(objectById(id)); }
-    inline shared_ptr<HydroponicsSensor> sensorById(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex sensorIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsSensor>(objectById(HydroponicsIdentity(sensorType, sensorIndex))); }
-    inline shared_ptr<HydroponicsCrop> cropById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsCrop>(objectById(id)); }
-    inline shared_ptr<HydroponicsCrop> cropById(Hydroponics_CropType cropType, Hydroponics_PositionIndex cropIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsCrop>(objectById(HydroponicsIdentity(cropType, cropIndex))); }
-    inline shared_ptr<HydroponicsReservoir> reservoirById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsReservoir>(objectById(id)); }
-    inline shared_ptr<HydroponicsReservoir> reservoirById(Hydroponics_ReservoirType reservoirType, Hydroponics_PositionIndex reservoirIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsReservoir>(objectById(HydroponicsIdentity(reservoirType, reservoirIndex))); }
-    inline shared_ptr<HydroponicsRail> railById(HydroponicsIdentity id) const { return static_pointer_cast<HydroponicsRail>(objectById(id)); }
-    inline shared_ptr<HydroponicsRail> railById(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex = HYDRUINO_POS_SEARCH_FROMBEG) const { return static_pointer_cast<HydroponicsRail>(objectById(HydroponicsIdentity(railType, railIndex))); }
-
     // Object Factory.
 
     // Convenience builders for common actuators (shared, nullptr return = failure).
@@ -379,10 +369,11 @@ public:
 
     // Mutators.
 
+    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
     void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE size limit)
     void setTimeZoneOffset(int8_t timeZoneOffset);                  // Sets system time zone offset from UTC
     void setPollingInterval(uint32_t pollingInterval);              // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
-    void setControlInputPinMap(byte *pinMap);                       // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
+    void setWiFiConnection(String ssid, String password);           // Sets WiFi connection's SSID and password
 
     // Accessors.
 
@@ -398,8 +389,12 @@ public:
     I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazily instantiated, nullptr return = failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
-    OneWire *getOneWireForPin(byte pin);                            // OneWire instance for given pin (lazily instantiated - cannot be destroyed once grabbed)
+    WiFiClass *getWiFi(bool begin = true);                          // WiFi instance (nullptr return = failure/no device)
+    OneWire *getOneWireForPin(byte pin);                            // OneWire instance for given pin (lazily instantiated)
+    void dropOneWireForPin(byte pin);                               // Drops OneWire instance for given pin (if created)
 
+    int getControlInputRibbonPinCount() const;                      // Total number of pins being used for the current control input ribbon mode
+    byte getControlInputPin(int ribbonPinIndex) const;              // Control input pin mapped to ribbon pin index, or -1 (255) if not used
     bool getInOperationalMode() const;                              // Whenever the system is in operational mode (has been launched), or not
     String getSystemName() const;                                   // System display name (default: "Hydruino")
     int8_t getTimeZoneOffset() const;                               // System time zone offset from UTC
@@ -407,8 +402,8 @@ public:
     uint32_t getPollingInterval() const;                            // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
     uint32_t getPollingFrame() const;                               // System polling frame number for sensor frame tracking
     bool getIsPollingFrameOld(uint32_t frame) const;                // Determines if a given frame # if out of date (true) or current (false)
-    int getControlInputRibbonPinCount() const;                      // Total number of pins being used for the current control input ribbon mode
-    byte getControlInputPin(int ribbonPinIndex) const;              // Control input pin mapped to ribbon pin index, or -1 (255) if not used
+    String getWiFiSSID();                                           // SSID for WiFi connection
+    String getWiFiPassword();                                       // Password for WiFi connection (plaintext)
 
     // Misc.
 
@@ -424,9 +419,10 @@ protected:
     const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
     const byte _rtcI2CAddr;                                         // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
     const byte _lcdI2CAddr;                                         // LCD i2c address, format: {A2,A1,A0} (default: B000)
-    TwoWire* _i2cWire;                                              // Wire class instance (unowned) (default: Wire)
+    TwoWire *_i2cWire;                                              // Wire class instance (unowned) (default: Wire)
     uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
     uint32_t _spiSpeed;                                             // Controller's SPI clock speed (default: 4MHz)
+    WiFiClass *_wifi;                                               // WiFi class instance (unowned) (default: WiFi)
 
 #ifdef HYDRUINO_USE_TASKSCHEDULER
     Scheduler _ts;                                                  // Task scheduler
@@ -443,6 +439,7 @@ protected:
     bool _eepromBegan;                                              // Status of EEPROM begin() call
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
+    bool _wifiBegan;                                                // Status of WiFi begin() call
     byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
 
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)

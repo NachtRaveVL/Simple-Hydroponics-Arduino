@@ -58,7 +58,7 @@ void HydroponicsCrop::update()
 
     if (_feedingState != triggerStateFromBool(getNeedsFeeding())) {
         _feedingState = triggerStateFromBool(getNeedsFeeding());
-        scheduleSignalFireOnce<HydroponicsCrop *>(_feedingSignal, this);
+        scheduleSignalFireOnce<HydroponicsCrop *>(getSharedPtr(), _feedingSignal, this);
     }
 }
 
@@ -450,7 +450,7 @@ void HydroponicsAdaptiveCrop::attachSoilMoistureSensor()
 {
     HYDRUINO_SOFT_ASSERT(getMoistureSensor(), F("Moisture sensor not linked, failure attaching"));
     if (getMoistureSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsAdaptiveCrop, const HydroponicsMeasurement *>(this, &handleSoilMoistureMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSoilMoistureMeasure);
         _moistureSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -459,7 +459,7 @@ void HydroponicsAdaptiveCrop::detachSoilMoistureSensor()
 {
     HYDRUINO_SOFT_ASSERT(getMoistureSensor(), F("Moisture sensor not linked, failure detaching"));
     if (getMoistureSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsAdaptiveCrop, const HydroponicsMeasurement *>(this, &handleSoilMoistureMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSoilMoistureMeasure);
         _moistureSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -476,7 +476,7 @@ void HydroponicsAdaptiveCrop::attachFeedingTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_feedingTrigger, F("Feeding trigger not linked, failure attaching"));
     if (_feedingTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsAdaptiveCrop, Hydroponics_TriggerState>(this, &handleFeedingTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFeedingTrigger);
         _feedingTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -485,7 +485,7 @@ void HydroponicsAdaptiveCrop::detachFeedingTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_feedingTrigger, F("Feeding trigger not linked, failure detaching"));
     if (_feedingTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsAdaptiveCrop, Hydroponics_TriggerState>(this, &handleFeedingTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFeedingTrigger);
         _feedingTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
@@ -493,7 +493,7 @@ void HydroponicsAdaptiveCrop::detachFeedingTrigger()
 void HydroponicsAdaptiveCrop::handleFeedingTrigger(Hydroponics_TriggerState triggerState)
 {
     if (triggerState != Hydroponics_TriggerState_Undefined) {
-        scheduleSignalFireOnce<HydroponicsCrop *>(_feedingSignal, this);
+        scheduleSignalFireOnce<HydroponicsCrop *>(getSharedPtr(), _feedingSignal, this);
     }
 }
 

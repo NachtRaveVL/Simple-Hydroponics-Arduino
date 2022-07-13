@@ -106,7 +106,8 @@ HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData("HSYS", 1),
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
-      systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL)
+      systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL),
+      wifiSSID{0}, wifiPassword{0}, wifiPasswordSeed(0)
 {
     _size = sizeof(*this);
     String defaultSysNameStr(F("Hydruino"));
@@ -124,6 +125,13 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
     if (systemName[0]) { objectOut[F("systemName")] = stringFromChars(systemName, HYDRUINO_NAME_MAXSIZE); }
     if (timeZoneOffset != 0) { objectOut[F("timeZoneOffset")] = timeZoneOffset; }
     if (pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[F("pollingInterval")] = pollingInterval; }
+    if (wifiSSID[0]) { objectOut[F("wifiSSID")] = stringFromChars(wifiSSID, HYDRUINO_NAME_MAXSIZE); }
+    if (wifiPasswordSeed) {
+        objectOut[F("wifiPassword")] = hexStringFromBytes(wifiPassword, HYDRUINO_NAME_MAXSIZE);
+        objectOut[F("wifiPasswordSeed")] = wifiPasswordSeed;
+    } else if (wifiPassword[0]) {
+        objectOut[F("wifiPassword")] = stringFromChars((const char *)wifiPassword, HYDRUINO_NAME_MAXSIZE);
+    }
     JsonObject schedulerObj = objectOut.createNestedObject(F("scheduler"));
     scheduler.toJSONObject(schedulerObj); if (!schedulerObj.size()) { objectOut.remove(F("scheduler")); }
 }
@@ -140,6 +148,12 @@ void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
     if (systemNameStr && systemNameStr[0]) { strncpy(systemName, systemNameStr, HYDRUINO_NAME_MAXSIZE); }
     timeZoneOffset = objectIn[F("timeZoneOffset")] | timeZoneOffset;
     pollingInterval = objectIn[F("pollingInterval")] | pollingInterval;
+    const char *wifiSSIDStr = objectIn[F("wifiSSID")];
+    if (wifiSSIDStr && wifiSSIDStr[0]) { strncpy(wifiSSID, wifiSSIDStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *wifiPasswordStr = objectIn[F("wifiPassword")];
+    wifiPasswordSeed = objectIn[F("wifiPasswordSeed")] | wifiPasswordSeed;
+    if (wifiPasswordStr && wifiPasswordSeed) { hexStringToBytes(String(wifiPasswordStr), wifiPassword, HYDRUINO_NAME_MAXSIZE); }
+    else if (wifiPasswordStr && wifiPasswordStr[0]) { strncpy((char *)wifiPassword, wifiPasswordStr, HYDRUINO_NAME_MAXSIZE); wifiPasswordSeed = 0; }
     JsonObjectConst schedulerObj = objectIn[F("scheduler")];
     if (!schedulerObj.isNull()) { scheduler.fromJSONObject(schedulerObj); }
 }
