@@ -170,7 +170,7 @@ protected:
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
     HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor linkage
 
-    void _takeMeasurement(int);
+    void _takeMeasurement(taskid_t taskId);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -249,7 +249,7 @@ protected:
     HydroponicsTripleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits[3];             // Measurement units preferred
 
-    void _takeMeasurement(int);
+    void _takeMeasurement(taskid_t taskId);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -281,7 +281,7 @@ protected:
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
-    void _takeMeasurement(int);
+    void _takeMeasurement(taskid_t taskId);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };

@@ -131,7 +131,7 @@ void HydroponicsBalancer::disableIncActuators()
 {
     for (auto actIter = _incActuators.begin(); actIter != _incActuators.end(); ++actIter) {
         auto actuator = actIter->second.first;
-        if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
+        if (actuator) { actuator->disableActuator(); }
     }
 }
 
@@ -139,15 +139,18 @@ void HydroponicsBalancer::disableDecActuators()
 {
     for (auto actIter = _decActuators.begin(); actIter != _decActuators.end(); ++actIter) {
         auto actuator = actIter->second.first;
-        if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
+        if (actuator) { actuator->disableActuator(); }
     }
 }
+
+void HydroponicsBalancer::handleBalancerState()
+{ ; }
 
 void HydroponicsBalancer::attachRangeTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_rangeTrigger, F("Range trigger not linked, failure attaching"));
     if (_rangeTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsBalancer, Hydroponics_TriggerState>(this, &handleRangeTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleRangeTrigger);
         _rangeTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -156,7 +159,7 @@ void HydroponicsBalancer::detachRangeTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_rangeTrigger, F("Range trigger not linked, failure detaching"));
     if (_rangeTrigger) {
-        auto methodSlot = MethodSlot<HydroponicsBalancer, Hydroponics_TriggerState>(this, &handleRangeTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleRangeTrigger);
         _rangeTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
@@ -178,13 +181,13 @@ void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerSta
         if (measurementValue > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
             measurementValue < _targetSetpoint + halfTargetRange - FLT_EPSILON) {
             _balancerState = Hydroponics_BalancerState_Balanced;
-            disableIncActuators();
-            disableDecActuators();
         } else {
             _balancerState = measurementValue > _targetSetpoint ? Hydroponics_BalancerState_TooHigh : Hydroponics_BalancerState_TooLow;
         }
 
         if (_balancerState != balancerStateBefore) {
+            handleBalancerState();
+
             scheduleSignalFireOnce<Hydroponics_BalancerState>(_balancerSignal, _balancerState);
         }
     }
@@ -219,12 +222,12 @@ float HydroponicsLinearEdgeBalancer::getEdgeLength() const
 
 HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, unsigned int mixTimeMins, int measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing), _baseDosingMillis(baseDosingMillis), _mixTimeMins(mixTimeMins),
-      _lastDosingTime(0), _lastDosingMillis(0), _lastDosingDir(Hydroponics_BalancerState_Undefined), _nextDosingActuatorIndex(-1)
+      _lastDosingTime(0), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1)
 { ; }
 
 HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, int measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
-      _lastDosingTime(0), _lastDosingMillis(0), _lastDosingDir(Hydroponics_BalancerState_Undefined), _nextDosingActuatorIndex(-1)
+      _lastDosingTime(0), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1)
 {
     if (volumeUnits != Hydroponics_UnitsType_LiquidVolume_Gallons) {
         convertStdUnits(&reservoirVolume, &volumeUnits, Hydroponics_UnitsType_LiquidVolume_Gallons);
@@ -246,10 +249,23 @@ void HydroponicsTimedDosingBalancer::update()
         performDosing();
     }
 
-    if (_lastDosingDir == Hydroponics_BalancerState_TooLow && _nextDosingActuatorIndex >= 0 && _nextDosingActuatorIndex < _incActuators.size()) {
-        // TODO
-    } else if (_lastDosingDir == Hydroponics_BalancerState_TooHigh && _nextDosingActuatorIndex >= 0 && _nextDosingActuatorIndex < _decActuators.size()) {
-        // TODO
+    if (_dosingActIndex >= 0) {
+        typeof(_incActuators) &actuatorsDir = _dosingDir == Hydroponics_BalancerState_TooLow ? _incActuators : _decActuators;            
+
+        while (_dosingActIndex < actuatorsDir.size()) {
+            auto iter = actuatorsDir.begin();
+            for (int actIndex = 0; iter != actuatorsDir.end() && actIndex != _dosingActIndex; ++iter, ++actIndex) { ; }
+            if (iter != actuatorsDir.end() && scheduleActuatorTimedEnableOnce(iter->second.first, 1.0f, iter->second.second * _dosingMillis) != TASKMGR_INVALIDID) {
+                _dosingActIndex++;
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        if (_dosingActIndex >= actuatorsDir.size()) {
+            _dosingActIndex = -1; // Dosing completed
+        }
     }
 }
 
@@ -267,23 +283,23 @@ void HydroponicsTimedDosingBalancer::performDosing()
 {
     auto sensor = _rangeTrigger ? _rangeTrigger->getSensor() : nullptr;
     if (sensor) {
-        if (_lastDosingDir != _balancerState) {
-            _lastDosingMillis = 0;
-            _lastDosingDir = _balancerState;
-            _nextDosingActuatorIndex = -1;
+        if (_dosingDir != _balancerState) {
+            _dosingMillis = 0;
+            _dosingDir = _balancerState;
         }
 
         float dosingMillis = _baseDosingMillis;
         auto dosingValue = measurementValueAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
-        if (_lastDosingMillis) {
-            auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _lastDosingMillis;
+        if (_dosingMillis) {
+            auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosingMillis;
             dosingMillis = (_targetSetpoint - dosingValue) * dosingRatePerMs;
             dosingMillis = constrain(dosingMillis, _baseDosingMillis * HYDRUINO_DOSETIME_MIN_FRACTION,
                                                    _baseDosingMillis * HYDRUINO_DOSETIME_MAX_FRACTION);
         }
         _lastDosingValue = dosingValue;
-        _lastDosingMillis = dosingMillis;
-        _nextDosingActuatorIndex = 0;
+        _dosingMillis = dosingMillis;
+        _dosingActIndex = 0;
+
         _lastDosingTime = now();
     }
 }

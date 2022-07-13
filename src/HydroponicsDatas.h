@@ -25,6 +25,9 @@ struct HydroponicsSystemData : public HydroponicsData {
     char systemName[HYDRUINO_NAME_MAXSIZE];                     // System name
     int8_t timeZoneOffset;                                      // Timezone offset
     uint32_t pollingInterval;                                   // Sensor polling interval, in milliseconds
+    char wifiSSID[HYDRUINO_NAME_MAXSIZE];                       // WiFi SSID
+    byte wifiPassword[HYDRUINO_NAME_MAXSIZE];                   // WiFi password (xor encrypted)
+    uint32_t wifiPasswordSeed;                                  // Seed for WiFi password one-time pad
     HydroponicsSchedulerSubData scheduler;                      // Scheduler subdata
 
     HydroponicsSystemData();

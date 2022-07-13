@@ -143,7 +143,7 @@ public:
 // Actuator Object Interface
 class HydroponicsActuatorObjectInterface {
 public:
-    virtual bool enableActuator(bool override = false, float intensity = 1.0f) = 0;
+    virtual bool enableActuator(float intensity = 1.0f, bool override = false) = 0;
     virtual void disableAt(time_t disableTime) = 0;
     inline void disableAfter(TimeSpan timeSpan) { disableAt(now() + (time_t)timeSpan.totalseconds()); }
     virtual void disableActuator() = 0;

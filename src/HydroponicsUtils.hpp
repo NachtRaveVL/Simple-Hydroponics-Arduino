@@ -64,35 +64,50 @@ struct HydroponicsDLinkObject {
 
 // Signal Fire Task
 // This class holds onto the passed signal and parameter to pass it along to the signal's
-// fire method upon task execution. This effectively links Callback into TaskManagerIO.
+// fire method upon task execution.
 template<typename ParameterType, int Slots>
 class SignalFireTask : public Executable {
 public:
-    SignalFireTask(Signal<ParameterType,Slots> &signal, ParameterType &param) : _signal(&signal), _param(param) { ; }
+    taskid_t taskId;
+    SignalFireTask(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType &param) : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
     virtual ~SignalFireTask() { ; }
 
     void exec() override { _signal->fire(_param); }
 private:
+    shared_ptr<HydroponicsObject> _object;
     Signal<ParameterType, Slots> *_signal;
     ParameterType _param;
 };
 
 template<typename ParameterType, int Slots>
+taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
+{
+    SignalFireTask<ParameterType,Slots> *fireTask = object ? new SignalFireTask<ParameterType,Slots>(object, signal, fireParam) : nullptr;
+    HYDRUINO_SOFT_ASSERT(!object || fireTask, F("Failure allocating signal fire task"));
+    taskid_t retVal = fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (fireTask ? (fireTask->taskId = retVal) : retVal);
+}
+
+template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {
-    SignalFireTask<ParameterType,Slots> *fireTask = new SignalFireTask<ParameterType,Slots>(signal, fireParam);
+    SignalFireTask<ParameterType,Slots> *fireTask = new SignalFireTask<ParameterType,Slots>(nullptr, signal, fireParam);
     HYDRUINO_SOFT_ASSERT(fireTask, F("Failure allocating signal fire task"));
-    return fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    taskid_t retVal = fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (fireTask ? (fireTask->taskId = retVal) : retVal);
 }
 
 
 // Method Slot Task
+// This class holds onto a MethodSlot to call once executed.
 template<class ObjectType, typename ParameterType>
 class MethodSlotCallTask : public Executable {
 public:
     typedef void (ObjectType::*FunctPtr)(ParameterType);
+    taskid_t taskId;
 
-    MethodSlotCallTask(shared_ptr<ObjectType> object, FunctPtr method, ParameterType callParam) : _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
+    MethodSlotCallTask(shared_ptr<ObjectType> object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
+    MethodSlotCallTask(ObjectType *object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(nullptr), _methodSlot(object, method), _callParam(callParam) { ; }
     virtual ~MethodSlotCallTask() { ; }
 
     void exec() override { _methodSlot(_callParam); }
@@ -100,14 +115,45 @@ private:
     shared_ptr<ObjectType> _object;
     MethodSlot<ObjectType,ParameterType> _methodSlot;
     ParameterType _callParam;
+
+    friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
+    friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(ObjectType *object, void (ObjectType::*method)(taskid_t));
 };
 
 template<class ObjectType, typename ParameterType>
-taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, typename MethodSlotCallTask<ObjectType,ParameterType>::FunctPtr method, ParameterType callParam)
+taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam)
 {
     MethodSlotCallTask<ObjectType,ParameterType> *callTask = object ? new MethodSlotCallTask<ObjectType,ParameterType>(object, method, callParam) : nullptr;
     HYDRUINO_SOFT_ASSERT(!object || callTask, F("Failure allocating object method call task"));
-    return callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (callTask ? (callTask->taskId = retVal) : retVal);
+}
+
+template<class ObjectType, typename ParameterType>
+taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*method)(ParameterType), ParameterType callParam)
+{
+    MethodSlotCallTask<ObjectType,ParameterType> *callTask = object ? new MethodSlotCallTask<ObjectType,ParameterType>(object, method, callParam) : nullptr;
+    HYDRUINO_SOFT_ASSERT(!object || callTask, F("Failure allocating object method call task"));
+    taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (callTask ? (callTask->taskId = retVal) : retVal);
+}
+
+template<class ObjectType>
+taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t))
+{
+    MethodSlotCallTask<ObjectType,taskid_t> *callTask = object ? new MethodSlotCallTask<ObjectType,taskid_t>(object, method, (taskid_t)0) : nullptr;
+    HYDRUINO_SOFT_ASSERT(!object || callTask, F("Failure allocating object method call with task id task"));
+    taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (callTask ? (callTask->taskId = (callTask->_callParam = retVal)) : retVal);
+}
+
+template<class ObjectType>
+taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (ObjectType::*method)(taskid_t))
+{
+    MethodSlotCallTask<ObjectType,taskid_t> *callTask = object ? new MethodSlotCallTask<ObjectType,taskid_t>(object, method, (taskid_t)0) : nullptr;
+    HYDRUINO_SOFT_ASSERT(!object || callTask, F("Failure allocating object method call with task id task"));
+    taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (callTask ? (callTask->taskId = (callTask->_callParam = retVal)) : retVal);
 }
 
 

@@ -14,12 +14,12 @@ Hydroponics *Hydroponics::_activeInstance = nullptr;
 
 Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sdCardCSPin, byte controlInputPin1,
                          byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress,
-                         TwoWire& i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed)
-    : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed),
+                         TwoWire &i2cWire, uint32_t i2cSpeed, uint32_t spiSpeed, WiFiClass &wifi)
+    : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _spiSpeed(spiSpeed), _wifi(&wifi),
       _piezoBuzzerPin(piezoBuzzerPin), _eepromDeviceSize(eepromDeviceSize), _sdCardCSPin(sdCardCSPin),
       _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1},
       _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
-      _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
+      _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _wifiBegan(false),
 #ifdef HYDRUINO_USE_TASKSCHEDULER
       _controlTask(nullptr), _dataTask(nullptr), _miscTask(nullptr),
 #elif defined(HYDRUINO_USE_SCHEDULER)
@@ -517,6 +517,10 @@ void Hydroponics::commonInit()
         setSyncProvider(rtcNow);
     }
 
+    if (_systemData->wifiPassword[0] && !_systemData->wifiPasswordSeed) {
+        setWiFiConnection(getWiFiSSID(), getWiFiPassword());
+    }
+
     // TODO: tcMenu setup
 
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -809,7 +813,7 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
         }
 
         if (retVal) {
-            //scheduleSignalFireOnce<Hydroponics_ReservoirType>(_additivesSignal, customAdditiveData->reservoirType);
+            //scheduleSignalFireOnce<Hydroponics_ReservoirType>(getSharedPtr(), _additivesSignal, customAdditiveData->reservoirType);
             return true;
         }
     }
@@ -834,7 +838,7 @@ bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *cu
         }
 
         if (retVal) {
-            //scheduleSignalFireOnce<Hydroponics_ReservoirType>(_additivesSignal, customAdditiveData->reservoirType);
+            //scheduleSignalFireOnce<Hydroponics_ReservoirType>(getSharedPtr(), _additivesSignal, customAdditiveData->reservoirType);
             return true;
         }
     }
@@ -976,12 +980,25 @@ Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, boo
     return -1;
 }
 
+void Hydroponics::setControlInputPinMap(byte *pinMap)
+{
+    HYDRUINO_SOFT_ASSERT(pinMap, F("Invalid pinMap"));
+    const int ctrlInPinCount = getControlInputRibbonPinCount();
+    HYDRUINO_SOFT_ASSERT(!pinMap || (ctrlInPinCount > 0), F("Control input pinmap not used in this mode"));
+
+    if (pinMap && ctrlInPinCount) {
+        for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
+            _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
+        }
+    }
+}
+
 void Hydroponics::setSystemName(String systemName)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
-        strncpy(&_systemData->systemName[0], systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
         // TODO system name or just lcd update signal
     }
 }
@@ -1010,15 +1027,23 @@ void Hydroponics::setPollingInterval(uint32_t pollingInterval)
     #endif
 }
 
-void Hydroponics::setControlInputPinMap(byte *pinMap)
+void Hydroponics::setWiFiConnection(String ssid, String password)
 {
-    HYDRUINO_SOFT_ASSERT(pinMap, F("Invalid pinMap"));
-    const int ctrlInPinCount = getControlInputRibbonPinCount();
-    HYDRUINO_SOFT_ASSERT(!pinMap || (ctrlInPinCount > 0), F("Control input pinmap not used in this mode"));
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    if (_systemData) {
+        _systemData->_bumpRevIfNotAlreadyModded();
+        if (ssid.length()) {
+            strncpy(_systemData->wifiSSID, ssid.c_str(), HYDRUINO_NAME_MAXSIZE);
+        }
+        if (password.length()) {
+            setRandomSeed();
+            _systemData->wifiPasswordSeed = random();
+            const char *passwordStr = password.c_str();
 
-    if (pinMap && ctrlInPinCount) {
-        for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
-            _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
+            randomSeed(_systemData->wifiPasswordSeed);
+            for (int charIndex = 0; charIndex < HYDRUINO_NAME_MAXSIZE; ++charIndex) {
+                _systemData->wifiPassword[charIndex] = (charIndex < password.length() ? passwordStr[charIndex] : '\0') ^ (byte)random(256);
+            }
         }
     }
 }
@@ -1107,6 +1132,22 @@ SDClass *Hydroponics::getSDCard(bool begin)
     return _sd;
 }
 
+WiFiClass *Hydroponics::getWiFi(bool begin)
+{
+    if (_wifi && begin && !_wifiBegan) {
+        int status;
+        {   String ssid = getWiFiSSID();
+            String pass = getWiFiPassword();
+            status = pass.length() ? _wifi->begin(ssid.c_str(), pass.c_str()) : _wifi->begin(ssid.c_str());
+        }
+        _wifiBegan = (status != WL_CONNECT_FAILED);
+
+        return _wifi && _wifiBegan ? _wifi : nullptr;
+    }
+
+    return _wifi;
+}
+
 OneWire *Hydroponics::getOneWireForPin(byte pin)
 {
     auto wireIter = _oneWires.find(pin);
@@ -1121,6 +1162,39 @@ OneWire *Hydroponics::getOneWireForPin(byte pin)
         }
     }
     return nullptr;
+}
+
+void Hydroponics::dropOneWireForPin(byte pin)
+{
+    auto wireIter = _oneWires.find(pin);
+    if (wireIter != _oneWires.end()) {
+        if (wireIter->second) { delete wireIter->second; }
+        _oneWires.erase(wireIter);
+    }
+}
+
+int Hydroponics::getControlInputRibbonPinCount() const
+{
+    switch (getControlInputMode()) {
+        case Hydroponics_ControlInputMode_2x2Matrix:
+        case Hydroponics_ControlInputMode_4xButton:
+            return 4;
+        case Hydroponics_ControlInputMode_6xButton:
+            return 6;
+        case Hydroponics_ControlInputMode_RotaryEncoder:
+            return 5;
+        default:
+            return 0;
+    }
+}
+
+byte Hydroponics::getControlInputPin(int ribbonPinIndex) const
+{
+    int ctrlInPinCount = getControlInputRibbonPinCount();
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, F("Control input pinmap not used in this mode"));
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), F("Ribbon pin index out of range"));
+
+    return ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInputPinMap[ribbonPinIndex] : -1;
 }
 
 bool Hydroponics::getInOperationalMode() const
@@ -1165,28 +1239,30 @@ bool Hydroponics::getIsPollingFrameOld(uint32_t frame) const
     return _pollingFrame > frame || (frame == UINT32_MAX && _pollingFrame < UINT32_MAX);
 }
 
-int Hydroponics::getControlInputRibbonPinCount() const
+String Hydroponics::getWiFiSSID()
 {
-    switch (getControlInputMode()) {
-        case Hydroponics_ControlInputMode_2x2Matrix:
-        case Hydroponics_ControlInputMode_4xButton:
-            return 4;
-        case Hydroponics_ControlInputMode_6xButton:
-            return 6;
-        case Hydroponics_ControlInputMode_RotaryEncoder:
-            return 5;
-        default:
-            return 0;
-    }
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    return _systemData ? String(_systemData->wifiSSID) : String();
 }
 
-byte Hydroponics::getControlInputPin(int ribbonPinIndex) const
+String Hydroponics::getWiFiPassword()
 {
-    int ctrlInPinCount = getControlInputRibbonPinCount();
-    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, F("Control input pinmap not used in this mode"));
-    HYDRUINO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), F("Ribbon pin index out of range"));
+    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    if (_systemData) {
+        char wifiPassword[HYDRUINO_NAME_MAXSIZE] = {0};
 
-    return ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInputPinMap[ribbonPinIndex] : -1;
+        if (_systemData->wifiPasswordSeed) {
+            randomSeed(_systemData->wifiPasswordSeed);
+            for (int charIndex = 0; charIndex <= HYDRUINO_NAME_MAXSIZE; ++charIndex) {
+                wifiPassword[charIndex] = _systemData->wifiPassword[charIndex] ^ (byte)random(256);
+            }
+        } else {
+            strncpy(wifiPassword, (const char *)(_systemData->wifiPassword), HYDRUINO_NAME_MAXSIZE);
+        }
+
+        return String(wifiPassword);
+    }
+    return String();
 }
 
 void Hydroponics::notifyRTCTimeUpdated()

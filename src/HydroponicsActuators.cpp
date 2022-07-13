@@ -200,7 +200,7 @@ HydroponicsRelayActuator::~HydroponicsRelayActuator()
     disableActuator();
 }
 
-bool HydroponicsRelayActuator::enableActuator(bool override, float intensity)
+bool HydroponicsRelayActuator::enableActuator(float intensity, bool override)
 {
     if (isValidPin(_outputPin)) {
         bool wasEnabledBefore = _enabled;
@@ -212,7 +212,7 @@ bool HydroponicsRelayActuator::enableActuator(bool override, float intensity)
         }
 
         if (_enabled != wasEnabledBefore) {
-            scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
         }
     }
 }
@@ -229,7 +229,7 @@ void HydroponicsRelayActuator::disableActuator()
         }
 
         if (_enabled != wasEnabledBefore) {
-            scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
         }
     }
 }
@@ -467,7 +467,7 @@ void HydroponicsPumpRelayActuator::attachFlowRateSensor()
 {
     HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), F("Flow rate sensor not linked, failure attaching"));
     if (getFlowRateSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsPumpRelayActuator, const HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -476,7 +476,7 @@ void HydroponicsPumpRelayActuator::detachFlowRateSensor()
 {
     HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), F("Flow rate sensor not linked, failure detaching"));
     if (getFlowRateSensor()) {
-        auto methodSlot = MethodSlot<HydroponicsPumpRelayActuator, const HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -511,7 +511,7 @@ HydroponicsPWMActuator::HydroponicsPWMActuator(const HydroponicsPWMActuatorData 
 HydroponicsPWMActuator::~HydroponicsPWMActuator()
 { ; }
 
-bool HydroponicsPWMActuator::enableActuator(bool override, float intensity)
+bool HydroponicsPWMActuator::enableActuator(float intensity, bool override)
 {
     bool wasEnabledBefore = _enabled;
     bool canEnable = _enabled || override || getCanEnable();
@@ -523,7 +523,7 @@ bool HydroponicsPWMActuator::enableActuator(bool override, float intensity)
     }
 
     if (_enabled != wasEnabledBefore) {
-        scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+        scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
     }
     return true;
 }
@@ -539,7 +539,7 @@ void HydroponicsPWMActuator::disableActuator()
     }
 
     if (_enabled != wasEnabledBefore) {
-        scheduleSignalFireOnce<HydroponicsActuator *>(_activateSignal, this);
+        scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
     }
 }
 

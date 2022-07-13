@@ -22,6 +22,63 @@ HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
     }
 }
 
+
+ActuatorTimedEnableTask::ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
+    : taskId(TASKMGR_INVALIDID), _actuator(actuator), _enableIntensity(enableIntensity), _enableTimeMillis(enableTimeMillis)
+{ ; }
+
+ActuatorTimedEnableTask::~ActuatorTimedEnableTask()
+{ ; }
+
+void ActuatorTimedEnableTask::exec()
+{
+    if (_actuator->enableActuator(_enableIntensity)) {
+        delay(_enableTimeMillis);
+        _actuator->disableActuator();
+
+        disableRepeatingTask(taskId);
+    } else {
+        enableRepeatingTask(taskId);
+    }
+}
+
+taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
+{
+    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, enableIntensity, enableTimeMillis) : nullptr;
+    HYDRUINO_SOFT_ASSERT(!actuator || enableTask, F("Failure allocating actuator timed enable task"));
+    taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (enableTask ? (enableTask->taskId = retVal) : retVal);
+}
+
+taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, time_t enableTimeMillis)
+{
+    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, 1.0f, enableTimeMillis) : nullptr;
+    HYDRUINO_SOFT_ASSERT(!actuator || enableTask, F("Failure allocating actuator timed enable task"));
+    taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
+    return (enableTask ? (enableTask->taskId = retVal) : retVal);
+}
+
+void enableRepeatingTask(taskid_t taskId, time_t intervalMillis)
+{
+    auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
+    if (task && !task->isRepeating()) {
+        auto next = task->getNext();
+        task->handleScheduling(intervalMillis, TIME_MILLIS, true);
+        task->setNext(next);
+    }
+}
+
+void disableRepeatingTask(taskid_t taskId, time_t intervalMillis)
+{
+    auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
+    if (task && task->isRepeating()) {
+        auto next = task->getNext();
+        task->handleScheduling(intervalMillis, TIME_MILLIS, false);
+        task->setNext(next);
+    }
+}
+
+
 Hydroponics *getHydroponicsInstance()
 {
     return Hydroponics::getActiveInstance();
@@ -885,6 +942,47 @@ bool checkPinIsPWMOutput(byte pin)
 bool checkPinCanInterrupt(byte pin)
 {
     return isValidPin(digitalPinToInterrupt(pin));
+}
+
+void setRandomSeed()
+{
+    {   auto time = rtcNow();
+        if (time > 0) { randomSeed(time); return; }
+    }
+    #if NUM_ANALOG_INPUTS >= 16
+        randomSeed(((analogRead(A15) & 0xFF) << 24) | ((analogRead(A15) & 0xFF) << 16) | ((analogRead(A15) & 0xFF) << 8) | (analogRead(A15) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 15
+        randomSeed(((analogRead(A14) & 0xFF) << 24) | ((analogRead(A14) & 0xFF) << 16) | ((analogRead(A14) & 0xFF) << 8) | (analogRead(A14) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 14
+        randomSeed(((analogRead(A13) & 0xFF) << 24) | ((analogRead(A13) & 0xFF) << 16) | ((analogRead(A13) & 0xFF) << 8) | (analogRead(A13) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 13
+        randomSeed(((analogRead(A12) & 0xFF) << 24) | ((analogRead(A12) & 0xFF) << 16) | ((analogRead(A12) & 0xFF) << 8) | (analogRead(A12) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 12
+        randomSeed(((analogRead(A11) & 0xFF) << 24) | ((analogRead(A11) & 0xFF) << 16) | ((analogRead(A11) & 0xFF) << 8) | (analogRead(A11) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 11
+        randomSeed(((analogRead(A10) & 0xFF) << 24) | ((analogRead(A10) & 0xFF) << 16) | ((analogRead(A10) & 0xFF) << 8) | (analogRead(A10) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 10
+        randomSeed(((analogRead(A9) & 0xFF) << 24) | ((analogRead(A9) & 0xFF) << 16) | ((analogRead(A9) & 0xFF) << 8) | (analogRead(A9) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 9
+        randomSeed(((analogRead(A8) & 0xFF) << 24) | ((analogRead(A8) & 0xFF) << 16) | ((analogRead(A8) & 0xFF) << 8) | (analogRead(A8) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 8
+        randomSeed(((analogRead(A7) & 0xFF) << 24) | ((analogRead(A7) & 0xFF) << 16) | ((analogRead(A7) & 0xFF) << 8) | (analogRead(A7) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 7
+        randomSeed(((analogRead(A6) & 0xFF) << 24) | ((analogRead(A6) & 0xFF) << 16) | ((analogRead(A6) & 0xFF) << 8) | (analogRead(A6) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 6
+        randomSeed(((analogRead(A5) & 0xFF) << 24) | ((analogRead(A5) & 0xFF) << 16) | ((analogRead(A5) & 0xFF) << 8) | (analogRead(A5) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 5
+        randomSeed(((analogRead(A4) & 0xFF) << 24) | ((analogRead(A4) & 0xFF) << 16) | ((analogRead(A4) & 0xFF) << 8) | (analogRead(A4) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 4
+        randomSeed(((analogRead(A3) & 0xFF) << 24) | ((analogRead(A3) & 0xFF) << 16) | ((analogRead(A3) & 0xFF) << 8) | (analogRead(A3) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 3
+        randomSeed(((analogRead(A2) & 0xFF) << 24) | ((analogRead(A2) & 0xFF) << 16) | ((analogRead(A2) & 0xFF) << 8) | (analogRead(A2) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 2
+        randomSeed(((analogRead(A1) & 0xFF) << 24) | ((analogRead(A1) & 0xFF) << 16) | ((analogRead(A1) & 0xFF) << 8) | (analogRead(A1) & 0xFF)); return;
+    #elif NUM_ANALOG_INPUTS >= 1
+        randomSeed(((analogRead(A0) & 0xFF) << 24) | ((analogRead(A0) & 0xFF) << 16) | ((analogRead(A0) & 0xFF) << 8) | (analogRead(A0) & 0xFF)); return;
+    #endif
+    randomSeed(micros());
 }
 
 String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeSpecial)

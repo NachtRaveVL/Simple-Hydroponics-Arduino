@@ -257,9 +257,9 @@ bool HydroponicsBinarySensor::takeMeasurement(bool override)
         bool stateChanged = _lastMeasurement.state != newMeasurement.state;
         _lastMeasurement = newMeasurement;
 
-        scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+        scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
         if (stateChanged) {
-            scheduleSignalFireOnce<bool>(_stateSignal, _lastMeasurement.state);
+            scheduleSignalFireOnce<bool>(getSharedPtr(), _stateSignal, _lastMeasurement.state);
         }
 
         _isTakingMeasure = false;
@@ -338,7 +338,7 @@ bool HydroponicsAnalogSensor::takeMeasurement(bool override)
     if (isValidPin(_inputPin) && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
-        if (scheduleObjectMethodCallOnce<HydroponicsAnalogSensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) != TASKMGR_INVALIDID) {
+        if (scheduleObjectMethodCallWithTaskIdOnce<HydroponicsAnalogSensor>(static_pointer_cast<HydroponicsAnalogSensor>(getSharedPtr()), &_takeMeasurement) != TASKMGR_INVALIDID) {
             return true;
         } else {
             _isTakingMeasure = false;
@@ -347,7 +347,7 @@ bool HydroponicsAnalogSensor::takeMeasurement(bool override)
     return false;
 }
 
-void HydroponicsAnalogSensor::_takeMeasurement(int)
+void HydroponicsAnalogSensor::_takeMeasurement(taskid_t taskId)
 {
     if (_isTakingMeasure && isValidPin(_inputPin)) {
         if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
@@ -388,12 +388,13 @@ void HydroponicsAnalogSensor::_takeMeasurement(int)
             convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
 
             _lastMeasurement = newMeasurement;
-            scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+            scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
 
             getHydroponicsInstance()->returnPinLock(_inputPin);
             _isTakingMeasure = false;
-        } else if (scheduleObjectMethodCallOnce<HydroponicsAnalogSensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) == TASKMGR_INVALIDID) {
-            _isTakingMeasure = false;
+            disableRepeatingTask(taskId);
+        } else {
+            enableRepeatingTask(taskId);
         }
     }
 }
@@ -646,7 +647,7 @@ bool HydroponicsDHTTempHumiditySensor::takeMeasurement(bool override)
     if (getHydroponicsInstance() && _dht && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
-        if (scheduleObjectMethodCallOnce<HydroponicsDHTTempHumiditySensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) != TASKMGR_INVALIDID) {
+        if (scheduleObjectMethodCallWithTaskIdOnce<HydroponicsDHTTempHumiditySensor>(static_pointer_cast<HydroponicsDHTTempHumiditySensor>(getSharedPtr()), &_takeMeasurement) != TASKMGR_INVALIDID) {
             return true;
         } else {
             _isTakingMeasure = false;
@@ -655,7 +656,7 @@ bool HydroponicsDHTTempHumiditySensor::takeMeasurement(bool override)
     return false;
 }
 
-void HydroponicsDHTTempHumiditySensor::_takeMeasurement(int)
+void HydroponicsDHTTempHumiditySensor::_takeMeasurement(taskid_t taskId)
 {
     if (_isTakingMeasure && _dht) {
         if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
@@ -684,12 +685,13 @@ void HydroponicsDHTTempHumiditySensor::_takeMeasurement(int)
             }
 
             _lastMeasurement = newMeasurement;
-            scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+            scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
 
             getHydroponicsInstance()->returnPinLock(_inputPin);
             _isTakingMeasure = false;
-        } else if (scheduleObjectMethodCallOnce<HydroponicsDHTTempHumiditySensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) == TASKMGR_INVALIDID) {
-            _isTakingMeasure = false;
+            disableRepeatingTask(taskId);
+        } else {
+            enableRepeatingTask(taskId);
         }
     }
 }
@@ -800,7 +802,7 @@ bool HydroponicsDSTemperatureSensor::takeMeasurement(bool override)
     if (_dt && _wirePosIndex >= 0 && (override || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
-        if (scheduleObjectMethodCallOnce<HydroponicsDSTemperatureSensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) != TASKMGR_INVALIDID) {
+        if (scheduleObjectMethodCallWithTaskIdOnce<HydroponicsDSTemperatureSensor>(static_pointer_cast<HydroponicsDSTemperatureSensor>(getSharedPtr()), &_takeMeasurement) != TASKMGR_INVALIDID) {
             return true;
         } else {
             _isTakingMeasure = false;
@@ -809,7 +811,7 @@ bool HydroponicsDSTemperatureSensor::takeMeasurement(bool override)
     return false;
 }
 
-void HydroponicsDSTemperatureSensor::_takeMeasurement(int)
+void HydroponicsDSTemperatureSensor::_takeMeasurement(taskid_t taskId)
 {
     if (_isTakingMeasure && _dt) {
         if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
@@ -835,7 +837,7 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(int)
                     convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
 
                     _lastMeasurement = newMeasurement;
-                    scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+                    scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
                 }
             } else {
                 HYDRUINO_SOFT_ASSERT(false, F("Measurement failed, device disconnected"));
@@ -843,8 +845,9 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(int)
 
             getHydroponicsInstance()->returnPinLock(_inputPin);
             _isTakingMeasure = false;
-        } else if (scheduleObjectMethodCallOnce<HydroponicsDSTemperatureSensor,int>(getHydroponicsInstance()->objectById(_id), &_takeMeasurement, 0) == TASKMGR_INVALIDID) {
-            _isTakingMeasure = false;
+            disableRepeatingTask(taskId);
+        } else {
+            enableRepeatingTask(taskId);
         }
     }
 }
@@ -921,7 +924,7 @@ bool HydroponicsTMPMoistureSensor::takeMeasurement(bool override)
         //convertStdUnits(&newMeasurement.value, &newMeasurement.units, unitsOut);
 
         //_lastMeasurement = newMeasurement;
-        scheduleSignalFireOnce<const HydroponicsMeasurement *>(_measureSignal, &_lastMeasurement);
+        scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
 
         _isTakingMeasure = false;
         return true;

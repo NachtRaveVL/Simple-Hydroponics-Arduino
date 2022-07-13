@@ -45,7 +45,7 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool enableActuator(bool override = false, float intensity = 1.0f) = 0;
+    virtual bool enableActuator(float intensity = 1.0f, bool override = false) = 0;
     virtual void disableAt(time_t disableTime) override;
     virtual void disableActuator() = 0;
     virtual bool getCanEnable() override;
@@ -91,7 +91,7 @@ public:
     HydroponicsRelayActuator(const HydroponicsRelayActuatorData *dataIn);
     virtual ~HydroponicsRelayActuator();
 
-    virtual bool enableActuator(bool override = false, float intensity = 1.0f) override;
+    virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
     virtual void disableActuator() override;
     virtual bool getIsEnabled(float tolerance = 0.5) const override;
 
@@ -177,7 +177,7 @@ public:
     HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn);
     virtual ~HydroponicsPWMActuator();
 
-    virtual bool enableActuator(bool override = false, float intensity = 1.0f) override;
+    virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
     virtual void disableActuator() override;
     virtual bool getIsEnabled(float tolerance = 0.5) const override;
 
