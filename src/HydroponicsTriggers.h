@@ -29,8 +29,12 @@ public:
     inline bool isMeasureRangeType() const { return type == MeasureRange; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
-    HydroponicsTrigger(HydroponicsIdentity sensorId, int measurementRow = 0, int type = Unknown);
-    HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, int measurementRow = 0, int type = Unknown);
+    HydroponicsTrigger(HydroponicsIdentity sensorId,
+                       int measurementRow = 0,
+                       int type = Unknown);
+    HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor,
+                       int measurementRow = 0,
+                       int type = Unknown);
     HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn);
     virtual ~HydroponicsTrigger();
 
@@ -73,8 +77,16 @@ protected:
 // set an additive value that a measurement must go past in order to detrigger.
 class HydroponicsMeasurementValueTrigger : public HydroponicsTrigger {
 public:
-    HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float triggerTolerance, bool triggerBelow = true, float detriggerTolerance = 0, int measurementRow = 0);
-    HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float triggerTolerance, bool triggerBelow = true, float detriggerTolerance = 0, int measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId,
+                                       float triggerTolerance,
+                                       bool triggerBelow = true,
+                                       float detriggerTolerance = 0,
+                                       int measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor,
+                                       float triggerTolerance,
+                                       bool triggerBelow = true,
+                                       float detriggerTolerance = 0,
+                                       int measurementRow = 0);
     HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementValueTrigger();
 
@@ -107,8 +119,18 @@ protected:
 // that a measurement must go past in order to detrigger.
 class HydroponicsMeasurementRangeTrigger : public HydroponicsTrigger {
 public:
-    HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside = true, float detriggerTolerance = 0, int measurementRow = 0);
-    HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside = true, float detriggerTolerance = 0, int measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId,
+                                       float toleranceLow,
+                                       float toleranceHigh,
+                                       bool triggerOutside = true,
+                                       float detriggerTolerance = 0,
+                                       int measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor,
+                                       float toleranceLow,
+                                       float toleranceHigh,
+                                       bool triggerOutside = true,
+                                       float detriggerTolerance = 0,
+                                       int measurementRow = 0);
     HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementRangeTrigger();
 

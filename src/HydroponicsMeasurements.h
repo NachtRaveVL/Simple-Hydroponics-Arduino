@@ -40,8 +40,11 @@ struct HydroponicsMeasurement {
     uint32_t frame;                                             // Polling frame #
 
     HydroponicsMeasurement();
-    HydroponicsMeasurement(int type, time_t timestamp = 0);
-    HydroponicsMeasurement(int type, time_t timestamp, uint32_t frame);
+    HydroponicsMeasurement(int type,
+                           time_t timestamp = 0);
+    HydroponicsMeasurement(int type,
+                           time_t timestamp,
+                           uint32_t frame);
     HydroponicsMeasurement(const HydroponicsMeasurementData *dataIn);
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
@@ -56,10 +59,13 @@ struct HydroponicsSingleMeasurement : public HydroponicsMeasurement {
     Hydroponics_UnitsType units;                                // Units of value
 
     HydroponicsSingleMeasurement();
-    HydroponicsSingleMeasurement(float value, Hydroponics_UnitsType units,
+    HydroponicsSingleMeasurement(float value,
+                                 Hydroponics_UnitsType units,
                                  time_t timestamp);
-    HydroponicsSingleMeasurement(float value, Hydroponics_UnitsType units,
-                                 time_t timestamp, uint32_t frame);
+    HydroponicsSingleMeasurement(float value,
+                                 Hydroponics_UnitsType units,
+                                 time_t timestamp,
+                                 uint32_t frame);
     HydroponicsSingleMeasurement(const HydroponicsMeasurementData *dataIn);
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
@@ -73,7 +79,8 @@ struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
     HydroponicsBinaryMeasurement(bool state,
                                  time_t timestamp);
     HydroponicsBinaryMeasurement(bool state,
-                                 time_t timestamp, uint32_t frame);
+                                 time_t timestamp,
+                                 uint32_t frame);
     HydroponicsBinaryMeasurement(const HydroponicsMeasurementData *dataIn);
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
@@ -87,12 +94,17 @@ struct HydroponicsDoubleMeasurement : public HydroponicsMeasurement {
     Hydroponics_UnitsType units[2];                             // Units of values
 
     HydroponicsDoubleMeasurement();
-    HydroponicsDoubleMeasurement(float value1, Hydroponics_UnitsType units1, 
-                                 float value2, Hydroponics_UnitsType units2, 
+    HydroponicsDoubleMeasurement(float value1,
+                                 Hydroponics_UnitsType units1, 
+                                 float value2,
+                                 Hydroponics_UnitsType units2, 
                                  time_t timestamp);
-    HydroponicsDoubleMeasurement(float value1, Hydroponics_UnitsType units1, 
-                                 float value2, Hydroponics_UnitsType units2, 
-                                 time_t timestamp, uint32_t frame);
+    HydroponicsDoubleMeasurement(float value1,
+                                 Hydroponics_UnitsType units1, 
+                                 float value2,
+                                 Hydroponics_UnitsType units2, 
+                                 time_t timestamp,
+                                 uint32_t frame);
     HydroponicsDoubleMeasurement(const HydroponicsMeasurementData *dataIn);
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
@@ -106,14 +118,21 @@ struct HydroponicsTripleMeasurement : public HydroponicsMeasurement {
     Hydroponics_UnitsType units[3];                             // Units of values
 
     HydroponicsTripleMeasurement();
-    HydroponicsTripleMeasurement(float value1, Hydroponics_UnitsType units1, 
-                                 float value2, Hydroponics_UnitsType units2, 
-                                 float value3, Hydroponics_UnitsType units3,
+    HydroponicsTripleMeasurement(float value1,
+                                 Hydroponics_UnitsType units1, 
+                                 float value2,
+                                 Hydroponics_UnitsType units2, 
+                                 float value3,
+                                 Hydroponics_UnitsType units3,
                                  time_t timestamp);
-    HydroponicsTripleMeasurement(float value1, Hydroponics_UnitsType units1, 
-                                 float value2, Hydroponics_UnitsType units2, 
-                                 float value3, Hydroponics_UnitsType units3,
-                                 time_t timestamp, uint32_t frame);
+    HydroponicsTripleMeasurement(float value1,
+                                 Hydroponics_UnitsType units1, 
+                                 float value2,
+                                 Hydroponics_UnitsType units2, 
+                                 float value3,
+                                 Hydroponics_UnitsType units3,
+                                 time_t timestamp,
+                                 uint32_t frame);
     HydroponicsTripleMeasurement(const HydroponicsMeasurementData *dataIn);
 
     void saveToData(HydroponicsMeasurementData *dataOut) const;
