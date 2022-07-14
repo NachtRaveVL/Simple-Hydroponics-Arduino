@@ -1320,7 +1320,6 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addGrowLightsRelay(byte output
             outputPin
         ));
         if (registerObject(actuator)) { return actuator; }
-        else { actuator = nullptr; }
     }
 
     return nullptr;
@@ -1340,7 +1339,6 @@ shared_ptr<HydroponicsPumpRelayActuator> Hydroponics::addWaterPumpRelay(byte out
             outputPin
         ));
         if (registerObject(actuator)) { return actuator; }
-        else { actuator = nullptr; }
     }
 
     return nullptr;
@@ -1360,7 +1358,6 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addWaterHeaterRelay(byte outpu
             outputPin
         ));
         if (registerObject(actuator)) { return actuator; }
-        else { actuator = nullptr; }
     }
 
     return nullptr;
@@ -1380,7 +1377,6 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addWaterAeratorRelay(byte outp
             outputPin
         ));
         if (registerObject(actuator)) { return actuator; }
-        else { actuator = nullptr; }
     }
 
     return nullptr;
@@ -1400,7 +1396,6 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addFanExhaustRelay(byte output
             outputPin
         ));
         if (registerObject(actuator)) { return actuator; }
-        else { actuator = nullptr; }
     }
 
     return nullptr;
@@ -1420,7 +1415,6 @@ shared_ptr<HydroponicsPWMActuator> Hydroponics::addFanExhaustPWM(byte outputPin,
             outputPin, outputBitRes
         ));
         if (registerObject(actuator)) { return actuator; }
-        else { actuator = nullptr; }
     }
 
     return nullptr;
@@ -1440,7 +1434,6 @@ shared_ptr<HydroponicsPumpRelayActuator> Hydroponics::addPeristalticPumpRelay(by
             outputPin
         ));
         if (registerObject(actuator)) { return actuator; }
-        else { actuator = nullptr; }
     }
 
     return nullptr;
@@ -1460,7 +1453,6 @@ shared_ptr<HydroponicsBinarySensor> Hydroponics::addLevelIndicator(byte inputPin
             inputPin
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1480,7 +1472,6 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogCO2Sensor(byte inputPi
             inputPin, inputBitRes, true
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1500,7 +1491,6 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogPhMeter(byte inputPin,
             inputPin, inputBitRes
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1520,7 +1510,6 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogTemperatureSensor(byte
             inputPin, inputBitRes
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1548,7 +1537,7 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogTDSElectrode(byte inpu
             }
 
             return sensor;
-        } else { sensor = nullptr; }
+        }
     }
 
     return nullptr;
@@ -1568,7 +1557,6 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addPWMPumpFlowSensor(byte input
             inputPin, inputBitRes
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1588,7 +1576,6 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogWaterHeightMeter(byte 
             inputPin, inputBitRes
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1608,7 +1595,6 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addUltrasonicDistanceSensor(byt
             inputPin, inputBitRes, true
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1628,7 +1614,6 @@ shared_ptr<HydroponicsDHTTempHumiditySensor> Hydroponics::addDHTTempHumiditySens
             dhtType
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1650,7 +1635,7 @@ shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(b
             if (isValidPin(pullupPin)) { sensor->setPullupPin(pullupPin); }
 
             return sensor;
-        } else { sensor = nullptr; }
+        }
     }
 
     return nullptr;
@@ -1669,7 +1654,6 @@ shared_ptr<HydroponicsTMPMoistureSensor> Hydroponics::addTMPMoistureSensor(byte 
             inputPin, inputBitRes
         ));
         if (registerObject(sensor)) { return sensor; }
-        else { sensor = nullptr; }
     }
 
     return nullptr;
@@ -1696,7 +1680,6 @@ shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedCrop(Hydroponics_CropTy
             TimeSpan(0,0,minsOff,0)
         ));
         if (registerObject(crop)) { return crop; }
-        else { crop = nullptr; }
     }
 
     return nullptr;
@@ -1707,9 +1690,10 @@ shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedPerennialCrop(Hydroponi
                                                                        DateTime lastHarvestDate,
                                                                        byte minsOn, byte minsOff)
 {
-    HydroponicsCropsLibData cropData(cropType);
-    time_t sowDate = lastHarvestDate.unixtime() - (cropData.totalGrowWeeks * SECS_PER_WEEK);
+    auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
+    time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
     auto crop = addTimerFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate), minsOn, minsOff);
+    getCropsLibraryInstance()->returnCropsData(cropData);
     return crop;
 }
 
@@ -1731,7 +1715,6 @@ shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedCrop(Hydroponics_
             sowDate
         ));
         if (registerObject(crop)) { return crop; }
-        else { crop = nullptr; }
     }
 
     return nullptr;
@@ -1741,9 +1724,10 @@ shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedPerennialCrop(Hyd
                                                                              Hydroponics_SubstrateType substrateType,
                                                                              DateTime lastHarvestDate)
 {
-    HydroponicsCropsLibData cropData(cropType);
-    time_t sowDate = lastHarvestDate.unixtime() - (cropData.totalGrowWeeks * SECS_PER_WEEK);
+    auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
+    time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
     auto crop = addAdaptiveFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate));
+    getCropsLibraryInstance()->returnCropsData(cropData);
     return crop;
 }
 
@@ -1761,7 +1745,6 @@ shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics
             maxVolume
         ));
         if (registerObject(reservoir)) { return reservoir; }
-        else { reservoir = nullptr; }
     }
 
     return nullptr;
@@ -1782,7 +1765,6 @@ shared_ptr<HydroponicsFeedReservoir> Hydroponics::addFeedWaterReservoir(float ma
             lastPruningDate
         ));
         if (registerObject(reservoir)) { return reservoir; }
-        else { reservoir = nullptr; }
     }
 
     return nullptr;
@@ -1800,7 +1782,6 @@ shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addDrainagePipe()
             false
         ));
         if (registerObject(reservoir)) { return reservoir; }
-        else { reservoir = nullptr; }
     }
 
     return nullptr;
@@ -1818,7 +1799,6 @@ shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addFreshWaterMain()
             true
         ));
         if (registerObject(reservoir)) { return reservoir; }
-        else { reservoir = nullptr; }
     }
 
     return nullptr;
@@ -1838,7 +1818,6 @@ shared_ptr<HydroponicsSimpleRail> Hydroponics::addSimplePowerRail(Hydroponics_Ra
             maxActiveAtOnce
         ));
         if (registerObject(rail)) { return rail; }
-        else { rail = nullptr; }
     }
 
     return nullptr;
@@ -1858,7 +1837,6 @@ shared_ptr<HydroponicsRegulatedRail> Hydroponics::addRegulatedPowerRail(Hydropon
             maxPower
         ));
         if (registerObject(rail)) { return rail; }
-        else { rail = nullptr; }
     }
 
     return nullptr;
