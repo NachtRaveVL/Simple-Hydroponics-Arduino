@@ -10,6 +10,12 @@ time_t rtcNow() {
     return _rtcSyncProvider ? _rtcSyncProvider->now().unixtime() : 0;
 }
 
+void handleInterrupt(pintype_t pin)
+{
+    auto hydroponics = getHydroponicsInstance();
+    if (hydroponics) { hydroponics->handleInterrupt(pin); }
+}
+
 Hydroponics *Hydroponics::_activeInstance = nullptr;
 
 Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sdCardCSPin, byte controlInputPin1,
@@ -36,6 +42,7 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sd
             _ctrlInputPinMap[pinIndex] = _ctrlInputPin1 + pinIndex;
         }
     }
+    taskManager.setInterruptCallback(::handleInterrupt);
 }
 
 Hydroponics::~Hydroponics()
@@ -1279,6 +1286,19 @@ void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
     _scheduler.setNeedsScheduling();
+}
+
+void Hydroponics::handleInterrupt(pintype_t pin)
+{
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        if (iter->second && iter->second->isSensorType()) {
+            auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+            if (sensor && sensor->getInputPin() == pin && sensor->isBinaryClass()) {
+                auto binarySensor = static_pointer_cast<HydroponicsBinarySensor>(sensor);
+                if (binarySensor) { binarySensor->notifyISRTriggered(); }
+            }
+        }
+    }
 }
 
 void Hydroponics::checkFreeMemory()

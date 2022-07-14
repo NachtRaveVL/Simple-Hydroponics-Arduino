@@ -12,6 +12,10 @@ template<typename ParameterType, int Slots> class SignalFireTask;
 
 #include "Hydroponics.h"
 #include "HydroponicsObject.h"
+#include "BasicInterruptAbstraction.h"
+
+extern BasicArduinoInterruptAbstraction interruptImpl; // Standard interrupt abstraction
+
 
 // Simple class for describing an analog bit resolution.
 // This class is mainly used to calculate analog pin range boundaries. If override flag
@@ -156,6 +160,9 @@ extern int freeMemory();
 
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
+
+// This will handle interrupts for task manager.
+extern void handleInterrupt(pintype_t pin);
 
 #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 

@@ -479,6 +479,9 @@ protected:
 
     shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
 
+    void handleInterrupt(pintype_t pin);
+    friend void ::handleInterrupt(pintype_t pin);
+
     void checkFreeMemory();
     //void forwardPublishData(paramsTODO);
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT

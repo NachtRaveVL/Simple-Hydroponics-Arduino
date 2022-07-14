@@ -222,7 +222,7 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
                                                  bool activeLow,
                                                  int classType)
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType),
-      _activeLow(activeLow)
+      _activeLow(activeLow), _usingISR(false)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
     if (isValidPin(_inputPin)) {
@@ -231,12 +231,13 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
 }
 
 HydroponicsBinarySensor::HydroponicsBinarySensor(const HydroponicsBinarySensorData *dataIn)
-    : HydroponicsSensor(dataIn), _activeLow(dataIn->activeLow)
+    : HydroponicsSensor(dataIn), _activeLow(dataIn->activeLow), _usingISR(false)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), F("Invalid input pin"));
     if (isValidPin(_inputPin)) {
         pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
     }
+    if (dataIn->usingISR) { tryRegisterAsISR(); }
 }
 
 HydroponicsBinarySensor::~HydroponicsBinarySensor()
@@ -281,6 +282,15 @@ Hydroponics_UnitsType HydroponicsBinarySensor::getMeasurementUnits(int measureme
     return Hydroponics_UnitsType_Raw_0_1;
 }
 
+bool HydroponicsBinarySensor::tryRegisterAsISR()
+{
+    if (!_usingISR) {
+        taskManager.addInterrupt(&interruptImpl, _inputPin, CHANGE);
+        _usingISR = true;
+    }
+    return _usingISR;
+}
+
 bool HydroponicsBinarySensor::getActiveLow() const
 {
     return _activeLow;
@@ -291,11 +301,17 @@ Signal<bool> &HydroponicsBinarySensor::getStateSignal()
     return _stateSignal;
 }
 
+void HydroponicsBinarySensor::notifyISRTriggered()
+{
+    takeMeasurement(true);
+}
+
 void HydroponicsBinarySensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsSensor::saveToData(dataOut);
 
     ((HydroponicsBinarySensorData *)dataOut)->activeLow = _activeLow;
+    ((HydroponicsBinarySensorData *)dataOut)->usingISR = _usingISR;
 }
 
 
@@ -1009,7 +1025,7 @@ void HydroponicsSensorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsBinarySensorData::HydroponicsBinarySensorData()
-    : HydroponicsSensorData(), activeLow(true)
+    : HydroponicsSensorData(), activeLow(true), usingISR(false)
 {
     _size = sizeof(*this);
 }
@@ -1018,7 +1034,8 @@ void HydroponicsBinarySensorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsSensorData::toJSONObject(objectOut);
 
-    objectOut[F("activeLow")] = activeLow;
+    if (!activeLow) { objectOut[F("activeLow")] = activeLow; }
+    if (usingISR) { objectOut[F("usingISR")] = usingISR; }
 }
 
 void HydroponicsBinarySensorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -1026,6 +1043,7 @@ void HydroponicsBinarySensorData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsSensorData::fromJSONObject(objectIn);
 
     activeLow = objectIn[F("activeLow")] | activeLow;
+    usingISR = objectIn[F("usingISR")] | usingISR;
 }
 
 HydroponicsAnalogSensorData::HydroponicsAnalogSensorData()
