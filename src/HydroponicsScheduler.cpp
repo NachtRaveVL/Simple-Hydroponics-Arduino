@@ -77,14 +77,14 @@ void HydroponicsScheduler::setupPHBalancer(HydroponicsReservoir *reservoir, Hydr
 
             if (phUpPumps.size()) {
                 for (auto pumpIter = phUpPumps.begin(); pumpIter != phUpPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { incActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
                 }
             } else if (waterPumps.size()) {
                 phUpPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_WaterPump);
 
                 for (auto pumpIter = phUpPumps.begin(); pumpIter != phUpPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { incActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
                 }
             }
@@ -99,14 +99,14 @@ void HydroponicsScheduler::setupPHBalancer(HydroponicsReservoir *reservoir, Hydr
 
             if (phDownPumps.size()) {
                 for (auto pumpIter = phDownPumps.begin(); pumpIter != phDownPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
                 }
             } else if (waterPumps.size()) {
                 phDownPumps = linksFilterActuatorsByType(waterPumps, Hydroponics_ActuatorType_WaterPump);
 
                 for (auto pumpIter = phDownPumps.begin(); pumpIter != phDownPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
                 }
             }
@@ -124,7 +124,7 @@ void HydroponicsScheduler::setupTDSBalancer(HydroponicsReservoir *reservoir, Hyd
             auto nutrientPumps = linksFilterPumpActuatorsByInputReservoirType(pumps, Hydroponics_ReservoirType_NutrientPremix);
 
             for (auto pumpIter = nutrientPumps.begin(); pumpIter != nutrientPumps.end(); ++pumpIter) {
-                auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                 float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_NutrientPremix);
                 if (pump && dosingRate > FLT_EPSILON) { incActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
             }
@@ -136,7 +136,7 @@ void HydroponicsScheduler::setupTDSBalancer(HydroponicsReservoir *reservoir, Hyd
                     nutrientPumps = linksFilterPumpActuatorsByInputReservoirType(pumps, reservoirType);
 
                     for (auto pumpIter = nutrientPumps.begin(); pumpIter != nutrientPumps.end(); ++pumpIter) {
-                        auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                        auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                         float dosingRate = getCombinedDosingRate(reservoir, reservoirType);
                         if (pump && dosingRate > FLT_EPSILON) { incActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
                     }
@@ -153,14 +153,14 @@ void HydroponicsScheduler::setupTDSBalancer(HydroponicsReservoir *reservoir, Hyd
 
             if (dilutionPumps.size()) {
                 for (auto pumpIter = dilutionPumps.begin(); pumpIter != dilutionPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
                 }
             } else if (pumps.size()) {
                 dilutionPumps = linksFilterActuatorsByType(pumps, Hydroponics_ActuatorType_WaterPump);
 
                 for (auto pumpIter = dilutionPumps.begin(); pumpIter != dilutionPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { decActuators.insert(pumpIter->first, arx::make_pair(pump, dosingRate)); }
                 }
             }
@@ -177,7 +177,7 @@ void HydroponicsScheduler::setupTempBalancer(HydroponicsReservoir *reservoir, Hy
             auto heaters = linksFilterActuatorsByType(reservoir->getLinkages(), Hydroponics_ActuatorType_WaterHeater);
 
             for (auto heaterIter = heaters.begin(); heaterIter != heaters.end(); ++heaterIter) {
-                auto heater = static_pointer_cast<HydroponicsActuator>(heaterIter->second->getSharedPtr());
+                auto heater = getSharedPtr<HydroponicsActuator>(heaterIter->second);
                 if (heater) { incActuators.insert(heaterIter->first, arx::make_pair(heater, 1.0f)); }
             }
 
@@ -223,9 +223,9 @@ void HydroponicsScheduler::setBaseFeedMultiplier(float baseFeedMultiplier)
 void HydroponicsScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, F("Scheduler data not yet initialized"));
-    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX), F("Invalid week index"));
+    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), F("Invalid week index"));
 
-    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX) {
+    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
         if (reservoirType == Hydroponics_ReservoirType_NutrientPremix) {
             getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
             _schedulerData->weeklyDosingRates[weekIndex] = dosingRate;
@@ -274,9 +274,9 @@ void HydroponicsScheduler::setLastWeekAsFlush(HydroponicsCrop *crop)
 void HydroponicsScheduler::setFlushWeek(int weekIndex)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, F("Scheduler data not yet initialized"));
-    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX), F("Invalid week index"));
+    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), F("Invalid week index"));
 
-    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX) {
+    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
         _schedulerData->weeklyDosingRates[weekIndex] = 0;
 
         for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
@@ -387,9 +387,9 @@ float HydroponicsScheduler::getBaseFeedMultiplier() const
 float HydroponicsScheduler::getWeeklyDosingRate(int weekIndex, Hydroponics_ReservoirType reservoirType) const
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, F("Scheduler data not yet initialized"));
-    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX), F("Invalid week index"));
+    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), F("Invalid week index"));
 
-    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX) {
+    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
         if (reservoirType == Hydroponics_ReservoirType_NutrientPremix) {
             return _schedulerData->weeklyDosingRates[weekIndex];
         } else if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 && reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
@@ -416,9 +416,9 @@ float HydroponicsScheduler::getStandardDosingRate(Hydroponics_ReservoirType rese
 bool HydroponicsScheduler::getIsFlushWeek(int weekIndex)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, F("Scheduler data not yet initialized"));
-    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX), F("Invalid week index"));
+    HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), F("Invalid week index"));
 
-    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWEEKS_MAX) {
+    if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
         return isFPEqual(_schedulerData->weeklyDosingRates[weekIndex], 0.0f);
     }
     return false;
@@ -637,14 +637,14 @@ void HydroponicsFeeding::setupStaging()
 
             if (fillPumps.size()) { // Fresh water pumps
                 for (auto pumpIter = fillPumps.begin(); pumpIter != fillPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { actuatorReqs.push_back(pump); }
                 }
             } else { // Fresh water peristaltic pumps
                 fillPumps = linksFilterActuatorsByType(pumps, Hydroponics_ActuatorType_PeristalticPump);
 
                 for (auto pumpIter = fillPumps.begin(); pumpIter != fillPumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { actuatorReqs.push_back(pump); }
                 }
             }
@@ -656,7 +656,7 @@ void HydroponicsFeeding::setupStaging()
             auto aerators = linksFilterActuatorsByType(feedRes->getLinkages(), Hydroponics_ActuatorType_WaterAerator);
 
             for (auto aeratorIter = aerators.begin(); aeratorIter != aerators.end(); ++aeratorIter) {
-                auto aerator = static_pointer_cast<HydroponicsActuator>(aeratorIter->second->getSharedPtr());
+                auto aerator = getSharedPtr<HydroponicsActuator>(aeratorIter->second);
                 if (aerator) { actuatorReqs.push_back(aerator); }
             }
         } break;
@@ -668,14 +668,14 @@ void HydroponicsFeeding::setupStaging()
 
                 if (feedPumps.size()) { // Recycling feed pumps
                     for (auto pumpIter = feedPumps.begin(); pumpIter != feedPumps.end(); ++pumpIter) {
-                        auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                        auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                         if (pump) { actuatorReqs.push_back(pump); }
                     }
                 } else if (pumps.size() && getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste) { // DTW feed pumps
                     feedPumps = linksFilterPumpActuatorsByOutputReservoirType(pumps, Hydroponics_ReservoirType_DrainageWater);
 
                     for (auto pumpIter = feedPumps.begin(); pumpIter != feedPumps.end(); ++pumpIter) {
-                        auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                        auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                         if (pump) { actuatorReqs.push_back(pump); }
                     }
                 }
@@ -686,7 +686,7 @@ void HydroponicsFeeding::setupStaging()
             {   auto aerators = linksFilterActuatorsByType(feedRes->getLinkages(), Hydroponics_ActuatorType_WaterAerator);
 
                 for (auto aeratorIter = aerators.begin(); aeratorIter != aerators.end(); ++aeratorIter) {
-                    auto aerator = static_pointer_cast<HydroponicsActuator>(aeratorIter->second->getSharedPtr());
+                    auto aerator = getSharedPtr<HydroponicsActuator>(aeratorIter->second);
                     if (aerator) { actuatorReqs.push_back(aerator); }
                 }
             }
@@ -699,14 +699,14 @@ void HydroponicsFeeding::setupStaging()
 
             if (drainagePumps.size()) { // Drainage pumps
                 for (auto pumpIter = drainagePumps.begin(); pumpIter != drainagePumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { actuatorReqs.push_back(pump); }
                 }
             } else if (pumps.size()) { // Drainage peristaltic pumps
                 drainagePumps = linksFilterActuatorsByType(pumps, Hydroponics_ActuatorType_PeristalticPump);
 
                 for (auto pumpIter = drainagePumps.begin(); pumpIter != drainagePumps.end(); ++pumpIter) {
-                    auto pump = static_pointer_cast<HydroponicsActuator>(pumpIter->second->getSharedPtr());
+                    auto pump = getSharedPtr<HydroponicsActuator>(pumpIter->second);
                     if (pump) { actuatorReqs.push_back(pump); }
                 }
             }
@@ -895,14 +895,14 @@ void HydroponicsLighting::setupStaging()
         case Spray:
             auto sprayers = linksFilterActuatorsByType(feedRes->getLinkages(), Hydroponics_ActuatorType_WaterSprayer);
             for (auto sprayerIter = sprayers.begin(); sprayerIter != sprayers.end(); ++sprayerIter) {
-                auto sprayer = static_pointer_cast<HydroponicsActuator>(sprayerIter->second->getSharedPtr());
+                auto sprayer = getSharedPtr<HydroponicsActuator>(sprayerIter->second);
                 if (sprayer) { actuatorReqs.push_back(sprayer); }
             }
             break;
         case Light:
             auto lights = linksFilterActuatorsByType(feedRes->getLinkages(), Hydroponics_ActuatorType_GrowLights);
             for (auto lightIter = lights.begin(); lightIter != lights.end(); ++lightIter) {
-                auto light = static_pointer_cast<HydroponicsActuator>(lightIter->second->getSharedPtr());
+                auto light = getSharedPtr<HydroponicsActuator>(lightIter->second);
                 if (light) { actuatorReqs.push_back(light); }
             }
             break;
@@ -947,8 +947,8 @@ void HydroponicsSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     // purposeful no call to base method (ignores type)
 
     if (!isFPEqual(baseFeedMultiplier, 1.0f)) { objectOut[F("baseFeedMultiplier")] = baseFeedMultiplier; }
-    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 1.0f);
-    if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX); }
+    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX, 1.0f);
+    if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX); }
     bool hasStandardDosings = !isFPEqual(standardDosingRates[0], 1.0f) || !isFPEqual(standardDosingRates[1], 0.5f) || !isFPEqual(standardDosingRates[2], 0.5f);
     if (hasStandardDosings) { objectOut[F("standardDosingRates")] = commaStringFromArray(standardDosingRates, 3); }
     if (totalFeedingsDay > 0) { objectOut[F("totalFeedingsDay")] = totalFeedingsDay; }
@@ -962,8 +962,8 @@ void HydroponicsSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
 
     baseFeedMultiplier = objectIn[F("baseFeedMultiplier")] | baseFeedMultiplier;
     JsonVariantConst weeklyDosingRatesVar = objectIn[F("weeklyDosingRates")];
-    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX);
-    for (int weekIndex = 0; weekIndex < HYDRUINO_CROP_GROWEEKS_MAX; ++weekIndex) { 
+    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX);
+    for (int weekIndex = 0; weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX; ++weekIndex) { 
         weeklyDosingRates[weekIndex] = weeklyDosingRatesVar[weekIndex] | weeklyDosingRates[weekIndex];
     }
     JsonVariantConst standardDosingRatesVar = objectIn[F("standardDosingRates")];

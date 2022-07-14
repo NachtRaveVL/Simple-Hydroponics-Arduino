@@ -32,7 +32,7 @@
 
 // NOTE: It is recommended to use custom build flags instead of editing this file directly.
 
-// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), as well as libraries.
+// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), as well as libraries. Not recommended.
 //#define HYDRUINO_DISABLE_MULTITASKING
 
 // Uncomment or -D this define to disable usage of the TaskScheduler library, which is used by default.
@@ -40,6 +40,9 @@
 
 // Uncomment or -D this define to enable usage of the Scheduler library, iff TaskScheduler disabled, for SAM/SAMD architectures only.
 //#define HYDRUINO_ENABLE_SCHEDULER               // https://github.com/arduino-libraries/Scheduler
+
+// Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
+//#define HYDRUINO_DISABLE_GUI                    // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable debug output.
 #define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -98,7 +101,7 @@ typedef SDFileSystemClass SDClass;
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "EasyBuzzer.h"                 // Async piezo buzzer library
 #include "I2C_eeprom.h"                 // i2c EEPROM library
-#if !defined(__STM32F1__)
+#ifndef __STM32F1__
 #include "OneWire.h"                    // OneWire for DS18* probes
 #else
 #include <OneWireSTM.h>                 // STM32 version of OneWire
@@ -106,7 +109,9 @@ typedef SDFileSystemClass SDClass;
 #include "RTClib.h"                     // i2c RTC library
 #include "SimpleCollections.h"          // SimpleCollections library
 #include "TimeLib.h"                    // Time library
+#ifndef HYDRUINO_DISABLE_GUI
 #include "tcMenu.h"                     // tcMenu library
+#endif
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 using namespace std;
@@ -143,12 +148,12 @@ public:
     Hydroponics(byte piezoBuzzerPin = -1,
                 uint32_t eepromDeviceSize = 0,              // use I2C_DEVICESIZE_* defines
                 byte sdCardCSPin = -1,
-                byte controlInputPin1 = -1,                 // first pin of ribbon (can be customized later)
+                byte controlInputPin1 = -1,                 // first pin of ribbon (pins can be individually customized later)
                 byte eepromI2CAddress = B000,
                 byte rtcI2CAddress = B000,                  // only B000 can be used atm
                 byte lcdI2CAddress = B000,
                 TwoWire &i2cWire = Wire, uint32_t i2cSpeed = 400000U,
-                uint32_t spiSpeed = 4000000U,
+                SPIClass &spi = SPI, uint32_t spiSpeed = 4000000U,
                 WiFiClass &wifi = WiFi);
     ~Hydroponics();
 
@@ -373,31 +378,33 @@ public:
     void setSystemName(String systemName);                          // Sets display name of system (HYDRUINO_NAME_MAXSIZE size limit)
     void setTimeZoneOffset(int8_t timeZoneOffset);                  // Sets system time zone offset from UTC
     void setPollingInterval(uint32_t pollingInterval);              // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
-    void setWiFiConnection(String ssid, String password);           // Sets WiFi connection's SSID and password
+    void setWiFiConnection(String ssid, String password);           // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
 
     // Accessors.
 
-    static Hydroponics *getActiveInstance();                        // Currently active Hydroponics instance (stack-owned)
-    uint32_t getI2CSpeed() const;                                   // i2c clock speed (Hz, default: 400kHz)
-    uint32_t getSPISpeed() const;                                   // SPI clock speed (Hz, default: 4MHz)
-    Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: Recycling)
-    Hydroponics_MeasurementMode getMeasurementMode() const;         // System measurement mode (default: Imperial)
-    Hydroponics_DisplayOutputMode getDisplayOutputMode() const;     // System LCD output mode (default: disabled)
-    Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
+    static Hydroponics *getActiveInstance();                        // Currently active Hydroponics instance
+    inline TwoWire *getI2C() const { return _i2cWire; }             // i2c Wire interface instance
+    inline uint32_t getI2CSpeed() const { return _i2cSpeed; }       // i2c clock speed (Hz, default: 400kHz)
+    inline SPIClass *getSPI() const { return &SPI; }                // SPI interface instance
+    inline uint32_t getSPISpeed() const { return _spiSpeed; }       // SPI clock speed (Hz, default: 4MHz)
+    int getControlInputRibbonPinCount() const;                      // Total number of pins being used for the current control input ribbon mode
+    byte getControlInputPin(int ribbonPinIndex) const;              // Control input pin mapped to ribbon pin index, or -1 (255) if not used
 
     inline EasyBuzzerClass *getPiezoBuzzer() const { return &EasyBuzzer; }; // Piezo buzzer instance
     I2C_eeprom *getEEPROM(bool begin = true);                       // EEPROM instance (lazily instantiated, nullptr return = failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);                // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);                          // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
-    WiFiClass *getWiFi(bool begin = true);                          // WiFi instance (nullptr return = failure/no device)
+    WiFiClass *getWiFi(bool begin = true);                          // WiFi instance (nullptr return = failure/no device, this method may block for a minute or more)
     OneWire *getOneWireForPin(byte pin);                            // OneWire instance for given pin (lazily instantiated)
     void dropOneWireForPin(byte pin);                               // Drops OneWire instance for given pin (if created)
 
-    int getControlInputRibbonPinCount() const;                      // Total number of pins being used for the current control input ribbon mode
-    byte getControlInputPin(int ribbonPinIndex) const;              // Control input pin mapped to ribbon pin index, or -1 (255) if not used
     bool getInOperationalMode() const;                              // Whenever the system is in operational mode (has been launched), or not
+    Hydroponics_SystemMode getSystemMode() const;                   // System type mode (default: Recycling)
+    Hydroponics_MeasurementMode getMeasurementMode() const;         // System measurement mode (default: Imperial)
+    Hydroponics_DisplayOutputMode getDisplayOutputMode() const;     // System LCD output mode (default: disabled)
+    Hydroponics_ControlInputMode getControlInputMode() const;       // System control input mode (default: disabled)
     String getSystemName() const;                                   // System display name (default: "Hydruino")
-    int8_t getTimeZoneOffset() const;                               // System time zone offset from UTC
+    int8_t getTimeZoneOffset() const;                               // System time zone offset from UTC (default: +0)
     bool getRTCBatteryFailure() const;                              // Whenever the system booted up with RTC battery failure flag set
     uint32_t getPollingInterval() const;                            // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
     uint32_t getPollingFrame() const;                               // System polling frame number for sensor frame tracking
@@ -419,10 +426,11 @@ protected:
     const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
     const byte _rtcI2CAddr;                                         // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
     const byte _lcdI2CAddr;                                         // LCD i2c address, format: {A2,A1,A0} (default: B000)
-    TwoWire *_i2cWire;                                              // Wire class instance (unowned) (default: Wire)
+    TwoWire *_i2cWire;                                              // Controller's i2c wire class instance (strong) (default: Wire)
     uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
+    SPIClass *_spi;                                                 // Controller's SPI class interface (strong) (default: SPI)
     uint32_t _spiSpeed;                                             // Controller's SPI clock speed (default: 4MHz)
-    WiFiClass *_wifi;                                               // WiFi class instance (unowned) (default: WiFi)
+    WiFiClass *_wifi;                                               // WiFi class instance (strong) (default: WiFi)
 
 #ifdef HYDRUINO_USE_TASKSCHEDULER
     Scheduler _ts;                                                  // Task scheduler

@@ -33,12 +33,23 @@ ActuatorTimedEnableTask::~ActuatorTimedEnableTask()
 void ActuatorTimedEnableTask::exec()
 {
     if (_actuator->enableActuator(_enableIntensity)) {
-        delay(_enableTimeMillis);
+        time_t startMillis = millis();
+        time_t endMillis = startMillis + _enableTimeMillis;
+        {   time_t delayMillis = max(0, _enableTimeMillis - HYDRUINO_ACTTASK_TIMED_SPINMILLIS);
+            if (delayMillis > 0) { delay(delayMillis); }
+        }
+
+        {   time_t timeMillis = millis();
+            while((endMillis >= startMillis && (timeMillis < endMillis)) ||
+                  (endMillis < startMillis && (timeMillis >= startMillis || timeMillis < endMillis))) {
+                timeMillis = millis();
+            }
+        }
         _actuator->disableActuator();
 
-        disableRepeatingTask(taskId);
+        tryDisableRepeatingTask(taskId);
     } else {
-        enableRepeatingTask(taskId);
+        tryEnableRepeatingTask(taskId);
     }
 }
 
@@ -58,7 +69,7 @@ taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuato
     return (enableTask ? (enableTask->taskId = retVal) : retVal);
 }
 
-void enableRepeatingTask(taskid_t taskId, time_t intervalMillis)
+bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis)
 {
     auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
     if (task && !task->isRepeating()) {
@@ -66,9 +77,10 @@ void enableRepeatingTask(taskid_t taskId, time_t intervalMillis)
         task->handleScheduling(intervalMillis, TIME_MILLIS, true);
         task->setNext(next);
     }
+    return task && task->isRepeating();
 }
 
-void disableRepeatingTask(taskid_t taskId, time_t intervalMillis)
+bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis)
 {
     auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
     if (task && task->isRepeating()) {
@@ -76,6 +88,7 @@ void disableRepeatingTask(taskid_t taskId, time_t intervalMillis)
         task->handleScheduling(intervalMillis, TIME_MILLIS, false);
         task->setNext(next);
     }
+    return task && !task->isRepeating();
 }
 
 
@@ -944,7 +957,7 @@ bool checkPinCanInterrupt(byte pin)
     return isValidPin(digitalPinToInterrupt(pin));
 }
 
-void setRandomSeed()
+void setupRandomSeed()
 {
     {   auto time = rtcNow();
         if (time > 0) { randomSeed(time); return; }

@@ -130,7 +130,7 @@ struct HydroponicsCropsLibData : public HydroponicsData {
 struct HydroponicsCustomAdditiveData : public HydroponicsData {
     Hydroponics_ReservoirType reservoirType;                    // Reservoir type (must be CustomAdditive*)
     char additiveName[HYDRUINO_NAME_MAXSIZE];                   // Name of additive
-    float weeklyDosingRates[HYDRUINO_CROP_GROWEEKS_MAX];        // Weekly dosing rate percentages (default: 0)
+    float weeklyDosingRates[HYDRUINO_CROP_GROWWEEKS_MAX];       // Weekly dosing rate percentages (default: 0)
 
     HydroponicsCustomAdditiveData();
     HydroponicsCustomAdditiveData(Hydroponics_ReservoirType reservoirType); // Convenience constructor, copies data from Hydroponics system then returns, good for temporary objects.

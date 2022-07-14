@@ -429,8 +429,8 @@ void HydroponicsCustomAdditiveData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[F("id")] = reservoirTypeToString(reservoirType);
     if (additiveName[0]) { objectOut[F("additiveName")] = stringFromChars(additiveName, HYDRUINO_NAME_MAXSIZE); }
-    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX, 0.0f);
-    if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX); }
+    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX, 0.0f);
+    if (hasWeeklyDosings) { objectOut[F("weeklyDosingRates")] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX); }
 }
 
 void HydroponicsCustomAdditiveData::fromJSONObject(JsonObjectConst &objectIn)
@@ -441,8 +441,8 @@ void HydroponicsCustomAdditiveData::fromJSONObject(JsonObjectConst &objectIn)
     const char *additiveNameStr = objectIn[F("additiveName")];
     if (additiveNameStr && additiveNameStr[0]) { strncpy(additiveName, additiveNameStr, HYDRUINO_NAME_MAXSIZE); }
     JsonVariantConst weeklyDosingRatesVar = objectIn[F("weeklyDosingRates")];
-    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRUINO_CROP_GROWEEKS_MAX);
-    for (int weekIndex = 0; weekIndex < HYDRUINO_CROP_GROWEEKS_MAX; ++weekIndex) { 
+    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX);
+    for (int weekIndex = 0; weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX; ++weekIndex) { 
         weeklyDosingRates[weekIndex] = weeklyDosingRatesVar[weekIndex] | weeklyDosingRates[weekIndex];
     }
 }
