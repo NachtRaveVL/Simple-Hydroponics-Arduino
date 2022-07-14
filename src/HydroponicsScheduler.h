@@ -120,7 +120,7 @@ struct HydroponicsLighting {
 // A part of HSYS system data.
 struct HydroponicsSchedulerSubData : public HydroponicsSubData {
     float baseFeedMultiplier;                               // Feed aggressiveness base TDS/EC multiplier (applies to *ALL* feeding solutions in use - default: 1)
-    float weeklyDosingRates[HYDRUINO_CROP_GROWEEKS_MAX];    // Nutrient dosing rate percentages (applies to any nutrient premixes in use - default: 1)
+    float weeklyDosingRates[HYDRUINO_CROP_GROWWEEKS_MAX];   // Nutrient dosing rate percentages (applies to any nutrient premixes in use - default: 1)
     float standardDosingRates[3];                           // Standard dosing rates for fresh water, pH up, and pH down (default: 1,1/2,1/2)
     uint8_t totalFeedingsDay;                               // Total number of feedings per day, if any (else 0 for disable - default: 0)
     uint8_t preFeedAeratorMins;                             // Minimum time to run aerators (if present) before feed pumps turn on, in minutes (default: 30)

@@ -204,9 +204,8 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool override)
 {
     if (isValidPin(_outputPin)) {
         bool wasEnabledBefore = _enabled;
-        bool canEnable = _enabled || override || getCanEnable();
 
-        if (!_enabled && canEnable) {
+        if (!_enabled && (override || getCanEnable())) {
             _enabled = true;
             digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
         }
@@ -215,6 +214,7 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool override)
             scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
         }
     }
+    return _enabled;
 }
 
 void HydroponicsRelayActuator::disableActuator()
@@ -513,19 +513,20 @@ HydroponicsPWMActuator::~HydroponicsPWMActuator()
 
 bool HydroponicsPWMActuator::enableActuator(float intensity, bool override)
 {
-    bool wasEnabledBefore = _enabled;
-    bool canEnable = _enabled || override || getCanEnable();
+    if (isValidPin(_outputPin)) {
+        bool wasEnabledBefore = _enabled;
 
-    if ((!_enabled && canEnable) || (_enabled && !isFPEqual(_pwmAmount, intensity))) {
-        _enabled = true;
-        _pwmAmount = constrain(intensity, 0.0f, 1.0f);
-        applyPWM();
-    }
+        if ((!_enabled && (override || getCanEnable())) || (_enabled && !isFPEqual(_pwmAmount, intensity))) {
+            _enabled = true;
+            _pwmAmount = constrain(intensity, 0.0f, 1.0f);
+            applyPWM();
+        }
 
-    if (_enabled != wasEnabledBefore) {
-        scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+        if (_enabled != wasEnabledBefore) {
+            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+        }
     }
-    return true;
+    return _enabled;
 }
 
 void HydroponicsPWMActuator::disableActuator()
@@ -545,7 +546,7 @@ void HydroponicsPWMActuator::disableActuator()
 
 bool HydroponicsPWMActuator::getIsEnabled(float tolerance) const
 {
-    return _enabled && _pwmAmount  >= tolerance - FLT_EPSILON;
+    return _enabled && _pwmAmount >= tolerance - FLT_EPSILON;
 }
 
 float HydroponicsPWMActuator::getPWMAmount() const
@@ -555,24 +556,25 @@ float HydroponicsPWMActuator::getPWMAmount() const
 
 int HydroponicsPWMActuator::getPWMAmount(int) const
 {
-    return _pwmResolution.inverseTransform(_pwmAmount);
+    int retVal = _pwmResolution.inverseTransform(_pwmAmount);
+    return constrain(retVal, 0, _pwmResolution.maxVal);
 }
 
 void HydroponicsPWMActuator::setPWMAmount(float amount)
 {
-    HYDRUINO_SOFT_ASSERT(amount >= 0.0f && amount <= 1.0f, F("PWM amount out of range"));
     _pwmAmount = constrain(amount, 0.0f, 1.0f);
 
     if (_enabled) {
-        if (amount > FLT_EPSILON) { applyPWM(); }
+        if (getPWMAmount(0)) { applyPWM(); }
         else { disableActuator(); }
     }
 }
 
 void HydroponicsPWMActuator::setPWMAmount(int amount)
 {
-    HYDRUINO_SOFT_ASSERT(amount >= 0 && amount <= _pwmResolution.maxVal, F("PWM amount out of range"));
+    amount = constrain(amount, 0, _pwmResolution.maxVal);
     _pwmAmount = _pwmResolution.transform(amount);
+    _pwmAmount = constrain(_pwmAmount, 0.0f, 1.0f);
 
     if (_enabled) {
         if (amount) { applyPWM(); }

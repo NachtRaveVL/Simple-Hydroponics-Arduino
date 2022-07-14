@@ -18,6 +18,10 @@ struct HydroponicsObjectData;
 // Creates object from passed object data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
 
+// Shortcut to get shared pointer from object with static pointer cast built-in
+template <class T>
+shared_ptr<T> getSharedPtr(HydroponicsObject *object) { return static_pointer_cast<T>(object->getSharedPtr()); }
+
 
 // Simple class for referencing an object in the Hydroponics system.
 // This class is mainly used to simplify object key generation, which is used when we

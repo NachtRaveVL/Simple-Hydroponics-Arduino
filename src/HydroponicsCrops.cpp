@@ -34,6 +34,7 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
     recalcGrowWeekAndPhase();
+    attachCustomCrop();
 }
 
 HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
@@ -43,10 +44,12 @@ HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
     recalcGrowWeekAndPhase();
+    attachCustomCrop();
 }
 
 HydroponicsCrop::~HydroponicsCrop()
 {
+    detachCustomCrop();
     //discardFromTaskManager(&_feedingSignal);
     if (_cropsData) { returnCropsLibData(); }
     if (_feedReservoir) { _feedReservoir->removeCrop(this); }
@@ -233,6 +236,32 @@ void HydroponicsCrop::returnCropsLibData()
 {
     if (_cropsData) {
         getCropsLibraryInstance()->returnCropsData(_cropsData); _cropsData = nullptr;
+    }
+}
+
+void HydroponicsCrop::attachCustomCrop()
+{
+    if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCropCount) {
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &handleCustomCropUpdated);
+        getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
+    }
+}
+
+void HydroponicsCrop::detachCustomCrop()
+{
+    if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCropCount) {
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &handleCustomCropUpdated);
+        getCropsLibraryInstance()->getCustomCropSignal().detach(methodSlot);
+    }
+}
+
+void HydroponicsCrop::handleCustomCropUpdated(Hydroponics_CropType cropType)
+{
+    if (getCropType() == cropType) {
+        returnCropsLibData(); // force re-checkout
+        recalcGrowWeekAndPhase();
+        auto scheduler = getSchedulerInstance();
+        if (scheduler) { scheduler->setNeedsScheduling(); }
     }
 }
 

@@ -45,6 +45,7 @@ private:
     time_t _enableTimeMillis;
 };
 
+
 // Scheduling
 
 // This will schedule an actuator to enable on the next TaskManagerIO runloop using the given intensity and enable time millis.
@@ -85,10 +86,10 @@ taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, v
 template<class ObjectType>
 taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (ObjectType::*method)(taskid_t));
 
-// Given a valid task id, makes the task repeating.
-void enableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
-// Given a valid task id, makes the task non-repeating.
-void disableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
+// Given a valid task id, tries making the task repeating. Returns true if valid task and task is repeating, false otherwise.
+bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
+// Given a valid task id, tries making the task non-repeating. Returns true if valid task and task is non-repeating, false otherwise.
+bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
 
 // Helpers & Misc
 
@@ -237,7 +238,7 @@ extern bool checkPinIsPWMOutput(byte pin);
 extern bool checkPinCanInterrupt(byte pin);
 
 // Sets random seed to an appropriate backing, in order: RTC's time, last analog pin's read (x4 to form 32-bit seed), or micros from system start.
-extern void setRandomSeed();
+extern void setupRandomSeed();
 
 // Enum & String Conversions
 

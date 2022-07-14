@@ -45,21 +45,24 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
 #define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported/user-facing position indexing starts at 1 or 0 (aka display offset)
 
-#define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
-#define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+#define HYDRUINO_ACTTASK_TIMED_SPINMILLIS   5                       // However many millis away from stop time a timed actuator task can use yield() up to before using a blocking spin-lock (used to ensure fine dosing, too high can cause system lockups)
 
 #define HYDRUINO_CROP_PH_RANGE_HALF         1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_EC_RANGE_HALF         0.5f                    // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_TEMP_RANGE_HALF       5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_NIGHT_BEGIN_HR        22                      // Hour of the day night begins (for night feeding multiplier)
 #define HYDRUINO_CROP_NIGHT_END_HR          6                       // Hour of the day night ends (for night feeding multiplier)
-#define HYDRUINO_CROP_GROWEEKS_MAX          16                      // Maximum grow weeks to support scheduling up to
-#define HYDRUINO_CROP_GROWEEKS_MIN          8                       // Minimum grow weeks to support scheduling up to
+#define HYDRUINO_CROP_GROWWEEKS_MAX          16                     // Maximum grow weeks to support scheduling up to
+#define HYDRUINO_CROP_GROWWEEKS_MIN          8                      // Minimum grow weeks to support scheduling up to
+
+#define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+#define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
-#define HYDRUINO_SENSOR_ANALOGREAD_SMPDELAY 0                       // Delay time between samples, or 0 to disable delay
+#define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
 
 #define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal on/off for scheduler to register as such
+
 #define HYDRUINO_DOSETIME_MIN_FRACTION      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
 #define HYDRUINO_DOSETIME_MAX_FRACTION      1.5f                    // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
 
@@ -151,6 +154,8 @@ enum Hydroponics_CropType {
     Hydroponics_CropType_Watermelon,                        // Watermelon crop
     Hydroponics_CropType_Zucchini,                          // Zucchini crop
 
+    // Custom crops allow customized parameters for crops to be programmed into the system.
+
     Hydroponics_CropType_CustomCrop1,                       // Custom crop 1
     Hydroponics_CropType_CustomCrop2,                       // Custom crop 2
     Hydroponics_CropType_CustomCrop3,                       // Custom crop 3
@@ -166,7 +171,7 @@ enum Hydroponics_CropType {
 };
 
 // Substrate Type
-// Common substrate types. Influences feeding scheduling and environment control.
+// Common substrate types. Influences feeding scheduling and environment control (TODO).
 enum Hydroponics_SubstrateType {
     Hydroponics_SubstrateType_ClayPebbles,                  // Expanded clay pebbles substrate
     Hydroponics_SubstrateType_CoconutCoir,                  // Coconut coir (aka coco peat) substrate
@@ -281,6 +286,8 @@ enum Hydroponics_ReservoirType {
     Hydroponics_ReservoirType_FreshWater,                   // Fresh water
     Hydroponics_ReservoirType_PhUpSolution,                 // pH-Up solution
     Hydroponics_ReservoirType_PhDownSolution,               // pH-Down solution
+
+    // Custom additives allow specialized weekly feeding schedules to be programmed into the system.
 
     Hydroponics_ReservoirType_CustomAdditive1,              // Custom additive 1 solution
     Hydroponics_ReservoirType_CustomAdditive2,              // Custom additive 2 solution
