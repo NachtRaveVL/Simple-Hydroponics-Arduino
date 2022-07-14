@@ -116,16 +116,17 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
-    // TODO reg as isr
-    //bool tryRegisterAsISR();
+    bool tryRegisterAsISR();
 
     bool getActiveLow() const;
 
     Signal<bool> &getStateSignal();
 
+    void notifyISRTriggered();
+
 protected:
     bool _activeLow;                                        // Active when low flag
-    // TODO isr reg state data
+    bool _usingISR;                                         // Using ISR flag
     HydroponicsBinaryMeasurement _lastMeasurement;          // Latest successful measurement
     Signal<bool> _stateSignal;                              // State changed signal
 
@@ -327,7 +328,7 @@ struct HydroponicsSensorData : public HydroponicsObjectData {
 // Binary Sensor Serialization Data
 struct HydroponicsBinarySensorData : public HydroponicsSensorData {
     bool activeLow;
-    //TODO: bool registerISR;
+    bool usingISR;
 
     HydroponicsBinarySensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

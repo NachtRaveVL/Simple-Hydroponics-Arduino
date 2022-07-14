@@ -6,6 +6,8 @@
 #include "Hydroponics.h"
 #include <pins_arduino.h>
 
+BasicArduinoInterruptAbstraction interruptImpl;
+
 HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
     : // TODO: Determine which other architectures have variable bit res analog pins
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
