@@ -21,7 +21,8 @@ struct HydroponicsBitResolution {
     int maxVal;                                 // Maximum value (2 ^ (# of bits))
 
     // Convenience constructor
-    HydroponicsBitResolution(byte bitRes, bool override = false);
+    HydroponicsBitResolution(byte bitRes,
+                             bool override = false);
 
     // Transforms value from raw integer (or initial) value into normalized raw (or transformed) value.
     inline float transform(int intValue) const { return constrain((float)maxVal / intValue, 0.0f, 1.0f); }
@@ -35,7 +36,9 @@ struct HydroponicsBitResolution {
 class ActuatorTimedEnableTask : public Executable {
     public:
     taskid_t taskId;
-    ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis);
+    ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator,
+                            float enableIntensity,
+                            time_t enableTimeMillis);
     virtual ~ActuatorTimedEnableTask();
 
     void exec() override;

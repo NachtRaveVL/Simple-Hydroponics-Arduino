@@ -262,6 +262,7 @@ public:
     HydroponicsDSTemperatureSensor(Hydroponics_PositionIndex sensorIndex,
                                    byte inputPin,
                                    byte inputBitRes = 9,
+                                   byte pullupPin = -1,
                                    int classType = DS1W);
     HydroponicsDSTemperatureSensor(const HydroponicsDSTemperatureSensorData *dataIn);
     virtual ~HydroponicsDSTemperatureSensor();
@@ -272,12 +273,11 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
 
-    void setPullupPin(byte pullupPin);
     byte getPullupPin() const;
 
 protected:
     DallasTemperature *_dt;                                 // DallasTemperature instance (owned)
-    byte _pullupPin;                                        // Pullup pin (if used, else -1)
+    byte _pullupPin;                                        // Pullup pin
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 

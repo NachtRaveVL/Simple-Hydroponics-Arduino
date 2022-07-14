@@ -49,7 +49,8 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     float multiplier, offset;                                   // Ax + B value transform
 
     HydroponicsCalibrationData();
-    HydroponicsCalibrationData(HydroponicsIdentity sensorId, Hydroponics_UnitsType calibUnits = Hydroponics_UnitsType_Undefined);
+    HydroponicsCalibrationData(HydroponicsIdentity sensorId,
+                               Hydroponics_UnitsType calibUnits = Hydroponics_UnitsType_Undefined);
 
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;

@@ -779,15 +779,17 @@ void HydroponicsDHTTempHumiditySensor::saveToData(HydroponicsData *dataOut)
 
 HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(Hydroponics_PositionIndex sensorIndex,
                                                                byte inputPin, byte inputBitRes,
+                                                               byte pullupPin,
                                                                int classType)
     : HydroponicsDigitalSensor(Hydroponics_SensorType_WaterTemperature, sensorIndex, inputPin, inputBitRes, true, classType),
-      _dt(new DallasTemperature()), _pullupPin(-1), _measurementUnits(defaultTemperatureUnits())
+      _dt(new DallasTemperature()), _pullupPin(pullupPin), _measurementUnits(defaultTemperatureUnits())
 {
     HYDRUINO_SOFT_ASSERT(_dt, F("DallasTemperature instance creation failure"));
 
     if (isValidPin(_inputPin) && _oneWire && _dt) {
         _dt->setOneWire(_oneWire);
-        _dt->setWaitForConversion(true); // reads will be done in their own task
+        if (isValidPin(_pullupPin)) { _dt->setPullupPin(_pullupPin); }
+        _dt->setWaitForConversion(true); // reads will be done in their own task, waits will delay and yield
         _dt->begin();
         if (_dt->getResolution() != inputBitRes) { _dt->setResolution(inputBitRes); }
         HYDRUINO_SOFT_ASSERT(_dt->getResolution() == inputBitRes, F("Resolved resolution mismatch with passed resolution"));
@@ -803,7 +805,7 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(const Hydroponics
     if (isValidPin(_inputPin) && _oneWire && _dt) {
         _dt->setOneWire(_oneWire);
         if (isValidPin(_pullupPin)) { _dt->setPullupPin(_pullupPin); }
-        _dt->setWaitForConversion(true); // reads will be done in their own task
+        _dt->setWaitForConversion(true); // reads will be done in their own task, waits will delay and yield
         _dt->begin();
         if (_dt->getResolution() != dataIn->inputBitRes) { _dt->setResolution(dataIn->inputBitRes); }
         HYDRUINO_SOFT_ASSERT(_dt->getResolution() == dataIn->inputBitRes, F("Resolved resolution mismatch with passed resolution"));
@@ -899,15 +901,6 @@ void HydroponicsDSTemperatureSensor::setMeasurementUnits(Hydroponics_UnitsType m
 Hydroponics_UnitsType HydroponicsDSTemperatureSensor::getMeasurementUnits(int measurementRow) const
 {
     return _measurementUnits;
-}
-
-void HydroponicsDSTemperatureSensor::setPullupPin(byte pullupPin)
-{
-    if (_pullupPin != pullupPin) {
-        _pullupPin = pullupPin;
-
-        if (_dt) { _dt->setPullupPin(_pullupPin); }
-    }
 }
 
 byte HydroponicsDSTemperatureSensor::getPullupPin() const

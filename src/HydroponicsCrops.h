@@ -108,11 +108,11 @@ protected:
 class HydroponicsTimedCrop : public HydroponicsCrop {
 public:
     HydroponicsTimedCrop(Hydroponics_CropType cropType,
-                          Hydroponics_PositionIndex cropIndex,
-                          Hydroponics_SubstrateType substrateType,
-                          DateTime sowDate,
-                          TimeSpan timeOn = TimeSpan(0,0,15,0), TimeSpan timeOff = TimeSpan(0,0,45,0),
-                          int classType = Timed);
+                         Hydroponics_PositionIndex cropIndex,
+                         Hydroponics_SubstrateType substrateType,
+                         DateTime sowDate,
+                         TimeSpan timeOn = TimeSpan(0,0,15,0), TimeSpan timeOff = TimeSpan(0,0,45,0),
+                         int classType = Timed);
     HydroponicsTimedCrop(const HydroponicsTimedCropData *dataIn);
     virtual ~HydroponicsTimedCrop();
 
@@ -137,10 +137,10 @@ protected:
 class HydroponicsAdaptiveCrop : public HydroponicsCrop, public HydroponicsSoilMoistureAwareInterface {
 public:
     HydroponicsAdaptiveCrop(Hydroponics_CropType cropType,
-                           Hydroponics_PositionIndex cropIndex,
-                           Hydroponics_SubstrateType substrateType,
-                           DateTime sowDate,
-                           int classType = Adaptive);
+                            Hydroponics_PositionIndex cropIndex,
+                            Hydroponics_SubstrateType substrateType,
+                            DateTime sowDate,
+                            int classType = Adaptive);
     HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropData *dataIn);
     virtual ~HydroponicsAdaptiveCrop();
 

@@ -1629,13 +1629,10 @@ shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(b
     if (inputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsDSTemperatureSensor> sensor(new HydroponicsDSTemperatureSensor(
             positionIndex,
-            inputPin, inputBitRes
+            inputPin, inputBitRes,
+            pullupPin
         ));
-        if (registerObject(sensor)) {
-            if (isValidPin(pullupPin)) { sensor->setPullupPin(pullupPin); }
-
-            return sensor;
-        }
+        if (registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;

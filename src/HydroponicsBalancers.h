@@ -21,7 +21,11 @@ public:
     inline bool isTimedDosingType() const { return type == TimedDosing; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
-    HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, int measurementRow = 0, int type = Unknown);
+    HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor,
+                        float targetSetpoint,
+                        float targetRange,
+                        int measurementRow = 0,
+                        int type = Unknown);
     virtual ~HydroponicsBalancer();
 
     virtual void setTargetSetpoint(float targetSetpoint) override;
@@ -74,7 +78,12 @@ protected:
 // TODO
 class HydroponicsLinearEdgeBalancer : public HydroponicsBalancer {
 public:
-    HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float edgeOffset = 0, float edgeLength = 0, int measurementRow = 0);
+    HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor,
+                                  float targetSetpoint,
+                                  float targetRange,
+                                  float edgeOffset = 0,
+                                  float edgeLength = 0,
+                                  int measurementRow = 0);
     virtual ~HydroponicsLinearEdgeBalancer();
 
     virtual void update() override;
@@ -91,8 +100,18 @@ protected:
 // TODO
 class HydroponicsTimedDosingBalancer : public HydroponicsBalancer {
 public:
-    HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, unsigned int mixTimeMins, int measurementRow = 0);
-    HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, int measurementRow = 0);
+    HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor,
+                                   float targetSetpoint,
+                                   float targetRange,
+                                   time_t baseDosingMillis,
+                                   unsigned int mixTimeMins,
+                                   int measurementRow = 0);
+    HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor,
+                                   float targetSetpoint,
+                                   float targetRange,
+                                   float reservoirVolume,
+                                   Hydroponics_UnitsType volumeUnits,
+                                   int measurementRow = 0);
     virtual ~HydroponicsTimedDosingBalancer();
 
     virtual void update() override;

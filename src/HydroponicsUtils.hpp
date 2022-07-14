@@ -16,13 +16,18 @@ struct HydroponicsDLinkObject {
     HydroponicsIdentity id;
     shared_ptr<T> obj;
 
-    HydroponicsDLinkObject() : id(), obj(nullptr) { ; }
+    HydroponicsDLinkObject()
+        : id(), obj(nullptr) { ; }
     template<class U>
-    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs) : id(rhs.id), obj(static_pointer_cast<T>(rhs.obj)) { ; }
-    HydroponicsDLinkObject(HydroponicsIdentity idIn) : id(idIn), obj(nullptr) { ; }
+    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs)
+        : id(rhs.id), obj(static_pointer_cast<T>(rhs.obj)) { ; }
+    HydroponicsDLinkObject(HydroponicsIdentity idIn)
+        : id(idIn), obj(nullptr) { ; }
     template<class U>
-    HydroponicsDLinkObject(shared_ptr<U> objIn) : id(objIn->getId()), obj(static_pointer_cast<T>(objIn)) { ; }
-    HydroponicsDLinkObject(const char *keyStrIn) : HydroponicsDLinkObject(HydroponicsIdentity(String(keyStrIn))) { ; }
+    HydroponicsDLinkObject(shared_ptr<U> objIn)
+        : id(objIn->getId()), obj(static_pointer_cast<T>(objIn)) { ; }
+    HydroponicsDLinkObject(const char *keyStrIn)
+        : HydroponicsDLinkObject(HydroponicsIdentity(keyStrIn)) { ; }
     ~HydroponicsDLinkObject() { ; }
 
     inline bool isId() const { return !obj; }
@@ -69,7 +74,10 @@ template<typename ParameterType, int Slots>
 class SignalFireTask : public Executable {
 public:
     taskid_t taskId;
-    SignalFireTask(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType &param) : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
+    SignalFireTask(shared_ptr<HydroponicsObject> object,
+                   Signal<ParameterType,Slots> &signal,
+                   ParameterType &param)
+        : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
     virtual ~SignalFireTask() { ; }
 
     void exec() override { _signal->fire(_param); }

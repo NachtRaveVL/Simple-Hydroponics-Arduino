@@ -73,7 +73,6 @@ struct HydroponicsIdentity {
     HydroponicsIdentity(const HydroponicsData *dataIn);
 
     // String constructor
-    HydroponicsIdentity(String name);
     HydroponicsIdentity(const char *name);
 
     // Used to update key value after modification, returning new key by convenience

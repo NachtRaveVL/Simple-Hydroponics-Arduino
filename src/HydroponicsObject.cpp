@@ -79,16 +79,12 @@ HydroponicsIdentity::HydroponicsIdentity(const HydroponicsData *dataIn)
     regenKey();
 }
 
-HydroponicsIdentity::HydroponicsIdentity(String name)
+HydroponicsIdentity::HydroponicsIdentity(const char *name)
     : type(Unknown), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyStr(name), key((Hydroponics_KeyType)-1)
 {
     // TODO: Advanced string detokenization - may not be needed, tho
     regenKey();
 }
-
-HydroponicsIdentity::HydroponicsIdentity(const char *name)
-    : HydroponicsIdentity(String(name))
-{ ; }
 
 Hydroponics_KeyType HydroponicsIdentity::regenKey()
 {
