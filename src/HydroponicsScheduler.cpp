@@ -892,20 +892,20 @@ void HydroponicsLighting::setupStaging()
     if (time >= lightEnd) { stage = (typeof(stage))((int)stage + 1); }
 
     switch(stage) {
-        case Spray:
+        case Spray: {
             auto sprayers = linksFilterActuatorsByType(feedRes->getLinkages(), Hydroponics_ActuatorType_WaterSprayer);
             for (auto sprayerIter = sprayers.begin(); sprayerIter != sprayers.end(); ++sprayerIter) {
                 auto sprayer = getSharedPtr<HydroponicsActuator>(sprayerIter->second);
                 if (sprayer) { actuatorReqs.push_back(sprayer); }
             }
-            break;
-        case Light:
+        } break;
+        case Light: {
             auto lights = linksFilterActuatorsByType(feedRes->getLinkages(), Hydroponics_ActuatorType_GrowLights);
             for (auto lightIter = lights.begin(); lightIter != lights.end(); ++lightIter) {
                 auto light = getSharedPtr<HydroponicsActuator>(lightIter->second);
                 if (light) { actuatorReqs.push_back(light); }
             }
-            break;
+        } break;
         default:
             break;
     }

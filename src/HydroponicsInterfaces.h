@@ -328,11 +328,11 @@ public:
 // Air CO2 Aware Interface
 class HydroponicsAirCO2AwareInterface {
 public:
-    virtual void setCO2Sensor(HydroponicsIdentity co2SensorId) = 0;
-    virtual void setCO2Sensor(shared_ptr<HydroponicsSensor> co2Sensor) = 0;
-    virtual shared_ptr<HydroponicsSensor> getCO2Sensor() = 0;
+    virtual void setAirCO2Sensor(HydroponicsIdentity airCO2SensorId) = 0;
+    virtual void setAirCO2Sensor(shared_ptr<HydroponicsSensor> airCO2Sensor) = 0;
+    virtual shared_ptr<HydroponicsSensor> getAirCO2Sensor() = 0;
 
-    virtual void setAirCO2(float airCO2, Hydroponics_UnitsType airCO2Units = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setAirCO2(float airCO2, Hydroponics_UnitsType airCO2Units = Hydroponics_UnitsType_Concentration_PPM) = 0;
     virtual void setAirCO2(HydroponicsSingleMeasurement airCO2) = 0;
     virtual const HydroponicsSingleMeasurement &getAirCO2() = 0;
 };

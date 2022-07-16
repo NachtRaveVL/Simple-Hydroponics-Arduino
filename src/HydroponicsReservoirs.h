@@ -146,7 +146,7 @@ protected:
 
 // Feed Water Reservoir
 // TODO
-class HydroponicsFeedReservoir : public HydroponicsFluidReservoir, public HydroponicsWaterPHAwareInterface, public HydroponicsWaterTDSAwareInterface, public HydroponicsWaterTemperatureAwareInterface {
+class HydroponicsFeedReservoir : public HydroponicsFluidReservoir, public HydroponicsWaterPHAwareInterface, public HydroponicsWaterTDSAwareInterface, public HydroponicsWaterTemperatureAwareInterface, public HydroponicsAirCO2AwareInterface {
 public:
     HydroponicsFeedReservoir(Hydroponics_PositionIndex reservoirIndex,
                              float maxVolume,
@@ -190,6 +190,14 @@ public:
     virtual void setWaterTemperature(HydroponicsSingleMeasurement waterTemperature) override;
     virtual const HydroponicsSingleMeasurement &getWaterTemperature() override;
 
+    virtual void setAirCO2Sensor(HydroponicsIdentity airCO2SensorId) override;
+    virtual void setAirCO2Sensor(shared_ptr<HydroponicsSensor> airCO2Sensor) override;
+    virtual shared_ptr<HydroponicsSensor> getAirCO2Sensor() override;
+
+    virtual void setAirCO2(float airCO2, Hydroponics_UnitsType airCO2Units = Hydroponics_UnitsType_Concentration_PPM) override;
+    virtual void setAirCO2(HydroponicsSingleMeasurement airCO2) override;
+    virtual const HydroponicsSingleMeasurement &getAirCO2() override;
+
     HydroponicsBalancer *setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);
     void setWaterPHBalancer(HydroponicsBalancer *phBalancer);
     HydroponicsBalancer *getWaterPHBalancer() const;
@@ -201,6 +209,10 @@ public:
     HydroponicsBalancer *setWaterTempBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
     void setWaterTempBalancer(HydroponicsBalancer *tempBalancer);
     HydroponicsBalancer *getWaterTempBalancer() const;
+
+    HydroponicsBalancer *setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits);
+    void setAirCO2Balancer(HydroponicsBalancer *co2Balancer);
+    HydroponicsBalancer *getAirCO2Balancer() const;
 
     Hydroponics_PositionIndex getChannelNumber() const;
 
@@ -226,15 +238,19 @@ protected:
     HydroponicsDLinkObject<HydroponicsSensor> _phSensor;    // PH sensor
     HydroponicsDLinkObject<HydroponicsSensor> _tdsSensor;   // TDS sensor
     HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor
+    HydroponicsDLinkObject<HydroponicsSensor> _co2Sensor;   // CO2 sensor
     bool _needsPHUpdate;                                    // Needs water pH update tracking flag
     bool _needsTDSUpdate;                                   // Needs water TDS update tracking flag
     bool _needsTempUpdate;                                  // Needs water temperature update tracking flag
+    bool _needsCO2Update;                                   // Needs CO2 level update tracking flag
     HydroponicsSingleMeasurement _waterPH;                  // Current PH alkalinity measure
     HydroponicsSingleMeasurement _waterTDS;                 // Current TDS concentration measure
     HydroponicsSingleMeasurement _waterTemp;                // Current water temperature measure
+    HydroponicsSingleMeasurement _co2Level;                 // Current CO2 level measure
     HydroponicsBalancer *_phBalancer;                       // PH balancer (assigned by scheduler when needed)
     HydroponicsBalancer *_tdsBalancer;                      // TDS balancer (assigned by scheduler when needed)
     HydroponicsBalancer *_tempBalancer;                     // Temperature balancer (assigned by scheduler when needed)
+    HydroponicsBalancer *_co2Balancer;                      // CO2 balancer (assigned by user if desired)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
@@ -247,6 +263,9 @@ protected:
     void attachWaterTempSensor();
     void detachWaterTempSensor();
     void handleWaterTempMeasure(const HydroponicsMeasurement *measurement);
+    void attachAirCO2Sensor();
+    void detachAirCO2Sensor();
+    void handleAirCO2Measure(const HydroponicsMeasurement *measurement);
 };
 
 
@@ -304,6 +323,7 @@ struct HydroponicsFeedReservoirData : public HydroponicsFluidReservoirData {
     char phSensorName[HYDRUINO_NAME_MAXSIZE];
     char tdsSensorName[HYDRUINO_NAME_MAXSIZE];
     char tempSensorName[HYDRUINO_NAME_MAXSIZE];
+    char co2SensorName[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsFeedReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

@@ -206,7 +206,26 @@ void HydroponicsLinearEdgeBalancer::update()
     HydroponicsBalancer::update();
     if (!_enabled || !_rangeTrigger) { return; }
 
-    // TODO
+    if (_balancerState != Hydroponics_BalancerState_Balanced && _balancerState != Hydroponics_BalancerState_Undefined) {
+        auto sensor = _rangeTrigger->getSensor();
+        if (sensor) {
+            auto measure = singleMeasurementAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+            convertStdUnits(&measure.value, &measure.units, _targetUnits);
+
+            float x = fabsf(measure.value - _targetSetpoint);
+            float val = _edgeLength > FLT_EPSILON ? mapValue<float>(x, _edgeOffset, _edgeOffset + _edgeLength, 0.0f, 1.0f)
+                                                  : (x >= _edgeOffset - FLT_EPSILON ? 1.0 : 0.0f);
+            val = constrain(val, 0.0f, 1.0f);
+
+            typeof(_incActuators) &actuatorsDir = _balancerState == Hydroponics_BalancerState_TooLow ? _incActuators : _decActuators;
+            for (auto iter = actuatorsDir.begin(); iter != actuatorsDir.end(); ++iter) {
+                auto actuator = iter->second.first;
+                if (actuator) {
+                    actuator->enableActuator(val * iter->second.second);
+                }
+            }
+        }
+    }
 }
 
 float HydroponicsLinearEdgeBalancer::getEdgeOffset() const
@@ -244,13 +263,13 @@ void HydroponicsTimedDosingBalancer::update()
     HydroponicsBalancer::update();
     if (!_enabled || !_rangeTrigger) { return; }
 
-    if (_balancerState != Hydroponics_BalancerState_Balanced &&
+    if (_balancerState != Hydroponics_BalancerState_Balanced && _balancerState != Hydroponics_BalancerState_Undefined &&
         (!_lastDosingTime || now() > _lastDosingTime + (_mixTimeMins * SECS_PER_MIN))) {
         performDosing();
     }
 
     if (_dosingActIndex >= 0) {
-        typeof(_incActuators) &actuatorsDir = _dosingDir == Hydroponics_BalancerState_TooLow ? _incActuators : _decActuators;            
+        typeof(_incActuators) &actuatorsDir = _dosingDir == Hydroponics_BalancerState_TooLow ? _incActuators : _decActuators;
 
         while (_dosingActIndex < actuatorsDir.size()) {
             auto iter = actuatorsDir.begin();

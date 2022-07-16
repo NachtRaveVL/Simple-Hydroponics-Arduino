@@ -50,10 +50,11 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_CROP_PH_RANGE_HALF         1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_EC_RANGE_HALF         0.5f                    // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_TEMP_RANGE_HALF       5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
+#define HYDRUINO_CROP_CO2_RANGE_HALF        100                     // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_NIGHT_BEGIN_HR        22                      // Hour of the day night begins (for night feeding multiplier)
 #define HYDRUINO_CROP_NIGHT_END_HR          6                       // Hour of the day night ends (for night feeding multiplier)
-#define HYDRUINO_CROP_GROWWEEKS_MAX          16                     // Maximum grow weeks to support scheduling up to
-#define HYDRUINO_CROP_GROWWEEKS_MIN          8                      // Minimum grow weeks to support scheduling up to
+#define HYDRUINO_CROP_GROWWEEKS_MAX         16                      // Maximum grow weeks to support scheduling up to
+#define HYDRUINO_CROP_GROWWEEKS_MIN         8                       // Minimum grow weeks to support scheduling up to
 
 #define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 #define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
