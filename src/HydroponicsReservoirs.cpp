@@ -462,17 +462,17 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(Hydroponics_PositionIndex res
                                                    int classType)
     : HydroponicsFluidReservoir(Hydroponics_ReservoirType_FeedWater, reservoirIndex, maxVolume, classType),
        _lastChangeDate(lastChangeDate.unixtime()), _lastPruningDate(lastPruningDate.unixtime()), _lastFeedingDate(0), _numFeedingsToday(0),
-       _tdsUnits(defaultConcentrationUnits()), _needsPHUpdate(true), _needsTDSUpdate(true), _needsTempUpdate(true),
-       _phBalancer(nullptr), _tdsBalancer(nullptr), _tempBalancer(nullptr)
+       _tdsUnits(defaultConcentrationUnits()), _needsPHUpdate(true), _needsTDSUpdate(true), _needsTempUpdate(true), _needsCO2Update(true),
+       _phBalancer(nullptr), _tdsBalancer(nullptr), _tempBalancer(nullptr), _co2Balancer(nullptr)
 { ; }
 
 HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoirData *dataIn)
-    : HydroponicsFluidReservoir(dataIn), _needsPHUpdate(true), _needsTDSUpdate(true), _needsTempUpdate(true),
+    : HydroponicsFluidReservoir(dataIn), _needsPHUpdate(true), _needsTDSUpdate(true), _needsTempUpdate(true), _needsCO2Update(true),
       _lastChangeDate(dataIn->lastChangeDate), _lastPruningDate(dataIn->lastPruningDate),
       _lastFeedingDate(dataIn->lastFeedingDate), _numFeedingsToday(dataIn->numFeedingsToday),
       _tdsUnits(dataIn->tdsUnits),
-      _phSensor(dataIn->phSensorName), _tdsSensor(dataIn->tdsSensorName), _tempSensor(dataIn->tempSensorName),
-      _phBalancer(nullptr), _tdsBalancer(nullptr), _tempBalancer(nullptr)
+      _phSensor(dataIn->phSensorName), _tdsSensor(dataIn->tdsSensorName), _tempSensor(dataIn->tempSensorName), _co2Sensor(dataIn->co2SensorName),
+      _phBalancer(nullptr), _tdsBalancer(nullptr), _tempBalancer(nullptr), _co2Balancer(nullptr)
 {
     if (_lastFeedingDate) {
         DateTime lastFeeding = DateTime((uint32_t)_lastFeedingDate);
@@ -493,9 +493,11 @@ HydroponicsFeedReservoir::~HydroponicsFeedReservoir()
     if (_phSensor) { detachPHSensor(); }
     if (_tdsSensor) { detachTDSSensor(); }
     if (_tempSensor) { detachWaterTempSensor(); }
+    if (_co2Sensor) { detachAirCO2Sensor(); }
     if (_phBalancer) { delete _phBalancer; _phBalancer = nullptr; }
     if (_tdsBalancer) { delete _tdsBalancer; _tdsBalancer = nullptr; }
     if (_tempBalancer) { delete _tempBalancer; _tempBalancer = nullptr; }
+    if (_co2Balancer) { delete _co2Balancer; _co2Balancer = nullptr; }
 }
 
 void HydroponicsFeedReservoir::update()
@@ -505,6 +507,7 @@ void HydroponicsFeedReservoir::update()
     if (_phBalancer) { _phBalancer->update(); }
     if (_tdsBalancer) { _tdsBalancer->update(); }
     if (_tempBalancer) { _tempBalancer->update(); }
+    if (_co2Balancer) { _co2Balancer->update(); }
 
     if (_needsPHUpdate && getWaterPHSensor()) {
         handlePHMeasure(_phSensor->getLatestMeasurement());
@@ -515,6 +518,9 @@ void HydroponicsFeedReservoir::update()
     if (_needsTempUpdate && getWaterTempSensor()) {
         handleWaterTempMeasure(_tempSensor->getLatestMeasurement());
     }
+    if (_needsCO2Update && getAirCO2Sensor()) {
+        handleAirCO2Measure(_co2Sensor->getLatestMeasurement());
+    }
 }
 
 void HydroponicsFeedReservoir::resolveLinks()
@@ -524,9 +530,11 @@ void HydroponicsFeedReservoir::resolveLinks()
     if (_phSensor.needsResolved()) { getWaterPHSensor(); }
     if (_tdsSensor.needsResolved()) { getWaterTDSSensor(); }
     if (_tempSensor.needsResolved()) { getWaterTempSensor(); }
+    if (_co2Sensor.needsResolved()) { getAirCO2Sensor(); }
     if (_phBalancer) { _phBalancer->resolveLinks(); }
     if (_tdsBalancer) { _tdsBalancer->resolveLinks(); }
     if (_tempBalancer) { _tempBalancer->resolveLinks(); }
+    if (_co2Balancer) { _co2Balancer->resolveLinks(); }
 }
 
 void HydroponicsFeedReservoir::handleLowMemory()
@@ -536,6 +544,7 @@ void HydroponicsFeedReservoir::handleLowMemory()
     if (_phBalancer && !_phBalancer->getIsEnabled()) { setWaterPHBalancer(nullptr); }
     if (_tdsBalancer && !_tdsBalancer->getIsEnabled()) { setWaterTDSBalancer(nullptr); }
     if (_tempBalancer && !_tempBalancer->getIsEnabled()) { setWaterTempBalancer(nullptr); }
+    if (_co2Balancer && !_co2Balancer->getIsEnabled()) { setAirCO2Balancer(nullptr); }
 }
 
 void HydroponicsFeedReservoir::setTDSUnits(Hydroponics_UnitsType tdsUnits)
@@ -720,6 +729,56 @@ const HydroponicsSingleMeasurement &HydroponicsFeedReservoir::getWaterTemperatur
     return _waterTemp;
 }
 
+void HydroponicsFeedReservoir::setAirCO2Sensor(HydroponicsIdentity airCO2SensorId)
+{
+    if (_co2Sensor != airCO2SensorId) {
+        if (_co2Sensor) { detachAirCO2Sensor(); }
+        _co2Sensor = airCO2SensorId;
+        _needsCO2Update = true;
+    }
+}
+
+void HydroponicsFeedReservoir::setAirCO2Sensor(shared_ptr<HydroponicsSensor> airCO2Sensor)
+{
+    if (_co2Sensor != airCO2Sensor) {
+        if (_co2Sensor) { detachAirCO2Sensor(); }
+        _co2Sensor = airCO2Sensor;
+        if (_co2Sensor) { attachAirCO2Sensor(); }
+        _needsCO2Update = true;
+    }
+}
+
+shared_ptr<HydroponicsSensor> HydroponicsFeedReservoir::getAirCO2Sensor()
+{
+    if (_co2Sensor.resolveIfNeeded()) { attachAirCO2Sensor(); }
+    return _co2Sensor.getObj();
+}
+
+void HydroponicsFeedReservoir::setAirCO2(float airCO2, Hydroponics_UnitsType airCO2Units)
+{
+    _co2Level.value = airCO2;
+    _co2Level.units = airCO2Units != Hydroponics_UnitsType_Undefined ? airCO2Units : Hydroponics_UnitsType_Concentration_PPM;
+    _co2Level.updateTimestamp();
+    _co2Level.updateFrame(1);
+
+    convertStdUnits(&_co2Level.value, &_co2Level.units, Hydroponics_UnitsType_Concentration_PPM);
+}
+
+void HydroponicsFeedReservoir::setAirCO2(HydroponicsSingleMeasurement airCO2)
+{
+    _co2Level = airCO2;
+
+    convertStdUnits(&_waterTemp.value, &_waterTemp.units, Hydroponics_UnitsType_Concentration_PPM);
+}
+
+const HydroponicsSingleMeasurement &HydroponicsFeedReservoir::getAirCO2()
+{
+    if (_needsCO2Update && getAirCO2Sensor()) {
+        handleAirCO2Measure(_co2Sensor->getLatestMeasurement());
+    }
+    return _co2Level;
+}
+
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits)
 {
     if (!_phBalancer && getWaterPHSensor()) {
@@ -776,7 +835,7 @@ HydroponicsBalancer *HydroponicsFeedReservoir::setWaterTempBalancer(float tempSe
 {
     if (!_tempBalancer && getWaterTempSensor()) {
         auto tempRangeQuad = HYDRUINO_CROP_TEMP_RANGE_HALF * 0.5f;
-        _tempBalancer = new HydroponicsLinearEdgeBalancer(getWaterTempSensor(), tempSetpoint, HYDRUINO_CROP_TEMP_RANGE_HALF, tempRangeQuad * 0.5f, tempRangeQuad);
+        _tempBalancer = new HydroponicsLinearEdgeBalancer(getWaterTempSensor(), tempSetpoint, HYDRUINO_CROP_TEMP_RANGE_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
         HYDRUINO_SOFT_ASSERT(_tempBalancer, F("Failure allocating TDS balancer"));
     }
     if (_tempBalancer) {
@@ -797,6 +856,33 @@ void HydroponicsFeedReservoir::setWaterTempBalancer(HydroponicsBalancer *tempBal
 HydroponicsBalancer *HydroponicsFeedReservoir::getWaterTempBalancer() const
 {
     return _tempBalancer;
+}
+
+HydroponicsBalancer *HydroponicsFeedReservoir::setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits)
+{
+    if (!_co2Balancer && getAirCO2Sensor()) {
+        auto co2RangeQuad = HYDRUINO_CROP_CO2_RANGE_HALF * 0.5f;
+        _co2Balancer = new HydroponicsLinearEdgeBalancer(getAirCO2Sensor(), co2Setpoint, HYDRUINO_CROP_CO2_RANGE_HALF, -co2RangeQuad * 0.5f, co2RangeQuad);
+        HYDRUINO_SOFT_ASSERT(_tempBalancer, F("Failure allocating TDS balancer"));
+    }
+    if (_co2Balancer) {
+        _co2Balancer->setTargetSetpoint(co2Setpoint);
+        _co2Balancer->setTargetUnits(co2SetpointUnits);
+    }
+    return _co2Balancer;
+}
+
+void HydroponicsFeedReservoir::setAirCO2Balancer(HydroponicsBalancer *co2Balancer)
+{
+    if (_co2Balancer != co2Balancer) {
+        if (_co2Balancer) { delete _co2Balancer; }
+        _co2Balancer = co2Balancer;
+    }
+}
+
+HydroponicsBalancer *HydroponicsFeedReservoir::getAirCO2Balancer() const
+{
+    return _co2Balancer;
 }
 
 Hydroponics_PositionIndex HydroponicsFeedReservoir::getChannelNumber() const
@@ -867,6 +953,9 @@ void HydroponicsFeedReservoir::saveToData(HydroponicsData *dataOut)
     if (_tempSensor.getId()) {
         strncpy(((HydroponicsFeedReservoirData *)dataOut)->tempSensorName, _tempSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
+    if (_co2Sensor.getId()) {
+        strncpy(((HydroponicsFeedReservoirData *)dataOut)->co2SensorName, _co2Sensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    }
 }
 
 void HydroponicsFeedReservoir::attachPHSensor()
@@ -923,8 +1012,8 @@ void HydroponicsFeedReservoir::handleTDSMeasure(const HydroponicsMeasurement *me
 
 void HydroponicsFeedReservoir::attachWaterTempSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_tempSensor, F("Temperature sensor not linked, failure attaching"));
-    if (_tempSensor) {
+    HYDRUINO_SOFT_ASSERT(getWaterTempSensor(), F("Temperature sensor not linked, failure attaching"));
+    if (getWaterTempSensor()) {
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
         _tempSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -932,8 +1021,8 @@ void HydroponicsFeedReservoir::attachWaterTempSensor()
 
 void HydroponicsFeedReservoir::detachWaterTempSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_tempSensor, F("Temperature sensor not linked, failure detaching"));
-    if (_tempSensor) {
+    HYDRUINO_SOFT_ASSERT(getWaterTempSensor(), F("Temperature sensor not linked, failure detaching"));
+    if (getWaterTempSensor()) {
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
         _tempSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -944,6 +1033,32 @@ void HydroponicsFeedReservoir::handleWaterTempMeasure(const HydroponicsMeasureme
     if (measurement && measurement->frame) {
         _needsTempUpdate = false;
         setWaterTemperature(singleMeasurementAt(measurement, 0)); // TODO: Correct row reference, based on sensor
+    }
+}
+
+void HydroponicsFeedReservoir::attachAirCO2Sensor()
+{
+    HYDRUINO_SOFT_ASSERT(getAirCO2Sensor(), F("CO2 sensor not linked, failure attaching"));
+    if (getAirCO2Sensor()) {
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleAirCO2Measure);
+        _co2Sensor->getMeasurementSignal().attach(methodSlot);
+    }
+}
+
+void HydroponicsFeedReservoir::detachAirCO2Sensor()
+{
+    HYDRUINO_SOFT_ASSERT(getAirCO2Sensor(), F("CO2 sensor not linked, failure detaching"));
+    if (getAirCO2Sensor()) {
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleAirCO2Measure);
+        _co2Sensor->getMeasurementSignal().detach(methodSlot);
+    }
+}
+
+void HydroponicsFeedReservoir::handleAirCO2Measure(const HydroponicsMeasurement *measurement)
+{
+    if (measurement && measurement->frame) {
+        _needsCO2Update = false;
+        setAirCO2(singleMeasurementAt(measurement, 0)); // TODO: Correct row reference, based on sensor
     }
 }
 
@@ -1036,7 +1151,7 @@ void HydroponicsFluidReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 HydroponicsFeedReservoirData::HydroponicsFeedReservoirData()
     : HydroponicsFluidReservoirData(), lastChangeDate(0), lastPruningDate(0), lastFeedingDate(0), numFeedingsToday(0),
       tdsUnits(Hydroponics_UnitsType_Undefined), tempUnits(Hydroponics_UnitsType_Undefined),
-      phSensorName{0}, tdsSensorName{0}, tempSensorName{0}
+      phSensorName{0}, tdsSensorName{0}, tempSensorName{0}, co2SensorName{0}
 {
     _size = sizeof(*this);
 }
@@ -1054,6 +1169,7 @@ void HydroponicsFeedReservoirData::toJSONObject(JsonObject &objectOut) const
     if (phSensorName[0]) { objectOut[F("phSensorName")] = stringFromChars(phSensorName, HYDRUINO_NAME_MAXSIZE); }
     if (tdsSensorName[0]) { objectOut[F("tdsSensorName")] = stringFromChars(tdsSensorName, HYDRUINO_NAME_MAXSIZE); }
     if (tempSensorName[0]) { objectOut[F("tempSensorName")] = stringFromChars(tempSensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (co2SensorName[0]) { objectOut[F("co2SensorName")] = stringFromChars(co2SensorName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)
@@ -1072,6 +1188,8 @@ void HydroponicsFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)
     if (tdsSensorNameStr && tdsSensorNameStr[0]) { strncpy(tdsSensorName, tdsSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
     const char *tempSensorNameStr = objectIn[F("tempSensorName")];
     if (tempSensorNameStr && tempSensorNameStr[0]) { strncpy(tempSensorName, tempSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *co2SensorNameStr = objectIn[F("co2SensorName")];
+    if (co2SensorNameStr && co2SensorNameStr[0]) { strncpy(co2SensorName, co2SensorNameStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
 HydroponicsInfiniteReservoirData::HydroponicsInfiniteReservoirData()
