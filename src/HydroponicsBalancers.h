@@ -67,7 +67,6 @@ protected:
 
     void disableIncActuators();
     void disableDecActuators();
-    virtual void handleBalancerState();
 
     void attachRangeTrigger();
     void detachRangeTrigger();

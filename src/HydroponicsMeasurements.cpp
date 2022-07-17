@@ -160,7 +160,7 @@ void HydroponicsSingleMeasurement::saveToData(HydroponicsMeasurementData *dataOu
 {
     HydroponicsMeasurement::saveToData(dataOut);
 
-    dataOut->dataAs.singleMeasure.value = value;
+    dataOut->dataAs.singleMeasure.value = roundForExport(value);
     dataOut->dataAs.singleMeasure.units = units;
 }
 
@@ -191,8 +191,8 @@ void HydroponicsDoubleMeasurement::saveToData(HydroponicsMeasurementData *dataOu
 {
     HydroponicsMeasurement::saveToData(dataOut);
 
-    dataOut->dataAs.doubleMeasure.value[0] = value[0];
-    dataOut->dataAs.doubleMeasure.value[1] = value[1];
+    dataOut->dataAs.doubleMeasure.value[0] = roundForExport(value[0]);
+    dataOut->dataAs.doubleMeasure.value[1] = roundForExport(value[1]);
     dataOut->dataAs.doubleMeasure.units[0] = units[0];
     dataOut->dataAs.doubleMeasure.units[1] = units[1];
 }
@@ -226,9 +226,9 @@ void HydroponicsTripleMeasurement::saveToData(HydroponicsMeasurementData *dataOu
 {
     HydroponicsMeasurement::saveToData(dataOut);
 
-    dataOut->dataAs.tripleMeasure.value[0] = value[0];
-    dataOut->dataAs.tripleMeasure.value[1] = value[1];
-    dataOut->dataAs.tripleMeasure.value[2] = value[2];
+    dataOut->dataAs.tripleMeasure.value[0] = roundForExport(value[0]);
+    dataOut->dataAs.tripleMeasure.value[1] = roundForExport(value[1]);
+    dataOut->dataAs.tripleMeasure.value[2] = roundForExport(value[2]);
     dataOut->dataAs.tripleMeasure.units[0] = units[0];
     dataOut->dataAs.tripleMeasure.units[1] = units[1];
     dataOut->dataAs.tripleMeasure.units[2] = units[2];

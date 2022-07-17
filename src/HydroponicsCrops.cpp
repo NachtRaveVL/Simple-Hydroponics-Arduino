@@ -335,12 +335,12 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(Hydroponics_CropType cropType,
                                                DateTime sowDate,
                                                int classType)
     : HydroponicsCrop(cropType, cropIndex, substrateType, sowDate, classType),
-      _moistureUnits(defaultConcentrationUnits()), _needsSoilMoisture(true), _feedingTrigger(nullptr)
+      _moistureUnits(Hydroponics_UnitsType_Concentration_EC), _needsSoilMoisture(true), _feedingTrigger(nullptr)
 { ; }
 
 HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropData *dataIn)
     : HydroponicsCrop(dataIn), _needsSoilMoisture(true),
-      _moistureUnits(dataIn->moistureUnits),
+      _moistureUnits(definedUnitsElse(dataIn->moistureUnits, Hydroponics_UnitsType_Concentration_EC)),
       _moistureSensor(dataIn->moistureSensorName),
       _feedingTrigger(newTriggerObjectFromSubData(&(dataIn->feedingTrigger)))
 { ; }
@@ -387,7 +387,7 @@ void HydroponicsAdaptiveCrop::setMoistureUnits(Hydroponics_UnitsType moistureUni
     if (_moistureUnits != moistureUnits) {
         _moistureUnits = moistureUnits;
 
-        convertStdUnits(&_soilMoisture.value, &_soilMoisture.units, _moistureUnits);
+        convertUnits(&_soilMoisture, _moistureUnits);
     }
 }
 
@@ -424,20 +424,19 @@ shared_ptr<HydroponicsSensor> HydroponicsAdaptiveCrop::getMoistureSensor()
 void HydroponicsAdaptiveCrop::setSoilMoisture(float soilMoisture, Hydroponics_UnitsType soilMoistureUnits)
 {
     _soilMoisture.value = soilMoisture;
-    _soilMoisture.units = soilMoistureUnits != Hydroponics_UnitsType_Undefined ? soilMoistureUnits
-                                                                               : (_moistureUnits != Hydroponics_UnitsType_Undefined ? _moistureUnits
-                                                                                                                                    : defaultConcentrationUnits());
+    _soilMoisture.units = definedUnitsElse(soilMoistureUnits, _moistureUnits, Hydroponics_UnitsType_Concentration_EC);
     _soilMoisture.updateTimestamp();
     _soilMoisture.updateFrame(1);
 
-    convertStdUnits(&_soilMoisture.value, &_soilMoisture.units, _moistureUnits);
+    convertUnits(&_soilMoisture, _moistureUnits);
 }
 
 void HydroponicsAdaptiveCrop::setSoilMoisture(HydroponicsSingleMeasurement soilMoisture)
 {
     _soilMoisture = soilMoisture;
+    _soilMoisture.setMinFrame(1);
 
-    convertStdUnits(&_soilMoisture.value, &_soilMoisture.units, _moistureUnits);
+    convertUnits(&_soilMoisture, _moistureUnits);
 }
 
 const HydroponicsSingleMeasurement &HydroponicsAdaptiveCrop::getSoilMoisture()
@@ -497,7 +496,7 @@ void HydroponicsAdaptiveCrop::handleSoilMoistureMeasure(const HydroponicsMeasure
 {
     if (measurement && measurement->frame) {
         _needsSoilMoisture = false;
-        setSoilMoisture(singleMeasurementAt(measurement, 0)); // TODO: Correct row reference, based on sensor
+        setSoilMoisture(singleMeasurementAt(measurement, 0));
     }
 }
 

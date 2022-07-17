@@ -144,11 +144,13 @@ public:
 class HydroponicsActuatorObjectInterface {
 public:
     virtual bool enableActuator(float intensity = 1.0f, bool override = false) = 0;
-    virtual void disableAt(time_t disableTime) = 0;
-    inline void disableAfter(TimeSpan timeSpan) { disableAt(now() + (time_t)timeSpan.totalseconds()); }
     virtual void disableActuator() = 0;
     virtual bool getCanEnable() = 0;
     virtual bool getIsEnabled(float tolerance = 0.5) const = 0;
+
+    virtual void setContinuousPowerDraw(float contPowerDraw, Hydroponics_UnitsType contPowerDrawUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setContinuousPowerDraw(HydroponicsSingleMeasurement contPowerDraw) = 0;
+    virtual const HydroponicsSingleMeasurement &getContinuousPowerDraw() = 0;
 };
 
 // Sensor Object Interface
@@ -174,6 +176,13 @@ public:
     virtual bool canActivate(HydroponicsActuator *actuator) = 0;
     virtual bool getIsFilled() const = 0;
     virtual bool getIsEmpty() const = 0;
+
+    virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits) = 0;
+    virtual Hydroponics_UnitsType getVolumeUnits() const = 0;
+
+    virtual void setWaterVolume(float waterVolume, Hydroponics_UnitsType waterVolumeUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setWaterVolume(HydroponicsSingleMeasurement waterVolume) = 0;
+    virtual const HydroponicsSingleMeasurement &getWaterVolume() = 0;
 };
 
 // Rail Object Interface
@@ -181,6 +190,11 @@ class HydroponicsRailObjectInterface {
 public:
     virtual bool canActivate(HydroponicsActuator *actuator) = 0;
     virtual float getCapacity() const = 0;
+
+    virtual void setPowerUnits(Hydroponics_UnitsType powerUnits) = 0;
+    virtual Hydroponics_UnitsType getPowerUnits() const = 0;
+
+    virtual float getRailVoltage() const = 0;
 };
 
 
@@ -207,26 +221,29 @@ public:
     virtual bool canPump(time_t timeMillis) = 0;
     virtual bool pump(time_t timeMillis) = 0;
 
+    virtual void setFlowRateUnits(Hydroponics_UnitsType flowRateUnits) = 0;
+    virtual Hydroponics_UnitsType getFlowRateUnits() const = 0;
+
     virtual void setOutputReservoir(HydroponicsIdentity outputReservoirId) = 0;
     virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> outputReservoir) = 0;
     virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() = 0;
+
+    virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) = 0;
+    virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() = 0;
 };
 
 
 // Flow Rate Aware Interface
 class HydroponicsFlowAwareInterface {
 public:
-    virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
-    virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) = 0;
-    virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() = 0;
-
     virtual void setFlowRateSensor(HydroponicsIdentity flowRateSensorId) = 0;
     virtual void setFlowRateSensor(shared_ptr<HydroponicsSensor> flowRateSensor) = 0;
     virtual shared_ptr<HydroponicsSensor> getFlowRateSensor() = 0;
 
-    virtual void setInstantaneousFlowRate(float instFlowRate, Hydroponics_UnitsType instFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
-    virtual void setInstantaneousFlowRate(HydroponicsSingleMeasurement instFlowRate) = 0;
-    virtual const HydroponicsSingleMeasurement &getInstantaneousFlowRate() = 0;
+    virtual void setFlowRate(float flowRate, Hydroponics_UnitsType flowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setFlowRate(HydroponicsSingleMeasurement flowRate) = 0;
+    virtual const HydroponicsSingleMeasurement &getFlowRate() = 0;    
 };
 
 // Liquid Volume Aware Interface
@@ -268,8 +285,8 @@ public:
 // Water pH/Alkalinity Aware Interface
 class HydroponicsWaterPHAwareInterface {
 public:
-    virtual void setWaterPHSensor(HydroponicsIdentity phSensorId) = 0;
-    virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> phSensor) = 0;
+    virtual void setWaterPHSensor(HydroponicsIdentity waterPHSensorId) = 0;
+    virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> waterPHSensor) = 0;
     virtual shared_ptr<HydroponicsSensor> getWaterPHSensor() = 0;
 
     virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_pHScale_0_14) = 0;
@@ -280,8 +297,8 @@ public:
 // Water TDS/Concentration Aware Interface
 class HydroponicsWaterTDSAwareInterface {
 public:
-    virtual void setWaterTDSSensor(HydroponicsIdentity tdsSensorId) = 0;
-    virtual void setWaterTDSSensor(shared_ptr<HydroponicsSensor> tdsSensor) = 0;
+    virtual void setWaterTDSSensor(HydroponicsIdentity waterTDSSensorId) = 0;
+    virtual void setWaterTDSSensor(shared_ptr<HydroponicsSensor> waterTDSSensor) = 0;
     virtual shared_ptr<HydroponicsSensor> getWaterTDSSensor() = 0;
 
     virtual void setWaterTDS(float waterTDS, Hydroponics_UnitsType waterTDSUnits = Hydroponics_UnitsType_Undefined) = 0;

@@ -58,8 +58,6 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
                     return new HydroponicsDHTTempHumiditySensorData();
                 case 4: // DS
                     return new HydroponicsDSTemperatureSensorData();
-                case 5: // TMP
-                    return new HydroponicsTMPMoistureSensorData();
                 default: break;
             }
             break;
@@ -202,6 +200,7 @@ void HydroponicsCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 void HydroponicsCalibrationData::setFromTwoPoints(float point1MeasuredAt, float point1CalibratedTo,
                                                   float point2MeasuredAt, float point2CalibratedTo)
 {
+    _bumpRevIfNotAlreadyModded();
     float aTerm = point2CalibratedTo - point1CalibratedTo;
     float bTerm = point2MeasuredAt - point1MeasuredAt;
     HYDRUINO_SOFT_ASSERT(!isFPEqual(bTerm, 0.0f), F("Invalid parameters"));
@@ -218,9 +217,8 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
       phRange{6,6}, tdsRange{1.8,2.4}, nightlyFeedMultiplier(1),
-      waterTempRange{25,25}, airTempRange{25,25},
-      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false), isToxicToPets(false),
-      isPruningNeeded(false), isSprayingNeeded(false)
+      waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
+      flags(0)
 {
     _size = sizeof(*this);
 }
@@ -231,9 +229,8 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
       phRange{6,6}, tdsRange{1.8,2.4}, nightlyFeedMultiplier(1),
-      waterTempRange{25,25}, airTempRange{25,25},
-      isInvasiveOrViner(false), isLargePlant(false), isPerennial(false), isToxicToPets(false),
-      isPruningNeeded(false), isSprayingNeeded(false)
+      waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
+      flags(0)
 {
     _size = sizeof(*this);
 
@@ -314,14 +311,23 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (isInvasiveOrViner || isLargePlant || isPerennial || isToxicToPets || isPruningNeeded || isSprayingNeeded) {
+    if (!(isFPEqual(co2Levels[0], 700.0f) && isFPEqual(co2Levels[1], 1400.0f))) {
+        if (!isFPEqual(co2Levels[0], co2Levels[1])) {
+            objectOut[F("co2Levels")] = commaStringFromArray(co2Levels, 2);
+        } else {
+            objectOut[F("co2Levels")] = co2Levels[0];
+        }
+    }
+
+    if (flags) {
         String flagsString = "";
-        if (isInvasiveOrViner) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("invasive")); }
-        if (isLargePlant) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("large")); }
-        if (isPerennial) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("perennial")); }
-        if (isToxicToPets) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("toxic")); }
-        if (isPruningNeeded) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("pruning")); }
-        if (isSprayingNeeded) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("spraying")); }
+        if (getIsInvasive()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("invasive")); }
+        if (getIsViner()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("viner")); }
+        if (getIsLarge()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("large")); }
+        if (getIsPerennial()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("perennial")); }
+        if (getIsToxicToPets()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("toxic")); }
+        if (getNeedsPrunning()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("pruning")); }
+        if (getNeedsSpraying()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(F("spraying")); }
         objectOut[F("flags")] = flagsString;
     }
 }
@@ -384,21 +390,23 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
         if (flagsVar.is<JsonArrayConst>()) {
             JsonArrayConst flagsArray = flagsVar;
             for (String flagStr : flagsArray) {
-                if (flagStr.equalsIgnoreCase(F("invasive"))) { isInvasiveOrViner = true; }
-                if (flagStr.equalsIgnoreCase(F("large"))) { isLargePlant = true; }
-                if (flagStr.equalsIgnoreCase(F("perennial"))) { isPerennial = true; }
-                if (flagStr.equalsIgnoreCase(F("toxic"))) { isToxicToPets = true; }
-                if (flagStr.equalsIgnoreCase(F("pruning"))) { isPruningNeeded = true; }
-                if (flagStr.equalsIgnoreCase(F("spraying"))) { isSprayingNeeded = true; }
+                if (flagStr.equalsIgnoreCase(F("invasive"))) { flags |= HydroponicsCropsLibData_Flag_Invasive; }
+                if (flagStr.equalsIgnoreCase(F("viner"))) { flags |= HydroponicsCropsLibData_Flag_Viner; }
+                if (flagStr.equalsIgnoreCase(F("large"))) { flags |= HydroponicsCropsLibData_Flag_Large; }
+                if (flagStr.equalsIgnoreCase(F("perennial"))) { flags |= HydroponicsCropsLibData_Flag_Perennial; }
+                if (flagStr.equalsIgnoreCase(F("toxic"))) { flags |= HydroponicsCropsLibData_Flag_Toxic; }
+                if (flagStr.equalsIgnoreCase(F("pruning"))) { flags |= HydroponicsCropsLibData_Flag_Pruning; }
+                if (flagStr.equalsIgnoreCase(F("spraying"))) { flags |= HydroponicsCropsLibData_Flag_Spraying; }
             }
         } else if (!flagsVar.isNull()) {
             String flagsString = String(F(",")) + objectIn[F("flags")].as<String>() + String(F(","));
-            isInvasiveOrViner = occurrencesInStringIgnoreCase(flagsString, F(",invasive,"));
-            isLargePlant = occurrencesInStringIgnoreCase(flagsString, F(",large,"));
-            isPerennial = occurrencesInStringIgnoreCase(flagsString, F(",perennial,"));
-            isToxicToPets = occurrencesInStringIgnoreCase(flagsString, F(",toxic,"));
-            isPruningNeeded = occurrencesInStringIgnoreCase(flagsString, F(",pruning,"));
-            isSprayingNeeded = occurrencesInStringIgnoreCase(flagsString, F(",spraying,"));
+            if (occurrencesInStringIgnoreCase(flagsString, F(",invasive,"))) { flags |= HydroponicsCropsLibData_Flag_Invasive; }
+            if (occurrencesInStringIgnoreCase(flagsString, F(",viner,"))) { flags |= HydroponicsCropsLibData_Flag_Viner; }
+            if (occurrencesInStringIgnoreCase(flagsString, F(",large,"))) { flags |= HydroponicsCropsLibData_Flag_Large; }
+            if (occurrencesInStringIgnoreCase(flagsString, F(",perennial,"))) { flags |= HydroponicsCropsLibData_Flag_Perennial; }
+            if (occurrencesInStringIgnoreCase(flagsString, F(",toxic,"))) { flags |= HydroponicsCropsLibData_Flag_Toxic; }
+            if (occurrencesInStringIgnoreCase(flagsString, F(",pruning,"))) { flags |= HydroponicsCropsLibData_Flag_Pruning; }
+            if (occurrencesInStringIgnoreCase(flagsString, F(",spraying,"))) { flags |= HydroponicsCropsLibData_Flag_Spraying; }
         }
     }
 }

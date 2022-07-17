@@ -65,33 +65,27 @@ taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuato
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter.
 // Object is captured, if not nullptr. Returns taskId or TASKMGR_INVALIDID on error.
-template<typename ParameterType, int Slots>
-taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam);
+template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam);
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter, w/o capturing object.
 // Returns taskId or TASKMGR_INVALIDID on error.
-template<typename ParameterType, int Slots>
-taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam);
+template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam);
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter.
-// Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
-template<class ObjectType, typename ParameterType>
-taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
+// Object is captured. Returns taskId or TASKMGR_INVALIDID on error. */
+template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter, w/o capturing object.
 // Returns taskId or TASKMGR_INVALIDID on error.
-template<class ObjectType, typename ParameterType>
-taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
+template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
 // Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
-template<class ObjectType>
-taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
+template<class ObjectType> taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
 // Returns taskId or TASKMGR_INVALIDID on error.
-template<class ObjectType>
-taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (ObjectType::*method)(taskid_t));
+template<class ObjectType> taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (ObjectType::*method)(taskid_t));
 
 // Given a valid task id, tries making the task repeating. Returns true if valid task and task is repeating, false otherwise.
 bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
@@ -119,17 +113,14 @@ extern String stringFromChars(const char *charsIn, size_t length);
 
 // Encodes a T-typed array to a comma-separated string.
 // Null array or invalid length will abort function before encoding occurs, returning "null".
-template<typename T>
-String commaStringFromArray(const T *arrayIn, size_t length);
+template<typename T> String commaStringFromArray(const T *arrayIn, size_t length);
 // Decodes a comma-separated string back to a T-typed array.
 // Last value read is repeated on through to last element, with no commas being treated as single value being applied to all elements.
 // Empty string, string value of "null", null array, or invalid length will abort function before decoding.
-template<typename T>
-void commaStringToArray(String stringIn, T *arrayOut, size_t length);
+template<typename T> void commaStringToArray(String stringIn, T *arrayOut, size_t length);
 // Decodes a comma-separated JSON variant, if not null, object, or array, back to a T-typed array.
 // Acts as a redirect for JSON variants so that they receive the additional checks before being converted to string.
-template<typename T>
-void commaStringToArray(JsonVariantConst &variantIn, T *arrayOut, size_t length);
+template<typename T> void commaStringToArray(JsonVariantConst &variantIn, T *arrayOut, size_t length);
 
 // Encodes a byte array to hexadecimal string.
 extern String hexStringFromBytes(const byte *bytesIn, size_t length);
@@ -148,12 +139,10 @@ int occurrencesInStringIgnoreCase(String string, char singleChar);
 int occurrencesInStringIgnoreCase(String string, String subString);
 
 // Returns whenever all elements of an array are equal to the specified value, or not.
-template<typename T>
-bool arrayElementsEqual(const T *arrayIn, size_t length, T value);
+template<typename T> bool arrayElementsEqual(const T *arrayIn, size_t length, T value);
 
 // Similar to the standard map function, but does it on any type.
-template<typename T>
-T mapValue(T value, T inMin, T inMax, T outMin, T outMax);
+template<typename T> T mapValue(T value, T inMin, T inMax, T outMin, T outMax);
 
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
 extern int freeMemory();
@@ -181,10 +170,28 @@ extern void hardAssert(bool cond, String msg, const char *file, const char *func
 
 // Units & Conversion
 
-// Tries to convert value from one unit to another (if supported), returning conversion status.
-extern bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut);
-// Attempts to convert value in-place from one unit to another, and if successful then assigns those values back overtop of source, with optional decimal place rounding.
-extern bool convertStdUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces = -1);
+// Tries to convert value from one unit to another (if supported), returning conversion success boolean.
+// Convert param used in certain unit conversions as external additional value (e.g. voltage for power/current conversion).
+// This is the main conversion function that all others wrap around.
+extern bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam = 0);
+
+// Attempts to convert value in-place from one unit to another, and if successful then assigns value back overtop of itself.
+// Convert param used in certain unit conversions. Returns conversion success boolean.
+extern bool convertUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType outUnits, float convertParam = 0);
+// Attempts to convert value from one unit to another, and if successful then assigns value, and optionally units, to output.
+// Convert param used in certain unit conversions. Returns conversion success boolean.
+extern bool convertUnits(float valueIn, float *valueOut, Hydroponics_UnitsType unitsIn, Hydroponics_UnitsType outUnits, Hydroponics_UnitsType *unitsOut = nullptr, float convertParam = 0);
+// Attempts to convert measurement in-place from one unit to another, and if successful then assigns value and units back overtop of itself.
+// Convert param used in certain unit conversions. Returns conversion success boolean.
+inline bool convertUnits(HydroponicsSingleMeasurement *measureInOut, Hydroponics_UnitsType outUnits, float convertParam = 0) { return convertUnits(&measureInOut->value, &measureInOut->units, outUnits, convertParam); }
+// Attemps to convert measurement from one unit to another, and if successful then assigns value and units to output measurement.
+// Convert param used in certain unit conversions. Returns conversion success boolean.
+inline bool convertUnits(const HydroponicsSingleMeasurement *measureIn, HydroponicsSingleMeasurement *measureOut, Hydroponics_UnitsType outUnits, float convertParam = 0) { return convertUnits(measureIn->value, &measureOut->value, measureIn->units, outUnits, &measureOut->units, convertParam); }
+
+// Returns the base units from a rate unit (e.g. L/min -> L).
+extern Hydroponics_UnitsType baseUnitsFromRate(Hydroponics_UnitsType units);
+// Returns the base units from a dilution unit (e.g. mL/L -> L).
+Hydroponics_UnitsType baseUnitsFromDilution(Hydroponics_UnitsType units);
 
 // Returns default temperature units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern Hydroponics_UnitsType defaultTemperatureUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
@@ -198,40 +205,41 @@ extern Hydroponics_UnitsType defaultWaterVolumeUnits(Hydroponics_MeasurementMode
 extern Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
-// Returns default concentration units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultConcentrationUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 
-// Linkages Filtering
+// Rounds value according to default decimal places rounding, as typically used for data export, with optional additional decimal places.
+inline float roundForExport(float value, unsigned int additionalDecPlaces = 0) { return roundToDecimalPlaces(value, defaultDecimalPlacesRounding() + additionalDecPlaces); }
 
-// Returns links list filtered down to actuators.
+// Linkages & Filtering
+
+// Returns linkages list filtered down to actuators.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterActuators(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
-// Returns links list filtered down to actuators by type.
+// Returns linkages list filtered down to actuators by type.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterActuatorsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ActuatorType actuatorType);
-// Returns links list filtered down to sensors.
+// Returns linkages list filtered down to sensors.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterSensors(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
-// Returns links list filtered down to sensors by type.
+// Returns linkages list filtered down to sensors by type.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterSensorsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_SensorType sensorType);
-// Returns links list filtered down to crops.
+// Returns linkages list filtered down to crops.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterCrops(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
-// Returns links list filtered down to crops by type.
+// Returns linkages list filtered down to crops by type.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterCropsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_CropType cropType);
-// Returns links list filtered down to reservoirs.
+// Returns linkages list filtered down to reservoirs.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterReservoirs(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
-// Returns links list filtered down to reservoirs by type.
+// Returns linkages list filtered down to reservoirs by type.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterReservoirsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType);
-// Returns links list filtered down to rails.
+// Returns linkages list filtered down to rails.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterRails(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links);
-// Returns links list filtered down to rails by type.
+// Returns linkages list filtered down to rails by type.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterRailsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_RailType railType);
-// Returns links list filtered down to pump actuators by source reservoir.
+// Returns linkages list filtered down to pump actuators by source reservoir.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByInputReservoir(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, HydroponicsReservoir *inputReservoir);
-// Returns links list filtered down to pump actuators by source reservoir type.
+// Returns linkages list filtered down to pump actuators by source reservoir type.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByInputReservoirType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType);
-// Returns links list filtered down to pump actuators by destination reservoir.
+// Returns linkages list filtered down to pump actuators by destination reservoir.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByOutputReservoir(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, HydroponicsReservoir *outputReservoir);
-// Returns links list filtered down to pump actuators by destination reservoir type.
+// Returns linkages list filtered down to pump actuators by destination reservoir type.
 template<size_t N> arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterPumpActuatorsByOutputReservoirType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType);
 
 // Pins & Checks
@@ -250,7 +258,7 @@ extern bool checkPinCanInterrupt(byte pin);
 // Sets random seed to an appropriate backing, in order: RTC's time, last analog pin's read (x4 to form 32-bit seed), or micros from system start.
 extern void setupRandomSeed();
 
-// Enum & String Conversions
+// Enums & Conversions
 
 // Converts from boolean value to triggered/not-triggered trigger state.
 inline Hydroponics_TriggerState triggerStateFromBool(bool value) { return value ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered; }
@@ -272,22 +280,25 @@ extern Hydroponics_CropType cropTypeFromString(String cropTypeStr);
 
 // Converts from fluid reservoir enum to string, with optional exclude for special types (instead returning "").
 extern String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool excludeSpecial = false);
-// Converts back to fluid reservoir enum from string
+// Converts back to fluid reservoir enum from string.
 extern Hydroponics_ReservoirType reservoirTypeFromString(String reservoirTypeStr);
 
-// Converts from power rail enum to string, with optional exclude for special types (instead returning "")
+// Returns rail voltage as derived from rail type enumeration.
+extern float railVoltageFromType(Hydroponics_RailType railType);
+
+// Converts from power rail enum to string, with optional exclude for special types (instead returning "").
 extern String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial = false);
-// Converts back to power rail enum from string
+// Converts back to power rail enum from string.
 extern Hydroponics_RailType railTypeFromString(String railTypeStr);
 
-// Converts from units type enum to symbol string, with optional exclude for special types (instead returning "")
+// Converts from units type enum to symbol string, with optional exclude for special types (instead returning "").
 extern String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial = false);
-// Converts back to units type enum from symbol
+// Converts back to units type enum from symbol.
 extern Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr);
 
-// Converts from position index to string, with optional exclude for special types (instead returning "");
+// Converts from position index to string, with optional exclude for special types (instead returning "").
 extern String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool excludeSpecial = false);
-// Converts back to position index from string
+// Converts back to position index from string.
 extern Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr);
 
 // Explicit Specializations

@@ -194,7 +194,7 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMe
             auto measurementValue = measurementValueAt(measurement, _measurementRow);
             auto measurementUnits = measurementUnitsAt(measurement, _measurementRow);
 
-            convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
+            convertUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
             if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {
                 float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTolerance : 0);
@@ -305,7 +305,7 @@ void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMe
         auto measurementValue = measurementValueAt(measurement, _measurementRow);
         auto measurementUnits = measurementUnitsAt(measurement, _measurementRow);
 
-        convertStdUnits(&measurementValue, &measurementUnits, _toleranceUnits);
+        convertUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
         if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {
             float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTolerance : 0);

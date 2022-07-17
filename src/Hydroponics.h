@@ -305,10 +305,6 @@ public:
     shared_ptr<HydroponicsDSTemperatureSensor> addDSTemperatureSensor(byte inputPin,                // OneWire digital input pin this sensor sits on
                                                                       byte inputBitRes = 9,         // Sensor ADC bit resolution to use
                                                                       byte pullupPin = -1);         // Strong pullup pin (if used, else -1)
-    // Adds a new digital TMP* OneWire soil moisture sensor to the system using the given parameters.
-    // Uses the XXXTODO library. A blah blah blah blah todo.
-    shared_ptr<HydroponicsTMPMoistureSensor> addTMPMoistureSensor(byte inputPin,                    // OneWire digital input pin this sensor sits on
-                                                                  byte inputBitRes = 9);            // Sensor ADC bit resolution to use
 
     // TODO: addDigitalPHMeter, addDigitalECMeter, addDigitalCO2Sensor
 

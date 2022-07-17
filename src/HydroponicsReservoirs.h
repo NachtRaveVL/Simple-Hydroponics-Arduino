@@ -49,6 +49,13 @@ public:
     virtual bool getIsFilled() const = 0;
     virtual bool getIsEmpty() const = 0;
 
+    virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits);
+    virtual Hydroponics_UnitsType getVolumeUnits() const;
+
+    virtual void setWaterVolume(float waterVolume, Hydroponics_UnitsType waterVolumeUnits = Hydroponics_UnitsType_Undefined) = 0;
+    virtual void setWaterVolume(HydroponicsSingleMeasurement waterVolume) = 0;
+    virtual const HydroponicsSingleMeasurement &getWaterVolume() = 0;
+
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
     virtual bool hasActuator(HydroponicsActuator *actuator) const override;
@@ -71,6 +78,7 @@ public:
     Signal<HydroponicsReservoir *> &getEmptySignal();
 
 protected:
+    Hydroponics_UnitsType _volumeUnits;                     // Volume units preferred (else default)
     Hydroponics_TriggerState _filledState;                  // Current filled state
     Hydroponics_TriggerState _emptyState;                   // Current empty state
     Signal<HydroponicsReservoir *> _filledSignal;           // Filled state signal
@@ -84,8 +92,6 @@ protected:
 // Simple Fluid Reservoir
 // Basic fluid reservoir that contains a volume of liquid and the ability to track
 // such. Crude, but effective.
-// Optional channel number is used mainly to track specific feed water reservoirs
-// but is usually (but not always) aliasing reservoir type position index.
 class HydroponicsFluidReservoir : public HydroponicsReservoir, public HydroponicsVolumeAwareInterface {
 public:
     HydroponicsFluidReservoir(Hydroponics_ReservoirType reservoirType,
@@ -102,8 +108,7 @@ public:
     virtual bool getIsFilled() const override;
     virtual bool getIsEmpty() const override;
 
-    void setVolumeUnits(Hydroponics_UnitsType volumeUnits);
-    Hydroponics_UnitsType getVolumeUnits() const;
+    virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits) override;
 
     virtual void setVolumeSensor(HydroponicsIdentity volumeSensorId) override;
     virtual void setVolumeSensor(shared_ptr<HydroponicsSensor> volumeSensor) override;
@@ -123,10 +128,9 @@ public:
 
 protected:
     float _maxVolume;                                       // Maximum volume
-    Hydroponics_UnitsType _volumeUnits;                     // Volume units preferred (else default)
-    HydroponicsDLinkObject<HydroponicsSensor> _volumeSensor; // Volume sensor linkage
     HydroponicsSingleMeasurement _waterVolume;              // Current water volume measure
     bool _needsVolumeUpdate;                                // Needs water volume update tracking flag
+    HydroponicsDLinkObject<HydroponicsSensor> _volumeSensor; // Volume sensor linkage
     HydroponicsTrigger *_filledTrigger;                     // Filled trigger (owned)
     HydroponicsTrigger *_emptyTrigger;                      // Empty trigger (owned)
 
@@ -146,7 +150,9 @@ protected:
 
 // Feed Water Reservoir
 // TODO
-class HydroponicsFeedReservoir : public HydroponicsFluidReservoir, public HydroponicsWaterPHAwareInterface, public HydroponicsWaterTDSAwareInterface, public HydroponicsWaterTemperatureAwareInterface, public HydroponicsAirCO2AwareInterface {
+// Optional channel number is used mainly to track specific feed water reservoirs
+// but is usually (but not always) aliasing reservoir type position index.
+class HydroponicsFeedReservoir : public HydroponicsFluidReservoir, public HydroponicsWaterPHAwareInterface, public HydroponicsWaterTDSAwareInterface, public HydroponicsWaterTemperatureAwareInterface,  public HydroponicsAirTemperatureAwareInterface, public HydroponicsAirCO2AwareInterface {
 public:
     HydroponicsFeedReservoir(Hydroponics_PositionIndex reservoirIndex,
                              float maxVolume,
@@ -166,16 +172,16 @@ public:
     void setTemperatureUnits(Hydroponics_UnitsType tempUnits);
     Hydroponics_UnitsType getTemperatureUnits() const;
 
-    virtual void setWaterPHSensor(HydroponicsIdentity phSensorId) override;
-    virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> phSensor) override;
+    virtual void setWaterPHSensor(HydroponicsIdentity waterPHSensorId) override;
+    virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> waterPHSensor) override;
     virtual shared_ptr<HydroponicsSensor> getWaterPHSensor() override;
 
     virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_pHScale_0_14) override;
     virtual void setWaterPH(HydroponicsSingleMeasurement waterPH) override;
     virtual const HydroponicsSingleMeasurement &getWaterPH() override;
 
-    virtual void setWaterTDSSensor(HydroponicsIdentity tdsSensorId) override;
-    virtual void setWaterTDSSensor(shared_ptr<HydroponicsSensor> tdsSensor) override;
+    virtual void setWaterTDSSensor(HydroponicsIdentity waterTDSSensorId) override;
+    virtual void setWaterTDSSensor(shared_ptr<HydroponicsSensor> waterTDSSensor) override;
     virtual shared_ptr<HydroponicsSensor> getWaterTDSSensor() override;
 
     virtual void setWaterTDS(float waterTDS, Hydroponics_UnitsType waterTDSUnits = Hydroponics_UnitsType_Undefined) override;
@@ -189,6 +195,14 @@ public:
     virtual void setWaterTemperature(float waterTemperature, Hydroponics_UnitsType waterTempUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setWaterTemperature(HydroponicsSingleMeasurement waterTemperature) override;
     virtual const HydroponicsSingleMeasurement &getWaterTemperature() override;
+
+    virtual void setAirTempSensor(HydroponicsIdentity airTempSensorId) override;
+    virtual void setAirTempSensor(shared_ptr<HydroponicsSensor> airTempSensor) override;
+    virtual shared_ptr<HydroponicsSensor> getAirTempSensor() override;
+
+    virtual void setAirTemperature(float airTemperature, Hydroponics_UnitsType airTempUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setAirTemperature(HydroponicsSingleMeasurement airTemperature) override;
+    virtual const HydroponicsSingleMeasurement &getAirTemperature() override;
 
     virtual void setAirCO2Sensor(HydroponicsIdentity airCO2SensorId) override;
     virtual void setAirCO2Sensor(shared_ptr<HydroponicsSensor> airCO2Sensor) override;
@@ -207,8 +221,12 @@ public:
     HydroponicsBalancer *getWaterTDSBalancer() const;
 
     HydroponicsBalancer *setWaterTempBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
-    void setWaterTempBalancer(HydroponicsBalancer *tempBalancer);
+    void setWaterTempBalancer(HydroponicsBalancer *waterTempBalancer);
     HydroponicsBalancer *getWaterTempBalancer() const;
+
+    HydroponicsBalancer *setAirTempBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
+    void setAirTempBalancer(HydroponicsBalancer *airTempBalancer);
+    HydroponicsBalancer *getAirTempBalancer() const;
 
     HydroponicsBalancer *setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits);
     void setAirCO2Balancer(HydroponicsBalancer *co2Balancer);
@@ -235,34 +253,41 @@ protected:
     int _numFeedingsToday;                                  // Number of feedings performed today
     Hydroponics_UnitsType _tdsUnits;                        // TDS units preferred (else default)
     Hydroponics_UnitsType _tempUnits;                       // Temperature units preferred (else default)
-    HydroponicsDLinkObject<HydroponicsSensor> _phSensor;    // PH sensor
-    HydroponicsDLinkObject<HydroponicsSensor> _tdsSensor;   // TDS sensor
-    HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor
-    HydroponicsDLinkObject<HydroponicsSensor> _co2Sensor;   // CO2 sensor
-    bool _needsPHUpdate;                                    // Needs water pH update tracking flag
-    bool _needsTDSUpdate;                                   // Needs water TDS update tracking flag
-    bool _needsTempUpdate;                                  // Needs water temperature update tracking flag
-    bool _needsCO2Update;                                   // Needs CO2 level update tracking flag
-    HydroponicsSingleMeasurement _waterPH;                  // Current PH alkalinity measure
+    HydroponicsDLinkObject<HydroponicsSensor> _waterPHSensor; // Water pH sensor
+    HydroponicsDLinkObject<HydroponicsSensor> _waterTDSSensor; // Water TDS sensor
+    HydroponicsDLinkObject<HydroponicsSensor> _waterTempSensor; // Water temperature sensor
+    HydroponicsDLinkObject<HydroponicsSensor> _airTempSensor; // Air temperature sensor
+    HydroponicsDLinkObject<HydroponicsSensor> _airCO2Sensor; // Air CO2 sensor
+    bool _needsWaterPHUpdate;                               // Needs water pH update tracking flag
+    bool _needsWaterTDSUpdate;                              // Needs water TDS update tracking flag
+    bool _needsWaterTempUpdate;                             // Needs water temperature update tracking flag
+    bool _needsAirTempUpdate;                               // Needs air temperature update tracking flag
+    bool _needsAirCO2Update;                                // Needs air CO2 level update tracking flag
+    HydroponicsSingleMeasurement _waterPH;                  // Current pH alkalinity measure
     HydroponicsSingleMeasurement _waterTDS;                 // Current TDS concentration measure
     HydroponicsSingleMeasurement _waterTemp;                // Current water temperature measure
-    HydroponicsSingleMeasurement _co2Level;                 // Current CO2 level measure
-    HydroponicsBalancer *_phBalancer;                       // PH balancer (assigned by scheduler when needed)
-    HydroponicsBalancer *_tdsBalancer;                      // TDS balancer (assigned by scheduler when needed)
-    HydroponicsBalancer *_tempBalancer;                     // Temperature balancer (assigned by scheduler when needed)
-    HydroponicsBalancer *_co2Balancer;                      // CO2 balancer (assigned by user if desired)
+    HydroponicsSingleMeasurement _airTemp;                  // Current air temperature measure
+    HydroponicsSingleMeasurement _airCO2;                   // Current air CO2 level measure
+    HydroponicsBalancer *_waterPHBalancer;                  // Water pH balancer (assigned by scheduler when needed)
+    HydroponicsBalancer *_waterTDSBalancer;                 // Water TDS balancer (assigned by scheduler when needed)
+    HydroponicsBalancer *_waterTempBalancer;                // Water temperature balancer (assigned by scheduler when needed)
+    HydroponicsBalancer *_airTempBalancer;                  // Air temperature balancer (assigned by user if desired)
+    HydroponicsBalancer *_airCO2Balancer;                   // Air CO2 balancer (assigned by user if desired)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    void attachPHSensor();
-    void detachPHSensor();
-    void handlePHMeasure(const HydroponicsMeasurement *measurement);
-    void attachTDSSensor();
-    void detachTDSSensor();
-    void handleTDSMeasure(const HydroponicsMeasurement *measurement);
+    void attachWaterPHSensor();
+    void detachWaterPHSensor();
+    void handleWaterPHMeasure(const HydroponicsMeasurement *measurement);
+    void attachWaterTDSSensor();
+    void detachWaterTDSSensor();
+    void handleWaterTDSMeasure(const HydroponicsMeasurement *measurement);
     void attachWaterTempSensor();
     void detachWaterTempSensor();
     void handleWaterTempMeasure(const HydroponicsMeasurement *measurement);
+    void attachAirTempSensor();
+    void detachAirTempSensor();
+    void handleAirTempMeasure(const HydroponicsMeasurement *measurement);
     void attachAirCO2Sensor();
     void detachAirCO2Sensor();
     void handleAirCO2Measure(const HydroponicsMeasurement *measurement);
@@ -285,6 +310,10 @@ public:
     virtual bool getIsFilled() const override;
     virtual bool getIsEmpty() const override;
 
+    virtual void setWaterVolume(float waterVolume, Hydroponics_UnitsType waterVolumeUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setWaterVolume(HydroponicsSingleMeasurement waterVolume) override;
+    virtual const HydroponicsSingleMeasurement &getWaterVolume() override;
+
 protected:
     bool _alwaysFilled;                                     // Always filled flag
 
@@ -294,6 +323,8 @@ protected:
 
 // Reservoir Serialization Data
 struct HydroponicsReservoirData : public HydroponicsObjectData {
+    Hydroponics_UnitsType volumeUnits;
+
     HydroponicsReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
@@ -302,7 +333,6 @@ struct HydroponicsReservoirData : public HydroponicsObjectData {
 // Fluid Reservoir Serialization Data
 struct HydroponicsFluidReservoirData : public HydroponicsReservoirData {
     float maxVolume;
-    Hydroponics_UnitsType volumeUnits;
     char volumeSensorName[HYDRUINO_NAME_MAXSIZE];
     HydroponicsTriggerSubData filledTrigger;
     HydroponicsTriggerSubData emptyTrigger;
@@ -320,10 +350,11 @@ struct HydroponicsFeedReservoirData : public HydroponicsFluidReservoirData {
     uint8_t numFeedingsToday;
     Hydroponics_UnitsType tdsUnits;
     Hydroponics_UnitsType tempUnits;
-    char phSensorName[HYDRUINO_NAME_MAXSIZE];
-    char tdsSensorName[HYDRUINO_NAME_MAXSIZE];
-    char tempSensorName[HYDRUINO_NAME_MAXSIZE];
-    char co2SensorName[HYDRUINO_NAME_MAXSIZE];
+    char waterPHSensorName[HYDRUINO_NAME_MAXSIZE];
+    char waterTDSSensorName[HYDRUINO_NAME_MAXSIZE];
+    char waterTempSensorName[HYDRUINO_NAME_MAXSIZE];
+    char airTempSensorName[HYDRUINO_NAME_MAXSIZE];
+    char airCO2SensorName[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsFeedReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
