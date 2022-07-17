@@ -377,7 +377,7 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
 
 #endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 
-bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut)
+bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam)
 {
     if (!valueOut || unitsOut == Hydroponics_UnitsType_Undefined || unitsIn == unitsOut) return false;
 
@@ -493,9 +493,9 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
+        case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
             switch(unitsOut) {
-                case Hydroponics_UnitsType_LiquidFlow_GallonsPerMin:
+                case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
                     *valueOut = valueIn * 0.264172f;
                     return true;
 
@@ -504,9 +504,9 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidFlow_GallonsPerMin:
+        case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
             switch (unitsOut) {
-                case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
+                case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
                     *valueOut = valueIn * 3.78541f;
                     return true;
 
@@ -534,6 +534,28 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
 
                 default:
                     break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Power_Wattage:
+            switch (unitsOut) {
+                case Hydroponics_UnitsType_Power_Amperage:
+                    if (!isFPEqual(convertParam, 0.0f)) {
+                        *valueOut = valueIn / convertParam;
+                        return true;
+                    }
+                break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Power_Amperage:
+            switch (unitsOut) {
+                case Hydroponics_UnitsType_Power_Wattage:
+                    if (!isFPEqual(convertParam, 0.0f)) {
+                        *valueOut = valueIn * convertParam;
+                        return true;
+                    }
+                break;
             }
             break;
 
@@ -583,8 +605,8 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
 
                 case Hydroponics_UnitsType_Concentration_PPM640:
                 case Hydroponics_UnitsType_Concentration_PPM700:
-                    if (tryConvertStdUnits(valueIn, unitsIn, valueOut, Hydroponics_UnitsType_Concentration_EC)) {
-                        return tryConvertStdUnits(*valueOut, Hydroponics_UnitsType_Concentration_EC, valueOut, unitsOut);
+                    if (tryConvertUnits(valueIn, unitsIn, valueOut, Hydroponics_UnitsType_Concentration_EC)) {
+                        return tryConvertUnits(*valueOut, Hydroponics_UnitsType_Concentration_EC, valueOut, unitsOut);
                     }
                     return false;
 
@@ -605,8 +627,8 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
 
                 case Hydroponics_UnitsType_Concentration_PPM500:
                 case Hydroponics_UnitsType_Concentration_PPM700:
-                    if (tryConvertStdUnits(valueIn, unitsIn, valueOut, Hydroponics_UnitsType_Concentration_EC)) {
-                        return tryConvertStdUnits(*valueOut, Hydroponics_UnitsType_Concentration_EC, valueOut, unitsOut);
+                    if (tryConvertUnits(valueIn, unitsIn, valueOut, Hydroponics_UnitsType_Concentration_EC)) {
+                        return tryConvertUnits(*valueOut, Hydroponics_UnitsType_Concentration_EC, valueOut, unitsOut);
                     }
                     return false;
 
@@ -627,8 +649,8 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
 
                 case Hydroponics_UnitsType_Concentration_PPM500:
                 case Hydroponics_UnitsType_Concentration_PPM700:
-                    if (tryConvertStdUnits(valueIn, unitsIn, valueOut, Hydroponics_UnitsType_Concentration_EC)) {
-                        return tryConvertStdUnits(*valueOut, Hydroponics_UnitsType_Concentration_EC, valueOut, unitsOut);
+                    if (tryConvertUnits(valueIn, unitsIn, valueOut, Hydroponics_UnitsType_Concentration_EC)) {
+                        return tryConvertUnits(*valueOut, Hydroponics_UnitsType_Concentration_EC, valueOut, unitsOut);
                     }
                     return false;
 
@@ -690,14 +712,48 @@ bool tryConvertStdUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *val
     return false;
 }
 
-bool convertStdUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType unitsOut, int roundToDecPlaces)
+bool convertUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType outUnits, float convertParam)
 {
-    if (tryConvertStdUnits(*valueInOut, *unitsInOut, valueInOut, unitsOut)) {
-        *unitsInOut = unitsOut;
-        *valueInOut = roundToDecimalPlaces(*valueInOut, roundToDecPlaces);
+    if (tryConvertUnits(*valueInOut, *unitsInOut, valueInOut, outUnits, convertParam)) {
+        *unitsInOut = outUnits;
         return true;
     }
     return false;
+}
+
+bool convertUnits(float valueIn, float *valueOut, Hydroponics_UnitsType unitsIn, Hydroponics_UnitsType outUnits, Hydroponics_UnitsType *unitsOut, float convertParam)
+{
+    if (tryConvertUnits(valueIn, unitsIn, valueOut, outUnits, convertParam)) {
+        if (unitsOut) { *unitsOut = outUnits; }
+        return true;
+    }
+    return false;
+}
+
+Hydroponics_UnitsType baseUnitsFromRate(Hydroponics_UnitsType units)
+{
+    switch (units) {
+        case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
+            return Hydroponics_UnitsType_LiquidVolume_Liters;
+        case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
+            return Hydroponics_UnitsType_LiquidVolume_Gallons;
+        default:
+            break;
+    }
+    return Hydroponics_UnitsType_Undefined;
+}
+
+Hydroponics_UnitsType baseUnitsFromDilution(Hydroponics_UnitsType units)
+{
+    switch (units) {
+        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter:
+            return Hydroponics_UnitsType_LiquidVolume_Liters;
+        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon:
+            return Hydroponics_UnitsType_LiquidVolume_Gallons;
+        default:
+            break;
+    }
+    return Hydroponics_UnitsType_Undefined;
 }
 
 Hydroponics_UnitsType defaultTemperatureUnits(Hydroponics_MeasurementMode measureMode)
@@ -782,10 +838,10 @@ Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measure
 
     switch (measureMode) {
         case Hydroponics_MeasurementMode_Imperial:
-            return Hydroponics_UnitsType_LiquidFlow_GallonsPerMin;
+            return Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin;
         case Hydroponics_MeasurementMode_Metric:
         case Hydroponics_MeasurementMode_Scientific:
-            return Hydroponics_UnitsType_LiquidFlow_LitersPerMin;
+            return Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin;
         default:
             return Hydroponics_UnitsType_Undefined;
     }
@@ -809,23 +865,6 @@ Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode mea
     }
 }
 
-Hydroponics_UnitsType defaultConcentrationUnits(Hydroponics_MeasurementMode measureMode)
-{
-    if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
-    }
-
-    switch (measureMode) {
-        case Hydroponics_MeasurementMode_Imperial:
-        case Hydroponics_MeasurementMode_Metric:
-        case Hydroponics_MeasurementMode_Scientific:
-            return Hydroponics_UnitsType_Concentration_EC;
-        default:
-            return Hydroponics_UnitsType_Undefined;
-    }
-}
-
 int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
@@ -834,13 +873,10 @@ int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode)
     }
 
     switch (measureMode) {
-        case Hydroponics_MeasurementMode_Imperial:
-        case Hydroponics_MeasurementMode_Metric:
-            return 1;
         case Hydroponics_MeasurementMode_Scientific:
             return 2;
         default:
-            return -1;
+            return 1;
     }
 }
 
@@ -1290,6 +1326,22 @@ String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool exclu
     return !excludeSpecial ? F("ReservoirUndefined") : F("");
 }
 
+float railVoltageFromType(Hydroponics_RailType railType)
+{
+    switch (railType) {
+        case Hydroponics_RailType_AC110V:
+            return 110.0f;
+        case Hydroponics_RailType_AC220V:
+            return 220.0f;
+        case Hydroponics_RailType_DC5V:
+            return 5.0f;
+        case Hydroponics_RailType_DC12V:
+            return 12.0f;
+        default:
+            return 0.0f;
+    }
+}
+
 String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial)
 {
     switch (railType) {
@@ -1319,7 +1371,7 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
         case Hydroponics_UnitsType_Temperature_Kelvin:
             return F("°K");
         case Hydroponics_UnitsType_Distance_Meters:
-            return F("M");
+            return F("m");
         case Hydroponics_UnitsType_Distance_Feet:
             return F("ft");
         case Hydroponics_UnitsType_Weight_Kilogram:
@@ -1330,9 +1382,9 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
             return F("L");
         case Hydroponics_UnitsType_LiquidVolume_Gallons:
             return F("gal");
-        case Hydroponics_UnitsType_LiquidFlow_LitersPerMin:
+        case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
             return F("L/min");
-        case Hydroponics_UnitsType_LiquidFlow_GallonsPerMin:
+        case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
             return F("gal/min");
         case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter:
             return F("mL/L");
@@ -1432,9 +1484,9 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             return (Hydroponics_UnitsType)typeIndex;
         }
     }
-    if (unitsSymbolStr.equalsIgnoreCase(F("EC")) || unitsSymbolStr.equalsIgnoreCase(F("TDS"))) { return Hydroponics_UnitsType_Concentration_EC; }
-    if (unitsSymbolStr.equalsIgnoreCase(F("PPM"))) { return Hydroponics_UnitsType_Concentration_PPM500; }
-    if (unitsSymbolStr.equalsIgnoreCase(F("J/s"))) { return Hydroponics_UnitsType_Power_Wattage; }
+    if (unitsSymbolStr.equals(F("J/s"))) { return Hydroponics_UnitsType_Power_Wattage; }
+    if (unitsSymbolStr.equalsIgnoreCase(F("ec")) || unitsSymbolStr.equalsIgnoreCase(F("tds"))) { return Hydroponics_UnitsType_Concentration_TDS; }
+    if (unitsSymbolStr.equalsIgnoreCase(F("ppm"))) { return Hydroponics_UnitsType_Concentration_PPM; }
     if (unitsSymbolStr.equalsIgnoreCase(F("raw"))) { return Hydroponics_UnitsType_Raw_0_1; }
     return Hydroponics_UnitsType_Undefined;
 }

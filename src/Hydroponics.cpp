@@ -780,6 +780,7 @@ void Hydroponics::updateObjects(int pass)
 
         case 1: {
             _pollingFrame++; if (_pollingFrame == 0) { _pollingFrame = 1; }
+
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
                 if (obj && obj->isSensorType()) {
@@ -1651,24 +1652,6 @@ shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(b
             positionIndex,
             inputPin, inputBitRes,
             pullupPin
-        ));
-        if (registerObject(sensor)) { return sensor; }
-    }
-
-    return nullptr;
-}
-
-shared_ptr<HydroponicsTMPMoistureSensor> Hydroponics::addTMPMoistureSensor(byte inputPin, byte inputBitRes)
-{
-    bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_SoilMoisture));
-    HYDRUINO_HARD_ASSERT(inputPinIsDigital, F("Input pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
-
-    if (inputPinIsDigital && positionIndex != -1) {
-        shared_ptr<HydroponicsTMPMoistureSensor> sensor(new HydroponicsTMPMoistureSensor(
-            positionIndex,
-            inputPin, inputBitRes
         ));
         if (registerObject(sensor)) { return sensor; }
     }

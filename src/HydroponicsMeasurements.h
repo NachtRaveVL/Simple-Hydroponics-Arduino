@@ -51,9 +51,10 @@ struct HydroponicsMeasurement {
 
     inline void updateTimestamp() { timestamp = now(); }
     void updateFrame(int minFrame = 0);
+    inline void setMinFrame(int minFrame = 0) { frame = max(minFrame, frame); }
 };
 
-// Single Sensor Data Measurement
+// Single Value Sensor Data Measurement
 struct HydroponicsSingleMeasurement : public HydroponicsMeasurement {
     float value;                                                // Polled value
     Hydroponics_UnitsType units;                                // Units of value
@@ -71,7 +72,7 @@ struct HydroponicsSingleMeasurement : public HydroponicsMeasurement {
     void saveToData(HydroponicsMeasurementData *dataOut) const;
 };
 
-// Binary Sensor Data Measurement
+// Binary Value Sensor Data Measurement
 struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
     bool state;                                                 // Polled state
 
@@ -88,7 +89,7 @@ struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
     inline HydroponicsSingleMeasurement asSingleMeasurement(float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1) { return HydroponicsSingleMeasurement(state ? binTrue : 0.0f, binUnits, timestamp, frame); }
 };
 
-// Double Sensor Data Measurement
+// Double Value Sensor Data Measurement
 struct HydroponicsDoubleMeasurement : public HydroponicsMeasurement {
     float value[2];                                             // Polled values
     Hydroponics_UnitsType units[2];                             // Units of values
@@ -112,7 +113,7 @@ struct HydroponicsDoubleMeasurement : public HydroponicsMeasurement {
     inline HydroponicsSingleMeasurement asSingleMeasurement(int row) { return HydroponicsSingleMeasurement(value[row], units[row], timestamp, frame); }
 };
 
-// Triple Sensor Data Measurement
+// Triple Value Sensor Data Measurement
 struct HydroponicsTripleMeasurement : public HydroponicsMeasurement {
     float value[3];                                             // Polled values
     Hydroponics_UnitsType units[3];                             // Units of values

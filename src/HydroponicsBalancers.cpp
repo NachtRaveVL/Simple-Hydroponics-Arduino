@@ -44,7 +44,7 @@ void HydroponicsBalancer::update()
 
     if (_needsTriggerUpdate && _rangeTrigger) {
         handleRangeTrigger(_rangeTrigger->getTriggerState());
-    }    
+    }
 }
 
 void HydroponicsBalancer::resolveLinks()
@@ -143,9 +143,6 @@ void HydroponicsBalancer::disableDecActuators()
     }
 }
 
-void HydroponicsBalancer::handleBalancerState()
-{ ; }
-
 void HydroponicsBalancer::attachRangeTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_rangeTrigger, F("Range trigger not linked, failure attaching"));
@@ -175,7 +172,7 @@ void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerSta
         auto measurementValue = measurementValueAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
         auto measurementUnits = measurementUnitsAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
 
-        convertStdUnits(&measurementValue, &measurementUnits, _targetUnits);
+        convertUnits(&measurementValue, &measurementUnits, _targetUnits);
 
         float halfTargetRange = _targetRange * 0.5f;
         if (measurementValue > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
@@ -186,8 +183,6 @@ void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerSta
         }
 
         if (_balancerState != balancerStateBefore) {
-            handleBalancerState();
-
             scheduleSignalFireOnce<Hydroponics_BalancerState>(_balancerSignal, _balancerState);
         }
     }
@@ -210,7 +205,7 @@ void HydroponicsLinearEdgeBalancer::update()
         auto sensor = _rangeTrigger->getSensor();
         if (sensor) {
             auto measure = singleMeasurementAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
-            convertStdUnits(&measure.value, &measure.units, _targetUnits);
+            convertUnits(&measure.value, &measure.units, _targetUnits);
 
             float x = fabsf(measure.value - _targetSetpoint);
             float val = _edgeLength > FLT_EPSILON ? mapValue<float>(x, _edgeOffset, _edgeOffset + _edgeLength, 0.0f, 1.0f)
@@ -249,7 +244,7 @@ HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<Hydrop
       _lastDosingTime(0), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1)
 {
     if (volumeUnits != Hydroponics_UnitsType_LiquidVolume_Gallons) {
-        convertStdUnits(&reservoirVolume, &volumeUnits, Hydroponics_UnitsType_LiquidVolume_Gallons);
+        convertUnits(&reservoirVolume, &volumeUnits, Hydroponics_UnitsType_LiquidVolume_Gallons);
     }
     _baseDosingMillis = mapValue<float>(reservoirVolume, 5, 30, 500, 3000);
     _mixTimeMins = mapValue<float>(reservoirVolume, 30, 200, 10, 30);

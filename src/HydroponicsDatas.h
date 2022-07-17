@@ -57,6 +57,8 @@ struct HydroponicsCalibrationData : public HydroponicsData {
 
     // Transforms value from raw (or initial) value into calibrated (or transformed) value.
     inline float transform(float rawValue) const { return (rawValue * multiplier) + offset; }
+    // Transforms value from raw (or initial) value into calibrated (or transformed) value in-place, with optional units write out.
+    inline void transform(float *valueInOut, Hydroponics_UnitsType *unitsOut = nullptr) const { *valueInOut = transform(*valueInOut); if (unitsOut) { *unitsOut = calibUnits; } }
 
     // Inverse transforms value from calibrated (or transformed) value back into raw (or initial) value.
     inline float inverseTransform(float calibratedValue) const { return (calibratedValue - offset) / multiplier; }
@@ -97,6 +99,15 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     inline void setFromScale(float scale) { setFromRange(0.0, scale); }
 };
 
+enum HydroponicsCropsLibData_Flag {
+    HydroponicsCropsLibData_Flag_Invasive =  0x01,              // Flag indicating plant is invasive and will take over other plants (default: false)
+    HydroponicsCropsLibData_Flag_Viner =     0x02,              // Flag indicating plant is a viner and will require a stick for support (default: false)
+    HydroponicsCropsLibData_Flag_Large =     0x04,              // Flag indicating plant grows large and will require proper support (default: false)
+    HydroponicsCropsLibData_Flag_Perennial = 0x08,              // Flag indicating plant grows back year after year (default: false)
+    HydroponicsCropsLibData_Flag_Toxic =     0x10,              // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
+    HydroponicsCropsLibData_Flag_Pruning =   0x20,              // Flag indicating plant benefits from active pruning (default: false)
+    HydroponicsCropsLibData_Flag_Spraying =  0x40               // Flag indicating plant benefits from spraying in the morning (default: false)
+};
 
 // Crop Library Data
 // id: HCLD. Hydroponic crop library data.
@@ -105,24 +116,28 @@ struct HydroponicsCropsLibData : public HydroponicsData {
     char cropName[HYDRUINO_NAME_MAXSIZE];                       // Name of crop
     byte totalGrowWeeks;                                        // How long it takes to grow until harvestable, in weeks (default: 14)
     byte lifeCycleWeeks;                                        // How long a perennials life cycle lasts, in weeks (default: 0)
-    byte phaseDurationWeeks[Hydroponics_CropPhase_MainCount];   // How many weeks each main crop phase lasts (seed,veg,bloom - default: 2,4,8)
-    byte dailyLightHours[Hydroponics_CropPhase_MainCount];      // How many light hours per day is needed per main stages (seed,veg,bloom or all - default: 20,18,12)
-    float phRange[2];                                           // Base acceptable pH range (min,max or mid - default: 6)
-    float tdsRange[2];                                          // Base acceptable TDS/EC range (min,max or mid - default: 1.8,2.4)
+    byte phaseDurationWeeks[Hydroponics_CropPhase_MainCount];   // How many weeks each main crop phase lasts (seed,veg,bloom&> - default: 2,4,8)
+    byte dailyLightHours[Hydroponics_CropPhase_MainCount];      // How many light hours per day is needed per main stages (seed,veg,bloom&> or all - default: 20,18,12)
+    float phRange[2];                                           // Ideal pH range (min,max or mid - default: 6)
+    float tdsRange[2];                                          // Ideal TDS/EC range (min,max or mid - default: 1.8,2.4)
     float nightlyFeedMultiplier;                                // Nightly feed multiplier, if crop uses a lower TDS/EC at night (default: 1)
-    float waterTempRange[2];                                    // Water temperature range (in C, min,max or mid - default: 25)
-    float airTempRange[2];                                      // Air temperature range (in C, min,max or mid - default: 25)
-    bool isInvasiveOrViner;                                     // Flag indicating plant is invasive, will vine, and/or take over other plants (default: false)
-    bool isLargePlant;                                          // Flag indicating plant requires proper supports (default: false)
-    bool isPerennial;                                           // Flag indicating plant grows back year after year (default: false)
-    bool isToxicToPets;                                         // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
-    bool isPruningNeeded;                                       // Flag indicating plant benefits from active pruning (default: false)
-    bool isSprayingNeeded;                                      // Flag indicating plant benefits from spraying in the morning (default: false)
+    float waterTempRange[2];                                    // Ideal water temperature range, in Celsius (min,max or mid - default: 25)
+    float airTempRange[2];                                      // Ideal air temperature range, in Celsius (min,max or mid - default: 25)
+    float co2Levels[2];                                         // Ideal CO2 levels per <=veg/>=bloom stages, in PPM (seed&veg,bloom&> or all - default: 700, 1400)
+    uint16_t flags;                                             // Plant flags
 
     HydroponicsCropsLibData();
     HydroponicsCropsLibData(Hydroponics_CropType cropType);     // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
+
+    inline bool getIsInvasive() const { return flags & HydroponicsCropsLibData_Flag_Invasive; }
+    inline bool getIsViner() const { return flags & HydroponicsCropsLibData_Flag_Viner; }
+    inline bool getIsLarge() const { return flags & HydroponicsCropsLibData_Flag_Large; }
+    inline bool getIsPerennial() const { return flags & HydroponicsCropsLibData_Flag_Perennial; }
+    inline bool getIsToxicToPets() const { return flags & HydroponicsCropsLibData_Flag_Toxic; }
+    inline bool getNeedsPrunning() const { return flags & HydroponicsCropsLibData_Flag_Pruning; }
+    inline bool getNeedsSpraying() const { return flags & HydroponicsCropsLibData_Flag_Spraying; }
 };
 
 

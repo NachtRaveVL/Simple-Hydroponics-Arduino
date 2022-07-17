@@ -26,10 +26,11 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    void setupPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *phBalancer);
-    void setupTDSBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tdsBalancer);
-    void setupTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *tempBalancer);
-    void setupCO2Balancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *co2Balancer);
+    void setupWaterPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterPHBalancer);
+    void setupWaterTDSBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTDSBalancer);
+    void setupWaterTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTempBalancer);
+    void setupAirTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airTempBalancer);
+    void setupAirCO2Balancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airCO2Balancer);
 
     void setBaseFeedMultiplier(float feedMultiplier);
     void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
@@ -80,7 +81,9 @@ struct HydroponicsFeeding {
 
     float phSetpoint;
     float tdsSetpoint;
-    float tempSetpoint;
+    float waterTempSetpoint;
+    float airTempSetpoint;
+    float co2Setpoint;
 
     HydroponicsFeeding(shared_ptr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsFeeding();

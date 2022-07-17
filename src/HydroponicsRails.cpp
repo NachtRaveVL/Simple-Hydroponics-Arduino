@@ -25,11 +25,13 @@ HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 
 
 HydroponicsRail::HydroponicsRail(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex, int classTypeIn)
-    : HydroponicsObject(HydroponicsIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn)
+    : HydroponicsObject(HydroponicsIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
+      _powerUnits(Hydroponics_UnitsType_Power_Wattage)
 { ; }
 
 HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
-    : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType))
+    : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
+      _powerUnits(definedUnitsElse(dataIn->powerUnits, Hydroponics_UnitsType_Power_Wattage))
 { ; }
 
 HydroponicsRail::~HydroponicsRail()
@@ -50,6 +52,18 @@ void HydroponicsRail::resolveLinks()
 void HydroponicsRail::handleLowMemory()
 {
     HydroponicsObject::handleLowMemory();
+}
+
+void HydroponicsRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
+{
+    if (_powerUnits != powerUnits) {
+        _powerUnits = powerUnits;
+    }
+}
+
+Hydroponics_UnitsType HydroponicsRail::getPowerUnits() const
+{
+    return _powerUnits;
 }
 
 bool HydroponicsRail::addActuator(HydroponicsActuator *actuator)
@@ -102,6 +116,11 @@ Hydroponics_PositionIndex HydroponicsRail::getRailIndex() const
     return _id.posIndex;
 }
 
+float HydroponicsRail::getRailVoltage() const
+{
+    return railVoltageFromType(_id.objTypeAs.railType);
+}
+
 Signal<HydroponicsRail *> &HydroponicsRail::getCapacitySignal()
 {
     return _capacitySignal;
@@ -117,6 +136,8 @@ void HydroponicsRail::saveToData(HydroponicsData *dataOut)
     HydroponicsObject::saveToData(dataOut);
 
     dataOut->id.object.classType = (int8_t)classType;
+
+    ((HydroponicsRailData *)dataOut)->powerUnits = _powerUnits;
 }
 
 
@@ -133,7 +154,7 @@ HydroponicsSimpleRail::HydroponicsSimpleRail(const HydroponicsSimpleRailData *da
 
 HydroponicsSimpleRail::~HydroponicsSimpleRail()
 {
-    {   auto actuators = getActuators();
+    {   auto actuators = linksFilterActuators(_links);
         for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
     }
 }
@@ -202,12 +223,12 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType
                              Hydroponics_PositionIndex railIndex,
                              float maxPower,
                              int classType = Regulated)
-    : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUnits(Hydroponics_UnitsType_Power_Wattage), _needsPowerUpdate(true)
+    : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _needsPowerUpdate(true)
 { ; }
 
 HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRailData *dataIn)
     : HydroponicsRail(dataIn), _needsPowerUpdate(true),
-      _maxPower(dataIn->maxPower), _powerUnits(dataIn->powerUnits),
+      _maxPower(dataIn->maxPower),
       _powerSensor(dataIn->powerSensorName), _limitTrigger(newTriggerObjectFromSubData(&(dataIn->limitTrigger)))
 {
     if (_limitTrigger) { attachLimitTrigger(); }
@@ -215,6 +236,9 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
 
 HydroponicsRegulatedRail::~HydroponicsRegulatedRail()
 {
+    {   auto actuators = linksFilterActuators(_links);
+        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
+    }
     if (_powerSensor) { detachPowerSensor(); }
     if (_limitTrigger) { detachLimitTrigger(); delete _limitTrigger; _limitTrigger = nullptr; }
 }
@@ -247,12 +271,17 @@ void HydroponicsRegulatedRail::handleLowMemory()
 
 bool HydroponicsRegulatedRail::canActivate(HydroponicsActuator *actuator)
 {
-    return _limitTrigger ? _limitTrigger->getTriggerState() != Hydroponics_TriggerState_Triggered : true;
+    if (_limitTrigger && _limitTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered) { return false; }
+
+    HydroponicsSingleMeasurement powerReq = actuator->getContinuousPowerDraw();
+    convertUnits(&powerReq.value, &powerReq.units, _powerUnits, getRailVoltage());
+
+    return _powerDraw.value + powerReq.value < _maxPower - FLT_EPSILON;
 }
 
 float HydroponicsRegulatedRail::getCapacity() const
 {
-    return _powerDraw.value / _maxPower;
+    return constrain(_powerDraw.value / _maxPower, 0.0f, 1.0f);
 }
 
 void HydroponicsRegulatedRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
@@ -260,13 +289,28 @@ void HydroponicsRegulatedRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
     if (_powerUnits != powerUnits) {
         _powerUnits = powerUnits;
 
-        convertStdUnits(&_powerDraw.value, &_powerDraw.units, _powerUnits);
+        convertUnits(&_powerDraw, _powerUnits, getRailVoltage());
     }
 }
 
-Hydroponics_UnitsType HydroponicsRegulatedRail::getPowerUnits() const
+bool HydroponicsRegulatedRail::addActuator(HydroponicsActuator *actuator)
 {
-    return _powerUnits;
+    if (HydroponicsRail::addActuator(actuator)) {
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
+        actuator->getActivationSignal().attach(methodSlot);
+        return true;
+    }
+    return false;
+}
+
+bool HydroponicsRegulatedRail::removeActuator(HydroponicsActuator *actuator)
+{
+    if (HydroponicsRail::removeActuator(actuator)) {
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
+        actuator->getActivationSignal().detach(methodSlot);
+        return true;
+    }
+    return false;
 }
 
 void HydroponicsRegulatedRail::setPowerSensor(HydroponicsIdentity powerSensorId)
@@ -297,20 +341,19 @@ shared_ptr<HydroponicsSensor> HydroponicsRegulatedRail::getPowerSensor()
 void HydroponicsRegulatedRail::setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits)
 {
     _powerDraw.value = powerDraw;
-    _powerDraw.units = powerDrawUnits != Hydroponics_UnitsType_Undefined ? powerDrawUnits
-                                                                         : (_powerUnits != Hydroponics_UnitsType_Undefined ? _powerUnits
-                                                                                                                           : Hydroponics_UnitsType_Power_Wattage);
+    _powerDraw.units = definedUnitsElse(powerDrawUnits, _powerUnits, Hydroponics_UnitsType_Power_Wattage);
     _powerDraw.updateTimestamp();
     _powerDraw.updateFrame(1);
 
-    convertStdUnits(&_powerDraw.value, &_powerDraw.units, _powerUnits);
+    convertUnits(&_powerDraw, _powerUnits, getRailVoltage());
 }
 
 void HydroponicsRegulatedRail::setPowerDraw(HydroponicsSingleMeasurement powerDraw)
 {
     _powerDraw = powerDraw;
+    _powerDraw.setMinFrame(1);
 
-    convertStdUnits(&_powerDraw.value, &_powerDraw.units, _powerUnits);
+    convertUnits(&_powerDraw, _powerUnits, getRailVoltage());
 }
 
 const HydroponicsSingleMeasurement &HydroponicsRegulatedRail::getPowerDraw()
@@ -344,8 +387,7 @@ void HydroponicsRegulatedRail::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsRail::saveToData(dataOut);
 
-    ((HydroponicsRegulatedRailData *)dataOut)->maxPower = _maxPower;
-    ((HydroponicsRegulatedRailData *)dataOut)->powerUnits = _powerUnits;
+    ((HydroponicsRegulatedRailData *)dataOut)->maxPower = roundForExport(_maxPower, 1);
     if (_powerSensor.getId()) {
         strncpy(((HydroponicsRegulatedRailData *)dataOut)->powerSensorName, _powerSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
@@ -354,10 +396,33 @@ void HydroponicsRegulatedRail::saveToData(HydroponicsData *dataOut)
     }
 }
 
+void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
+{
+    if (!getPowerSensor() && actuator) {
+        auto powerReq = actuator->getContinuousPowerDraw();
+        auto powerDraw = getPowerDraw();
+        bool enabled = actuator->getIsEnabled(0.0f);
+
+        convertUnits(&powerReq, _powerUnits, getRailVoltage());
+
+        if (enabled) {
+            powerDraw.value += powerReq.value;
+        } else {
+            powerDraw.value -= powerReq.value;
+        }
+
+        setPowerDraw(powerDraw);
+
+        if (!enabled) {
+            scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
+        }
+    }
+}
+
 void HydroponicsRegulatedRail::attachPowerSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_powerSensor, F("Power sensor not linked, failure attaching"));
-    if (_powerSensor) {
+    HYDRUINO_SOFT_ASSERT(getPowerSensor(), F("Power sensor not linked, failure attaching"));
+    if (getPowerSensor()) {
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
         _powerSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -365,8 +430,8 @@ void HydroponicsRegulatedRail::attachPowerSensor()
 
 void HydroponicsRegulatedRail::detachPowerSensor()
 {
-    HYDRUINO_SOFT_ASSERT(_powerSensor, F("Power sensor not linked, failure detaching"));
-    if (_powerSensor) {
+    HYDRUINO_SOFT_ASSERT(getPowerSensor(), F("Power sensor not linked, failure detaching"));
+    if (getPowerSensor()) {
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
         _powerSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -376,7 +441,13 @@ void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *
 {
     if (measurement && measurement->frame) {
         _needsPowerUpdate = false;
-        setPowerDraw(singleMeasurementAt(measurement, 0, _maxPower, _powerUnits)); // TODO: Correct row reference, based on sensor
+        float capacityBefore = getCapacity();
+
+        setPowerDraw(singleMeasurementAt(measurement, 0, _maxPower, _powerUnits));
+
+        if (getCapacity() < capacityBefore - FLT_EPSILON) {
+            scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
+        }
     }
 }
 
@@ -400,14 +471,14 @@ void HydroponicsRegulatedRail::detachLimitTrigger()
 
 void HydroponicsRegulatedRail::handleLimitTrigger(Hydroponics_TriggerState triggerState)
 {
-    if (triggerState != Hydroponics_TriggerState_Undefined) {
+    if (triggerState == Hydroponics_TriggerState_NotTriggered) {
         scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
     }
 }
 
 
 HydroponicsRailData::HydroponicsRailData()
-    : HydroponicsObjectData()
+    : HydroponicsObjectData(), powerUnits(Hydroponics_UnitsType_Undefined)
 {
     _size = sizeof(*this);
 }
@@ -415,11 +486,15 @@ HydroponicsRailData::HydroponicsRailData()
 void HydroponicsRailData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsObjectData::toJSONObject(objectOut);
+
+    if (powerUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("powerUnits")] = powerUnits; }
 }
 
 void HydroponicsRailData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsObjectData::fromJSONObject(objectIn);
+
+    powerUnits = objectIn[F("powerUnits")] | powerUnits;
 }
 
 HydroponicsSimpleRailData::HydroponicsSimpleRailData()
@@ -443,7 +518,7 @@ void HydroponicsSimpleRailData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsRegulatedRailData::HydroponicsRegulatedRailData()
-    : HydroponicsRailData(), maxPower(0), powerUnits{Hydroponics_UnitsType_Undefined}, powerSensorName{0}
+    : HydroponicsRailData(), maxPower(0), powerSensorName{0}, limitTrigger()
 {
     _size = sizeof(*this);
 }
@@ -453,7 +528,6 @@ void HydroponicsRegulatedRailData::toJSONObject(JsonObject &objectOut) const
     HydroponicsRailData::toJSONObject(objectOut);
 
     objectOut[F("maxPower")] = maxPower;
-    if (powerUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("powerUnits")] = powerUnits; }
     if (powerSensorName[0]) { objectOut[F("powerSensorName")] = stringFromChars(powerSensorName, HYDRUINO_NAME_MAXSIZE); }
     if (limitTrigger.type != -1) {
         JsonObject limitTriggerObj = objectOut.createNestedObject(F("limitTrigger"));
@@ -466,7 +540,6 @@ void HydroponicsRegulatedRailData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsRailData::fromJSONObject(objectIn);
 
     maxPower = objectIn[F("maxPower")] | maxPower;
-    powerUnits = objectIn[F("powerUnits")] | powerUnits;
     const char *powerSensorNameStr = objectIn[F("powerSensorName")];
     if (powerSensorNameStr && powerSensorNameStr[0]) { strncpy(powerSensorName, powerSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
     JsonObjectConst limitTriggerObj = objectIn[F("limitTrigger")];

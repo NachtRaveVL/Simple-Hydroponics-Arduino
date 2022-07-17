@@ -62,7 +62,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
 
-#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal on/off for scheduler to register as such
+#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
+#define HYDRUINO_SCHEDULER_BALANCE_MINTIME  30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
 
 #define HYDRUINO_DOSETIME_MIN_FRACTION      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
 #define HYDRUINO_DOSETIME_MAX_FRACTION      1.5f                    // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
@@ -359,11 +360,12 @@ enum Hydroponics_UnitsType {
     Hydroponics_UnitsType_Weight_Pounds,                    // Pounds weight mode
     Hydroponics_UnitsType_LiquidVolume_Liters,              // Liters liquid volume mode
     Hydroponics_UnitsType_LiquidVolume_Gallons,             // Gallons liquid volume mode
-    Hydroponics_UnitsType_LiquidFlow_LitersPerMin,          // Liters per minute liquid flow mode
-    Hydroponics_UnitsType_LiquidFlow_GallonsPerMin,         // Gallons per minute liquid flow mode
+    Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin,      // Liters per minute liquid flow rate mode
+    Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin,     // Gallons per minute liquid flow rate mode
     Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter, // Milli liter per liter dilution mode
     Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon, // Milli liter per gallon dilution mode
     Hydroponics_UnitsType_Power_Wattage,                    // Wattage power mode
+    Hydroponics_UnitsType_Power_Amperage,                   // Amperage current power mode
     Hydroponics_UnitsType_pHScale_0_14,                     // pH scale [0.0,14.0] mode
     Hydroponics_UnitsType_Concentration_EC,                 // Siemens electrical conductivity mode
     Hydroponics_UnitsType_Concentration_PPM500,             // Parts-per-million 500 (NaCl) concentration mode (US)
@@ -373,10 +375,9 @@ enum Hydroponics_UnitsType {
     Hydroponics_UnitsType_Raw_0_1,                          // Raw value [0.0,1.0] mode
 
     Hydroponics_UnitsType_Count,                            // Internal use only
-    Hydroponics_UnitsType_Concentration_PPMTDS = Hydroponics_UnitsType_Concentration_PPM500, // TDS PPM concentration mode alias
+    Hydroponics_UnitsType_Concentration_TDS = Hydroponics_UnitsType_Concentration_EC, // Standard TDS concentration mode alias
     Hydroponics_UnitsType_Concentration_PPM = Hydroponics_UnitsType_Concentration_PPM500, // Standard PPM concentration mode alias
     Hydroponics_UnitsType_Power_JoulesPerSecond = Hydroponics_UnitsType_Power_Wattage, // Joules per second power mode alias
-    Hydroponics_UnitsType_Raw = Hydroponics_UnitsType_Raw_0_1, // Standard raw mode alias
     Hydroponics_UnitsType_Undefined = -1                    // Internal use only
 };
 
