@@ -309,7 +309,7 @@ void HydroponicsPumpRelayActuator::update()
     if (_pumpTimeAccMillis) {
         time_t timeMillis = millis();
         time_t timePassedMillis = timeMillis - _pumpTimeAccMillis;
-        if (_pumpTimeAccMillis >= HYDRUINO_ACT_PUMPCALC_WRTMINMILLIS) {
+        if (_pumpTimeAccMillis >= HYDRUINO_ACT_PUMPCALC_MINWRTMILLIS) {
             handlePumpTime(timePassedMillis);
             _pumpTimeAccMillis = max(1, timeMillis);
         }

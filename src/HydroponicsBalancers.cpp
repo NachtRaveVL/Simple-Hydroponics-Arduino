@@ -307,8 +307,8 @@ void HydroponicsTimedDosingBalancer::performDosing()
         if (_dosingMillis) {
             auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosingMillis;
             dosingMillis = (_targetSetpoint - dosingValue) * dosingRatePerMs;
-            dosingMillis = constrain(dosingMillis, _baseDosingMillis * HYDRUINO_DOSETIME_MIN_FRACTION,
-                                                   _baseDosingMillis * HYDRUINO_DOSETIME_MAX_FRACTION);
+            dosingMillis = constrain(dosingMillis, _baseDosingMillis * HYDRUINO_DOSETIME_FRACTION_MIN,
+                                                   _baseDosingMillis * HYDRUINO_DOSETIME_FRACTION_MAX);
         }
         _lastDosingValue = dosingValue;
         _dosingMillis = dosingMillis;

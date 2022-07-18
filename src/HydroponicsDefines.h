@@ -45,13 +45,13 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
 #define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported/user-facing position indexing starts at 1 or 0 (aka display offset)
 
-#define HYDRUINO_ACT_PUMPCALC_WRTMINMILLIS  250                     // Minimum time millis needing to pass before a pump reports changed volume to reservoir (reduces error accumulation)
-#define HYDRUINO_ACT_PUMPCALC_MINFLOWRATE   0.05f                   // What fraction of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
+#define HYDRUINO_ACT_PUMPCALC_MINWRTMILLIS  250                     // Minimum time millis needing to pass before a pump reports/writes changed volume to reservoir (reduces error accumulation)
+#define HYDRUINO_ACT_PUMPCALC_MINFLOWRATE   0.05                    // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
 #define HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF  5                       // Maximum polling frames # away an instantaneous flow rate can be for it to be used in pump/volume calculations (so it uses only recent measurements)
-#define HYDRUINO_ACTTASK_TIMED_SPINMILLIS   5                       // However many millis away from stop time a timed actuator task can use yield() up to before using a blocking spin-lock (ensures fine dosing, too high can cause system lockups)
+#define HYDRUINO_ACT_TIMEDTASK_SPINMILLIS   15                      // However many millis away from stop time a timed actuator task can use yield() up to before using a blocking spin-lock (ensures fine dosing, too high can cause system lockups while too low can cause dosing timers to go over)
 
 #define HYDRUINO_CROP_PH_RANGE_HALF         1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
-#define HYDRUINO_CROP_EC_RANGE_HALF         0.5f                    // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
+#define HYDRUINO_CROP_EC_RANGE_HALF         0.5                     // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_TEMP_RANGE_HALF       5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_CO2_RANGE_HALF        100                     // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_NIGHT_BEGINHR         22                      // Hour of the day night begins (for night feeding multiplier)
@@ -59,8 +59,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_CROP_GROWWEEKS_MAX         16                      // Maximum grow weeks to support scheduling up to
 #define HYDRUINO_CROP_GROWWEEKS_MIN         8                       // Minimum grow weeks to support scheduling up to
 
-#define HYDRUINO_FEEDRES_EMPTY_FRACTION     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
-#define HYDRUINO_FEEDRES_FILLED_FRACTION    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+#define HYDRUINO_FEEDRES_FRACTION_EMPTY     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+#define HYDRUINO_FEEDRES_FRACTION_FILLED    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
@@ -68,8 +68,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRUINO_SCHEDULER_BALANCE_MINTIME  30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
 
-#define HYDRUINO_DOSETIME_MIN_FRACTION      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
-#define HYDRUINO_DOSETIME_MAX_FRACTION      1.5f                    // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
+#define HYDRUINO_DOSETIME_FRACTION_MIN      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
+#define HYDRUINO_DOSETIME_FRACTION_MAX      1.5f                    // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
