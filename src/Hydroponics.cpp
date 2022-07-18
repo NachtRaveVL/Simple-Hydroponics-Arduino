@@ -952,7 +952,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
         }
     }
 
-    return shared_ptr<HydroponicsObject>(nullptr);
+    return nullptr;
 }
 
 shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
@@ -1252,9 +1252,10 @@ uint32_t Hydroponics::getPollingFrame() const
     return _pollingFrame;
 }
 
-bool Hydroponics::getIsPollingFrameOld(uint32_t frame) const
+bool Hydroponics::getIsPollingFrameOld(unsigned int frame, unsigned int allowance) const
 {
-    return _pollingFrame > frame || (frame == UINT32_MAX && _pollingFrame < UINT32_MAX);
+    unsigned int diff = abs(_pollingFrame - frame);
+    return diff > allowance;
 }
 
 String Hydroponics::getWiFiSSID()
@@ -1616,6 +1617,28 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addUltrasonicDistanceSensor(byt
             inputPin, inputBitRes, true
         ));
         if (registerObject(sensor)) { return sensor; }
+    }
+
+    return nullptr;
+}
+
+shared_ptr<HydroponicsAnalogSensor> Hydroponics::addPowerUsageMeter(byte inputPin, bool isWattageBased, byte inputBitRes = 8)
+{
+    bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
+    Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PowerUsageMeter));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+
+    if (inputPinIsAnalog && positionIndex != -1) {
+        shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
+            Hydroponics_SensorType_PowerUsageMeter,
+            positionIndex,
+            inputPin, inputBitRes
+        ));
+        if (registerObject(sensor)) {
+            if (!isWattageBased) { sensor->setMeasurementUnits(Hydroponics_UnitsType_Power_Amperage); }
+            return sensor;
+        }
     }
 
     return nullptr;

@@ -50,7 +50,6 @@ HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
 HydroponicsCrop::~HydroponicsCrop()
 {
     detachCustomCrop();
-    //discardFromTaskManager(&_feedingSignal);
     if (_cropsData) { returnCropsLibData(); }
     if (_feedReservoir) { _feedReservoir->removeCrop(this); }
 }
@@ -59,9 +58,10 @@ void HydroponicsCrop::update()
 {
     HydroponicsObject::update();
 
-    if (_feedingState != triggerStateFromBool(getNeedsFeeding())) {
-        _feedingState = triggerStateFromBool(getNeedsFeeding());
-        scheduleSignalFireOnce<HydroponicsCrop *>(getSharedPtr(), _feedingSignal, this);
+    auto feedingState = triggerStateFromBool(getNeedsFeeding());
+    if (_feedingState != feedingState) {
+        _feedingState = feedingState;
+        handleFeedingState();
     }
 }
 
@@ -204,6 +204,11 @@ void HydroponicsCrop::saveToData(HydroponicsData *dataOut)
         strncpy(((HydroponicsCropData *)dataOut)->feedReservoirName, _feedReservoir.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     ((HydroponicsCropData *)dataOut)->feedingWeight = _feedingWeight;
+}
+
+void HydroponicsCrop::handleFeedingState()
+{
+    scheduleSignalFireOnce<HydroponicsCrop *>(getSharedPtr(), _feedingSignal, this);
 }
 
 void HydroponicsCrop::recalcGrowWeekAndPhase()
@@ -393,7 +398,7 @@ void HydroponicsAdaptiveCrop::setMoistureUnits(Hydroponics_UnitsType moistureUni
 
 Hydroponics_UnitsType HydroponicsAdaptiveCrop::getMoistureUnits() const
 {
-    return _moistureUnits;
+    return definedUnitsElse(_moistureUnits, Hydroponics_UnitsType_Concentration_EC);
 }
 
 void HydroponicsAdaptiveCrop::setMoistureSensor(HydroponicsIdentity moistureSensorId)
@@ -424,11 +429,12 @@ shared_ptr<HydroponicsSensor> HydroponicsAdaptiveCrop::getMoistureSensor()
 void HydroponicsAdaptiveCrop::setSoilMoisture(float soilMoisture, Hydroponics_UnitsType soilMoistureUnits)
 {
     _soilMoisture.value = soilMoisture;
-    _soilMoisture.units = definedUnitsElse(soilMoistureUnits, _moistureUnits, Hydroponics_UnitsType_Concentration_EC);
+    _soilMoisture.units = soilMoistureUnits;
     _soilMoisture.updateTimestamp();
     _soilMoisture.updateFrame(1);
 
     convertUnits(&_soilMoisture, _moistureUnits);
+    _needsSoilMoisture = false;
 }
 
 void HydroponicsAdaptiveCrop::setSoilMoisture(HydroponicsSingleMeasurement soilMoisture)
@@ -437,6 +443,7 @@ void HydroponicsAdaptiveCrop::setSoilMoisture(HydroponicsSingleMeasurement soilM
     _soilMoisture.setMinFrame(1);
 
     convertUnits(&_soilMoisture, _moistureUnits);
+    _needsSoilMoisture = false;
 }
 
 const HydroponicsSingleMeasurement &HydroponicsAdaptiveCrop::getSoilMoisture()
@@ -495,7 +502,6 @@ void HydroponicsAdaptiveCrop::detachSoilMoistureSensor()
 void HydroponicsAdaptiveCrop::handleSoilMoistureMeasure(const HydroponicsMeasurement *measurement)
 {
     if (measurement && measurement->frame) {
-        _needsSoilMoisture = false;
         setSoilMoisture(singleMeasurementAt(measurement, 0));
     }
 }
@@ -520,8 +526,9 @@ void HydroponicsAdaptiveCrop::detachFeedingTrigger()
 
 void HydroponicsAdaptiveCrop::handleFeedingTrigger(Hydroponics_TriggerState triggerState)
 {
-    if (triggerState != Hydroponics_TriggerState_Undefined) {
-        scheduleSignalFireOnce<HydroponicsCrop *>(getSharedPtr(), _feedingSignal, this);
+    if (triggerState != Hydroponics_TriggerState_Undefined && triggerState != Hydroponics_TriggerState_Disabled) {
+        _feedingState = triggerState;
+        handleFeedingState();
     }
 }
 

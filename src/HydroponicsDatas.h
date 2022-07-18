@@ -46,7 +46,7 @@ struct HydroponicsSystemData : public HydroponicsData {
 struct HydroponicsCalibrationData : public HydroponicsData {
     char sensorName[HYDRUINO_NAME_MAXSIZE];                     // Sensor name this calibration belongs to
     Hydroponics_UnitsType calibUnits;                           // Calibration output units
-    float multiplier, offset;                                   // Ax + B value transform
+    float multiplier, offset;                                   // Ax + B value transform coefficients
 
     HydroponicsCalibrationData();
     HydroponicsCalibrationData(HydroponicsIdentity sensorId,
@@ -57,11 +57,23 @@ struct HydroponicsCalibrationData : public HydroponicsData {
 
     // Transforms value from raw (or initial) value into calibrated (or transformed) value.
     inline float transform(float rawValue) const { return (rawValue * multiplier) + offset; }
-    // Transforms value from raw (or initial) value into calibrated (or transformed) value in-place, with optional units write out.
-    inline void transform(float *valueInOut, Hydroponics_UnitsType *unitsOut = nullptr) const { *valueInOut = transform(*valueInOut); if (unitsOut) { *unitsOut = calibUnits; } }
+    // Transforms value in-place from raw (or initial) value into calibrated (or transformed) value, with optional units write out.
+    inline void transform(float *valueInOut, Hydroponics_UnitsType *unitsOut = nullptr) const { *valueInOut = transform(*valueInOut);
+                                                                                                if (unitsOut) { *unitsOut = calibUnits; } }
+    // Transforms measurement from raw (or initial) measurement into calibrated (or transformed) measurement.
+    inline HydroponicsSingleMeasurement transform(HydroponicsSingleMeasurement rawMeasurement) { return HydroponicsSingleMeasurement(transform(rawMeasurement.value), calibUnits, rawMeasurement.timestamp, rawMeasurement.frame); }
+    // Transforms measurement in-place from raw (or initial) measurement into calibrated (or transformed) measurement.
+    inline void transform(HydroponicsSingleMeasurement *measurementInOut) const { transform(&measurementInOut->value, &measurementInOut->units); }
 
     // Inverse transforms value from calibrated (or transformed) value back into raw (or initial) value.
     inline float inverseTransform(float calibratedValue) const { return (calibratedValue - offset) / multiplier; }
+    // Inverse transforms value in-place from calibrated (or transformed) value back into raw (or initial) value, with optional units write out.
+    inline void inverseTransform(float *valueInOut, Hydroponics_UnitsType *unitsOut = nullptr) const { *valueInOut = inverseTransform(*valueInOut);
+                                                                                                       if (unitsOut) { *unitsOut = Hydroponics_UnitsType_Raw_0_1; } }
+    // Inverse transforms measurement from calibrated (or transformed) measurement back into raw (or initial) measurement.
+    inline HydroponicsSingleMeasurement inverseTransform(HydroponicsSingleMeasurement rawMeasurement) { return HydroponicsSingleMeasurement(inverseTransform(rawMeasurement.value), calibUnits, rawMeasurement.timestamp, rawMeasurement.frame); }
+    // Inverse transforms measurement in-place from calibrated (or transformed) measurement back into raw (or initial) measurement.
+    inline void inverseTransform(HydroponicsSingleMeasurement *measurementInOut) const { inverseTransform(&measurementInOut->value, &measurementInOut->units); }
 
     // Sets linear calibration curvature from two points.
     // Measured normalized raw values should be between 0.0 and 1.0, and represents

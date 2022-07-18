@@ -33,6 +33,7 @@ public:
     inline bool isFluidClass() const { return classType == Fluid; }
     inline bool isFeedClass() const { return classType == Feed; }
     inline bool isPipeClass() const { return classType == Pipe; }
+    inline bool isAnyFluidClass() const { return isFluidClass() || isFeedClass(); }
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroponicsReservoir(Hydroponics_ReservoirType reservoirType,
@@ -86,6 +87,9 @@ protected:
 
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
+
+    virtual void handleFilledState();
+    virtual void handleEmptyState();
 };
 
 
@@ -135,6 +139,9 @@ protected:
     HydroponicsTrigger *_emptyTrigger;                      // Empty trigger (owned)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
+
+    virtual void handleFilledState() override;
+    virtual void handleEmptyState() override;
 
     void attachFilledTrigger();
     void detachFilledTrigger();

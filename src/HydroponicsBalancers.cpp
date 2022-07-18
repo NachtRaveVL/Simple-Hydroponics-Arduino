@@ -5,7 +5,7 @@
 
 #include "Hydroponics.h"
 
-HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, int measurementRow, int typeIn)
+HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, byte measurementRow, int typeIn)
     : type((typeof(type))typeIn), _rangeTrigger(nullptr), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false), _needsTriggerUpdate(true),
       _targetUnits(Hydroponics_UnitsType_Undefined), _balancerState(Hydroponics_BalancerState_Undefined)
 {
@@ -17,11 +17,11 @@ HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, f
 
 HydroponicsBalancer::~HydroponicsBalancer()
 {
+    //discardFromTaskManager(&_balancerSignal);
     _enabled = false;
-    if (_rangeTrigger) { detachRangeTrigger(); delete _rangeTrigger; _rangeTrigger = nullptr; }
     disableIncActuators();
     disableDecActuators();
-    //discardFromTaskManager(&_balancerSignal);
+    if (_rangeTrigger) { detachRangeTrigger(); delete _rangeTrigger; _rangeTrigger = nullptr; }
 }
 
 void HydroponicsBalancer::setTargetSetpoint(float targetSetpoint)
@@ -163,7 +163,7 @@ void HydroponicsBalancer::detachRangeTrigger()
 
 void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerState)
 {
-    if (!_enabled || !_rangeTrigger) { return; }
+    if (!_enabled || !_rangeTrigger || triggerState == Hydroponics_TriggerState_Undefined || triggerState == Hydroponics_TriggerState_Disabled) { return; }
 
     auto sensor = _rangeTrigger->getSensor();
     if (sensor) {
@@ -189,7 +189,7 @@ void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerSta
 }
 
 
-HydroponicsLinearEdgeBalancer::HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float edgeOffset, float edgeLength, int measurementRow)
+HydroponicsLinearEdgeBalancer::HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float edgeOffset, float edgeLength, byte measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, LinearEdge), _edgeOffset(edgeOffset), _edgeLength(edgeLength)
 { ; }
 
@@ -234,12 +234,12 @@ float HydroponicsLinearEdgeBalancer::getEdgeLength() const
 }
 
 
-HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, unsigned int mixTimeMins, int measurementRow)
+HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, unsigned int mixTimeMins, byte measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing), _baseDosingMillis(baseDosingMillis), _mixTimeMins(mixTimeMins),
       _lastDosingTime(0), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1)
 { ; }
 
-HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, int measurementRow)
+HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, byte measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
       _lastDosingTime(0), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1)
 {

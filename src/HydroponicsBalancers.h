@@ -24,7 +24,7 @@ public:
     HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor,
                         float targetSetpoint,
                         float targetRange,
-                        int measurementRow = 0,
+                        byte measurementRow = 0,
                         int type = Unknown);
     virtual ~HydroponicsBalancer();
 
@@ -82,7 +82,7 @@ public:
                                   float targetRange,
                                   float edgeOffset = 0,
                                   float edgeLength = 0,
-                                  int measurementRow = 0);
+                                  byte measurementRow = 0);
     virtual ~HydroponicsLinearEdgeBalancer();
 
     virtual void update() override;
@@ -91,8 +91,8 @@ public:
     float getEdgeLength() const;
 
 protected:
-    float _edgeOffset;
-    float _edgeLength;
+    float _edgeOffset;                                      // TODO
+    float _edgeLength;                                      // TODO
 };
 
 
@@ -104,13 +104,13 @@ public:
                                    float targetRange,
                                    time_t baseDosingMillis,
                                    unsigned int mixTimeMins,
-                                   int measurementRow = 0);
+                                   byte measurementRow = 0);
     HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor,
                                    float targetSetpoint,
                                    float targetRange,
                                    float reservoirVolume,
                                    Hydroponics_UnitsType volumeUnits,
-                                   int measurementRow = 0);
+                                   byte measurementRow = 0);
     virtual ~HydroponicsTimedDosingBalancer();
 
     virtual void update() override;
@@ -119,14 +119,14 @@ public:
     unsigned int getMixTimeMins() const;
 
 protected:
-    uint8_t _mixTimeMins;
-    time_t _baseDosingMillis;
+    uint8_t _mixTimeMins;                                   // TODO
+    time_t _baseDosingMillis;                               // TODO
 
-    time_t _lastDosingTime;
-    float _lastDosingValue;
-    time_t _dosingMillis;
-    Hydroponics_BalancerState _dosingDir;
-    int8_t _dosingActIndex;
+    time_t _lastDosingTime;                                 // TODO
+    float _lastDosingValue;                                 // TODO
+    time_t _dosingMillis;                                   // TODO
+    Hydroponics_BalancerState _dosingDir;                   // TODO
+    int8_t _dosingActIndex;                                 // TODO
 
     void performDosing();
 };

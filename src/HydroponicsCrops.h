@@ -92,6 +92,8 @@ protected:
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
 
+    virtual void handleFeedingState();
+
     void recalcGrowWeekAndPhase();
     void checkoutCropsLibData();
     void returnCropsLibData();

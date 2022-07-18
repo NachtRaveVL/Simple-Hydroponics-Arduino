@@ -1036,6 +1036,31 @@ void setupRandomSeed()
     randomSeed(micros());
 }
 
+bool getActuatorInWaterFromType(Hydroponics_ActuatorType actuatorType)
+{
+    switch (actuatorType) {
+        case Hydroponics_ActuatorType_WaterPump:
+        case Hydroponics_ActuatorType_WaterHeater:
+        case Hydroponics_ActuatorType_WaterAerator:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+bool getActuatorIsPumpFromType(Hydroponics_ActuatorType actuatorType)
+{
+    switch (actuatorType) {
+        case Hydroponics_ActuatorType_WaterPump:
+        case Hydroponics_ActuatorType_PeristalticPump:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
 String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeSpecial)
 {
     switch (actuatorType) {
@@ -1326,7 +1351,7 @@ String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool exclu
     return !excludeSpecial ? F("ReservoirUndefined") : F("");
 }
 
-float railVoltageFromType(Hydroponics_RailType railType)
+float getRailVoltageFromType(Hydroponics_RailType railType)
 {
     switch (railType) {
         case Hydroponics_RailType_AC110V:

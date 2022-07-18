@@ -47,7 +47,7 @@ public:
 
     virtual bool enableActuator(float intensity = 1.0f, bool override = false) = 0;
     virtual bool getCanEnable() override;
-    virtual bool getIsEnabled(float tolerance = 0.5) const = 0;
+    virtual bool getIsEnabled(float tolerance = 0.0f) const = 0;
 
     virtual void setContinuousPowerDraw(float contPowerDraw, Hydroponics_UnitsType contPowerDrawUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setContinuousPowerDraw(HydroponicsSingleMeasurement contPowerDraw) override;
@@ -69,6 +69,7 @@ public:
 
 protected:
     byte _outputPin;                                        // Output pin
+    bool _enabled;                                          // Enabled state flag
     HydroponicsSingleMeasurement _contPowerDraw;            // Continuous power draw
     HydroponicsDLinkObject<HydroponicsRail> _rail;          // Power rail linkage
     HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
@@ -99,8 +100,7 @@ public:
     bool getActiveLow() const;
 
 protected:
-    bool _enabled;                                          // Enabled state flag
-    bool _activeLow;                                        // If pulling pin to a LOW state infers ACTIVE (default: true)
+    bool _activeLow;                                        // If pulling pin to a LOW state infers ACTIVE status (default: true)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -120,6 +120,9 @@ public:
 
     virtual void update() override;
     virtual void resolveLinks() override;
+
+    virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
+    virtual void disableActuator() override;
 
     virtual bool canPump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
     virtual bool pump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
@@ -154,10 +157,15 @@ protected:
     HydroponicsSingleMeasurement _contFlowRate;             // Continuous flow rate
     HydroponicsSingleMeasurement _flowRate;                 // Current flow rate
     bool _needsFlowRate;                                    // Needs flow rate update tracking flag
+    time_t _pumpTimeAccMillis;                              // Time pump flow was accounted up to
     HydroponicsDLinkObject<HydroponicsReservoir> _outputReservoir; // Output reservoir linkage
     HydroponicsDLinkObject<HydroponicsSensor> _flowRateSensor; // Flow rate sensor linkage
 
     virtual void saveToData(HydroponicsData *dataOut) override;
+
+    void checkPumpingReservoirs();
+    void pulsePumpingSensors();
+    void handlePumpTime(time_t timeMillis);
 
     void attachFlowRateSensor();
     void detachFlowRateSensor();
@@ -190,7 +198,6 @@ public:
     HydroponicsBitResolution getPWMResolution() const;
 
 protected:
-    bool _enabled;                                          // Enabled state flag
     float _pwmAmount;                                       // Current set PWM amount
     HydroponicsBitResolution _pwmResolution;                // PWM output resolution
 

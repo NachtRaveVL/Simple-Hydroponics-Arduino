@@ -64,10 +64,13 @@ public:
 
 protected:
     Hydroponics_UnitsType _powerUnits;                      // Power units preferred
+    Hydroponics_TriggerState _limitState;                   // Current limit state
     Signal<HydroponicsRail *> _capacitySignal;              // Capacity changed signal
 
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
+
+    virtual void handleLimitState();
 };
 
 // Simple Power Rail
