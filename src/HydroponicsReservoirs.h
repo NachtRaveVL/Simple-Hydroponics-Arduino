@@ -94,8 +94,8 @@ protected:
 
 
 // Simple Fluid Reservoir
-// Basic fluid reservoir that contains a volume of liquid and the ability to track
-// such. Crude, but effective.
+// Basic fluid reservoir that contains a volume of liquid and the ability to track such.
+// Crude, but effective.
 class HydroponicsFluidReservoir : public HydroponicsReservoir, public HydroponicsVolumeAwareInterface {
 public:
     HydroponicsFluidReservoir(Hydroponics_ReservoirType reservoirType,
@@ -156,9 +156,8 @@ protected:
 
 
 // Feed Water Reservoir
-// TODO
-// Optional channel number is used mainly to track specific feed water reservoirs
-// but is usually (but not always) aliasing reservoir type position index.
+// The feed water reservoir can be thought of as an entire feeding channel hub, complete
+// with sensors to automate the variety of tasks associated with feeding crops.
 class HydroponicsFeedReservoir : public HydroponicsFluidReservoir, public HydroponicsWaterPHAwareInterface, public HydroponicsWaterTDSAwareInterface, public HydroponicsWaterTemperatureAwareInterface,  public HydroponicsAirTemperatureAwareInterface, public HydroponicsAirCO2AwareInterface {
 public:
     HydroponicsFeedReservoir(Hydroponics_PositionIndex reservoirIndex,

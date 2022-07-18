@@ -37,6 +37,7 @@ void ActuatorTimedEnableTask::exec()
     if (_actuator->enableActuator(_enableIntensity)) {
         time_t startMillis = millis();
         time_t endMillis = startMillis + _enableTimeMillis;
+
         {   time_t delayMillis = max(0, _enableTimeMillis - HYDRUINO_ACTTASK_TIMED_SPINMILLIS);
             if (delayMillis > 0) { delay(delayMillis); }
         }
@@ -47,6 +48,7 @@ void ActuatorTimedEnableTask::exec()
                 timeMillis = millis();
             }
         }
+
         _actuator->disableActuator();
 
         tryDisableRepeatingTask(taskId);
@@ -219,6 +221,7 @@ String hexStringFromBytes(const byte *bytesIn, size_t length)
     for (size_t index = 0; index < length; ++index) {
         String valStr = String(bytesIn[index], 16);
         if (valStr.length() == 1) { valStr = String('0') + valStr; }
+
         retVal += valStr;
     }
     return retVal.length() ? retVal : String(F("null"));
@@ -228,7 +231,7 @@ void hexStringToBytes(String stringIn, byte *bytesOut, size_t length)
 {
     if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
     for (size_t index = 0; index < length; ++index) {
-        String valStr = stringIn.substring(index*2,(index+1)*2);
+        String valStr = stringIn.substring(index << 1,(index+1) << 1);
         if (valStr.length() == 2) { bytesOut[index] = strtoul(valStr.c_str(), nullptr, 16); }
         else { bytesOut[index] = 0; }
     }
@@ -562,7 +565,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_pHScale_0_14:
             switch(unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / 14.0f; // FIXME no idea if this is correct
+                    *valueOut = valueIn / 14.0f;
                     return true;
 
                 default:
@@ -677,7 +680,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_EC:
-                    *valueOut = valueIn * 5.0f; // FIXME: No idea if this is right
+                    *valueOut = valueIn * 5.0f;
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_PPM500:
