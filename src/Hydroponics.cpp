@@ -1254,8 +1254,7 @@ uint32_t Hydroponics::getPollingFrame() const
 
 bool Hydroponics::getIsPollingFrameOld(unsigned int frame, unsigned int allowance) const
 {
-    unsigned int diff = abs(_pollingFrame - frame);
-    return diff > allowance;
+    return _pollingFrame - frame > allowance;
 }
 
 String Hydroponics::getWiFiSSID()
