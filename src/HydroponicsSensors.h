@@ -58,10 +58,10 @@ public:
     virtual bool takeMeasurement(bool override = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
     virtual bool getIsTakingMeasurement() const override;
-    virtual bool getNeedsPolling() const override;
+    virtual bool getNeedsPolling(uint32_t allowance = 0) const override;
 
-    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) = 0;
-    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const = 0;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) = 0;
+    virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const = 0;
 
     virtual void setCrop(HydroponicsIdentity cropId) override;
     virtual void setCrop(shared_ptr<HydroponicsCrop> crop) override;
@@ -86,7 +86,7 @@ protected:
     HydroponicsDLinkObject<HydroponicsCrop> _crop;          // Crop linkage
     HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
     const HydroponicsCalibrationData *_calibrationData;     // Calibration data
-    Signal<const HydroponicsMeasurement *> _measureSignal;        // New measurement signal
+    Signal<const HydroponicsMeasurement *> _measureSignal;  // New measurement signal
 
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
@@ -109,8 +109,8 @@ public:
     virtual bool takeMeasurement(bool override = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const override;
 
     bool tryRegisterAsISR();
 
@@ -145,17 +145,11 @@ public:
     HydroponicsAnalogSensor(const HydroponicsAnalogSensorData *dataIn);
     virtual ~HydroponicsAnalogSensor();
 
-    virtual void resolveLinks() override;
-
     virtual bool takeMeasurement(bool override = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
-    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
-
-    void setTemperatureSensor(HydroponicsIdentity sensorId);
-    void setTemperatureSensor(shared_ptr<HydroponicsSensor> sensor);
-    shared_ptr<HydroponicsSensor> getTemperatureSensor();
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const override;
 
     HydroponicsBitResolution getInputResolution() const;
     bool getInputInversion() const;
@@ -165,7 +159,6 @@ protected:
     bool _inputInversion;                                   // Analog input inversion
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
-    HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor linkage
 
     void _takeMeasurement(taskid_t taskId);
 
@@ -193,10 +186,6 @@ public:
     virtual bool setWireDeviceAddress(const uint8_t wireDevAddress[8]);
     virtual const uint8_t *getWireDeviceAddress() const;
 
-    void setTemperatureSensor(HydroponicsIdentity sensorId);
-    void setTemperatureSensor(shared_ptr<HydroponicsSensor> sensor);
-    shared_ptr<HydroponicsSensor> getTemperatureSensor();
-
     OneWire *getOneWire();
 
 protected:
@@ -204,7 +193,6 @@ protected:
     OneWire *_oneWire;                                      // OneWire comm instance (strong, nullptr when not used)
     Hydroponics_PositionIndex _wirePosIndex;                // OneWire sensor position index
     uint8_t _wireDevAddress[8];                             // OneWire sensor device address
-    HydroponicsDLinkObject<HydroponicsSensor> _tempSensor;  // Temperature sensor linkage
 
     void resolveDeviceAddress();
 
@@ -231,8 +219,8 @@ public:
     inline byte getMeasurementRowForHumidity() const { return 1; }
     inline byte getMeasurementRowForHeatIndex() const { return 2; }
 
-    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow) override;
-    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const override;
 
     virtual bool setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex) override; // disabled
     virtual Hydroponics_PositionIndex getWirePositionIndex() const override; // disabled
@@ -273,8 +261,8 @@ public:
 
     inline byte getMeasurementRowForTemperature() const { return 0; }
 
-    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, int measurementRow = 0) override;
-    virtual Hydroponics_UnitsType getMeasurementUnits(int measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) override;
+    virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const override;
 
     byte getPullupPin() const;
 
@@ -316,7 +304,6 @@ struct HydroponicsAnalogSensorData : public HydroponicsSensorData {
     byte inputBitRes;
     bool inputInversion;
     Hydroponics_UnitsType measurementUnits;
-    char waterTempSensorName[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsAnalogSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -328,7 +315,6 @@ struct HydroponicsDigitalSensorData : public HydroponicsSensorData {
     byte inputBitRes;
     Hydroponics_PositionIndex wirePosIndex;
     uint8_t wireDevAddress[8];
-    char waterTempSensorName[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsDigitalSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

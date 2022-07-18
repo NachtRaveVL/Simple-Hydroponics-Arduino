@@ -45,14 +45,17 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
 #define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported/user-facing position indexing starts at 1 or 0 (aka display offset)
 
-#define HYDRUINO_ACTTASK_TIMED_SPINMILLIS   5                       // However many millis away from stop time a timed actuator task can use yield() up to before using a blocking spin-lock (used to ensure fine dosing, too high can cause system lockups)
+#define HYDRUINO_ACT_PUMPCALC_WRTMINMILLIS  250                     // Minimum time millis needing to pass before a pump reports changed volume to reservoir (reduces error accumulation)
+#define HYDRUINO_ACT_PUMPCALC_MINFLOWRATE   0.05f                   // What fraction of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
+#define HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF  5                       // Maximum polling frames # away an instantaneous flow rate can be for it to be used in pump/volume calculations (so it uses only recent measurements)
+#define HYDRUINO_ACTTASK_TIMED_SPINMILLIS   5                       // However many millis away from stop time a timed actuator task can use yield() up to before using a blocking spin-lock (ensures fine dosing, too high can cause system lockups)
 
 #define HYDRUINO_CROP_PH_RANGE_HALF         1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_EC_RANGE_HALF         0.5f                    // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_TEMP_RANGE_HALF       5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_CO2_RANGE_HALF        100                     // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
-#define HYDRUINO_CROP_NIGHT_BEGIN_HR        22                      // Hour of the day night begins (for night feeding multiplier)
-#define HYDRUINO_CROP_NIGHT_END_HR          6                       // Hour of the day night ends (for night feeding multiplier)
+#define HYDRUINO_CROP_NIGHT_BEGINHR         22                      // Hour of the day night begins (for night feeding multiplier)
+#define HYDRUINO_CROP_NIGHT_ENDHR           6                       // Hour of the day night ends (for night feeding multiplier)
 #define HYDRUINO_CROP_GROWWEEKS_MAX         16                      // Maximum grow weeks to support scheduling up to
 #define HYDRUINO_CROP_GROWWEEKS_MIN         8                       // Minimum grow weeks to support scheduling up to
 

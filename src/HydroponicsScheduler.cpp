@@ -33,7 +33,7 @@ void HydroponicsScheduler::update()
 {
     if (_schedulerData) {
         {   DateTime currTime = getCurrentTime();
-            bool nowDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_END_HR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGIN_HR;
+            bool nowDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
 
             if (_inDaytimeMode != nowDaytimeMode) {
                 _inDaytimeMode = nowDaytimeMode;

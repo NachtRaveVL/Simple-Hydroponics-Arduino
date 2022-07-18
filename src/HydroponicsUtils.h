@@ -263,6 +263,11 @@ extern void setupRandomSeed();
 // Converts from boolean value to triggered/not-triggered trigger state.
 inline Hydroponics_TriggerState triggerStateFromBool(bool value) { return value ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered; }
 
+// Returns true for actuators that "live" in water (thus must do empty checks) as derived from actuator type enumeration.
+extern bool getActuatorInWaterFromType(Hydroponics_ActuatorType actuatorType);
+// Returns true for actuators that pump liquid (thus must do empty/filled checks) as derived from actuator type enumeration.
+extern bool getActuatorIsPumpFromType(Hydroponics_ActuatorType actuatorType);
+
 // Converts from actuator type enum to string, with optional exclude for special types (instead returning "").
 extern String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeSpecial = false);
 // Converts back to actuator type enum from string.
@@ -284,7 +289,7 @@ extern String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, boo
 extern Hydroponics_ReservoirType reservoirTypeFromString(String reservoirTypeStr);
 
 // Returns rail voltage as derived from rail type enumeration.
-extern float railVoltageFromType(Hydroponics_RailType railType);
+extern float getRailVoltageFromType(Hydroponics_RailType railType);
 
 // Converts from power rail enum to string, with optional exclude for special types (instead returning "").
 extern String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial = false);

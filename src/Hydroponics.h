@@ -264,37 +264,43 @@ public:
     // Level indicators can be used to control filled/empty status of a liquid reservoir.
     shared_ptr<HydroponicsBinarySensor> addLevelIndicator(byte inputPin);                           // Digital input pin this sensor sits on (can make interruptable)
 
-    // Adds a new analog CO2 sensor to the system using the given parameters.
-    // CO2 sensors are used to control and measure the amount of CO2 plants have available.
-    shared_ptr<HydroponicsAnalogSensor> addAnalogCO2Sensor(byte inputPin,                           // Analog input pin this sensor sits on
-                                                           byte inputBitRes = 8);                   // ADC bit resolution to use
     // Adds a new analog PH meter to the system using the given parameters.
-    // pH meters are vital in ensuring the proper alkalinity of the feed water.
+    // pH meters are vital in ensuring the proper alkalinity level is used in feed water.
     shared_ptr<HydroponicsAnalogSensor> addAnalogPhMeter(byte inputPin,                             // Analog input pin this sensor sits on
                                                          byte inputBitRes = 8);                     // ADC bit resolution to use
-    // Adds a new analog temperature sensor to the system using the given parameters.
-    // Temperature sensors improve measurement precision as well as ensure proper water conditions.
-    shared_ptr<HydroponicsAnalogSensor> addAnalogTemperatureSensor(byte inputPin,                   // Analog input pin this sensor sits on
-                                                                   byte inputBitRes = 8);           // ADC bit resolution to use
     // Adds a new analog TDS electrode to the system using the given parameters.
-    // TDS electrodes are vital in ensuring the proper nutrition levels of the feed water.
+    // TDS electrodes are vital in ensuring the proper nutrition levels are used in feed water.
     shared_ptr<HydroponicsAnalogSensor> addAnalogTDSElectrode(byte inputPin,                        // Analog input pin this sensor sits on
                                                               int ppmScale = 500,                   // PPM measurement scaling (default: 500, aka TDS/PPM500)
                                                               byte inputBitRes = 8);                // ADC bit resolution to use
-    // Adds a new analog pump flow sensor to the system using the given parameters.
-    // Flow sensors allow for more precise liquid volume pumping calculations to be performed.
+    // Adds a new analog temperature sensor to the system using the given parameters.
+    // Temperature sensors can be used to ensure proper temperature conditions.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogTemperatureSensor(byte inputPin,                   // Analog input pin this sensor sits on
+                                                                   byte inputBitRes = 8);           // ADC bit resolution to use
+    // Adds a new analog CO2 sensor to the system using the given parameters.
+    // CO2 sensors can be used to ensure proper CO2 levels.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogCO2Sensor(byte inputPin,                           // Analog input pin this sensor sits on
+                                                           byte inputBitRes = 8);                   // ADC bit resolution to use
+
+    // Adds a new analog PWM-based pump flow sensor to the system using the given parameters.
+    // Pump flow sensors can allow for more precise liquid volume pumping calculations.
     shared_ptr<HydroponicsAnalogSensor> addPWMPumpFlowSensor(byte inputPin,                         // Analog input pin this sensor sits on
                                                              byte inputBitRes = 8);                 // ADC bit resolution to use
     // Adds a new analog water height meter to the system using the given parameters.
-    // Water height meters can determine the filled/empty status of a liquid reservoir.
+    // Water height meters can be used to determine the volume of a container.
     shared_ptr<HydroponicsAnalogSensor> addAnalogWaterHeightMeter(byte inputPin,                    // Analog input pin this sensor sits on
                                                                   byte inputBitRes = 8);            // ADC bit resolution to use
-    // Adds a new analog ultrasonic distance sensor to the system using the given parameters.
-    // Downward-facing ultrasonic distance sensors call also determine filled/empty status.
+    // Adds a new downward-facing analog ultrasonic distance sensor to the system using the given parameters.
+    // Downward-facing ultrasonic distance sensors can be used to determine the volume of a container.
+    // (Pro-tip: These widely available inexpensive sensors don't sit in the water and thus won't corrode.)
     shared_ptr<HydroponicsAnalogSensor> addUltrasonicDistanceSensor(byte inputPin,                  // Analog input pin this sensor sits on
                                                                     byte inputBitRes = 8);          // ADC bit resolution to use
 
-    // TODO: addPowerSensor
+    // Adds a new analog power usage meter to the system using the given parameters.
+    // Power usage meters can be used to determine and manage the energy demands of a power rail.
+    shared_ptr<HydroponicsAnalogSensor> addPowerUsageMeter(byte inputPin,                           // Analog input pin this sensor sits on
+                                                           bool isWattageBased,                     // If power meter measures wattage (true) or amperage (false)
+                                                           byte inputBitRes = 8);                   // ADC bit resolution to use
 
     // Adds a new digital DHT* OneWire temperature & humidity sensor to the system using the given parameters.
     // Uses the DHT library. A very common digital sensor, included in most Arduino starter kits.
@@ -305,8 +311,6 @@ public:
     shared_ptr<HydroponicsDSTemperatureSensor> addDSTemperatureSensor(byte inputPin,                // OneWire digital input pin this sensor sits on
                                                                       byte inputBitRes = 9,         // Sensor ADC bit resolution to use
                                                                       byte pullupPin = -1);         // Strong pullup pin (if used, else -1)
-
-    // TODO: addDigitalPHMeter, addDigitalECMeter, addDigitalCO2Sensor
 
     // Convenience builders for common crops (shared, nullptr return = failure).
 
@@ -404,7 +408,7 @@ public:
     bool getRTCBatteryFailure() const;                              // Whenever the system booted up with RTC battery failure flag set
     uint32_t getPollingInterval() const;                            // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
     uint32_t getPollingFrame() const;                               // System polling frame number for sensor frame tracking
-    bool getIsPollingFrameOld(uint32_t frame) const;                // Determines if a given frame # if out of date (true) or current (false)
+    bool getIsPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const; // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
     String getWiFiSSID();                                           // SSID for WiFi connection
     String getWiFiPassword();                                       // Password for WiFi connection (plaintext)
 

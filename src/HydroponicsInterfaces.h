@@ -146,7 +146,7 @@ public:
     virtual bool enableActuator(float intensity = 1.0f, bool override = false) = 0;
     virtual void disableActuator() = 0;
     virtual bool getCanEnable() = 0;
-    virtual bool getIsEnabled(float tolerance = 0.5) const = 0;
+    virtual bool getIsEnabled(float tolerance = 0.0f) const = 0;
 
     virtual void setContinuousPowerDraw(float contPowerDraw, Hydroponics_UnitsType contPowerDrawUnits = Hydroponics_UnitsType_Undefined) = 0;
     virtual void setContinuousPowerDraw(HydroponicsSingleMeasurement contPowerDraw) = 0;
@@ -159,7 +159,7 @@ public:
     virtual bool takeMeasurement(bool override = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
     virtual bool getIsTakingMeasurement() const = 0;
-    virtual bool getNeedsPolling() const = 0;
+    virtual bool getNeedsPolling(uint32_t allowance = 0) const = 0;
 };
 
 // Crop Object Interface
