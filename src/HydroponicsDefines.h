@@ -350,7 +350,6 @@ enum Hydroponics_BalancerState {
     Hydroponics_BalancerState_Undefined = -1               // Internal use only
 };
 
-
 // Units Type
 // Unit of measurement type. Specifies the unit type associated with a measured value.
 enum Hydroponics_UnitsType {
