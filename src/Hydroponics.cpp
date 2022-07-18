@@ -822,6 +822,7 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
 
         if (retVal) {
             //scheduleSignalFireOnce<Hydroponics_ReservoirType>(_additivesSignal, customAdditiveData->reservoirType);
+            getSchedulerInstance()->setNeedsScheduling();
             return true;
         }
     }
@@ -847,6 +848,7 @@ bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *cu
 
         if (retVal) {
             //scheduleSignalFireOnce<Hydroponics_ReservoirType>(_additivesSignal, customAdditiveData->reservoirType);
+            getSchedulerInstance()->setNeedsScheduling();
             return true;
         }
     }
@@ -1007,7 +1009,7 @@ void Hydroponics::setSystemName(String systemName)
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
-        // TODO system name or just lcd update signal
+        // TODO: system name or just lcd update signal
     }
 }
 
@@ -1017,7 +1019,8 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
-        // TODO system TZ or just lcd update signal
+        // TODO: system TZ or just lcd update signal
+        getSchedulerInstance()->setNeedsScheduling();
     }
 }
 
@@ -1322,7 +1325,7 @@ void Hydroponics::checkFreeMemory()
 
 void Hydroponics::forwardLogMessage(String message, bool flushAfter = false)
 {
-    // TODO
+    // TODO: Log message forwarding.
 }
 
 #endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
