@@ -63,7 +63,7 @@ Hydroponics::~Hydroponics()
     deallocateEEPROM();
     deallocateRTC();
     deallocateSD();
-    _i2cWire = nullptr;
+    _i2cWire = nullptr; _spi = nullptr; _wifi = nullptr;
     if (this == _activeInstance) { _activeInstance = nullptr; }
     if (_systemData) { delete _systemData; _systemData = nullptr; }
 }
@@ -236,7 +236,6 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
                 _scheduler.initFromData(&(_systemData->scheduler));
-                //_actQueue.initFromData(&(_systemData->actQueue));
                 //_publisher.initFromData(&(_systemData->publisher));
             } else if (systemData) {
                 delete systemData;
@@ -395,7 +394,6 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
                 _scheduler.initFromData(&(_systemData->scheduler));
-                //_actQueue.initFromData(&(_systemData->actQueue));
                 //_publisher.initFromData(&(_systemData->publisher));
             } else if (systemData) {
                 delete systemData;
@@ -692,7 +690,6 @@ void Hydroponics::launch()
 
     // Ensures linkage (and reverse linkage) of unlinked objects
     _scheduler.resolveLinks();
-    //_actQueue.resolveLinks();
     //_publisher.resolveLinks();
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         auto obj = iter->second;
@@ -1316,7 +1313,6 @@ void Hydroponics::checkFreeMemory()
             }
         }
         _scheduler.handleLowMemory();
-        //_actQueue.handleLowMemory();
         //_publisher.handleLowMemory();
     }
 }

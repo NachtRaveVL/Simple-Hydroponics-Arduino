@@ -438,16 +438,16 @@ protected:
     Task *_dataTask;                                                // Data collection task (on polling interval)
     Task *_miscTask;                                                // Misc task
 #elif defined(HYDRUINO_USE_SCHEDULER)
-    bool _loopsStarted;                                             // Loops started flag
-    bool _suspend;                                                  // Suspend operation flag
+    byte _loopsStarted;                                             // Loops started flag
+    byte _suspend;                                                  // Suspend operation flag
 #endif
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
-    bool _eepromBegan;                                              // Status of EEPROM begin() call
-    bool _rtcBegan;                                                 // Status of RTC begin() call
-    bool _rtcBattFail;                                              // Status of RTC battery failure flag
-    bool _wifiBegan;                                                // Status of WiFi begin() call
+    byte _eepromBegan;                                              // Status of EEPROM begin() call
+    byte _rtcBegan;                                                 // Status of RTC begin() call
+    byte _rtcBattFail;                                              // Status of RTC battery failure flag
+    byte _wifiBegan;                                                // Status of WiFi begin() call
     byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
 
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
