@@ -788,7 +788,7 @@ void HydroponicsPumpRelayActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsRelayActuatorData::toJSONObject(objectOut);
 
-    if (flowRateUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("flowRateUnits")] = flowRateUnits; }
+    if (flowRateUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("flowRateUnits")] = unitsTypeToSymbol(flowRateUnits); }
     if (contFlowRate.type != -1) {
         JsonObject contFlowRateObj = objectOut.createNestedObject(F("contFlowRate"));
         contFlowRate.toJSONObject(contFlowRateObj);
@@ -801,7 +801,7 @@ void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsRelayActuatorData::fromJSONObject(objectIn);
 
-    flowRateUnits = objectIn[F("flowRateUnits")] | flowRateUnits;
+    flowRateUnits = unitsTypeFromSymbol(objectIn[F("flowRateUnits")]);
     JsonVariantConst contFlowRateVar = objectIn[F("contFlowRate")];
     if (!contFlowRateVar.isNull()) { contFlowRate.fromJSONVariant(contFlowRateVar); }
     const char *outputReservoirNameStr = objectIn[F("outputReservoirName")];

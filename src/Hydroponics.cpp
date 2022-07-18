@@ -552,44 +552,13 @@ void Hydroponics::commonInit()
         Serial.print(F(", SPISpeed: "));
         Serial.print(roundf(getSPISpeed() / 1000000.0f)); Serial.print(F("MHz"));
         Serial.print(F(", systemMode: "));
-        switch(getSystemMode()) {
-            case Hydroponics_SystemMode_Recycling: Serial.print(F("Recycling")); break;
-            case Hydroponics_SystemMode_DrainToWaste: Serial.print(F("DrainToWaste")); break;
-            case Hydroponics_SystemMode_Count:
-            case Hydroponics_SystemMode_Undefined:
-                Serial.print(getSystemMode()); break;
-        }
+        Serial.print(systemModeToString(getSystemMode()));
         Serial.print(F(", measureMode: "));
-        switch (getMeasurementMode()) {
-            case Hydroponics_MeasurementMode_Imperial: Serial.print(F("Imperial")); break;
-            case Hydroponics_MeasurementMode_Metric: Serial.print(F("Metric")); break;
-            case Hydroponics_MeasurementMode_Scientific: Serial.print(F("Scientific")); break;
-            case Hydroponics_MeasurementMode_Count:
-            case Hydroponics_MeasurementMode_Undefined:
-                Serial.print(getMeasurementMode()); break;
-        }
+        Serial.print(measurementModeToString(getMeasurementMode()));
         Serial.print(F(", dispOutMode: "));
-        switch (getDisplayOutputMode()) {
-            case Hydroponics_DisplayOutputMode_Disabled: Serial.print(F("Disabled")); break;
-            case Hydroponics_DisplayOutputMode_20x4LCD: Serial.print(F("20x4LCD")); break;
-            case Hydroponics_DisplayOutputMode_20x4LCD_Swapped: Serial.print(F("20x4LCD <Swapped>")); break;
-            case Hydroponics_DisplayOutputMode_16x2LCD: Serial.print(F("16x2LCD")); break;
-            case Hydroponics_DisplayOutputMode_16x2LCD_Swapped: Serial.print(F("16x2LCD <Swapped>")); break;
-            case Hydroponics_DisplayOutputMode_Count:
-            case Hydroponics_DisplayOutputMode_Undefined:
-                Serial.print(getDisplayOutputMode()); break;
-        }
+        Serial.print(displayOutputModeToString(getDisplayOutputMode()));
         Serial.print(F(", ctrlInMode: "));
-        switch (getControlInputMode()) {
-            case Hydroponics_ControlInputMode_Disabled: Serial.print(F("Disabled")); break;
-            case Hydroponics_ControlInputMode_2x2Matrix: Serial.print(F("2x2Matrix")); break;
-            case Hydroponics_ControlInputMode_4xButton: Serial.print(F("4xButton")); break;
-            case Hydroponics_ControlInputMode_6xButton: Serial.print(F("6xButton")); break;
-            case Hydroponics_ControlInputMode_RotaryEncoder: Serial.print(F("RotaryEncoder")); break;
-            case Hydroponics_ControlInputMode_Count:
-            case Hydroponics_ControlInputMode_Undefined:
-                Serial.print(getControlInputMode()); break;
-        }
+        Serial.print(controlInputModeToString(getControlInputMode()));
         Serial.println();
     #endif
 }

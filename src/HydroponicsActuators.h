@@ -95,7 +95,7 @@ public:
 
     virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
     virtual void disableActuator() override;
-    virtual bool getIsEnabled(float tolerance = 0.5) const override;
+    virtual bool getIsEnabled(float tolerance = 0.0f) const override;
 
     bool getActiveLow() const;
 
@@ -157,7 +157,7 @@ protected:
     HydroponicsSingleMeasurement _contFlowRate;             // Continuous flow rate
     HydroponicsSingleMeasurement _flowRate;                 // Current flow rate
     bool _needsFlowRate;                                    // Needs flow rate update tracking flag
-    time_t _pumpTimeAccMillis;                              // Time pump flow was accounted up to
+    time_t _pumpTimeAccMillis;                              // Time pump flow has been accounted for up to
     HydroponicsDLinkObject<HydroponicsReservoir> _outputReservoir; // Output reservoir linkage
     HydroponicsDLinkObject<HydroponicsSensor> _flowRateSensor; // Flow rate sensor linkage
 

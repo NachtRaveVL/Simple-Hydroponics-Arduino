@@ -325,7 +325,7 @@ struct HydroponicsDigitalSensorData : public HydroponicsSensorData {
 struct HydroponicsDHTTempHumiditySensorData : public HydroponicsDigitalSensorData {
     byte dhtType;
     bool computeHeatIndex;
-    Hydroponics_UnitsType measurementUnits[3];
+    Hydroponics_UnitsType measurementUnits;
 
     HydroponicsDHTTempHumiditySensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

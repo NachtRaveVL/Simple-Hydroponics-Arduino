@@ -543,7 +543,7 @@ void HydroponicsCropData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsObjectData::toJSONObject(objectOut);
 
-    if (substrateType != Hydroponics_SubstrateType_Undefined) { objectOut[F("substrateType")] = substrateType; }
+    if (substrateType != Hydroponics_SubstrateType_Undefined) { objectOut[F("substrateType")] = substrateTypeToString(substrateType); }
     if (sowDate) { objectOut[F("sowDate")] = sowDate; }
     if (feedReservoirName[0]) { objectOut[F("feedReservoirName")] = stringFromChars(feedReservoirName, HYDRUINO_NAME_MAXSIZE); }
     if (!isFPEqual(feedingWeight, 1.0f)) { objectOut[F("feedingWeight")] = feedingWeight; }
@@ -552,7 +552,7 @@ void HydroponicsCropData::toJSONObject(JsonObject &objectOut) const
 void HydroponicsCropData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsObjectData::fromJSONObject(objectIn);
-    substrateType = objectIn[F("substrateType")] | substrateType;
+    substrateType = substrateTypeFromString(objectIn[F("substrateType")]);
     sowDate = objectIn[F("sowDate")] | sowDate;
     const char *feedReservoirNameStr = objectIn[F("feedReservoirName")];
     if (feedReservoirNameStr && feedReservoirNameStr[0]) { strncpy(feedReservoirName, feedReservoirNameStr, HYDRUINO_NAME_MAXSIZE); }
@@ -593,7 +593,7 @@ void HydroponicsAdaptiveCropData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsCropData::toJSONObject(objectOut);
 
-    if (moistureUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("moistureUnits")] = moistureUnits; }
+    if (moistureUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("moistureUnits")] = unitsTypeToSymbol(moistureUnits); }
     if (moistureSensorName[0]) { objectOut[F("moistureSensorName")] = stringFromChars(moistureSensorName, HYDRUINO_NAME_MAXSIZE); }
     if (feedingTrigger.type != -1) {
         JsonObject feedingTriggerObj = objectOut.createNestedObject(F("feedingTrigger"));
@@ -605,7 +605,7 @@ void HydroponicsAdaptiveCropData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsCropData::fromJSONObject(objectIn);
 
-    moistureUnits = objectIn[F("moistureUnits")] | moistureUnits;
+    moistureUnits = unitsTypeFromSymbol(objectIn[F("moistureUnits")]);
     const char *moistureSensorNameStr = objectIn[F("moistureSensorName")];
     if (moistureSensorNameStr && moistureSensorNameStr[0]) { strncpy(moistureSensorName, moistureSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
     JsonObjectConst feedingTriggerObj = objectIn[F("feedingTrigger")];

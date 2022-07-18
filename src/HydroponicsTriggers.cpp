@@ -351,7 +351,7 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
         default: break;
     }
     if (detriggerTolerance > 0) { objectOut[F("detriggerTolerance")] = detriggerTolerance; }
-    if (toleranceUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("toleranceUnits")] = toleranceUnits; }
+    if (toleranceUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("toleranceUnits")] = unitsTypeToSymbol(toleranceUnits); }
 }
 
 void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
@@ -374,5 +374,5 @@ void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
         default: break;
     }
     detriggerTolerance = objectIn[F("detriggerTolerance")] | detriggerTolerance;
-    toleranceUnits = objectIn[F("toleranceUnits")] | toleranceUnits;
+    toleranceUnits = unitsTypeFromSymbol(objectIn[F("toleranceUnits")]);
 }

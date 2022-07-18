@@ -1064,6 +1064,80 @@ bool getActuatorIsPumpFromType(Hydroponics_ActuatorType actuatorType)
     }
 }
 
+String systemModeToString(Hydroponics_SystemMode systemMode, bool excludeSpecial)
+{
+    switch (systemMode) {
+        case Hydroponics_SystemMode_Recycling:
+            return F("Recycling");
+        case Hydroponics_SystemMode_DrainToWaste:
+            return F("DrainToWaste");
+        case Hydroponics_SystemMode_Count:
+            return !excludeSpecial ? F("SystemModeCount") : F("");
+        case Hydroponics_SystemMode_Undefined:
+            break;
+    }
+    return !excludeSpecial ? F("SystemModeUndefined") : F("");
+}
+
+String measurementModeToString(Hydroponics_MeasurementMode measurementMode, bool excludeSpecial)
+{
+    switch (measurementMode) {
+        case Hydroponics_MeasurementMode_Imperial:
+            return F("Imperial");
+        case Hydroponics_MeasurementMode_Metric:
+            return F("Metric");
+        case Hydroponics_MeasurementMode_Scientific:
+            return F("Scientific");
+        case Hydroponics_MeasurementMode_Count:
+            return !excludeSpecial ? F("MeasurementModeCount") : F("");
+        case Hydroponics_MeasurementMode_Undefined:
+            break;
+    }
+    return !excludeSpecial ? F("MeasurementModeUndefined") : F("");
+}
+
+String displayOutputModeToString(Hydroponics_DisplayOutputMode displayOutMode, bool excludeSpecial)
+{
+    switch (displayOutMode) {
+        case Hydroponics_DisplayOutputMode_Disabled:
+            return F("Disabled");
+        case Hydroponics_DisplayOutputMode_20x4LCD:
+            return F("20x4LCD");
+        case Hydroponics_DisplayOutputMode_20x4LCD_Swapped:
+            return F("20x4LCDSwapped");
+        case Hydroponics_DisplayOutputMode_16x2LCD:
+            return F("16x2LCD");
+        case Hydroponics_DisplayOutputMode_16x2LCD_Swapped:
+            return F("16x2LCDSwapped");
+        case Hydroponics_DisplayOutputMode_Count:
+            return !excludeSpecial ? F("DisplayOutputModeCount") : F("");
+        case Hydroponics_DisplayOutputMode_Undefined:
+            break;
+    }
+    return !excludeSpecial ? F("DisplayOutputModeUndefined") : F("");
+}
+
+String controlInputModeToString(Hydroponics_ControlInputMode controlInMode, bool excludeSpecial)
+{
+    switch (controlInMode) {
+        case Hydroponics_ControlInputMode_Disabled:
+            return F("Disabled");
+        case Hydroponics_ControlInputMode_2x2Matrix:
+            return F("2x2Matrix");
+        case Hydroponics_ControlInputMode_4xButton:
+            return F("4xButton");
+        case Hydroponics_ControlInputMode_6xButton:
+            return F("6xButton");
+        case Hydroponics_ControlInputMode_RotaryEncoder:
+            return F("RotaryEncoder");
+        case Hydroponics_ControlInputMode_Count:
+            return !excludeSpecial ? F("ControlInputModeCount") : F("");
+        case Hydroponics_ControlInputMode_Undefined:
+            break;
+    }
+    return !excludeSpecial ? F("ControlInputModeUndefined") : F("");
+}
+
 String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeSpecial)
 {
     switch (actuatorType) {
@@ -1473,6 +1547,46 @@ String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool exclu
     return String();
 }
 
+Hydroponics_SystemMode systemModeFromString(String systemModeStr)
+{
+    for (int typeIndex = 0; typeIndex <= Hydroponics_SystemMode_Count; ++typeIndex) {
+        if (systemModeStr == systemModeToString((Hydroponics_SystemMode)typeIndex)) {
+            return (Hydroponics_SystemMode)typeIndex;
+        }
+    }
+    return Hydroponics_SystemMode_Undefined;
+}
+
+Hydroponics_MeasurementMode measurementModeFromString(String measurementModeStr)
+{
+    for (int typeIndex = 0; typeIndex <= Hydroponics_MeasurementMode_Count; ++typeIndex) {
+        if (measurementModeStr == measurementModeToString((Hydroponics_MeasurementMode)typeIndex)) {
+            return (Hydroponics_MeasurementMode)typeIndex;
+        }
+    }
+    return Hydroponics_MeasurementMode_Undefined;
+}
+
+Hydroponics_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
+{
+    for (int typeIndex = 0; typeIndex <= Hydroponics_DisplayOutputMode_Count; ++typeIndex) {
+        if (displayOutModeStr == displayOutputModeToString((Hydroponics_DisplayOutputMode)typeIndex)) {
+            return (Hydroponics_DisplayOutputMode)typeIndex;
+        }
+    }
+    return Hydroponics_DisplayOutputMode_Undefined;
+}
+
+Hydroponics_ControlInputMode controlInputModeFromString(String controlInModeStr)
+{
+    for (int typeIndex = 0; typeIndex <= Hydroponics_ControlInputMode_Count; ++typeIndex) {
+        if (controlInModeStr == controlInputModeToString((Hydroponics_ControlInputMode)typeIndex)) {
+            return (Hydroponics_ControlInputMode)typeIndex;
+        }
+    }
+    return Hydroponics_ControlInputMode_Undefined;
+}
+
 Hydroponics_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 {
     for (int typeIndex = 0; typeIndex <= Hydroponics_ActuatorType_Count; ++typeIndex) {
@@ -1556,74 +1670,4 @@ Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
         int8_t decode = positionIndexStr.toInt();
         return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
     }
-}
-
-bool convertToJson(const Hydroponics_ActuatorType& src, JsonVariant dst)
-{
-    return dst.set(actuatorTypeToString(src));
-}
-
-void convertFromJson(JsonVariantConst src, Hydroponics_ActuatorType& dst)
-{
-    dst = actuatorTypeFromString(src);
-}
-
-bool convertToJson(const Hydroponics_SensorType& src, JsonVariant dst)
-{
-    return dst.set(sensorTypeToString(src));
-}
-
-void convertFromJson(JsonVariantConst src, Hydroponics_SensorType& dst)
-{
-    dst = sensorTypeFromString(src);
-}
-
-bool convertToJson(const Hydroponics_CropType& src, JsonVariant dst)
-{
-    return dst.set(cropTypeToString(src));
-}
-
-void convertFromJson(JsonVariantConst src, Hydroponics_CropType& dst)
-{
-    dst = cropTypeFromString(src);
-}
-
-bool convertToJson(const Hydroponics_SubstrateType& src, JsonVariant dst)
-{
-    return dst.set(substrateTypeToString(src));
-}
-
-void convertFromJson(JsonVariantConst src, Hydroponics_SubstrateType& dst)
-{
-    dst = substrateTypeFromString(src);
-}
-
-bool convertToJson(const Hydroponics_ReservoirType& src, JsonVariant dst)
-{
-    return dst.set(reservoirTypeToString(src));
-}
-
-void convertFromJson(JsonVariantConst src, Hydroponics_ReservoirType& dst)
-{
-    dst = reservoirTypeFromString(src);
-}
-
-bool convertToJson(const Hydroponics_RailType& src, JsonVariant dst)
-{
-    return dst.set(railTypeToString(src));
-}
-
-void convertFromJson(JsonVariantConst src, Hydroponics_RailType& dst)
-{
-    dst = railTypeFromString(src);
-}
-
-bool convertToJson(const Hydroponics_UnitsType& src, JsonVariant dst)
-{
-    return dst.set(unitsTypeToSymbol(src));
-}
-
-void convertFromJson(JsonVariantConst src, Hydroponics_UnitsType& dst)
-{
-    dst = unitsTypeFromSymbol(src);
 }

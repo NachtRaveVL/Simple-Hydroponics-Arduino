@@ -610,7 +610,9 @@ HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(Hydroponics_P
 HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(const HydroponicsDHTTempHumiditySensorData *dataIn)
     : HydroponicsDigitalSensor(dataIn, false),
       _dht(new DHT(dataIn->inputPin, dataIn->dhtType)), _dhtType(dataIn->dhtType), _computeHeatIndex(dataIn->computeHeatIndex),
-      _measurementUnits{dataIn->measurementUnits[0],dataIn->measurementUnits[1],dataIn->measurementUnits[2]}
+      _measurementUnits{definedUnitsElse(dataIn->measurementUnits, defaultTemperatureUnits()),
+                        Hydroponics_UnitsType_Percentile_0_100,
+                        definedUnitsElse(dataIn->measurementUnits, defaultTemperatureUnits())}
 {
     HYDRUINO_SOFT_ASSERT(_dht, F("Failure creating DHT instance"));
     if (isValidPin(_inputPin) && _dht) { _dht->begin(); }
@@ -760,9 +762,7 @@ void HydroponicsDHTTempHumiditySensor::saveToData(HydroponicsData *dataOut)
 
     ((HydroponicsDHTTempHumiditySensorData *)dataOut)->dhtType = _dhtType;
     ((HydroponicsDHTTempHumiditySensorData *)dataOut)->computeHeatIndex = _computeHeatIndex;
-    ((HydroponicsDHTTempHumiditySensorData *)dataOut)->measurementUnits[0] = _measurementUnits[0];
-    ((HydroponicsDHTTempHumiditySensorData *)dataOut)->measurementUnits[1] = _measurementUnits[1];
-    ((HydroponicsDHTTempHumiditySensorData *)dataOut)->measurementUnits[2] = _measurementUnits[2];
+    ((HydroponicsDHTTempHumiditySensorData *)dataOut)->measurementUnits = _measurementUnits[0];
 }
 
 
@@ -980,7 +980,7 @@ void HydroponicsAnalogSensorData::toJSONObject(JsonObject &objectOut) const
 
     if (inputBitRes != 8) { objectOut[F("inputBitRes")] = inputBitRes; }
     if (inputInversion != false) { objectOut[F("inputInversion")] = inputInversion; }
-    if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = measurementUnits; }
+    if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = unitsTypeToSymbol(measurementUnits); }
 }
 
 void HydroponicsAnalogSensorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -989,7 +989,7 @@ void HydroponicsAnalogSensorData::fromJSONObject(JsonObjectConst &objectIn)
 
     inputBitRes = objectIn[F("inputBitRes")] | inputBitRes;
     inputInversion = objectIn[F("inputInversion")] | inputInversion;
-    measurementUnits = objectIn[F("measurementUnits")] | measurementUnits;
+    measurementUnits = unitsTypeFromSymbol(objectIn[F("measurementUnits")]);
 }
 
 HydroponicsDigitalSensorData::HydroponicsDigitalSensorData()
@@ -1021,7 +1021,7 @@ void HydroponicsDigitalSensorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsDHTTempHumiditySensorData::HydroponicsDHTTempHumiditySensorData()
-    : HydroponicsDigitalSensorData(), dhtType(DHT12), computeHeatIndex(false), measurementUnits{Hydroponics_UnitsType_Undefined,Hydroponics_UnitsType_Undefined,Hydroponics_UnitsType_Undefined}
+    : HydroponicsDigitalSensorData(), dhtType(DHT12), computeHeatIndex(false), measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     _size = sizeof(*this);
 }
@@ -1032,13 +1032,7 @@ void HydroponicsDHTTempHumiditySensorData::toJSONObject(JsonObject &objectOut) c
 
     if (dhtType != DHT12) { objectOut[F("dhtType")] = dhtType; }
     if (computeHeatIndex != false) { objectOut[F("computeHeatIndex")] = computeHeatIndex; }
-    if (measurementUnits[0] != Hydroponics_UnitsType_Undefined || measurementUnits[1] != Hydroponics_UnitsType_Undefined || measurementUnits[2] != Hydroponics_UnitsType_Undefined) {
-        if (!(measurementUnits[0] == measurementUnits[1] && measurementUnits[0] == measurementUnits[2])) {
-            objectOut[F("measurementUnits")] = commaStringFromArray(measurementUnits, 3);
-        } else {
-            objectOut[F("measurementUnits")] = measurementUnits[0];
-        }
-    }
+    if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = unitsTypeToSymbol(measurementUnits); }
 }
 
 void HydroponicsDHTTempHumiditySensorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -1047,11 +1041,7 @@ void HydroponicsDHTTempHumiditySensorData::fromJSONObject(JsonObjectConst &objec
 
     dhtType = objectIn[F("dhtType")] | dhtType;
     computeHeatIndex = objectIn[F("computeHeatIndex")] | computeHeatIndex;
-    JsonVariantConst measurementUnitsVar = objectIn[F("measurementUnits")];
-    commaStringToArray(measurementUnitsVar, measurementUnits, 3);
-    measurementUnits[0] = measurementUnitsVar[0] | measurementUnits[0];
-    measurementUnits[1] = measurementUnitsVar[1] | measurementUnits[1];
-    measurementUnits[2] = measurementUnitsVar[2] | measurementUnits[2];
+    measurementUnits = unitsTypeFromSymbol(objectIn[F("measurementUnits")]);
 }
 
 HydroponicsDSTemperatureSensorData::HydroponicsDSTemperatureSensorData()
@@ -1065,7 +1055,7 @@ void HydroponicsDSTemperatureSensorData::toJSONObject(JsonObject &objectOut) con
     HydroponicsDigitalSensorData::toJSONObject(objectOut);
 
     if (isValidPin(pullupPin)) { objectOut[F("pullupPin")] = pullupPin; }
-    if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = measurementUnits; }
+    if (measurementUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("measurementUnits")] = unitsTypeToSymbol(measurementUnits); }
 }
 
 void HydroponicsDSTemperatureSensorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -1073,5 +1063,5 @@ void HydroponicsDSTemperatureSensorData::fromJSONObject(JsonObjectConst &objectI
     HydroponicsDigitalSensorData::fromJSONObject(objectIn);
 
     pullupPin = objectIn[F("pullupPin")] | pullupPin;
-    measurementUnits = objectIn[F("measurementUnits")] | measurementUnits;
+    measurementUnits = unitsTypeFromSymbol(objectIn[F("measurementUnits")]);
 }
