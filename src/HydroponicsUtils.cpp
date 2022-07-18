@@ -38,7 +38,7 @@ void ActuatorTimedEnableTask::exec()
         time_t startMillis = millis();
         time_t endMillis = startMillis + _enableTimeMillis;
 
-        {   time_t delayMillis = max(0, _enableTimeMillis - HYDRUINO_ACTTASK_TIMED_SPINMILLIS);
+        {   time_t delayMillis = max(0, _enableTimeMillis - HYDRUINO_ACT_TIMEDTASK_SPINMILLIS);
             if (delayMillis > 0) { delay(delayMillis); }
         }
 

@@ -265,14 +265,14 @@ void HydroponicsFluidReservoir::handleLowMemory()
 bool HydroponicsFluidReservoir::getIsFilled() const
 {
     if (_filledTrigger) { return _filledTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered; }
-    return _waterVolume.value >= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FILLED_FRACTION
+    return _waterVolume.value >= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
                                                                                                      : _maxVolume) - FLT_EPSILON;
 }
 
 bool HydroponicsFluidReservoir::getIsEmpty() const
 {
     if (_emptyTrigger) { return _emptyTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered; }
-    return _waterVolume.value <= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_EMPTY_FRACTION
+    return _waterVolume.value <= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
                                                                                                      : 0) + FLT_EPSILON;
 }
 
@@ -387,7 +387,7 @@ void HydroponicsFluidReservoir::saveToData(HydroponicsData *dataOut)
 void HydroponicsFluidReservoir::handleFilledState()
 {
     if (_filledState == Hydroponics_TriggerState_Triggered && !getVolumeSensor()) {
-        setWaterVolume(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FILLED_FRACTION
+        setWaterVolume(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
                                                                                           : _maxVolume, _volumeUnits);
     }
     HydroponicsReservoir::handleFilledState();
@@ -396,7 +396,7 @@ void HydroponicsFluidReservoir::handleFilledState()
 void HydroponicsFluidReservoir::handleEmptyState()
 {
     if (_emptyState == Hydroponics_TriggerState_Triggered && !getVolumeSensor()) {
-        setWaterVolume(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_EMPTY_FRACTION
+        setWaterVolume(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
                                                                                           : 0, _volumeUnits);
     }
     HydroponicsReservoir::handleEmptyState();
