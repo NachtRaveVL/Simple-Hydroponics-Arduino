@@ -283,6 +283,11 @@ extern String cropTypeToString(Hydroponics_CropType cropType, bool excludeSpecia
 // Converts back to crop type enum from string.
 extern Hydroponics_CropType cropTypeFromString(String cropTypeStr);
 
+// Converts from substrate type enum to string, with optional exclude for special types (instead returning "").
+extern String substrateTypeToString(Hydroponics_SubstrateType substrateType, bool excludeSpecial = false);
+// Converts back to substrate type enum from string.
+extern Hydroponics_SubstrateType substrateTypeFromString(String substrateTypeStr);
+
 // Converts from fluid reservoir enum to string, with optional exclude for special types (instead returning "").
 extern String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool excludeSpecial = false);
 // Converts back to fluid reservoir enum from string.
@@ -305,6 +310,23 @@ extern Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr);
 extern String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool excludeSpecial = false);
 // Converts back to position index from string.
 extern Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr);
+
+// JSON Custom Converters
+
+extern bool convertToJson(const Hydroponics_ActuatorType& src, JsonVariant dst);
+extern void convertFromJson(JsonVariantConst src, Hydroponics_ActuatorType& dst);
+extern bool convertToJson(const Hydroponics_SensorType& src, JsonVariant dst);
+extern void convertFromJson(JsonVariantConst src, Hydroponics_SensorType& dst);
+extern bool convertToJson(const Hydroponics_CropType& src, JsonVariant dst);
+extern void convertFromJson(JsonVariantConst src, Hydroponics_CropType& dst);
+extern bool convertToJson(const Hydroponics_SubstrateType& src, JsonVariant dst);
+extern void convertFromJson(JsonVariantConst src, Hydroponics_SubstrateType& dst);
+extern bool convertToJson(const Hydroponics_ReservoirType& src, JsonVariant dst);
+extern void convertFromJson(JsonVariantConst src, Hydroponics_ReservoirType& dst);
+extern bool convertToJson(const Hydroponics_RailType& src, JsonVariant dst);
+extern void convertFromJson(JsonVariantConst src, Hydroponics_RailType& dst);
+extern bool convertToJson(const Hydroponics_UnitsType& src, JsonVariant dst);
+extern void convertFromJson(JsonVariantConst src, Hydroponics_UnitsType& dst);
 
 // Explicit Specializations
 
