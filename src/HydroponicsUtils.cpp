@@ -1299,6 +1299,23 @@ String cropTypeToString(Hydroponics_CropType cropType, bool excludeSpecial)
     return !excludeSpecial ? F("CropUndefined") : F("");
 }
 
+String substrateTypeToString(Hydroponics_SubstrateType substrateType, bool excludeSpecial)
+{
+    switch (substrateType) {
+        case Hydroponics_SubstrateType_ClayPebbles:
+            return F("ClayPebbles");
+        case Hydroponics_SubstrateType_CoconutCoir:
+            return F("CoconutCoir");
+        case Hydroponics_SubstrateType_Rockwool:
+            return F("Rockwool");
+        case Hydroponics_SubstrateType_Count:
+            return !excludeSpecial ? F("SubstrateCount") : F("");
+        case Hydroponics_SubstrateType_Undefined:
+            break;
+    }
+    return !excludeSpecial ? F("SubstrateUndefined") : F("");
+}
+
 String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool excludeSpecial)
 {
     switch (reservoirType) {
@@ -1486,6 +1503,16 @@ Hydroponics_CropType cropTypeFromString(String cropTypeStr)
     return Hydroponics_CropType_Undefined;
 }
 
+Hydroponics_SubstrateType substrateTypeFromString(String substrateTypeStr)
+{
+    for (int typeIndex = 0; typeIndex <= Hydroponics_SubstrateType_Count; ++typeIndex) {
+        if (substrateTypeStr == substrateTypeToString((Hydroponics_SubstrateType)typeIndex)) {
+            return (Hydroponics_SubstrateType)typeIndex;
+        }
+    }
+    return Hydroponics_SubstrateType_Undefined;
+}
+
 Hydroponics_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
 {
     for (int typeIndex = 0; typeIndex <= Hydroponics_ReservoirType_Count; ++typeIndex) {
@@ -1529,4 +1556,74 @@ Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
         int8_t decode = positionIndexStr.toInt();
         return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
     }
+}
+
+bool convertToJson(const Hydroponics_ActuatorType& src, JsonVariant dst)
+{
+    return dst.set(actuatorTypeToString(src));
+}
+
+void convertFromJson(JsonVariantConst src, Hydroponics_ActuatorType& dst)
+{
+    dst = actuatorTypeFromString(src);
+}
+
+bool convertToJson(const Hydroponics_SensorType& src, JsonVariant dst)
+{
+    return dst.set(sensorTypeToString(src));
+}
+
+void convertFromJson(JsonVariantConst src, Hydroponics_SensorType& dst)
+{
+    dst = sensorTypeFromString(src);
+}
+
+bool convertToJson(const Hydroponics_CropType& src, JsonVariant dst)
+{
+    return dst.set(cropTypeToString(src));
+}
+
+void convertFromJson(JsonVariantConst src, Hydroponics_CropType& dst)
+{
+    dst = cropTypeFromString(src);
+}
+
+bool convertToJson(const Hydroponics_SubstrateType& src, JsonVariant dst)
+{
+    return dst.set(substrateTypeToString(src));
+}
+
+void convertFromJson(JsonVariantConst src, Hydroponics_SubstrateType& dst)
+{
+    dst = substrateTypeFromString(src);
+}
+
+bool convertToJson(const Hydroponics_ReservoirType& src, JsonVariant dst)
+{
+    return dst.set(reservoirTypeToString(src));
+}
+
+void convertFromJson(JsonVariantConst src, Hydroponics_ReservoirType& dst)
+{
+    dst = reservoirTypeFromString(src);
+}
+
+bool convertToJson(const Hydroponics_RailType& src, JsonVariant dst)
+{
+    return dst.set(railTypeToString(src));
+}
+
+void convertFromJson(JsonVariantConst src, Hydroponics_RailType& dst)
+{
+    dst = railTypeFromString(src);
+}
+
+bool convertToJson(const Hydroponics_UnitsType& src, JsonVariant dst)
+{
+    return dst.set(unitsTypeToSymbol(src));
+}
+
+void convertFromJson(JsonVariantConst src, Hydroponics_UnitsType& dst)
+{
+    dst = unitsTypeFromSymbol(src);
 }
