@@ -116,10 +116,10 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    objectOut[F("systemMode")] = systemMode;
-    objectOut[F("measureMode")] = measureMode;
-    objectOut[F("dispOutMode")] = dispOutMode;
-    objectOut[F("ctrlInMode")] = ctrlInMode;
+    objectOut[F("systemMode")] = systemModeToString(systemMode);
+    objectOut[F("measureMode")] = measurementModeToString(measureMode);
+    objectOut[F("dispOutMode")] = displayOutputModeToString(dispOutMode);
+    objectOut[F("ctrlInMode")] = controlInputModeToString(ctrlInMode);
     if (systemName[0]) { objectOut[F("systemName")] = stringFromChars(systemName, HYDRUINO_NAME_MAXSIZE); }
     if (timeZoneOffset != 0) { objectOut[F("timeZoneOffset")] = timeZoneOffset; }
     if (pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[F("pollingInterval")] = pollingInterval; }
@@ -138,10 +138,10 @@ void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsData::fromJSONObject(objectIn);
 
-    systemMode = objectIn[F("systemMode")] | systemMode;
-    measureMode = objectIn[F("measureMode")] | measureMode;
-    dispOutMode = objectIn[F("dispOutMode")] | dispOutMode;
-    ctrlInMode = objectIn[F("ctrlInMode")] | ctrlInMode;
+    systemMode = systemModeFromString(objectIn[F("systemMode")]);
+    measureMode = measurementModeFromString(objectIn[F("measureMode")]);
+    dispOutMode = displayOutputModeFromString(objectIn[F("dispOutMode")]);
+    ctrlInMode = controlInputModeFromString(objectIn[F("ctrlInMode")]);
     const char *systemNameStr = objectIn[F("systemName")];
     if (systemNameStr && systemNameStr[0]) { strncpy(systemName, systemNameStr, HYDRUINO_NAME_MAXSIZE); }
     timeZoneOffset = objectIn[F("timeZoneOffset")] | timeZoneOffset;
@@ -181,7 +181,7 @@ void HydroponicsCalibrationData::toJSONObject(JsonObject &objectOut) const
     HydroponicsData::toJSONObject(objectOut);
 
     if (sensorName[0]) { objectOut[F("sensorName")] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
-    if (calibUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("calibUnits")] = calibUnits; }
+    if (calibUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("calibUnits")] = unitsTypeToSymbol(calibUnits); }
     objectOut[F("multiplier")] = multiplier;
     objectOut[F("offset")] = offset;
 }
@@ -192,7 +192,7 @@ void HydroponicsCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 
     const char *sensorNameStr = objectIn[F("sensorName")];
     if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
-    calibUnits = objectIn[F("calibUnits")] | calibUnits;
+    calibUnits = unitsTypeFromSymbol(objectIn[F("calibUnits")]);
     multiplier = objectIn[F("multiplier")] | multiplier;
     offset = objectIn[F("offset")] | offset;
 }

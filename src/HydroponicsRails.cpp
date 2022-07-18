@@ -499,14 +499,14 @@ void HydroponicsRailData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsObjectData::toJSONObject(objectOut);
 
-    if (powerUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("powerUnits")] = powerUnits; }
+    if (powerUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("powerUnits")] = unitsTypeToSymbol(powerUnits); }
 }
 
 void HydroponicsRailData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsObjectData::fromJSONObject(objectIn);
 
-    powerUnits = objectIn[F("powerUnits")] | powerUnits;
+    powerUnits = unitsTypeFromSymbol(objectIn[F("powerUnits")]);
 }
 
 HydroponicsSimpleRailData::HydroponicsSimpleRailData()

@@ -260,8 +260,25 @@ extern void setupRandomSeed();
 
 // Enums & Conversions
 
-// Converts from boolean value to triggered/not-triggered trigger state.
-inline Hydroponics_TriggerState triggerStateFromBool(bool value) { return value ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered; }
+// Converts from system mode enum to string, with optional exclude for special types (instead returning "").
+extern String systemModeToString(Hydroponics_SystemMode systemMode, bool excludeSpecial = false);
+// Converts back to system mode enum from string.
+extern Hydroponics_SystemMode systemModeFromString(String systemModeStr);
+
+// Converts from measurement mode enum to string, with optional exclude for special types (instead returning "").
+extern String measurementModeToString(Hydroponics_MeasurementMode measurementMode, bool excludeSpecial = false);
+// Converts back to measurement mode enum from string.
+extern Hydroponics_MeasurementMode measurementModeFromString(String measurementModeStr);
+
+// Converts from display output mode enum to string, with optional exclude for special types (instead returning "").
+extern String displayOutputModeToString(Hydroponics_DisplayOutputMode displayOutMode, bool excludeSpecial = false);
+// Converts back to display output mode enum from string.
+extern Hydroponics_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr);
+
+// Converts from control input mode enum to string, with optional exclude for special types (instead returning "").
+extern String controlInputModeToString(Hydroponics_ControlInputMode controlInMode, bool excludeSpecial = false);
+// Converts back to control input mode enum from string.
+extern Hydroponics_ControlInputMode controlInputModeFromString(String controlInModeStr);
 
 // Returns true for actuators that "live" in water (thus must do empty checks) as derived from actuator type enumeration.
 extern bool getActuatorInWaterFromType(Hydroponics_ActuatorType actuatorType);
@@ -311,22 +328,8 @@ extern String positionIndexToString(Hydroponics_PositionIndex positionIndex, boo
 // Converts back to position index from string.
 extern Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr);
 
-// JSON Custom Converters
-
-extern bool convertToJson(const Hydroponics_ActuatorType& src, JsonVariant dst);
-extern void convertFromJson(JsonVariantConst src, Hydroponics_ActuatorType& dst);
-extern bool convertToJson(const Hydroponics_SensorType& src, JsonVariant dst);
-extern void convertFromJson(JsonVariantConst src, Hydroponics_SensorType& dst);
-extern bool convertToJson(const Hydroponics_CropType& src, JsonVariant dst);
-extern void convertFromJson(JsonVariantConst src, Hydroponics_CropType& dst);
-extern bool convertToJson(const Hydroponics_SubstrateType& src, JsonVariant dst);
-extern void convertFromJson(JsonVariantConst src, Hydroponics_SubstrateType& dst);
-extern bool convertToJson(const Hydroponics_ReservoirType& src, JsonVariant dst);
-extern void convertFromJson(JsonVariantConst src, Hydroponics_ReservoirType& dst);
-extern bool convertToJson(const Hydroponics_RailType& src, JsonVariant dst);
-extern void convertFromJson(JsonVariantConst src, Hydroponics_RailType& dst);
-extern bool convertToJson(const Hydroponics_UnitsType& src, JsonVariant dst);
-extern void convertFromJson(JsonVariantConst src, Hydroponics_UnitsType& dst);
+// Converts from boolean value to triggered/not-triggered trigger state.
+inline Hydroponics_TriggerState triggerStateFromBool(bool value) { return value ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered; }
 
 // Explicit Specializations
 

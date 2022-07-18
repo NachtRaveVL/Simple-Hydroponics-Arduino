@@ -1267,14 +1267,14 @@ void HydroponicsReservoirData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsObjectData::toJSONObject(objectOut);
 
-    if (volumeUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("volumeUnits")] = volumeUnits; }
+    if (volumeUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("volumeUnits")] = unitsTypeToSymbol(volumeUnits); }
 }
 
 void HydroponicsReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsObjectData::fromJSONObject(objectIn);
 
-    volumeUnits = objectIn[F("volumeUnits")] | volumeUnits;
+    volumeUnits = unitsTypeFromSymbol(objectIn[F("volumeUnits")]);
 }
 
 HydroponicsFluidReservoirData::HydroponicsFluidReservoirData()
@@ -1328,8 +1328,8 @@ void HydroponicsFeedReservoirData::toJSONObject(JsonObject &objectOut) const
     if (lastPruningDate) { objectOut[F("lastPruningDate")] = lastPruningDate; }
     if (lastFeedingDate) { objectOut[F("lastFeedingDate")] = lastFeedingDate; }
     if (numFeedingsToday > 0) { objectOut[F("numFeedingsToday")] = numFeedingsToday; }
-    if (tdsUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("tdsUnits")] = tdsUnits; }
-    if (tempUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("tempUnits")] = tempUnits; }
+    if (tdsUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("tdsUnits")] = unitsTypeToSymbol(tdsUnits); }
+    if (tempUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("tempUnits")] = unitsTypeToSymbol(tempUnits); }
     if (waterPHSensorName[0]) { objectOut[F("phSensorName")] = stringFromChars(waterPHSensorName, HYDRUINO_NAME_MAXSIZE); }
     if (waterTDSSensorName[0]) { objectOut[F("tdsSensorName")] = stringFromChars(waterTDSSensorName, HYDRUINO_NAME_MAXSIZE); }
     if (waterTempSensorName[0]) {
@@ -1347,8 +1347,8 @@ void HydroponicsFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)
     lastPruningDate = objectIn[F("lastPruningDate")] | lastPruningDate;
     lastFeedingDate = objectIn[F("lastFeedingDate")] | lastFeedingDate;
     numFeedingsToday = objectIn[F("numFeedingsToday")] | numFeedingsToday;
-    tdsUnits = objectIn[F("tdsUnits")] | tdsUnits;
-    tempUnits = objectIn[F("tempUnits")] | tempUnits;
+    tdsUnits = unitsTypeFromSymbol(objectIn[F("tdsUnits")]);
+    tempUnits = unitsTypeFromSymbol(objectIn[F("tempUnits")]);
     const char *waterPHSensorNameStr = objectIn[F("phSensorName")];
     if (waterPHSensorNameStr && waterPHSensorNameStr[0]) { strncpy(waterPHSensorName, waterPHSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
     const char *waterTDSSensorNameStr = objectIn[F("tdsSensorName")];
