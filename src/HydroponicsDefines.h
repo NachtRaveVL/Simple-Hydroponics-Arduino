@@ -6,7 +6,6 @@
 #ifndef HydroponicsDefines_H
 #define HydroponicsDefines_H
 
-
 #ifndef FLT_EPSILON
 #define FLT_EPSILON                         0.00001f                // Single-precision floating point error tolerance
 #endif

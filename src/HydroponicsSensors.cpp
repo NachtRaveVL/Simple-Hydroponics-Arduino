@@ -1003,7 +1003,7 @@ void HydroponicsDigitalSensorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsSensorData::toJSONObject(objectOut);
 
     if (inputBitRes != 9) { objectOut[SFP(HS_Key_InputBitRes)] = inputBitRes; }
-    if (wirePosIndex >= 0) { objectOut[SFP(HS_Key_WirePosIndex)] = wirePosIndex; }
+    if (wirePosIndex > 0) { objectOut[SFP(HS_Key_WirePosIndex)] = wirePosIndex; }
     if (!arrayElementsEqual<uint8_t>(wireDevAddress, 8, 0)) { objectOut[SFP(HS_Key_WireDevAddress)] = hexStringFromBytes(wireDevAddress, 8); }
 }
 

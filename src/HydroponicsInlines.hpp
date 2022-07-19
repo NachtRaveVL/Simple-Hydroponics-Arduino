@@ -8,9 +8,9 @@
 #include "Hydroponics.h"
 
 // Checks if pin is valid or not.
-static inline bool isValidPin(byte pin) { return pin != -1; }
+static inline bool isValidPin(byte pin) { return pin != (byte)-1; }
 // Checks if measurement row is valid or not.
-static inline bool isValidRow(byte row) { return row != -1; }
+static inline bool isValidRow(byte row) { return row != (byte)-1; }
 
 // Checks if two single-precision floating point values are equal with respect to defined error epsilon.
 static inline bool isFPEqual(float lhs, float rhs) { return fabsf(rhs - lhs) <= FLT_EPSILON; }
