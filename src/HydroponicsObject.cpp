@@ -86,6 +86,10 @@ HydroponicsIdentity::HydroponicsIdentity(const char *name)
     regenKey();
 }
 
+HydroponicsIdentity::HydroponicsIdentity(String name)
+    : HydroponicsIdentity(name.c_str())
+{ ; }
+
 Hydroponics_KeyType HydroponicsIdentity::regenKey()
 {
     String sep = String('.');

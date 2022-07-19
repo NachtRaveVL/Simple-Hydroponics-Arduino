@@ -74,6 +74,7 @@ struct HydroponicsIdentity {
 
     // String constructor
     HydroponicsIdentity(const char *name);
+    HydroponicsIdentity(String name);
 
     // Used to update key value after modification, returning new key by convenience
     Hydroponics_KeyType regenKey();
