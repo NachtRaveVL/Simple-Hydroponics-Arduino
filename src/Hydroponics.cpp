@@ -556,8 +556,8 @@ void Hydroponics::commonInit()
         Serial.print(_lcdI2CAddr, HEX);
         Serial.print(F(", i2cSpeed: "));
         Serial.print(roundf(getI2CSpeed() / 1000.0f)); Serial.print(F("kHz"));
-        Serial.print(F(", SPISpeed: "));
-        Serial.print(roundf(getSPISpeed() / 1000000.0f)); Serial.print(F("MHz"));
+        Serial.print(F(", sdCardSpeed: "));
+        Serial.print(roundf(getSDCardSpeed() / 1000000.0f)); Serial.print(F("MHz"));
         Serial.print(F(", systemMode: "));
         Serial.print(systemModeToString(getSystemMode()));
         Serial.print(F(", measureMode: "));
@@ -735,7 +735,7 @@ void Hydroponics::update()
 
     EasyBuzzer.update(); // EasyBuzzer does its own state updates efficiently
 
-    taskManager.runLoop(); // tcMenu also uses this system to run its UI, which we also use to run our Signal fires
+    taskManager.runLoop(); // tcMenu also uses this system to run its UI
 }
 
 void Hydroponics::updateObjects(int pass)
@@ -751,14 +751,14 @@ void Hydroponics::updateObjects(int pass)
         } break;
 
         case 1: {
-            _pollingFrame++; if (_pollingFrame == 0) { _pollingFrame = 1; }
+            _pollingFrame++; if (_pollingFrame == 0) { _pollingFrame = 1; } // only valid frame #
 
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
                 if (obj && obj->isSensorType()) {
                     auto sensorObj = static_pointer_cast<HydroponicsSensor>(obj);
                     if (sensorObj && sensorObj->getNeedsPolling()) {
-                        sensorObj->takeMeasurement(true);
+                        sensorObj->takeMeasurement(); // no force if already current for this frame #
                     }
                 }
             }
@@ -766,6 +766,99 @@ void Hydroponics::updateObjects(int pass)
 
         default: break;
     }
+}
+
+bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
+{
+    HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HS_Err_InvalidParameter));
+    if(obj && _objects.insert(obj->getKey(), obj).second) {
+        _scheduler.setNeedsScheduling();
+        if (getInOperationalMode()) { obj->resolveLinks(); }
+        return true;
+    }
+    return false;
+}
+
+bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
+{
+    auto iter = _objects.find(obj->getKey());
+    if (iter != _objects.end()) {
+        _objects.erase(iter);
+        _scheduler.setNeedsScheduling();
+        return true;
+    }
+    return false;
+}
+
+shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) const
+{
+    if (id.posIndex == HYDRUINO_POS_SEARCH_FROMBEG) {
+        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
+            auto iter = _objects.find(id.regenKey());
+            if (iter != _objects.end()) {
+                if (id.keyStr == iter->second->getId().keyStr) {
+                    return iter->second;
+                } else {
+                    objectById_Col(id);
+                }
+            }
+        }
+    } else if (id.posIndex == HYDRUINO_POS_SEARCH_FROMEND) {
+        while(--id.posIndex >= 0) {
+            auto iter = _objects.find(id.regenKey());
+            if (iter != _objects.end()) {
+                if (id.keyStr == iter->second->getId().keyStr) {
+                    return iter->second;
+                } else {
+                    objectById_Col(id);
+                }
+            }
+        }
+    } else {
+        auto iter = _objects.find(id.key);
+        if (iter != _objects.end()) {
+            if (id.keyStr == iter->second->getId().keyStr) {
+                return iter->second;
+            } else {
+                objectById_Col(id);
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
+{
+    HYDRUINO_SOFT_ASSERT(false, F("Hashing collision"));
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        if (id.keyStr == iter->second->getId().keyStr) {
+            return iter->second;
+        }
+    }
+}
+
+Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, bool taken)
+{
+    if (id.posIndex != HYDRUINO_POS_SEARCH_FROMEND) {
+        id.posIndex = HYDRUINO_POS_SEARCH_FROMBEG;
+        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
+            auto iter = _objects.find(id.regenKey());
+            if (taken == (iter != _objects.end())) {
+                return id.posIndex;
+            }
+        }
+    } else {
+        id.posIndex = HYDRUINO_POS_SEARCH_FROMEND;
+        while(--id.posIndex >= 0) {
+            auto iter = _objects.find(id.regenKey());
+            if (taken == (iter != _objects.end())) {
+                return id.posIndex;
+            }
+        }
+    }
+
+    return -1;
 }
 
 bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData)
@@ -867,99 +960,6 @@ void Hydroponics::returnPinLock(byte pin)
     }
 }
 
-bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
-{
-    HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HS_Err_InvalidParameter));
-    if(obj && _objects.insert(obj->getKey(), obj).second) {
-        _scheduler.setNeedsScheduling();
-        if (getInOperationalMode()) { obj->resolveLinks(); }
-        return true;
-    }
-    return false;
-}
-
-bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
-{
-    auto iter = _objects.find(obj->getKey());
-    if (iter != _objects.end()) {
-        _objects.erase(iter);
-        _scheduler.setNeedsScheduling();
-        return true;
-    }
-    return false;
-}
-
-shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) const
-{
-    if (id.posIndex == HYDRUINO_POS_SEARCH_FROMBEG) {
-        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
-            auto iter = _objects.find(id.regenKey());
-            if (iter != _objects.end()) {
-                if (id.keyStr == iter->second->getId().keyStr) {
-                    return iter->second;
-                } else {
-                    objectById_Col(id);
-                }
-            }
-        }
-    } else if (id.posIndex == HYDRUINO_POS_SEARCH_FROMEND) {
-        while(--id.posIndex >= 0) {
-            auto iter = _objects.find(id.regenKey());
-            if (iter != _objects.end()) {
-                if (id.keyStr == iter->second->getId().keyStr) {
-                    return iter->second;
-                } else {
-                    objectById_Col(id);
-                }
-            }
-        }
-    } else {
-        auto iter = _objects.find(id.key);
-        if (iter != _objects.end()) {
-            if (id.keyStr == iter->second->getId().keyStr) {
-                return iter->second;
-            } else {
-                objectById_Col(id);
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
-{
-    HYDRUINO_SOFT_ASSERT(false, F("Hashing collision"));
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (id.keyStr == iter->second->getId().keyStr) {
-            return iter->second;
-        }
-    }
-}
-
-Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, bool taken)
-{
-    if (id.posIndex != HYDRUINO_POS_SEARCH_FROMEND) {
-        id.posIndex = HYDRUINO_POS_SEARCH_FROMBEG;
-        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
-            auto iter = _objects.find(id.regenKey());
-            if (taken == (iter != _objects.end())) {
-                return id.posIndex;
-            }
-        }
-    } else {
-        id.posIndex = HYDRUINO_POS_SEARCH_FROMEND;
-        while(--id.posIndex >= 0) {
-            auto iter = _objects.find(id.regenKey());
-            if (taken == (iter != _objects.end())) {
-                return id.posIndex;
-            }
-        }
-    }
-
-    return -1;
-}
-
 void Hydroponics::setControlInputPinMap(byte *pinMap)
 {
     HYDRUINO_SOFT_ASSERT(pinMap, SFP(HS_Err_InvalidParameter));
@@ -979,7 +979,7 @@ void Hydroponics::setSystemName(String systemName)
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
-        // TODO: system name or just lcd update signal
+        // TODO: notify GUI to update
     }
 }
 
@@ -989,7 +989,7 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
-        // TODO: system TZ or just lcd update signal
+        // TODO: notify GUI to update
         getSchedulerInstance()->setNeedsScheduling();
     }
 }
@@ -1124,10 +1124,12 @@ WiFiClass *Hydroponics::getWiFi(bool begin)
 {
     int status = _wifi ? _wifi->status() : WL_NO_SHIELD;
 
-    if (_wifi && begin && (!_wifiBegan || status == WL_CONNECTION_LOST || status == WL_DISCONNECTED)) {
+    if (_wifi && begin && (!_wifiBegan || status != WL_CONNECTED)) {
         if (status == WL_CONNECTED) {
             _wifiBegan = true;
-        } else {
+        } else if (status == WL_NO_SHIELD) {
+            _wifiBegan = false;
+        } else { // attempt connection
             String ssid = getWiFiSSID();
             String pass = getWiFiPassword();
 

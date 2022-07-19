@@ -217,7 +217,7 @@ enum Hydroponics_MeasurementMode {
 
     Hydroponics_MeasurementMode_Count,                      // Internal use only
     Hydroponics_MeasurementMode_Undefined = -1,             // Internal use only
-    Hydroponics_MeasurementMode_Default = Hydroponics_MeasurementMode_Metric // If you must change it
+    Hydroponics_MeasurementMode_Default = Hydroponics_MeasurementMode_Metric // Default system measurement mode
 };
 
 // LCD/Display Output Mode
