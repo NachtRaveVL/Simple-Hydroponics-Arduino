@@ -51,7 +51,7 @@ public:
     virtual bool addSensor(HydroponicsSensor *sensor) override;
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
     virtual bool hasSensor(HydroponicsSensor *sensor) const override;
-    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getSensors() const override;
+    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getSensors() const override;
 
     void setFeedReservoir(HydroponicsIdentity reservoirId);
     void setFeedReservoir(shared_ptr<HydroponicsFeedReservoir> reservoir);
@@ -85,7 +85,7 @@ protected:
     Hydroponics_TriggerState _feedingState;                 // Current feeding signal state
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)
 
-    arx::map<Hydroponics_KeyType, HydroponicsSensor *> _sensors; // Attached crop sensors (weak)
+    Map<Hydroponics_KeyType, HydroponicsSensor *>::type _sensors; // Attached crop sensors (weak)
     HydroponicsDLinkObject<HydroponicsFeedReservoir> _feedReservoir; // Feed reservoir linkage
     Signal<HydroponicsCrop *> _feedingSignal;               // Feeding requested signal
 

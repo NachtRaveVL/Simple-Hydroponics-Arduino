@@ -100,7 +100,7 @@ bool HydroponicsCrop::hasSensor(HydroponicsSensor *sensor) const
     return hasLinkage(sensor);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsCrop::getSensors() const
+Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsCrop::getSensors() const
 {
     return linksFilterSensors(_links);
 }

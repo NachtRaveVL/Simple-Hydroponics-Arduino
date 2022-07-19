@@ -151,7 +151,7 @@ bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
     return (_links.find(obj->_id) != _links.end());
 }
 
-const arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsObject::getLinkages() const
+const Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsObject::getLinkages() const
 {
     return _links;
 }

@@ -124,11 +124,16 @@ extern void __int_restore_irq(int *primask);
 #include "tcMenu.h"                     // tcMenu library
 #endif
 
-
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 using namespace std;
+template <typename K, typename V, size_t N = 16> struct Map { typedef std::map<K,V> type; };
+template <typename T, size_t N = 16> struct Vector { typedef std::vector<T> type; };
+template <class T1, class T2> struct Pair { typedef std::pair<T1,T2> type; };
 #else
 using namespace arx;
+template <typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> struct Map { typedef arx::map<K,V,N> type; };
+template <typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> struct Vector { typedef arx::vector<T,N> type; };
+template <class T1, class T2> struct Pair { typedef arx::pair<T1,T2> type; };
 #endif
 using namespace arx::stdx;
 
@@ -377,10 +382,10 @@ protected:
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
     uint32_t _pollingFrame;                                         // Polling frame #
 
-    arx::map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
-    arx::map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount> _additives; // Custom additives data
-    arx::map<byte, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE> _oneWires; // pin->OneWire list
-    arx::map<byte, byte> _pinLocks;                                 // Pin locks list (existence = locked)
+    Map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
+    Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount>::type _additives; // Custom additives data
+    Map<byte, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE>::type _oneWires; // pin->OneWire list
+    Map<byte, byte, HYDRUINO_SYS_PINLOCKS_MAXSIZE>::type _pinLocks; // Pin locks list (existence = locked)
 
     HydroponicsScheduler _scheduler;                                // Scheduler piggy-back instance
     friend class HydroponicsScheduler;
