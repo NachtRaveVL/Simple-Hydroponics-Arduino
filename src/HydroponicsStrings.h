@@ -13,7 +13,6 @@ extern const char PROGMEM HS_Null[];
 extern const char PROGMEM HS_Undefined[];
 
 extern const char PROGMEM HS_Err_AllocationFailure[];
-extern const char PROGMEM HS_Err_AssertionFailure[];
 extern const char PROGMEM HS_Err_DataAlreadyInitialized[];
 extern const char PROGMEM HS_Err_DataNotYetInitialized[];
 extern const char PROGMEM HS_Err_ExportFailure[];

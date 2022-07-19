@@ -352,28 +352,34 @@ void logMessage(String message, bool flushAfter)
     }
 }
 
-static String fileFromFullPath(String fullPath) {
+static String fileFromFullPath(String fullPath)
+{
     int index = fullPath.lastIndexOf(HYDRUINO_BLDPATH_SEPARATOR);
     return index != -1 ? fullPath.substring(index+1) : fullPath;
+}
+
+static String makeAssertMsg(String msg, const char *file, const char *func, int line)
+{
+    return String(F("Assertion Failure: ")) + fileFromFullPath(String(file)) + String(':') + String(line) +
+           String(F(" in ")) + String(func) + String(':') + String(' ') + msg;
 }
 
 void softAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        msg = SFP(HS_Err_AssertionFailure) + String(':') + String(' ') + fileFromFullPath(String(file)) + String(':') + String(line) + String(' ') + String(func) + String(':') + String(' ') + msg;
-        logMessage(msg);
-        return;
+        String message = makeAssertMsg(msg, file, func, line);
+        logMessage(message, true);
     }
 }
 
 void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        msg = SFP(HS_Err_AssertionFailure) + F(" (HARD)") + String(':') + String(' ') + fileFromFullPath(String(file)) + String(':') + String(line) + String(' ') + String(func) + String(':') + String(' ') + msg;
-        logMessage(msg, true);
+        String message = String(F("HARD ")) + makeAssertMsg(msg, file, func, line);
+        logMessage(message, true);
         auto hydroponics = getHydroponicsInstance();
         if (hydroponics) { hydroponics->suspend(); }
-        delay(1000);
+        yield(); delay(10);
         abort();
     }
 }

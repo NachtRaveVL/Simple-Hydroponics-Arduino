@@ -12,7 +12,6 @@ const char PROGMEM HS_Null[] = {"null"};
 const char PROGMEM HS_Undefined[] = {"Undefined"};
 
 const char PROGMEM HS_Err_AllocationFailure[] = {"Allocation failure"};
-const char PROGMEM HS_Err_AssertionFailure[] = {"Assertion failure"};
 const char PROGMEM HS_Err_DataAlreadyInitialized[] = {"Data already initialized"};
 const char PROGMEM HS_Err_DataNotYetInitialized[] = {"Data not yet initialized"};
 const char PROGMEM HS_Err_ExportFailure[] = {"Export failure"};

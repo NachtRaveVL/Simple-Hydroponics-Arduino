@@ -62,10 +62,21 @@
 #include <SD.h>
 #include <WiFi.h>
 #include <Wire.h>
+
 #if defined(ESP32) || defined(ESP8266)
 typedef SDFileSystemClass SDClass;
+#endif
+
+#if defined(__AVR__)
+    #include <util/atomic.h>
+    #define CRITICAL_SECTION ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+#elif defined(__arm__)
+    // See http://stackoverflow.com/questions/27998059/atomic-block-for-reading-vs-arm-systicks
+    extern int __int_disable_irq(void);
+    extern void __int_restore_irq(int *primask);
+    #define CRITICAL_SECTION for (int primask_save __attribute__((__cleanup__(__int_restore_irq))) = __int_disable_irq(), __ToDo = 1; __ToDo; __ToDo = 0)
 #else
-#include <util/atomic.h>
+    #define CRITICAL_SECTION for (noInterrupts(), __ToDo = 1; __ToDo; interrupts(), __ToDo = 0)
 #endif
 
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
@@ -101,13 +112,13 @@ typedef SDFileSystemClass SDClass;
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "EasyBuzzer.h"                 // Async piezo buzzer library
 #include "I2C_eeprom.h"                 // i2c EEPROM library
-#ifndef __STM32F1__
-#include "OneWire.h"                    // OneWire for DS18* probes
+#ifndef __STM32__
+#include "OneWire.h"                    // OneWire library
 #else
-#include <OneWireSTM.h>                 // STM32 version of OneWire
+#include <OneWireSTM.h>                 // STM32 version of OneWire (via stm32duino)
 #endif
 #include "RTClib.h"                     // i2c RTC library
-#include "TaskManager.h"                // Task Manager library
+#include "TaskManagerIO.h"              // Task Manager library
 #include "TimeLib.h"                    // Time library
 #ifndef HYDRUINO_DISABLE_GUI
 #include "tcMenu.h"                     // tcMenu library
