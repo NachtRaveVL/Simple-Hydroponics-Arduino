@@ -143,7 +143,7 @@ void HydroponicsMeasurementValueTrigger::saveToData(HydroponicsTriggerSubData *d
 void HydroponicsMeasurementValueTrigger::attachTrigger()
 {
     if (!_attached && getSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSensorMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsMeasurementValueTrigger::handleSensorMeasure);
         _sensor->getMeasurementSignal().attach(methodSlot);
         _attached = true;
     }
@@ -152,7 +152,7 @@ void HydroponicsMeasurementValueTrigger::attachTrigger()
 void HydroponicsMeasurementValueTrigger::detachTrigger()
 {
     if (_attached && getSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSensorMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsMeasurementValueTrigger::handleSensorMeasure);
         _sensor->getMeasurementSignal().detach(methodSlot);
         _attached = false;
     }
@@ -250,7 +250,7 @@ void HydroponicsMeasurementRangeTrigger::saveToData(HydroponicsTriggerSubData *d
 void HydroponicsMeasurementRangeTrigger::attachTrigger()
 {
     if (!_attached && getSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSensorMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsMeasurementRangeTrigger::handleSensorMeasure);
         _sensor->getMeasurementSignal().attach(methodSlot);
         _attached = true;
     }
@@ -259,7 +259,7 @@ void HydroponicsMeasurementRangeTrigger::attachTrigger()
 void HydroponicsMeasurementRangeTrigger::detachTrigger()
 {
     if (_attached && getSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSensorMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsMeasurementRangeTrigger::handleSensorMeasure);
         _sensor->getMeasurementSignal().detach(methodSlot);
         _attached = false;
     }

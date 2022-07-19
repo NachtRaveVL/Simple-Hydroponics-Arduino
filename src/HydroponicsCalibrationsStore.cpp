@@ -44,7 +44,8 @@ bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalib
             HYDRUINO_SOFT_ASSERT(calibData, SFP(HS_Err_AllocationFailure));
             if (calibData) {
                 *calibData = *calibrationData;
-                retVal = _calibrationData.insert(key, calibData).second;
+                _calibrationData[key] = calibData;
+                retVal = (_calibrationData[key] == calibData);
             }
         } else {
             *(iter->second) = *calibrationData;

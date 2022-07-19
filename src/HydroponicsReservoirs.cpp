@@ -406,7 +406,7 @@ void HydroponicsFluidReservoir::attachFilledTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HS_Err_MissingLinkage));
     if (_filledTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFilledTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleFilledTrigger);
         _filledTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -415,7 +415,7 @@ void HydroponicsFluidReservoir::detachFilledTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HS_Err_MissingLinkage));
     if (_filledTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFilledTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleFilledTrigger);
         _filledTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
@@ -432,7 +432,7 @@ void HydroponicsFluidReservoir::attachEmptyTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HS_Err_MissingLinkage));
     if (_emptyTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleEmptyTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleEmptyTrigger);
         _emptyTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -441,7 +441,7 @@ void HydroponicsFluidReservoir::detachEmptyTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HS_Err_MissingLinkage));
     if (_emptyTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleEmptyTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleEmptyTrigger);
         _emptyTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
@@ -458,7 +458,7 @@ void HydroponicsFluidReservoir::attachWaterVolumeSensor()
 {
     HYDRUINO_SOFT_ASSERT(getVolumeSensor(), SFP(HS_Err_MissingLinkage));
     if (getVolumeSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterVolumeMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFluidReservoir::handleWaterVolumeMeasure);
         _volumeSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -467,7 +467,7 @@ void HydroponicsFluidReservoir::detachWaterVolumeSensor()
 {
     HYDRUINO_SOFT_ASSERT(getVolumeSensor(), SFP(HS_Err_MissingLinkage));
     if (getVolumeSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterVolumeMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFluidReservoir::handleWaterVolumeMeasure);
         _volumeSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -1092,7 +1092,7 @@ void HydroponicsFeedReservoir::attachWaterPHSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterPHSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterPHSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterPHMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterPHMeasure);
         _waterPHSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -1101,7 +1101,7 @@ void HydroponicsFeedReservoir::detachWaterPHSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterPHSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterPHSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterPHMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterPHMeasure);
         _waterPHSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -1117,7 +1117,7 @@ void HydroponicsFeedReservoir::attachWaterTDSSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTDSSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTDSSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTDSMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTDSMeasure);
         _waterTDSSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -1126,7 +1126,7 @@ void HydroponicsFeedReservoir::detachWaterTDSSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTDSSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTDSSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTDSMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTDSMeasure);
         _waterTDSSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -1142,7 +1142,7 @@ void HydroponicsFeedReservoir::attachWaterTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTempSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTempMeasure);
         _waterTempSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -1151,7 +1151,7 @@ void HydroponicsFeedReservoir::detachWaterTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTempSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleWaterTempMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTempMeasure);
         _waterTempSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -1167,7 +1167,7 @@ void HydroponicsFeedReservoir::attachAirTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getAirTempSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleAirTempMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirTempMeasure);
         _airTempSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -1176,7 +1176,7 @@ void HydroponicsFeedReservoir::detachAirTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getAirTempSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleAirTempMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirTempMeasure);
         _airTempSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -1192,7 +1192,7 @@ void HydroponicsFeedReservoir::attachAirCO2Sensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirCO2Sensor(), SFP(HS_Err_MissingLinkage));
     if (getAirCO2Sensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleAirCO2Measure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirCO2Measure);
         _airCO2Sensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -1201,7 +1201,7 @@ void HydroponicsFeedReservoir::detachAirCO2Sensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirCO2Sensor(), SFP(HS_Err_MissingLinkage));
     if (getAirCO2Sensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleAirCO2Measure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirCO2Measure);
         _airCO2Sensor->getMeasurementSignal().detach(methodSlot);
     }
 }

@@ -183,7 +183,7 @@ float HydroponicsSimpleRail::getCapacity() const
 bool HydroponicsSimpleRail::addActuator(HydroponicsActuator *actuator)
 {
     if (HydroponicsRail::addActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsSimpleRail::handleActivation);
         actuator->getActivationSignal().attach(methodSlot);
         return true;
     }
@@ -193,7 +193,7 @@ bool HydroponicsSimpleRail::addActuator(HydroponicsActuator *actuator)
 bool HydroponicsSimpleRail::removeActuator(HydroponicsActuator *actuator)
 {
     if (HydroponicsRail::removeActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsSimpleRail::handleActivation);
         actuator->getActivationSignal().detach(methodSlot);
         return true;
     }
@@ -306,7 +306,7 @@ void HydroponicsRegulatedRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
 bool HydroponicsRegulatedRail::addActuator(HydroponicsActuator *actuator)
 {
     if (HydroponicsRail::addActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsRegulatedRail::handleActivation);
         actuator->getActivationSignal().attach(methodSlot);
         return true;
     }
@@ -316,7 +316,7 @@ bool HydroponicsRegulatedRail::addActuator(HydroponicsActuator *actuator)
 bool HydroponicsRegulatedRail::removeActuator(HydroponicsActuator *actuator)
 {
     if (HydroponicsRail::removeActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &handleActivation);
+        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsRegulatedRail::handleActivation);
         actuator->getActivationSignal().detach(methodSlot);
         return true;
     }
@@ -435,7 +435,7 @@ void HydroponicsRegulatedRail::attachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(getPowerSensor(), SFP(HS_Err_MissingLinkage));
     if (getPowerSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsRegulatedRail::handlePowerMeasure);
         _powerSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -444,7 +444,7 @@ void HydroponicsRegulatedRail::detachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(getPowerSensor(), SFP(HS_Err_MissingLinkage));
     if (getPowerSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsRegulatedRail::handlePowerMeasure);
         _powerSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -466,7 +466,7 @@ void HydroponicsRegulatedRail::attachLimitTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HS_Err_MissingLinkage));
     if (_limitTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleLimitTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsRegulatedRail::handleLimitTrigger);
         _limitTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -475,7 +475,7 @@ void HydroponicsRegulatedRail::detachLimitTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HS_Err_MissingLinkage));
     if (_limitTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleLimitTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsRegulatedRail::handleLimitTrigger);
         _limitTrigger->getTriggerSignal().detach(methodSlot);
     }
 }

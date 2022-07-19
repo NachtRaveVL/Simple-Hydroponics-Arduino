@@ -147,7 +147,7 @@ void HydroponicsBalancer::attachRangeTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_MissingLinkage));
     if (_rangeTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleRangeTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsBalancer::handleRangeTrigger);
         _rangeTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -156,7 +156,7 @@ void HydroponicsBalancer::detachRangeTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_MissingLinkage));
     if (_rangeTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleRangeTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsBalancer::handleRangeTrigger);
         _rangeTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
