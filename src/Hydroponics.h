@@ -147,26 +147,27 @@ using namespace arx::stdx;
 class Hydroponics : public HydroponicsFactory {
 public:
     // Library constructor. Typically called during class instantiation, before setup().
-    // TODO
-    Hydroponics(byte piezoBuzzerPin = -1,
-                uint32_t eepromDeviceSize = 0,              // use I2C_DEVICESIZE_* defines
-                byte sdCardCSPin = -1,
-                byte controlInputPin1 = -1,                 // first pin of ribbon (pins can be individually customized later)
-                byte eepromI2CAddress = B000,
-                byte rtcI2CAddress = B000,                  // only B000 can be used atm
-                byte lcdI2CAddress = B000,
-                TwoWire &i2cWire = Wire,
-                uint32_t i2cSpeed = 400000U,
-                uint32_t sdCardSpeed = 4000000U,
-                WiFiClass &wifi = WiFi);
+    Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
+                uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
+                byte sdCardCSPin = -1,                      // SD card CS pin, else -1
+                byte controlInputPin1 = -1,                 // First pin of input ribbon, else -1 (ribbon pins can be individually customized later)
+                byte eepromI2CAddress = B000,               // EEPROM address
+                byte rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
+                byte lcdI2CAddress = B000,                  // LCD i2c address
+                TwoWire &i2cWire = Wire,                    // I2C wire class instance
+                uint32_t i2cSpeed = 400000U,                // I2C speed
+                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed
+                WiFiClass &wifi = WiFi);                    // WiFi class instance
+    // Library destructor. Just in case.
     ~Hydroponics();
 
-    // Initializes default empty system. Typically called in setup().
+    // Initializes default empty system. Typically called near top of setup().
     // See individual enums for more info.
-    void init(Hydroponics_SystemMode systemMode = Hydroponics_SystemMode_Recycling,                 // How feed reservoirs are treated
-              Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Default,
-              Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,
-              Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);
+    void init(Hydroponics_SystemMode systemMode = Hydroponics_SystemMode_Recycling,                 // What system of crop feeding is performed
+              Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Default,        // What units of measurement should be used
+              Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
+              Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
+
     // Initializes system from EEPROM save, returning success flag
     bool initFromEEPROM(bool jsonFormat = false);
     // Initializes system from SD card file save, returning success flag
@@ -175,6 +176,8 @@ public:
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
     bool initFromBinaryStream(Stream *streamIn);
+    // TODO: Network URL init
+    //bool initFromNetworkURL(urlData, configFile = "hydruino.cfg");
 
     // Saves current system setup to EEPROM save, returning success flag
     bool saveToEEPROM(bool jsonFormat = false);
@@ -184,44 +187,38 @@ public:
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup 
     bool saveToBinaryStream(Stream *streamOut);
-
-    // TODO: maybe like this?
-    //bool initFromNetworkURL(urlData, configFile = "hydruino.cfg");
+    // TODO: Network URL save
     //bool saveToNetworkURL(urlData, configFile = "hydruino.cfg");
 
-    //bool enableSysLoggingToSDCard(String logFilePrefix = "logs/sys");
-    //bool enableSysLoggingToNetworkURL(urlData, String logFilePrefix = "logs/sys");
+    // System Operation.
 
-    //bool enableDataPublishingToSDCard(String csvFilePrefix = "logs/dat");
-    //bool enableDataPublishingToNetworkURL(urlData, String csvFilePrefix = "logs/dat");
-    //bool enableDataPublishingToMQTT(mqttBroker, deviceData);
-    //bool enableDataPublishingToWebAPI(urlData, apiInterface);
-
-    // Launches system into operational mode. Typically called last in setup().
+    // Launches system into operational mode. Typically called near end of setup().
     void launch();
 
-    // Suspends the system from operational mode (disables all runloops). Resume operation by a call to launch().
+    // Suspends the system from operational mode (disables all runloops). Typically used during system setup UI.
+    // Resume operation by a call to launch().
     void suspend();
 
-    // Update method. Typically called last in loop().
-    // By default this method simply calls into the active scheduler's main loop mechanism, unless multitasking is disabled in which case calls all runloops.
+    // Update method. Typically called in loop().
     void update();
 
-    // Custom Additives.
+    // System Logging.
 
-    // Sets custom additive data, returning success flag.
-    bool setCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
-    // Drops custom additive data, returning success flag.
-    bool dropCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
-    // Returns custom additive data (if any), else nullptr.
-    const HydroponicsCustomAdditiveData *getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const;
+    // TODO: SD card sys logging
+    //bool enableSysLoggingToSDCard(String logFilePrefix = "logs/sys");
+    // TODO: Network URL sys logging
+    //bool enableSysLoggingToNetworkURL(urlData, String logFilePrefix = "logs/sys");
 
-    // Pin Locks.
+    // Data Publishing.
 
-    // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
-    bool tryGetPinLock(byte pin, time_t waitMillis = 250);
-    // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
-    void returnPinLock(byte pin);
+    // TODO: SD card data pub
+    //bool enableDataPublishingToSDCard(String csvFilePrefix = "logs/dat");
+    // TODO: Network URL data pub
+    //bool enableDataPublishingToNetworkURL(urlData, String csvFilePrefix = "logs/dat");
+    // TODO: MQTT data pub
+    //bool enableDataPublishingToMQTT(mqttBroker, deviceData);
+    // TODO: Web API data pub
+    //bool enableDataPublishingToWebAPI(urlData, apiInterface);
 
     // Object Registration.
 
@@ -240,6 +237,22 @@ public:
     // Finds first position open, given the id type
     inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { return firstPosition(id, false); }
 
+    // Custom Additives.
+
+    // Sets custom additive data, returning success flag.
+    bool setCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
+    // Drops custom additive data, returning success flag.
+    bool dropCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
+    // Returns custom additive data (if any), else nullptr.
+    const HydroponicsCustomAdditiveData *getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const;
+
+    // Pin Locks.
+
+    // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
+    bool tryGetPinLock(byte pin, time_t waitMillis = 250);
+    // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
+    void returnPinLock(byte pin);
+
     // Mutators.
 
     // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
@@ -257,14 +270,14 @@ public:
 
     // Currently active Hydroponics instance
     static Hydroponics *getActiveInstance();
-    // i2c Wire interface instance
+    // i2c Wire interface instance (customizable)
     inline TwoWire *getI2C() const { return _i2cWire; }
-    // i2c clock speed (Hz, default: 400kHz)
+    // i2c clock speed, in Hz (default: 400kHz)
     inline uint32_t getI2CSpeed() const { return _i2cSpeed; }
-    // SPI interface instance
+    // SPI interface instance (hardwired)
     inline SPIClass *getSPI() const { return &SPI; }
-    // SPI clock speed (Hz, default: 4MHz)
-    inline uint32_t getSPISpeed() const { return _sdCardSpeed; }
+    // SD card SPI clock speed, in Hz (default: 4MHz)
+    inline uint32_t getSDCardSpeed() const { return _sdCardSpeed; }
     // Total number of pins being used for the current control input ribbon mode
     int getControlInputRibbonPinCount() const;
     // Control input pin mapped to ribbon pin index, or -1 (255) if not used
@@ -276,9 +289,9 @@ public:
     I2C_eeprom *getEEPROM(bool begin = true);
     // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);
-    // SD card instance (if began user code *must* call end() to free SPI interface, lazily instantiated, nullptr return = failure/no device)
+    // SD card instance (if began user code *must* call end() to free interface, lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);
-    // WiFi instance (nullptr return = failure/no device, this method may block for a minute or more)
+    // WiFi instance (nullptr return = failure/no device, note: this method may block for up to a minute)
     WiFiClass *getWiFi(bool begin = true);
     // OneWire instance for given pin (lazily instantiated)
     OneWire *getOneWireForPin(byte pin);
@@ -291,15 +304,15 @@ public:
     Hydroponics_SystemMode getSystemMode() const;
     // System measurement mode (default: Metric)
     Hydroponics_MeasurementMode getMeasurementMode() const;
-    // System LCD output mode (default: disabled)
+    // System LCD output mode (default: Disabled)
     Hydroponics_DisplayOutputMode getDisplayOutputMode() const;
-    // System control input mode (default: disabled)
+    // System control input mode (default: Disabled)
     Hydroponics_ControlInputMode getControlInputMode() const;
     // System display name (default: "Hydruino")
     String getSystemName() const;
-    // System time zone offset from UTC (default: +0)
+    // System time zone offset from UTC (default: +0/UTC)
     int8_t getTimeZoneOffset() const;
-    // Whenever the system booted up with RTC battery failure flag set
+    // Whenever the system booted up with the RTC battery failure flag set (meaning the time is not set correctly)
     bool getRTCBatteryFailure() const;
     // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
     uint32_t getPollingInterval() const;
@@ -314,16 +327,16 @@ public:
 
     // Misc.
 
-    // Called when RTC time is updated, unsets battery failure flag and sets rescheduling flag
+    // Called to notify system when RTC time is updated
     void notifyRTCTimeUpdated();
 
 protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init)
 
-    const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: disabled)
-    const int _eepromDeviceSize;                                    // EEPROM device size (default: 0/disabled)
-    const byte _sdCardCSPin;                                        // SD card cable select (CS) pin (default: disabled)
-    const byte _ctrlInputPin1;                                      // Control input pin 1 (default: disabled)
+    const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: Disabled)
+    const int _eepromDeviceSize;                                    // EEPROM device size (default: 0/Disabled)
+    const byte _sdCardCSPin;                                        // SD card cable select (CS) pin (default: Disabled)
+    const byte _ctrlInputPin1;                                      // Control input pin 1 (default: Disabled)
     const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
     const byte _rtcI2CAddr;                                         // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
     const byte _lcdI2CAddr;                                         // LCD i2c address, format: {A2,A1,A0} (default: B000)
