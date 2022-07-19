@@ -923,7 +923,7 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
             if (additiveData) {
                 *additiveData = *customAdditiveData;
                 _additives[customAdditiveData->reservoirType] = additiveData;
-                retVal = (_additives[customAdditiveData->reservoirType] == additiveData);
+                retVal = (_additives.find(customAdditiveData->reservoirType) != _additives.end());
             }
         } else {
             *(iter->second) = *customAdditiveData;
@@ -988,7 +988,7 @@ bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
             auto iter = _pinLocks.find(pin);
             if (iter == _pinLocks.end()) {
                 _pinLocks[pin] = true;
-                gotLock = _pinLocks[pin];
+                gotLock = (_pinLocks.find(pin) != _pinLocks.end());
             }
         }
         if (gotLock) { return true; }
@@ -1074,7 +1074,7 @@ void Hydroponics::setWiFiConnection(String ssid, String password)
 
                 randomSeed(_systemData->wifiPasswordSeed);
                 for (int charIndex = 0; charIndex < HYDRUINO_NAME_MAXSIZE; ++charIndex) {
-                    _systemData->wifiPassword[charIndex] = (charIndex < password.length() ? password[charIndex] : '\0') ^ (byte)random(256);
+                    _systemData->wifiPassword[charIndex] = (byte)(charIndex < password.length() ? password[charIndex] : '\0') ^ (byte)random(256);
                 }
             } else {
                 _systemData->wifiPasswordSeed = 0;

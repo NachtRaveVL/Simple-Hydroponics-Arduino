@@ -67,8 +67,8 @@ struct HydroponicsDLinkObject {
     inline bool resolveIfNeeded() { return (!obj ? (bool)getObj() : false); }
     inline operator bool() const { return isObj(); }
 
-    HydroponicsIdentity getId() const { return obj ? obj->getId() : id;  }
-    Hydroponics_KeyType getKey() const { return obj ? obj->getId().key : id.key; }
+    HydroponicsIdentity getId() const { return (bool)obj ? obj->getId() : id;  }
+    Hydroponics_KeyType getKey() const { return (bool)obj ? obj->getKey() : id.key; }
 
     shared_ptr<T> getObj();
     inline T* operator->() { return getObj().get(); }
@@ -80,18 +80,18 @@ struct HydroponicsDLinkObject {
     HydroponicsDLinkObject<T> &operator=(shared_ptr<U> rhs) { obj = static_pointer_cast<T>(rhs); id = obj->getId(); }
 
     template<class U>
-    bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return id.key == rhs->getId().key; }
+    bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return id.key == rhs->getKey(); }
     bool operator==(const HydroponicsIdentity rhs) const { return id.key == rhs.key; }
     template<class U>
-    bool operator==(shared_ptr<U> rhs) const { return id.key == rhs->getId().key; }
-    bool operator==(HydroponicsObject *rhs) const { return id.key == rhs->getId().key; }
+    bool operator==(shared_ptr<U> rhs) const { return id.key == rhs->getKey(); }
+    bool operator==(HydroponicsObject *rhs) const { return id.key == rhs->getKey(); }
 
     template<class U>
-    bool operator!=(const HydroponicsDLinkObject<U> &rhs) const { return id.key != rhs->getId().key; }
+    bool operator!=(const HydroponicsDLinkObject<U> &rhs) const { return id.key != rhs->getKey(); }
     bool operator!=(const HydroponicsIdentity rhs) const { return id.key != rhs.key; }
     template<class U>
-    bool operator!=(shared_ptr<U> rhs) const { return id.key != rhs->getId().key; }
-    bool operator!=(HydroponicsObject *rhs) const { return id.key != rhs->getId().key; }
+    bool operator!=(shared_ptr<U> rhs) const { return id.key != rhs->getKey(); }
+    bool operator!=(HydroponicsObject *rhs) const { return id.key != rhs->getKey(); }
 };
 
 

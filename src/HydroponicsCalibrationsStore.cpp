@@ -45,7 +45,7 @@ bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalib
             if (calibData) {
                 *calibData = *calibrationData;
                 _calibrationData[key] = calibData;
-                retVal = (_calibrationData[key] == calibData);
+                retVal = (_calibrationData.find(key) != _calibrationData.end());
             }
         } else {
             *(iter->second) = *calibrationData;

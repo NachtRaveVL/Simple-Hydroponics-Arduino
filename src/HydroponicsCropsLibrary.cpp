@@ -59,7 +59,7 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydrop
                     book->data.fromJSONObject(cropsLibDataObj);
                 }
                 _cropsData[cropType] = book;
-                if (_cropsData[cropType] != book) {
+                if (_cropsData.find(cropType) == _cropsData.end()) {
                     delete book; book = nullptr;
                 }
             }
@@ -110,7 +110,7 @@ bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *c
             HYDRUINO_SOFT_ASSERT(book, SFP(HS_Err_AllocationFailure));
             if (book) {
                 _cropsData[cropData->cropType] = book;
-                retVal = (_cropsData[cropData->cropType] == book);
+                retVal = (_cropsData.find(cropData->cropType) != _cropsData.end());
             }
         } else {
             iter->second->data = *cropData;
