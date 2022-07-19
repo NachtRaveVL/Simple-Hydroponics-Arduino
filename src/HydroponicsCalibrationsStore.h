@@ -33,7 +33,7 @@ public:
     Signal<Hydroponics_KeyType> &getUserCalibrationSignal();
 
 protected:
-    arx::map<Hydroponics_KeyType, HydroponicsCalibrationData *> _calibrationData; // Loaded user calibration data
+    Map<Hydroponics_KeyType, HydroponicsCalibrationData *>::type _calibrationData; // Loaded user calibration data
     Signal<Hydroponics_KeyType> _calibrationSignal;             // User calibration data updated signal    
 
 private:

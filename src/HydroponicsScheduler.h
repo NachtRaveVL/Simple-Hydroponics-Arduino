@@ -61,8 +61,8 @@ protected:
     bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
     int _lastDayNum;                                        // Last day number tracking for daily rescheduling
-    arx::map<Hydroponics_KeyType, HydroponicsFeeding *> _feedings; // Feedings in progress
-    arx::map<Hydroponics_KeyType, HydroponicsLighting *> _lightings; // Lightings in progress
+    Map<Hydroponics_KeyType, HydroponicsFeeding *>::type _feedings; // Feedings in progress
+    Map<Hydroponics_KeyType, HydroponicsLighting *>::type _lightings; // Lightings in progress
 
     friend class Hydroponics;
 
@@ -75,7 +75,7 @@ protected:
 struct HydroponicsFeeding {
     shared_ptr<HydroponicsFeedReservoir> feedRes;
     enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage;
-    arx::vector<shared_ptr<HydroponicsActuator> > actuatorReqs;
+    Vector<shared_ptr<HydroponicsActuator> >::type actuatorReqs;
     time_t stageStart;
     time_t canFeedAfter;
 
@@ -103,7 +103,7 @@ private:
 struct HydroponicsLighting {
     shared_ptr<HydroponicsFeedReservoir> feedRes;
     enum {Init,Spray,Light,Done,Unknown = -1} stage;
-    arx::vector<shared_ptr<HydroponicsActuator> > actuatorReqs;
+    Vector<shared_ptr<HydroponicsActuator> >::type actuatorReqs;
 
     time_t sprayStart;
     time_t lightStart;

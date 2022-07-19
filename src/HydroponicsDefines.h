@@ -29,10 +29,11 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_NAME_MAXSIZE               32                      // Naming character maximum size (system name, crop name, etc.)
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
-#define HYDRUINO_OBJ_LINKS_MAXSIZE          ARX_MAP_DEFAULT_SIZE    // Maximum size for object linkage list (per obj)
+#define HYDRUINO_OBJ_LINKS_MAXSIZE          16                      // Maximum size for object linkage list (per obj)
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        32                      // Maximum size for system objects (max # of objects in system)
 #define HYDRUINO_BAL_ACTUATORS_MAXSIZE      8                       // Maximum size for balancer actuator list (per inc/dec)
 #define HYDRUINO_SYS_ONEWIRE_MAXSIZE        8                       // Maximum size for pin->OneWire instances list
+#define HYDRUINO_SYS_PINLOCKS_MAXSIZE       8                       // Maximum size for pin locks list
 #define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document size (serialization bytes)
 
 #define HYDRUINO_LOW_MEM_SIZE               1024                    // How many bytes of free memory left spawns a handle low mem call to all objects

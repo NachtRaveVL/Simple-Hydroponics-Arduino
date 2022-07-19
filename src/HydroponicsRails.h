@@ -49,12 +49,12 @@ public:
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
     virtual bool hasActuator(HydroponicsActuator *actuator) const override;
-    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getActuators() const override;
+    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getActuators() const override;
 
     virtual bool addSensor(HydroponicsSensor *sensor) override;
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
     virtual bool hasSensor(HydroponicsSensor *sensor) const override;
-    virtual arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getSensors() const override;
+    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getSensors() const override;
 
     Hydroponics_RailType getRailType() const;
     Hydroponics_PositionIndex getRailIndex() const;

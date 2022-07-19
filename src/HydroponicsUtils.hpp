@@ -218,9 +218,9 @@ T mapValue(T value, T inMin, T inMax, T outMin, T outMax)
 
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterActuators(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
@@ -232,9 +232,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *,N> linksFilterActuators(const 
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterActuatorsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ActuatorType actuatorType)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterActuatorsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ActuatorType actuatorType)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
@@ -249,9 +249,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterActuatorsByType
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterSensors(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterSensors(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isSensorType()) {
@@ -263,9 +263,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterSensors(const a
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterSensorsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_SensorType sensorType)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterSensorsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_SensorType sensorType)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isSensorType()) {
@@ -280,9 +280,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterSensorsByType(c
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterCrops(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isCropType()) {
@@ -294,9 +294,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterCrops(const arx
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterCropsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_CropType cropType)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterCropsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_CropType cropType)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isCropType()) {
@@ -311,9 +311,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterCropsByType(con
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterReservoirs(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterReservoirs(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isReservoirType()) {
@@ -325,9 +325,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterReservoirs(cons
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterReservoirsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterReservoirsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ReservoirType reservoirType)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isReservoirType()) {
@@ -342,9 +342,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterReservoirsByTyp
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterRails(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterRails(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isRailType()) {
@@ -356,9 +356,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterRails(const arx
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterRailsByType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_RailType railType)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterRailsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_RailType railType)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isRailType()) {
@@ -373,9 +373,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterRailsByType(con
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterPumpActuatorsByInputReservoir(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, HydroponicsReservoir *inputReservoir)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoir(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, HydroponicsReservoir *inputReservoir)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
@@ -390,9 +390,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterPumpActuatorsBy
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterPumpActuatorsByInputReservoirType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ReservoirType reservoirType)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
@@ -407,9 +407,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterPumpActuatorsBy
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterPumpActuatorsByOutputReservoir(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, HydroponicsReservoir *outputReservoir)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoir(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, HydroponicsReservoir *outputReservoir)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
@@ -424,9 +424,9 @@ arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterPumpActuatorsBy
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE>
-arx::map<Hydroponics_KeyType, HydroponicsObject *, N> linksFilterPumpActuatorsByOutputReservoirType(const arx::map<Hydroponics_KeyType, HydroponicsObject *,N> &links, Hydroponics_ReservoirType reservoirType)
+typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ReservoirType reservoirType)
 {
-    arx::map<Hydroponics_KeyType, HydroponicsObject *,N> retVal;
+    typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {

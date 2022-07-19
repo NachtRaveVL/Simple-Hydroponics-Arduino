@@ -107,7 +107,7 @@ public:
     HydroponicsData *newSaveData();                         // Saves object state to proper backing data
 
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object.
-    const arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> getLinkages() const;
+    const Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const;
 
     const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object
     Hydroponics_KeyType getKey() const;                     // Returns the unique key of the object
@@ -115,7 +115,7 @@ public:
 
 protected:
     HydroponicsIdentity _id;                                // Object id
-    arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> _links; // Linked objects (strong)
+    Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _links; // Linked objects (strong)
 
     bool addLinkage(HydroponicsObject *obj);
     bool removeLinkage(HydroponicsObject *obj);

@@ -85,7 +85,7 @@ bool HydroponicsRail::hasActuator(HydroponicsActuator *actuator) const
     return hasLinkage(actuator);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsRail::getActuators() const
+Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsRail::getActuators() const
 {
     return linksFilterActuators(_links);
 }
@@ -105,7 +105,7 @@ bool HydroponicsRail::hasSensor(HydroponicsSensor *sensor) const
     return hasLinkage(sensor);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsRail::getSensors() const
+Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsRail::getSensors() const
 {
     return linksFilterSensors(_links);
 }

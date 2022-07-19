@@ -13,3 +13,4 @@ pad
 # Generic:
 ###############
 *.bak
+.vscode

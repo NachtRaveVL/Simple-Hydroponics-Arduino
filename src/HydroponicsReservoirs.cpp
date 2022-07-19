@@ -113,7 +113,7 @@ bool HydroponicsReservoir::hasActuator(HydroponicsActuator *actuator) const
     return hasLinkage(actuator);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsReservoir::getActuators() const
+Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsReservoir::getActuators() const
 {
     return linksFilterActuators(_links);
 }
@@ -133,7 +133,7 @@ bool HydroponicsReservoir::hasSensor(HydroponicsSensor *sensor) const
     return hasLinkage(sensor);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsReservoir::getSensors() const
+Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsReservoir::getSensors() const
 {
     return linksFilterSensors(_links);
 }
@@ -153,7 +153,7 @@ bool HydroponicsReservoir::hasCrop(HydroponicsCrop *crop) const
     return hasLinkage(crop);
 }
 
-arx::map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsReservoir::getCrops() const
+Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsReservoir::getCrops() const
 {
     return linksFilterReservoirs(_links);
 }
