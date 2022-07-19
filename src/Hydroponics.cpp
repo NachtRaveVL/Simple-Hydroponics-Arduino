@@ -147,7 +147,7 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
                        Hydroponics_DisplayOutputMode dispOutMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
         HYDRUINO_SOFT_ASSERT((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count, SFP(HS_Err_InvalidParameter));
@@ -180,7 +180,7 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
 
 bool Hydroponics::initFromEEPROM(bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
         if (getEEPROM() && _eepromBegan) {
@@ -194,7 +194,7 @@ bool Hydroponics::initFromEEPROM(bool jsonFormat)
 
 bool Hydroponics::saveToEEPROM(bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
 
     if (_systemData) {
         if (getEEPROM() && _eepromBegan) {
@@ -208,7 +208,7 @@ bool Hydroponics::saveToEEPROM(bool jsonFormat)
 
 bool Hydroponics::initFromSDCard(String configFile, bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
         auto sd = getSDCard();
@@ -229,7 +229,7 @@ bool Hydroponics::initFromSDCard(String configFile, bool jsonFormat)
 
 bool Hydroponics::saveToSDCard(String configFile, bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
 
     if (!_systemData) {
         auto sd = getSDCard();
@@ -250,7 +250,7 @@ bool Hydroponics::saveToSDCard(String configFile, bool jsonFormat)
 
 bool Hydroponics::initFromJSONStream(Stream *streamIn)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
@@ -317,7 +317,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
 
 bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(streamOut, SFP(HS_Err_InvalidParameter));
 
     if (_systemData && streamOut) {
@@ -350,7 +350,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 
         if (getCropsLibraryInstance()->hasCustomCrops()) {
             auto cropsLib = getCropsLibraryInstance();
-            
+
             for (auto iter = cropsLib->_cropsData.begin(); iter != cropsLib->_cropsData.end(); ++iter) {
                 if (iter->first >= Hydroponics_CropType_CustomCrop1) {
                     StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
@@ -412,7 +412,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 
 bool Hydroponics::initFromBinaryStream(Stream *streamIn)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
@@ -472,7 +472,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
 
 bool Hydroponics::saveToBinaryStream(Stream *streamOut)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(streamOut, SFP(HS_Err_InvalidParameter));
 
     if (_systemData && streamOut) {
@@ -851,7 +851,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
 
 shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
 {
-    HYDRUINO_SOFT_ASSERT(false, F("Hashing collision"));
+    HYDRUINO_SOFT_ASSERT(false, F("Hashing collision")); // exhaustive search must be performed
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         if (id.keyStr == iter->second->getId().keyStr) {
             return iter->second;
@@ -957,7 +957,7 @@ const HydroponicsCustomAdditiveData *Hydroponics::getCustomAdditiveData(Hydropon
 
 bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
 {
-    time_t start = millis();
+    time_t startMillis = millis();
     while (1) {
         bool gotLock = false;
         CRITICAL_SECTION {
@@ -967,7 +967,7 @@ bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
             }
         }
         if (gotLock) { return true; }
-        else if (millis() - start >= waitMillis) { return false; }
+        else if (millis() - startMillis >= waitMillis) { return false; }
         else { yield(); }
     }
 }
@@ -994,7 +994,7 @@ void Hydroponics::setControlInputPinMap(byte *pinMap)
 
 void Hydroponics::setSystemName(String systemName)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
@@ -1004,7 +1004,7 @@ void Hydroponics::setSystemName(String systemName)
 
 void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
@@ -1015,7 +1015,7 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
 
 void Hydroponics::setPollingInterval(uint32_t pollingInterval)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->pollingInterval = pollingInterval;
@@ -1029,7 +1029,7 @@ void Hydroponics::setPollingInterval(uint32_t pollingInterval)
 
 void Hydroponics::setWiFiConnection(String ssid, String password)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     if (_systemData) {
         bool ssidChanged = ssid.equals(getWiFiSSID());
         bool passChanged = password.equals(getWiFiPassword());
@@ -1222,13 +1222,13 @@ Hydroponics_ControlInputMode Hydroponics::getControlInputMode() const
 
 String Hydroponics::getSystemName() const
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     return _systemData ? String(_systemData->systemName) : String();
 }
 
 int8_t Hydroponics::getTimeZoneOffset() const
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     return _systemData ? _systemData->timeZoneOffset : 0;
 }
 
@@ -1239,7 +1239,7 @@ bool Hydroponics::getRTCBatteryFailure() const
 
 uint32_t Hydroponics::getPollingInterval() const
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     return _systemData ? _systemData->pollingInterval : 0;
 }
 
@@ -1255,13 +1255,13 @@ bool Hydroponics::getIsPollingFrameOld(unsigned int frame, unsigned int allowanc
 
 String Hydroponics::getWiFiSSID()
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     return _systemData ? String(_systemData->wifiSSID) : String();
 }
 
 String Hydroponics::getWiFiPassword()
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     if (_systemData) {
         char wifiPassword[HYDRUINO_NAME_MAXSIZE] = {0};
 

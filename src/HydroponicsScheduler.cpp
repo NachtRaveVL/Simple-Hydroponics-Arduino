@@ -232,7 +232,7 @@ void HydroponicsScheduler::setupAirCO2Balancer(HydroponicsReservoir *reservoir, 
 
 void HydroponicsScheduler::setBaseFeedMultiplier(float baseFeedMultiplier)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     if (_schedulerData) {
         getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
         _schedulerData->baseFeedMultiplier = baseFeedMultiplier;
@@ -242,7 +242,7 @@ void HydroponicsScheduler::setBaseFeedMultiplier(float baseFeedMultiplier)
 
 void HydroponicsScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), SFP(HS_Err_InvalidParameter));
 
     if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
@@ -266,7 +266,7 @@ void HydroponicsScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, 
 
 void HydroponicsScheduler::setStandardDosingRate(float dosingRate, Hydroponics_ReservoirType reservoirType)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || (reservoirType >= Hydroponics_ReservoirType_FreshWater && reservoirType < Hydroponics_ReservoirType_CustomAdditive1), SFP(HS_Err_InvalidParameter));
 
     if (_schedulerData && (reservoirType >= Hydroponics_ReservoirType_FreshWater && reservoirType < Hydroponics_ReservoirType_CustomAdditive1)) {
@@ -293,7 +293,7 @@ void HydroponicsScheduler::setLastWeekAsFlush(HydroponicsCrop *crop)
 
 void HydroponicsScheduler::setFlushWeek(int weekIndex)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), SFP(HS_Err_InvalidParameter));
 
     if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
@@ -317,7 +317,7 @@ void HydroponicsScheduler::setFlushWeek(int weekIndex)
 
 void HydroponicsScheduler::setTotalFeedingsDay(unsigned int feedingsDay)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
 
     if (_schedulerData) {
         getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
@@ -329,7 +329,7 @@ void HydroponicsScheduler::setTotalFeedingsDay(unsigned int feedingsDay)
 
 void HydroponicsScheduler::setPreFeedAeratorMins(unsigned int aeratorMins)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
 
     if (_schedulerData) {
         getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
@@ -341,7 +341,7 @@ void HydroponicsScheduler::setPreFeedAeratorMins(unsigned int aeratorMins)
 
 void HydroponicsScheduler::setPreLightSprayMins(unsigned int sprayMins)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
 
     if (_schedulerData) {
         getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
@@ -358,7 +358,7 @@ void HydroponicsScheduler::setNeedsScheduling()
 
 float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoir, Hydroponics_ReservoirType reservoirType)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || reservoir, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || !reservoir || (reservoirType >= Hydroponics_ReservoirType_NutrientPremix &&
                                                            reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), SFP(HS_Err_InvalidParameter));
@@ -400,13 +400,13 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoi
 
 float HydroponicsScheduler::getBaseFeedMultiplier() const
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     return _schedulerData ? _schedulerData->baseFeedMultiplier : 1.0f;
 }
 
 float HydroponicsScheduler::getWeeklyDosingRate(int weekIndex, Hydroponics_ReservoirType reservoirType) const
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), SFP(HS_Err_InvalidParameter));
 
     if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
@@ -424,7 +424,7 @@ float HydroponicsScheduler::getWeeklyDosingRate(int weekIndex, Hydroponics_Reser
 
 float HydroponicsScheduler::getStandardDosingRate(Hydroponics_ReservoirType reservoirType) const
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || (reservoirType >= Hydroponics_ReservoirType_FreshWater && reservoirType < Hydroponics_ReservoirType_CustomAdditive1), SFP(HS_Err_InvalidParameter));
 
     if (_schedulerData && reservoirType >= Hydroponics_ReservoirType_FreshWater && reservoirType < Hydroponics_ReservoirType_CustomAdditive1) {
@@ -435,7 +435,7 @@ float HydroponicsScheduler::getStandardDosingRate(Hydroponics_ReservoirType rese
 
 bool HydroponicsScheduler::getIsFlushWeek(int weekIndex)
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), SFP(HS_Err_InvalidParameter));
 
     if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
@@ -446,19 +446,19 @@ bool HydroponicsScheduler::getIsFlushWeek(int weekIndex)
 
 unsigned int HydroponicsScheduler::getTotalFeedingsDay() const
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     return _schedulerData ? _schedulerData->totalFeedingsDay : 0;
 }
 
 unsigned int HydroponicsScheduler::getPreFeedAeratorMins() const
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     return _schedulerData ? _schedulerData->preFeedAeratorMins : 0;
 }
 
 unsigned int HydroponicsScheduler::getPreLightSprayMins() const
 {
-    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     return _schedulerData ? _schedulerData->preLightSprayMins : 0;
 }
 
