@@ -6,86 +6,17 @@
 #ifndef HydroponicsUtils_HPP
 #define HydroponicsUtils_HPP
 
-#include "HydroponicsUtils.h"
+#include "Hydroponics.h"
 
-// Delay/Dynamic Loaded/Linked Object Reference
-// Simple class for delay loading objects that get references to others during system
-// load. T should be a derived class type of HydroponicsObject, with getId() method.
 template<class T>
-struct HydroponicsDLinkObject {
-    HydroponicsIdentity id;
-    shared_ptr<T> obj;
-
-    HydroponicsDLinkObject()
-        : id(), obj(nullptr) { ; }
-    template<class U>
-    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs)
-        : id(rhs.id), obj(static_pointer_cast<T>(rhs.obj)) { ; }
-    HydroponicsDLinkObject(HydroponicsIdentity idIn)
-        : id(idIn), obj(nullptr) { ; }
-    template<class U>
-    HydroponicsDLinkObject(shared_ptr<U> objIn)
-        : id(objIn->getId()), obj(static_pointer_cast<T>(objIn)) { ; }
-    HydroponicsDLinkObject(const char *keyStrIn)
-        : HydroponicsDLinkObject(HydroponicsIdentity(keyStrIn)) { ; }
-    ~HydroponicsDLinkObject() { ; }
-
-    inline bool isId() const { return !obj; }
-    inline bool isObj() const { return (bool)obj; }
-    inline bool needsResolved() const { return (!obj && (bool)id); }
-    inline bool resolveIfNeeded() { return (!obj ? (bool)getObj() : false); }
-    inline operator bool() const { return isObj(); }
-
-    HydroponicsIdentity getId() const { return obj ? obj->getId() : id;  }
-    Hydroponics_KeyType getKey() const { return obj ? obj->getId().key : id.key; }
-
-    shared_ptr<T> getObj() { if (!obj && (bool)id) { auto hydroponics = getHydroponicsInstance();
-                                                     if (hydroponics) { obj = hydroponics->objectById(id); }
-                                                     if (isObj()) { id = obj->getId(); } }
-                             return obj; }
-    inline T* operator->() { return getObj().get(); }
-
-    template<class U>
-    HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { id = rhs.id; obj = static_pointer_cast<T>(rhs.obj); }
-    HydroponicsDLinkObject<T> &operator=(const HydroponicsIdentity rhs) { id = rhs; obj = nullptr; }
-    template<class U>
-    HydroponicsDLinkObject<T> &operator=(shared_ptr<U> rhs) { obj = static_pointer_cast<T>(rhs); id = obj->getId(); }
-
-    template<class U>
-    bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return id.key == rhs->getId().key; }
-    bool operator==(const HydroponicsIdentity rhs) const { return id.key == rhs.key; }
-    template<class U>
-    bool operator==(shared_ptr<U> rhs) const { return id.key == rhs->getId().key; }
-    bool operator==(HydroponicsObject *rhs) const { return id.key == rhs->getId().key; }
-
-    template<class U>
-    bool operator!=(const HydroponicsDLinkObject<U> &rhs) const { return id.key != rhs->getId().key; }
-    bool operator!=(const HydroponicsIdentity rhs) const { return id.key != rhs.key; }
-    template<class U>
-    bool operator!=(shared_ptr<U> rhs) const { return id.key != rhs->getId().key; }
-    bool operator!=(HydroponicsObject *rhs) const { return id.key != rhs->getId().key; }
-};
-
-
-// Signal Fire Task
-// This class holds onto the passed signal and parameter to pass it along to the signal's
-// fire method upon task execution.
-template<typename ParameterType, int Slots>
-class SignalFireTask : public Executable {
-public:
-    taskid_t taskId;
-    SignalFireTask(shared_ptr<HydroponicsObject> object,
-                   Signal<ParameterType,Slots> &signal,
-                   ParameterType &param)
-        : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
-    virtual ~SignalFireTask() { ; }
-
-    void exec() override { _signal->fire(_param); }
-private:
-    shared_ptr<HydroponicsObject> _object;
-    Signal<ParameterType, Slots> *_signal;
-    ParameterType _param;
-};
+shared_ptr<T> HydroponicsDLinkObject<T>::getObj() {
+    if (!obj && (bool)id) {
+        auto hydroponics = getHydroponicsInstance();
+        if (hydroponics) { obj = hydroponics->objectById(id); }
+        if ((bool)obj) { id = obj->getId(); }
+    }
+    return obj;
+}
 
 template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
@@ -104,29 +35,6 @@ taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterTy
     taskid_t retVal = fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (fireTask ? (fireTask->taskId = retVal) : retVal);
 }
-
-
-// Method Slot Task
-// This class holds onto a MethodSlot to call once executed.
-template<class ObjectType, typename ParameterType>
-class MethodSlotCallTask : public Executable {
-public:
-    typedef void (ObjectType::*FunctPtr)(ParameterType);
-    taskid_t taskId;
-
-    MethodSlotCallTask(shared_ptr<ObjectType> object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
-    MethodSlotCallTask(ObjectType *object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(nullptr), _methodSlot(object, method), _callParam(callParam) { ; }
-    virtual ~MethodSlotCallTask() { ; }
-
-    void exec() override { _methodSlot(_callParam); }
-private:
-    shared_ptr<ObjectType> _object;
-    MethodSlot<ObjectType,ParameterType> _methodSlot;
-    ParameterType _callParam;
-
-    friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
-    friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(ObjectType *object, void (ObjectType::*method)(taskid_t));
-};
 
 template<class ObjectType, typename ParameterType>
 taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam)
