@@ -70,13 +70,11 @@ typedef SDFileSystemClass SDClass;
 #if defined(__AVR__)
 #include <util/atomic.h>
 #define CRITICAL_SECTION ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-#elif defined(__arm__)
+#else
 // See http://stackoverflow.com/questions/27998059/atomic-block-for-reading-vs-arm-systicks
 extern int __int_disable_irq(void);
 extern void __int_restore_irq(int *primask);
 #define CRITICAL_SECTION for (int primask_save __attribute__((__cleanup__(__int_restore_irq))) = __int_disable_irq(), __ToDo = 1; __ToDo; __ToDo = 0)
-#else
-#define CRITICAL_SECTION for (noInterrupts(), __ToDo = 1; __ToDo; interrupts(), __ToDo = 0)
 #endif
 
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)

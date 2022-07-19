@@ -34,6 +34,21 @@ void __int_restore_irq(int *primask)
     }
 }
 
+#else
+
+int8_t _irqCnt = 0;
+
+int __int_disable_irq(void)
+{
+    if (_irqCnt++ == 0) { noInterrupts(); return 1; }
+    return 0;
+}
+
+void __int_restore_irq(int *primask)
+{
+    if (--_irqCnt == 0) { interrupts(); }
+}
+
 #endif // /ifdef __arm__
 
 
@@ -1127,8 +1142,6 @@ SDClass *Hydroponics::getSDCard(bool begin)
     if (_sd && begin) {
         #if defined(ESP32) || defined(ESP8266)
             bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), _sdCardSpeed);
-        #elif defined(CORE_TEENSY)
-            bool sdBegan = _sd->begin(_sdCardCSPin, _sdCardSpeed);
         #else
             bool sdBegan = _sd->begin(_sdCardSpeed, _sdCardCSPin);
         #endif
