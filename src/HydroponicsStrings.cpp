@@ -6,22 +6,21 @@
 #include "Hydroponics.h"
 
 const char PROGMEM HS_Count[] = {"Count"};
-const char PROGMEM HS_Default[] = {"Default"};
 const char PROGMEM HS_Disabled[] = {"Disabled"};
 const char PROGMEM HS_Null[] = {"null"};
 const char PROGMEM HS_Undefined[] = {"Undefined"};
 
 const char PROGMEM HS_Err_AllocationFailure[] = {"Allocation failure"};
-const char PROGMEM HS_Err_DataAlreadyInitialized[] = {"Data already initialized"};
-const char PROGMEM HS_Err_DataNotYetInitialized[] = {"Data not yet initialized"};
+const char PROGMEM HS_Err_AlreadyInitialized[] = {"Already initialized"};
 const char PROGMEM HS_Err_ExportFailure[] = {"Export failure"};
 const char PROGMEM HS_Err_ImportFailure[] = {"Import failure"};
 const char PROGMEM HS_Err_InitializationFailure[] = {"Initialization failure"};
 const char PROGMEM HS_Err_InvalidParameter[] = {"Invalid parameter"};
-const char PROGMEM HS_Err_InvalidPin[] = {"Invalid pin or type"};
+const char PROGMEM HS_Err_InvalidPinOrType[] = {"Invalid pin or type"};
 const char PROGMEM HS_Err_MeasurementFailure[] = {"Measurement failure"};
 const char PROGMEM HS_Err_MissingLinkage[] = {"Missing or no linkage"};
 const char PROGMEM HS_Err_NoPositionsAvailable[] = {"No positions available"};
+const char PROGMEM HS_Err_NotYetInitialized[] = {"Not yet initialized"};
 const char PROGMEM HS_Err_OperationFailure[] = {"Operation failure"};
 const char PROGMEM HS_Err_ParameterMismatch[] = {"Parameter mismatch"};
 const char PROGMEM HS_Err_UnsupportedOperation[] = {"Unsupported operation"};

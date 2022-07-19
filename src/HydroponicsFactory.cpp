@@ -9,7 +9,7 @@ shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addGrowLightsRelay(byte
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_GrowLights));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
 
     if (outputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
@@ -27,7 +27,7 @@ shared_ptr<HydroponicsPumpRelayActuator> HydroponicsFactory::addWaterPumpRelay(b
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterPump));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
@@ -46,7 +46,7 @@ shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addWaterHeaterRelay(byt
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterHeater));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
@@ -65,7 +65,7 @@ shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addWaterAeratorRelay(by
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterAerator));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
@@ -84,7 +84,7 @@ shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(byte
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
@@ -103,7 +103,7 @@ shared_ptr<HydroponicsPWMActuator> HydroponicsFactory::addFanExhaustPWM(byte out
 {
     bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
-    HYDRUINO_HARD_ASSERT(outputPinIsPWM, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(outputPinIsPWM, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsPWM && positionIndex != -1) {
@@ -122,7 +122,7 @@ shared_ptr<HydroponicsPumpRelayActuator> HydroponicsFactory::addPeristalticPumpR
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_PeristalticPump));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
@@ -141,7 +141,7 @@ shared_ptr<HydroponicsBinarySensor> HydroponicsFactory::addLevelIndicator(byte i
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterLevelIndicator));
-    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
@@ -160,7 +160,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPhMeter(byte in
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PotentialHydrogen));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -179,7 +179,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTDSElectrode(by
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_TotalDissolvedSolids));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -207,7 +207,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTemperatureSens
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -226,7 +226,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(byte 
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirCarbonDioxide));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -245,7 +245,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addPWMPumpFlowSensor(byt
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterPumpFlowSensor));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -264,7 +264,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogWaterHeightMete
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -283,7 +283,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addUltrasonicDistanceSen
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -302,7 +302,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addPowerUsageMeter(byte 
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PowerUsageMeter));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
@@ -324,7 +324,7 @@ shared_ptr<HydroponicsDHTTempHumiditySensor> HydroponicsFactory::addDHTTempHumid
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirTempHumidity));
-    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
@@ -343,7 +343,7 @@ shared_ptr<HydroponicsDSTemperatureSensor> HydroponicsFactory::addDSTemperatureS
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
-    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {

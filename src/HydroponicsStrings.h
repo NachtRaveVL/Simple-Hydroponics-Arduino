@@ -7,22 +7,21 @@
 #define HydroponicsStrings_H
 
 extern const char PROGMEM HS_Count[];
-extern const char PROGMEM HS_Default[];
 extern const char PROGMEM HS_Disabled[];
 extern const char PROGMEM HS_Null[];
 extern const char PROGMEM HS_Undefined[];
 
 extern const char PROGMEM HS_Err_AllocationFailure[];
-extern const char PROGMEM HS_Err_DataAlreadyInitialized[];
-extern const char PROGMEM HS_Err_DataNotYetInitialized[];
+extern const char PROGMEM HS_Err_AlreadyInitialized[];
 extern const char PROGMEM HS_Err_ExportFailure[];
 extern const char PROGMEM HS_Err_ImportFailure[];
 extern const char PROGMEM HS_Err_InitializationFailure[];
 extern const char PROGMEM HS_Err_InvalidParameter[];
-extern const char PROGMEM HS_Err_InvalidPin[];
+extern const char PROGMEM HS_Err_InvalidPinOrType[];
 extern const char PROGMEM HS_Err_MeasurementFailure[];
 extern const char PROGMEM HS_Err_MissingLinkage[];
 extern const char PROGMEM HS_Err_NoPositionsAvailable[];
+extern const char PROGMEM HS_Err_NotYetInitialized[];
 extern const char PROGMEM HS_Err_OperationFailure[];
 extern const char PROGMEM HS_Err_ParameterMismatch[];
 extern const char PROGMEM HS_Err_UnsupportedOperation[];

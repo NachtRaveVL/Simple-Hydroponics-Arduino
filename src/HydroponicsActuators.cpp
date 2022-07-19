@@ -33,7 +33,7 @@ HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
     : HydroponicsObject(HydroponicsIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
       _outputPin(outputPin), _enabled(false)
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HS_Err_InvalidPinOrType));
     if (isValidPin(_outputPin)) {
         pinMode(_outputPin, OUTPUT);
     }
@@ -45,7 +45,7 @@ HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
       _contPowerDraw(&(dataIn->contPowerDraw)),
       _rail(dataIn->railName), _reservoir(dataIn->reservoirName)
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HS_Err_InvalidPinOrType));
     if (isValidPin(_outputPin)) {
         pinMode(_outputPin, OUTPUT);
     }

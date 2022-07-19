@@ -220,7 +220,7 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType),
       _activeLow(activeLow), _usingISR(false)
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
     }
@@ -229,7 +229,7 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
 HydroponicsBinarySensor::HydroponicsBinarySensor(const HydroponicsBinarySensorData *dataIn)
     : HydroponicsSensor(dataIn), _activeLow(dataIn->activeLow), _usingISR(false)
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
     }
@@ -318,7 +318,7 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(Hydroponics_SensorType sensorTy
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType),
       _inputResolution(inputBitRes), _inputInversion(inputInversion), _measurementUnits(defaultMeasureUnitsForSensorType(sensorType))
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         pinMode(_inputPin, INPUT);
     }
@@ -329,7 +329,7 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(const HydroponicsAnalogSensorDa
       _inputResolution(dataIn->inputBitRes), _inputInversion(dataIn->inputInversion),
       _measurementUnits(definedUnitsElse(dataIn->measurementUnits, defaultMeasureUnitsForSensorType((Hydroponics_SensorType)(dataIn->id.object.objType))))
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         pinMode(_inputPin, INPUT);
     }
@@ -469,7 +469,7 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(Hydroponics_SensorType sensor
                                                    int classType)
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType), _inputBitRes(inputBitRes), _oneWire(nullptr), _wirePosIndex(-1), _wireDevAddress{0}
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPinOrType));
     if (allocate1W && isValidPin(_inputPin)) {
         auto hydroponics = getHydroponicsInstance();
         _oneWire = hydroponics ? hydroponics->getOneWireForPin(_inputPin) : nullptr;
@@ -480,7 +480,7 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(Hydroponics_SensorType sensor
 HydroponicsDigitalSensor::HydroponicsDigitalSensor(const HydroponicsDigitalSensorData *dataIn, bool allocate1W)
     : HydroponicsSensor(dataIn), _inputBitRes(dataIn->inputBitRes), _oneWire(nullptr), _wirePosIndex(-1), _wireDevAddress{0}
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPin));
+    HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HS_Err_InvalidPinOrType));
     if (allocate1W && isValidPin(_inputPin)) {
         auto hydroponics = getHydroponicsInstance();
         _oneWire = hydroponics ? hydroponics->getOneWireForPin(_inputPin) : nullptr;
