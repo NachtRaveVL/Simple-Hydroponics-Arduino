@@ -11,8 +11,7 @@ HydroponicsCalibrationsStore *HydroponicsCalibrationsStore::getInstance()
 {
     if (_instance) { return _instance; }
     else {
-        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-        {
+        CRITICAL_SECTION {
             if (!_instance) {
                 _instance = new HydroponicsCalibrationsStore();
             }

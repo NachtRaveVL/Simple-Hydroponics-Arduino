@@ -16,6 +16,27 @@ void handleInterrupt(pintype_t pin)
     if (hydroponics) { hydroponics->handleInterrupt(pin); }
 }
 
+#ifdef __arm__
+
+int __int_disable_irq(void)
+{
+    int primask;
+    asm volatile("mrs %0, PRIMASK\n" : "=r"(primask));
+    asm volatile("cpsid i\n");
+    return primask & 1;
+}
+
+void __int_restore_irq(int *primask)
+{
+    if (!(*primask)) {
+        asm volatile ("" ::: "memory");
+        asm volatile("cpsie i\n");
+    }
+}
+
+#endif // /ifdef __arm__
+
+
 Hydroponics *Hydroponics::_activeInstance = nullptr;
 
 Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sdCardCSPin, byte controlInputPin1,
@@ -939,8 +960,7 @@ bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
     time_t start = millis();
     while (1) {
         bool gotLock = false;
-        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-        {
+        CRITICAL_SECTION {
             auto iter = _pinLocks.find(pin);
             if (iter == _pinLocks.end()) {
                 gotLock = _pinLocks.insert(pin, (byte)true).second;
@@ -954,8 +974,7 @@ bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
 
 void Hydroponics::returnPinLock(byte pin)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-    {
+    CRITICAL_SECTION {
         _pinLocks.erase(pin);
     }
 }
@@ -1108,6 +1127,8 @@ SDClass *Hydroponics::getSDCard(bool begin)
     if (_sd && begin) {
         #if defined(ESP32) || defined(ESP8266)
             bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), _sdCardSpeed);
+        #elif defined(CORE_TEENSY)
+            bool sdBegan = _sd->begin(_sdCardCSPin, _sdCardSpeed);
         #else
             bool sdBegan = _sd->begin(_sdCardSpeed, _sdCardCSPin);
         #endif
