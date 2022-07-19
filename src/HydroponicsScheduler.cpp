@@ -476,7 +476,7 @@ void HydroponicsScheduler::performScheduling()
                 auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
 
                 if (feedReservoir) {
-                    {   auto feedingIter = _feedings.find(feedReservoir->getId().key);
+                    {   auto feedingIter = _feedings.find(feedReservoir->getKey());
                         auto crops = feedReservoir->getCrops();
                         if (crops.size()) {
                             if (feedingIter != _feedings.end()) {
@@ -484,7 +484,7 @@ void HydroponicsScheduler::performScheduling()
                             } else {
                                 HydroponicsFeeding *feeding = new HydroponicsFeeding(feedReservoir);
                                 HYDRUINO_SOFT_ASSERT(feeding, SFP(HS_Err_AllocationFailure));
-                                if (feeding) { _feedings[feedReservoir->getId().key] = feeding; }
+                                if (feeding) { _feedings[feedReservoir->getKey()] = feeding; }
                             }
                         } else if (feedingIter != _feedings.end()) { // No crops, but found in feedings
                             if (feedingIter->second) { delete feedingIter->second; }
@@ -492,7 +492,7 @@ void HydroponicsScheduler::performScheduling()
                         }
                     }
 
-                    {   auto lightingIter = _lightings.find(feedReservoir->getId().key);
+                    {   auto lightingIter = _lightings.find(feedReservoir->getKey());
                         auto actuators = feedReservoir->getActuators();
                         if (actuators.size() &&
                             (linksFilterActuatorsByType(actuators, Hydroponics_ActuatorType_GrowLights).size() ||
@@ -502,7 +502,7 @@ void HydroponicsScheduler::performScheduling()
                             } else {
                                 HydroponicsLighting *lighting = new HydroponicsLighting(feedReservoir);
                                 HYDRUINO_SOFT_ASSERT(lighting, SFP(HS_Err_AllocationFailure));
-                                if (lighting) { _lightings[feedReservoir->getId().key] = lighting; }
+                                if (lighting) { _lightings[feedReservoir->getKey()] = lighting; }
                             }
                         } else if (lightingIter != _lightings.end()) { // No lights/sprayers, but found in lightings
                             if (lightingIter->second) { delete lightingIter->second; }
