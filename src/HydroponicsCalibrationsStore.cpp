@@ -32,7 +32,7 @@ const HydroponicsCalibrationData *HydroponicsCalibrationsStore::getUserCalibrati
 
 bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalibrationData *calibrationData)
 {
-    HYDRUINO_SOFT_ASSERT(calibrationData, F("Invalid user calibration data"));
+    HYDRUINO_SOFT_ASSERT(calibrationData, SFP(HS_Err_InvalidParameter));
 
     if (calibrationData) {
         Hydroponics_KeyType key = stringHash(calibrationData->sensorName);
@@ -42,7 +42,7 @@ bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalib
         if (iter == _calibrationData.end()) {
             auto calibData = new HydroponicsCalibrationData();
 
-            HYDRUINO_SOFT_ASSERT(calibData, F("Failure allocating calibration data"));
+            HYDRUINO_SOFT_ASSERT(calibData, SFP(HS_Err_AllocationFailure));
             if (calibData) {
                 *calibData = *calibrationData;
                 retVal = _calibrationData.insert(key, calibData).second;
@@ -62,7 +62,7 @@ bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalib
 
 bool HydroponicsCalibrationsStore::dropUserCalibrationData(const HydroponicsCalibrationData *calibrationData)
 {
-    HYDRUINO_SOFT_ASSERT(calibrationData, F("Invalid user calibration data"));
+    HYDRUINO_SOFT_ASSERT(calibrationData, SFP(HS_Err_InvalidParameter));
 
     if (calibrationData) {
         Hydroponics_KeyType key = stringHash(calibrationData->sensorName);

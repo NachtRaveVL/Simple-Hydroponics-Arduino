@@ -8,7 +8,7 @@
 HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasurementData *dataIn)
 {
     if (dataIn && dataIn->type == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, F("Invalid data"));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, SFP(HS_Err_InvalidParameter));
 
     if (dataIn) {
         switch (dataIn->type) {
@@ -245,32 +245,32 @@ void HydroponicsMeasurementData::toJSONObject(JsonObject &objectOut) const
 
     switch (type) {
         case 0: // Binary
-            objectOut[F("state")] = dataAs.binaryMeasure.state;
+            objectOut[SFP(HS_Key_State)] = dataAs.binaryMeasure.state;
             break;
         case 1: // Single
-            objectOut[F("value")] = dataAs.singleMeasure.value;
-            objectOut[F("units")] = dataAs.singleMeasure.units;
+            objectOut[SFP(HS_Key_Value)] = dataAs.singleMeasure.value;
+            objectOut[SFP(HS_Key_Units)] = dataAs.singleMeasure.units;
             break;
         case 2: { // Double
-            objectOut[F("values")] = commaStringFromArray(dataAs.doubleMeasure.value, 2);
+            objectOut[SFP(HS_Key_Values)] = commaStringFromArray(dataAs.doubleMeasure.value, 2);
             if (dataAs.doubleMeasure.units[0] != dataAs.doubleMeasure.units[1]) {
-                objectOut[F("units")] = commaStringFromArray(dataAs.doubleMeasure.units, 2);
+                objectOut[SFP(HS_Key_Units)] = commaStringFromArray(dataAs.doubleMeasure.units, 2);
             } else {
-                objectOut[F("units")] = dataAs.doubleMeasure.units[0];
+                objectOut[SFP(HS_Key_Units)] = dataAs.doubleMeasure.units[0];
             }
         } break;
         case 3: { // Triple
-            objectOut[F("values")] = commaStringFromArray(dataAs.tripleMeasure.value, 3);
+            objectOut[SFP(HS_Key_Values)] = commaStringFromArray(dataAs.tripleMeasure.value, 3);
             if (dataAs.tripleMeasure.units[0] != dataAs.tripleMeasure.units[1] ||
                 dataAs.tripleMeasure.units[0] != dataAs.tripleMeasure.units[2]) {
-                objectOut[F("units")] = commaStringFromArray(dataAs.tripleMeasure.units, 3);
+                objectOut[SFP(HS_Key_Units)] = commaStringFromArray(dataAs.tripleMeasure.units, 3);
             } else {
-                objectOut[F("units")] = dataAs.tripleMeasure.units[0];
+                objectOut[SFP(HS_Key_Units)] = dataAs.tripleMeasure.units[0];
             }
         } break;
         default: break;
     }
-    objectOut[F("timestamp")] = timestamp;
+    objectOut[SFP(HS_Key_Timestamp)] = timestamp;
 }
 
 void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn)
@@ -279,22 +279,22 @@ void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn)
 
     switch (type) {
         case 0: // Binary
-            dataAs.binaryMeasure.state = objectIn[F("state")] | false;
+            dataAs.binaryMeasure.state = objectIn[SFP(HS_Key_State)] | false;
             break;
         case 1: // Single
             fromJSONObject(objectIn, 0);
             break;
         default: {
-            JsonVariantConst valuesVar = objectIn[F("values")] | objectIn[F("vals")];
+            JsonVariantConst valuesVar = objectIn[SFP(HS_Key_Values)] | objectIn[F("vals")];
             if (valuesVar.is<JsonArrayConst>()) { JsonArrayConst valuesArray = valuesVar; fromJSONValuesArray(valuesArray); }
             else { fromJSONValuesString(valuesVar); }
 
-            JsonVariantConst unitsVar = objectIn[F("units")] | objectIn[F("unit")];
+            JsonVariantConst unitsVar = objectIn[SFP(HS_Key_Units)] | objectIn[SFP(HS_Key_Unit)];
             if (unitsVar.is<JsonArrayConst>()) { JsonArrayConst unitsArray = unitsVar; fromJSONUnitsArray(unitsArray); }
             else { fromJSONUnitsString(unitsVar); }
         } break;
     }
-    timestamp = objectIn[F("timestamp")] | timestamp;
+    timestamp = objectIn[SFP(HS_Key_Timestamp)] | timestamp;
 }
 
 void HydroponicsMeasurementData::fromJSONVariant(JsonVariantConst &variantIn)
@@ -313,7 +313,7 @@ void HydroponicsMeasurementData::fromJSONVariant(JsonVariantConst &variantIn)
         type = 1;
         setValue(variantIn, 0);
     } else {
-        HYDRUINO_SOFT_ASSERT(false, F("Unsupported measurement JSON"));
+        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_UnsupportedOperation));
     }
 }
 
@@ -337,8 +337,8 @@ void HydroponicsMeasurementData::fromJSONObjectsArray(JsonArrayConst &objectsIn)
 
 void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn, int rowIndex)
 {
-    setValue(objectIn[F("value")] | objectIn[F("val")] | objectIn[F("state")] | 0.0f, rowIndex);
-    setUnits(objectIn[F("units")] | objectIn[F("unit")] | Hydroponics_UnitsType_Undefined, rowIndex);
+    setValue(objectIn[SFP(HS_Key_Value)] | objectIn[F("val")] | objectIn[SFP(HS_Key_State)] | 0.0f, rowIndex);
+    setUnits(objectIn[SFP(HS_Key_Units)] | objectIn[SFP(HS_Key_Unit)] | Hydroponics_UnitsType_Undefined, rowIndex);
 }
 
 void HydroponicsMeasurementData::fromJSONValuesArray(JsonArrayConst &valuesIn)

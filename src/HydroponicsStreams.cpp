@@ -14,7 +14,7 @@ HydroponicsEEPROMStream::HydroponicsEEPROMStream()
             _end = _eeprom->getDeviceSize();
         }
     }
-    HYDRUINO_HARD_ASSERT(_eeprom, F("EEPROM not available"));
+    HYDRUINO_HARD_ASSERT(_eeprom, SFP(HS_Err_UnsupportedOperation));
 }
 
 HydroponicsEEPROMStream::HydroponicsEEPROMStream(size_t dataAddress, size_t dataSize)
@@ -22,7 +22,7 @@ HydroponicsEEPROMStream::HydroponicsEEPROMStream(size_t dataAddress, size_t data
 {
     auto hydroponics = getHydroponicsInstance();
     if (hydroponics) { _eeprom = hydroponics->getEEPROM(); }
-    HYDRUINO_HARD_ASSERT(_eeprom, F("EEPROM not available"));
+    HYDRUINO_HARD_ASSERT(_eeprom, SFP(HS_Err_UnsupportedOperation));
 }
 
 int HydroponicsEEPROMStream::available()
@@ -56,7 +56,7 @@ size_t HydroponicsEEPROMStream::write(const uint8_t *buffer, size_t size)
         _writeAddress += size;
         return size;
     } else {
-        HYDRUINO_SOFT_ASSERT(false, F("Failure verifying written data to EEPROM"));
+        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
         return 0;
     }
 }
@@ -67,7 +67,7 @@ size_t HydroponicsEEPROMStream::write(uint8_t data) {
         _writeAddress += 1;
         return 1;
     } else {
-        HYDRUINO_SOFT_ASSERT(false, F("Failure verifying written data to EEPROM"));
+        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
         return 0;
     }
 }

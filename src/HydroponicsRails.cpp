@@ -8,7 +8,7 @@
 HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), F("Invalid data"));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
         switch(dataIn->id.object.classType) {
@@ -433,7 +433,7 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
 
 void HydroponicsRegulatedRail::attachPowerSensor()
 {
-    HYDRUINO_SOFT_ASSERT(getPowerSensor(), F("Power sensor not linked, failure attaching"));
+    HYDRUINO_SOFT_ASSERT(getPowerSensor(), SFP(HS_Err_MissingLinkage));
     if (getPowerSensor()) {
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
         _powerSensor->getMeasurementSignal().attach(methodSlot);
@@ -442,7 +442,7 @@ void HydroponicsRegulatedRail::attachPowerSensor()
 
 void HydroponicsRegulatedRail::detachPowerSensor()
 {
-    HYDRUINO_SOFT_ASSERT(getPowerSensor(), F("Power sensor not linked, failure detaching"));
+    HYDRUINO_SOFT_ASSERT(getPowerSensor(), SFP(HS_Err_MissingLinkage));
     if (getPowerSensor()) {
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handlePowerMeasure);
         _powerSensor->getMeasurementSignal().detach(methodSlot);
@@ -464,7 +464,7 @@ void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *
 
 void HydroponicsRegulatedRail::attachLimitTrigger()
 {
-    HYDRUINO_SOFT_ASSERT(_limitTrigger, F("Limit trigger not linked, failure attaching"));
+    HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HS_Err_MissingLinkage));
     if (_limitTrigger) {
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleLimitTrigger);
         _limitTrigger->getTriggerSignal().attach(methodSlot);
@@ -473,7 +473,7 @@ void HydroponicsRegulatedRail::attachLimitTrigger()
 
 void HydroponicsRegulatedRail::detachLimitTrigger()
 {
-    HYDRUINO_SOFT_ASSERT(_limitTrigger, F("Limit trigger not linked, failure detaching"));
+    HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HS_Err_MissingLinkage));
     if (_limitTrigger) {
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleLimitTrigger);
         _limitTrigger->getTriggerSignal().detach(methodSlot);
@@ -499,14 +499,14 @@ void HydroponicsRailData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsObjectData::toJSONObject(objectOut);
 
-    if (powerUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("powerUnits")] = unitsTypeToSymbol(powerUnits); }
+    if (powerUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_PowerUnits)] = unitsTypeToSymbol(powerUnits); }
 }
 
 void HydroponicsRailData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsObjectData::fromJSONObject(objectIn);
 
-    powerUnits = unitsTypeFromSymbol(objectIn[F("powerUnits")]);
+    powerUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_PowerUnits)]);
 }
 
 HydroponicsSimpleRailData::HydroponicsSimpleRailData()
@@ -519,14 +519,14 @@ void HydroponicsSimpleRailData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsRailData::toJSONObject(objectOut);
 
-    if (maxActiveAtOnce != 2) { objectOut[F("maxActiveAtOnce")] = maxActiveAtOnce; }
+    if (maxActiveAtOnce != 2) { objectOut[SFP(HS_Key_MaxActiveAtOnce)] = maxActiveAtOnce; }
 }
 
 void HydroponicsSimpleRailData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsRailData::fromJSONObject(objectIn);
 
-    maxActiveAtOnce = objectIn[F("maxActiveAtOnce")] | maxActiveAtOnce;
+    maxActiveAtOnce = objectIn[SFP(HS_Key_MaxActiveAtOnce)] | maxActiveAtOnce;
 }
 
 HydroponicsRegulatedRailData::HydroponicsRegulatedRailData()
@@ -539,10 +539,10 @@ void HydroponicsRegulatedRailData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsRailData::toJSONObject(objectOut);
 
-    objectOut[F("maxPower")] = maxPower;
-    if (powerSensorName[0]) { objectOut[F("powerSensorName")] = stringFromChars(powerSensorName, HYDRUINO_NAME_MAXSIZE); }
+    objectOut[SFP(HS_Key_MaxPower)] = maxPower;
+    if (powerSensorName[0]) { objectOut[SFP(HS_Key_PowerSensorName)] = stringFromChars(powerSensorName, HYDRUINO_NAME_MAXSIZE); }
     if (limitTrigger.type != -1) {
-        JsonObject limitTriggerObj = objectOut.createNestedObject(F("limitTrigger"));
+        JsonObject limitTriggerObj = objectOut.createNestedObject(SFP(HS_Key_LimitTrigger));
         limitTrigger.toJSONObject(limitTriggerObj);
     }
 }
@@ -551,9 +551,9 @@ void HydroponicsRegulatedRailData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsRailData::fromJSONObject(objectIn);
 
-    maxPower = objectIn[F("maxPower")] | maxPower;
-    const char *powerSensorNameStr = objectIn[F("powerSensorName")];
+    maxPower = objectIn[SFP(HS_Key_MaxPower)] | maxPower;
+    const char *powerSensorNameStr = objectIn[SFP(HS_Key_PowerSensorName)];
     if (powerSensorNameStr && powerSensorNameStr[0]) { strncpy(powerSensorName, powerSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
-    JsonObjectConst limitTriggerObj = objectIn[F("limitTrigger")];
+    JsonObjectConst limitTriggerObj = objectIn[SFP(HS_Key_LimitTrigger)];
     if (!limitTriggerObj.isNull()) { limitTrigger.fromJSONObject(limitTriggerObj); }
 }

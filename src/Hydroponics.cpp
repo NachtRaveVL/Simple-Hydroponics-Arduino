@@ -72,7 +72,7 @@ void Hydroponics::allocateEEPROM()
 {
     if (!_eeprom && _eepromDeviceSize) {
         _eeprom = new I2C_eeprom(_eepromI2CAddr, _eepromDeviceSize, _i2cWire);
-        HYDRUINO_SOFT_ASSERT(_eeprom, F("Failure allocating EEPROM device"));
+        HYDRUINO_SOFT_ASSERT(_eeprom, SFP(HS_Err_AllocationFailure));
         _eepromBegan = false;
     }
 }
@@ -86,7 +86,7 @@ void Hydroponics::allocateRTC()
 {
     if (!_rtc) {
         _rtc = new RTC_DS3231();
-        HYDRUINO_SOFT_ASSERT(_rtc, F("Failure allocating RTC device"));
+        HYDRUINO_SOFT_ASSERT(_rtc, SFP(HS_Err_AllocationFailure));
         HYDRUINO_HARD_ASSERT(_rtcI2CAddr == B000, F("RTClib does not support i2c multi-addressing, only i2c address B000 may be used"));
         _rtcBegan = false;
     }
@@ -107,7 +107,7 @@ void Hydroponics::allocateSD()
     #else
         if (!_sd) {
             _sd = new SDClass();
-            HYDRUINO_SOFT_ASSERT(_sd, F("Failure allocating SD card device"));
+            HYDRUINO_SOFT_ASSERT(_sd, SFP(HS_Err_AllocationFailure));
         }
     #endif
 }
@@ -126,22 +126,29 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
                        Hydroponics_DisplayOutputMode dispOutMode,
                        Hydroponics_ControlInputMode ctrlInMode)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, F("Controller already initialized"));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
 
     if (!_systemData) {
-        HYDRUINO_SOFT_ASSERT((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count, F("Invalid system mode"));
-        HYDRUINO_SOFT_ASSERT((int)measureMode >= 0 && measureMode < Hydroponics_MeasurementMode_Count, F("Invalid measurement mode"));
-        HYDRUINO_SOFT_ASSERT((int)dispOutMode >= 0 && dispOutMode < Hydroponics_DisplayOutputMode_Count, F("Invalid LCD output mode"));
-        HYDRUINO_SOFT_ASSERT((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count, F("Invalid control input mode"));
+        HYDRUINO_SOFT_ASSERT((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count, SFP(HS_Err_InvalidParameter));
+        HYDRUINO_SOFT_ASSERT((int)measureMode >= 0 && measureMode < Hydroponics_MeasurementMode_Count, SFP(HS_Err_InvalidParameter));
+        #ifndef HYDRUINO_DISABLE_GUI
+            HYDRUINO_SOFT_ASSERT((int)dispOutMode >= 0 && dispOutMode < Hydroponics_DisplayOutputMode_Count, SFP(HS_Err_InvalidParameter));
+            HYDRUINO_SOFT_ASSERT((int)ctrlInMode >= 0 && ctrlInMode < Hydroponics_ControlInputMode_Count, SFP(HS_Err_InvalidParameter));
+        #endif
 
         _systemData = new HydroponicsSystemData();
-        HYDRUINO_SOFT_ASSERT(_systemData, F("Failure allocating system data store"));
+        HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_AllocationFailure));
 
         if (_systemData) {
             _systemData->systemMode = systemMode;
             _systemData->measureMode = measureMode;
-            _systemData->dispOutMode = dispOutMode;
-            _systemData->ctrlInMode = ctrlInMode;
+            #ifndef HYDRUINO_DISABLE_GUI
+                _systemData->dispOutMode = dispOutMode;
+                _systemData->ctrlInMode = ctrlInMode;
+            #else
+                _systemData->dispOutMode = Hydroponics_DisplayOutputMode_Disabled;
+                _systemData->ctrlInMode = Hydroponics_ControlInputMode_Disabled;
+            #endif
 
             _scheduler.initFromData(&(_systemData->scheduler));
 
@@ -152,7 +159,7 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
 
 bool Hydroponics::initFromEEPROM(bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, F("Controller already initialized"));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
 
     if (!_systemData) {
         if (getEEPROM() && _eepromBegan) {
@@ -166,7 +173,7 @@ bool Hydroponics::initFromEEPROM(bool jsonFormat)
 
 bool Hydroponics::saveToEEPROM(bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, F("Controller not initialized"));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
 
     if (_systemData) {
         if (getEEPROM() && _eepromBegan) {
@@ -180,7 +187,7 @@ bool Hydroponics::saveToEEPROM(bool jsonFormat)
 
 bool Hydroponics::initFromSDCard(String configFile, bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, F("Controller already initialized"));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
 
     if (!_systemData) {
         auto sd = getSDCard();
@@ -201,7 +208,7 @@ bool Hydroponics::initFromSDCard(String configFile, bool jsonFormat)
 
 bool Hydroponics::saveToSDCard(String configFile, bool jsonFormat)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, F("Controller not initialized"));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
 
     if (!_systemData) {
         auto sd = getSDCard();
@@ -222,8 +229,8 @@ bool Hydroponics::saveToSDCard(String configFile, bool jsonFormat)
 
 bool Hydroponics::initFromJSONStream(Stream *streamIn)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, F("Controller already initialized"));
-    HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), F("Invalid stream or no data present"));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
+    HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
 
@@ -232,7 +239,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
             JsonObjectConst systemDataObj = doc.as<JsonObjectConst>();
             HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromJSONObject(systemDataObj);
 
-            HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), F("Failure importing system data"));
+            HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), SFP(HS_Err_ImportFailure));
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
                 _scheduler.initFromData(&(_systemData->scheduler));
@@ -249,7 +256,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                 JsonObjectConst dataObj = doc.as<JsonObjectConst>();
                 HydroponicsData *data = newDataFromJSONObject(dataObj);
 
-                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), F("Failure importing data, unsupported type"));
+                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HS_Err_ImportFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
@@ -264,7 +271,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                     delete data; data = nullptr;
 
                     if (!(obj && !obj->isUnknownType() && _objects.insert(obj->getId().key, shared_ptr<HydroponicsObject>(obj)).second)) {
-                        HYDRUINO_SOFT_ASSERT(false, F("Failure creating object"));
+                        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ImportFailure));
                         if (obj) { delete obj; }
                         delete _systemData; _systemData = nullptr;
                         break;
@@ -277,7 +284,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
             }
         }
 
-        HYDRUINO_SOFT_ASSERT(_systemData, F("Failure initializing, no system data"));
+        HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_InitializationFailure));
         if (_systemData) {
             commonInit();
         }
@@ -289,8 +296,8 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
 
 bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, F("Controller not initialized"));
-    HYDRUINO_SOFT_ASSERT(streamOut, F("Invalid stream"));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(streamOut, SFP(HS_Err_InvalidParameter));
 
     if (_systemData && streamOut) {
         {   StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
@@ -299,7 +306,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             _systemData->toJSONObject(systemDataObj);
 
             if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
-                HYDRUINO_SOFT_ASSERT(false, F("Failure exporting system data"));
+                HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ExportFailure));
                 return false;
             }
         }
@@ -314,7 +321,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
                 iter->second->toJSONObject(calibDataObj);
 
                 if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
-                    HYDRUINO_SOFT_ASSERT(false, F("Failure exporting user calibration data"));
+                    HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ExportFailure));
                     return false;
                 }
             }
@@ -331,7 +338,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
                     iter->second->data.toJSONObject(cropDataObj);
 
                     if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
-                        HYDRUINO_SOFT_ASSERT(false, F("Failure exporting custom crop data"));
+                        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ExportFailure));
                         return false;
                     }
                 }
@@ -346,7 +353,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
                 iter->second->toJSONObject(additiveDataObj);
 
                 if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
-                    HYDRUINO_SOFT_ASSERT(false, F("Failure exporting custom additive data"));
+                    HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ExportFailure));
                     return false;
                 }
             }
@@ -356,7 +363,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroponicsData *data = iter->second->newSaveData();
 
-                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), F("Failure saving object to data"));
+                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), SFP(HS_Err_AllocationFailure));
                 if (data && data->isObjectData()) {
                     StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
@@ -365,7 +372,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
                     delete data; data = nullptr;
 
                     if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
-                        HYDRUINO_SOFT_ASSERT(false, F("Failure exporting object data"));
+                        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ExportFailure));
                         return false;
                     }
                 } else {
@@ -384,13 +391,13 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
 
 bool Hydroponics::initFromBinaryStream(Stream *streamIn)
 {
-    HYDRUINO_HARD_ASSERT(!_systemData, F("Controller already initialized"));
-    HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), F("Invalid stream or no data present"));
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_DataAlreadyInitialized));
+    HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
         {   HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromBinaryStream(streamIn);
 
-            HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), F("Failure importing system data"));
+            HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), SFP(HS_Err_ImportFailure));
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
                 _scheduler.initFromData(&(_systemData->scheduler));
@@ -404,7 +411,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             while (streamIn->available()) {
                 HydroponicsData *data = newDataFromBinaryStream(streamIn);
 
-                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), F("Failure importing data, unsupported type"));
+                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HS_Err_AllocationFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
@@ -419,7 +426,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                     delete data; data = nullptr;
 
                     if (!(obj && !obj->isUnknownType() && _objects.insert(obj->getId().key, shared_ptr<HydroponicsObject>(obj)).second)) {
-                        HYDRUINO_SOFT_ASSERT(false, F("Failure creating object"));
+                        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ImportFailure));
                         if (obj) { delete obj; }
                         delete _systemData; _systemData = nullptr;
                         break;
@@ -432,7 +439,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             }
         }
 
-        HYDRUINO_SOFT_ASSERT(_systemData, F("Failure initializing, no system data"));
+        HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_InitializationFailure));
         if (_systemData) {
             commonInit();
         }
@@ -444,13 +451,13 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
 
 bool Hydroponics::saveToBinaryStream(Stream *streamOut)
 {
-    HYDRUINO_HARD_ASSERT(_systemData, F("Controller not initialized"));
-    HYDRUINO_SOFT_ASSERT(streamOut, F("Invalid stream"));
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(streamOut, SFP(HS_Err_InvalidParameter));
 
     if (_systemData && streamOut) {
         {   size_t bytesWritten = serializeDataToBinaryStream(_systemData, streamOut);
 
-            HYDRUINO_SOFT_ASSERT(!bytesWritten, F("Failure exporting system data"));
+            HYDRUINO_SOFT_ASSERT(!bytesWritten, SFP(HS_Err_ExportFailure));
             if (!bytesWritten) { return false; }
         }
 
@@ -462,7 +469,7 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
-            HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure exporting user calibration data"));
+            HYDRUINO_SOFT_ASSERT(bytesWritten, SFP(HS_Err_ExportFailure));
             if (!bytesWritten) { return false; }
         }
 
@@ -476,7 +483,7 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
                 }
             }
 
-            HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure exporting custom crop data"));
+            HYDRUINO_SOFT_ASSERT(bytesWritten, SFP(HS_Err_ExportFailure));
             if (!bytesWritten) { return false; }
         }
 
@@ -487,7 +494,7 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
-            HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure exporting custom additive data"));
+            HYDRUINO_SOFT_ASSERT(bytesWritten, SFP(HS_Err_ExportFailure));
             if (!bytesWritten) { return false; }
         }
 
@@ -495,12 +502,12 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroponicsData *data = iter->second->newSaveData();
 
-                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), F("Failure saving object to data"));
+                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), SFP(HS_Err_AllocationFailure));
                 if (data && data->isObjectData()) {
                     size_t bytesWritten = serializeDataToBinaryStream(data, streamOut);
                     delete data; data = nullptr;
 
-                    HYDRUINO_SOFT_ASSERT(bytesWritten, F("Failure exporting object data"));
+                    HYDRUINO_SOFT_ASSERT(bytesWritten, SFP(HS_Err_ExportFailure));
                     if (!bytesWritten) { return false; }
                 } else {
                     if (data) { delete data; data = nullptr; }
@@ -531,16 +538,16 @@ void Hydroponics::commonInit()
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         Serial.print(F("Hydroponics::commonInit piezoBuzzerPin: "));
         if (isValidPin(_piezoBuzzerPin)) { Serial.print(_piezoBuzzerPin); }
-        else { Serial.print(F("Disabled")); }
+        else { Serial.print(SFP(HS_Disabled)); }
         Serial.print(F(", eepromDeviceSize: "));
         if (_eepromDeviceSize) { Serial.print(_eepromDeviceSize); }
-        else { Serial.print(F("Disabled")); }
+        else { Serial.print(SFP(HS_Disabled)); }
         Serial.print(F(", sdCardCSPin: "));
         if (isValidPin(_sdCardCSPin)) { Serial.print(_sdCardCSPin); }
-        else { Serial.print(F("Disabled")); }
+        else { Serial.print(SFP(HS_Disabled)); }
         Serial.print(F(", controlInputPin1: "));
         if (isValidPin(_ctrlInputPin1)) { Serial.print(_ctrlInputPin1); }
-        else { Serial.print(F("Disabled")); }
+        else { Serial.print(SFP(HS_Disabled)); }
         Serial.print(F(", EEPROMi2cAddress: 0x"));
         Serial.print(_eepromI2CAddr, HEX);
         Serial.print(F(", RTCi2cAddress: 0x"));
@@ -669,19 +676,19 @@ void Hydroponics::launch()
     #if defined(HYDRUINO_USE_TASKSCHEDULER)
         if (!_controlTask) {
             _controlTask = new Task(HYDRUINO_CONTROL_LOOP_INTERVAL * TASK_MILLISECOND, TASK_FOREVER, controlLoop, &_ts, true);
-            HYDRUINO_HARD_ASSERT(_controlTask, F("Failure allocating control task loop"));
+            HYDRUINO_HARD_ASSERT(_controlTask, SFP(HS_Err_AllocationFailure));
         } else {
             _controlTask->enable();
         }
         if (!_dataTask) {
             _dataTask = new Task(getPollingInterval() * TASK_MILLISECOND, TASK_FOREVER, dataLoop, &_ts, true);
-            HYDRUINO_HARD_ASSERT(_dataTask, F("Failure allocating data task loop"));
+            HYDRUINO_HARD_ASSERT(_dataTask, SFP(HS_Err_AllocationFailure));
         } else {
             _dataTask->enable();
         }
         if (!_miscTask) {
             _miscTask = new Task(HYDRUINO_MISC_LOOP_INTERVAL * TASK_MILLISECOND, TASK_FOREVER, miscLoop, &_ts, true);
-            HYDRUINO_HARD_ASSERT(_miscTask, F("Failure allocating misc task loop"));
+            HYDRUINO_HARD_ASSERT(_miscTask, SFP(HS_Err_AllocationFailure));
         } else {
             _miscTask->enable();
         }
@@ -764,9 +771,9 @@ void Hydroponics::updateObjects(int pass)
 
 bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData)
 {
-    HYDRUINO_SOFT_ASSERT(customAdditiveData, F("Invalid custom additive data"));
+    HYDRUINO_SOFT_ASSERT(customAdditiveData, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), F("Invalid reservoir type"));
+                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), SFP(HS_Err_InvalidParameter));
 
     if (customAdditiveData && customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
         customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
@@ -776,7 +783,7 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
         if (iter == _additives.end()) {
             auto additiveData = new HydroponicsCustomAdditiveData();
 
-            HYDRUINO_SOFT_ASSERT(additiveData, F("Failure allocating custom additive data"));
+            HYDRUINO_SOFT_ASSERT(additiveData, SFP(HS_Err_AllocationFailure));
             if (additiveData) {
                 *additiveData = *customAdditiveData;
                 retVal = _additives.insert(customAdditiveData->reservoirType, additiveData).second;
@@ -797,9 +804,9 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
 
 bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData)
 {
-    HYDRUINO_SOFT_ASSERT(customAdditiveData, F("Invalid custom additive data"));
+    HYDRUINO_SOFT_ASSERT(customAdditiveData, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), F("Invalid reservoir type"));
+                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), SFP(HS_Err_InvalidParameter));
 
     if (customAdditiveData && customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
         customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
@@ -824,7 +831,7 @@ bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *cu
 const HydroponicsCustomAdditiveData *Hydroponics::getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const
 {
     HYDRUINO_SOFT_ASSERT(reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount, F("Invalid reservoir type"));
+                         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount, SFP(HS_Err_InvalidParameter));
 
     if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
@@ -865,7 +872,7 @@ void Hydroponics::returnPinLock(byte pin)
 
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
-    HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, F("Invalid position index"));
+    HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HS_Err_InvalidParameter));
     if(obj && _objects.insert(obj->getKey(), obj).second) {
         _scheduler.setNeedsScheduling();
         if (getInOperationalMode()) { obj->resolveLinks(); }
@@ -958,9 +965,9 @@ Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, boo
 
 void Hydroponics::setControlInputPinMap(byte *pinMap)
 {
-    HYDRUINO_SOFT_ASSERT(pinMap, F("Invalid pinMap"));
+    HYDRUINO_SOFT_ASSERT(pinMap, SFP(HS_Err_InvalidParameter));
     const int ctrlInPinCount = getControlInputRibbonPinCount();
-    HYDRUINO_SOFT_ASSERT(!pinMap || (ctrlInPinCount > 0), F("Control input pinmap not used in this mode"));
+    HYDRUINO_SOFT_ASSERT(!pinMap || (ctrlInPinCount > 0), SFP(HS_Err_UnsupportedOperation));
 
     if (pinMap && ctrlInPinCount) {
         for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
@@ -971,7 +978,7 @@ void Hydroponics::setControlInputPinMap(byte *pinMap)
 
 void Hydroponics::setSystemName(String systemName)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
@@ -981,7 +988,7 @@ void Hydroponics::setSystemName(String systemName)
 
 void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
@@ -992,7 +999,7 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
 
 void Hydroponics::setPollingInterval(uint32_t pollingInterval)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     if (_systemData) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->pollingInterval = pollingInterval;
@@ -1006,7 +1013,7 @@ void Hydroponics::setPollingInterval(uint32_t pollingInterval)
 
 void Hydroponics::setWiFiConnection(String ssid, String password)
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     if (_systemData) {
         bool ssidChanged = ssid.equals(getWiFiSSID());
         bool passChanged = password.equals(getWiFiPassword());
@@ -1061,8 +1068,8 @@ int Hydroponics::getControlInputRibbonPinCount() const
 byte Hydroponics::getControlInputPin(int ribbonPinIndex) const
 {
     int ctrlInPinCount = getControlInputRibbonPinCount();
-    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, F("Control input pinmap not used in this mode"));
-    HYDRUINO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), F("Ribbon pin index out of range"));
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, SFP(HS_Err_UnsupportedOperation));
+    HYDRUINO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), SFP(HS_Err_InvalidParameter));
 
     return ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInputPinMap[ribbonPinIndex] : -1;
 }
@@ -1195,13 +1202,13 @@ Hydroponics_ControlInputMode Hydroponics::getControlInputMode() const
 
 String Hydroponics::getSystemName() const
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     return _systemData ? String(_systemData->systemName) : String();
 }
 
 int8_t Hydroponics::getTimeZoneOffset() const
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     return _systemData ? _systemData->timeZoneOffset : 0;
 }
 
@@ -1212,7 +1219,7 @@ bool Hydroponics::getRTCBatteryFailure() const
 
 uint32_t Hydroponics::getPollingInterval() const
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     return _systemData ? _systemData->pollingInterval : 0;
 }
 
@@ -1228,13 +1235,13 @@ bool Hydroponics::getIsPollingFrameOld(unsigned int frame, unsigned int allowanc
 
 String Hydroponics::getWiFiSSID()
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     return _systemData ? String(_systemData->wifiSSID) : String();
 }
 
 String Hydroponics::getWiFiPassword()
 {
-    HYDRUINO_SOFT_ASSERT(_systemData, F("System data not yet initialized"));
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_DataNotYetInitialized));
     if (_systemData) {
         char wifiPassword[HYDRUINO_NAME_MAXSIZE] = {0};
 
@@ -1300,7 +1307,7 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addGrowLightsRelay(byte output
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_GrowLights));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, F("Output pin is not digital"));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
 
     if (outputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
@@ -1318,8 +1325,8 @@ shared_ptr<HydroponicsPumpRelayActuator> Hydroponics::addWaterPumpRelay(byte out
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterPump));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, F("Output pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsPumpRelayActuator> actuator(new HydroponicsPumpRelayActuator(
@@ -1337,8 +1344,8 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addWaterHeaterRelay(byte outpu
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterHeater));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, F("Output pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
@@ -1356,8 +1363,8 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addWaterAeratorRelay(byte outp
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterAerator));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, F("Output pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
@@ -1375,8 +1382,8 @@ shared_ptr<HydroponicsRelayActuator> Hydroponics::addFanExhaustRelay(byte output
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, F("Output pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsRelayActuator> actuator(new HydroponicsRelayActuator(
@@ -1394,8 +1401,8 @@ shared_ptr<HydroponicsPWMActuator> Hydroponics::addFanExhaustPWM(byte outputPin,
 {
     bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
-    HYDRUINO_HARD_ASSERT(outputPinIsPWM, F("Output pin does not support PWM"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(outputPinIsPWM, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsPWM && positionIndex != -1) {
         shared_ptr<HydroponicsPWMActuator> actuator(new HydroponicsPWMActuator(
@@ -1413,8 +1420,8 @@ shared_ptr<HydroponicsPumpRelayActuator> Hydroponics::addPeristalticPumpRelay(by
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_PeristalticPump));
-    HYDRUINO_HARD_ASSERT(outputPinIsDigital, F("Output pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsPumpRelayActuator> actuator(new HydroponicsPumpRelayActuator(
@@ -1432,8 +1439,8 @@ shared_ptr<HydroponicsBinarySensor> Hydroponics::addLevelIndicator(byte inputPin
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterLevelIndicator));
-    HYDRUINO_HARD_ASSERT(inputPinIsDigital, F("Input pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsBinarySensor> sensor(new HydroponicsBinarySensor(
@@ -1451,8 +1458,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogCO2Sensor(byte inputPi
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirCarbonDioxide));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1470,8 +1477,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogPhMeter(byte inputPin,
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PotentialHydrogen));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1489,8 +1496,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogTemperatureSensor(byte
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1508,8 +1515,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogTDSElectrode(byte inpu
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_TotalDissolvedSolids));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1536,8 +1543,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addPWMPumpFlowSensor(byte input
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterPumpFlowSensor));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1555,8 +1562,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addAnalogWaterHeightMeter(byte 
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1574,8 +1581,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addUltrasonicDistanceSensor(byt
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1593,8 +1600,8 @@ shared_ptr<HydroponicsAnalogSensor> Hydroponics::addPowerUsageMeter(byte inputPi
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PowerUsageMeter));
-    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, F("Input pin is not analog"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         shared_ptr<HydroponicsAnalogSensor> sensor(new HydroponicsAnalogSensor(
@@ -1615,8 +1622,8 @@ shared_ptr<HydroponicsDHTTempHumiditySensor> Hydroponics::addDHTTempHumiditySens
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirTempHumidity));
-    HYDRUINO_HARD_ASSERT(inputPinIsDigital, F("Input pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsDHTTempHumiditySensor> sensor(new HydroponicsDHTTempHumiditySensor(
@@ -1634,8 +1641,8 @@ shared_ptr<HydroponicsDSTemperatureSensor> Hydroponics::addDSTemperatureSensor(b
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
-    HYDRUINO_HARD_ASSERT(inputPinIsDigital, F("Input pin is not digital"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_HARD_ASSERT(inputPinIsDigital, SFP(HS_Err_InvalidPin));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
         shared_ptr<HydroponicsDSTemperatureSensor> sensor(new HydroponicsDSTemperatureSensor(
@@ -1655,10 +1662,10 @@ shared_ptr<HydroponicsTimedCrop> Hydroponics::addTimerFedCrop(Hydroponics_CropTy
                                                               byte minsOn, byte minsOff)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
-    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
-    HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, F("Invalid substrate type"));
-    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), F("Invalid sow date"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() && positionIndex != -1) {
         shared_ptr<HydroponicsTimedCrop> crop(new HydroponicsTimedCrop(
@@ -1692,10 +1699,10 @@ shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedCrop(Hydroponics_
                                                                     DateTime sowDate)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(cropType));
-    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, F("Invalid crop type"));
-    HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, F("Invalid substrate type"));
-    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), F("Invalid sow date"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() && positionIndex != -1) {
         shared_ptr<HydroponicsAdaptiveCrop> crop(new HydroponicsAdaptiveCrop(
@@ -1724,11 +1731,11 @@ shared_ptr<HydroponicsAdaptiveCrop> Hydroponics::addAdaptiveFedPerennialCrop(Hyd
 shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics_ReservoirType reservoirType, float maxVolume)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(reservoirType));
-    HYDRUINO_SOFT_ASSERT((int)reservoirType >= 0 && reservoirType <= Hydroponics_ReservoirType_Count, F("Invalid reservoir type"));
-    HYDRUINO_SOFT_ASSERT(maxVolume > 0.0f, F("Invalid max volume"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT((int)reservoirType >= 0 && reservoirType <= Hydroponics_ReservoirType_Count, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(maxVolume > FLT_EPSILON, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
-    if ((int)reservoirType >= 0 && reservoirType < Hydroponics_ReservoirType_Count && maxVolume > 0.0f && positionIndex != -1) {
+    if ((int)reservoirType >= 0 && reservoirType < Hydroponics_ReservoirType_Count && maxVolume > FLT_EPSILON && positionIndex != -1) {
         shared_ptr<HydroponicsFluidReservoir> reservoir(new HydroponicsFluidReservoir(
             reservoirType,
             positionIndex,
@@ -1743,11 +1750,11 @@ shared_ptr<HydroponicsFluidReservoir> Hydroponics::addFluidReservoir(Hydroponics
 shared_ptr<HydroponicsFeedReservoir> Hydroponics::addFeedWaterReservoir(float maxVolume, DateTime lastChangeDate, DateTime lastPruningDate)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_FeedWater));
-    HYDRUINO_SOFT_ASSERT(maxVolume > 0.0f, F("Invalid max volume"));
-    HYDRUINO_SOFT_ASSERT(lastChangeDate.unixtime(), F("Invalid last water change date"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT(maxVolume > FLT_EPSILON, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(lastChangeDate.unixtime(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
-    if (maxVolume > 0.0f && positionIndex != -1) {
+    if (maxVolume > FLT_EPSILON && positionIndex != -1) {
         shared_ptr<HydroponicsFeedReservoir> reservoir(new HydroponicsFeedReservoir(
             positionIndex,
             maxVolume,
@@ -1763,7 +1770,7 @@ shared_ptr<HydroponicsFeedReservoir> Hydroponics::addFeedWaterReservoir(float ma
 shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addDrainagePipe()
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_DrainageWater));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (positionIndex != -1) {
         shared_ptr<HydroponicsInfiniteReservoir> reservoir(new HydroponicsInfiniteReservoir(
@@ -1780,7 +1787,7 @@ shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addDrainagePipe()
 shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addFreshWaterMain()
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_FreshWater));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (positionIndex != -1) {
         shared_ptr<HydroponicsInfiniteReservoir> reservoir(new HydroponicsInfiniteReservoir(
@@ -1797,9 +1804,9 @@ shared_ptr<HydroponicsInfiniteReservoir> Hydroponics::addFreshWaterMain()
 shared_ptr<HydroponicsSimpleRail> Hydroponics::addSimplePowerRail(Hydroponics_RailType railType, int maxActiveAtOnce)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(railType));
-    HYDRUINO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydroponics_RailType_Count, F("Invalid rail type"));
-    HYDRUINO_SOFT_ASSERT(maxActiveAtOnce > 0, F("Invalid max active at once"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydroponics_RailType_Count, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(maxActiveAtOnce > 0, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if ((int)railType >= 0 && railType < Hydroponics_RailType_Count && maxActiveAtOnce > 0 && positionIndex != -1) {
         shared_ptr<HydroponicsSimpleRail> rail(new HydroponicsSimpleRail(
@@ -1816,11 +1823,11 @@ shared_ptr<HydroponicsSimpleRail> Hydroponics::addSimplePowerRail(Hydroponics_Ra
 shared_ptr<HydroponicsRegulatedRail> Hydroponics::addRegulatedPowerRail(Hydroponics_RailType railType, float maxPower)
 {
     Hydroponics_PositionIndex positionIndex = firstPositionOpen(HydroponicsIdentity(railType));
-    HYDRUINO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydroponics_RailType_Count, F("Invalid rail type"));
-    HYDRUINO_SOFT_ASSERT(maxPower > 0, F("Invalid max power"));
-    HYDRUINO_SOFT_ASSERT(positionIndex != -1, F("No more positions available"));
+    HYDRUINO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydroponics_RailType_Count, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(maxPower > FLT_EPSILON, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
-    if ((int)railType >= 0 && railType < Hydroponics_RailType_Count && maxPower > 0 && positionIndex != -1) {
+    if ((int)railType >= 0 && railType < Hydroponics_RailType_Count && maxPower > FLT_EPSILON && positionIndex != -1) {
         shared_ptr<HydroponicsRegulatedRail> rail(new HydroponicsRegulatedRail(
             railType,
             positionIndex,
