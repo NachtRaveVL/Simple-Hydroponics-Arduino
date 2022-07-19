@@ -143,9 +143,9 @@ const char PROGMEM HS_Key_WiFiSSID[] = {"wifiSSID"};
 const char PROGMEM HS_Key_WireDevAddress[] = {"wireDevAddress"};
 const char PROGMEM HS_Key_WirePosIndex[] = {"wirePosIndex"};
 
-String stringFromPGM(const char PROGMEM *str)
+String stringFromPGM(const char *str)
 {
-    String retVal; retVal.reserve(strlen_P(str));
+    String retVal; retVal.reserve(strlen_P(str)+1);
     char readChar = pgm_read_byte(str++);
     while (readChar) {
         retVal.concat(readChar);

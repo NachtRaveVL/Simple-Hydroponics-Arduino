@@ -144,7 +144,7 @@ using namespace arx::stdx;
 #include "HydroponicsData.h"
 #include "HydroponicsObject.h"
 #include "HydroponicsMeasurements.h"
-#include "HydroponicsUtils.hpp"
+#include "HydroponicsUtils.h"
 #include "HydroponicsDatas.h"
 #include "HydroponicsCropsLibrary.h"
 #include "HydroponicsCalibrationsStore.h"
@@ -418,5 +418,7 @@ protected:
     friend void ::logMessage(String,bool);
     #endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 };
+
+#include "HydroponicsUtils.hpp"
 
 #endif // /ifndef Hydroponics_H
