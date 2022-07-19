@@ -144,7 +144,7 @@ extern const char PROGMEM HS_Key_WiFiSSID[];
 extern const char PROGMEM HS_Key_WireDevAddress[];
 extern const char PROGMEM HS_Key_WirePosIndex[];
 
-extern String stringFromPGM(const char PROGMEM *str);
+extern String stringFromPGM(const char *str);
 #define SFP(HStr) stringFromPGM((HStr))
 
 #endif // /ifndef HydroponicsStrings_H
