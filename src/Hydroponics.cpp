@@ -229,12 +229,12 @@ bool Hydroponics::initFromSDCard(String configFile, bool jsonFormat)
         auto sd = getSDCard();
         if (sd) {
             bool retVal = false;
-            auto config = sd->open(configFile);
+            auto config = sd->open(configFile.c_str());
             if (config) {
                 retVal = jsonFormat ? initFromJSONStream(&config) : initFromBinaryStream(&config);
                 config.close();
             }
-            sd->end();
+            endSDCard(sd);
             return retVal;
         }
     }
@@ -250,12 +250,12 @@ bool Hydroponics::saveToSDCard(String configFile, bool jsonFormat)
         auto sd = getSDCard();
         if (sd) {
             bool retVal = false;
-            auto config = sd->open(configFile);
+            auto config = sd->open(configFile.c_str());
             if (config) {
                 retVal = jsonFormat ? saveToJSONStream(&config) : saveToBinaryStream(&config);
                 config.close();
             }
-            sd->end();
+            endSDCard(sd);
             return retVal;
         }
     }
@@ -306,7 +306,9 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                     HydroponicsObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
 
-                    if (!(obj && !obj->isUnknownType() && _objects.insert(obj->getId().key, shared_ptr<HydroponicsObject>(obj)).second)) {
+                    if (obj && !obj->isUnknownType()) {
+                        _objects[obj->getKey()] = shared_ptr<HydroponicsObject>(obj);
+                    } else {
                         HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ImportFailure));
                         if (obj) { delete obj; }
                         delete _systemData; _systemData = nullptr;
@@ -461,7 +463,9 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                     HydroponicsObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
 
-                    if (!(obj && !obj->isUnknownType() && _objects.insert(obj->getId().key, shared_ptr<HydroponicsObject>(obj)).second)) {
+                    if (obj && !obj->isUnknownType()) {
+                        _objects[obj->getKey()] = shared_ptr<HydroponicsObject>(obj);
+                    } else {
                         HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_ImportFailure));
                         if (obj) { delete obj; }
                         delete _systemData; _systemData = nullptr;
@@ -807,7 +811,8 @@ void Hydroponics::updateObjects(int pass)
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
     HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HS_Err_InvalidParameter));
-    if(obj && _objects.insert(obj->getKey(), obj).second) {
+    if (obj && _objects.find(obj->getKey()) == _objects.end()) {
+        _objects[obj->getKey()] = obj;
         _scheduler.setNeedsScheduling();
         if (getInOperationalMode()) { obj->resolveLinks(); }
         return true;
@@ -867,11 +872,14 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
 shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
 {
     HYDRUINO_SOFT_ASSERT(false, F("Hashing collision")); // exhaustive search must be performed
+
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         if (id.keyStr == iter->second->getId().keyStr) {
             return iter->second;
         }
     }
+
+    return nullptr;
 }
 
 Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, bool taken)
@@ -914,7 +922,8 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
             HYDRUINO_SOFT_ASSERT(additiveData, SFP(HS_Err_AllocationFailure));
             if (additiveData) {
                 *additiveData = *customAdditiveData;
-                retVal = _additives.insert(customAdditiveData->reservoirType, additiveData).second;
+                _additives[customAdditiveData->reservoirType] = additiveData;
+                retVal = (_additives[customAdditiveData->reservoirType] == additiveData);
             }
         } else {
             *(iter->second) = *customAdditiveData;
@@ -978,7 +987,8 @@ bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
         CRITICAL_SECTION {
             auto iter = _pinLocks.find(pin);
             if (iter == _pinLocks.end()) {
-                gotLock = _pinLocks.insert(pin, (byte)true).second;
+                _pinLocks[pin] = true;
+                gotLock = _pinLocks[pin];
             }
         }
         if (gotLock) { return true; }
@@ -1142,6 +1152,8 @@ SDClass *Hydroponics::getSDCard(bool begin)
     if (_sd && begin) {
         #if defined(ESP32) || defined(ESP8266)
             bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), _sdCardSpeed);
+        #elif defined(CORE_TEENSY)
+            bool sdBegan = _sd->begin(_sdCardCSPin);
         #else
             bool sdBegan = _sd->begin(_sdCardSpeed, _sdCardCSPin);
         #endif
@@ -1152,6 +1164,13 @@ SDClass *Hydroponics::getSDCard(bool begin)
     }
 
     return _sd;
+}
+
+void Hydroponics::endSDCard(SDClass *sd)
+{
+    #if !defined(CORE_TEENSY)
+        sd->end();
+    #endif
 }
 
 WiFiClass *Hydroponics::getWiFi(bool begin)
@@ -1186,11 +1205,11 @@ OneWire *Hydroponics::getOneWireForPin(byte pin)
         return wireIter->second;
     } else {
         OneWire *oneWire = new OneWire(pin);
-        if (oneWire && _oneWires.insert(pin, oneWire).second) {
-            return oneWire;
-        } else if (oneWire) {
-            delete oneWire;
-        }
+        if (oneWire) {
+            _oneWires[pin] = oneWire;
+            if (_oneWires[pin] == oneWire) { return oneWire; }
+            else if (oneWire) { delete oneWire; }
+        } else if (oneWire) { delete oneWire; }
     }
     return nullptr;
 }

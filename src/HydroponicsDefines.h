@@ -18,6 +18,9 @@
 #ifndef DISABLED
 #define DISABLED                            0x0                     // Disabled define (convenience)
 #endif
+#ifndef RANDOM_MAX
+#define RANDOM_MAX RAND_MAX
+#endif
 #if defined(ESP8266) || defined(ESP32)
 #define min _min
 #define max _max

@@ -303,8 +303,10 @@ public:
     I2C_eeprom *getEEPROM(bool begin = true);
     // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);
-    // SD card instance (if began user code *must* call end() to free interface, lazily instantiated, nullptr return = failure/no device)
+    // SD card instance (if began user code *must* call endSDCard(sd) to free interface, lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);
+    // Helper function to end SD card instance irrespective of platform
+    void endSDCard(SDClass *sd);
     // WiFi instance (nullptr return = failure/no device, note: this method may block for up to a minute)
     WiFiClass *getWiFi(bool begin = true);
     // OneWire instance for given pin (lazily instantiated)

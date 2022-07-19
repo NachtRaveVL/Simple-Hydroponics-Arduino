@@ -58,7 +58,10 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydrop
                     auto cropsLibDataObj = doc.as<JsonObjectConst>();
                     book->data.fromJSONObject(cropsLibDataObj);
                 }
-                _cropsData.insert(cropType, book);
+                _cropsData[cropType] = book;
+                if (_cropsData[cropType] != book) {
+                    delete book; book = nullptr;
+                }
             }
         }
     }
@@ -106,7 +109,8 @@ bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *c
 
             HYDRUINO_SOFT_ASSERT(book, SFP(HS_Err_AllocationFailure));
             if (book) {
-                retVal = _cropsData.insert(cropData->cropType, book).second;
+                _cropsData[cropData->cropType] = book;
+                retVal = (_cropsData[cropData->cropType] == book);
             }
         } else {
             iter->second->data = *cropData;

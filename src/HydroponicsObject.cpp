@@ -174,7 +174,8 @@ shared_ptr<HydroponicsObject> HydroponicsObject::getSharedPtr() const
 
 bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
 {
-    return _links.insert(obj->getKey(), obj).second;
+    _links[obj->getKey()] = obj;
+    return (_links[obj->getKey()] == obj);
 }
 
 bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)

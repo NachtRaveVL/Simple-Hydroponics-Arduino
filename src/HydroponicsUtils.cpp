@@ -210,7 +210,11 @@ void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length
         String subString = stringIn.substring(lastSepPos+1, nextSepPos);
         if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
 
-        arrayOut[index] = subString.toDouble();
+        #if !defined(CORE_TEENSY)
+            arrayOut[index] = subString.toDouble();
+        #else
+            arrayOut[index] = subString.toFloat();
+        #endif
     }
 }
 

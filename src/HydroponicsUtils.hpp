@@ -132,7 +132,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterActua
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
-            retVal.insert(iter->first, iter->second);
+            retVal[iter->first] = iter->second;
         }
     }
 
@@ -148,7 +148,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterActua
         if (iter->second && iter->second->isActuatorType()) {
             auto actuatorObj = (HydroponicsActuator *)(iter->second);
             if (actuatorObj && actuatorObj->getActuatorType() == actuatorType) {
-                retVal.insert(iter->first, actuatorObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -163,7 +163,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterSenso
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isSensorType()) {
-            retVal.insert(iter->first, iter->second);
+            retVal[iter->first] = iter->second;
         }
     }
 
@@ -179,7 +179,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterSenso
         if (iter->second && iter->second->isSensorType()) {
             auto sensorObj = (HydroponicsSensor *)(iter->second);
             if (sensorObj->getSensorType() == sensorType) {
-                retVal.insert(iter->first, sensorObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -194,7 +194,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterCrops
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isCropType()) {
-            retVal.insert(iter->first, iter->second);
+            retVal[iter->first] = iter->second;
         }
     }
 
@@ -210,7 +210,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterCrops
         if (iter->second && iter->second->isCropType()) {
             auto cropObj = (HydroponicsCrop *)(iter->second);
             if (cropObj->getCropType() == cropType) {
-                retVal.insert(iter->first, cropObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -225,7 +225,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterReser
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isReservoirType()) {
-            retVal.insert(iter->first, iter->second);
+            retVal[iter->first] = iter->second;
         }
     }
 
@@ -241,7 +241,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterReser
         if (iter->second && iter->second->isReservoirType()) {
             auto reservoirObj = (HydroponicsReservoir *)(iter->second);
             if (reservoirObj->getReservoirType() == reservoirType) {
-                retVal.insert(iter->first, reservoirObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -256,7 +256,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterRails
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isRailType()) {
-            retVal.insert(iter->first, iter->second);
+            retVal[iter->first] = iter->second;
         }
     }
 
@@ -272,7 +272,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterRails
         if (iter->second && iter->second->isRailType()) {
             auto railObj = (HydroponicsRail *)(iter->second);
             if (railObj->getRailType() == railType) {
-                retVal.insert(iter->first, railObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -289,7 +289,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
         if (iter->second && iter->second->isActuatorType()) {
             auto actuatorObj = (HydroponicsActuator *)(iter->second);
             if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getReservoir().get() == inputReservoir) {
-                retVal.insert(iter->first, actuatorObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -306,7 +306,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
         if (iter->second && iter->second->isActuatorType()) {
             auto actuatorObj = (HydroponicsActuator *)(iter->second);
             if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getReservoir() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getReservoir()->getReservoirType() == reservoirType) {
-                retVal.insert(iter->first, actuatorObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -323,7 +323,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
         if (iter->second && iter->second->isActuatorType()) {
             auto actuatorObj = (HydroponicsActuator *)(iter->second);
             if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getOutputReservoir().get() == outputReservoir) {
-                retVal.insert(iter->first, actuatorObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }
@@ -340,7 +340,7 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
         if (iter->second && iter->second->isActuatorType()) {
             auto actuatorObj = (HydroponicsActuator *)(iter->second);
             if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getOutputReservoir() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getOutputReservoir()->getReservoirType() == reservoirType) {
-                retVal.insert(iter->first, actuatorObj);
+                retVal[iter->first] = iter->second;
             }
         }
     }

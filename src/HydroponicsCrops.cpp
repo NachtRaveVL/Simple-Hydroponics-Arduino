@@ -247,7 +247,7 @@ void HydroponicsCrop::returnCropsLibData()
 void HydroponicsCrop::attachCustomCrop()
 {
     if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCropCount) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &handleCustomCropUpdated);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
         getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
     }
 }
@@ -255,7 +255,7 @@ void HydroponicsCrop::attachCustomCrop()
 void HydroponicsCrop::detachCustomCrop()
 {
     if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCropCount) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &handleCustomCropUpdated);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
         getCropsLibraryInstance()->getCustomCropSignal().detach(methodSlot);
     }
 }
@@ -485,7 +485,7 @@ void HydroponicsAdaptiveCrop::attachSoilMoistureSensor()
 {
     HYDRUINO_SOFT_ASSERT(getMoistureSensor(), SFP(HS_Err_MissingLinkage));
     if (getMoistureSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSoilMoistureMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsAdaptiveCrop::handleSoilMoistureMeasure);
         _moistureSensor->getMeasurementSignal().attach(methodSlot);
     }
 }
@@ -494,7 +494,7 @@ void HydroponicsAdaptiveCrop::detachSoilMoistureSensor()
 {
     HYDRUINO_SOFT_ASSERT(getMoistureSensor(), SFP(HS_Err_MissingLinkage));
     if (getMoistureSensor()) {
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &handleSoilMoistureMeasure);
+        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsAdaptiveCrop::handleSoilMoistureMeasure);
         _moistureSensor->getMeasurementSignal().detach(methodSlot);
     }
 }
@@ -510,7 +510,7 @@ void HydroponicsAdaptiveCrop::attachFeedingTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_feedingTrigger, SFP(HS_Err_MissingLinkage));
     if (_feedingTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFeedingTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
         _feedingTrigger->getTriggerSignal().attach(methodSlot);
     }
 }
@@ -519,7 +519,7 @@ void HydroponicsAdaptiveCrop::detachFeedingTrigger()
 {
     HYDRUINO_SOFT_ASSERT(_feedingTrigger, SFP(HS_Err_MissingLinkage));
     if (_feedingTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleFeedingTrigger);
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
         _feedingTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
