@@ -37,7 +37,7 @@ HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
 
 const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydroponics_CropType cropType)
 {
-    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType < Hydroponics_CropType_CustomCropCount, F("Invalid crop type"));
+    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType < Hydroponics_CropType_CustomCropCount, SFP(HS_Err_InvalidParameter));
 
     HydroponicsCropsLibraryBook *book = nullptr;
 
@@ -46,15 +46,13 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydrop
 
         if (iter != _cropsData.end()) {
             book = iter->second;
-
-            HYDRUINO_SOFT_ASSERT(book, F("Failure accessing crops lib book"));
             if (book) {
                 book->count += 1;
             }
         } else if (cropType < Hydroponics_CropType_CustomCrop1) { // don't allocate custom
             book = new HydroponicsCropsLibraryBook();
 
-            HYDRUINO_SOFT_ASSERT(book, F("Failure allocating crops lib book"));
+            HYDRUINO_SOFT_ASSERT(book, SFP(HS_Err_AllocationFailure));
             if (book) {
                 {   StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                     deserializeJson(doc, jsonStringForCrop(cropType));
@@ -71,7 +69,7 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydrop
 
 void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cropData)
 {
-    HYDRUINO_SOFT_ASSERT(cropData, F("Invalid crop data"));
+    HYDRUINO_SOFT_ASSERT(cropData, SFP(HS_Err_InvalidParameter));
 
     if (cropData) {
         auto iter = _cropsData.find(cropData->cropType);
@@ -79,8 +77,6 @@ void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cro
 
         if (iter != _cropsData.end()) {
             auto book = iter->second;
-            HYDRUINO_SOFT_ASSERT(book, F("Failure accessing crops lib book"));
-
             if (book) {
                 book->count -= 1;
 
@@ -96,9 +92,9 @@ void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cro
 
 bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *cropData)
 {
-    HYDRUINO_SOFT_ASSERT(cropData, F("Invalid custom crop data"));
+    HYDRUINO_SOFT_ASSERT(cropData, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(!cropData || (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
-                                       cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), F("Invalid crop type"));
+                                       cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), SFP(HS_Err_InvalidParameter));
 
     if (cropData && cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
         cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
@@ -109,7 +105,7 @@ bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *c
         if (iter == _cropsData.end()) {
             auto book = new HydroponicsCropsLibraryBook(*cropData);
 
-            HYDRUINO_SOFT_ASSERT(book, F("Failure allocating crop lib book"));
+            HYDRUINO_SOFT_ASSERT(book, SFP(HS_Err_AllocationFailure));
             if (book) {
                 retVal = _cropsData.insert(cropData->cropType, book).second;
             }
@@ -129,9 +125,9 @@ bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *c
 
 bool HydroponicsCropsLibrary::dropCustomCropData(const HydroponicsCropsLibData *cropData)
 {
-    HYDRUINO_SOFT_ASSERT(cropData, F("Invalid custom crop data"));
+    HYDRUINO_SOFT_ASSERT(cropData, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(!cropData || (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
-                         cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), F("Invalid crop type"));
+                         cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), SFP(HS_Err_InvalidParameter));
 
     if (cropData && cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
         cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {

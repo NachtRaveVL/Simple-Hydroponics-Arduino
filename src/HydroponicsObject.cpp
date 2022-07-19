@@ -8,7 +8,7 @@
 HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), F("Invalid data"));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.idType) {
@@ -88,7 +88,7 @@ HydroponicsIdentity::HydroponicsIdentity(const char *name)
 
 Hydroponics_KeyType HydroponicsIdentity::regenKey()
 {
-    String sep = F(".");
+    String sep = String('.');
     switch(type) {
         case Actuator:
             keyStr = actuatorTypeToString(objTypeAs.actuatorType, true) + sep + positionIndexToString(posIndex, true);
@@ -137,7 +137,7 @@ void HydroponicsObject::handleLowMemory()
 HydroponicsData *HydroponicsObject::newSaveData()
 {
     auto data = allocateData();
-    HYDRUINO_SOFT_ASSERT(data, F("Failure allocating object data"));
+    HYDRUINO_SOFT_ASSERT(data, SFP(HS_Err_AllocationFailure));
     if (data) { saveToData(data); }
     return data;
 }
@@ -185,7 +185,7 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 
 HydroponicsData *HydroponicsObject::allocateData() const
 {
-    HYDRUINO_HARD_ASSERT(false, F("Missing method"));
+    HYDRUINO_HARD_ASSERT(false, SFP(HS_Err_UnsupportedOperation));
     return new HydroponicsData();
 }
 
@@ -210,13 +210,13 @@ void HydroponicsObjectData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    if (name[0]) { objectOut[F("id")] = stringFromChars(name, HYDRUINO_NAME_MAXSIZE); }
+    if (name[0]) { objectOut[SFP(HS_Key_Id)] = stringFromChars(name, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsObjectData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsData::fromJSONObject(objectIn);
 
-    const char *nameStr = objectIn[F("id")];
+    const char *nameStr = objectIn[SFP(HS_Key_Id)];
     if (nameStr && nameStr[0]) { strncpy(name, nameStr, HYDRUINO_NAME_MAXSIZE); }
 }

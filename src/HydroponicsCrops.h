@@ -128,7 +128,7 @@ public:
     TimeSpan getFeedTimeOff() const;
 
 protected:
-    time_t _lastFeedingTime;                                // Last feeding time
+    time_t _lastFeedingDate;                                // Last feeding time
     byte _feedTimingMins[2];                                // Feed timing (on/off), in minutes
 
     virtual void saveToData(HydroponicsData *dataOut) override;
@@ -200,7 +200,7 @@ struct HydroponicsCropData : public HydroponicsObjectData
 // Timed Crop Serialization Data
 struct HydroponicsTimedCropData : public HydroponicsCropData
 {
-    time_t lastFeedingTime;
+    time_t lastFeedingDate;
     byte feedTimingMins[2];
 
     HydroponicsTimedCropData();

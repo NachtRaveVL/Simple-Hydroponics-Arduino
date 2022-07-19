@@ -45,10 +45,10 @@
 //#define HYDRUINO_DISABLE_GUI                    // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable debug output.
-#define HYDRUINO_ENABLE_DEBUG_OUTPUT
+//#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
-// Uncomment or -D this define to specifically disable debug assertions (saves a lot on memory).
-#define HYDRUINO_DISABLE_DEBUG_ASSERTIONS
+// Uncomment or -D this define to specifically disable debug assertions.
+//#define HYDRUINO_DISABLE_DEBUG_ASSERTIONS
 
 
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -107,11 +107,12 @@ typedef SDFileSystemClass SDClass;
 #include <OneWireSTM.h>                 // STM32 version of OneWire
 #endif
 #include "RTClib.h"                     // i2c RTC library
-#include "SimpleCollections.h"          // SimpleCollections library
+#include "TaskManager.h"                // Task Manager library
 #include "TimeLib.h"                    // Time library
 #ifndef HYDRUINO_DISABLE_GUI
 #include "tcMenu.h"                     // tcMenu library
 #endif
+
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 using namespace std;
@@ -121,6 +122,7 @@ using namespace arx;
 using namespace arx::stdx;
 
 #include "HydroponicsDefines.h"
+#include "HydroponicsStrings.h"
 #include "HydroponicsInlines.hpp"
 #include "HydroponicsInterfaces.h"
 #include "HydroponicsData.h"
@@ -438,16 +440,16 @@ protected:
     Task *_dataTask;                                                // Data collection task (on polling interval)
     Task *_miscTask;                                                // Misc task
 #elif defined(HYDRUINO_USE_SCHEDULER)
-    byte _loopsStarted;                                             // Loops started flag
-    byte _suspend;                                                  // Suspend operation flag
+    bool _loopsStarted;                                             // Loops started flag
+    bool _suspend;                                                  // Suspend operation flag
 #endif
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
-    byte _eepromBegan;                                              // Status of EEPROM begin() call
-    byte _rtcBegan;                                                 // Status of RTC begin() call
-    byte _rtcBattFail;                                              // Status of RTC battery failure flag
-    byte _wifiBegan;                                                // Status of WiFi begin() call
+    bool _eepromBegan;                                              // Status of EEPROM begin() call
+    bool _rtcBegan;                                                 // Status of RTC begin() call
+    bool _rtcBattFail;                                              // Status of RTC battery failure flag
+    bool _wifiBegan;                                                // Status of WiFi begin() call
     byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
 
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)

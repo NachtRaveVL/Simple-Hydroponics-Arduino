@@ -9,7 +9,7 @@
 HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData *dataIn)
 {
     if (dataIn && dataIn->type == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, F("Invalid data"));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, SFP(HS_Err_InvalidParameter));
 
     if (dataIn) {
         switch (dataIn->type) {
@@ -336,43 +336,43 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsSubData::toJSONObject(objectOut);
 
-    if (sensorName[0]) { objectOut[F("sensorName")] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
-    if (measurementRow > 0) { objectOut[F("measurementRow")] = measurementRow; }
+    if (sensorName[0]) { objectOut[SFP(HS_Key_SensorName)] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (measurementRow > 0) { objectOut[SFP(HS_Key_MeasurementRow)] = measurementRow; }
     switch (type) {
         case 0: // MeasureValue
-            objectOut[F("tolerance")] = dataAs.measureValue.tolerance;
-            objectOut[F("triggerBelow")] = dataAs.measureValue.triggerBelow;
+            objectOut[SFP(HS_Key_Tolerance)] = dataAs.measureValue.tolerance;
+            objectOut[SFP(HS_Key_TriggerBelow)] = dataAs.measureValue.triggerBelow;
             break;
         case 1: // MeasureRange
-            objectOut[F("toleranceLow")] = dataAs.measureRange.toleranceLow;
-            objectOut[F("toleranceHigh")] = dataAs.measureRange.toleranceHigh;
-            objectOut[F("triggerOutside")] = dataAs.measureRange.triggerOutside;
+            objectOut[SFP(HS_Key_ToleranceLow)] = dataAs.measureRange.toleranceLow;
+            objectOut[SFP(HS_Key_ToleranceHigh)] = dataAs.measureRange.toleranceHigh;
+            objectOut[SFP(HS_Key_TriggerOutside)] = dataAs.measureRange.triggerOutside;
             break;
         default: break;
     }
-    if (detriggerTolerance > 0) { objectOut[F("detriggerTolerance")] = detriggerTolerance; }
-    if (toleranceUnits != Hydroponics_UnitsType_Undefined) { objectOut[F("toleranceUnits")] = unitsTypeToSymbol(toleranceUnits); }
+    if (detriggerTolerance > 0) { objectOut[SFP(HS_Key_DetriggerTolerance)] = detriggerTolerance; }
+    if (toleranceUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_ToleranceUnits)] = unitsTypeToSymbol(toleranceUnits); }
 }
 
 void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsSubData::fromJSONObject(objectIn);
 
-    const char *sensorNameStr = objectIn[F("sensorName")];
+    const char *sensorNameStr = objectIn[SFP(HS_Key_SensorName)];
     if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
-    measurementRow = objectIn[F("measurementRow")] | measurementRow;
+    measurementRow = objectIn[SFP(HS_Key_MeasurementRow)] | measurementRow;
     switch (type) {
         case 0: // MeasureValue
-            dataAs.measureValue.tolerance = objectIn[F("tolerance")] | dataAs.measureValue.tolerance;
-            dataAs.measureValue.triggerBelow = objectIn[F("triggerBelow")] | dataAs.measureValue.triggerBelow;
+            dataAs.measureValue.tolerance = objectIn[SFP(HS_Key_Tolerance)] | dataAs.measureValue.tolerance;
+            dataAs.measureValue.triggerBelow = objectIn[SFP(HS_Key_TriggerBelow)] | dataAs.measureValue.triggerBelow;
             break;
         case 1: // MeasureRange
-            dataAs.measureRange.toleranceLow = objectIn[F("toleranceLow")] | dataAs.measureRange.toleranceLow;
-            dataAs.measureRange.toleranceHigh = objectIn[F("toleranceHigh")] | dataAs.measureRange.toleranceHigh;
-            dataAs.measureRange.triggerOutside = objectIn[F("triggerOutside")] | dataAs.measureRange.triggerOutside;
+            dataAs.measureRange.toleranceLow = objectIn[SFP(HS_Key_ToleranceLow)] | dataAs.measureRange.toleranceLow;
+            dataAs.measureRange.toleranceHigh = objectIn[SFP(HS_Key_ToleranceHigh)] | dataAs.measureRange.toleranceHigh;
+            dataAs.measureRange.triggerOutside = objectIn[SFP(HS_Key_TriggerOutside)] | dataAs.measureRange.triggerOutside;
             break;
         default: break;
     }
-    detriggerTolerance = objectIn[F("detriggerTolerance")] | detriggerTolerance;
-    toleranceUnits = unitsTypeFromSymbol(objectIn[F("toleranceUnits")]);
+    detriggerTolerance = objectIn[SFP(HS_Key_DetriggerTolerance)] | detriggerTolerance;
+    toleranceUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_ToleranceUnits)]);
 }

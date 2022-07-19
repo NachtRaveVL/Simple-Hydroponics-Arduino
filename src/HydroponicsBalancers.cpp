@@ -11,7 +11,7 @@ HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, f
 {
     float halfTargetRange = targetRange * 0.5f;
     _rangeTrigger = new HydroponicsMeasurementRangeTrigger(sensor, targetSetpoint - halfTargetRange, targetSetpoint + halfTargetRange, true, halfTargetRange, measurementRow);
-    HYDRUINO_SOFT_ASSERT(_rangeTrigger, F("Failure allocating range trigger"));
+    HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_AllocationFailure));
     if (_rangeTrigger) { attachRangeTrigger(); }
 }
 
@@ -145,7 +145,7 @@ void HydroponicsBalancer::disableDecActuators()
 
 void HydroponicsBalancer::attachRangeTrigger()
 {
-    HYDRUINO_SOFT_ASSERT(_rangeTrigger, F("Range trigger not linked, failure attaching"));
+    HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_MissingLinkage));
     if (_rangeTrigger) {
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleRangeTrigger);
         _rangeTrigger->getTriggerSignal().attach(methodSlot);
@@ -154,7 +154,7 @@ void HydroponicsBalancer::attachRangeTrigger()
 
 void HydroponicsBalancer::detachRangeTrigger()
 {
-    HYDRUINO_SOFT_ASSERT(_rangeTrigger, F("Range trigger not linked, failure detaching"));
+    HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_MissingLinkage));
     if (_rangeTrigger) {
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &handleRangeTrigger);
         _rangeTrigger->getTriggerSignal().detach(methodSlot);

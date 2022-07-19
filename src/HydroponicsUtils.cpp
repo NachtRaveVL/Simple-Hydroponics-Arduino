@@ -20,7 +20,7 @@ HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
         bitRes = bitResIn;
         maxVal = 1 << bitResIn;
     } else {
-        HYDRUINO_SOFT_ASSERT(bitRes == bitResIn, F("Resolved resolution mismatch with passed resolution"));
+        HYDRUINO_SOFT_ASSERT(bitRes == bitResIn, SFP(HS_Err_ParameterMismatch));
     }
 }
 
@@ -60,7 +60,7 @@ void ActuatorTimedEnableTask::exec()
 taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
 {
     ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, enableIntensity, enableTimeMillis) : nullptr;
-    HYDRUINO_SOFT_ASSERT(!actuator || enableTask, F("Failure allocating actuator timed enable task"));
+    HYDRUINO_SOFT_ASSERT(!actuator || enableTask, SFP(HS_Err_AllocationFailure));
     taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (enableTask ? (enableTask->taskId = retVal) : retVal);
 }
@@ -68,7 +68,7 @@ taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuato
 taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, time_t enableTimeMillis)
 {
     ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, 1.0f, enableTimeMillis) : nullptr;
-    HYDRUINO_SOFT_ASSERT(!actuator || enableTask, F("Failure allocating actuator timed enable task"));
+    HYDRUINO_SOFT_ASSERT(!actuator || enableTask, SFP(HS_Err_AllocationFailure));
     taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (enableTask ? (enableTask->taskId = retVal) : retVal);
 }
@@ -132,19 +132,19 @@ Hydroponics_KeyType stringHash(String string)
 
 String stringFromChars(const char *charsIn, size_t length)
 {
-    if (!charsIn || !length) { return String(F("null")); }
-    String retVal = "";
+    if (!charsIn || !length) { return String(SFP(HS_Null)); }
+    String retVal; retVal.reserve(length);
     for (size_t index = 0; index < length && charsIn[index] != '\0'; ++index) {
         retVal.concat(charsIn[index]);
     }
-    return retVal.length() ? retVal : String(F("null"));
+    return retVal.length() ? retVal : String(SFP(HS_Null));
 }
 
 template<>
 String commaStringFromArray<float>(const float *arrayIn, size_t length)
 {
-    if (!arrayIn || !length) { return String(F("null")); }
-    String retVal = "";
+    if (!arrayIn || !length) { return String(SFP(HS_Null)); }
+    String retVal; retVal.reserve(length << 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
 
@@ -159,14 +159,14 @@ String commaStringFromArray<float>(const float *arrayIn, size_t length)
 
         retVal += floatString;
     }
-    return retVal.length() ? retVal : String(F("null"));
+    return retVal.length() ? retVal : String(SFP(HS_Null));
 }
 
 template<>
 String commaStringFromArray<double>(const double *arrayIn, size_t length)
 {
-    if (!arrayIn || !length) { return String(F("null")); }
-    String retVal = "";
+    if (!arrayIn || !length) { return String(SFP(HS_Null)); }
+    String retVal; retVal.reserve(length << 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
 
@@ -181,13 +181,13 @@ String commaStringFromArray<double>(const double *arrayIn, size_t length)
 
         retVal += doubleString;
     }
-    return retVal.length() ? retVal : String(F("null"));
+    return retVal.length() ? retVal : String(SFP(HS_Null));
 }
 
 template<>
 void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_Null))) { return; }
     int lastSepPos = -1;
     for (size_t index = 0; index < length; ++index) {
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
@@ -202,7 +202,7 @@ void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length)
 template<>
 void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_Null))) { return; }
     int lastSepPos = -1;
     for (size_t index = 0; index < length; ++index) {
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
@@ -216,20 +216,20 @@ void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length
 
 String hexStringFromBytes(const byte *bytesIn, size_t length)
 {
-    if (!bytesIn || !length) { return String(F("null")); }
-    String retVal = "";
+    if (!bytesIn || !length) { return String(SFP(HS_Null)); }
+    String retVal; retVal.reserve((length << 1) + 1);
     for (size_t index = 0; index < length; ++index) {
         String valStr = String(bytesIn[index], 16);
         if (valStr.length() == 1) { valStr = String('0') + valStr; }
 
         retVal += valStr;
     }
-    return retVal.length() ? retVal : String(F("null"));
+    return retVal.length() ? retVal : String(SFP(HS_Null));
 }
 
 void hexStringToBytes(String stringIn, byte *bytesOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(F("null"))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_Null))) { return; }
     for (size_t index = 0; index < length; ++index) {
         String valStr = stringIn.substring(index << 1,(index+1) << 1);
         if (valStr.length() == 2) { bytesOut[index] = strtoul(valStr.c_str(), nullptr, 16); }
@@ -360,7 +360,7 @@ static String fileFromFullPath(String fullPath) {
 void softAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        msg = String(F("Assertion Failure: ")) + fileFromFullPath(String(file)) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;    
+        msg = SFP(HS_Err_AssertionFailure) + String(':') + String(' ') + fileFromFullPath(String(file)) + String(':') + String(line) + String(' ') + String(func) + String(':') + String(' ') + msg;
         logMessage(msg);
         return;
     }
@@ -369,7 +369,7 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
 void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        msg = String(F("Assertion Failure (HARD): ")) + fileFromFullPath(String(file)) + String(F(":")) + String(line) + String(F(" in ")) + String(func) + String(F(": ")) + msg;
+        msg = SFP(HS_Err_AssertionFailure) + F(" (HARD)") + String(':') + String(' ') + fileFromFullPath(String(file)) + String(':') + String(line) + String(' ') + String(func) + String(':') + String(' ') + msg;
         logMessage(msg, true);
         auto hydroponics = getHydroponicsInstance();
         if (hydroponics) { hydroponics->suspend(); }
@@ -1072,11 +1072,11 @@ String systemModeToString(Hydroponics_SystemMode systemMode, bool excludeSpecial
         case Hydroponics_SystemMode_DrainToWaste:
             return F("DrainToWaste");
         case Hydroponics_SystemMode_Count:
-            return !excludeSpecial ? F("SystemModeCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_SystemMode_Undefined:
             break;
     }
-    return !excludeSpecial ? F("SystemModeUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String measurementModeToString(Hydroponics_MeasurementMode measurementMode, bool excludeSpecial)
@@ -1089,18 +1089,18 @@ String measurementModeToString(Hydroponics_MeasurementMode measurementMode, bool
         case Hydroponics_MeasurementMode_Scientific:
             return F("Scientific");
         case Hydroponics_MeasurementMode_Count:
-            return !excludeSpecial ? F("MeasurementModeCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_MeasurementMode_Undefined:
             break;
     }
-    return !excludeSpecial ? F("MeasurementModeUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String displayOutputModeToString(Hydroponics_DisplayOutputMode displayOutMode, bool excludeSpecial)
 {
     switch (displayOutMode) {
         case Hydroponics_DisplayOutputMode_Disabled:
-            return F("Disabled");
+            return SFP(HS_Disabled);
         case Hydroponics_DisplayOutputMode_20x4LCD:
             return F("20x4LCD");
         case Hydroponics_DisplayOutputMode_20x4LCD_Swapped:
@@ -1110,18 +1110,18 @@ String displayOutputModeToString(Hydroponics_DisplayOutputMode displayOutMode, b
         case Hydroponics_DisplayOutputMode_16x2LCD_Swapped:
             return F("16x2LCDSwapped");
         case Hydroponics_DisplayOutputMode_Count:
-            return !excludeSpecial ? F("DisplayOutputModeCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_DisplayOutputMode_Undefined:
             break;
     }
-    return !excludeSpecial ? F("DisplayOutputModeUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String controlInputModeToString(Hydroponics_ControlInputMode controlInMode, bool excludeSpecial)
 {
     switch (controlInMode) {
         case Hydroponics_ControlInputMode_Disabled:
-            return F("Disabled");
+            return SFP(HS_Disabled);
         case Hydroponics_ControlInputMode_2x2Matrix:
             return F("2x2Matrix");
         case Hydroponics_ControlInputMode_4xButton:
@@ -1131,11 +1131,11 @@ String controlInputModeToString(Hydroponics_ControlInputMode controlInMode, bool
         case Hydroponics_ControlInputMode_RotaryEncoder:
             return F("RotaryEncoder");
         case Hydroponics_ControlInputMode_Count:
-            return !excludeSpecial ? F("ControlInputModeCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_ControlInputMode_Undefined:
             break;
     }
-    return !excludeSpecial ? F("ControlInputModeUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeSpecial)
@@ -1154,11 +1154,11 @@ String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeS
         case Hydroponics_ActuatorType_FanExhaust:
             return F("FanExhaust");
         case Hydroponics_ActuatorType_Count:
-            return !excludeSpecial ? F("ActuatorCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_ActuatorType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("ActuatorUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String sensorTypeToString(Hydroponics_SensorType sensorType, bool excludeSpecial)
@@ -1185,11 +1185,11 @@ String sensorTypeToString(Hydroponics_SensorType sensorType, bool excludeSpecial
         case Hydroponics_SensorType_PowerUsageMeter:
             return F("PowerUsage");
         case Hydroponics_SensorType_Count:
-            return !excludeSpecial ? F("SensorCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_SensorType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("SensorUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String cropTypeToString(Hydroponics_CropType cropType, bool excludeSpecial)
@@ -1366,11 +1366,11 @@ String cropTypeToString(Hydroponics_CropType cropType, bool excludeSpecial)
         case Hydroponics_CropType_CustomCrop8:
             return F("CustomCrop8");
         case Hydroponics_CropType_Count:
-            return !excludeSpecial ? F("CropCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_CropType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("CropUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String substrateTypeToString(Hydroponics_SubstrateType substrateType, bool excludeSpecial)
@@ -1383,11 +1383,11 @@ String substrateTypeToString(Hydroponics_SubstrateType substrateType, bool exclu
         case Hydroponics_SubstrateType_Rockwool:
             return F("Rockwool");
         case Hydroponics_SubstrateType_Count:
-            return !excludeSpecial ? F("SubstrateCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_SubstrateType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("SubstrateUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool excludeSpecial)
@@ -1438,11 +1438,11 @@ String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool exclu
         case Hydroponics_ReservoirType_CustomAdditive16:
             return F("CustomAdditive16");
         case Hydroponics_ReservoirType_Count:
-            return !excludeSpecial ? F("ReservoirCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_ReservoirType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("ReservoirUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 float getRailVoltageFromType(Hydroponics_RailType railType)
@@ -1473,11 +1473,11 @@ String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial)
         case Hydroponics_RailType_DC12V:
             return F("DC12V");
         case Hydroponics_ReservoirType_Count:
-            return !excludeSpecial ? F("RailCount") : F("");
+            return !excludeSpecial ? SFP(HS_Count) : String();
         case Hydroponics_ReservoirType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("RailUndefined") : F("");
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
 String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
@@ -1526,11 +1526,11 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
         case Hydroponics_UnitsType_Raw_0_1:
             return F("raw(01)"); // alt: raw
         case Hydroponics_UnitsType_Count:
-            return !excludeSpecial ? F("qty") : F("");
+            return !excludeSpecial ? F("qty") : String();
         case Hydroponics_UnitsType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("undef") : F("");
+    return !excludeSpecial ? F("undef") : String();
 }
 
 String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool excludeSpecial)
@@ -1539,9 +1539,9 @@ String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool exclu
         return String(positionIndex + HYDRUINO_POS_EXPORT_BEGFROM);
     } else if (!excludeSpecial) {
         if (positionIndex == HYDRUINO_POS_MAXSIZE) {
-            return F("PositionCount");
+            return SFP(HS_Count);
         } else {
-            return F("PositionUndefined");
+            return SFP(HS_Undefined);
         }
     }
     return String();
