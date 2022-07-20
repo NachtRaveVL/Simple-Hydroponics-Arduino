@@ -236,6 +236,7 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool override)
         }
 
         if (_enabled != wasEnabledBefore) {
+            getLoggerInstance()->logActivation(this);
             scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
         }
     }
@@ -253,6 +254,7 @@ void HydroponicsRelayActuator::disableActuator()
         }
 
         if (_enabled != wasEnabledBefore) {
+            getLoggerInstance()->logDeactivation(this);
             scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
         }
     }
@@ -330,19 +332,26 @@ void HydroponicsPumpRelayActuator::resolveLinks()
 
 bool HydroponicsPumpRelayActuator::enableActuator(float intensity, bool override)
 {
-    if (HydroponicsRelayActuator::enableActuator(intensity, override) && !_pumpTimeAccMillis) {
-        time_t timeMillis = millis();
-        _pumpTimeAccMillis = max(1, timeMillis);
+    bool wasEnabledBefore = _enabled;
+    time_t timeMillis = millis();
+    HydroponicsRelayActuator::enableActuator(intensity, override);
+    if (_enabled && !wasEnabledBefore) {
+        _pumpVolumeAcc = 0;
+        _pumpTimeBegMillis = _pumpTimeAccMillis = max(1, timeMillis);
     }
 }
 
 void HydroponicsPumpRelayActuator::disableActuator()
 {
     bool wasEnabledBefore = _enabled;
+    time_t timeMillis = millis();
     HydroponicsRelayActuator::disableActuator();
-    if (!_enabled && wasEnabledBefore && _pumpTimeAccMillis) {
-        handlePumpTime(millis() - _pumpTimeAccMillis);
+    if (!_enabled && wasEnabledBefore) {
+        time_t pumpMillis = timeMillis - _pumpTimeAccMillis;
+        if (pumpMillis) { handlePumpTime(pumpMillis); }
         _pumpTimeAccMillis = 0;
+        //pumpMillis = timeMillis - _pumpTimeBegMillis;
+        getLoggerInstance()->logMeasuredPumping(this, "TODO");
     }
 }
 
@@ -380,7 +389,10 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
 {
     auto reservoir = getReservoir();
     if (reservoir) {
-        return scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID;
+        if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
+            getLoggerInstance()->logEstimatedPumping(this, "TODO");
+            return true;
+        }
     }
     return false;
 }
@@ -562,6 +574,7 @@ void HydroponicsPumpRelayActuator::handlePumpTime(time_t timeMillis)
         float flowRateVal = _flowRate.frame && getFlowRateSensor() && !_flowRateSensor->getNeedsPolling(HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF) &&
                             _flowRate.value >= (_contFlowRate.value * HYDRUINO_ACT_PUMPCALC_MINFLOWRATE) - FLT_EPSILON ? _flowRate.value : _contFlowRate.value;
         float volumePumped = flowRateVal * (timeMillis / (float)secondsToMillis(SECS_PER_MIN));
+        _pumpVolumeAcc += volumePumped;
 
         if (sourceRes && sourceRes->isAnyFluidClass()) {
             auto sourceFluidRes = static_pointer_cast<HydroponicsFluidReservoir>(sourceRes);
@@ -654,6 +667,7 @@ bool HydroponicsPWMActuator::enableActuator(float intensity, bool override)
         }
 
         if (_enabled != wasEnabledBefore) {
+            getLoggerInstance()->logActivation(this);
             scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
         }
     }
@@ -670,6 +684,7 @@ void HydroponicsPWMActuator::disableActuator()
     }
 
     if (_enabled != wasEnabledBefore) {
+        getLoggerInstance()->logDeactivation(this);
         scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
     }
 }

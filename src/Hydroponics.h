@@ -83,6 +83,7 @@ extern void __int_restore_irq(int *primask);
 #if defined(HYDRUINO_ENABLE_DEBUG_OUTPUT) && !defined(HYDRUINO_DISABLE_DEBUG_ASSERTIONS)
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  softAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
 #define HYDRUINO_HARD_ASSERT(cond,msg)  hardAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
+#define HYDRUINO_USE_DEBUG_ASSERTIONS
 #else
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  ((void)0)
 #define HYDRUINO_HARD_ASSERT(cond,msg)  ((void)0)
@@ -127,11 +128,13 @@ using namespace std;
 template <typename K, typename V, size_t N = 16> struct Map { typedef std::map<K,V> type; };
 template <typename T, size_t N = 16> struct Vector { typedef std::vector<T> type; };
 template <class T1, class T2> struct Pair { typedef std::pair<T1,T2> type; };
+#define HYDRUINO_USE_STDCPP_CONTAINERS
 #else
 using namespace arx;
 template <typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> struct Map { typedef arx::map<K,V,N> type; };
 template <typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> struct Vector { typedef arx::vector<T,N> type; };
 template <class T1, class T2> struct Pair { typedef arx::pair<T1,T2> type; };
+#define HYDRUINO_USE_ARX_CONTAINERS
 #endif
 using namespace arx::stdx;
 
@@ -155,6 +158,8 @@ using namespace arx::stdx;
 #include "HydroponicsReservoirs.h"
 #include "HydroponicsRails.h"
 #include "HydroponicsScheduler.h"
+#include "HydroponicsLogger.h"
+#include "HydroponicsPublisher.h"
 #include "HydroponicsFactory.h"
 
 // Hydroponics Controller
@@ -170,7 +175,7 @@ public:
                 byte lcdI2CAddress = B000,                  // LCD i2c address
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
                 uint32_t i2cSpeed = 400000U,                // I2C speed
-                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed
+                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed (ignored if on Teensy)
                 WiFiClass &wifi = WiFi);                    // WiFi class instance
     // Library destructor. Just in case.
     ~Hydroponics();
@@ -185,24 +190,24 @@ public:
     // Initializes system from EEPROM save, returning success flag
     bool initFromEEPROM(bool jsonFormat = false);
     // Initializes system from SD card file save, returning success flag
-    bool initFromSDCard(String configFile = "hydruino.cfg", bool jsonFormat = true);
+    bool initFromSDCard(String configFileName = "hydruino.cfg", bool jsonFormat = true);
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
     bool initFromBinaryStream(Stream *streamIn);
     // TODO: Network URL init
-    //bool initFromNetworkURL(urlData, configFile = "hydruino.cfg");
+    //bool initFromNetworkURL(urlDataTODO, configFileName = "hydruino.cfg");
 
     // Saves current system setup to EEPROM save, returning success flag
     bool saveToEEPROM(bool jsonFormat = false);
     // Saves current system setup to SD card file save, returning success flag
-    bool saveToSDCard(String configFile = "hydruino.cfg", bool jsonFormat = true);
+    bool saveToSDCard(String configFileName = "hydruino.cfg", bool jsonFormat = true);
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup 
     bool saveToBinaryStream(Stream *streamOut);
     // TODO: Network URL save
-    //bool saveToNetworkURL(urlData, configFile = "hydruino.cfg");
+    //bool saveToNetworkURL(urlDataTODO, configFileName = "hydruino.cfg");
 
     // System Operation.
 
@@ -218,21 +223,21 @@ public:
 
     // System Logging.
 
-    // TODO: SD card sys logging
-    //bool enableSysLoggingToSDCard(String logFilePrefix = "logs/sys");
+    // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to specified prefix. Returns success boolean.
+    bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy");
     // TODO: Network URL sys logging
-    //bool enableSysLoggingToNetworkURL(urlData, String logFilePrefix = "logs/sys");
+    //bool enableSysLoggingToNetworkURL(urlData, String logFilePrefix = "logs/hy");
 
     // Data Publishing.
 
-    // TODO: SD card data pub
-    //bool enableDataPublishingToSDCard(String csvFilePrefix = "logs/dat");
+    // Enables data publishing to the SD card. Log file names will concat YYMMDD.csv to the specified prefix. Returns success boolean.
+    bool enableDataPublishingToSDCard(String csvFilePrefix = "data/hy");
     // TODO: Network URL data pub
-    //bool enableDataPublishingToNetworkURL(urlData, String csvFilePrefix = "logs/dat");
+    //bool enableDataPublishingToNetworkURL(urlData, String csvFilePrefix = "data/hy");
     // TODO: MQTT data pub
     //bool enableDataPublishingToMQTT(mqttBroker, deviceData);
     // TODO: Web API data pub
-    //bool enableDataPublishingToWebAPI(urlData, apiInterface);
+    //bool enableDataPublishingToWebAPI(urlDataTODO, apiInterfaceTODO);
 
     // Object Registration.
 
@@ -276,7 +281,11 @@ public:
     // Sets system time zone offset from UTC
     void setTimeZoneOffset(int8_t timeZoneOffset);
     // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
-    void setPollingInterval(uint32_t pollingInterval);
+    void setPollingInterval(uint16_t pollingInterval);
+    // Sets system autosave enable mode and optional autosave interval, in minutes.
+    void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
+    // Sets system config file as used by autosave, if not already set by initWith.
+    void setSystemConfigFile(String configFileName = "hydruino.cfg");
     // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
     void setWiFiConnection(String ssid, String password);
 
@@ -290,8 +299,8 @@ public:
     inline uint32_t getI2CSpeed() const { return _i2cSpeed; }
     // SPI interface instance (hardwired)
     inline SPIClass *getSPI() const { return &SPI; }
-    // SD card SPI clock speed, in Hz (default: 4MHz)
-    inline uint32_t getSDCardSpeed() const { return _sdCardSpeed; }
+    // SD card SPI clock speed, in Hz (default: 4MHz, hardwired to 25MHz on Teensy)
+    uint32_t getSDCardSpeed() const;
     // Total number of pins being used for the current control input ribbon mode
     int getControlInputRibbonPinCount() const;
     // Control input pin mapped to ribbon pin index, or -1 (255) if not used
@@ -303,9 +312,9 @@ public:
     I2C_eeprom *getEEPROM(bool begin = true);
     // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);
-    // SD card instance (if began user code *must* call endSDCard(sd) to free interface, lazily instantiated, nullptr return = failure/no device)
+    // SD card instance (if began user code *must* call endSDCard(inst) to free interface, lazily instantiated, nullptr return = failure/no device)
     SDClass *getSDCard(bool begin = true);
-    // Helper function to end SD card instance irrespective of platform
+    // Ends SD card transaction with proper regards to platform
     void endSDCard(SDClass *sd);
     // WiFi instance (nullptr return = failure/no device, note: this method may block for up to a minute)
     WiFiClass *getWiFi(bool begin = true);
@@ -331,11 +340,13 @@ public:
     // Whenever the system booted up with the RTC battery failure flag set (meaning the time is not set correctly)
     bool getRTCBatteryFailure() const;
     // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
-    uint32_t getPollingInterval() const;
+    uint16_t getPollingInterval() const;
     // System polling frame number for sensor frame tracking
     uint32_t getPollingFrame() const;
     // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
     bool getIsPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
+    // Whenever or not system autosaves are enabled or not
+    bool getIsAutosaveEnabled() const;
     // SSID for WiFi connection
     String getWiFiSSID();
     // Password for WiFi connection (plaintext)
@@ -343,7 +354,7 @@ public:
 
     // Misc.
 
-    // Called to notify system when RTC time is updated
+    // Called to notify system when RTC time is updated (also clears RTC battery failure flag)
     void notifyRTCTimeUpdated();
 
 protected:
@@ -358,7 +369,7 @@ protected:
     const byte _lcdI2CAddr;                                         // LCD i2c address, format: {A2,A1,A0} (default: B000)
     TwoWire *_i2cWire;                                              // Controller's i2c wire class instance (strong) (default: Wire)
     uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
-    uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz)
+    uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz, ignored if on Teensy)
     WiFiClass *_wifi;                                               // WiFi class instance (strong) (default: WiFi)
 
 #ifdef HYDRUINO_USE_TASKSCHEDULER
@@ -381,15 +392,25 @@ protected:
 
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
     uint32_t _pollingFrame;                                         // Polling frame #
+    time_t _lastSpaceCheck;                                         // Last time storage media free space was checked (if able)
+    time_t _lastAutosave;                                           // Last time autosave was performed (if able)
+    String _configFileName;                                         // Config file name saved from init call, used for autosave
 
     Map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
     Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount>::type _additives; // Custom additives data
-    Map<byte, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE>::type _oneWires; // pin->OneWire list
-    Map<byte, byte, HYDRUINO_SYS_PINLOCKS_MAXSIZE>::type _pinLocks; // Pin locks list (existence = locked)
+    Map<byte, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE>::type _oneWires; // pin->OneWire mapping
+    Map<byte, byte, HYDRUINO_SYS_PINLOCKS_MAXSIZE>::type _pinLocks; // Pin locks mapping (existence = locked)
 
     HydroponicsScheduler _scheduler;                                // Scheduler piggy-back instance
+    HydroponicsLogger _logger;                                      // Logger piggy-back instance
+    HydroponicsPublisher _publisher;                                // Publisher piggy-back instance
+
     friend class HydroponicsScheduler;
     friend HydroponicsScheduler *::getSchedulerInstance();
+    friend class HydroponicsLogger;
+    friend HydroponicsLogger *::getLoggerInstance();
+    friend class HydroponicsPublisher;
+    friend HydroponicsPublisher *::getPublisherInstance();
 
     void allocateEEPROM();
     void deallocateEEPROM();
@@ -412,11 +433,11 @@ protected:
     friend void ::handleInterrupt(pintype_t pin);
 
     void checkFreeMemory();
-    //void forwardPublishData(paramsTODO);
-    #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-    void forwardLogMessage(String message, bool flushAfter = false);
-    friend void ::logMessage(String,bool);
-    #endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+    void broadcastLowMemory();
+
+    void checkFreeSpace();
+
+    void checkAutosave();
 };
 
 #include "HydroponicsUtils.hpp"

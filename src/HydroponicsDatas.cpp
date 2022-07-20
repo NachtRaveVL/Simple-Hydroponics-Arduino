@@ -104,7 +104,7 @@ HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData("HSYS", 1),
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
-      systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL),
+      systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL), autosaveEnabled(Hydroponics_Autosave_Disabled), autosaveInterval(HYDRUINO_SYS_AUTOSAVE_INTERVAL),
       wifiSSID{0}, wifiPassword{0}, wifiPasswordSeed(0)
 {
     _size = sizeof(*this);
@@ -127,7 +127,9 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
     #endif
     if (systemName[0]) { objectOut[SFP(HS_Key_SystemName)] = stringFromChars(systemName, HYDRUINO_NAME_MAXSIZE); }
     if (timeZoneOffset != 0) { objectOut[SFP(HS_Key_TimeZoneOffset)] = timeZoneOffset; }
-    if (pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[SFP(HS_Key_PollingInterval)] = pollingInterval; }
+    if (pollingInterval && pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[SFP(HS_Key_PollingInterval)] = pollingInterval; }
+    if (autosaveEnabled != Hydroponics_Autosave_Disabled) { objectOut[SFP(HS_Key_AutosaveEnabled)] = autosaveEnabled; }
+    if (autosaveInterval && autosaveInterval != HYDRUINO_SYS_AUTOSAVE_INTERVAL) { objectOut[SFP(HS_Key_AutosaveInterval)] = autosaveInterval; }
     if (wifiSSID[0]) { objectOut[SFP(HS_Key_WiFiSSID)] = stringFromChars(wifiSSID, HYDRUINO_NAME_MAXSIZE); }
     if (wifiPasswordSeed) {
         objectOut[SFP(HS_Key_WiFiPassword)] = hexStringFromBytes(wifiPassword, HYDRUINO_NAME_MAXSIZE);
@@ -135,8 +137,13 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
     } else if (wifiPassword[0]) {
         objectOut[SFP(HS_Key_WiFiPassword)] = stringFromChars((const char *)wifiPassword, HYDRUINO_NAME_MAXSIZE);
     }
+
     JsonObject schedulerObj = objectOut.createNestedObject(SFP(HS_Key_Scheduler));
     scheduler.toJSONObject(schedulerObj); if (!schedulerObj.size()) { objectOut.remove(SFP(HS_Key_Scheduler)); }
+    JsonObject loggerObj = objectOut.createNestedObject(SFP(HS_Key_Logger));
+    logger.toJSONObject(loggerObj); if (!loggerObj.size()) { objectOut.remove(SFP(HS_Key_Logger)); }
+    JsonObject publisherObj = objectOut.createNestedObject(SFP(HS_Key_Publisher));
+    publisher.toJSONObject(publisherObj); if (!publisherObj.size()) { objectOut.remove(SFP(HS_Key_Publisher)); }
 }
 
 void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
@@ -156,14 +163,21 @@ void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
     if (systemNameStr && systemNameStr[0]) { strncpy(systemName, systemNameStr, HYDRUINO_NAME_MAXSIZE); }
     timeZoneOffset = objectIn[SFP(HS_Key_TimeZoneOffset)] | timeZoneOffset;
     pollingInterval = objectIn[SFP(HS_Key_PollingInterval)] | pollingInterval;
+    autosaveEnabled = objectIn[SFP(HS_Key_AutosaveEnabled)] | autosaveEnabled;
+    autosaveInterval = objectIn[SFP(HS_Key_AutosaveInterval)] | autosaveInterval;
     const char *wifiSSIDStr = objectIn[SFP(HS_Key_WiFiSSID)];
     if (wifiSSIDStr && wifiSSIDStr[0]) { strncpy(wifiSSID, wifiSSIDStr, HYDRUINO_NAME_MAXSIZE); }
     const char *wifiPasswordStr = objectIn[SFP(HS_Key_WiFiPassword)];
     wifiPasswordSeed = objectIn[SFP(HS_Key_WiFiPasswordSeed)] | wifiPasswordSeed;
     if (wifiPasswordStr && wifiPasswordSeed) { hexStringToBytes(String(wifiPasswordStr), wifiPassword, HYDRUINO_NAME_MAXSIZE); }
     else if (wifiPasswordStr && wifiPasswordStr[0]) { strncpy((char *)wifiPassword, wifiPasswordStr, HYDRUINO_NAME_MAXSIZE); wifiPasswordSeed = 0; }
+
     JsonObjectConst schedulerObj = objectIn[SFP(HS_Key_Scheduler)];
     if (!schedulerObj.isNull()) { scheduler.fromJSONObject(schedulerObj); }
+    JsonObjectConst loggerObj = objectIn[SFP(HS_Key_Logger)];
+    if (!loggerObj.isNull()) { logger.fromJSONObject(loggerObj); }
+    JsonObjectConst publisherObj = objectIn[SFP(HS_Key_Publisher)];
+    if (!publisherObj.isNull()) { publisher.fromJSONObject(publisherObj); }
 }
 
 
@@ -210,11 +224,11 @@ void HydroponicsCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 void HydroponicsCalibrationData::setFromTwoPoints(float point1MeasuredAt, float point1CalibratedTo,
                                                   float point2MeasuredAt, float point2CalibratedTo)
 {
-    _bumpRevIfNotAlreadyModded();
     float aTerm = point2CalibratedTo - point1CalibratedTo;
     float bTerm = point2MeasuredAt - point1MeasuredAt;
     HYDRUINO_SOFT_ASSERT(!isFPEqual(bTerm, 0.0f), SFP(HS_Err_InvalidParameter));
     if (!isFPEqual(bTerm, 0.0f)) {
+        _bumpRevIfNotAlreadyModded();
         multiplier = aTerm / bTerm;
         offset = ((aTerm * point2MeasuredAt) + (bTerm * point1CalibratedTo)) / bTerm;
     }

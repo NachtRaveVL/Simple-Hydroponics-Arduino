@@ -6,10 +6,18 @@
 #ifndef HydroponicsStrings_H
 #define HydroponicsStrings_H
 
+extern const PROGMEM char HS_Air[];
+extern const PROGMEM char HS_CO2[];
 extern const PROGMEM char HS_Count[];
+extern const PROGMEM char HS_csv[];
 extern const PROGMEM char HS_Disabled[];
-extern const PROGMEM char HS_Null[];
+extern const PROGMEM char HS_TDS[];
+extern const PROGMEM char HS_Temp[];
+extern const PROGMEM char HS_txt[];
 extern const PROGMEM char HS_Undefined[];
+extern const PROGMEM char HS_Water[];
+extern const PROGMEM char HS_null[];
+extern const PROGMEM char HS_pH[];
 
 extern const PROGMEM char HS_Err_AllocationFailure[];
 extern const PROGMEM char HS_Err_AlreadyInitialized[];
@@ -26,11 +34,24 @@ extern const PROGMEM char HS_Err_OperationFailure[];
 extern const PROGMEM char HS_Err_ParameterMismatch[];
 extern const PROGMEM char HS_Err_UnsupportedOperation[];
 
+extern const PROGMEM char HS_Log_EstimatedRunTime[];
+extern const PROGMEM char HS_Log_FeedingSequence[];
+extern const PROGMEM char HS_Log_HasBegan[];
+extern const PROGMEM char HS_Log_HasDisabled[];
+extern const PROGMEM char HS_Log_HasEnabled[];
+extern const PROGMEM char HS_Log_HasEnded[];
+extern const PROGMEM char HS_Log_LightingSequence[];
+extern const PROGMEM char HS_Log_PollingFrame[];
+extern const PROGMEM char HS_Log_SystemDataSaved[];
+extern const PROGMEM char HS_Log_SystemUptime[];
+
 extern const PROGMEM char HS_Key_ActiveLow[];
 extern const PROGMEM char HS_Key_AdditiveName[];
 extern const PROGMEM char HS_Key_AirTempRange[];
 extern const PROGMEM char HS_Key_AirTempSensorName[];
 extern const PROGMEM char HS_Key_AlwaysFilled[];
+extern const PROGMEM char HS_Key_AutosaveEnabled[];
+extern const PROGMEM char HS_Key_AutosaveInterval[];
 extern const PROGMEM char HS_Key_BaseFeedMultiplier[];
 extern const PROGMEM char HS_Key_Bloom[];
 extern const PROGMEM char HS_Key_CO2Levels[];
@@ -49,8 +70,8 @@ extern const PROGMEM char HS_Key_DispOutMode[];
 extern const PROGMEM char HS_Key_EmptyTrigger[];
 extern const PROGMEM char HS_Key_FeedReservoirName[];
 extern const PROGMEM char HS_Key_FeedTimingMins[];
-extern const PROGMEM char HS_Key_FeedingWeight[];
 extern const PROGMEM char HS_Key_FeedingTrigger[];
+extern const PROGMEM char HS_Key_FeedingWeight[];
 extern const PROGMEM char HS_Key_FilledTrigger[];
 extern const PROGMEM char HS_Key_Flags[];
 extern const PROGMEM char HS_Key_FlowRateSensorName[];
@@ -67,6 +88,7 @@ extern const PROGMEM char HS_Key_LastFeedingDate[];
 extern const PROGMEM char HS_Key_LastPruningDate[];
 extern const PROGMEM char HS_Key_LifeCycleWeeks[];
 extern const PROGMEM char HS_Key_LimitTrigger[];
+extern const PROGMEM char HS_Key_Logger[];
 extern const PROGMEM char HS_Key_MaxActiveAtOnce[];
 extern const PROGMEM char HS_Key_MaxPower[];
 extern const PROGMEM char HS_Key_MaxVolume[];
@@ -94,6 +116,7 @@ extern const PROGMEM char HS_Key_PowerUnits[];
 extern const PROGMEM char HS_Key_PreFeedAeratorMins[];
 extern const PROGMEM char HS_Key_PreLightSprayMins[];
 extern const PROGMEM char HS_Key_Pruning[];
+extern const PROGMEM char HS_Key_Publisher[];
 extern const PROGMEM char HS_Key_PullupPin[];
 extern const PROGMEM char HS_Key_RailName[];
 extern const PROGMEM char HS_Key_ReservoirName[];

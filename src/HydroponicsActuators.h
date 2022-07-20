@@ -157,7 +157,9 @@ protected:
     HydroponicsSingleMeasurement _contFlowRate;             // Continuous flow rate
     HydroponicsSingleMeasurement _flowRate;                 // Current flow rate
     bool _needsFlowRate;                                    // Needs flow rate update tracking flag
-    time_t _pumpTimeAccMillis;                              // Time pump flow has been accounted for up to
+    float _pumpVolumeAcc;                                   // Accumulator for total volume of fluid pumped
+    time_t _pumpTimeBegMillis;                              // Time millis pump was activated at
+    time_t _pumpTimeAccMillis;                              // Time millis pump has been accumulated up to
     HydroponicsDLinkObject<HydroponicsReservoir> _outputReservoir; // Output reservoir linkage
     HydroponicsDLinkObject<HydroponicsSensor> _flowRateSensor; // Flow rate sensor linkage
 

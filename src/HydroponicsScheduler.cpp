@@ -40,9 +40,8 @@ void HydroponicsScheduler::update()
                 setNeedsScheduling();
             }
             if (_lastDayNum != currTime.day()) {
-                _lastDayNum = currTime.day();
-                setNeedsScheduling();
                 broadcastDayChange();
+                getLoggerInstance()->logSystemUptime();
             }
         }
 
@@ -65,7 +64,12 @@ void HydroponicsScheduler::resolveLinks()
 }
 
 void HydroponicsScheduler::handleLowMemory()
-{ ; }
+{
+    #ifdef HYDRUINO_USE_STDCPP_CONTAINERS
+        _feedings.shrink_to_fit();
+        _lightings.shrink_to_fit();
+    #endif
+}
 
 void HydroponicsScheduler::setupWaterPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterPHBalancer)
 {
@@ -395,6 +399,7 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoi
 
         return totalDosing / totalWeights;
     }
+
     return 0.0f;
 }
 
@@ -419,6 +424,7 @@ float HydroponicsScheduler::getWeeklyDosingRate(int weekIndex, Hydroponics_Reser
             HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_UnsupportedOperation));
         }
     }
+
     return 0.0f;
 }
 
@@ -430,6 +436,7 @@ float HydroponicsScheduler::getStandardDosingRate(Hydroponics_ReservoirType rese
     if (_schedulerData && reservoirType >= Hydroponics_ReservoirType_FreshWater && reservoirType < Hydroponics_ReservoirType_CustomAdditive1) {
         return _schedulerData->stdDosingRates[reservoirType - Hydroponics_ReservoirType_FreshWater];
     }
+
     return 0.0f;
 }
 
@@ -441,6 +448,7 @@ bool HydroponicsScheduler::getIsFlushWeek(int weekIndex)
     if (_schedulerData && weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX) {
         return isFPEqual(_schedulerData->weeklyDosingRates[weekIndex], 0.0f);
     }
+
     return false;
 }
 
@@ -517,8 +525,11 @@ void HydroponicsScheduler::performScheduling()
     _needsScheduling = false;
 }
 
-void HydroponicsScheduler::broadcastDayChange() const
+void HydroponicsScheduler::broadcastDayChange()
 {
+    setNeedsScheduling();
+    _lastDayNum = getCurrentTime().day();
+
     for (auto iter = getHydroponicsInstance()->_objects.begin(); iter != getHydroponicsInstance()->_objects.end(); ++iter) {
         if (iter->second) {
             if (iter->second->isReservoirType()) {
@@ -533,6 +544,9 @@ void HydroponicsScheduler::broadcastDayChange() const
             }
         }
     }
+
+    getHydroponicsInstance()->_logger.notifyDayChanged();
+    getHydroponicsInstance()->_publisher.notifyDayChanged();
 }
 
 
@@ -863,6 +877,8 @@ void HydroponicsFeeding::update()
 
 void HydroponicsFeeding::broadcastFeedingBegan()
 {
+    getLoggerInstance()->logFeedingBegan(feedRes.get(), "TODO");
+
     auto crops = feedRes->getCrops();
     feedRes->notifyFeedingBegan();
     for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
@@ -873,6 +889,8 @@ void HydroponicsFeeding::broadcastFeedingBegan()
 
 void HydroponicsFeeding::broadcastFeedingEnded()
 {
+    getLoggerInstance()->logFeedingEnded(feedRes.get(), "TODO");
+
     auto crops = feedRes->getCrops();
     feedRes->notifyFeedingEnded();
     for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
@@ -990,11 +1008,17 @@ void HydroponicsLighting::update()
             break;
 
         case Spray:
-            if ((lightStart && time >= lightStart) || (lightEnd && time >= lightEnd)) { setupStaging(); }
+            if ((lightStart && time >= lightStart) || (lightEnd && time >= lightEnd)) {
+                getLoggerInstance()->logLightingBegan(feedRes.get(), "TODO");
+                setupStaging();
+            }
             break;
 
         case Light:
-            if (lightEnd && time >= lightEnd) { setupStaging(); }
+            if (lightEnd && time >= lightEnd) {
+                getLoggerInstance()->logLightingEnded(feedRes.get(), "TODO");
+                setupStaging();
+            }
             break;
 
         default:

@@ -135,7 +135,9 @@ void HydroponicsObject::resolveLinks()
 
 void HydroponicsObject::handleLowMemory()
 {
-    //_links.shrink_to_fit(); // not yet implemented library method
+    #ifdef HYDRUINO_USE_STDCPP_CONTAINERS
+        _links.shrink_to_fit(); // only implemented in libstdc++
+    #endif
 }
 
 HydroponicsData *HydroponicsObject::newSaveData()

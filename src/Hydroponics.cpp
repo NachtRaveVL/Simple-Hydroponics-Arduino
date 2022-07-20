@@ -36,7 +36,7 @@ void __int_restore_irq(int *primask)
 
 #else
 
-int8_t _irqCnt = 0;
+static int8_t _irqCnt = 0;
 
 int __int_disable_irq(void)
 {
@@ -61,7 +61,8 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sd
       _piezoBuzzerPin(piezoBuzzerPin), _eepromDeviceSize(eepromDeviceSize), _sdCardCSPin(sdCardCSPin),
       _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1},
       _eepromI2CAddr(eepromI2CAddress), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
-      _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _wifiBegan(false),
+      _eeprom(nullptr), _rtc(nullptr), _sd(nullptr),
+      _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _wifiBegan(false),
 #ifdef HYDRUINO_USE_TASKSCHEDULER
       _controlTask(nullptr), _dataTask(nullptr), _miscTask(nullptr),
 #elif defined(HYDRUINO_USE_SCHEDULER)
@@ -95,7 +96,7 @@ Hydroponics::~Hydroponics()
     #endif
     while (_objects.size()) { _objects.erase(_objects.begin()); }
     while (_additives.size()) { dropCustomAdditiveData(_additives.begin()->second); }
-    while (_oneWires.size()) { delete _oneWires.begin()->second; _oneWires.erase(_oneWires.begin()); }
+    while (_oneWires.size()) { dropOneWireForPin(_oneWires.begin()->first); }
     deallocateEEPROM();
     deallocateRTC();
     deallocateSD();
@@ -187,6 +188,8 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
             #endif
 
             _scheduler.initFromData(&(_systemData->scheduler));
+            _logger.initFromData(&(_systemData->logger));
+            _publisher.initFromData(&(_systemData->publisher));
 
             commonInit();
         }
@@ -221,18 +224,19 @@ bool Hydroponics::saveToEEPROM(bool jsonFormat)
     return false;
 }
 
-bool Hydroponics::initFromSDCard(String configFile, bool jsonFormat)
+bool Hydroponics::initFromSDCard(String configFileName, bool jsonFormat)
 {
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
+        _configFileName = configFileName;
         auto sd = getSDCard();
         if (sd) {
             bool retVal = false;
-            auto config = sd->open(configFile.c_str());
-            if (config) {
-                retVal = jsonFormat ? initFromJSONStream(&config) : initFromBinaryStream(&config);
-                config.close();
+            auto configFile = sd->open(configFileName.c_str());
+            if (configFile) {
+                retVal = jsonFormat ? initFromJSONStream(&configFile) : initFromBinaryStream(&configFile);
+                configFile.close();
             }
             endSDCard(sd);
             return retVal;
@@ -242,15 +246,16 @@ bool Hydroponics::initFromSDCard(String configFile, bool jsonFormat)
     return false;
 }
 
-bool Hydroponics::saveToSDCard(String configFile, bool jsonFormat)
+bool Hydroponics::saveToSDCard(String configFileName, bool jsonFormat)
 {
     HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
 
     if (!_systemData) {
+        _configFileName = configFileName;
         auto sd = getSDCard();
         if (sd) {
             bool retVal = false;
-            auto config = sd->open(configFile.c_str());
+            auto config = sd->open(configFileName.c_str());
             if (config) {
                 retVal = jsonFormat ? saveToJSONStream(&config) : saveToBinaryStream(&config);
                 config.close();
@@ -270,7 +275,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
 
     if (!_systemData && streamIn && streamIn->available()) {
 
-        {   StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
+        {   StaticJsonDocument<HYDRUINO_JSON_DOC_SYSSIZE> doc;
             deserializeJson(doc, *streamIn);
             JsonObjectConst systemDataObj = doc.as<JsonObjectConst>();
             HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromJSONObject(systemDataObj);
@@ -279,7 +284,8 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
                 _scheduler.initFromData(&(_systemData->scheduler));
-                //_publisher.initFromData(&(_systemData->publisher));
+                _logger.initFromData(&(_systemData->logger));
+                _publisher.initFromData(&(_systemData->publisher));
             } else if (systemData) {
                 delete systemData;
             }
@@ -338,7 +344,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
     HYDRUINO_SOFT_ASSERT(streamOut, SFP(HS_Err_InvalidParameter));
 
     if (_systemData && streamOut) {
-        {   StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
+        {   StaticJsonDocument<HYDRUINO_JSON_DOC_SYSSIZE> doc;
 
             JsonObject systemDataObj = doc.to<JsonObject>();
             _systemData->toJSONObject(systemDataObj);
@@ -439,7 +445,8 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
                 _scheduler.initFromData(&(_systemData->scheduler));
-                //_publisher.initFromData(&(_systemData->publisher));
+                _logger.initFromData(&(_systemData->logger));
+                _publisher.initFromData(&(_systemData->publisher));
             } else if (systemData) {
                 delete systemData;
             }
@@ -569,6 +576,10 @@ void Hydroponics::commonInit()
         setSyncProvider(rtcNow);
     }
 
+    if (getIsAutosaveEnabled()) {
+        _lastAutosave = now();
+    }
+
     if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
         setWiFiConnection(getWiFiSSID(), getWiFiPassword());
     }
@@ -612,6 +623,8 @@ void Hydroponics::commonInit()
 
 void Hydroponics::commonPostSave()
 {
+    _logger.logSystemSave();
+
     if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
         auto calibsStore = getCalibrationsStoreInstance();
 
@@ -652,7 +665,7 @@ void controlLoop()
             if (hydroponics->_suspend) { yield(); return; }
         #endif
         hydroponics->updateObjects(0);
-        getSchedulerInstance()->update();
+        hydroponics->_scheduler.update();
     }
 
     yield();
@@ -673,7 +686,6 @@ void dataLoop()
             if (hydroponics->_suspend) { yield(); return; }
         #endif
         hydroponics->updateObjects(1);
-        //hydroponics->_publisher.update();
     }
 
     yield();
@@ -694,6 +706,10 @@ void miscLoop()
             if (hydroponics->_suspend) { yield(); return; }
         #endif
         hydroponics->checkFreeMemory();
+        hydroponics->checkFreeSpace();
+        hydroponics->checkAutosave();
+        hydroponics->_logger.update();
+        hydroponics->_publisher.update();
     }
 
     yield();
@@ -701,15 +717,18 @@ void miscLoop()
 
 void Hydroponics::launch()
 {
-    ++_pollingFrame; // Forces all sensors to get a new initial measurement
-
     // Ensures linkage (and reverse linkage) of unlinked objects
     _scheduler.resolveLinks();
-    //_publisher.resolveLinks();
+    _logger.resolveLinks();
+    _publisher.resolveLinks();
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         auto obj = iter->second;
         if (obj) { obj->resolveLinks(); }
     }
+
+    // Forces all sensors to get a new measurement
+    _pollingFrame++; if (!_pollingFrame) { _pollingFrame = 1; } // use only valid frame #
+    _publisher.notifyNewFrame();
 
     // Create main runloops
     #if defined(HYDRUINO_USE_TASKSCHEDULER)
@@ -781,17 +800,9 @@ void Hydroponics::update()
 void Hydroponics::updateObjects(int pass)
 {
     switch(pass) {
-        case 0: {
-            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                auto obj = iter->second;
-                if (obj) {
-                    obj->update();
-                }
-            } 
-        } break;
-
         case 1: {
-            _pollingFrame++; if (_pollingFrame == 0) { _pollingFrame = 1; } // only valid frame #
+            _pollingFrame++; if (!_pollingFrame) { _pollingFrame = 1; } // use only valid frame #
+            _publisher.notifyNewFrame();
 
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 auto obj = iter->second;
@@ -804,8 +815,26 @@ void Hydroponics::updateObjects(int pass)
             }
         } break;
 
-        default: break;
+        case 0:
+        default: {
+            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+                auto obj = iter->second;
+                if (obj) {
+                    obj->update();
+                }
+            } 
+        } break;
     }
+}
+
+bool Hydroponics::enableSysLoggingToSDCard(String logFilePrefix)
+{
+    return _logger.beginLoggingToSDCard(logFilePrefix);
+}
+
+bool Hydroponics::enableDataPublishingToSDCard(String csvFilePrefix)
+{
+    return _publisher.beginPublishingToSDCard(csvFilePrefix);
 }
 
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
@@ -813,8 +842,18 @@ bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
     HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HS_Err_InvalidParameter));
     if (obj && _objects.find(obj->getKey()) == _objects.end()) {
         _objects[obj->getKey()] = obj;
-        _scheduler.setNeedsScheduling();
-        if (getInOperationalMode()) { obj->resolveLinks(); }
+
+        if (getInOperationalMode()) {
+            obj->resolveLinks();
+
+            if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
+                _scheduler.setNeedsScheduling();
+            }
+
+            if (obj->isSensorType()) {
+                _publisher.setNeedsTabulation();
+            }
+        }
         return true;
     }
     return false;
@@ -1038,7 +1077,7 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
     }
 }
 
-void Hydroponics::setPollingInterval(uint32_t pollingInterval)
+void Hydroponics::setPollingInterval(uint16_t pollingInterval)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     if (_systemData) {
@@ -1050,6 +1089,22 @@ void Hydroponics::setPollingInterval(uint32_t pollingInterval)
             _dataTask->setInterval(getPollingInterval() * TASK_MILLISECOND);
         }
     #endif
+}
+
+void Hydroponics::setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint16_t autosaveInterval)
+{
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
+    if (_systemData && (_systemData->autosaveEnabled != autosaveEnabled || _systemData->autosaveInterval != autosaveInterval)) {
+        _systemData->_bumpRevIfNotAlreadyModded();
+        _systemData->autosaveEnabled = autosaveEnabled;
+        _systemData->autosaveInterval = autosaveInterval;
+        _lastAutosave = now();
+    }
+}
+
+void Hydroponics::setSystemConfigFile(String configFileName)
+{
+    _configFileName = configFileName;
 }
 
 void Hydroponics::setWiFiConnection(String ssid, String password)
@@ -1089,6 +1144,15 @@ void Hydroponics::setWiFiConnection(String ssid, String password)
 Hydroponics *Hydroponics::getActiveInstance()
 {
     return _activeInstance;
+}
+
+uint32_t Hydroponics::getSDCardSpeed() const
+{
+    #if defined(CORE_TEENSY)
+        return 25000000U;
+    #else
+        return _sdCardSpeed;
+    #endif
 }
 
 int Hydroponics::getControlInputRibbonPinCount() const
@@ -1151,11 +1215,11 @@ SDClass *Hydroponics::getSDCard(bool begin)
 
     if (_sd && begin) {
         #if defined(ESP32) || defined(ESP8266)
-            bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), _sdCardSpeed);
+            bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), getSDCardSpeed());
         #elif defined(CORE_TEENSY)
-            bool sdBegan = _sd->begin(_sdCardCSPin);
+            bool sdBegan = _sd->begin(_sdCardCSPin); // card speed not possible to set on teensy
         #else
-            bool sdBegan = _sd->begin(_sdCardSpeed, _sdCardCSPin);
+            bool sdBegan = _sd->begin(getSDCardSpeed(), _sdCardCSPin);
         #endif
 
         if (!sdBegan) { deallocateSD(); }
@@ -1168,7 +1232,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
 
 void Hydroponics::endSDCard(SDClass *sd)
 {
-    #if !defined(CORE_TEENSY)
+    #if !defined(CORE_TEENSY) // no delayed write on Teensy's SD impl
         sd->end();
     #endif
 }
@@ -1207,7 +1271,7 @@ OneWire *Hydroponics::getOneWireForPin(byte pin)
         OneWire *oneWire = new OneWire(pin);
         if (oneWire) {
             _oneWires[pin] = oneWire;
-            if (_oneWires[pin] == oneWire) { return oneWire; }
+            if (_oneWires.find(pin) != _oneWires.end()) { return oneWire; }
             else if (oneWire) { delete oneWire; }
         } else if (oneWire) { delete oneWire; }
     }
@@ -1218,7 +1282,10 @@ void Hydroponics::dropOneWireForPin(byte pin)
 {
     auto wireIter = _oneWires.find(pin);
     if (wireIter != _oneWires.end()) {
-        if (wireIter->second) { delete wireIter->second; }
+        if (wireIter->second) {
+            wireIter->second->depower();
+            delete wireIter->second;
+        }
         _oneWires.erase(wireIter);
     }
 }
@@ -1269,7 +1336,7 @@ bool Hydroponics::getRTCBatteryFailure() const
     return _rtcBattFail;
 }
 
-uint32_t Hydroponics::getPollingInterval() const
+uint16_t Hydroponics::getPollingInterval() const
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     return _systemData ? _systemData->pollingInterval : 0;
@@ -1283,6 +1350,12 @@ uint32_t Hydroponics::getPollingFrame() const
 bool Hydroponics::getIsPollingFrameOld(unsigned int frame, unsigned int allowance) const
 {
     return _pollingFrame - frame > allowance;
+}
+
+bool Hydroponics::getIsAutosaveEnabled() const
+{
+    HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
+    return _systemData ? _systemData->autosaveEnabled != Hydroponics_Autosave_Disabled : false;
 }
 
 String Hydroponics::getWiFiSSID()
@@ -1300,7 +1373,7 @@ String Hydroponics::getWiFiPassword()
         if (_systemData->wifiPasswordSeed) {
             randomSeed(_systemData->wifiPasswordSeed);
             for (int charIndex = 0; charIndex <= HYDRUINO_NAME_MAXSIZE; ++charIndex) {
-                wifiPassword[charIndex] = _systemData->wifiPassword[charIndex] ^ (byte)random(256);
+                wifiPassword[charIndex] = (char)(_systemData->wifiPassword[charIndex] ^ (byte)random(256));
             }
         } else {
             strncpy(wifiPassword, (const char *)(_systemData->wifiPassword), HYDRUINO_NAME_MAXSIZE);
@@ -1314,7 +1387,8 @@ String Hydroponics::getWiFiPassword()
 void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
-    _scheduler.setNeedsScheduling();
+    _lastAutosave = now();
+    _scheduler.broadcastDayChange();
 }
 
 void Hydroponics::handleInterrupt(pintype_t pin)
@@ -1333,23 +1407,82 @@ void Hydroponics::handleInterrupt(pintype_t pin)
 void Hydroponics::checkFreeMemory()
 {
     int memLeft = freeMemory();
-    if (memLeft != -1 && memLeft < HYDRUINO_LOW_MEM_SIZE) {
-        for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-            auto obj = iter->second;
-            if (obj) {
-                obj->handleLowMemory();
-            }
-        }
-        _scheduler.handleLowMemory();
-        //_publisher.handleLowMemory();
+    if (memLeft != -1 && memLeft < HYDRUINO_SYS_FREERAM_LOWBYTES) {
+        broadcastLowMemory();
     }
 }
 
-#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-
-void Hydroponics::forwardLogMessage(String message, bool flushAfter = false)
+void Hydroponics::broadcastLowMemory()
 {
-    // TODO: Log message forwarding.
+    #ifdef HYDRUINO_USE_STDCPP_CONTAINERS
+        _objects.shrink_to_fit();
+        _additives.shrink_to_fit();
+        _oneWires.shrink_to_fit();
+        _pinLocks.shrink_to_fit();
+        getCalibrationsStoreInstance()->_calibrationData.shrink_to_fit();
+        getCropsLibraryInstance()->_cropsData.shrink_to_fit();
+    #endif
+
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        if (iter->second) {
+            iter->second->handleLowMemory();
+        }
+    }
+
+    _scheduler.handleLowMemory();
+    _logger.handleLowMemory();
+    _publisher.handleLowMemory();
 }
 
-#endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+static uint32_t getSDCardFreeSpace()
+{
+    uint32_t retVal = HYDRUINO_SYS_FREESPACE_LOWSPACE;
+    #if defined(CORE_TEENSY)
+        auto sd = getHydroponicsInstance()->getSDCard();
+        if (sd) {
+            retVal = sd.vol()->freeClusterCount() * (sd.vol()->blocksPerCluster() >> 1);
+            getHydroponicsInstance()->endSDCard(sd);
+        }
+    #endif
+    return retVal;
+}
+
+void Hydroponics::checkFreeSpace()
+{
+    if ((_logger.getIsLoggingEnabled() || _publisher.getIsPublishingEnabled()) &&
+        (!_lastSpaceCheck || now() >= _lastSpaceCheck + (HYDRUINO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
+        if (_logger.getIsLoggingToSDCard() || _publisher.getIsPublishingToSDCard()) {
+            uint32_t freeKB = getSDCardFreeSpace();
+            while(freeKB < HYDRUINO_SYS_FREESPACE_LOWSPACE) {
+                _logger.cleanupOldestLogs(true);
+                _publisher.cleanupOldestData(true);
+                freeKB = getSDCardFreeSpace();
+            }
+        }
+        // TODO: URL free space
+        _lastSpaceCheck = now();
+    }
+}
+
+void Hydroponics::checkAutosave()
+{
+    if (getIsAutosaveEnabled() && (!_lastAutosave || now() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN))) {
+        switch (_systemData->autosaveEnabled) {
+            case Hydroponics_Autosave_EnabledToSDCardJson:
+                saveToSDCard(_configFileName, true);
+                break;
+            case Hydroponics_Autosave_EnabledToSDCardRaw:
+                saveToSDCard(_configFileName, false);
+                break;
+            case Hydroponics_Autosave_EnabledToEEPROMJson:
+                saveToEEPROM(true);
+                break;
+            case Hydroponics_Autosave_EnabledToEEPROMRaw:
+                saveToEEPROM(false);
+                break;
+            default:
+                break;
+        }
+        _lastAutosave = now();
+    }
+}
