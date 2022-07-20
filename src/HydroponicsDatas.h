@@ -14,6 +14,16 @@ struct HydroponicsCustomAdditiveData;
 #include "Hydroponics.h"
 #include "HydroponicsData.h"
 #include "HydroponicsScheduler.h"
+#include "HydroponicsPublisher.h"
+#include "HydroponicsLogger.h"
+
+enum Hydroponics_Autosave {
+    Hydroponics_Autosave_EnabledToSDCardJson,
+    Hydroponics_Autosave_EnabledToSDCardRaw,
+    Hydroponics_Autosave_EnabledToEEPROMJson,
+    Hydroponics_Autosave_EnabledToEEPROMRaw,
+    Hydroponics_Autosave_Disabled = -1
+};
 
 // User System Setup Data
 // id: HSYS. Hydroponic user system setup data.
@@ -24,11 +34,16 @@ struct HydroponicsSystemData : public HydroponicsData {
     Hydroponics_ControlInputMode ctrlInMode;                    // System control input mode 
     char systemName[HYDRUINO_NAME_MAXSIZE];                     // System name
     int8_t timeZoneOffset;                                      // Timezone offset
-    uint32_t pollingInterval;                                   // Sensor polling interval, in milliseconds
+    uint16_t pollingInterval;                                   // Sensor polling interval, in milliseconds
+    Hydroponics_Autosave autosaveEnabled;                       // Autosave enabled
+    uint16_t autosaveInterval;                                  // Autosave interval, in minutes
     char wifiSSID[HYDRUINO_NAME_MAXSIZE];                       // WiFi SSID
     byte wifiPassword[HYDRUINO_NAME_MAXSIZE];                   // WiFi password (xor encrypted)
     uint32_t wifiPasswordSeed;                                  // Seed for WiFi password one-time pad
+
     HydroponicsSchedulerSubData scheduler;                      // Scheduler subdata
+    HydroponicsLoggerSubData logger;                            // Logger subdata
+    HydroponicsPublisherSubData publisher;                      // Publisher subdata
 
     HydroponicsSystemData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

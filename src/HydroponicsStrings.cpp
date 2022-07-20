@@ -5,10 +5,18 @@
 
 #include "Hydroponics.h"
 
+const PROGMEM char HS_Air[] = {"Air"};
+const PROGMEM char HS_CO2[] = {"CO2"};
 const PROGMEM char HS_Count[] = {"Count"};
+const PROGMEM char HS_csv[] = {"csv"};
 const PROGMEM char HS_Disabled[] = {"Disabled"};
-const PROGMEM char HS_Null[] = {"null"};
+const PROGMEM char HS_TDS[] = {"TDS"};
+const PROGMEM char HS_Temp[] = {"Temp"};
+const PROGMEM char HS_txt[] = {"txt"};
 const PROGMEM char HS_Undefined[] = {"Undefined"};
+const PROGMEM char HS_Water[] = {"Water"};
+const PROGMEM char HS_null[] = {"null"};
+const PROGMEM char HS_pH[] = {"pH"};
 
 const PROGMEM char HS_Err_AllocationFailure[] = {"Allocation failure"};
 const PROGMEM char HS_Err_AlreadyInitialized[] = {"Already initialized"};
@@ -25,11 +33,24 @@ const PROGMEM char HS_Err_OperationFailure[] = {"Operation failure"};
 const PROGMEM char HS_Err_ParameterMismatch[] = {"Parameter mismatch"};
 const PROGMEM char HS_Err_UnsupportedOperation[] = {"Unsupported operation"};
 
+const PROGMEM char HS_Log_EstimatedRunTime[] = {"Estimated run time"};
+const PROGMEM char HS_Log_FeedingSequence[] = {"Feeding sequence"};
+const PROGMEM char HS_Log_HasBegan[] = {"Has began"};
+const PROGMEM char HS_Log_HasDisabled[] = {"Has disabled"};
+const PROGMEM char HS_Log_HasEnabled[] = {"Has enabled"};
+const PROGMEM char HS_Log_HasEnded[] = {"Has ended"};
+const PROGMEM char HS_Log_LightingSequence[] = {"Lighting sequence"};
+const PROGMEM char HS_Log_PollingFrame[] = {"Polling frame"};
+const PROGMEM char HS_Log_SystemDataSaved[] = {"System data saved"};
+const PROGMEM char HS_Log_SystemUptime[] = {"System uptime"};
+
 const PROGMEM char HS_Key_ActiveLow[] = {"activeLow"};
 const PROGMEM char HS_Key_AdditiveName[] = {"additiveName"};
 const PROGMEM char HS_Key_AirTempRange[] = {"airTempRange"};
 const PROGMEM char HS_Key_AirTempSensorName[] = {"airTempSensorName"};
 const PROGMEM char HS_Key_AlwaysFilled[] = {"alwaysFilled"};
+const PROGMEM char HS_Key_AutosaveEnabled[] = {"autosaveEnabled"};
+const PROGMEM char HS_Key_AutosaveInterval[] = {"autosaveInterval"};
 const PROGMEM char HS_Key_BaseFeedMultiplier[] = {"baseFeedMultiplier"};
 const PROGMEM char HS_Key_Bloom[] = {"bloom"};
 const PROGMEM char HS_Key_CO2Levels[] = {"co2Levels"};
@@ -66,6 +87,7 @@ const PROGMEM char HS_Key_LastFeedingDate[] = {"lastFeedingDate"};
 const PROGMEM char HS_Key_LastPruningDate[] = {"lastPruningDate"};
 const PROGMEM char HS_Key_LifeCycleWeeks[] = {"lifeCycleWeeks"};
 const PROGMEM char HS_Key_LimitTrigger[] = {"limitTrigger"};
+const PROGMEM char HS_Key_Logger[] = {"logger"};
 const PROGMEM char HS_Key_MaxActiveAtOnce[] = {"maxActiveAtOnce"};
 const PROGMEM char HS_Key_MaxPower[] = {"maxPower"};
 const PROGMEM char HS_Key_MaxVolume[] = {"maxVolume"};
@@ -93,6 +115,7 @@ const PROGMEM char HS_Key_PowerUnits[] = {"powerUnits"};
 const PROGMEM char HS_Key_PreFeedAeratorMins[] = {"preFeedAeratorMins"};
 const PROGMEM char HS_Key_PreLightSprayMins[] = {"preLightSprayMins"};
 const PROGMEM char HS_Key_Pruning[] = {"pruning"};
+const PROGMEM char HS_Key_Publisher[] = {"publisher"};
 const PROGMEM char HS_Key_PullupPin[] = {"pullupPin"};
 const PROGMEM char HS_Key_RailName[] = {"railName"};
 const PROGMEM char HS_Key_ReservoirName[] = {"reservoirName"};

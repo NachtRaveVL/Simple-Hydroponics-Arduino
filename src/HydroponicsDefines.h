@@ -29,20 +29,23 @@
 typedef int8_t Hydroponics_PositionIndex;                           // Position indexing type
 typedef uint32_t Hydroponics_KeyType;                               // Key type, for hashing
 
-#define HYDRUINO_NAME_MAXSIZE               32                      // Naming character maximum size (system name, crop name, etc.)
+#define HYDRUINO_NAME_MAXSIZE               24                      // Naming character maximum size (system name, crop name, etc.)
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
-#define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Control input pinmap maximum size
-#define HYDRUINO_OBJ_LINKS_MAXSIZE          16                      // Maximum size for object linkage list (per obj)
-#define HYDRUINO_SYS_OBJECTS_MAXSIZE        32                      // Maximum size for system objects (max # of objects in system)
-#define HYDRUINO_BAL_ACTUATORS_MAXSIZE      8                       // Maximum size for balancer actuator list (per inc/dec)
-#define HYDRUINO_SYS_ONEWIRE_MAXSIZE        8                       // Maximum size for pin->OneWire instances list
-#define HYDRUINO_SYS_PINLOCKS_MAXSIZE       8                       // Maximum size for pin locks list
-#define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document size (serialization bytes)
+#define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Maximum array size for control input pinmap (max # of ribbon pins)
+#define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk size for reading in main system data (serialization buffer size)
+#define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk size (serialization buffer size)
 
-#define HYDRUINO_LOW_MEM_SIZE               1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
+// The following maxsizes only matter for architectures that do not have STL support
+#define HYDRUINO_SYS_OBJECTS_MAXSIZE        32                      // Maximum array size for system objects (max # of objects in system)
+#define HYDRUINO_OBJ_LINKS_MAXSIZE          16                      // Maximum array size for object linkage list, per obj (max # of linked objects)
+#define HYDRUINO_BAL_ACTUATORS_MAXSIZE      8                       // Maximum array size for balancer actuator increment/decrement lists (max # of balancing actuators)
+#define HYDRUINO_SCH_FEEDRES_MAXSIZE        4                       // Maximum array size for scheduler feeding/lighting lists (max # of feed reservoirs)
+#define HYDRUINO_SYS_ONEWIRE_MAXSIZE        4                       // Maximum array size for pin->OneWire instances list (max # of OneWire pins)
+#define HYDRUINO_SYS_PINLOCKS_MAXSIZE       4                       // Maximum array size for pin locks list (max # of simultaneous locks)
+
 #define HYDRUINO_CONTROL_LOOP_INTERVAL      100                     // Run interval of main control loop, in milliseconds
 #define HYDRUINO_DATA_LOOP_INTERVAL         2000                    // Default run interval of data loop, in milliseconds
-#define HYDRUINO_MISC_LOOP_INTERVAL         25                      // Run interval of misc loop, in milliseconds
+#define HYDRUINO_MISC_LOOP_INTERVAL         250                     // Run interval of misc loop, in milliseconds
 
 #define HYDRUINO_POS_SEARCH_FROMBEG         -1                      // Search from beginning to end, 0 up to MAXSIZE-1
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
@@ -67,6 +70,12 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
+
+#define HYDRUINO_SYS_AUTOSAVE_INTERVAL      120                     // Default autosave interval, in minutes
+#define HYDRUINO_SYS_FREERAM_LOWBYTES       1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
+#define HYDRUINO_SYS_FREESPACE_INTERVAL     240                     // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
+#define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
+#define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
 
 #define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRUINO_SCHEDULER_BALANCE_MINTIME  30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
@@ -345,12 +354,12 @@ enum Hydroponics_TriggerState {
 // Balancing State
 // Common balancing states. Specifies balance or which direction of imbalance.
 enum Hydroponics_BalancerState {
-    Hydroponics_BalancerState_TooLow,                      // Too low / needs incremented state
-    Hydroponics_BalancerState_Balanced,                    // Balanced state
-    Hydroponics_BalancerState_TooHigh,                     // Too high / needs decremented state
+    Hydroponics_BalancerState_TooLow,                       // Too low / needs incremented state
+    Hydroponics_BalancerState_Balanced,                     // Balanced state
+    Hydroponics_BalancerState_TooHigh,                      // Too high / needs decremented state
 
-    Hydroponics_BalancerState_Count,                       // Internal use only
-    Hydroponics_BalancerState_Undefined = -1               // Internal use only
+    Hydroponics_BalancerState_Count,                        // Internal use only
+    Hydroponics_BalancerState_Undefined = -1                // Internal use only
 };
 
 // Units Type
@@ -388,7 +397,6 @@ enum Hydroponics_UnitsType {
 
 
 class Hydroponics;
-class HydroponicsScheduler;
 struct HydroponicsIdentity;
 class HydroponicsObject;
 class HydroponicsSubObject;
@@ -396,6 +404,7 @@ class HydroponicsActuator;
 class HydroponicsSensor;
 class HydroponicsCrop;
 class HydroponicsReservoir;
+class HydroponicsFeedReservoir;
 class HydroponicsRail;
 struct HydroponicsData;
 struct HydroponicsObjectData;
@@ -404,5 +413,8 @@ struct HydroponicsMeasurement;
 struct HydroponicsSingleMeasurement;
 class HydroponicsTrigger;
 class HydroponicsBalancer;
+class HydroponicsScheduler;
+class HydroponicsLogger;
+class HydroponicsPublisher;
 
 #endif // /ifndef HydroponicsDefines_H

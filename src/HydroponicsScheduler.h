@@ -13,7 +13,6 @@ struct HydroponicsFeeding;
 struct HydroponicsLighting;
 
 #include "Hydroponics.h"
-#include "HydroponicsReservoirs.h"
 
 // Hydroponics Scheduler
 class HydroponicsScheduler : public HydroponicsSubObject {
@@ -60,14 +59,14 @@ protected:
 
     bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
-    int _lastDayNum;                                        // Last day number tracking for daily rescheduling
-    Map<Hydroponics_KeyType, HydroponicsFeeding *>::type _feedings; // Feedings in progress
-    Map<Hydroponics_KeyType, HydroponicsLighting *>::type _lightings; // Lightings in progress
+    int _lastDayNum;                                        // Last day number tracking for daily rescheduling tracking
+    Map<Hydroponics_KeyType, HydroponicsFeeding *, HYDRUINO_SCH_FEEDRES_MAXSIZE>::type _feedings; // Feedings in progress
+    Map<Hydroponics_KeyType, HydroponicsLighting *, HYDRUINO_SCH_FEEDRES_MAXSIZE>::type _lightings; // Lightings in progress
 
     friend class Hydroponics;
 
     void performScheduling();
-    void broadcastDayChange() const;
+    void broadcastDayChange();
 };
 
 

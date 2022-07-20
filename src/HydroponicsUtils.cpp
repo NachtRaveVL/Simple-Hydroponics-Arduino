@@ -107,6 +107,45 @@ HydroponicsScheduler *getSchedulerInstance()
     return hydroponics ? &(hydroponics->_scheduler) : nullptr;
 }
 
+HydroponicsLogger *getLoggerInstance()
+{
+    auto hydroponics = Hydroponics::getActiveInstance();
+    return hydroponics ? &(hydroponics->_logger) : nullptr;
+}
+
+HydroponicsPublisher *getPublisherInstance()
+{
+    auto hydroponics = Hydroponics::getActiveInstance();
+    return hydroponics ? &(hydroponics->_publisher) : nullptr;
+}
+
+void logMessage(String message, bool flushAfter)
+{
+    auto logger = getLoggerInstance();
+    if (logger) {
+        logger->logMessage(message);
+        if (flushAfter) { logger->flush(); }
+    }
+}
+
+void logWarning(String warning, bool flushAfter)
+{
+    auto logger = getLoggerInstance();
+    if (logger) {
+        logger->logWarning(warning);
+        if (flushAfter) { logger->flush(); }
+    }
+}
+
+void logError(String error, bool flushAfter)
+{
+    auto logger = getLoggerInstance();
+    if (logger) {
+        logger->logError(error);
+        if (flushAfter) { logger->flush(); }
+    }
+}
+
 DateTime getCurrentTime()
 {
     auto hydroponics = Hydroponics::getActiveInstance();
@@ -121,6 +160,19 @@ time_t getCurrentDayStartTime()
     return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime() + timeZoneSecs;
 }
 
+String getYYMMDDFilename(String prefix, String ext)
+{
+    DateTime currTime = getCurrentTime();
+    int8_t yy = currTime.year() % 100;
+    int8_t mm = currTime.month();
+    int8_t dd = currTime.day();
+    return prefix +
+        (yy >= 10 ? String(yy) : String('0') + String(yy)) +
+        (mm >= 10 ? String(mm) : String('0') + String(mm)) +
+        (dd >= 10 ? String(dd) : String('0') + String(dd)) +
+        String('.') + ext;
+}
+
 Hydroponics_KeyType stringHash(String string)
 {
     Hydroponics_KeyType hash = 5381;
@@ -132,18 +184,18 @@ Hydroponics_KeyType stringHash(String string)
 
 String stringFromChars(const char *charsIn, size_t length)
 {
-    if (!charsIn || !length) { return String(SFP(HS_Null)); }
+    if (!charsIn || !length) { return String(SFP(HS_null)); }
     String retVal; retVal.reserve(length);
     for (size_t index = 0; index < length && charsIn[index] != '\0'; ++index) {
         retVal.concat(charsIn[index]);
     }
-    return retVal.length() ? retVal : String(SFP(HS_Null));
+    return retVal.length() ? retVal : String(SFP(HS_null));
 }
 
 template<>
 String commaStringFromArray<float>(const float *arrayIn, size_t length)
 {
-    if (!arrayIn || !length) { return String(SFP(HS_Null)); }
+    if (!arrayIn || !length) { return String(SFP(HS_null)); }
     String retVal; retVal.reserve(length << 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
@@ -159,13 +211,13 @@ String commaStringFromArray<float>(const float *arrayIn, size_t length)
 
         retVal += floatString;
     }
-    return retVal.length() ? retVal : String(SFP(HS_Null));
+    return retVal.length() ? retVal : String(SFP(HS_null));
 }
 
 template<>
 String commaStringFromArray<double>(const double *arrayIn, size_t length)
 {
-    if (!arrayIn || !length) { return String(SFP(HS_Null)); }
+    if (!arrayIn || !length) { return String(SFP(HS_null)); }
     String retVal; retVal.reserve(length << 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
@@ -181,13 +233,13 @@ String commaStringFromArray<double>(const double *arrayIn, size_t length)
 
         retVal += doubleString;
     }
-    return retVal.length() ? retVal : String(SFP(HS_Null));
+    return retVal.length() ? retVal : String(SFP(HS_null));
 }
 
 template<>
 void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_Null))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_null))) { return; }
     int lastSepPos = -1;
     for (size_t index = 0; index < length; ++index) {
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
@@ -202,7 +254,7 @@ void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length)
 template<>
 void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_Null))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_null))) { return; }
     int lastSepPos = -1;
     for (size_t index = 0; index < length; ++index) {
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
@@ -220,7 +272,7 @@ void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length
 
 String hexStringFromBytes(const byte *bytesIn, size_t length)
 {
-    if (!bytesIn || !length) { return String(SFP(HS_Null)); }
+    if (!bytesIn || !length) { return String(SFP(HS_null)); }
     String retVal; retVal.reserve((length << 1) + 1);
     for (size_t index = 0; index < length; ++index) {
         String valStr = String(bytesIn[index], 16);
@@ -228,12 +280,12 @@ String hexStringFromBytes(const byte *bytesIn, size_t length)
 
         retVal += valStr;
     }
-    return retVal.length() ? retVal : String(SFP(HS_Null));
+    return retVal.length() ? retVal : String(SFP(HS_null));
 }
 
 void hexStringToBytes(String stringIn, byte *bytesOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_Null))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_null))) { return; }
     for (size_t index = 0; index < length; ++index) {
         String valStr = stringIn.substring(index << 1,(index+1) << 1);
         if (valStr.length() == 2) { bytesOut[index] = strtoul(valStr.c_str(), nullptr, 16); }
@@ -339,22 +391,7 @@ int freeMemory() {
     return -1;
 }
 
-#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-
-void logMessage(String message, bool flushAfter)
-{
-    if (Serial) { Serial.println(message); }
-
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) {
-        hydroponics->forwardLogMessage(message, flushAfter);
-    }
-
-    if (flushAfter) {
-        if (Serial) { Serial.flush(); }
-        yield();
-    }
-}
+#ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
 
 static String fileFromFullPath(String fullPath)
 {
@@ -372,7 +409,7 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
 {
     if (!cond) {
         String message = makeAssertMsg(msg, file, func, line);
-        logMessage(message, true);
+        logWarning(message, true);
     }
 }
 
@@ -380,7 +417,7 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
 {
     if (!cond) {
         String message = String(F("HARD ")) + makeAssertMsg(msg, file, func, line);
-        logMessage(message, true);
+        logError(message, true);
         auto hydroponics = getHydroponicsInstance();
         if (hydroponics) { hydroponics->suspend(); }
         yield(); delay(10);
@@ -388,7 +425,8 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
     }
 }
 
-#endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+#endif // /ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
+
 
 bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam)
 {
@@ -893,6 +931,7 @@ int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode)
     }
 }
 
+
 bool checkPinIsAnalogInput(byte pin)
 {
     #if !defined(NUM_ANALOG_INPUTS) || NUM_ANALOG_INPUTS == 0
@@ -1049,30 +1088,6 @@ void setupRandomSeed()
     randomSeed(micros());
 }
 
-bool getActuatorInWaterFromType(Hydroponics_ActuatorType actuatorType)
-{
-    switch (actuatorType) {
-        case Hydroponics_ActuatorType_WaterPump:
-        case Hydroponics_ActuatorType_WaterHeater:
-        case Hydroponics_ActuatorType_WaterAerator:
-            return true;
-
-        default:
-            return false;
-    }
-}
-
-bool getActuatorIsPumpFromType(Hydroponics_ActuatorType actuatorType)
-{
-    switch (actuatorType) {
-        case Hydroponics_ActuatorType_WaterPump:
-        case Hydroponics_ActuatorType_PeristalticPump:
-            return true;
-
-        default:
-            return false;
-    }
-}
 
 String systemModeToString(Hydroponics_SystemMode systemMode, bool excludeSpecial)
 {
@@ -1146,6 +1161,31 @@ String controlInputModeToString(Hydroponics_ControlInputMode controlInMode, bool
             break;
     }
     return !excludeSpecial ? SFP(HS_Undefined) : String();
+}
+
+bool getActuatorInWaterFromType(Hydroponics_ActuatorType actuatorType)
+{
+    switch (actuatorType) {
+        case Hydroponics_ActuatorType_WaterPump:
+        case Hydroponics_ActuatorType_WaterHeater:
+        case Hydroponics_ActuatorType_WaterAerator:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+bool getActuatorIsPumpFromType(Hydroponics_ActuatorType actuatorType)
+{
+    switch (actuatorType) {
+        case Hydroponics_ActuatorType_WaterPump:
+        case Hydroponics_ActuatorType_PeristalticPump:
+            return true;
+
+        default:
+            return false;
+    }
 }
 
 String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeSpecial)

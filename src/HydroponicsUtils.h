@@ -201,11 +201,24 @@ private:
 extern Hydroponics *getHydroponicsInstance();
 // Returns the active scheduler instance. Not guaranteed to be non-null.
 extern HydroponicsScheduler *getSchedulerInstance();
+// Returns the active logger instance. Not guaranteed to be non-null.
+extern HydroponicsLogger *getLoggerInstance();
+// Returns the active publisher instance. Not guaranteed to be non-null.
+extern HydroponicsPublisher *getPublisherInstance();
+
+// This logs a standard message to Logger output, with optional flush afterwards.
+extern void logMessage(String message, bool flushAfter = false);
+// This logs a standard message to Logger output, with optional flush afterwards.
+extern void logWarning(String warning, bool flushAfter = false);
+// This logs a standard message to Logger output, with optional flush afterwards.
+extern void logError(String error, bool flushAfter = false);
 
 // Returns current time, with proper time zone offset based on active hydroponics instance.
-DateTime getCurrentTime();
+extern DateTime getCurrentTime();
 // Returns the UTC unix time that today started, accounting for time zone offset based on active hydroponics instance.
-time_t getCurrentDayStartTime();
+extern time_t getCurrentDayStartTime();
+// Returns a proper filename for a storage monitoring file (log, data, etc) that uses YYMMDD as filename.
+extern String getYYMMDDFilename(String prefix, String ext);
 
 // Computes a hash for a string using a fast and efficient (read as: good enough for our use) hashing algorithm.
 extern Hydroponics_KeyType stringHash(String string);
@@ -256,10 +269,7 @@ extern time_t rtcNow();
 // This will handle interrupts for task manager.
 extern void handleInterrupt(pintype_t pin);
 
-#ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-
-// This logs a standard message to Serial output (if connected) and then forwards it to the active Hydroponics instance's logging mechanism (if any are enabled).
-extern void logMessage(String message, bool flushAfter = false);
+#ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
 
 // This softly asserts on a failed condition, sending message out to Serial output (if debugging enabled) and/or disk-based logging (if enabled), and then finally continuing program execution.
 // See HYDRUINO_SOFT_ASSERT() macro for usage.
@@ -269,7 +279,7 @@ extern void softAssert(bool cond, String msg, const char *file, const char *func
 // See HYDRUINO_HARD_ASSERT() macro for usage.
 extern void hardAssert(bool cond, String msg, const char *file, const char *func, int line);
 
-#endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+#endif // /ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
 
 // Units & Conversion
 

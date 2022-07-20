@@ -76,19 +76,19 @@ taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (Object
 template<typename T>
 String commaStringFromArray(const T *arrayIn, size_t length)
 {
-    if (!arrayIn || !length) { return String(SFP(HS_Null)); }
+    if (!arrayIn || !length) { return String(SFP(HS_null)); }
     String retVal; retVal.reserve(length << 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
         retVal += String(arrayIn[index]);
     }
-    return retVal.length() ? retVal : String(SFP(HS_Null));
+    return retVal.length() ? retVal : String(SFP(HS_null));
 }
 
 template<typename T>
 void commaStringToArray(String stringIn, T *arrayOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_Null))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_null))) { return; }
     int lastSepPos = -1;
     for (size_t index = 0; index < length; ++index) {
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
