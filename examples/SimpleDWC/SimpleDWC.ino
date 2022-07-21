@@ -19,9 +19,10 @@ void setup() {
     // Adds our relay power rail as standard AC. This will manage how many active devices can be turned on at the same time.
     auto relayPower = hydroController.addSimplePowerRail(Hydroponics_RailType_AC110V);
 
-    // Adds the 4 gallon main water reservoir. This will contain sensors and feed crops.
+    // Adds the 4 gallon main water reservoir, and initializes it as full. This will contain sensors and feed crops.
     auto feedWater = hydroController.addFeedWaterReservoir(4);
     feedWater->setVolumeUnits(Hydroponics_UnitsType_LiqVolume_Gallons);
+    feedWater->setWaterVolume(feedWater->getMaxVolume());
 
     // Add simple water aerator relay at AeratorRelayPin, and link it to the feed water reservoir and the relay power rail.
     auto aerator = hydroController.addWaterAeratorRelay(AeratorRelayPin);
