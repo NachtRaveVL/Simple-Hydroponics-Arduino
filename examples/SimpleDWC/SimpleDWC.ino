@@ -29,7 +29,7 @@ void setup() {
     aerator->setReservoir(feedWater);
 
     // Add some lettuce, set to feed on a timer, that we planted in clay pebbles on LettuceSowDate, and link it to the feed water reservoir.
-    auto lettuce = hydroController.addTimerFedCrop((Hydroponics_CropType)0, Hydroponics_SubstrateType_ClayPebbles, LettuceSowDate.unixtime());
+    auto lettuce = hydroController.addTimerFedCrop((Hydroponics_CropType)0, Hydroponics_SubstrateType_ClayPebbles, LettuceSowDate);
     lettuce->setFeedReservoir(feedWater);
 
     // Launches controller into main operation.

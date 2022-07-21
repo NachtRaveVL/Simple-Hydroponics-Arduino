@@ -213,7 +213,7 @@ time_t getCurrentDayStartTime()
     auto hydroponics = Hydroponics::getActiveInstance();
     long timeZoneSecs = (hydroponics ? hydroponics->getTimeZoneOffset() : 0L) * SECS_PER_HOUR;
     DateTime currTime = DateTime((uint32_t)(now() + timeZoneSecs));
-    return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime() + timeZoneSecs;
+    return DateTime(currTime.year(), currTime.month(), currTime.day()).secondstime() + timeZoneSecs;
 }
 
 String getYYMMDDFilename(String prefix, String ext)

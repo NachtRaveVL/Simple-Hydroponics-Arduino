@@ -30,7 +30,7 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
                                  DateTime sowDate,
                                  int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(cropType, cropIndex)), classType((typeof(classType))classTypeIn),
-      _substrateType(substrateType), _sowDate(sowDate.unixtime()), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
+      _substrateType(substrateType), _sowDate(sowDate.secondstime()), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
     recalcGrowWeekAndPhase();

@@ -237,7 +237,7 @@ extern void publishData(HydroponicsSensor *sensor);
 
 // Returns current time, with proper time zone offset based on active hydroponics instance.
 extern DateTime getCurrentTime();
-// Returns the UTC unix time that today started, accounting for time zone offset based on active hydroponics instance.
+// Returns the UTC seconds time that today started, accounting for time zone offset based on active hydroponics instance.
 extern time_t getCurrentDayStartTime();
 // Returns a proper filename for a storage monitoring file (log, data, etc) that uses YYMMDD as filename.
 extern String getYYMMDDFilename(String prefix, String ext);
