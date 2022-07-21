@@ -162,11 +162,7 @@ const PROGMEM char HS_Key_WirePosIndex[] = {"wirePosIndex"};
 
 String stringFromPGM(const char *str)
 {
-    String retVal; retVal.reserve(strlen_P(str)+1);
-    char readChar = pgm_read_byte(str++);
-    while (readChar) {
-        retVal.concat(readChar);
-        readChar = pgm_read_byte(str++);
-    }
-    return retVal;
+    char buffer[32] = {0};
+    strncpy_P(buffer, str, 32);
+    return String(buffer);
 }
