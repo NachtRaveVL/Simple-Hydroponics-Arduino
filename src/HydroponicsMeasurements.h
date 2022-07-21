@@ -21,11 +21,13 @@ struct HydroponicsMeasurementData;
 extern HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasurementData *dataIn);
 
 // Gets the value of a measurement at a specified row (with optional binary true value).
-extern float measurementValueAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, float binTrue = 1.0f);
+extern float getMeasurementValue(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow = 0, float binTrue = 1.0f);
 // Gets the units of a measurement at a specified row (with optional binary units).
-extern Hydroponics_UnitsType measurementUnitsAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
+extern Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow = 0, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
+// Gets the number of rows of data that a measurement holds.
+extern Hydroponics_PositionIndex getMeasurementRowCount(const HydroponicsMeasurement *measurement);
 // Gets the single measurement of a measurement (with optional binary true value / units).
-extern HydroponicsSingleMeasurement singleMeasurementAt(const HydroponicsMeasurement *measurementIn, int rowIndex = 0, float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
+extern HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow = 0, float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
 
 // Sensor Data Measurement Base
 struct HydroponicsMeasurement {
@@ -36,18 +38,18 @@ struct HydroponicsMeasurement {
     inline bool isTripleType() const { return type == Triple; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
-    time_t timestamp;                                           // Time event recorded (UTC unix time)
-    uint32_t frame;                                             // Polling frame #
+    time_t timestamp;                                           // Time event recorded (UTC)
+    uint16_t frame;                                             // Polling frame #
 
     HydroponicsMeasurement();
     HydroponicsMeasurement(int type,
                            time_t timestamp = 0);
     HydroponicsMeasurement(int type,
                            time_t timestamp,
-                           uint32_t frame);
+                           uint16_t frame);
     HydroponicsMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
     inline void updateTimestamp() { timestamp = now(); }
     void updateFrame(int minFrame = 0);
@@ -66,10 +68,10 @@ struct HydroponicsSingleMeasurement : public HydroponicsMeasurement {
     HydroponicsSingleMeasurement(float value,
                                  Hydroponics_UnitsType units,
                                  time_t timestamp,
-                                 uint32_t frame);
+                                 uint16_t frame);
     HydroponicsSingleMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 };
 
 // Binary Value Sensor Data Measurement
@@ -81,12 +83,12 @@ struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
                                  time_t timestamp);
     HydroponicsBinaryMeasurement(bool state,
                                  time_t timestamp,
-                                 uint32_t frame);
+                                 uint16_t frame);
     HydroponicsBinaryMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroponicsSingleMeasurement asSingleMeasurement(float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1) { return HydroponicsSingleMeasurement(state ? binTrue : 0.0f, binUnits, timestamp, frame); }
+    inline HydroponicsSingleMeasurement getAsSingleMeasurement(float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1) { return HydroponicsSingleMeasurement(state ? binTrue : 0.0f, binUnits, timestamp, frame); }
 };
 
 // Double Value Sensor Data Measurement
@@ -105,12 +107,12 @@ struct HydroponicsDoubleMeasurement : public HydroponicsMeasurement {
                                  float value2,
                                  Hydroponics_UnitsType units2, 
                                  time_t timestamp,
-                                 uint32_t frame);
+                                 uint16_t frame);
     HydroponicsDoubleMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroponicsSingleMeasurement asSingleMeasurement(int row) { return HydroponicsSingleMeasurement(value[row], units[row], timestamp, frame); }
+    inline HydroponicsSingleMeasurement getAsSingleMeasurement(Hydroponics_PositionIndex measurementRow) { return HydroponicsSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
 };
 
 // Triple Value Sensor Data Measurement
@@ -133,52 +135,27 @@ struct HydroponicsTripleMeasurement : public HydroponicsMeasurement {
                                  float value3,
                                  Hydroponics_UnitsType units3,
                                  time_t timestamp,
-                                 uint32_t frame);
+                                 uint16_t frame);
     HydroponicsTripleMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroponicsSingleMeasurement asSingleMeasurement(int row) { return HydroponicsSingleMeasurement(value[row], units[row], timestamp, frame); }
-    inline HydroponicsDoubleMeasurement asDoubleMeasurement(int row1, int row2) { return HydroponicsDoubleMeasurement(value[row1], units[row1], value[row2], units[row2], timestamp, frame); }
+    inline HydroponicsSingleMeasurement getAsSingleMeasurement(Hydroponics_PositionIndex measurementRow) { return HydroponicsSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
+    inline HydroponicsDoubleMeasurement getAsDoubleMeasurement(Hydroponics_PositionIndex measurementRow1, Hydroponics_PositionIndex measurementRow2) { return HydroponicsDoubleMeasurement(value[measurementRow1], units[measurementRow1], value[measurementRow2], units[measurementRow2], timestamp, frame); }
 };
 
 
 // Combined Measurement Serialization Sub Data
 struct HydroponicsMeasurementData : public HydroponicsSubData {
-    union {
-        struct {
-            bool state;
-        } binaryMeasure;
-        struct {
-            float value;
-            Hydroponics_UnitsType units;
-        } singleMeasure;
-        struct {
-            float value[2];
-            Hydroponics_UnitsType units[2];
-        } doubleMeasure;
-        struct {
-            float value[3];
-            Hydroponics_UnitsType units[3];
-        } tripleMeasure;
-    } dataAs;
-    time_t timestamp;
+    Hydroponics_PositionIndex measurementRow;               // Source measurement row index that data is from
+    float value;                                            // Value
+    Hydroponics_UnitsType units;                            // Units of value
+    time_t timestamp;                                       // Timestamp
 
     HydroponicsMeasurementData();
     void toJSONObject(JsonObject &objectOut) const;
     void fromJSONObject(JsonObjectConst &objectIn);
     void fromJSONVariant(JsonVariantConst &variantIn);
-
-private:
-    void fromJSONArray(JsonArrayConst &arrayIn);
-    void fromJSONObjectsArray(JsonArrayConst &objectsIn);
-    void fromJSONObject(JsonObjectConst &objectIn, int rowIndex);
-    void fromJSONValuesArray(JsonArrayConst &valuesIn);
-    void fromJSONValuesString(const char *valuesIn);
-    void fromJSONUnitsArray(JsonArrayConst &unitsIn);
-    void fromJSONUnitsString(const char *unitsIn);
-    void setValue(float value, int rowIndex);
-    void setUnits(Hydroponics_UnitsType units, int rowIndex);
 };
 
 #endif // /ifndef HydroponicsMeasurements_H

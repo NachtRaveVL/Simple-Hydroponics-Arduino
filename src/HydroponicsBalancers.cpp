@@ -169,8 +169,8 @@ void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerSta
     if (sensor) {
         _needsTriggerUpdate = false;
         auto balancerStateBefore = _balancerState;
-        auto measurementValue = measurementValueAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
-        auto measurementUnits = measurementUnitsAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+        auto measurementValue = getMeasurementValue(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+        auto measurementUnits = getMeasurementUnits(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
 
         convertUnits(&measurementValue, &measurementUnits, _targetUnits);
 
@@ -183,7 +183,11 @@ void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerSta
         }
 
         if (_balancerState != balancerStateBefore) {
-            scheduleSignalFireOnce<Hydroponics_BalancerState>(_balancerSignal, _balancerState);
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<Hydroponics_BalancerState>(_balancerSignal, _balancerState);
+            #else
+                _balancerSignal.fire(_balancerState);
+            #endif
         }
     }
 }
@@ -204,7 +208,7 @@ void HydroponicsLinearEdgeBalancer::update()
     if (_balancerState != Hydroponics_BalancerState_Balanced && _balancerState != Hydroponics_BalancerState_Undefined) {
         auto sensor = _rangeTrigger->getSensor();
         if (sensor) {
-            auto measure = singleMeasurementAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+            auto measure = getAsSingleMeasurement(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
             convertUnits(&measure.value, &measure.units, _targetUnits);
 
             float x = fabsf(measure.value - _targetSetpoint);
@@ -243,9 +247,10 @@ HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<Hydrop
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
       _lastDosingTime(0), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1)
 {
-    if (volumeUnits != Hydroponics_UnitsType_LiquidVolume_Gallons) {
-        convertUnits(&reservoirVolume, &volumeUnits, Hydroponics_UnitsType_LiquidVolume_Gallons);
+    if (volumeUnits != Hydroponics_UnitsType_LiqVolume_Gallons) {
+        convertUnits(&reservoirVolume, &volumeUnits, Hydroponics_UnitsType_LiqVolume_Gallons);
     }
+    // TODO: Verify these values work
     _baseDosingMillis = mapValue<float>(reservoirVolume, 5, 30, 500, 3000);
     _mixTimeMins = mapValue<float>(reservoirVolume, 30, 200, 10, 30);
 }
@@ -269,16 +274,29 @@ void HydroponicsTimedDosingBalancer::update()
         while (_dosingActIndex < actuatorsDir.size()) {
             auto iter = actuatorsDir.begin();
             for (int actIndex = 0; iter != actuatorsDir.end() && actIndex != _dosingActIndex; ++iter, ++actIndex) { ; }
-            if (iter != actuatorsDir.end() && scheduleActuatorTimedEnableOnce(iter->second.first, 1.0f, iter->second.second * _dosingMillis) != TASKMGR_INVALIDID) {
-                _dosingActIndex++;
-                continue;
-            } else {
-                break;
-            }
+            if (iter != actuatorsDir.end()) {
+                auto actuator = static_pointer_cast<HydroponicsActuator>(iter->second.first);
+                time_t timeMillis = iter->second.second * _dosingMillis;
+
+                if (actuator && actuator->isAnyPumpClass()) {
+                    ((HydroponicsPumpObjectInterface *)(actuator.get()))->pump(timeMillis); // pumps have nice logging output
+                } else if (actuator) {
+                    #ifndef HYDRUINO_DISABLE_MULTITASKING
+                        scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(actuator), timeMillis);
+                        _dosingActIndex++;
+                    #else
+                        actuator->enableActuator();
+                        delayFine(timeMillis);
+                        actuator->disableActuator();
+                        _dosingActIndex++;
+                        break; // only once per call
+                    #endif
+                }
+            } else { break; }
         }
 
         if (_dosingActIndex >= actuatorsDir.size()) {
-            _dosingActIndex = -1; // Dosing completed
+            _dosingActIndex = -1; // dosing completed
         }
     }
 }
@@ -303,7 +321,7 @@ void HydroponicsTimedDosingBalancer::performDosing()
         }
 
         float dosingMillis = _baseDosingMillis;
-        auto dosingValue = measurementValueAt(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+        auto dosingValue = getMeasurementValue(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
         if (_dosingMillis) {
             auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosingMillis;
             dosingMillis = (_targetSetpoint - dosingValue) * dosingRatePerMs;

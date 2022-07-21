@@ -237,7 +237,11 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool override)
 
         if (_enabled != wasEnabledBefore) {
             getLoggerInstance()->logActivation(this);
-            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+            #else
+                _activateSignal.fire(this);
+            #endif
         }
     }
     return _enabled;
@@ -255,7 +259,11 @@ void HydroponicsRelayActuator::disableActuator()
 
         if (_enabled != wasEnabledBefore) {
             getLoggerInstance()->logDeactivation(this);
-            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+            #else
+                _activateSignal.fire(this);
+            #endif
         }
     }
 }
@@ -290,8 +298,8 @@ HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(const HydroponicsPump
     : HydroponicsRelayActuator(dataIn), _needsFlowRate(true), _pumpTimeAccMillis(0),
       _flowRateUnits(definedUnitsElse(dataIn->flowRateUnits, defaultLiquidFlowUnits())),
       _contFlowRate(&(dataIn->contFlowRate)),
-      _outputReservoir(dataIn->outputReservoirName),
-      _flowRateSensor(dataIn->flowRateSensorName)
+      _outputReservoir(dataIn->outputReservoir),
+      _flowRateSensor(dataIn->flowRateSensor)
 { ; }
 
 HydroponicsPumpRelayActuator::~HydroponicsPumpRelayActuator()
@@ -389,10 +397,17 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
 {
     auto reservoir = getReservoir();
     if (reservoir) {
-        if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
+        #ifndef HYDRUINO_DISABLE_MULTITASKING
+            if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
+                getLoggerInstance()->logEstimatedPumping(this, "TODO");
+                return true;
+            }
+        #else
             getLoggerInstance()->logEstimatedPumping(this, "TODO");
-            return true;
-        }
+            enableActuator();
+            delayFine(timeMillis);
+            disableActuator();
+        #endif
     }
     return false;
 }
@@ -532,10 +547,10 @@ void HydroponicsPumpRelayActuator::saveToData(HydroponicsData *dataOut)
         _contFlowRate.saveToData(&(((HydroponicsPumpRelayActuatorData *)dataOut)->contFlowRate));
     }
     if (_outputReservoir.getId()) {
-        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->outputReservoirName, _outputReservoir.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->outputReservoir, _outputReservoir.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     if (_flowRateSensor.getId()) {
-        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->flowRateSensorName, _flowRateSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->flowRateSensor, _flowRateSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
 }
 
@@ -618,7 +633,7 @@ void HydroponicsPumpRelayActuator::detachFlowRateSensor()
 void HydroponicsPumpRelayActuator::handleFlowRateMeasure(const HydroponicsMeasurement *measurement)
 {
     if (measurement && measurement->frame && _enabled) {
-        setFlowRate(singleMeasurementAt(measurement, 0, _contFlowRate.value, _flowRateUnits));
+        setFlowRate(getAsSingleMeasurement(measurement, 0, _contFlowRate.value, _flowRateUnits));
     }
 }
 
@@ -668,7 +683,12 @@ bool HydroponicsPWMActuator::enableActuator(float intensity, bool override)
 
         if (_enabled != wasEnabledBefore) {
             getLoggerInstance()->logActivation(this);
-            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+            #else
+                _activateSignal.fire(this);
+            #endif
         }
     }
     return _enabled;
@@ -685,7 +705,12 @@ void HydroponicsPWMActuator::disableActuator()
 
     if (_enabled != wasEnabledBefore) {
         getLoggerInstance()->logDeactivation(this);
-        scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+
+        #ifndef HYDRUINO_DISABLE_MULTITASKING
+            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+        #else
+            _activateSignal.fire(this);
+        #endif
     }
 }
 
@@ -752,12 +777,12 @@ void HydroponicsActuatorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsObjectData::toJSONObject(objectOut);
 
     if (isValidPin(outputPin)) { objectOut[SFP(HS_Key_OutputPin)] = outputPin; }
-    if (contPowerDraw.type != -1) {
+    if (contPowerDraw.value > FLT_EPSILON) {
         JsonObject contPowerDrawObj = objectOut.createNestedObject(SFP(HS_Key_ContPowerDraw));
         contPowerDraw.toJSONObject(contPowerDrawObj);
     }
-    if (railName[0]) { objectOut[SFP(HS_Key_RailName)] = stringFromChars(railName, HYDRUINO_NAME_MAXSIZE); }
-    if (reservoirName[0]) { objectOut[SFP(HS_Key_ReservoirName)] = stringFromChars(reservoirName, HYDRUINO_NAME_MAXSIZE); }
+    if (railName[0]) { objectOut[SFP(HS_Key_Rail)] = stringFromChars(railName, HYDRUINO_NAME_MAXSIZE); }
+    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = stringFromChars(reservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -767,10 +792,10 @@ void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
     outputPin = objectIn[SFP(HS_Key_OutputPin)] | outputPin;
     JsonVariantConst contPowerDrawVar = objectIn[SFP(HS_Key_ContPowerDraw)];
     if (!contPowerDrawVar.isNull()) { contPowerDraw.fromJSONVariant(contPowerDrawVar); }
-    const char *railNameStr = objectIn[SFP(HS_Key_RailName)];
-    if (railNameStr && railNameStr[0]) { strncpy(railName, railNameStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *reservoirNameStr = objectIn[SFP(HS_Key_ReservoirName)];
-    if (reservoirNameStr && reservoirNameStr[0]) { strncpy(reservoirName, reservoirNameStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *railStr = objectIn[SFP(HS_Key_Rail)];
+    if (railStr && railStr[0]) { strncpy(railName, railStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *reservoirStr = objectIn[SFP(HS_Key_Reservoir)];
+    if (reservoirStr && reservoirStr[0]) { strncpy(reservoirName, reservoirStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
 HydroponicsRelayActuatorData::HydroponicsRelayActuatorData()
@@ -794,7 +819,7 @@ void HydroponicsRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsPumpRelayActuatorData::HydroponicsPumpRelayActuatorData()
-    : HydroponicsRelayActuatorData(), flowRateUnits(Hydroponics_UnitsType_Undefined), contFlowRate(), outputReservoirName{0}, flowRateSensorName{0}
+    : HydroponicsRelayActuatorData(), flowRateUnits(Hydroponics_UnitsType_Undefined), contFlowRate(), outputReservoir{0}, flowRateSensor{0}
 {
     _size = sizeof(*this);
 }
@@ -804,12 +829,12 @@ void HydroponicsPumpRelayActuatorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsRelayActuatorData::toJSONObject(objectOut);
 
     if (flowRateUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_FlowRateUnits)] = unitsTypeToSymbol(flowRateUnits); }
-    if (contFlowRate.type != -1) {
+    if (contFlowRate.value > FLT_EPSILON) {
         JsonObject contFlowRateObj = objectOut.createNestedObject(SFP(HS_Key_ContFlowRate));
         contFlowRate.toJSONObject(contFlowRateObj);
     }
-    if (outputReservoirName[0]) { objectOut[SFP(HS_Key_OutputReservoirName)] = stringFromChars(outputReservoirName, HYDRUINO_NAME_MAXSIZE); }
-    if (flowRateSensorName[0]) { objectOut[SFP(HS_Key_FlowRateSensorName)] = stringFromChars(flowRateSensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (outputReservoir[0]) { objectOut[SFP(HS_Key_OutputReservoir)] = stringFromChars(outputReservoir, HYDRUINO_NAME_MAXSIZE); }
+    if (flowRateSensor[0]) { objectOut[SFP(HS_Key_FlowRateSensor)] = stringFromChars(flowRateSensor, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -819,10 +844,10 @@ void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
     flowRateUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_FlowRateUnits)]);
     JsonVariantConst contFlowRateVar = objectIn[SFP(HS_Key_ContFlowRate)];
     if (!contFlowRateVar.isNull()) { contFlowRate.fromJSONVariant(contFlowRateVar); }
-    const char *outputReservoirNameStr = objectIn[SFP(HS_Key_OutputReservoirName)];
-    if (outputReservoirNameStr && outputReservoirNameStr[0]) { strncpy(outputReservoirName, outputReservoirNameStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *flowRateSensorNameStr = objectIn[SFP(HS_Key_FlowRateSensorName)];
-    if (flowRateSensorNameStr && flowRateSensorNameStr[0]) { strncpy(flowRateSensorName, flowRateSensorNameStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *outputReservoirStr = objectIn[SFP(HS_Key_OutputReservoir)];
+    if (outputReservoirStr && outputReservoirStr[0]) { strncpy(outputReservoir, outputReservoirStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *flowRateSensorStr = objectIn[SFP(HS_Key_FlowRateSensor)];
+    if (flowRateSensorStr && flowRateSensorStr[0]) { strncpy(flowRateSensor, flowRateSensorStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
 HydroponicsPWMActuatorData::HydroponicsPWMActuatorData()

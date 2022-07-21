@@ -182,7 +182,7 @@ public:
     virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> waterPHSensor) override;
     virtual shared_ptr<HydroponicsSensor> getWaterPHSensor() override;
 
-    virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_pHScale_0_14) override;
+    virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_Alkalinity_pH_0_14) override;
     virtual void setWaterPH(HydroponicsSingleMeasurement waterPH) override;
     virtual const HydroponicsSingleMeasurement &getWaterPH() override;
 
@@ -339,7 +339,7 @@ struct HydroponicsReservoirData : public HydroponicsObjectData {
 // Fluid Reservoir Serialization Data
 struct HydroponicsFluidReservoirData : public HydroponicsReservoirData {
     float maxVolume;
-    char volumeSensorName[HYDRUINO_NAME_MAXSIZE];
+    char volumeSensor[HYDRUINO_NAME_MAXSIZE];
     HydroponicsTriggerSubData filledTrigger;
     HydroponicsTriggerSubData emptyTrigger;
 
@@ -356,11 +356,11 @@ struct HydroponicsFeedReservoirData : public HydroponicsFluidReservoirData {
     uint8_t numFeedingsToday;
     Hydroponics_UnitsType tdsUnits;
     Hydroponics_UnitsType tempUnits;
-    char waterPHSensorName[HYDRUINO_NAME_MAXSIZE];
-    char waterTDSSensorName[HYDRUINO_NAME_MAXSIZE];
-    char waterTempSensorName[HYDRUINO_NAME_MAXSIZE];
-    char airTempSensorName[HYDRUINO_NAME_MAXSIZE];
-    char airCO2SensorName[HYDRUINO_NAME_MAXSIZE];
+    char waterPHSensor[HYDRUINO_NAME_MAXSIZE];
+    char waterTDSSensor[HYDRUINO_NAME_MAXSIZE];
+    char waterTempSensor[HYDRUINO_NAME_MAXSIZE];
+    char airTempSensor[HYDRUINO_NAME_MAXSIZE];
+    char airCO2Sensor[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsFeedReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

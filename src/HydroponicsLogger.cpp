@@ -183,20 +183,16 @@ HydroponicsLogLevel HydroponicsLogger::getLogLevel() const
 bool HydroponicsLogger::getIsLoggingEnabled() const
 {
     HYDRUINO_SOFT_ASSERT(_loggerData, SFP(HS_Err_NotYetInitialized));
-    return _loggerData && (_loggerData->logToSDCard);
+    return _loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None &&
+           (_loggerData->logToSDCard);
 }
 
 void HydroponicsLogger::notifyDayChanged()
 {
     if (getIsLoggingEnabled()) {
-        regenLogFileName();
+        _logFileName = getYYMMDDFilename(stringFromChars(_loggerData->logFilePrefix, 16), SFP(HS_txt));
         cleanupOldestLogs();
     }
-}
-
-String HydroponicsLogger::regenLogFileName()
-{
-   return _loggerData ? (_logFileName = getYYMMDDFilename(stringFromChars(_loggerData->logFilePrefix, 16), SFP(HS_txt))) : String();
 }
 
 void HydroponicsLogger::cleanupOldestLogs(bool force)
@@ -207,16 +203,18 @@ void HydroponicsLogger::cleanupOldestLogs(bool force)
 
 HydroponicsLoggerSubData::HydroponicsLoggerSubData()
     : HydroponicsSubData() // TODO
-{ ; }
+{
+    type = 0; // no type differentiation
+}
 
 void HydroponicsLoggerSubData::toJSONObject(JsonObject &objectOut) const
 {
-    // purposeful no call to base method (ignores type)
+    //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
     // TODO
 }
 
 void HydroponicsLoggerSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    // purposeful no call to base method (ignores type)
+    //HydroponicsSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
     // TODO
 }

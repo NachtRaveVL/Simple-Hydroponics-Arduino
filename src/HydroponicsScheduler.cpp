@@ -477,7 +477,9 @@ bool HydroponicsScheduler::getInDaytimeMode() const
 
 void HydroponicsScheduler::performScheduling()
 {
-    for (auto iter = getHydroponicsInstance()->_objects.begin(); iter != getHydroponicsInstance()->_objects.end(); ++iter) {
+    auto hydroponics = getHydroponicsInstance();
+
+    for (auto iter = hydroponics->_objects.begin(); iter != hydroponics->_objects.end(); ++iter) {
         if (iter->second && iter->second->isReservoirType()) {
             auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
             if (reservoir && reservoir->isFeedClass()) {
@@ -527,10 +529,11 @@ void HydroponicsScheduler::performScheduling()
 
 void HydroponicsScheduler::broadcastDayChange()
 {
-    setNeedsScheduling();
     _lastDayNum = getCurrentTime().day();
+    setNeedsScheduling();
+    auto hydroponics = getHydroponicsInstance();
 
-    for (auto iter = getHydroponicsInstance()->_objects.begin(); iter != getHydroponicsInstance()->_objects.end(); ++iter) {
+    for (auto iter = hydroponics->_objects.begin(); iter != hydroponics->_objects.end(); ++iter) {
         if (iter->second) {
             if (iter->second->isReservoirType()) {
                 auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
@@ -545,8 +548,8 @@ void HydroponicsScheduler::broadcastDayChange()
         }
     }
 
-    getHydroponicsInstance()->_logger.notifyDayChanged();
-    getHydroponicsInstance()->_publisher.notifyDayChanged();
+    hydroponics->_logger.notifyDayChanged();
+    hydroponics->_publisher.notifyDayChanged();
 }
 
 
@@ -622,7 +625,7 @@ void HydroponicsFeeding::recalcFeeding()
     airTempSetpoint = totalSetpoints[3] / totalWeights;
     co2Setpoint = totalSetpoints[4] / totalWeights;
 
-    if (feedRes->getWaterPHBalancer()) { feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_pHScale_0_14); }
+    if (feedRes->getWaterPHBalancer()) { feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14); }
     if (feedRes->getWaterTDSBalancer()) { feedRes->setWaterTDSBalancer(tdsSetpoint, Hydroponics_UnitsType_Concentration_EC); }
     if (feedRes->getWaterTempBalancer()) { feedRes->setWaterTempBalancer(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius); }
     if (feedRes->getAirTempBalancer()) { feedRes->setAirTempBalancer(airTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius); }
@@ -635,7 +638,7 @@ void HydroponicsFeeding::setupStaging()
 
     if (stage == PreFeed) {
         if (feedRes->getWaterPHSensor()) {
-            auto phBalancer = feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_pHScale_0_14);
+            auto phBalancer = feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
             if (phBalancer) {
                 getSchedulerInstance()->setupWaterPHBalancer(feedRes.get(), phBalancer);
                 phBalancer->setEnabled(true);
@@ -1035,11 +1038,13 @@ void HydroponicsLighting::update()
 
 HydroponicsSchedulerSubData::HydroponicsSchedulerSubData()
     : HydroponicsSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, stdDosingRates{1.0f,0.5f,0.5f}, totalFeedingsDay(0), preFeedAeratorMins(30), preLightSprayMins(60)
-{ ; }
+{
+    type = 0; // no type differentiation
+}
 
 void HydroponicsSchedulerSubData::toJSONObject(JsonObject &objectOut) const
 {
-    // purposeful no call to base method (ignores type)
+    //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
     if (!isFPEqual(baseFeedMultiplier, 1.0f)) { objectOut[SFP(HS_Key_BaseFeedMultiplier)] = baseFeedMultiplier; }
     bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX, 1.0f);
@@ -1053,7 +1058,7 @@ void HydroponicsSchedulerSubData::toJSONObject(JsonObject &objectOut) const
 
 void HydroponicsSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    // purposeful no call to base method (ignores type)
+    //HydroponicsSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
 
     baseFeedMultiplier = objectIn[SFP(HS_Key_BaseFeedMultiplier)] | baseFeedMultiplier;
     JsonVariantConst weeklyDosingRatesVar = objectIn[SFP(HS_Key_WeeklyDosingRates)];

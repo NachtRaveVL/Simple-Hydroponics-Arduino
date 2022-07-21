@@ -25,8 +25,10 @@ struct HydroponicsDSTemperatureSensorData;
 // Creates sensor object from passed sensor data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn);
 
-// Returns default measurement units to use based on sensorType and measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default measurement units to use based on sensorType, optional row index, and measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
+extern Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow = 0, Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+// Returns default measurement category to use based on sensorType and optional row index (note: this may not accurately produce the correct category, e.g. an ultrasonic distance sensor being used for distance and not volume).
+extern Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow = 0);
 
 
 // Hydroponics Sensor Base
@@ -160,7 +162,7 @@ protected:
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
-    void _takeMeasurement(taskid_t taskId);
+    void _takeMeasurement(unsigned int taskId);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -238,7 +240,7 @@ protected:
     HydroponicsTripleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits[3];             // Measurement units preferred
 
-    void _takeMeasurement(taskid_t taskId);
+    void _takeMeasurement(unsigned int taskId);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -272,7 +274,7 @@ protected:
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
-    void _takeMeasurement(taskid_t taskId);
+    void _takeMeasurement(unsigned int taskId);
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };

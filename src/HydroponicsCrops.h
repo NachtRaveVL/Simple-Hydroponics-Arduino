@@ -189,7 +189,7 @@ struct HydroponicsCropData : public HydroponicsObjectData
 {
     Hydroponics_SubstrateType substrateType;
     time_t sowDate;
-    char feedReservoirName[HYDRUINO_NAME_MAXSIZE];
+    char feedReservoir[HYDRUINO_NAME_MAXSIZE];
     float feedingWeight;
 
     HydroponicsCropData();
@@ -212,7 +212,7 @@ struct HydroponicsTimedCropData : public HydroponicsCropData
 struct HydroponicsAdaptiveCropData : public HydroponicsCropData
 {
     Hydroponics_UnitsType moistureUnits;
-    char moistureSensorName[HYDRUINO_NAME_MAXSIZE];
+    char moistureSensor[HYDRUINO_NAME_MAXSIZE];
     HydroponicsTriggerSubData feedingTrigger;
 
     HydroponicsAdaptiveCropData();

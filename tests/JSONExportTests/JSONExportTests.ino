@@ -1,7 +1,6 @@
 // JSON export tests
 
 #include <Hydroponics.h>
-#include <TaskScheduler.h>
 
 Hydroponics hydroController;
 
