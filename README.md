@@ -28,7 +28,7 @@ You can pretty much do everything this controller does using the Cloud, a few Io
 
 Few have seen the value in putting to use the heaps of old, cheap, slow Arduinos that we all have laying around doing absolutely nothing. But as time has passed, the prices of MCUs have sharply risen. Add in a global chip manufacturing crisis, a pandemic, massive inflation, food shortages, etc., it then becomes a little more apparent that it's overkill to use a costly RasPi to turn a bunch of relays on and off.
 
-For devices at scale in today's world, a cheap, readily available, reliable MCU can meet these new challenges. You don't need the shiny fast red sports car version when you're turning on and off switches. Be it Arduino, ESP32, RasPico, or others, cheaper MCUs have exploded in popularity, and rightfully so. This project aims to take advantage of these while keeping costs down so that everyone can more easily access hydroponics.
+For devices at scale in today's world, a cheap, readily available, reliable MCU can meet these new challenges. You don't need the shiny fast red sports car version when you're turning on and off switches. Be it Arduino, ESP32, RasPi Pico, or others, cheaper MCUs have exploded in popularity, and rightfully so. This project aims to take advantage of these while keeping costs down so that everyone can more easily access hydroponics.
 
 ## Controller Setup
 
@@ -46,7 +46,17 @@ Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=6
 
 From Hydroponics.h:
 ```Arduino
-// TODO: Reinclude this example after modifications completed. -NR
+// Uncomment or -D this define to completely disable usage of any multitasking commands and libraries. Not recommended.
+//#define HYDRUINO_DISABLE_MULTITASKING             // https://github.com/davetcc/TaskManagerIO
+
+// Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
+//#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
+
+// Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
+//#define HYDRUINO_ENABLE_DEBUG_OUTPUT
+
+// Uncomment or -D this define to disable debug assertions.
+//#define HYDRUINO_DISABLE_DEBUG_ASSERTIONS
 ```
 
 ### Controller Initialization
