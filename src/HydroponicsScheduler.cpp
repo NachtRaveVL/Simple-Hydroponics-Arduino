@@ -488,6 +488,7 @@ void HydroponicsScheduler::performScheduling()
                 if (feedReservoir) {
                     {   auto feedingIter = _feedings.find(feedReservoir->getKey());
                         auto crops = feedReservoir->getCrops();
+
                         if (crops.size()) {
                             if (feedingIter != _feedings.end()) {
                                 if (feedingIter->second) { feedingIter->second->recalcFeeding(); }
@@ -504,6 +505,7 @@ void HydroponicsScheduler::performScheduling()
 
                     {   auto lightingIter = _lightings.find(feedReservoir->getKey());
                         auto actuators = feedReservoir->getActuators();
+
                         if (actuators.size() &&
                             (linksFilterActuatorsByType(actuators, Hydroponics_ActuatorType_GrowLights).size() ||
                              linksFilterActuatorsByType(actuators, Hydroponics_ActuatorType_WaterSprayer).size())) {
@@ -592,7 +594,8 @@ void HydroponicsFeeding::recalcFeeding()
         auto cropsLibData = crop ? getCropsLibraryInstance()->checkoutCropsData(crop->getCropType()) : nullptr;
 
         if (cropsLibData) {
-            totalWeights += crop->getFeedingWeight();
+            float weight = crop->getFeedingWeight();
+            totalWeights += weight;
 
             float feedRate = ((cropsLibData->tdsRange[0] + cropsLibData->tdsRange[1]) * 0.5);
             if (!getSchedulerInstance()->getInDaytimeMode()) {
@@ -600,11 +603,11 @@ void HydroponicsFeeding::recalcFeeding()
             }
             feedRate *= getSchedulerInstance()->getBaseFeedMultiplier();
 
-            totalSetpoints[0] += ((cropsLibData->phRange[0] + cropsLibData->phRange[1]) * 0.5);
-            totalSetpoints[1] += feedRate;
-            totalSetpoints[2] += ((cropsLibData->waterTempRange[0] + cropsLibData->waterTempRange[1]) * 0.5);
-            totalSetpoints[3] += ((cropsLibData->airTempRange[0] + cropsLibData->airTempRange[1]) * 0.5);
-            totalSetpoints[4] += cropsLibData->co2Levels[(crop->getCropPhase() <= Hydroponics_CropPhase_Vegetative ? 0 : 1)];
+            totalSetpoints[0] += ((cropsLibData->phRange[0] + cropsLibData->phRange[1]) * 0.5) * weight;
+            totalSetpoints[1] += feedRate * weight;
+            totalSetpoints[2] += ((cropsLibData->waterTempRange[0] + cropsLibData->waterTempRange[1]) * 0.5) * weight;
+            totalSetpoints[3] += ((cropsLibData->airTempRange[0] + cropsLibData->airTempRange[1]) * 0.5) * weight;
+            totalSetpoints[4] += cropsLibData->co2Levels[(crop->getCropPhase() <= Hydroponics_CropPhase_Vegetative ? 0 : 1)] * weight;
 
             getCropsLibraryInstance()->returnCropsData(cropsLibData);
         }
@@ -815,7 +818,7 @@ void HydroponicsFeeding::update()
         } break;
 
         case TopOff: {
-            if (feedRes->getIsFilled()) {
+            if (feedRes->getIsFilled() || !actuatorReqs.size()) {
                 stage = PreFeed; stageStart = now();
                 setupStaging();
             }
