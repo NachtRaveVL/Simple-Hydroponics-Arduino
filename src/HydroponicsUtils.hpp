@@ -18,6 +18,8 @@ shared_ptr<T> HydroponicsDLinkObject<T>::getObj() {
     return obj;
 }
 
+#ifndef HYDRUINO_DISABLE_MULTITASKING
+
 template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {
@@ -71,6 +73,8 @@ taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (Object
     taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (callTask ? (callTask->taskId = (callTask->_callParam = retVal)) : retVal);
 }
+
+#endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
 
 
 template<typename T>

@@ -67,7 +67,7 @@ protected:
     friend class Hydroponics;
 
     void log(String msg);
-    String regenLogFileName();
+
     void cleanupOldestLogs(bool force = false);
 };
 

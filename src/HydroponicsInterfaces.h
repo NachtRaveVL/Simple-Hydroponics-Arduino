@@ -289,7 +289,7 @@ public:
     virtual void setWaterPHSensor(shared_ptr<HydroponicsSensor> waterPHSensor) = 0;
     virtual shared_ptr<HydroponicsSensor> getWaterPHSensor() = 0;
 
-    virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_pHScale_0_14) = 0;
+    virtual void setWaterPH(float waterPH, Hydroponics_UnitsType waterPHUnits = Hydroponics_UnitsType_Alkalinity_pH_0_14) = 0;
     virtual void setWaterPH(HydroponicsSingleMeasurement waterPH) = 0;
     virtual const HydroponicsSingleMeasurement &getWaterPH() = 0;
 };

@@ -28,7 +28,7 @@ HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn)
     return nullptr;
 }
 
-Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, Hydroponics_MeasurementMode measureMode)
+Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow, Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
         auto hydroponics = getHydroponicsInstance();
@@ -37,7 +37,7 @@ Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType se
 
     switch (sensorType) {
         case Hydroponics_SensorType_PotentialHydrogen:
-            return Hydroponics_UnitsType_pHScale_0_14;
+            return Hydroponics_UnitsType_Alkalinity_pH_0_14;
         case Hydroponics_SensorType_TotalDissolvedSolids:
         case Hydroponics_SensorType_SoilMoisture:
             return Hydroponics_UnitsType_Concentration_EC;
@@ -48,6 +48,7 @@ Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType se
             return Hydroponics_UnitsType_Concentration_PPM;
         case Hydroponics_SensorType_WaterPumpFlowSensor:
             return defaultLiquidFlowUnits(measureMode);
+        case Hydroponics_SensorType_WaterLevelIndicator:
         case Hydroponics_SensorType_WaterHeightMeter:
             return defaultDistanceUnits(measureMode);
         case Hydroponics_SensorType_PowerUsageMeter:
@@ -55,6 +56,38 @@ Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType se
         default:
             return Hydroponics_UnitsType_Undefined;
     }
+}
+
+Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow)
+{
+    switch (sensorType) {
+        case Hydroponics_SensorType_PotentialHydrogen:
+            return Hydroponics_UnitsCategory_Alkalinity;
+        case Hydroponics_SensorType_TotalDissolvedSolids:
+            return Hydroponics_UnitsCategory_DissolvedSolids;
+        case Hydroponics_SensorType_SoilMoisture:
+            return Hydroponics_UnitsCategory_SoilMoisture;
+        case Hydroponics_SensorType_WaterTemperature:
+            return Hydroponics_UnitsCategory_LiqTemperature;
+        case Hydroponics_SensorType_WaterPumpFlowSensor:
+            return Hydroponics_UnitsCategory_LiqFlowRate;
+        case Hydroponics_SensorType_WaterLevelIndicator:
+        case Hydroponics_SensorType_WaterHeightMeter:
+            return Hydroponics_UnitsCategory_LiqVolume;
+        case Hydroponics_SensorType_AirTempHumidity:
+            switch (measurementRow) {
+                case 0: return Hydroponics_UnitsCategory_AirTemperature;
+                case 1: return Hydroponics_UnitsCategory_AirHumidity;
+                case 2: return Hydroponics_UnitsCategory_AirHeatIndex;
+                default: break;
+            }
+        case Hydroponics_SensorType_AirCarbonDioxide:
+            return Hydroponics_UnitsCategory_AirConcentration;
+        case Hydroponics_SensorType_PowerUsageMeter:
+            return Hydroponics_UnitsCategory_Power;
+        default: break;
+    }
+    return Hydroponics_UnitsCategory_Undefined;
 }
 
 
@@ -254,9 +287,18 @@ bool HydroponicsBinarySensor::takeMeasurement(bool override)
 
         _lastMeasurement = HydroponicsBinaryMeasurement(state, timestamp);
 
-        scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+        #ifndef HYDRUINO_DISABLE_MULTITASKING
+            scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+        #else
+            _measureSignal.fire(&_lastMeasurement);
+        #endif
+
         if (state != stateBefore) {
-            scheduleSignalFireOnce<bool>(getSharedPtr(), _stateSignal, _lastMeasurement.state);
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<bool>(getSharedPtr(), _stateSignal, _lastMeasurement.state);
+            #else
+                _stateSignal.fire(_lastMeasurement.state);
+            #endif
         }
 
         _isTakingMeasure = false;
@@ -280,10 +322,12 @@ Hydroponics_UnitsType HydroponicsBinarySensor::getMeasurementUnits(byte measurem
 
 bool HydroponicsBinarySensor::tryRegisterAsISR()
 {
-    if (!_usingISR && checkPinCanInterrupt(_inputPin)) {
-        taskManager.addInterrupt(&interruptImpl, _inputPin, CHANGE);
-        _usingISR = true;
-    }
+    #ifndef HYDRUINO_DISABLE_MULTITASKING
+        if (!_usingISR && checkPinCanInterrupt(_inputPin)) {
+            taskManager.addInterrupt(&interruptImpl, _inputPin, CHANGE);
+            _usingISR = true;
+        }
+    #endif
     return _usingISR;
 }
 
@@ -349,16 +393,17 @@ bool HydroponicsAnalogSensor::takeMeasurement(bool override)
             if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsAnalogSensor>(this), &_takeMeasurement) != TASKMGR_INVALIDID) {
                 return true;
             } else {
+                HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
                 _isTakingMeasure = false;
             }
         #else
-            _takeMeasurement(TASKMGR_INVALIDID);
+            _takeMeasurement(0xffffU);
         #endif
     }
     return false;
 }
 
-void HydroponicsAnalogSensor::_takeMeasurement(taskid_t taskId)
+void HydroponicsAnalogSensor::_takeMeasurement(unsigned int taskId)
 {
     if (_isTakingMeasure && isValidPin(_inputPin)) {
         if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
@@ -383,7 +428,8 @@ void HydroponicsAnalogSensor::_takeMeasurement(taskid_t taskId)
                     analogReadResolution(_inputResolution.bitRes);
                 #endif
                 rawRead = analogRead(_inputPin);
-            #endif
+            #endif // /if HYDRUINO_SENSOR_ANALOGREAD_SAMPLES > 1
+
             if (_inputInversion) { rawRead = _inputResolution.maxVal - rawRead; }
             auto timestamp = now();
 
@@ -400,7 +446,12 @@ void HydroponicsAnalogSensor::_takeMeasurement(taskid_t taskId)
             convertUnits(&newMeasurement, outUnits);
 
             _lastMeasurement = newMeasurement;
-            scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+            #else
+                _measureSignal.fire(&_lastMeasurement);
+            #endif
 
             getHydroponicsInstance()->returnPinLock(_inputPin);
             _isTakingMeasure = false;
@@ -634,16 +685,17 @@ bool HydroponicsDHTTempHumiditySensor::takeMeasurement(bool override)
             if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDHTTempHumiditySensor>(this), &_takeMeasurement) != TASKMGR_INVALIDID) {
                 return true;
             } else {
+                HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
                 _isTakingMeasure = false;
             }
         #else
-            _takeMeasurement(TASKMGR_INVALIDID);
+            _takeMeasurement(0xffffU);
         #endif
     }
     return false;
 }
 
-void HydroponicsDHTTempHumiditySensor::_takeMeasurement(taskid_t taskId)
+void HydroponicsDHTTempHumiditySensor::_takeMeasurement(unsigned int taskId)
 {
     if (_isTakingMeasure && _dht) {
         if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
@@ -684,7 +736,12 @@ void HydroponicsDHTTempHumiditySensor::_takeMeasurement(taskid_t taskId)
             }
 
             _lastMeasurement = newMeasurement;
-            scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+            #else
+                _measureSignal.fire(&_lastMeasurement);
+            #endif
 
             getHydroponicsInstance()->returnPinLock(_inputPin);
             _isTakingMeasure = false;
@@ -819,16 +876,17 @@ bool HydroponicsDSTemperatureSensor::takeMeasurement(bool override)
             if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDSTemperatureSensor>(this), &_takeMeasurement) != TASKMGR_INVALIDID) {
                 return true;
             } else {
+                HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
                 _isTakingMeasure = false;
             }
         #else
-            _takeMeasurement(TASKMGR_INVALIDID);
+            _takeMeasurement(0xffffU);
         #endif
     }
     return false;
 }
 
-void HydroponicsDSTemperatureSensor::_takeMeasurement(taskid_t taskId)
+void HydroponicsDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
 {
     if (_isTakingMeasure && _dt) {
         if (getHydroponicsInstance()->tryGetPinLock(_inputPin, 5)) {
@@ -860,7 +918,11 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(taskid_t taskId)
                     convertUnits(&newMeasurement, outUnits);
 
                     _lastMeasurement = newMeasurement;
-                    scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+                    #ifndef HYDRUINO_DISABLE_MULTITASKING
+                        scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
+                    #else
+                        _measureSignal.fire(&_lastMeasurement);
+                    #endif
                 }
             } else {
                 HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_MeasurementFailure)); // device disconnected or no device by that addr
@@ -931,8 +993,8 @@ void HydroponicsSensorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsObjectData::toJSONObject(objectOut);
 
     if (isValidPin(inputPin)) { objectOut[SFP(HS_Key_InputPin)] = inputPin; }
-    if (cropName[0]) { objectOut[SFP(HS_Key_CropName)] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE); }
-    if (reservoirName[0]) { objectOut[SFP(HS_Key_ReservoirName)] = stringFromChars(reservoirName, HYDRUINO_NAME_MAXSIZE); }
+    if (cropName[0]) { objectOut[SFP(HS_Key_Crop)] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE); }
+    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = stringFromChars(reservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsSensorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -940,10 +1002,10 @@ void HydroponicsSensorData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsObjectData::fromJSONObject(objectIn);
 
     inputPin = objectIn[SFP(HS_Key_InputPin)] | inputPin;
-    const char *cropNameStr = objectIn[SFP(HS_Key_CropName)];
-    if (cropNameStr && cropNameStr[0]) { strncpy(cropName, cropNameStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *reservoirNameStr = objectIn[SFP(HS_Key_ReservoirName)];
-    if (reservoirNameStr && reservoirNameStr[0]) { strncpy(reservoirName, reservoirNameStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *cropStr = objectIn[SFP(HS_Key_Crop)];
+    if (cropStr && cropStr[0]) { strncpy(cropName, cropStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *reservoirStr = objectIn[SFP(HS_Key_Reservoir)];
+    if (reservoirStr && reservoirStr[0]) { strncpy(reservoirName, reservoirStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
 HydroponicsBinarySensorData::HydroponicsBinarySensorData()

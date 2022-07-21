@@ -191,8 +191,8 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMe
         if (measurement->isBinaryType()) {
             newState = ((HydroponicsBinaryMeasurement *)measurement)->state != _triggerBelow;
         } else {
-            auto measurementValue = measurementValueAt(measurement, _measurementRow);
-            auto measurementUnits = measurementUnitsAt(measurement, _measurementRow);
+            auto measurementValue = getMeasurementValue(measurement, _measurementRow);
+            auto measurementUnits = getMeasurementUnits(measurement, _measurementRow);
 
             convertUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
@@ -206,7 +206,12 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMe
         if ((_triggerState == Hydroponics_TriggerState_Disabled) ||
             (newState != (_triggerState == Hydroponics_TriggerState_Triggered))) {
             _triggerState = newState ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered;
-            scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
+
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
+            #else
+                _triggerSignal.fire(_triggerState);
+            #endif
         }
     }
 }
@@ -302,8 +307,8 @@ void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMe
     if (measurement && measurement->frame) {
         _needsSensorUpdate = false;
         bool newState = (_triggerState == Hydroponics_TriggerState_Triggered);
-        auto measurementValue = measurementValueAt(measurement, _measurementRow);
-        auto measurementUnits = measurementUnitsAt(measurement, _measurementRow);
+        auto measurementValue = getMeasurementValue(measurement, _measurementRow);
+        auto measurementUnits = getMeasurementUnits(measurement, _measurementRow);
 
         convertUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
@@ -322,7 +327,12 @@ void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMe
         if ((_triggerState == Hydroponics_TriggerState_Disabled) ||
             (newState != (_triggerState == Hydroponics_TriggerState_Triggered))) {
             _triggerState = newState ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered;
-            scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
+
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<Hydroponics_TriggerState>(_triggerSignal, _triggerState);
+            #else
+                _triggerSignal.fire(_triggerState);
+            #endif
         }
     }
 }
@@ -336,7 +346,7 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsSubData::toJSONObject(objectOut);
 
-    if (sensorName[0]) { objectOut[SFP(HS_Key_SensorName)] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (sensorName[0]) { objectOut[SFP(HS_Key_Sensor)] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
     if (measurementRow > 0) { objectOut[SFP(HS_Key_MeasurementRow)] = measurementRow; }
     switch (type) {
         case 0: // MeasureValue
@@ -358,8 +368,8 @@ void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsSubData::fromJSONObject(objectIn);
 
-    const char *sensorNameStr = objectIn[SFP(HS_Key_SensorName)];
-    if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *sensorStr = objectIn[SFP(HS_Key_Sensor)];
+    if (sensorStr && sensorStr[0]) { strncpy(sensorName, sensorStr, HYDRUINO_NAME_MAXSIZE); }
     measurementRow = objectIn[SFP(HS_Key_MeasurementRow)] | measurementRow;
     switch (type) {
         case 0: // MeasureValue

@@ -27,54 +27,59 @@ HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasure
     return nullptr;
 }
 
-float measurementValueAt(const HydroponicsMeasurement *measurementIn, int rowIndex, float binTrue)
+float getMeasurementValue(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow, float binTrue)
 {
-    if (measurementIn) {
-        switch (measurementIn->type) {
+    if (measurement) {
+        switch (measurement->type) {
             case 0: // Binary
-                if (rowIndex == 0) { return ((HydroponicsBinaryMeasurement *)measurementIn)->state ? binTrue : 0.0f; }
+                if (measurementRow == 0) { return ((HydroponicsBinaryMeasurement *)measurement)->state ? binTrue : 0.0f; }
             case 1: // Single
-                if (rowIndex == 0) { return ((HydroponicsSingleMeasurement *)measurementIn)->value; }
+                if (measurementRow == 0) { return ((HydroponicsSingleMeasurement *)measurement)->value; }
             case 2: // Double
-                if (rowIndex > 0 && rowIndex < 2) { return ((HydroponicsDoubleMeasurement *)measurementIn)->value[rowIndex]; }
+                if (measurementRow > 0 && measurementRow < 2) { return ((HydroponicsDoubleMeasurement *)measurement)->value[measurementRow]; }
             case 3: // Triple
-                if (rowIndex > 0 && rowIndex < 3) { return ((HydroponicsTripleMeasurement *)measurementIn)->value[rowIndex]; }
+                if (measurementRow > 0 && measurementRow < 3) { return ((HydroponicsTripleMeasurement *)measurement)->value[measurementRow]; }
             default: break;
         }
     }
     return 0.0f;
 }
 
-Hydroponics_UnitsType measurementUnitsAt(const HydroponicsMeasurement *measurementIn, int rowIndex, Hydroponics_UnitsType binUnits)
+Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow, Hydroponics_UnitsType binUnits)
 {
-    if (measurementIn) {
-        switch (measurementIn->type) {
+    if (measurement) {
+        switch (measurement->type) {
             case 0: // Binary
-                if (rowIndex == 0) { return binUnits; }
+                if (measurementRow == 0) { return binUnits; }
             case 1: // Single
-                if (rowIndex == 0) { return ((HydroponicsSingleMeasurement *)measurementIn)->units; }
+                if (measurementRow == 0) { return ((HydroponicsSingleMeasurement *)measurement)->units; }
             case 2: // Double
-                if (rowIndex > 0 && rowIndex < 2) { return ((HydroponicsDoubleMeasurement *)measurementIn)->units[rowIndex]; }
+                if (measurementRow > 0 && measurementRow < 2) { return ((HydroponicsDoubleMeasurement *)measurement)->units[measurementRow]; }
             case 3: // Triple
-                if (rowIndex > 0 && rowIndex < 3) { return ((HydroponicsTripleMeasurement *)measurementIn)->units[rowIndex]; }
+                if (measurementRow > 0 && measurementRow < 3) { return ((HydroponicsTripleMeasurement *)measurement)->units[measurementRow]; }
             default: break;
         }
     }
     return Hydroponics_UnitsType_Undefined;
 }
 
-HydroponicsSingleMeasurement singleMeasurementAt(const HydroponicsMeasurement *measurementIn, int rowIndex, float binTrue, Hydroponics_UnitsType binUnits)
+Hydroponics_PositionIndex getMeasurementRowCount(const HydroponicsMeasurement *measurement)
 {
-    if (measurementIn) {
-        switch (measurementIn->type) {
+    return measurement ? max(1, (int)(measurement->type)) : 0;
+}
+
+HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow, float binTrue, Hydroponics_UnitsType binUnits)
+{
+    if (measurement) {
+        switch (measurement->type) {
             case 0: // Binary
-                if (rowIndex == 0) { return ((HydroponicsBinaryMeasurement *)measurementIn)->asSingleMeasurement(binTrue, binUnits); }
+                if (measurementRow == 0) { return ((HydroponicsBinaryMeasurement *)measurement)->getAsSingleMeasurement(binTrue, binUnits); }
             case 1: // Single
-                if (rowIndex == 0) { return HydroponicsSingleMeasurement(*((HydroponicsSingleMeasurement *)measurementIn)); }
+                if (measurementRow == 0) { return HydroponicsSingleMeasurement(*((HydroponicsSingleMeasurement *)measurement)); }
             case 2: // Double
-                if (rowIndex > 0 && rowIndex < 2) { return ((HydroponicsDoubleMeasurement *)measurementIn)->asSingleMeasurement(rowIndex); }
+                if (measurementRow > 0 && measurementRow < 2) { return ((HydroponicsDoubleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow); }
             case 3: // Triple
-                if (rowIndex > 0 && rowIndex < 3) { return ((HydroponicsTripleMeasurement *)measurementIn)->asSingleMeasurement(rowIndex); }
+                if (measurementRow > 0 && measurementRow < 3) { return ((HydroponicsTripleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow); }
             default: break;
         }
     }
@@ -95,7 +100,7 @@ HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn)
     updateFrame();
 }
 
-HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn, uint32_t frameIn)
+HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn, uint16_t frameIn)
     : type((typeof(type))typeIn), timestamp(timestampIn), frame(frameIn)
 { ; }
 
@@ -103,9 +108,10 @@ HydroponicsMeasurement::HydroponicsMeasurement(const HydroponicsMeasurementData 
     : type((typeof(type))(dataIn->type)), timestamp(dataIn->timestamp), frame(1)
 { ; }
 
-void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut) const
+void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
 {
     dataOut->type = (int8_t)type;
+    dataOut->measurementRow = measurementRow;
     dataOut->timestamp = timestamp;
 }
 
@@ -124,19 +130,21 @@ HydroponicsBinaryMeasurement::HydroponicsBinaryMeasurement(bool stateIn, time_t 
     : HydroponicsMeasurement((int)Binary, timestamp), state(stateIn)
 { ; }
 
-HydroponicsBinaryMeasurement::HydroponicsBinaryMeasurement(bool stateIn, time_t timestamp, uint32_t frame)
+HydroponicsBinaryMeasurement::HydroponicsBinaryMeasurement(bool stateIn, time_t timestamp, uint16_t frame)
     : HydroponicsMeasurement((int)Binary, timestamp, frame), state(stateIn)
 { ; }
 
 HydroponicsBinaryMeasurement::HydroponicsBinaryMeasurement(const HydroponicsMeasurementData *dataIn)
-    : HydroponicsMeasurement(dataIn), state(dataIn->dataAs.binaryMeasure.state)
+    : HydroponicsMeasurement(dataIn),
+      state(dataIn->measurementRow == 0 && dataIn->value >= 0.5f - FLT_EPSILON)
 { ; }
 
-void HydroponicsBinaryMeasurement::saveToData(HydroponicsMeasurementData *dataOut) const
+void HydroponicsBinaryMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroponicsMeasurement::saveToData(dataOut);
+    HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->dataAs.binaryMeasure.state = state;
+    dataOut->value = measurementRow == 0 && state ? 1.0f : 0.0f;
+    dataOut->units = measurementRow == 0 ? Hydroponics_UnitsType_Raw_0_1 : Hydroponics_UnitsType_Undefined;
 }
 
 
@@ -148,20 +156,22 @@ HydroponicsSingleMeasurement::HydroponicsSingleMeasurement(float valueIn, Hydrop
     : HydroponicsMeasurement((int)Single, timestamp), value(valueIn), units(unitsIn)
 { ; }
 
-HydroponicsSingleMeasurement::HydroponicsSingleMeasurement(float valueIn, Hydroponics_UnitsType unitsIn, time_t timestamp, uint32_t frame)
+HydroponicsSingleMeasurement::HydroponicsSingleMeasurement(float valueIn, Hydroponics_UnitsType unitsIn, time_t timestamp, uint16_t frame)
     : HydroponicsMeasurement((int)Single, timestamp, frame), value(valueIn), units(unitsIn)
 { ; }
 
 HydroponicsSingleMeasurement::HydroponicsSingleMeasurement(const HydroponicsMeasurementData *dataIn)
-    : HydroponicsMeasurement(dataIn), value(dataIn->dataAs.singleMeasure.value), units(dataIn->dataAs.singleMeasure.units)
+    : HydroponicsMeasurement(dataIn),
+      value(dataIn->measurementRow == 0 ? dataIn->value : 0.0f),
+      units(dataIn->measurementRow == 0 ? dataIn->units : Hydroponics_UnitsType_Undefined)
 { ; }
 
-void HydroponicsSingleMeasurement::saveToData(HydroponicsMeasurementData *dataOut) const
+void HydroponicsSingleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroponicsMeasurement::saveToData(dataOut);
+    HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->dataAs.singleMeasure.value = roundForExport(value);
-    dataOut->dataAs.singleMeasure.units = units;
+    dataOut->value = measurementRow == 0 ? roundForExport(value, additionalDecPlaces) : 0.0f;
+    dataOut->units = measurementRow == 0 ? units : Hydroponics_UnitsType_Undefined;
 }
 
 
@@ -177,24 +187,26 @@ HydroponicsDoubleMeasurement::HydroponicsDoubleMeasurement(float value1, Hydropo
 
 HydroponicsDoubleMeasurement::HydroponicsDoubleMeasurement(float value1, Hydroponics_UnitsType units1,
                                                            float value2, Hydroponics_UnitsType units2,
-                                                           time_t timestamp, uint32_t frame)
+                                                           time_t timestamp, uint16_t frame)
     : HydroponicsMeasurement((int)Double, timestamp, frame), value{value1,value2}, units{units1,units2}
 { ; }
 
 HydroponicsDoubleMeasurement::HydroponicsDoubleMeasurement(const HydroponicsMeasurementData *dataIn)
     : HydroponicsMeasurement(dataIn),
-      value{dataIn->dataAs.doubleMeasure.value[0], dataIn->dataAs.doubleMeasure.value[1]},
-      units{dataIn->dataAs.doubleMeasure.units[0], dataIn->dataAs.doubleMeasure.units[1]}
+      value{dataIn->measurementRow == 0 ? dataIn->value : 0.0f,
+            dataIn->measurementRow == 1 ? dataIn->value : 0.0f
+      },
+      units{dataIn->measurementRow == 0 ? dataIn->units : Hydroponics_UnitsType_Undefined,
+            dataIn->measurementRow == 1 ? dataIn->units : Hydroponics_UnitsType_Undefined
+      }
 { ; }
 
-void HydroponicsDoubleMeasurement::saveToData(HydroponicsMeasurementData *dataOut) const
+void HydroponicsDoubleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroponicsMeasurement::saveToData(dataOut);
+    HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->dataAs.doubleMeasure.value[0] = roundForExport(value[0]);
-    dataOut->dataAs.doubleMeasure.value[1] = roundForExport(value[1]);
-    dataOut->dataAs.doubleMeasure.units[0] = units[0];
-    dataOut->dataAs.doubleMeasure.units[1] = units[1];
+    dataOut->value = measurementRow >= 0 && measurementRow < 2 ? roundForExport(value[measurementRow], additionalDecPlaces) : 0.0f;
+    dataOut->units = measurementRow >= 0 && measurementRow < 2 ? units[measurementRow] : Hydroponics_UnitsType_Undefined;
 }
 
 
@@ -212,88 +224,54 @@ HydroponicsTripleMeasurement::HydroponicsTripleMeasurement(float value1, Hydropo
 HydroponicsTripleMeasurement::HydroponicsTripleMeasurement(float value1, Hydroponics_UnitsType units1,
                                                            float value2, Hydroponics_UnitsType units2,
                                                            float value3, Hydroponics_UnitsType units3,
-                                                           time_t timestamp, uint32_t frame)
+                                                           time_t timestamp, uint16_t frame)
     : HydroponicsMeasurement((int)Triple, timestamp, frame), value{value1,value2,value3}, units{units1,units2,units3}
 { ; }
 
 HydroponicsTripleMeasurement::HydroponicsTripleMeasurement(const HydroponicsMeasurementData *dataIn)
     : HydroponicsMeasurement(dataIn),
-      value{dataIn->dataAs.tripleMeasure.value[0], dataIn->dataAs.tripleMeasure.value[1], dataIn->dataAs.tripleMeasure.value[2]},
-      units{dataIn->dataAs.tripleMeasure.units[0], dataIn->dataAs.tripleMeasure.units[1], dataIn->dataAs.tripleMeasure.units[2]}
+      value{dataIn->measurementRow == 0 ? dataIn->value : 0.0f,
+            dataIn->measurementRow == 1 ? dataIn->value : 0.0f,
+            dataIn->measurementRow == 2 ? dataIn->value : 0.0f,
+      },
+      units{dataIn->measurementRow == 0 ? dataIn->units : Hydroponics_UnitsType_Undefined,
+            dataIn->measurementRow == 1 ? dataIn->units : Hydroponics_UnitsType_Undefined,
+            dataIn->measurementRow == 2 ? dataIn->units : Hydroponics_UnitsType_Undefined,
+      }
 { ; }
 
-void HydroponicsTripleMeasurement::saveToData(HydroponicsMeasurementData *dataOut) const
+void HydroponicsTripleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroponicsMeasurement::saveToData(dataOut);
+    HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->dataAs.tripleMeasure.value[0] = roundForExport(value[0]);
-    dataOut->dataAs.tripleMeasure.value[1] = roundForExport(value[1]);
-    dataOut->dataAs.tripleMeasure.value[2] = roundForExport(value[2]);
-    dataOut->dataAs.tripleMeasure.units[0] = units[0];
-    dataOut->dataAs.tripleMeasure.units[1] = units[1];
-    dataOut->dataAs.tripleMeasure.units[2] = units[2];
+    dataOut->value = measurementRow >= 0 && measurementRow < 3 ? roundForExport(value[measurementRow], additionalDecPlaces) : 0.0f;
+    dataOut->units = measurementRow >= 0 && measurementRow < 3 ? units[measurementRow] : Hydroponics_UnitsType_Undefined;
 }
 
 
 HydroponicsMeasurementData::HydroponicsMeasurementData()
-    : HydroponicsSubData(), dataAs{.tripleMeasure={{0.0f,0.0f,0.0f},{Hydroponics_UnitsType_Undefined,Hydroponics_UnitsType_Undefined,Hydroponics_UnitsType_Undefined}}}, timestamp(0)
-{ ; }
+    : HydroponicsSubData(), measurementRow(0), value(0.0f), units(Hydroponics_UnitsType_Undefined), timestamp(0)
+{
+    type = 0; // no type differentiation
+}
 
 void HydroponicsMeasurementData::toJSONObject(JsonObject &objectOut) const
 {
-    HydroponicsSubData::toJSONObject(objectOut);
+    //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
-    switch (type) {
-        case 0: // Binary
-            objectOut[SFP(HS_Key_State)] = dataAs.binaryMeasure.state;
-            break;
-        case 1: // Single
-            objectOut[SFP(HS_Key_Value)] = dataAs.singleMeasure.value;
-            objectOut[SFP(HS_Key_Units)] = dataAs.singleMeasure.units;
-            break;
-        case 2: { // Double
-            objectOut[SFP(HS_Key_Values)] = commaStringFromArray(dataAs.doubleMeasure.value, 2);
-            if (dataAs.doubleMeasure.units[0] != dataAs.doubleMeasure.units[1]) {
-                objectOut[SFP(HS_Key_Units)] = commaStringFromArray(dataAs.doubleMeasure.units, 2);
-            } else {
-                objectOut[SFP(HS_Key_Units)] = dataAs.doubleMeasure.units[0];
-            }
-        } break;
-        case 3: { // Triple
-            objectOut[SFP(HS_Key_Values)] = commaStringFromArray(dataAs.tripleMeasure.value, 3);
-            if (dataAs.tripleMeasure.units[0] != dataAs.tripleMeasure.units[1] ||
-                dataAs.tripleMeasure.units[0] != dataAs.tripleMeasure.units[2]) {
-                objectOut[SFP(HS_Key_Units)] = commaStringFromArray(dataAs.tripleMeasure.units, 3);
-            } else {
-                objectOut[SFP(HS_Key_Units)] = dataAs.tripleMeasure.units[0];
-            }
-        } break;
-        default: break;
-    }
+    objectOut[SFP(HS_Key_MeasurementRow)] = measurementRow;
+    objectOut[SFP(HS_Key_Value)] = value;
+    objectOut[SFP(HS_Key_Units)] = unitsTypeToSymbol(units);
     objectOut[SFP(HS_Key_Timestamp)] = timestamp;
 }
 
 void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    HydroponicsSubData::fromJSONObject(objectIn);
+    //HydroponicsSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
 
-    switch (type) {
-        case 0: // Binary
-            dataAs.binaryMeasure.state = objectIn[SFP(HS_Key_State)] | false;
-            break;
-        case 1: // Single
-            fromJSONObject(objectIn, 0);
-            break;
-        default: {
-            JsonVariantConst valuesVar = objectIn[SFP(HS_Key_Values)] | objectIn[F("vals")];
-            if (valuesVar.is<JsonArrayConst>()) { JsonArrayConst valuesArray = valuesVar; fromJSONValuesArray(valuesArray); }
-            else { fromJSONValuesString(valuesVar); }
-
-            JsonVariantConst unitsVar = objectIn[SFP(HS_Key_Units)] | objectIn[SFP(HS_Key_Unit)];
-            if (unitsVar.is<JsonArrayConst>()) { JsonArrayConst unitsArray = unitsVar; fromJSONUnitsArray(unitsArray); }
-            else { fromJSONUnitsString(unitsVar); }
-        } break;
-    }
+    measurementRow = objectIn[SFP(HS_Key_MeasurementRow)] | measurementRow;
+    value = objectIn[SFP(HS_Key_Value)] | value;
+    units = unitsTypeFromSymbol(objectIn[SFP(HS_Key_Units)]);
     timestamp = objectIn[SFP(HS_Key_Timestamp)] | timestamp;
 }
 
@@ -302,108 +280,9 @@ void HydroponicsMeasurementData::fromJSONVariant(JsonVariantConst &variantIn)
     if (variantIn.is<JsonObjectConst>()) {
         JsonObjectConst variantObj = variantIn;
         fromJSONObject(variantObj);
-    } else if (variantIn.is<JsonArrayConst>()) {
-        JsonArrayConst variantArray = variantIn;
-        fromJSONArray(variantArray);
-    } else if (variantIn.is<const char *>()) {
-        const char *valuesIn = variantIn.as<const char*>();
-        type = occurrencesInString(valuesIn, ',') + 1;
-        fromJSONValuesString(valuesIn);
     } else if (variantIn.is<float>() || variantIn.is<int>()) {
-        type = 1;
-        setValue(variantIn, 0);
+        value = variantIn.as<float>();
     } else {
         HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_UnsupportedOperation));
-    }
-}
-
-void HydroponicsMeasurementData::fromJSONArray(JsonArrayConst &arrayIn)
-{
-    type = arrayIn.size();
-    if (arrayIn[0].is<JsonObjectConst>()) {
-        fromJSONObjectsArray(arrayIn);
-    } else {
-        fromJSONValuesArray(arrayIn);
-    }
-}
-
-void HydroponicsMeasurementData::fromJSONObjectsArray(JsonArrayConst &objectsIn)
-{
-    for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
-        JsonObjectConst objectObj = objectsIn[rowIndex];
-        if (!objectObj.isNull()) { fromJSONObject(objectObj, rowIndex); }
-    }
-}
-
-void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn, int rowIndex)
-{
-    setValue(objectIn[SFP(HS_Key_Value)] | objectIn[F("val")] | objectIn[SFP(HS_Key_State)] | 0.0f, rowIndex);
-    setUnits(objectIn[SFP(HS_Key_Units)] | objectIn[SFP(HS_Key_Unit)] | Hydroponics_UnitsType_Undefined, rowIndex);
-}
-
-void HydroponicsMeasurementData::fromJSONValuesArray(JsonArrayConst &valuesIn)
-{
-    for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
-        setValue(valuesIn[rowIndex], rowIndex);
-    }
-}
-
-void HydroponicsMeasurementData::fromJSONValuesString(const char *valuesIn)
-{
-    float values[3]; commaStringToArray(valuesIn, values, type);
-
-    for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
-        setValue(values[rowIndex], rowIndex);
-    }
-}
-
-void HydroponicsMeasurementData::fromJSONUnitsArray(JsonArrayConst &unitsIn)
-{
-    for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
-        setUnits(unitsIn[rowIndex], rowIndex);
-    }
-}
-
-void HydroponicsMeasurementData::fromJSONUnitsString(const char *unitsIn)
-{
-    int units[3]; commaStringToArray(unitsIn, units, type);
-
-    for (int rowIndex = 0; rowIndex < type; ++rowIndex) {
-        setUnits((Hydroponics_UnitsType)units[rowIndex], rowIndex);
-    }
-}
-
-void HydroponicsMeasurementData::setValue(float value, int rowIndex)
-{
-    switch (type) {
-        case 0: // Binary
-            if (rowIndex == 0) { dataAs.binaryMeasure.state = value; }
-            break;
-        case 1: // Single
-            if (rowIndex == 0) { dataAs.singleMeasure.value = value; }
-            break;
-        case 2: // Double
-            if (rowIndex >= 0 && rowIndex < 2) { dataAs.doubleMeasure.value[rowIndex] = value; }
-            break;
-        case 3: // Triple
-            if (rowIndex >= 0 && rowIndex < 3) { dataAs.tripleMeasure.value[rowIndex] = value; }
-            break;
-        default: break;
-    }
-}
-
-void HydroponicsMeasurementData::setUnits(Hydroponics_UnitsType units, int rowIndex)
-{
-    switch (type) {
-        case 1: // Single
-            if (rowIndex == 0) { dataAs.singleMeasure.units = units; }
-            break;
-        case 2: // Double
-            if (rowIndex >= 0 && rowIndex < 2) { dataAs.doubleMeasure.units[rowIndex] = units; }
-            break;
-        case 3: // Triple
-            if (rowIndex >= 0 && rowIndex < 3) { dataAs.tripleMeasure.units[rowIndex] = units; }
-            break;
-        default: break;
     }
 }

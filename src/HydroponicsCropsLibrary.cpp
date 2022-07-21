@@ -119,7 +119,13 @@ bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *c
 
         if (retVal) {
             _hasCustomCrops = true;
-            scheduleSignalFireOnce<Hydroponics_CropType>(_cropDataSignal, cropType);
+
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<Hydroponics_CropType>(_cropDataSignal, cropType);
+            #else
+                _cropDataSignal.fire(cropType);
+            #endif
+
             return true;
         }
     }
@@ -142,7 +148,13 @@ bool HydroponicsCropsLibrary::dropCustomCropData(const HydroponicsCropsLibData *
             _cropsData.erase(iter);
 
             updateHasCustom();
-            scheduleSignalFireOnce<Hydroponics_CropType>(_cropDataSignal, cropType);
+
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<Hydroponics_CropType>(_cropDataSignal, cropType);
+            #else
+                _cropDataSignal.fire(cropType);
+            #endif
+
             return true;
         }
     }

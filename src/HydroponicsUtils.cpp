@@ -6,8 +6,6 @@
 #include "Hydroponics.h"
 #include <pins_arduino.h>
 
-BasicArduinoInterruptAbstraction interruptImpl;
-
 HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
     : // TODO: Determine which other architectures have variable bit res analog pins
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
@@ -25,6 +23,10 @@ HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
 }
 
 
+#ifndef HYDRUINO_DISABLE_MULTITASKING
+
+BasicArduinoInterruptAbstraction interruptImpl;
+
 ActuatorTimedEnableTask::ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
     : taskId(TASKMGR_INVALIDID), _actuator(actuator), _enableIntensity(enableIntensity), _enableTimeMillis(enableTimeMillis)
 { ; }
@@ -35,21 +37,12 @@ ActuatorTimedEnableTask::~ActuatorTimedEnableTask()
 void ActuatorTimedEnableTask::exec()
 {
     if (_actuator->enableActuator(_enableIntensity)) {
-        time_t startMillis = millis();
-        time_t endMillis = startMillis + _enableTimeMillis;
+        delayFine(_enabledTimeMillis);
 
-        {   time_t delayMillis = max(0, _enableTimeMillis - HYDRUINO_ACT_TIMEDTASK_SPINMILLIS);
-            if (delayMillis > 0) { delay(delayMillis); }
+        HYDRUINO_SOFT_ASSERT(_actuator->getIsEnabled(), SFP(HS_Err_OperationFailure));
+        if (_actuator->getIsEnabled()) {
+            _actuator->disableActuator();
         }
-
-        {   time_t timeMillis = millis();
-            while((endMillis >= startMillis && (timeMillis < endMillis)) ||
-                  (endMillis < startMillis && (timeMillis >= startMillis || timeMillis < endMillis))) {
-                timeMillis = millis();
-            }
-        }
-
-        _actuator->disableActuator();
 
         tryDisableRepeatingTask(taskId);
     } else {
@@ -95,6 +88,45 @@ bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis)
     return task && !task->isRepeating();
 }
 
+#endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
+
+
+#ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
+
+static String fileFromFullPath(String fullPath)
+{
+    int index = fullPath.lastIndexOf(HYDRUINO_BLDPATH_SEPARATOR);
+    return index != -1 ? fullPath.substring(index+1) : fullPath;
+}
+
+static String makeAssertMsg(String msg, const char *file, const char *func, int line)
+{
+    return String(F("Assertion Failure: ")) + fileFromFullPath(String(file)) + String(':') + String(line) +
+           String(F(" in ")) + String(func) + String(':') + String(' ') + msg;
+}
+
+void softAssert(bool cond, String msg, const char *file, const char *func, int line)
+{
+    if (!cond) {
+        String message = makeAssertMsg(msg, file, func, line);
+        logWarning(message, true);
+    }
+}
+
+void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
+{
+    if (!cond) {
+        String message = String(F("HARD ")) + makeAssertMsg(msg, file, func, line);
+        logError(message, true);
+        auto hydroponics = getHydroponicsInstance();
+        if (hydroponics) { hydroponics->suspend(); }
+        yield(); delay(10);
+        abort();
+    }
+}
+
+#endif // /ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
+
 
 Hydroponics *getHydroponicsInstance()
 {
@@ -121,28 +153,52 @@ HydroponicsPublisher *getPublisherInstance()
 
 void logMessage(String message, bool flushAfter)
 {
-    auto logger = getLoggerInstance();
-    if (logger) {
-        logger->logMessage(message);
-        if (flushAfter) { logger->flush(); }
+    if (message.length()) {
+        auto logger = getLoggerInstance();
+        if (logger) {
+            logger->logMessage(message);
+            if (flushAfter) { logger->flush(); }
+        }
     }
 }
 
 void logWarning(String warning, bool flushAfter)
 {
-    auto logger = getLoggerInstance();
-    if (logger) {
-        logger->logWarning(warning);
-        if (flushAfter) { logger->flush(); }
+    if (warning.length()) {
+        auto logger = getLoggerInstance();
+        if (logger) {
+            logger->logWarning(warning);
+            if (flushAfter) { logger->flush(); }
+        }
     }
 }
 
 void logError(String error, bool flushAfter)
 {
-    auto logger = getLoggerInstance();
-    if (logger) {
-        logger->logError(error);
-        if (flushAfter) { logger->flush(); }
+    if (error.length()) {
+        auto logger = getLoggerInstance();
+        if (logger) {
+            logger->logError(error);
+            if (flushAfter) { logger->flush(); }
+        }
+    }
+}
+
+void publishData(HydroponicsSensor *sensor)
+{
+    if (sensor) {
+        auto publisher = getPublisherInstance();
+        if (publisher) {
+            auto measurement = sensor->getLatestMeasurement();
+            Hydroponics_PositionIndex rows = getMeasurementRowCount(measurement);
+            Hydroponics_PositionIndex columnIndexStart = publisher->getColumnIndexStart(sensor->getKey());
+
+            if (columnIndexStart >= 0) {
+                for (Hydroponics_PositionIndex measurementRow = 0; measurementRow < rows; ++measurementRow) {
+                    publisher->publishData(columnIndexStart + measurementRow, getAsSingleMeasurement(measurement, measurementRow));
+                }
+            }
+        }
     }
 }
 
@@ -391,41 +447,21 @@ int freeMemory() {
     return -1;
 }
 
-#ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
+void delayFine(time_t timeMillis) {
+    time_t startMillis = millis();
+    time_t endMillis = startMillis + timeMillis;
 
-static String fileFromFullPath(String fullPath)
-{
-    int index = fullPath.lastIndexOf(HYDRUINO_BLDPATH_SEPARATOR);
-    return index != -1 ? fullPath.substring(index+1) : fullPath;
-}
+    {   time_t delayMillis = max(0, timeMillis - HYDRUINO_SYS_DELAYFINE_SPINMILLIS);
+        if (delayMillis > 0) { delay(delayMillis); }
+    }
 
-static String makeAssertMsg(String msg, const char *file, const char *func, int line)
-{
-    return String(F("Assertion Failure: ")) + fileFromFullPath(String(file)) + String(':') + String(line) +
-           String(F(" in ")) + String(func) + String(':') + String(' ') + msg;
-}
-
-void softAssert(bool cond, String msg, const char *file, const char *func, int line)
-{
-    if (!cond) {
-        String message = makeAssertMsg(msg, file, func, line);
-        logWarning(message, true);
+    {   time_t timeMillis = millis();
+        while((endMillis >= startMillis && (timeMillis < endMillis)) ||
+                (endMillis < startMillis && (timeMillis >= startMillis || timeMillis < endMillis))) {
+            timeMillis = millis();
+        }
     }
 }
-
-void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
-{
-    if (!cond) {
-        String message = String(F("HARD ")) + makeAssertMsg(msg, file, func, line);
-        logError(message, true);
-        auto hydroponics = getHydroponicsInstance();
-        if (hydroponics) { hydroponics->suspend(); }
-        yield(); delay(10);
-        abort();
-    }
-}
-
-#endif // /ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
 
 
 bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam)
@@ -522,9 +558,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidVolume_Liters:
+        case Hydroponics_UnitsType_LiqVolume_Liters:
             switch(unitsOut) {
-                case Hydroponics_UnitsType_LiquidVolume_Gallons:
+                case Hydroponics_UnitsType_LiqVolume_Gallons:
                     *valueOut = valueIn * 0.264172f;
                     return true;
 
@@ -533,9 +569,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidVolume_Gallons:
+        case Hydroponics_UnitsType_LiqVolume_Gallons:
             switch(unitsOut) {
-                case Hydroponics_UnitsType_LiquidVolume_Liters:
+                case Hydroponics_UnitsType_LiqVolume_Liters:
                     *valueOut = valueIn * 3.78541f;
                     return true;
 
@@ -544,9 +580,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
+        case Hydroponics_UnitsType_LiqFlowRate_LitersPerMin:
             switch(unitsOut) {
-                case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
+                case Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin:
                     *valueOut = valueIn * 0.264172f;
                     return true;
 
@@ -555,9 +591,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
+        case Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin:
             switch (unitsOut) {
-                case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
+                case Hydroponics_UnitsType_LiqFlowRate_LitersPerMin:
                     *valueOut = valueIn * 3.78541f;
                     return true;
 
@@ -566,9 +602,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter:
+        case Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter:
             switch(unitsOut) {
-                case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon:
+                case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
                     *valueOut = valueIn * 3.78541f;
                     return true;
 
@@ -577,9 +613,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon:
+        case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
             switch(unitsOut) {
-                case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter:
+                case Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter:
                     *valueOut = valueIn * 0.264172f;
                     return true;
 
@@ -588,29 +624,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_Power_Wattage:
-            switch (unitsOut) {
-                case Hydroponics_UnitsType_Power_Amperage:
-                    if (!isFPEqual(convertParam, 0.0f)) {
-                        *valueOut = valueIn / convertParam;
-                        return true;
-                    }
-                break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Power_Amperage:
-            switch (unitsOut) {
-                case Hydroponics_UnitsType_Power_Wattage:
-                    if (!isFPEqual(convertParam, 0.0f)) {
-                        *valueOut = valueIn * convertParam;
-                        return true;
-                    }
-                break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_pHScale_0_14:
+        case Hydroponics_UnitsType_Alkalinity_pH_0_14:
             switch(unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
                     *valueOut = valueIn / 14.0f;
@@ -710,6 +724,28 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
+        case Hydroponics_UnitsType_Power_Wattage:
+            switch (unitsOut) {
+                case Hydroponics_UnitsType_Power_Amperage:
+                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn / convertParam;
+                        return true;
+                    }
+                break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Power_Amperage:
+            switch (unitsOut) {
+                case Hydroponics_UnitsType_Power_Wattage:
+                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * convertParam;
+                        return true;
+                    }
+                break;
+            }
+            break;
+
         case Hydroponics_UnitsType_Percentile_0_100:
             switch(unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
@@ -723,24 +759,40 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
 
         case Hydroponics_UnitsType_Raw_0_1:
             switch(unitsOut) {
-                case Hydroponics_UnitsType_pHScale_0_14:
+                case Hydroponics_UnitsType_Alkalinity_pH_0_14:
                     *valueOut = valueIn * 14.0f;
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_EC:
-                    *valueOut = valueIn * 5.0f;
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * 5.0f;
+                    } else {
+                        *valueOut = valueIn * convertParam;
+                    }
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_PPM500:
-                    *valueOut = valueIn * (5.0f * 500.0f);
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * (5.0f * 500.0f);
+                    } else {
+                        *valueOut = valueIn * (convertParam * 500.0f);
+                    }
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_PPM640:
-                    *valueOut = valueIn * (5.0f * 640.0f);
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * (5.0f * 640.0f);
+                    } else {
+                        *valueOut = valueIn * (convertParam * 640.0f);
+                    }
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_PPM700:
-                    *valueOut = valueIn * (5.0f * 700.0f);
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * (5.0f * 700.0f);
+                    } else {
+                        *valueOut = valueIn * (convertParam * 700.0f);
+                    }
                     return true;
 
                 case Hydroponics_UnitsType_Percentile_0_100:
@@ -748,6 +800,10 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
                     return true;
 
                 default:
+                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * convertParam;
+                        return true;
+                    }
                     break;
             }
             break;
@@ -784,10 +840,10 @@ bool convertUnits(float valueIn, float *valueOut, Hydroponics_UnitsType unitsIn,
 Hydroponics_UnitsType baseUnitsFromRate(Hydroponics_UnitsType units)
 {
     switch (units) {
-        case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
-            return Hydroponics_UnitsType_LiquidVolume_Liters;
-        case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
-            return Hydroponics_UnitsType_LiquidVolume_Gallons;
+        case Hydroponics_UnitsType_LiqFlowRate_LitersPerMin:
+            return Hydroponics_UnitsType_LiqVolume_Liters;
+        case Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin:
+            return Hydroponics_UnitsType_LiqVolume_Gallons;
         default:
             break;
     }
@@ -797,10 +853,10 @@ Hydroponics_UnitsType baseUnitsFromRate(Hydroponics_UnitsType units)
 Hydroponics_UnitsType baseUnitsFromDilution(Hydroponics_UnitsType units)
 {
     switch (units) {
-        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter:
-            return Hydroponics_UnitsType_LiquidVolume_Liters;
-        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon:
-            return Hydroponics_UnitsType_LiquidVolume_Gallons;
+        case Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter:
+            return Hydroponics_UnitsType_LiqVolume_Liters;
+        case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
+            return Hydroponics_UnitsType_LiqVolume_Gallons;
         default:
             break;
     }
@@ -862,7 +918,7 @@ Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode
     }
 }
 
-Hydroponics_UnitsType defaultWaterVolumeUnits(Hydroponics_MeasurementMode measureMode)
+Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
         auto hydroponics = getHydroponicsInstance();
@@ -871,10 +927,10 @@ Hydroponics_UnitsType defaultWaterVolumeUnits(Hydroponics_MeasurementMode measur
 
     switch (measureMode) {
         case Hydroponics_MeasurementMode_Imperial:
-            return Hydroponics_UnitsType_LiquidVolume_Gallons;
+            return Hydroponics_UnitsType_LiqVolume_Gallons;
         case Hydroponics_MeasurementMode_Metric:
         case Hydroponics_MeasurementMode_Scientific:
-            return Hydroponics_UnitsType_LiquidVolume_Liters;
+            return Hydroponics_UnitsType_LiqVolume_Liters;
         default:
             return Hydroponics_UnitsType_Undefined;
     }
@@ -889,10 +945,10 @@ Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measure
 
     switch (measureMode) {
         case Hydroponics_MeasurementMode_Imperial:
-            return Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin;
+            return Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin;
         case Hydroponics_MeasurementMode_Metric:
         case Hydroponics_MeasurementMode_Scientific:
-            return Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin;
+            return Hydroponics_UnitsType_LiqFlowRate_LitersPerMin;
         default:
             return Hydroponics_UnitsType_Undefined;
     }
@@ -907,10 +963,10 @@ Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode mea
 
     switch (measureMode) {
         case Hydroponics_MeasurementMode_Imperial:
-            return Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon;
+            return Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon;
         case Hydroponics_MeasurementMode_Metric:
         case Hydroponics_MeasurementMode_Scientific:
-            return Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter;
+            return Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter;
         default:
             return Hydroponics_UnitsType_Undefined;
     }
@@ -1214,24 +1270,24 @@ String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeS
 String sensorTypeToString(Hydroponics_SensorType sensorType, bool excludeSpecial)
 {
     switch (sensorType) {
-        case Hydroponics_SensorType_AirTempHumidity:
-            return F("AirTempHumid");
-        case Hydroponics_SensorType_AirCarbonDioxide:
-            return F("AirCO2");
         case Hydroponics_SensorType_PotentialHydrogen:
             return F("WaterPH");
         case Hydroponics_SensorType_TotalDissolvedSolids:
             return F("WaterTDS");
-        case Hydroponics_SensorType_WaterTemperature:
-            return F("WaterTemp");
         case Hydroponics_SensorType_SoilMoisture:
             return F("SoilMoisture");
+        case Hydroponics_SensorType_WaterTemperature:
+            return F("WaterTemp");
         case Hydroponics_SensorType_WaterPumpFlowSensor:
             return F("PumpFlow");
         case Hydroponics_SensorType_WaterLevelIndicator:
             return F("LevelIndicator");
         case Hydroponics_SensorType_WaterHeightMeter:
             return F("WaterHeight");
+        case Hydroponics_SensorType_AirTempHumidity:
+            return F("AirTempHumid");
+        case Hydroponics_SensorType_AirCarbonDioxide:
+            return F("AirCO2");
         case Hydroponics_SensorType_PowerUsageMeter:
             return F("PowerUsage");
         case Hydroponics_SensorType_Count:
@@ -1530,15 +1586,80 @@ String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial)
     return !excludeSpecial ? SFP(HS_Undefined) : String();
 }
 
+String unitsCategoryToString(Hydroponics_UnitsCategory unitsCategory, bool excludeSpecial)
+{
+    switch (unitsCategory) {
+        case Hydroponics_UnitsCategory_Alkalinity:
+            return F("Alkalinity");
+        case Hydroponics_UnitsCategory_DissolvedSolids:
+            return F("DissolvedSolids");
+        case Hydroponics_UnitsCategory_SoilMoisture:
+            return F("SoilMoisture");
+        case Hydroponics_UnitsCategory_LiqTemperature:
+            return F("LiqTemperature");
+        case Hydroponics_UnitsCategory_LiqVolume:
+            return F("LiqVolume");
+        case Hydroponics_UnitsCategory_LiqFlowRate:
+            return F("LiqFlowRate");
+        case Hydroponics_UnitsCategory_LiqDilution:
+            return F("LiqDilution");
+        case Hydroponics_UnitsCategory_AirTemperature:
+            return F("AirTemperature");
+        case Hydroponics_UnitsCategory_AirHumidity:
+            return F("AirHumidity");
+        case Hydroponics_UnitsCategory_AirHeatIndex:
+            return F("AirHeatIndex");
+        case Hydroponics_UnitsCategory_AirConcentration:
+            return F("AirConcentration");
+        case Hydroponics_UnitsCategory_Distance:
+            return F("Distance");
+        case Hydroponics_UnitsCategory_Weight:
+            return F("Weight");
+        case Hydroponics_UnitsCategory_Power:
+            return F("Power");
+        case Hydroponics_UnitsCategory_Count:
+            return !excludeSpecial ? SFP(HS_Count) : String();
+        case Hydroponics_UnitsCategory_Undefined:
+            break;
+    }
+    return !excludeSpecial ? SFP(HS_Undefined) : String();
+}
+
 String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
 {
     switch (unitsType) {
+        case Hydroponics_UnitsType_Raw_0_1:
+            return F("raw(01)"); // alt: raw
+        case Hydroponics_UnitsType_Percentile_0_100:
+            return F("%");
+        case Hydroponics_UnitsType_Alkalinity_pH_0_14:
+            return SFP(HS_pH);
+        case Hydroponics_UnitsType_Concentration_EC:
+            return F("mS/cm"); // alt: EC, TDS
         case Hydroponics_UnitsType_Temperature_Celsius:
             return F("°C");
         case Hydroponics_UnitsType_Temperature_Fahrenheit:
             return F("°F");
         case Hydroponics_UnitsType_Temperature_Kelvin:
             return F("°K");
+        case Hydroponics_UnitsType_LiqVolume_Liters:
+            return F("L");
+        case Hydroponics_UnitsType_LiqVolume_Gallons:
+            return F("gal");
+        case Hydroponics_UnitsType_LiqFlowRate_LitersPerMin:
+            return F("L/min");
+        case Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin:
+            return F("gal/min");
+        case Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter:
+            return F("mL/L");
+        case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
+            return F("mL/gal");
+        case Hydroponics_UnitsType_Concentration_PPM500:
+            return F("ppm(500)"); // alt: PPM
+        case Hydroponics_UnitsType_Concentration_PPM640:
+            return F("ppm(640)");
+        case Hydroponics_UnitsType_Concentration_PPM700:
+            return F("ppm(700)");
         case Hydroponics_UnitsType_Distance_Meters:
             return F("m");
         case Hydroponics_UnitsType_Distance_Feet:
@@ -1547,34 +1668,10 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
             return F("Kg");
         case Hydroponics_UnitsType_Weight_Pounds:
             return F("lbs");
-        case Hydroponics_UnitsType_LiquidVolume_Liters:
-            return F("L");
-        case Hydroponics_UnitsType_LiquidVolume_Gallons:
-            return F("gal");
-        case Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin:
-            return F("L/min");
-        case Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin:
-            return F("gal/min");
-        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter:
-            return F("mL/L");
-        case Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon:
-            return F("mL/gal");
         case Hydroponics_UnitsType_Power_Wattage:
             return F("W");
-        case Hydroponics_UnitsType_pHScale_0_14:
-            return F("pH");
-        case Hydroponics_UnitsType_Concentration_EC:
-            return F("mS/cm"); // alt: EC, TDS
-        case Hydroponics_UnitsType_Concentration_PPM500:
-            return F("ppm(500)"); // alt: PPM
-        case Hydroponics_UnitsType_Concentration_PPM640:
-            return F("ppm(640)");
-        case Hydroponics_UnitsType_Concentration_PPM700:
-            return F("ppm(700)");
-        case Hydroponics_UnitsType_Percentile_0_100:
-            return F("%");
-        case Hydroponics_UnitsType_Raw_0_1:
-            return F("raw(01)"); // alt: raw
+        case Hydroponics_UnitsType_Power_Amperage:
+            return F("A");
         case Hydroponics_UnitsType_Count:
             return !excludeSpecial ? F("qty") : String();
         case Hydroponics_UnitsType_Undefined:
@@ -1708,6 +1805,16 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
     if (unitsSymbolStr.equalsIgnoreCase(F("ppm"))) { return Hydroponics_UnitsType_Concentration_PPM; }
     if (unitsSymbolStr.equalsIgnoreCase(F("raw"))) { return Hydroponics_UnitsType_Raw_0_1; }
     return Hydroponics_UnitsType_Undefined;
+}
+
+Hydroponics_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
+{
+    for (int categoryIndex = 0; categoryIndex <= Hydroponics_UnitsCategory_Count; ++categoryIndex) {
+        if (unitsCategoryStr == unitsCategoryToString((Hydroponics_UnitsCategory)categoryIndex)) {
+            return (Hydroponics_UnitsCategory)categoryIndex;
+        }
+    }
+    return Hydroponics_UnitsCategory_Undefined;
 }
 
 Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)

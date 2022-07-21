@@ -2,7 +2,6 @@
 // TODO
 
 #include <Hydroponics.h>
-#include <TaskScheduler.h>
 
 const byte AeratorRelayPin = 7;
 const DateTime LettuceSowDate = DateTime(2022, 5, 21);
@@ -22,7 +21,7 @@ void setup() {
 
     // Adds the 4 gallon main water reservoir. This will contain sensors and feed crops.
     auto feedWater = hydroController.addFeedWaterReservoir(4);
-    feedWater->setVolumeUnits(Hydroponics_UnitsType_LiquidVolume_Gallons);
+    feedWater->setVolumeUnits(Hydroponics_UnitsType_LiqVolume_Gallons);
 
     // Add simple water aerator relay at AeratorRelayPin, and link it to the feed water reservoir and the relay power rail.
     auto aerator = hydroController.addWaterAeratorRelay(AeratorRelayPin);

@@ -9,6 +9,7 @@
 
 class HydroponicsPublisher;
 struct HydroponicsPublisherSubData;
+struct HydroponicsDataColumn;
 
 #include "Hydroponics.h"
 
@@ -26,11 +27,13 @@ public:
     bool beginPublishingToSDCard(String csvFilePrefix);
     bool getIsPublishingToSDCard();
 
+    void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
+
     void setNeedsTabulation();
 
+    Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
     bool getIsPublishingEnabled();
 
-    void notifyNewFrame();
     void notifyDayChanged();
 
 protected:
@@ -38,15 +41,29 @@ protected:
 
     String _dataFileName;                                   // Resolved data file name (based on day)
     bool _needsTabulation;                                  // Needs tabulation tracking flag
+    uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
+    HydroponicsDataColumn *_dataColumns;                    // Data columns (owned)
+    byte _columnsCount;                                     // Data columns count
 
     friend class Hydroponics;
 
-    void publish();
+    void advancePollingFrame();
+
+    void checkCanPublish();
+    void publish(time_t timestamp);
 
     void performTabulation();
-    String regenDataFileName();
+
+    void resetDataFile();
     void cleanupOldestData(bool force = false);
 };
+
+
+struct HydroponicsDataColumn {
+    Hydroponics_KeyType sensorKey;
+    HydroponicsSingleMeasurement measurement;
+};
+
 
 // Publisher Serialization Sub Data
 // A part of HSYS system data.

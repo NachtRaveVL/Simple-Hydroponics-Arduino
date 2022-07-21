@@ -183,7 +183,7 @@ struct HydroponicsSimpleRailData : public HydroponicsRailData
 struct HydroponicsRegulatedRailData : public HydroponicsRailData
 {
     float maxPower;
-    char powerSensorName[HYDRUINO_NAME_MAXSIZE];
+    char powerSensor[HYDRUINO_NAME_MAXSIZE];
     HydroponicsTriggerSubData limitTrigger;
 
     HydroponicsRegulatedRailData();

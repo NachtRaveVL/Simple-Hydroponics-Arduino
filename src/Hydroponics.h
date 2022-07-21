@@ -32,17 +32,11 @@
 
 // NOTE: It is recommended to use custom build flags instead of editing this file directly.
 
-// Uncomment or -D this define to completely disable usage of any multitasking commands, such as yield(), as well as libraries. Not recommended.
-//#define HYDRUINO_DISABLE_MULTITASKING
-
-// Uncomment or -D this define to disable usage of the TaskScheduler library, which is used by default.
-//#define HYDRUINO_DISABLE_TASKSCHEDULER          // https://github.com/arkhipenko/TaskScheduler
-
-// Uncomment or -D this define to enable usage of the Scheduler library, iff TaskScheduler disabled, for SAM/SAMD architectures only.
-//#define HYDRUINO_ENABLE_SCHEDULER               // https://github.com/arduino-libraries/Scheduler
+// Uncomment or -D this define to completely disable usage of any multitasking commands and libraries. Not recommended.
+#define HYDRUINO_DISABLE_MULTITASKING             // https://github.com/davetcc/TaskManagerIO
 
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
-//#define HYDRUINO_DISABLE_GUI                    // https://github.com/davetcc/tcMenu
+//#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable debug output.
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -67,6 +61,7 @@
 typedef SDFileSystemClass SDClass;
 #endif
 
+#ifndef HYDRUINO_DISABLE_MULTITASKING
 #if defined(__AVR__)
 #include <util/atomic.h>
 #define CRITICAL_SECTION ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
@@ -76,6 +71,13 @@ extern int __int_disable_irq(void);
 extern void __int_restore_irq(int *primask);
 #define CRITICAL_SECTION for (int primask_save __attribute__((__cleanup__(__int_restore_irq))) = __int_disable_irq(), __ToDo = 1; __ToDo; __ToDo = 0)
 #endif
+#else
+#ifndef HYDRUINO_DISABLE_GUI
+#define HYDRUINO_DISABLE_GUI
+#endif
+#define secondsToMillis(val) ((val)*1000U)
+#define CRITICAL_SECTION if (1)
+#endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
 
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
 #undef HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -87,21 +89,7 @@ extern void __int_restore_irq(int *primask);
 #else
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  ((void)0)
 #define HYDRUINO_HARD_ASSERT(cond,msg)  ((void)0)
-#endif
-
-#ifndef HYDRUINO_DISABLE_MULTITASKING
-#if !defined(HYDRUINO_DISABLE_TASKSCHEDULER)
-#include "TaskSchedulerDeclarations.h"  // Including this forces user code to include TaskSheduler.h
-#define HYDRUINO_USE_TASKSCHEDULER
-#define HYDRUINO_MAINLOOP(scheduler)    (scheduler).execute()
-#elif defined(HYDRUINO_ENABLE_SCHEDULER) && (defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD))
-#include "Scheduler.h"
-#define HYDRUINO_USE_SCHEDULER
-#endif
-#endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
-#ifndef HYDRUINO_MAINLOOP
-#define HYDRUINO_MAINLOOP()             yield()
-#endif
+#endif // /if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
 
 #include "ArduinoJson.h"                // JSON library
 #include "ArxContainer.h"               // STL-like container library
@@ -117,7 +105,9 @@ extern void __int_restore_irq(int *primask);
 #include <OneWireSTM.h>                 // STM32 version of OneWire (via stm32duino)
 #endif
 #include "RTClib.h"                     // i2c RTC library
+#ifndef HYDRUINO_DISABLE_MULTITASKING
 #include "TaskManagerIO.h"              // Task Manager library
+#endif
 #include "TimeLib.h"                    // Time library
 #ifndef HYDRUINO_DISABLE_GUI
 #include "tcMenu.h"                     // tcMenu library
@@ -342,7 +332,7 @@ public:
     // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
     uint16_t getPollingInterval() const;
     // System polling frame number for sensor frame tracking
-    uint32_t getPollingFrame() const;
+    uint16_t getPollingFrame() const;
     // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
     bool getIsPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
     // Whenever or not system autosaves are enabled or not
@@ -371,16 +361,6 @@ protected:
     uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
     uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz, ignored if on Teensy)
     WiFiClass *_wifi;                                               // WiFi class instance (strong) (default: WiFi)
-
-#ifdef HYDRUINO_USE_TASKSCHEDULER
-    Scheduler _ts;                                                  // Task scheduler
-    Task *_controlTask;                                             // Main control task
-    Task *_dataTask;                                                // Data collection task (on polling interval)
-    Task *_miscTask;                                                // Misc task
-#elif defined(HYDRUINO_USE_SCHEDULER)
-    bool _loopsStarted;                                             // Loops started flag
-    bool _suspend;                                                  // Suspend operation flag
-#endif
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
@@ -391,7 +371,14 @@ protected:
     byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
 
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
-    uint32_t _pollingFrame;                                         // Polling frame #
+
+    #ifndef HYDRUINO_DISABLE_MULTITASKING
+        taskid_t _controlTaskId;                                    // Control task Id if created, else TASKMGR_INVALIDID
+        taskid_t _dataTaskId;                                       // Data polling task Id if created, else TASKMGR_INVALIDID
+        taskid_t _miscTaskId;                                       // Misc task Id if created, else TASKMGR_INVALIDID
+    #endif
+    bool _suspend;                                                  // If system is currently suspended from operation
+    uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, controlled by publisher)
     time_t _lastSpaceCheck;                                         // Last time storage media free space was checked (if able)
     time_t _lastAutosave;                                           // Last time autosave was performed (if able)
     String _configFileName;                                         // Config file name saved from init call, used for autosave
@@ -429,8 +416,8 @@ protected:
 
     shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
 
-    void handleInterrupt(pintype_t pin);
-    friend void ::handleInterrupt(pintype_t pin);
+    void handleInterrupt(byte pin);
+    friend void ::handleInterrupt(byte pin);
 
     void checkFreeMemory();
     void broadcastLowMemory();

@@ -14,10 +14,6 @@ class ActuatorTimedEnableTask;
 
 #include "Hydroponics.h"
 #include "HydroponicsObject.h"
-#include "BasicInterruptAbstraction.h"
-
-// Standard interrupt abstraction
-extern BasicArduinoInterruptAbstraction interruptImpl;
 
 
 // Simple class for describing an analog bit resolution.
@@ -96,6 +92,13 @@ struct HydroponicsDLinkObject {
 
 
 // Scheduling
+
+#ifndef HYDRUINO_DISABLE_MULTITASKING
+
+#include "BasicInterruptAbstraction.h"
+
+// Standard interrupt abstraction
+extern BasicArduinoInterruptAbstraction interruptImpl;
 
 // This will schedule an actuator to enable on the next TaskManagerIO runloop using the given intensity and enable time millis.
 // Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
@@ -195,6 +198,22 @@ private:
     time_t _enableTimeMillis;
 };
 
+#endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
+
+// Assertions
+
+#ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
+
+// This softly asserts on a failed condition, sending message out to Serial output (if debugging enabled) and/or disk-based logging (if enabled), and then finally continuing program execution.
+// See HYDRUINO_SOFT_ASSERT() macro for usage.
+extern void softAssert(bool cond, String msg, const char *file, const char *func, int line);
+
+// This hard asserts on a failed condition, sending message out to Serial output (if debugging enabled) and/or disk-based logging (if enabled), then yielding (to allow comms), and then finally aborting program execution.
+// See HYDRUINO_HARD_ASSERT() macro for usage.
+extern void hardAssert(bool cond, String msg, const char *file, const char *func, int line);
+
+#endif // /ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
+
 // Helpers & Misc
 
 // Returns the active hydroponics instance. Not guaranteed to be non-null.
@@ -212,6 +231,9 @@ extern void logMessage(String message, bool flushAfter = false);
 extern void logWarning(String warning, bool flushAfter = false);
 // This logs a standard message to Logger output, with optional flush afterwards.
 extern void logError(String error, bool flushAfter = false);
+
+// Publishes latest data from sensor to Publisher output.
+extern void publishData(HydroponicsSensor *sensor);
 
 // Returns current time, with proper time zone offset based on active hydroponics instance.
 extern DateTime getCurrentTime();
@@ -263,43 +285,34 @@ template<typename T> T mapValue(T value, T inMin, T inMax, T outMin, T outMax);
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
 extern int freeMemory();
 
+// This delays a finely timed amount, with spin loop nearer to end. Used in finely timed dispensers.
+extern void delayFine(time_t timeMillis);
+
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
 
 // This will handle interrupts for task manager.
-extern void handleInterrupt(pintype_t pin);
-
-#ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
-
-// This softly asserts on a failed condition, sending message out to Serial output (if debugging enabled) and/or disk-based logging (if enabled), and then finally continuing program execution.
-// See HYDRUINO_SOFT_ASSERT() macro for usage.
-extern void softAssert(bool cond, String msg, const char *file, const char *func, int line);
-
-// This hard asserts on a failed condition, sending message out to Serial output (if debugging enabled) and/or disk-based logging (if enabled), then yielding (to allow comms), and then finally aborting program execution.
-// See HYDRUINO_HARD_ASSERT() macro for usage.
-extern void hardAssert(bool cond, String msg, const char *file, const char *func, int line);
-
-#endif // /ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
+extern void handleInterrupt(byte pin);
 
 // Units & Conversion
 
 // Tries to convert value from one unit to another (if supported), returning conversion success boolean.
 // Convert param used in certain unit conversions as external additional value (e.g. voltage for power/current conversion).
 // This is the main conversion function that all others wrap around.
-extern bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam = 0);
+extern bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam = FLT_UNDEF);
 
 // Attempts to convert value in-place from one unit to another, and if successful then assigns value back overtop of itself.
 // Convert param used in certain unit conversions. Returns conversion success boolean.
-extern bool convertUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType outUnits, float convertParam = 0);
+extern bool convertUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType outUnits, float convertParam = FLT_UNDEF);
 // Attempts to convert value from one unit to another, and if successful then assigns value, and optionally units, to output.
 // Convert param used in certain unit conversions. Returns conversion success boolean.
-extern bool convertUnits(float valueIn, float *valueOut, Hydroponics_UnitsType unitsIn, Hydroponics_UnitsType outUnits, Hydroponics_UnitsType *unitsOut = nullptr, float convertParam = 0);
+extern bool convertUnits(float valueIn, float *valueOut, Hydroponics_UnitsType unitsIn, Hydroponics_UnitsType outUnits, Hydroponics_UnitsType *unitsOut = nullptr, float convertParam = FLT_UNDEF);
 // Attempts to convert measurement in-place from one unit to another, and if successful then assigns value and units back overtop of itself.
 // Convert param used in certain unit conversions. Returns conversion success boolean.
-inline bool convertUnits(HydroponicsSingleMeasurement *measureInOut, Hydroponics_UnitsType outUnits, float convertParam = 0) { return convertUnits(&measureInOut->value, &measureInOut->units, outUnits, convertParam); }
+inline bool convertUnits(HydroponicsSingleMeasurement *measureInOut, Hydroponics_UnitsType outUnits, float convertParam = FLT_UNDEF) { return convertUnits(&measureInOut->value, &measureInOut->units, outUnits, convertParam); }
 // Attemps to convert measurement from one unit to another, and if successful then assigns value and units to output measurement.
 // Convert param used in certain unit conversions. Returns conversion success boolean.
-inline bool convertUnits(const HydroponicsSingleMeasurement *measureIn, HydroponicsSingleMeasurement *measureOut, Hydroponics_UnitsType outUnits, float convertParam = 0) { return convertUnits(measureIn->value, &measureOut->value, measureIn->units, outUnits, &measureOut->units, convertParam); }
+inline bool convertUnits(const HydroponicsSingleMeasurement *measureIn, HydroponicsSingleMeasurement *measureOut, Hydroponics_UnitsType outUnits, float convertParam = FLT_UNDEF) { return convertUnits(measureIn->value, &measureOut->value, measureIn->units, outUnits, &measureOut->units, convertParam); }
 
 // Returns the base units from a rate unit (e.g. L/min -> L).
 extern Hydroponics_UnitsType baseUnitsFromRate(Hydroponics_UnitsType units);
@@ -313,7 +326,7 @@ extern Hydroponics_UnitsType defaultDistanceUnits(Hydroponics_MeasurementMode me
 // Returns default weight units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default liquid volume units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultWaterVolumeUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+extern Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default liquid flow units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
@@ -423,13 +436,18 @@ extern String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, boo
 // Converts back to fluid reservoir enum from string.
 extern Hydroponics_ReservoirType reservoirTypeFromString(String reservoirTypeStr);
 
-// Returns rail voltage as derived from rail type enumeration.
+// Returns nominal rail voltage as derived from rail type enumeration.
 extern float getRailVoltageFromType(Hydroponics_RailType railType);
 
 // Converts from power rail enum to string, with optional exclude for special types (instead returning "").
 extern String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial = false);
 // Converts back to power rail enum from string.
 extern Hydroponics_RailType railTypeFromString(String railTypeStr);
+
+// Converts from units category enum to string, with optional exclude for special types (instead returning "").
+extern String unitsCategoryToString(Hydroponics_UnitsCategory unitsCategory, bool excludeSpecial = false);
+// Converts back to units category enum from string.
+extern Hydroponics_UnitsCategory unitsCategoryFromString(String unitsCategoryStr);
 
 // Converts from units type enum to symbol string, with optional exclude for special types (instead returning "").
 extern String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial = false);

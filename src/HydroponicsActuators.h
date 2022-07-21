@@ -237,8 +237,8 @@ struct HydroponicsPumpRelayActuatorData : public HydroponicsRelayActuatorData
 {
     Hydroponics_UnitsType flowRateUnits;
     HydroponicsMeasurementData contFlowRate;
-    char outputReservoirName[HYDRUINO_NAME_MAXSIZE];
-    char flowRateSensorName[HYDRUINO_NAME_MAXSIZE];
+    char outputReservoir[HYDRUINO_NAME_MAXSIZE];
+    char flowRateSensor[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsPumpRelayActuatorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

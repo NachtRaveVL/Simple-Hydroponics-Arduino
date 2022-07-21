@@ -9,6 +9,9 @@
 #ifndef FLT_EPSILON
 #define FLT_EPSILON                         0.00001f                // Single-precision floating point error tolerance
 #endif
+#ifndef FLT_UNDEF
+#define FLT_UNDEF                           __FLT_MAX__             // A floating point value to stand in for "undefined"
+#endif
 #ifndef DBL_EPSILON
 #define DBL_EPSILON                         0.0000000000001         // Double-precision floating point error tolerance
 #endif
@@ -34,7 +37,6 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Maximum array size for control input pinmap (max # of ribbon pins)
 #define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk size for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk size (serialization buffer size)
-
 // The following maxsizes only matter for architectures that do not have STL support
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        32                      // Maximum array size for system objects (max # of objects in system)
 #define HYDRUINO_OBJ_LINKS_MAXSIZE          16                      // Maximum array size for object linkage list, per obj (max # of linked objects)
@@ -44,29 +46,35 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_PINLOCKS_MAXSIZE       4                       // Maximum array size for pin locks list (max # of simultaneous locks)
 
 #define HYDRUINO_CONTROL_LOOP_INTERVAL      100                     // Run interval of main control loop, in milliseconds
-#define HYDRUINO_DATA_LOOP_INTERVAL         2000                    // Default run interval of data loop, in milliseconds
+#define HYDRUINO_DATA_LOOP_INTERVAL         2000                    // Default run interval of data loop, in milliseconds (customizable later)
 #define HYDRUINO_MISC_LOOP_INTERVAL         250                     // Run interval of misc loop, in milliseconds
-
-#define HYDRUINO_POS_SEARCH_FROMBEG         -1                      // Search from beginning to end, 0 up to MAXSIZE-1
-#define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
-#define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported/user-facing position indexing starts at 1 or 0 (aka display offset)
 
 #define HYDRUINO_ACT_PUMPCALC_MINWRTMILLIS  250                     // Minimum time millis needing to pass before a pump reports/writes changed volume to reservoir (reduces error accumulation)
 #define HYDRUINO_ACT_PUMPCALC_MINFLOWRATE   0.05                    // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
 #define HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF  5                       // Maximum polling frames # away an instantaneous flow rate can be for it to be used in pump/volume calculations (so it uses only recent measurements)
-#define HYDRUINO_ACT_TIMEDTASK_SPINMILLIS   15                      // However many millis away from stop time a timed actuator task can use yield() up to before using a blocking spin-lock (ensures fine dosing, too high can cause system lockups while too low can cause dosing timers to go over)
 
-#define HYDRUINO_CROP_PH_RANGE_HALF         1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
-#define HYDRUINO_CROP_EC_RANGE_HALF         0.5                     // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
-#define HYDRUINO_CROP_TEMP_RANGE_HALF       5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
-#define HYDRUINO_CROP_CO2_RANGE_HALF        100                     // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
 #define HYDRUINO_CROP_NIGHT_BEGINHR         22                      // Hour of the day night begins (for night feeding multiplier)
 #define HYDRUINO_CROP_NIGHT_ENDHR           6                       // Hour of the day night ends (for night feeding multiplier)
 #define HYDRUINO_CROP_GROWWEEKS_MAX         16                      // Maximum grow weeks to support scheduling up to
 #define HYDRUINO_CROP_GROWWEEKS_MIN         8                       // Minimum grow weeks to support scheduling up to
 
+#define HYDRUINO_DOSETIME_FRACTION_MIN      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
+#define HYDRUINO_DOSETIME_FRACTION_MAX      1.5f                    // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
+
 #define HYDRUINO_FEEDRES_FRACTION_EMPTY     0.2f                    // What fraction of a feed reservoir's volume is to be considered 'empty' during pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 #define HYDRUINO_FEEDRES_FRACTION_FILLED    0.9f                    // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+
+#define HYDRUINO_POS_SEARCH_FROMBEG         -1                      // Search from beginning to end, 0 up to MAXSIZE-1
+#define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
+#define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported/user-facing position indexing starts at 1 or 0 (aka display offset)
+
+#define HYDRUINO_RANGEFORM_PH_HALF          1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
+#define HYDRUINO_RANGEFORM_EC_HALF          0.5                     // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
+#define HYDRUINO_RANGEFORM_TEMP_HALF        5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
+#define HYDRUINO_RANGEFORM_CO2_HALF         100                     // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
+
+#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
+#define HYDRUINO_SCHEDULER_BALANCE_MINTIME  30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
@@ -76,12 +84,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_FREESPACE_INTERVAL     240                     // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
+#define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
 
-#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
-#define HYDRUINO_SCHEDULER_BALANCE_MINTIME  30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
-
-#define HYDRUINO_DOSETIME_FRACTION_MIN      0.5f                    // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
-#define HYDRUINO_DOSETIME_FRACTION_MAX      1.5f                    // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
@@ -279,15 +283,15 @@ enum Hydroponics_ActuatorType {
 // Sensor Type
 // Sensor device type. Specifies the various sensors and the kinds of things they measure.
 enum Hydroponics_SensorType {
-    Hydroponics_SensorType_AirTempHumidity,                 // Air temperature and humidity sensor (digital)
-    Hydroponics_SensorType_AirCarbonDioxide,                // Air CO2 sensor (analog/digital)
     Hydroponics_SensorType_PotentialHydrogen,               // pH sensor (analog/digital, feed reservoir only)
     Hydroponics_SensorType_TotalDissolvedSolids,            // TDS salts electrode sensor (analog/digital, feed reservoir only)
-    Hydroponics_SensorType_WaterTemperature,                // Submersible water sensor (analog/digital)
     Hydroponics_SensorType_SoilMoisture,                    // Soil moisture sensor (analog/digital)
+    Hydroponics_SensorType_WaterTemperature,                // Submersible water sensor (analog/digital)
     Hydroponics_SensorType_WaterPumpFlowSensor,             // Water pump flow hall sensor (analog(PWM))
     Hydroponics_SensorType_WaterLevelIndicator,             // Water level indicator (binary)
     Hydroponics_SensorType_WaterHeightMeter,                // Water height meter (analog)
+    Hydroponics_SensorType_AirTempHumidity,                 // Air temperature and humidity sensor (digital)
+    Hydroponics_SensorType_AirCarbonDioxide,                // Air CO2 sensor (analog/digital)
     Hydroponics_SensorType_PowerUsageMeter,                 // Power usage meter (analog)
 
     Hydroponics_SensorType_Count,                           // Internal use only
@@ -362,31 +366,53 @@ enum Hydroponics_BalancerState {
     Hydroponics_BalancerState_Undefined = -1                // Internal use only
 };
 
+// Units Category
+// Unit of measurement category. Specifies the kind of unit.
+enum Hydroponics_UnitsCategory {
+    Hydroponics_UnitsCategory_Alkalinity,                   // Alkalinity based unit
+    Hydroponics_UnitsCategory_DissolvedSolids,              // Dissolved solids based unit
+    Hydroponics_UnitsCategory_SoilMoisture,                 // Soil moisture based unit
+    Hydroponics_UnitsCategory_LiqTemperature,               // Liquid temperature based unit
+    Hydroponics_UnitsCategory_LiqVolume,                    // Liquid volume based unit
+    Hydroponics_UnitsCategory_LiqFlowRate,                  // Liquid flow rate based unit
+    Hydroponics_UnitsCategory_LiqDilution,                  // Liquid dilution based unit
+    Hydroponics_UnitsCategory_AirTemperature,               // Air temperature based unit
+    Hydroponics_UnitsCategory_AirHumidity,                  // Air humidity based unit
+    Hydroponics_UnitsCategory_AirHeatIndex,                 // Air heat index based unit
+    Hydroponics_UnitsCategory_AirConcentration,             // Air particle concentration based unit
+    Hydroponics_UnitsCategory_Distance,                     // Distance based unit
+    Hydroponics_UnitsCategory_Weight,                       // Weight based unit
+    Hydroponics_UnitsCategory_Power,                        // Power based unit
+
+    Hydroponics_UnitsCategory_Count,                        // Internal use only
+    Hydroponics_UnitsCategory_Undefined = -1                // Internal use only
+};
+
 // Units Type
 // Unit of measurement type. Specifies the unit type associated with a measured value.
 enum Hydroponics_UnitsType {
+    Hydroponics_UnitsType_Raw_0_1,                          // Raw value [0.0,1.0] mode
+    Hydroponics_UnitsType_Percentile_0_100,                 // Percentile [0.0,100.0] mode
+    Hydroponics_UnitsType_Alkalinity_pH_0_14,               // pH value [0.0,14.0] alkalinity mode
+    Hydroponics_UnitsType_Concentration_EC,                 // Siemens electrical conductivity mode
     Hydroponics_UnitsType_Temperature_Celsius,              // Celsius temperature mode
     Hydroponics_UnitsType_Temperature_Fahrenheit,           // Fahrenheit temperature mode
     Hydroponics_UnitsType_Temperature_Kelvin,               // Kelvin temperature mode
+    Hydroponics_UnitsType_LiqVolume_Liters,                 // Liters liquid volume mode
+    Hydroponics_UnitsType_LiqVolume_Gallons,                // Gallons liquid volume mode
+    Hydroponics_UnitsType_LiqFlowRate_LitersPerMin,         // Liters per minute liquid flow rate mode
+    Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin,        // Gallons per minute liquid flow rate mode
+    Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter,   // Milli liter per liter dilution mode
+    Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon,  // Milli liter per gallon dilution mode
+    Hydroponics_UnitsType_Concentration_PPM500,             // Parts-per-million 500 (NaCl) concentration mode (US)
+    Hydroponics_UnitsType_Concentration_PPM640,             // Parts-per-million 640 concentration mode (EU)
+    Hydroponics_UnitsType_Concentration_PPM700,             // Parts-per-million 700 (KCl) concentration mode (AU)
     Hydroponics_UnitsType_Distance_Meters,                  // Meters distance mode
     Hydroponics_UnitsType_Distance_Feet,                    // Feet distance mode
     Hydroponics_UnitsType_Weight_Kilogram,                  // Kilogram weight mode
     Hydroponics_UnitsType_Weight_Pounds,                    // Pounds weight mode
-    Hydroponics_UnitsType_LiquidVolume_Liters,              // Liters liquid volume mode
-    Hydroponics_UnitsType_LiquidVolume_Gallons,             // Gallons liquid volume mode
-    Hydroponics_UnitsType_LiquidFlowRate_LitersPerMin,      // Liters per minute liquid flow rate mode
-    Hydroponics_UnitsType_LiquidFlowRate_GallonsPerMin,     // Gallons per minute liquid flow rate mode
-    Hydroponics_UnitsType_LiquidDilution_MilliLiterPerLiter, // Milli liter per liter dilution mode
-    Hydroponics_UnitsType_LiquidDilution_MilliLiterPerGallon, // Milli liter per gallon dilution mode
     Hydroponics_UnitsType_Power_Wattage,                    // Wattage power mode
     Hydroponics_UnitsType_Power_Amperage,                   // Amperage current power mode
-    Hydroponics_UnitsType_pHScale_0_14,                     // pH scale [0.0,14.0] mode
-    Hydroponics_UnitsType_Concentration_EC,                 // Siemens electrical conductivity mode
-    Hydroponics_UnitsType_Concentration_PPM500,             // Parts-per-million 500 (NaCl) concentration mode (US)
-    Hydroponics_UnitsType_Concentration_PPM640,             // Parts-per-million 640 concentration mode (EU)
-    Hydroponics_UnitsType_Concentration_PPM700,             // Parts-per-million 700 (KCl) concentration mode (AU)
-    Hydroponics_UnitsType_Percentile_0_100,                 // Percentile [0.0,100.0] mode
-    Hydroponics_UnitsType_Raw_0_1,                          // Raw value [0.0,1.0] mode
 
     Hydroponics_UnitsType_Count,                            // Internal use only
     Hydroponics_UnitsType_Concentration_TDS = Hydroponics_UnitsType_Concentration_EC, // Standard TDS concentration mode alias
@@ -394,7 +420,6 @@ enum Hydroponics_UnitsType {
     Hydroponics_UnitsType_Power_JoulesPerSecond = Hydroponics_UnitsType_Power_Wattage, // Joules per second power mode alias
     Hydroponics_UnitsType_Undefined = -1                    // Internal use only
 };
-
 
 class Hydroponics;
 struct HydroponicsIdentity;
