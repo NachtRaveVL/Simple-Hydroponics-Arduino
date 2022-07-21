@@ -5,18 +5,12 @@
 
 #include "Hydroponics.h"
 
-const PROGMEM char HS_Air[] = {"Air"};
-const PROGMEM char HS_CO2[] = {"CO2"};
 const PROGMEM char HS_Count[] = {"Count"};
 const PROGMEM char HS_csv[] = {"csv"};
 const PROGMEM char HS_Disabled[] = {"Disabled"};
-const PROGMEM char HS_TDS[] = {"TDS"};
-const PROGMEM char HS_Temp[] = {"Temp"};
 const PROGMEM char HS_txt[] = {"txt"};
 const PROGMEM char HS_Undefined[] = {"Undefined"};
-const PROGMEM char HS_Water[] = {"Water"};
 const PROGMEM char HS_null[] = {"null"};
-const PROGMEM char HS_pH[] = {"pH"};
 
 const PROGMEM char HS_Err_AllocationFailure[] = {"Allocation failure"};
 const PROGMEM char HS_Err_AlreadyInitialized[] = {"Already initialized"};
@@ -52,7 +46,6 @@ const PROGMEM char HS_Key_AlwaysFilled[] = {"alwaysFilled"};
 const PROGMEM char HS_Key_AutosaveEnabled[] = {"autosaveEnabled"};
 const PROGMEM char HS_Key_AutosaveInterval[] = {"autosaveInterval"};
 const PROGMEM char HS_Key_BaseFeedMultiplier[] = {"baseFeedMultiplier"};
-const PROGMEM char HS_Key_Bloom[] = {"bloom"};
 const PROGMEM char HS_Key_CO2Levels[] = {"co2Levels"};
 const PROGMEM char HS_Key_CO2Sensor[] = {"co2Sensor"};
 const PROGMEM char HS_Key_CalibUnits[] = {"calibUnits"};
@@ -76,7 +69,6 @@ const PROGMEM char HS_Key_FilledTrigger[] = {"filledTrigger"};
 const PROGMEM char HS_Key_Flags[] = {"flags"};
 const PROGMEM char HS_Key_FlowRateSensor[] = {"flowRateSensor"};
 const PROGMEM char HS_Key_FlowRateUnits[] = {"flowRateUnits"};
-const PROGMEM char HS_Key_Grow[] = {"grow"};
 const PROGMEM char HS_Key_Id[] = {"id"};
 const PROGMEM char HS_Key_InputBitRes[] = {"inputBitRes"};
 const PROGMEM char HS_Key_InputInversion[] = {"inputInversion"};
@@ -127,7 +119,6 @@ const PROGMEM char HS_Key_Reservoir[] = {"reservoir"};
 const PROGMEM char HS_Key_ReservoirType[] = {"reservoirType"};
 const PROGMEM char HS_Key_Revision[] = {"revision"};
 const PROGMEM char HS_Key_Scheduler[] = {"scheduler"};
-const PROGMEM char HS_Key_Seed[] = {"seed"};
 const PROGMEM char HS_Key_Sensor[] = {"sensor"};
 const PROGMEM char HS_Key_SowDate[] = {"sowDate"};
 const PROGMEM char HS_Key_Spraying[] = {"spraying"};

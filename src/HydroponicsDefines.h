@@ -38,8 +38,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk size for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk size (serialization buffer size)
 // The following maxsizes only matter for architectures that do not have STL support
-#define HYDRUINO_SYS_OBJECTS_MAXSIZE        32                      // Maximum array size for system objects (max # of objects in system)
-#define HYDRUINO_OBJ_LINKS_MAXSIZE          16                      // Maximum array size for object linkage list, per obj (max # of linked objects)
+#define HYDRUINO_SYS_OBJECTS_MAXSIZE        24                      // Maximum array size for system objects (max # of objects in system)
+#define HYDRUINO_OBJ_LINKS_MAXSIZE          12                      // Maximum array size for object linkage list, per obj (max # of linked objects)
 #define HYDRUINO_BAL_ACTUATORS_MAXSIZE      8                       // Maximum array size for balancer actuator increment/decrement lists (max # of balancing actuators)
 #define HYDRUINO_SCH_FEEDRES_MAXSIZE        4                       // Maximum array size for scheduler feeding/lighting lists (max # of feed reservoirs)
 #define HYDRUINO_SYS_ONEWIRE_MAXSIZE        4                       // Maximum array size for pin->OneWire instances list (max # of OneWire pins)

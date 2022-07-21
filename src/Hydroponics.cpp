@@ -69,7 +69,8 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sd
 #ifndef HYDRUINO_DISABLE_MULTITASKING
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
-      _systemData(nullptr), _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0)
+      _systemData(nullptr), _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0),
+      _configFileName(F("hydruino.cfg"))
 {
     _activeInstance = this;
     if (isValidPin(_piezoBuzzerPin)) {
@@ -219,17 +220,16 @@ bool Hydroponics::saveToEEPROM(bool jsonFormat)
     return false;
 }
 
-bool Hydroponics::initFromSDCard(String configFileName, bool jsonFormat)
+bool Hydroponics::initFromSDCard(bool jsonFormat)
 {
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
-        _configFileName = configFileName;
         auto sd = getSDCard();
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(configFileName.c_str());
+            auto configFile = sd->open(_configFileName.c_str());
 
             if (configFile && configFile.available()) {
                 retVal = jsonFormat ? initFromJSONStream(&configFile) : initFromBinaryStream(&configFile);
@@ -245,17 +245,16 @@ bool Hydroponics::initFromSDCard(String configFileName, bool jsonFormat)
     return false;
 }
 
-bool Hydroponics::saveToSDCard(String configFileName, bool jsonFormat)
+bool Hydroponics::saveToSDCard(bool jsonFormat)
 {
     HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
 
     if (!_systemData) {
-        _configFileName = configFileName;
         auto sd = getSDCard();
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(configFileName.c_str());
+            auto configFile = sd->open(_configFileName.c_str());
 
             if (configFile && configFile.availableForWrite()) {
                 retVal = jsonFormat ? saveToJSONStream(&configFile) : saveToBinaryStream(&configFile);
@@ -868,7 +867,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
 
 shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
 {
-    HYDRUINO_SOFT_ASSERT(false, F("Hashing collision")); // exhaustive search must be performed
+    HYDRUINO_SOFT_ASSERT(false, F("Hashing collision")); // exhaustive search must be performed, publishing may miss values
 
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         if (id.keyStr == iter->second->getId().keyStr) {
@@ -1190,7 +1189,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
 
 void Hydroponics::endSDCard(SDClass *sd)
 {
-    #if !defined(CORE_TEENSY) // no delayed write on Teensy's SD impl
+    #if !defined(CORE_TEENSY) // no delayed write on teensy's SD impl
         sd->end();
     #endif
 }
@@ -1423,10 +1422,10 @@ void Hydroponics::checkAutosave()
     if (getIsAutosaveEnabled() && now() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
         switch (_systemData->autosaveEnabled) {
             case Hydroponics_Autosave_EnabledToSDCardJson:
-                saveToSDCard(_configFileName, true);
+                saveToSDCard(true);
                 break;
             case Hydroponics_Autosave_EnabledToSDCardRaw:
-                saveToSDCard(_configFileName, false);
+                saveToSDCard(false);
                 break;
             case Hydroponics_Autosave_EnabledToEEPROMJson:
                 saveToEEPROM(true);
