@@ -39,10 +39,10 @@
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
-#define HYDRUINO_ENABLE_DEBUG_OUTPUT
+//#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
-// Uncomment or -D this define to disable debug assertions.
-//#define HYDRUINO_DISABLE_DEBUG_ASSERTIONS
+// Uncomment or -D this define to enable debug assertions (note: adds considerable size to sketch).
+//#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
 
 
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -82,14 +82,14 @@ extern void __int_restore_irq(int *primask);
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
 #undef HYDRUINO_ENABLE_DEBUG_OUTPUT
 #endif
-#if !defined(HYDRUINO_DISABLE_DEBUG_ASSERTIONS)
+#if !defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_ASSERTIONS)
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  softAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
 #define HYDRUINO_HARD_ASSERT(cond,msg)  hardAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
 #define HYDRUINO_USE_DEBUG_ASSERTIONS
 #else
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  ((void)0)
 #define HYDRUINO_HARD_ASSERT(cond,msg)  ((void)0)
-#endif // /if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
+#endif
 
 #include "ArduinoJson.h"                // JSON library
 #include "ArxContainer.h"               // STL-like container library
@@ -179,8 +179,8 @@ public:
 
     // Initializes system from EEPROM save, returning success flag
     bool initFromEEPROM(bool jsonFormat = false);
-    // Initializes system from SD card file save, returning success flag
-    bool initFromSDCard(String configFileName = "hydruino.cfg", bool jsonFormat = true);
+    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    bool initFromSDCard(bool jsonFormat = true);
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
@@ -190,8 +190,8 @@ public:
 
     // Saves current system setup to EEPROM save, returning success flag
     bool saveToEEPROM(bool jsonFormat = false);
-    // Saves current system setup to SD card file save, returning success flag
-    bool saveToSDCard(String configFileName = "hydruino.cfg", bool jsonFormat = true);
+    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    bool saveToSDCard(bool jsonFormat = true);
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup 
@@ -258,7 +258,7 @@ public:
     // Pin Locks.
 
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
-    bool tryGetPinLock(byte pin, time_t waitMillis = 250);
+    bool tryGetPinLock(byte pin, time_t waitMillis = 150);
     // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
     void returnPinLock(byte pin);
 
@@ -274,8 +274,8 @@ public:
     void setPollingInterval(uint16_t pollingInterval);
     // Sets system autosave enable mode and optional autosave interval, in minutes.
     void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
-    // Sets system config file as used by autosave, if not already set by initWith.
-    void setSystemConfigFile(String configFileName = "hydruino.cfg");
+    // Sets system config file as used by various methods.
+    void setSystemConfigFile(String configFileName);
     // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
     void setWiFiConnection(String ssid, String password);
 
@@ -373,15 +373,15 @@ protected:
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
     #ifndef HYDRUINO_DISABLE_MULTITASKING
-        taskid_t _controlTaskId;                                    // Control task Id if created, else TASKMGR_INVALIDID
-        taskid_t _dataTaskId;                                       // Data polling task Id if created, else TASKMGR_INVALIDID
-        taskid_t _miscTaskId;                                       // Misc task Id if created, else TASKMGR_INVALIDID
+    taskid_t _controlTaskId;                                        // Control task Id if created, else TASKMGR_INVALIDID
+    taskid_t _dataTaskId;                                           // Data polling task Id if created, else TASKMGR_INVALIDID
+    taskid_t _miscTaskId;                                           // Misc task Id if created, else TASKMGR_INVALIDID
     #endif
     bool _suspend;                                                  // If system is currently suspended from operation
     uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, controlled by publisher)
     time_t _lastSpaceCheck;                                         // Last time storage media free space was checked (if able)
     time_t _lastAutosave;                                           // Last time autosave was performed (if able)
-    String _configFileName;                                         // Config file name saved from init call, used for autosave
+    String _configFileName;                                         // Config file name saved from init call, used for autosave (default: "hydruino.cfg")
 
     Map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
     Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount>::type _additives; // Custom additives data

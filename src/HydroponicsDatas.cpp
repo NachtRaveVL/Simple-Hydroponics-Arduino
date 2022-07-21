@@ -370,17 +370,17 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
     {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, SFP(HS_Err_ImportFailure));
         JsonVariantConst dailyLightHoursVar = objectIn[SFP(HS_Key_DailyLightHours)];
         commaStringToArray(dailyLightHoursVar, dailyLightHours, 3);
-        dailyLightHours[0] = dailyLightHoursVar[SFP(HS_Key_Seed)] | dailyLightHoursVar[0] | dailyLightHours[0];
-        dailyLightHours[1] = dailyLightHoursVar[SFP(HS_Key_Grow)] | dailyLightHoursVar[1] | dailyLightHours[1];
-        dailyLightHours[2] = dailyLightHoursVar[SFP(HS_Key_Bloom)] | dailyLightHoursVar[2] | dailyLightHours[2];
+        dailyLightHours[0] = dailyLightHoursVar[0] | dailyLightHours[0];
+        dailyLightHours[1] = dailyLightHoursVar[1] | dailyLightHours[1];
+        dailyLightHours[2] = dailyLightHoursVar[2] | dailyLightHours[2];
     }
 
     {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, SFP(HS_Err_ImportFailure));
         JsonVariantConst phaseDurationWeeksVar = objectIn[SFP(HS_Key_PhaseDurationWeeks)];
         commaStringToArray(phaseDurationWeeksVar, phaseDurationWeeks, 3);
-        phaseDurationWeeks[0] = phaseDurationWeeksVar[SFP(HS_Key_Seed)] | phaseDurationWeeksVar[0] | phaseDurationWeeks[0];
-        phaseDurationWeeks[1] = phaseDurationWeeksVar[SFP(HS_Key_Grow)] | phaseDurationWeeksVar[1] | phaseDurationWeeks[1];
-        phaseDurationWeeks[2] = phaseDurationWeeksVar[SFP(HS_Key_Bloom)] | phaseDurationWeeksVar[2] | phaseDurationWeeks[2];
+        phaseDurationWeeks[0] = phaseDurationWeeksVar[0] | phaseDurationWeeks[0];
+        phaseDurationWeeks[1] = phaseDurationWeeksVar[1] | phaseDurationWeeks[1];
+        phaseDurationWeeks[2] = phaseDurationWeeksVar[2] | phaseDurationWeeks[2];
     }
 
     {   JsonVariantConst phRangeVar = objectIn[SFP(HS_Key_PHRange)];
@@ -388,7 +388,7 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
         phRange[0] = phRangeVar[SFP(HS_Key_Min)] | phRangeVar[0] | phRange[0];
         phRange[1] = phRangeVar[SFP(HS_Key_Max)] | phRangeVar[1] | phRange[1];
     }
-    {   JsonVariantConst tdsRangeVar = objectIn[SFP(HS_Key_TDSRange)] | objectIn[F("ecRange")];
+    {   JsonVariantConst tdsRangeVar = objectIn[SFP(HS_Key_TDSRange)];
         commaStringToArray(tdsRangeVar, tdsRange, 2);
         tdsRange[0] = tdsRangeVar[SFP(HS_Key_Min)] | tdsRangeVar[0];
         tdsRange[1] = tdsRangeVar[SFP(HS_Key_Max)] | tdsRangeVar[1];

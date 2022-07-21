@@ -55,8 +55,8 @@ From Hydroponics.h:
 // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
-// Uncomment or -D this define to disable debug assertions.
-//#define HYDRUINO_DISABLE_DEBUG_ASSERTIONS
+// Uncomment or -D this define to enable debug assertions (note: adds considerable size to sketch).
+//#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
 ```
 
 ### Controller Initialization

@@ -68,7 +68,7 @@ struct HydroponicsDataColumn {
 // Publisher Serialization Sub Data
 // A part of HSYS system data.
 struct HydroponicsPublisherSubData : public HydroponicsSubData {
-    char dataFilePrefix[HYDRUINO_NAME_MAXSIZE];
+    char dataFilePrefix[16];
     bool publishToSDCard;
 
     HydroponicsPublisherSubData();

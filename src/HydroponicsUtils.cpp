@@ -469,6 +469,106 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
     if (!valueOut || unitsOut == Hydroponics_UnitsType_Undefined || unitsIn == unitsOut) return false;
 
     switch (unitsIn) {
+        case Hydroponics_UnitsType_Raw_0_1:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Alkalinity_pH_0_14:
+                    *valueOut = valueIn * 14.0f;
+                    return true;
+
+                case Hydroponics_UnitsType_Concentration_EC:
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * 5.0f;
+                    } else {
+                        *valueOut = valueIn * convertParam;
+                    }
+                    return true;
+
+                case Hydroponics_UnitsType_Concentration_PPM500:
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * (5.0f * 500.0f);
+                    } else {
+                        *valueOut = valueIn * (convertParam * 500.0f);
+                    }
+                    return true;
+
+                case Hydroponics_UnitsType_Concentration_PPM640:
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * (5.0f * 640.0f);
+                    } else {
+                        *valueOut = valueIn * (convertParam * 640.0f);
+                    }
+                    return true;
+
+                case Hydroponics_UnitsType_Concentration_PPM700:
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * (5.0f * 700.0f);
+                    } else {
+                        *valueOut = valueIn * (convertParam * 700.0f);
+                    }
+                    return true;
+
+                case Hydroponics_UnitsType_Percentile_0_100:
+                    *valueOut = valueIn * 100.0f;
+                    return true;
+
+                default:
+                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn * convertParam;
+                        return true;
+                    }
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Percentile_0_100:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Raw_0_1:
+                    *valueOut = valueIn / 100.0f;
+                    return true;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Alkalinity_pH_0_14:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Raw_0_1:
+                    *valueOut = valueIn / 14.0f;
+                    return true;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Concentration_EC:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Raw_0_1:
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn / 5.0f;
+                    } else {
+                        *valueOut = valueIn / convertParam;
+                    }
+                    return true;
+
+                case Hydroponics_UnitsType_Concentration_PPM500:
+                    *valueOut = valueIn * 500.0f;
+                    return true;
+
+                case Hydroponics_UnitsType_Concentration_PPM640:
+                    *valueOut = valueIn * 640.0f;
+                    return true;
+
+                case Hydroponics_UnitsType_Concentration_PPM700:
+                    *valueOut = valueIn * 700.0f;
+                    return true;
+
+                default:
+                    break;
+            }
+            break;
+
         case Hydroponics_UnitsType_Temperature_Celsius:
             switch(unitsOut) {
                 case Hydroponics_UnitsType_Temperature_Fahrenheit:
@@ -507,50 +607,6 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
 
                 case Hydroponics_UnitsType_Temperature_Fahrenheit:
                     *valueOut = ((valueIn * 9.0) / 5.0) - 459.67;
-                    return true;
-
-                default:
-                    break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Distance_Meters:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Distance_Feet:
-                    *valueOut = valueIn * 3.28084f;
-                    return true;
-
-                default:
-                    break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Distance_Feet:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Distance_Meters:
-                    *valueOut = valueIn * 0.3048;
-                    return true;
-
-                default:
-                    break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Weight_Kilogram:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Weight_Pounds:
-                    *valueOut = valueIn * 2.20462f;
-                    return true;
-
-                default:
-                    break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Weight_Pounds:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Weight_Kilogram:
-                    *valueOut = valueIn * 0.453592f;
                     return true;
 
                 default:
@@ -624,44 +680,14 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             }
             break;
 
-        case Hydroponics_UnitsType_Alkalinity_pH_0_14:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / 14.0f;
-                    return true;
-
-                default:
-                    break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Concentration_EC:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / 5.0f;
-                    return true;
-
-                case Hydroponics_UnitsType_Concentration_PPM500:
-                    *valueOut = valueIn * 500.0f;
-                    return true;
-
-                case Hydroponics_UnitsType_Concentration_PPM640:
-                    *valueOut = valueIn * 640.0f;
-                    return true;
-
-                case Hydroponics_UnitsType_Concentration_PPM700:
-                    *valueOut = valueIn * 700.0f;
-                    return true;
-
-                default:
-                    break;
-            }
-            break;
-
         case Hydroponics_UnitsType_Concentration_PPM500:
             switch(unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / (5.0f * 500.0f);
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn / (5.0f * 500.0f);
+                    } else {
+                        *valueOut = valueIn / (convertParam * 500.0f);
+                    }
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_EC:
@@ -683,7 +709,11 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_Concentration_PPM640:
             switch(unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / (5.0f * 640.0f);
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn / (5.0f * 640.0f);
+                    } else {
+                        *valueOut = valueIn / (convertParam * 640.0f);
+                    }
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_EC:
@@ -705,7 +735,11 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_Concentration_PPM700:
             switch(unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / (5.0f * 700.0f);
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                        *valueOut = valueIn / (5.0f * 700.0f);
+                    } else {
+                        *valueOut = valueIn / (convertParam * 700.0f);
+                    }
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_EC:
@@ -718,6 +752,50 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
                         return tryConvertUnits(*valueOut, Hydroponics_UnitsType_Concentration_EC, valueOut, unitsOut);
                     }
                     return false;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Distance_Meters:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Distance_Feet:
+                    *valueOut = valueIn * 3.28084f;
+                    return true;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Distance_Feet:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Distance_Meters:
+                    *valueOut = valueIn * 0.3048;
+                    return true;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Weight_Kilogram:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Weight_Pounds:
+                    *valueOut = valueIn * 2.20462f;
+                    return true;
+
+                default:
+                    break;
+            }
+            break;
+
+        case Hydroponics_UnitsType_Weight_Pounds:
+            switch(unitsOut) {
+                case Hydroponics_UnitsType_Weight_Kilogram:
+                    *valueOut = valueIn * 0.453592f;
+                    return true;
 
                 default:
                     break;
@@ -743,68 +821,6 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
                         return true;
                     }
                 break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Percentile_0_100:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / 100.0f;
-                    return true;
-
-                default:
-                    break;
-            }
-            break;
-
-        case Hydroponics_UnitsType_Raw_0_1:
-            switch(unitsOut) {
-                case Hydroponics_UnitsType_Alkalinity_pH_0_14:
-                    *valueOut = valueIn * 14.0f;
-                    return true;
-
-                case Hydroponics_UnitsType_Concentration_EC:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
-                        *valueOut = valueIn * 5.0f;
-                    } else {
-                        *valueOut = valueIn * convertParam;
-                    }
-                    return true;
-
-                case Hydroponics_UnitsType_Concentration_PPM500:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
-                        *valueOut = valueIn * (5.0f * 500.0f);
-                    } else {
-                        *valueOut = valueIn * (convertParam * 500.0f);
-                    }
-                    return true;
-
-                case Hydroponics_UnitsType_Concentration_PPM640:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
-                        *valueOut = valueIn * (5.0f * 640.0f);
-                    } else {
-                        *valueOut = valueIn * (convertParam * 640.0f);
-                    }
-                    return true;
-
-                case Hydroponics_UnitsType_Concentration_PPM700:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
-                        *valueOut = valueIn * (5.0f * 700.0f);
-                    } else {
-                        *valueOut = valueIn * (convertParam * 700.0f);
-                    }
-                    return true;
-
-                case Hydroponics_UnitsType_Percentile_0_100:
-                    *valueOut = valueIn * 100.0f;
-                    return true;
-
-                default:
-                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
-                        *valueOut = valueIn * convertParam;
-                        return true;
-                    }
-                    break;
             }
             break;
 
@@ -1633,7 +1649,7 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
         case Hydroponics_UnitsType_Percentile_0_100:
             return F("%");
         case Hydroponics_UnitsType_Alkalinity_pH_0_14:
-            return SFP(HS_pH);
+            return F("pH");
         case Hydroponics_UnitsType_Concentration_EC:
             return F("mS/cm"); // alt: EC, TDS
         case Hydroponics_UnitsType_Temperature_Celsius:

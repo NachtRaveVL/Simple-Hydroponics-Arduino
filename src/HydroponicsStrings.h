@@ -6,18 +6,12 @@
 #ifndef HydroponicsStrings_H
 #define HydroponicsStrings_H
 
-extern const PROGMEM char HS_Air[];
-extern const PROGMEM char HS_CO2[];
 extern const PROGMEM char HS_Count[];
 extern const PROGMEM char HS_csv[];
 extern const PROGMEM char HS_Disabled[];
-extern const PROGMEM char HS_TDS[];
-extern const PROGMEM char HS_Temp[];
 extern const PROGMEM char HS_txt[];
 extern const PROGMEM char HS_Undefined[];
-extern const PROGMEM char HS_Water[];
 extern const PROGMEM char HS_null[];
-extern const PROGMEM char HS_pH[];
 
 extern const PROGMEM char HS_Err_AllocationFailure[];
 extern const PROGMEM char HS_Err_AlreadyInitialized[];
@@ -53,7 +47,6 @@ extern const PROGMEM char HS_Key_AlwaysFilled[];
 extern const PROGMEM char HS_Key_AutosaveEnabled[];
 extern const PROGMEM char HS_Key_AutosaveInterval[];
 extern const PROGMEM char HS_Key_BaseFeedMultiplier[];
-extern const PROGMEM char HS_Key_Bloom[];
 extern const PROGMEM char HS_Key_CO2Levels[];
 extern const PROGMEM char HS_Key_CO2Sensor[];
 extern const PROGMEM char HS_Key_CalibUnits[];
@@ -77,7 +70,6 @@ extern const PROGMEM char HS_Key_FilledTrigger[];
 extern const PROGMEM char HS_Key_Flags[];
 extern const PROGMEM char HS_Key_FlowRateSensor[];
 extern const PROGMEM char HS_Key_FlowRateUnits[];
-extern const PROGMEM char HS_Key_Grow[];
 extern const PROGMEM char HS_Key_Id[];
 extern const PROGMEM char HS_Key_InputBitRes[];
 extern const PROGMEM char HS_Key_InputInversion[];
@@ -128,7 +120,6 @@ extern const PROGMEM char HS_Key_Reservoir[];
 extern const PROGMEM char HS_Key_ReservoirType[];
 extern const PROGMEM char HS_Key_Revision[];
 extern const PROGMEM char HS_Key_Scheduler[];
-extern const PROGMEM char HS_Key_Seed[];
 extern const PROGMEM char HS_Key_Sensor[];
 extern const PROGMEM char HS_Key_SowDate[];
 extern const PROGMEM char HS_Key_Spraying[];
