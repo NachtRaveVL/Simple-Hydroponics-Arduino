@@ -277,7 +277,6 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
-
         {   StaticJsonDocument<HYDRUINO_JSON_DOC_SYSSIZE> doc;
             deserializeJson(doc, *streamIn);
             JsonObjectConst systemDataObj = doc.as<JsonObjectConst>();
@@ -332,9 +331,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
         }
 
         HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_InitializationFailure));
-        if (_systemData) {
-            commonInit();
-        }
+        if (_systemData) { commonInit(); }
         return _systemData;
     }
 
@@ -490,9 +487,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
         }
 
         HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_InitializationFailure));
-        if (_systemData) {
-            commonInit();
-        }
+        if (_systemData) { commonInit(); }
         return _systemData;
     }
 
@@ -623,7 +618,7 @@ void Hydroponics::commonInit()
         Serial.print(F(", ctrlInMode: "));
         Serial.print(controlInputModeToString(getControlInputMode()));
         Serial.println();
-    #endif
+    #endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
 }
 
 void Hydroponics::commonPostSave()
@@ -816,6 +811,7 @@ bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
                 _publisher.setNeedsTabulation();
             }
         }
+
         return true;
     }
     return false;
