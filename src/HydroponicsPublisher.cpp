@@ -39,7 +39,7 @@ void HydroponicsPublisher::resolveLinks()
 void HydroponicsPublisher::handleLowMemory()
 { ; }
 
-bool HydroponicsPublisher::beginPublishingToSDCard(String csvFilePrefix)
+bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 {
     auto hydroponics = getHydroponicsInstance();
     HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
@@ -48,14 +48,14 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String csvFilePrefix)
         auto sd = hydroponics->getSDCard();
 
         if (sd && sd->exists("/")) {
-            String dataFileName = getYYMMDDFilename(csvFilePrefix, SFP(HS_csv));
+            String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HS_csv));
             auto dataFile = sd->open(dataFileName, FILE_WRITE);
             if (dataFile && dataFile.availableForWrite()) {
                 dataFile.close();
                 hydroponics->endSDCard(sd);
 
                 hydroponics->_systemData->_bumpRevIfNotAlreadyModded();
-                strncpy(_publisherData->csvFilePrefix, csvFilePrefix.c_str(), 16);
+                strncpy(_publisherData->dataFilePrefix, dataFilePrefix.c_str(), 16);
                 _publisherData->publishToSDCard = true;
                 _dataFileName = dataFileName;
 
@@ -99,7 +99,7 @@ bool HydroponicsPublisher::getIsPublishingEnabled()
 void HydroponicsPublisher::notifyDayChanged()
 {
     if (getIsPublishingEnabled()) {
-        _dataFileName = getYYMMDDFilename(stringFromChars(_publisherData->csvFilePrefix, 16), SFP(HS_csv));
+        _dataFileName = getYYMMDDFilename(stringFromChars(_publisherData->dataFilePrefix, 16), SFP(HS_csv));
         cleanupOldestData();
     }
 }
@@ -224,7 +224,7 @@ void HydroponicsPublisher::cleanupOldestData(bool force)
 
 
 HydroponicsPublisherSubData::HydroponicsPublisherSubData()
-    : HydroponicsSubData() // TODO
+    : HydroponicsSubData(), dataFilePrefix{0}, publishToSDCard(false)
 {
     type = 0; // no type differentiation
 }
@@ -232,11 +232,16 @@ HydroponicsPublisherSubData::HydroponicsPublisherSubData()
 void HydroponicsPublisherSubData::toJSONObject(JsonObject &objectOut) const
 {
     //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
-    // TODO
+
+    if (dataFilePrefix[0]) { objectOut[SFP(HS_Key_DataFilePrefix)] = stringFromChars(dataFilePrefix, 16); }
+    if (publishToSDCard != false) { objectOut[SFP(HS_Key_PublishToSDCard)] = publishToSDCard; }
 }
 
 void HydroponicsPublisherSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
     //HydroponicsSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
-    // TODO
+
+    const char *dataFilePrefixStr = objectIn[SFP(HS_Key_DataFilePrefix)];
+    if (dataFilePrefixStr && dataFilePrefixStr[0]) { strncpy(dataFilePrefix, dataFilePrefixStr, 16); }
+    publishToSDCard = objectIn[SFP(HS_Key_PublishToSDCard)] | publishToSDCard;
 }

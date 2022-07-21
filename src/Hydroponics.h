@@ -33,7 +33,7 @@
 // NOTE: It is recommended to use custom build flags instead of editing this file directly.
 
 // Uncomment or -D this define to completely disable usage of any multitasking commands and libraries. Not recommended.
-#define HYDRUINO_DISABLE_MULTITASKING             // https://github.com/davetcc/TaskManagerIO
+//#define HYDRUINO_DISABLE_MULTITASKING             // https://github.com/davetcc/TaskManagerIO
 
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
@@ -221,9 +221,9 @@ public:
     // Data Publishing.
 
     // Enables data publishing to the SD card. Log file names will concat YYMMDD.csv to the specified prefix. Returns success boolean.
-    bool enableDataPublishingToSDCard(String csvFilePrefix = "data/hy");
+    bool enableDataPublishingToSDCard(String dataFilePrefix = "data/hy");
     // TODO: Network URL data pub
-    //bool enableDataPublishingToNetworkURL(urlData, String csvFilePrefix = "data/hy");
+    //bool enableDataPublishingToNetworkURL(urlData, String dataFilePrefix = "data/hy");
     // TODO: MQTT data pub
     //bool enableDataPublishingToMQTT(mqttBroker, deviceData);
     // TODO: Web API data pub

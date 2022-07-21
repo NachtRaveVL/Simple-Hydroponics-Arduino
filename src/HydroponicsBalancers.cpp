@@ -282,7 +282,7 @@ void HydroponicsTimedDosingBalancer::update()
                     ((HydroponicsPumpObjectInterface *)(actuator.get()))->pump(timeMillis); // pumps have nice logging output
                 } else if (actuator) {
                     #ifndef HYDRUINO_DISABLE_MULTITASKING
-                        scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(actuator), timeMillis);
+                        scheduleActuatorTimedEnableOnce(actuator, timeMillis);
                         _dosingActIndex++;
                     #else
                         actuator->enableActuator();

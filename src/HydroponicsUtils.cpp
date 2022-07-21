@@ -37,7 +37,7 @@ ActuatorTimedEnableTask::~ActuatorTimedEnableTask()
 void ActuatorTimedEnableTask::exec()
 {
     if (_actuator->enableActuator(_enableIntensity)) {
-        delayFine(_enabledTimeMillis);
+        delayFine(_enableTimeMillis);
 
         HYDRUINO_SOFT_ASSERT(_actuator->getIsEnabled(), SFP(HS_Err_OperationFailure));
         if (_actuator->getIsEnabled()) {

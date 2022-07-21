@@ -24,7 +24,7 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
  
-    bool beginPublishingToSDCard(String csvFilePrefix);
+    bool beginPublishingToSDCard(String dataFilePrefix);
     bool getIsPublishingToSDCard();
 
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
@@ -68,7 +68,7 @@ struct HydroponicsDataColumn {
 // Publisher Serialization Sub Data
 // A part of HSYS system data.
 struct HydroponicsPublisherSubData : public HydroponicsSubData {
-    char csvFilePrefix[HYDRUINO_NAME_MAXSIZE];
+    char dataFilePrefix[HYDRUINO_NAME_MAXSIZE];
     bool publishToSDCard;
 
     HydroponicsPublisherSubData();

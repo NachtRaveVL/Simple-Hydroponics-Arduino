@@ -650,7 +650,7 @@ void Hydroponics::commonPostSave()
 void controlLoop()
 {
     auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) {
+    if (hydroponics && hydroponics->getInOperationalMode()) {
         hydroponics->updateObjects(0);
         hydroponics->_scheduler.update();
     }
@@ -661,7 +661,7 @@ void controlLoop()
 void dataLoop()
 {
     auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) {
+    if (hydroponics && hydroponics->getInOperationalMode()) {
         hydroponics->updateObjects(1);
     }
 
@@ -671,7 +671,7 @@ void dataLoop()
 void miscLoop()
 {
     auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) {
+    if (hydroponics && hydroponics->getInOperationalMode()) {
         hydroponics->checkFreeMemory();
         hydroponics->checkFreeSpace();
         hydroponics->checkAutosave();
@@ -786,9 +786,9 @@ bool Hydroponics::enableSysLoggingToSDCard(String logFilePrefix)
     return _logger.beginLoggingToSDCard(logFilePrefix);
 }
 
-bool Hydroponics::enableDataPublishingToSDCard(String csvFilePrefix)
+bool Hydroponics::enableDataPublishingToSDCard(String dataFilePrefix)
 {
-    return _publisher.beginPublishingToSDCard(csvFilePrefix);
+    return _publisher.beginPublishingToSDCard(dataFilePrefix);
 }
 
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
