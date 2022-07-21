@@ -170,10 +170,14 @@ void HydroponicsLogger::logError(String err)
 
 void HydroponicsLogger::log(String msg)
 {
-    String timestamp = getCurrentTime().timestamp(DateTime::TIMESTAMP_TIME);
+    String timestamp = getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL);
 
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-        if (Serial) { Serial.println(msg); }
+        if (Serial) {
+            Serial.print(timestamp);
+            Serial.print(' ');
+            Serial.println(msg);
+        }
     #endif
 
     if (getIsLoggingToSDCard()) {
@@ -184,7 +188,7 @@ void HydroponicsLogger::log(String msg)
 
             if (logFile && logFile.availableForWrite()) {
                 logFile.print(timestamp);
-                logFile.print(':'); logFile.print(' ');
+                logFile.print(' ');
                 logFile.println(msg);
             }
 
@@ -198,7 +202,10 @@ void HydroponicsLogger::log(String msg)
 void HydroponicsLogger::flush()
 {
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-        if (Serial) { Serial.flush(); yield(); }
+        if (Serial) {
+            Serial.flush();
+            yield();
+        }
     #endif
 }
 
