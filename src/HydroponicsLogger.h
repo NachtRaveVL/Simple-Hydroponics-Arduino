@@ -11,7 +11,7 @@ struct HydroponicsLoggerSubData;
 
 #include "Hydroponics.h"
 
-enum HydroponicsLogLevel {
+enum Hydroponics_LogLevel {
     Hydroponics_LogLevel_All,
     Hydroponics_LogLevel_Warnings,
     Hydroponics_LogLevel_Errors,
@@ -52,8 +52,8 @@ public:
     void logError(String err);
     void flush();
 
-    void setLogLevel(HydroponicsLogLevel logLevel);
-    HydroponicsLogLevel getLogLevel() const;
+    void setLogLevel(Hydroponics_LogLevel logLevel);
+    Hydroponics_LogLevel getLogLevel() const;
     bool getIsLoggingEnabled() const;
 
     void notifyDayChanged();
@@ -74,7 +74,7 @@ protected:
 // Logger Serialization Sub Data
 // A part of HSYS system data.
 struct HydroponicsLoggerSubData : public HydroponicsSubData {
-    HydroponicsLogLevel logLevel;
+    Hydroponics_LogLevel logLevel;
     char logFilePrefix[16];
     bool logToSDCard;
 

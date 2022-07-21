@@ -164,7 +164,7 @@ void HydroponicsLogger::flush()
     #endif
 }
 
-void HydroponicsLogger::setLogLevel(HydroponicsLogLevel logLevel)
+void HydroponicsLogger::setLogLevel(Hydroponics_LogLevel logLevel)
 {
     HYDRUINO_SOFT_ASSERT(_loggerData, SFP(HS_Err_NotYetInitialized));
 
@@ -174,7 +174,7 @@ void HydroponicsLogger::setLogLevel(HydroponicsLogLevel logLevel)
     }
 }
 
-HydroponicsLogLevel HydroponicsLogger::getLogLevel() const
+Hydroponics_LogLevel HydroponicsLogger::getLogLevel() const
 {
     HYDRUINO_SOFT_ASSERT(_loggerData, SFP(HS_Err_NotYetInitialized));
     return _loggerData ? _loggerData->logLevel : Hydroponics_LogLevel_None;
@@ -202,7 +202,7 @@ void HydroponicsLogger::cleanupOldestLogs(bool force)
 
 
 HydroponicsLoggerSubData::HydroponicsLoggerSubData()
-    : HydroponicsSubData() // TODO
+    : HydroponicsSubData(), logLevel(Hydroponics_LogLevel_All), logFilePrefix{0}, logToSDCard(false)
 {
     type = 0; // no type differentiation
 }
@@ -210,11 +210,18 @@ HydroponicsLoggerSubData::HydroponicsLoggerSubData()
 void HydroponicsLoggerSubData::toJSONObject(JsonObject &objectOut) const
 {
     //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
-    // TODO
+
+    if (logLevel != Hydroponics_LogLevel_All) { objectOut[SFP(HS_Key_LogLevel)] = logLevel; }
+    if (logFilePrefix[0]) { objectOut[SFP(HS_Key_LogFilePrefix)] = stringFromChars(logFilePrefix, 16); }
+    if (logToSDCard != false) { objectOut[SFP(HS_Key_LogToSDCard)] = logToSDCard; }
 }
 
 void HydroponicsLoggerSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
     //HydroponicsSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
-    // TODO
+
+    logLevel = objectIn[SFP(HS_Key_LogLevel)] | logLevel;
+    const char *logFilePrefixStr = objectIn[SFP(HS_Key_LogFilePrefix)];
+    if (logFilePrefixStr && logFilePrefixStr[0]) { strncpy(logFilePrefix, logFilePrefixStr, 16); }
+    logToSDCard = objectIn[SFP(HS_Key_LogToSDCard)] | logToSDCard;
 }
