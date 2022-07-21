@@ -7,7 +7,7 @@
 
 static RTC_DS3231 *_rtcSyncProvider = nullptr;
 time_t rtcNow() {
-    return _rtcSyncProvider ? _rtcSyncProvider->now().unixtime() : 0;
+    return _rtcSyncProvider ? _rtcSyncProvider->now().secondstime() : 0;
 }
 
 void handleInterrupt(byte pin)
@@ -572,6 +572,8 @@ void Hydroponics::commonInit()
     if ((_rtcSyncProvider = getRealTimeClock())) {
         setSyncProvider(rtcNow);
     }
+
+    _logger._initDate = now();
 
     if (getIsAutosaveEnabled()) {
         _lastAutosave = now();

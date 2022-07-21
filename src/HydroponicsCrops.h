@@ -76,7 +76,7 @@ public:
 
 protected:
     Hydroponics_SubstrateType _substrateType;               // Substrate type
-    time_t _sowDate;                                        // Sow date
+    time_t _sowDate;                                        // Sow date (UTC)
 
     const HydroponicsCropsLibData *_cropsData;              // Crops library data (checked out iff !nullptr)
     int _growWeek;                                          // Current grow week
@@ -128,7 +128,7 @@ public:
     TimeSpan getFeedTimeOff() const;
 
 protected:
-    time_t _lastFeedingDate;                                // Last feeding time
+    time_t _lastFeedingDate;                                // Last feeding date (UTC)
     byte _feedTimingMins[2];                                // Feed timing (on/off), in minutes
 
     virtual void saveToData(HydroponicsData *dataOut) override;

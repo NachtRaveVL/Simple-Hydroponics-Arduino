@@ -366,10 +366,10 @@ shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedCrop(Hydroponics
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, SFP(HS_Err_InvalidParameter));
-    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(sowDate.secondstime(), SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
-    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() && positionIndex != -1) {
+    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.secondstime() && positionIndex != -1) {
         shared_ptr<HydroponicsTimedCrop> crop(new HydroponicsTimedCrop(
             cropType,
             positionIndex,
@@ -390,7 +390,7 @@ shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedPerennialCrop(Hy
                                                                        byte minsOn, byte minsOff)
 {
     auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
-    time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
+    time_t sowDate = lastHarvestDate.secondstime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
     auto crop = addTimerFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate), minsOn, minsOff);
     getCropsLibraryInstance()->returnCropsData(cropData);
     return crop;
@@ -403,10 +403,10 @@ shared_ptr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedCrop(Hydro
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count, SFP(HS_Err_InvalidParameter));
-    HYDRUINO_SOFT_ASSERT(sowDate.unixtime(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(sowDate.secondstime(), SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
-    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.unixtime() && positionIndex != -1) {
+    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && sowDate.secondstime() && positionIndex != -1) {
         shared_ptr<HydroponicsAdaptiveCrop> crop(new HydroponicsAdaptiveCrop(
             cropType,
             positionIndex,
@@ -424,7 +424,7 @@ shared_ptr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedPerennialC
                                                                              DateTime lastHarvestDate)
 {
     auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
-    time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
+    time_t sowDate = lastHarvestDate.secondstime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
     auto crop = addAdaptiveFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate));
     getCropsLibraryInstance()->returnCropsData(cropData);
     return crop;
@@ -453,7 +453,7 @@ shared_ptr<HydroponicsFeedReservoir> HydroponicsFactory::addFeedWaterReservoir(f
 {
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ReservoirType_FeedWater));
     HYDRUINO_SOFT_ASSERT(maxVolume > FLT_EPSILON, SFP(HS_Err_InvalidParameter));
-    HYDRUINO_SOFT_ASSERT(lastChangeDate.unixtime(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(lastChangeDate.secondstime(), SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
 
     if (maxVolume > FLT_EPSILON && positionIndex != -1) {

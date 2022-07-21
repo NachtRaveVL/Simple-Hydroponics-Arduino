@@ -68,52 +68,83 @@ bool HydroponicsLogger::getIsLoggingToSDCard() const
 
 void HydroponicsLogger::logActivation(HydroponicsActuator *actuator)
 {
-    // TODO: Something cute.
+    if (actuator) {
+        String msg = actuator->getId().keyStr + SFP(HS_Log_HasEnabled);
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logDeactivation(HydroponicsActuator *actuator)
 {
-    // TODO: Something cute.
+    if (actuator) {
+        String msg = actuator->getId().keyStr + SFP(HS_Log_HasDisabled);
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logFeedingBegan(HydroponicsFeedReservoir *feedReservoir, String feedingInfo)
 {
-    // TODO: Something cute.
+    if (feedReservoir) {
+        String msg = feedReservoir->getId().keyStr + SFP(HS_Log_FeedingSequence) + SFP(HS_Log_HasBegan) +
+                     (feedingInfo.length() ? String(' ') + String('(') + feedingInfo + String(')') : String());
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logFeedingEnded(HydroponicsFeedReservoir *feedReservoir, String feedingInfo)
 {
-    // TODO: Something cute.
+    if (feedReservoir) {
+        String msg = feedReservoir->getId().keyStr + SFP(HS_Log_FeedingSequence) + SFP(HS_Log_HasEnded) +
+                     (feedingInfo.length() ? String(' ') + String('(') + feedingInfo + String(')') : String());
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logLightingBegan(HydroponicsFeedReservoir *feedReservoir, String lightingInfo)
 {
-    // TODO: Something cute.
+    if (feedReservoir) {
+        String msg = feedReservoir->getId().keyStr + SFP(HS_Log_LightingSequence) + SFP(HS_Log_HasBegan) +
+                     (lightingInfo.length() ? String(' ') + String('(') + lightingInfo + String(')') : String());
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logLightingEnded(HydroponicsFeedReservoir *feedReservoir, String lightingInfo)
 {
-    // TODO: Something cute.
+    if (feedReservoir) {
+        String msg = feedReservoir->getId().keyStr + SFP(HS_Log_LightingSequence) + SFP(HS_Log_HasEnded) +
+                     (lightingInfo.length() ? String(' ') + String('(') + lightingInfo + String(')') : String());
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logEstimatedPumping(HydroponicsPumpObjectInterface *pump, String estimationInfo)
 {
-    // TODO: Something cute.
+    if (pump) {
+        String msg = ((HydroponicsObject *)pump)->getId().keyStr + SFP(HS_Log_EstimatedPumping) + estimationInfo;
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logMeasuredPumping(HydroponicsPumpObjectInterface *pump, String measuredInfo)
 {
-    // TODO: Something cute.
+    if (pump) {
+        String msg = ((HydroponicsObject *)pump)->getId().keyStr + SFP(HS_Log_MeasuredPumping) + measuredInfo;
+        logMessage(msg);
+    }
 }
 
 void HydroponicsLogger::logSystemUptime()
 {
-    // TODO: Something cute.
+    time_t elapsedTime = now() - _initDate;
+    DateTime elapsed((uint32_t)elapsedTime);
+    String msg = SFP(HS_Log_SystemUptime) + String(elapsedTime / SECS_PER_DAY) + String('d') + String(' ') +
+                 elapsed.timestamp(DateTime::TIMESTAMP_TIME);
 }
 
 void HydroponicsLogger::logSystemSave()
 {
-    // TODO: Something cute.
+    logMessage(SFP(HS_Log_SystemDataSaved));
 }
 
 void HydroponicsLogger::logMessage(String msg)

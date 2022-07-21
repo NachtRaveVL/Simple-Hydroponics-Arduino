@@ -28,14 +28,14 @@ extern const PROGMEM char HS_Err_OperationFailure[];
 extern const PROGMEM char HS_Err_ParameterMismatch[];
 extern const PROGMEM char HS_Err_UnsupportedOperation[];
 
-extern const PROGMEM char HS_Log_EstimatedRunTime[];
+extern const PROGMEM char HS_Log_EstimatedPumping[];
 extern const PROGMEM char HS_Log_FeedingSequence[];
 extern const PROGMEM char HS_Log_HasBegan[];
 extern const PROGMEM char HS_Log_HasDisabled[];
 extern const PROGMEM char HS_Log_HasEnabled[];
 extern const PROGMEM char HS_Log_HasEnded[];
 extern const PROGMEM char HS_Log_LightingSequence[];
-extern const PROGMEM char HS_Log_PollingFrame[];
+extern const PROGMEM char HS_Log_MeasuredPumping[];
 extern const PROGMEM char HS_Log_SystemDataSaved[];
 extern const PROGMEM char HS_Log_SystemUptime[];
 

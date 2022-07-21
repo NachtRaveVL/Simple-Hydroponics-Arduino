@@ -91,8 +91,8 @@ public:
     float getEdgeLength() const;
 
 protected:
-    float _edgeOffset;                                      // TODO
-    float _edgeLength;                                      // TODO
+    float _edgeOffset;                                      // Edge offset
+    float _edgeLength;                                      // Length of edge (0 for non-linear)
 };
 
 
@@ -119,14 +119,14 @@ public:
     unsigned int getMixTimeMins() const;
 
 protected:
-    uint8_t _mixTimeMins;                                   // TODO
-    time_t _baseDosingMillis;                               // TODO
+    uint8_t _mixTimeMins;                                   // Time allowance for mixing, in minutes
+    time_t _baseDosingMillis;                               // Base dosing time, in milliseconds
 
-    time_t _lastDosingTime;                                 // TODO
-    float _lastDosingValue;                                 // TODO
-    time_t _dosingMillis;                                   // TODO
-    Hydroponics_BalancerState _dosingDir;                   // TODO
-    int8_t _dosingActIndex;                                 // TODO
+    time_t _lastDosingTime;                                 // Date dosing was last performed (UTC)
+    float _lastDosingValue;                                 // Last used dosing value
+    time_t _dosingMillis;                                   // Dosing missis for next runs
+    Hydroponics_BalancerState _dosingDir;                   // Dosing direction for next runs
+    int8_t _dosingActIndex;                                 // Next dosing actuator to run
 
     void performDosing();
 };

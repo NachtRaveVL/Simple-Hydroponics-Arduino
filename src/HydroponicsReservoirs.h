@@ -253,9 +253,9 @@ public:
     void notifyDayChanged();
 
 protected:
-    time_t _lastChangeDate;                                 // Last water change date (recycling systems only)
-    time_t _lastPruningDate;                                // Last pruning date (pruning crops only)
-    time_t _lastFeedingDate;                                // Last feeding date
+    time_t _lastChangeDate;                                 // Last water change date (recycling systems only, UTC)
+    time_t _lastPruningDate;                                // Last pruning date (pruning crops only, UTC)
+    time_t _lastFeedingDate;                                // Last feeding date (UTC)
     int _numFeedingsToday;                                  // Number of feedings performed today
     Hydroponics_UnitsType _tdsUnits;                        // TDS units preferred (else default)
     Hydroponics_UnitsType _tempUnits;                       // Temperature units preferred (else default)

@@ -27,16 +27,16 @@ const PROGMEM char HS_Err_OperationFailure[] = {"Operation failure"};
 const PROGMEM char HS_Err_ParameterMismatch[] = {"Parameter mismatch"};
 const PROGMEM char HS_Err_UnsupportedOperation[] = {"Unsupported operation"};
 
-const PROGMEM char HS_Log_EstimatedRunTime[] = {"Estimated run time"};
-const PROGMEM char HS_Log_FeedingSequence[] = {"Feeding sequence"};
-const PROGMEM char HS_Log_HasBegan[] = {"Has began"};
-const PROGMEM char HS_Log_HasDisabled[] = {"Has disabled"};
-const PROGMEM char HS_Log_HasEnabled[] = {"Has enabled"};
-const PROGMEM char HS_Log_HasEnded[] = {"Has ended"};
-const PROGMEM char HS_Log_LightingSequence[] = {"Lighting sequence"};
-const PROGMEM char HS_Log_PollingFrame[] = {"Polling frame"};
+const PROGMEM char HS_Log_EstimatedPumping[] = {" estimated pumping: "};
+const PROGMEM char HS_Log_FeedingSequence[] = {" feeding sequence"};
+const PROGMEM char HS_Log_HasBegan[] = {" has began"};
+const PROGMEM char HS_Log_HasDisabled[] = {" has disabled"};
+const PROGMEM char HS_Log_HasEnabled[] = {" has enabled"};
+const PROGMEM char HS_Log_HasEnded[] = {" has ended"};
+const PROGMEM char HS_Log_LightingSequence[] = {" lighting sequence"};
+const PROGMEM char HS_Log_MeasuredPumping[] = {" measured pumping: "};
 const PROGMEM char HS_Log_SystemDataSaved[] = {"System data saved"};
-const PROGMEM char HS_Log_SystemUptime[] = {"System uptime"};
+const PROGMEM char HS_Log_SystemUptime[] = {"System uptime: "};
 
 const PROGMEM char HS_Key_ActiveLow[] = {"activeLow"};
 const PROGMEM char HS_Key_AdditiveName[] = {"additiveName"};

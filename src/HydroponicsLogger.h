@@ -62,7 +62,8 @@ protected:
     HydroponicsLoggerSubData *_loggerData;                  // Logger data (strong, saved to storage via system data)
 
     String _logFileName;                                    // Resolved log file name (based on day)
-    time_t _lastSpaceCheck;                                 // Last time enough space was checked
+    time_t _initDate;                                       // Init date (UTC, controlled by hydroponics)
+    time_t _lastSpaceCheck;                                 // Last time enough space was checked (UTC)
 
     friend class Hydroponics;
 
