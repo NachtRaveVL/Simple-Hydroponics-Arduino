@@ -235,8 +235,9 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool override)
             digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
         }
 
-        if (_enabled != wasEnabledBefore) {
+        if (_enabled && !wasEnabledBefore) {
             getLoggerInstance()->logActivation(this);
+
             #ifndef HYDRUINO_DISABLE_MULTITASKING
                 scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
             #else
@@ -244,6 +245,7 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool override)
             #endif
         }
     }
+
     return _enabled;
 }
 
@@ -257,8 +259,9 @@ void HydroponicsRelayActuator::disableActuator()
             digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
         }
 
-        if (_enabled != wasEnabledBefore) {
+        if (!_enabled && wasEnabledBefore) {
             getLoggerInstance()->logDeactivation(this);
+
             #ifndef HYDRUINO_DISABLE_MULTITASKING
                 scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
             #else
@@ -681,7 +684,7 @@ bool HydroponicsPWMActuator::enableActuator(float intensity, bool override)
             applyPWM();
         }
 
-        if (_enabled != wasEnabledBefore) {
+        if (_enabled && !wasEnabledBefore) {
             getLoggerInstance()->logActivation(this);
 
             #ifndef HYDRUINO_DISABLE_MULTITASKING
@@ -691,26 +694,29 @@ bool HydroponicsPWMActuator::enableActuator(float intensity, bool override)
             #endif
         }
     }
+
     return _enabled;
 }
 
 void HydroponicsPWMActuator::disableActuator()
 {
-    bool wasEnabledBefore = _enabled;
+    if (isValidPin(_outputPin)) {
+        bool wasEnabledBefore = _enabled;
 
-    if (_enabled) {
-        _enabled = false;
-        applyPWM();
-    }
+        if (_enabled) {
+            _enabled = false;
+            applyPWM();
+        }
 
-    if (_enabled != wasEnabledBefore) {
-        getLoggerInstance()->logDeactivation(this);
+        if (!_enabled && wasEnabledBefore) {
+            getLoggerInstance()->logDeactivation(this);
 
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
-        #else
-            _activateSignal.fire(this);
-        #endif
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsActuator *>(getSharedPtr(), _activateSignal, this);
+            #else
+                _activateSignal.fire(this);
+            #endif
+        }
     }
 }
 
