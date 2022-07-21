@@ -825,7 +825,7 @@ void HydroponicsFeeding::update()
         } break;
 
         case PreFeed: {
-            if (!actuatorReqs.size() || now() >= stageStart + getSchedulerInstance()->getPreFeedAeratorMins()) {
+            if (!actuatorReqs.size() || now() >= stageStart + (getSchedulerInstance()->getPreFeedAeratorMins() * SECS_PER_MIN)) {
                 auto phBalancer = feedRes->getWaterPHBalancer();
                 auto tdsBalancer = feedRes->getWaterTDSBalancer();
                 auto waterTempBalancer = feedRes->getWaterTempBalancer();
