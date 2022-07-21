@@ -43,7 +43,7 @@ protected:
     bool _needsTabulation;                                  // Needs tabulation tracking flag
     uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
     HydroponicsDataColumn *_dataColumns;                    // Data columns (owned)
-    byte _columnsCount;                                     // Data columns count
+    byte _columnCount;                                      // Data columns count
 
     friend class Hydroponics;
 
