@@ -940,8 +940,9 @@ void HydroponicsLighting::recalcLighting()
             auto cropsLibData = getCropsLibraryInstance()->checkoutCropsData(crop->getCropType());
 
             if (cropsLibData) {
-                totalWeights += crop->getFeedingWeight();
-                totalLightHours += cropsLibData->dailyLightHours[cropPhase];
+                auto weight = crop->getFeedingWeight();
+                totalWeights += weight;
+                totalLightHours += (cropsLibData->dailyLightHours[cropPhase] * weight);
                 sprayingNeeded = sprayingNeeded || cropsLibData->getNeedsSpraying();
 
                 getCropsLibraryInstance()->returnCropsData(cropsLibData);
