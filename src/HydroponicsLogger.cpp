@@ -38,6 +38,7 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
         if (sd && sd->exists("/")) {
             String logFileName = getYYMMDDFilename(logFilePrefix, SFP(HS_txt));
             auto logFile = sd->open(logFileName, FILE_WRITE);
+
             if (logFile.availableForWrite()) {
                 logFile.close();
                 getHydroponicsInstance()->endSDCard(sd);
@@ -49,11 +50,13 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
 
                 return true;
             }
+
             if (logFile) { logFile.close(); }
         }
 
         if (sd) { getHydroponicsInstance()->endSDCard(sd); }
     }
+
     return false;
 }
 
@@ -147,11 +150,15 @@ void HydroponicsLogger::log(String msg)
 
         if (sd) {
             auto logFile = sd->open(_logFileName, FILE_WRITE);
+
             if (logFile && logFile.availableForWrite()) {
                 logFile.print(timestamp);
                 logFile.print(':'); logFile.print(' ');
                 logFile.println(msg);
-            } else if (logFile) { logFile.close(); }
+            }
+
+            if (logFile) { logFile.close(); }
+
             getHydroponicsInstance()->endSDCard(sd);
         }
     }

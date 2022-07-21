@@ -6,7 +6,7 @@
 #include "Hydroponics.h"
 
 HydroponicsPublisher::HydroponicsPublisher()
-    : _publisherData(nullptr), _dataFileName(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnsCount(0)
+    : _publisherData(nullptr), _dataFileName(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnCount(0)
 { ; }
 
 HydroponicsPublisher::~HydroponicsPublisher()
@@ -50,6 +50,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
         if (sd && sd->exists("/")) {
             String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HS_csv));
             auto dataFile = sd->open(dataFileName, FILE_WRITE);
+
             if (dataFile && dataFile.availableForWrite()) {
                 dataFile.close();
                 hydroponics->endSDCard(sd);
@@ -63,6 +64,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 
                 return true;
             }
+
             if (dataFile) { dataFile.close(); }
         }
 
@@ -79,7 +81,7 @@ bool HydroponicsPublisher::getIsPublishingToSDCard()
 
 void HydroponicsPublisher::publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement)
 {
-    if (_dataColumns && _columnsCount && columnIndex >= 0 && columnIndex < _columnsCount) {
+    if (_dataColumns && _columnCount && columnIndex >= 0 && columnIndex < _columnCount) {
         _dataColumns[columnIndex].measurement = measurement;
         checkCanPublish();
     }
@@ -131,14 +133,16 @@ void HydroponicsPublisher::checkCanPublish()
 {
     auto hydroponics = getHydroponicsInstance();
 
-    if (_dataColumns && _columnsCount && hydroponics->getIsPollingFrameOld(_pollingFrame)) {
+    if (_dataColumns && _columnCount && hydroponics->getIsPollingFrameOld(_pollingFrame)) {
         bool allCurrent = true;
-        for (int columnIndex = 0; columnIndex < _columnsCount; ++columnIndex) {
+
+        for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
             if (hydroponics->getIsPollingFrameOld(_dataColumns[columnIndex].measurement.frame)) {
                 allCurrent = false;
                 break;
             }
         }
+
         if (allCurrent) {
             time_t timestamp = now();
             _pollingFrame = hydroponics->getPollingFrame();
@@ -161,15 +165,20 @@ void HydroponicsPublisher::publish(time_t timestamp)
 
         if (sd) {
             auto dataFile = sd->open(_dataFileName, FILE_WRITE);
+
             if (dataFile && dataFile.availableForWrite()) {
                 dataFile.print(timestamp);
-                for (int columnIndex = 0; columnIndex < _columnsCount; ++columnIndex) {
+
+                for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
                     dataFile.print(',');
                     dataFile.print(_dataColumns[columnIndex].measurement.value);
                 }
+
                 dataFile.println();
-                dataFile.close();
-            } else if (dataFile) { dataFile.close(); }
+            }
+
+            if (dataFile) { dataFile.close(); }
+
             getHydroponicsInstance()->endSDCard(sd);
         }
     }
@@ -177,7 +186,67 @@ void HydroponicsPublisher::publish(time_t timestamp)
 
 void HydroponicsPublisher::performTabulation()
 {
-    // TODO: Data table reallocation.
+    if (getIsPublishingEnabled()) {
+        auto hydroponics = getHydroponicsInstance();
+        bool sameOrder = _dataColumns && _columnCount ? true : false;
+        int columnCount = 0;
+
+        for (auto iter = hydroponics->_objects.begin(); iter != hydroponics->_objects.end(); ++iter) {
+            if (iter->second && iter->second->isSensorType()) {
+                auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+
+                if (sensor) {
+                    auto rowCount = getMeasurementRowCount(sensor->getLatestMeasurement());
+
+                    for (int rowIndex = 0; sameOrder && rowIndex < rowCount; ++rowIndex) {
+                        sameOrder = sameOrder && (columnCount + rowIndex + 1 <= _columnCount) &&
+                                    (_dataColumns[columnCount + rowIndex].sensorKey == sensor->getKey());
+                    }
+
+                    columnCount += rowCount;
+                }
+            }
+        }
+        sameOrder = sameOrder && (columnCount == _columnCount);
+
+        if (!sameOrder) {
+            if (_dataColumns && _columnCount != columnCount) { delete [] _dataColumns; _dataColumns = nullptr; }
+            _columnCount = columnCount;
+
+            if (_columnCount) {
+                if (!_dataColumns) {
+                    _dataColumns = new HydroponicsDataColumn[_columnCount];
+                    HYDRUINO_SOFT_ASSERT(_dataColumns, SFP(HS_Err_AllocationFailure));
+                }
+
+                if (_dataColumns) {
+                    int columnIndex = 0;
+
+                    for (auto iter = hydroponics->_objects.begin(); iter != hydroponics->_objects.end(); ++iter) {
+                        if (iter->second && iter->second->isSensorType()) {
+                            auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+
+                            if (sensor) {
+                                auto measurement = sensor->getLatestMeasurement();
+                                auto rowCount = getMeasurementRowCount(measurement);
+
+                                for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
+                                    HYDRUINO_HARD_ASSERT(columnIndex < _columnCount, SFP(HS_Err_OperationFailure));
+                                    _dataColumns[columnIndex].measurement = getAsSingleMeasurement(measurement, rowIndex);
+                                    _dataColumns[columnIndex].sensorKey = sensor->getKey();
+                                    columnIndex++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            resetDataFile();
+        }
+    }
+
+    _needsTabulation = false;
 }
 
 void HydroponicsPublisher::resetDataFile()
@@ -192,26 +261,37 @@ void HydroponicsPublisher::resetDataFile()
                 sd->remove(_dataFileName);
             }
             auto dataFile = sd->open(_dataFileName, FILE_WRITE);
+
             if (dataFile && dataFile.availableForWrite()) {
                 HydroponicsSensor *lastSensor = nullptr;
                 Hydroponics_PositionIndex measurementRow = 0;
+
                 dataFile.print(SFP(HS_Key_Timestamp));
-                for (int columnIndex = 0; columnIndex < _columnsCount; ++columnIndex) {
+
+                for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
                     dataFile.print(',');
 
                     auto sensor = (HydroponicsSensor *)(hydroponics->_objects[_dataColumns[columnIndex].sensorKey].get());
-                    if (sensor == lastSensor) { ++measurementRow; }
+                    if (sensor && sensor == lastSensor) { ++measurementRow; }
                     else { measurementRow = 0; lastSensor = sensor; }
 
-                    dataFile.print(sensor->getId().keyStr);
-                    dataFile.print('_');
-                    dataFile.print(unitsCategoryToString(defaultMeasureCategoryForSensorType(sensor->getSensorType(), measurementRow)));
-                    dataFile.print('_');
-                    dataFile.print(unitsTypeToSymbol(getMeasurementUnits(sensor->getLatestMeasurement(), measurementRow)));
+                    if (sensor) {
+                        dataFile.print(sensor->getId().keyStr);
+                        dataFile.print('_');
+                        dataFile.print(unitsCategoryToString(defaultMeasureCategoryForSensorType(sensor->getSensorType(), measurementRow)));
+                        dataFile.print('_');
+                        dataFile.print(unitsTypeToSymbol(getMeasurementUnits(sensor->getLatestMeasurement(), measurementRow)));
+                    } else {
+                        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
+                        dataFile.print(SFP(HS_Undefined));
+                    }
                 }
+
                 dataFile.println();
-                dataFile.close();
-            } else if (dataFile) { dataFile.close(); }
+            }
+
+            if (dataFile) { dataFile.close(); }
+
             hydroponics->endSDCard(sd);
         }
     }

@@ -226,13 +226,17 @@ bool Hydroponics::initFromSDCard(String configFileName, bool jsonFormat)
     if (!_systemData) {
         _configFileName = configFileName;
         auto sd = getSDCard();
+
         if (sd) {
             bool retVal = false;
             auto configFile = sd->open(configFileName.c_str());
-            if (configFile) {
+
+            if (configFile && configFile.available()) {
                 retVal = jsonFormat ? initFromJSONStream(&configFile) : initFromBinaryStream(&configFile);
-                configFile.close();
             }
+
+            if (configFile) { configFile.close(); }
+
             endSDCard(sd);
             return retVal;
         }
@@ -248,13 +252,17 @@ bool Hydroponics::saveToSDCard(String configFileName, bool jsonFormat)
     if (!_systemData) {
         _configFileName = configFileName;
         auto sd = getSDCard();
+
         if (sd) {
             bool retVal = false;
-            auto config = sd->open(configFileName.c_str());
-            if (config) {
-                retVal = jsonFormat ? saveToJSONStream(&config) : saveToBinaryStream(&config);
-                config.close();
+            auto configFile = sd->open(configFileName.c_str());
+
+            if (configFile && configFile.availableForWrite()) {
+                retVal = jsonFormat ? saveToJSONStream(&configFile) : saveToBinaryStream(&configFile);
             }
+
+            if (configFile) { configFile.close(); }
+
             endSDCard(sd);
             return retVal;
         }
