@@ -150,8 +150,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterActua
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
-            auto actuatorObj = (HydroponicsActuator *)(iter->second);
-            if (actuatorObj && actuatorObj->getActuatorType() == actuatorType) {
+            auto actuator = (HydroponicsActuator *)(iter->second);
+            if (actuator && actuator->getActuatorType() == actuatorType) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -181,8 +181,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterSenso
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isSensorType()) {
-            auto sensorObj = (HydroponicsSensor *)(iter->second);
-            if (sensorObj->getSensorType() == sensorType) {
+            auto sensor = (HydroponicsSensor *)(iter->second);
+            if (sensor->getSensorType() == sensorType) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -212,8 +212,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterCrops
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isCropType()) {
-            auto cropObj = (HydroponicsCrop *)(iter->second);
-            if (cropObj->getCropType() == cropType) {
+            auto crop = (HydroponicsCrop *)(iter->second);
+            if (crop->getCropType() == cropType) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -243,8 +243,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterReser
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isReservoirType()) {
-            auto reservoirObj = (HydroponicsReservoir *)(iter->second);
-            if (reservoirObj->getReservoirType() == reservoirType) {
+            auto reservoir = (HydroponicsReservoir *)(iter->second);
+            if (reservoir->getReservoirType() == reservoirType) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -274,8 +274,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterRails
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isRailType()) {
-            auto railObj = (HydroponicsRail *)(iter->second);
-            if (railObj->getRailType() == railType) {
+            auto rail = (HydroponicsRail *)(iter->second);
+            if (rail->getRailType() == railType) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -291,8 +291,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
-            auto actuatorObj = (HydroponicsActuator *)(iter->second);
-            if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getReservoir().get() == inputReservoir) {
+            auto actuator = (HydroponicsActuator *)(iter->second);
+            if (actuator->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuator)->getReservoir().get() == inputReservoir) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -308,8 +308,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
-            auto actuatorObj = (HydroponicsActuator *)(iter->second);
-            if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getReservoir() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getReservoir()->getReservoirType() == reservoirType) {
+            auto actuator = (HydroponicsActuator *)(iter->second);
+            if (actuator->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuator)->getReservoir() && ((HydroponicsPumpObjectInterface *)actuator)->getReservoir()->getReservoirType() == reservoirType) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -325,8 +325,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
-            auto actuatorObj = (HydroponicsActuator *)(iter->second);
-            if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getOutputReservoir().get() == outputReservoir) {
+            auto actuator = (HydroponicsActuator *)(iter->second);
+            if (actuator->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuator)->getOutputReservoir().get() == outputReservoir) {
                 retVal[iter->first] = iter->second;
             }
         }
@@ -342,8 +342,8 @@ typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpA
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second && iter->second->isActuatorType()) {
-            auto actuatorObj = (HydroponicsActuator *)(iter->second);
-            if (actuatorObj->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getOutputReservoir() && ((HydroponicsPumpObjectInterface *)actuatorObj)->getOutputReservoir()->getReservoirType() == reservoirType) {
+            auto actuator = (HydroponicsActuator *)(iter->second);
+            if (actuator->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuator)->getOutputReservoir() && ((HydroponicsPumpObjectInterface *)actuator)->getOutputReservoir()->getReservoirType() == reservoirType) {
                 retVal[iter->first] = iter->second;
             }
         }
