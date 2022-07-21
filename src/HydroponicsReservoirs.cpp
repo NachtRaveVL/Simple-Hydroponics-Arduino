@@ -155,7 +155,7 @@ bool HydroponicsReservoir::hasCrop(HydroponicsCrop *crop) const
 
 Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsReservoir::getCrops() const
 {
-    return linksFilterReservoirs(_links);
+    return linksFilterCrops(_links);
 }
 
 Hydroponics_ReservoirType HydroponicsReservoir::getReservoirType() const
