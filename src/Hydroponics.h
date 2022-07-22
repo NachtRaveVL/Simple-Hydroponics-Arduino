@@ -407,6 +407,7 @@ protected:
     void allocateSD();
     void deallocateSD();
 
+    void commonPreInit();
     void commonInit();
     void commonPostSave();
 

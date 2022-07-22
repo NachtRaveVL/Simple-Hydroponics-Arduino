@@ -162,7 +162,7 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
-        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+        commonPreInit();
 
         HYDRUINO_SOFT_ASSERT((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count, SFP(HS_Err_InvalidParameter));
         HYDRUINO_SOFT_ASSERT((int)measureMode >= 0 && measureMode < Hydroponics_MeasurementMode_Count, SFP(HS_Err_InvalidParameter));
@@ -199,7 +199,7 @@ bool Hydroponics::initFromEEPROM(bool jsonFormat)
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
-        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+        commonPreInit();
 
         if (getEEPROM() && _eepromBegan) {
             HydroponicsEEPROMStream eepromStream;
@@ -229,7 +229,7 @@ bool Hydroponics::initFromSDCard(bool jsonFormat)
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
-        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+        commonPreInit();
         auto sd = getSDCard();
 
         if (sd) {
@@ -281,7 +281,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
-        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+        commonPreInit();
 
         {   StaticJsonDocument<HYDRUINO_JSON_DOC_SYSSIZE> doc;
             deserializeJson(doc, *streamIn);
@@ -445,7 +445,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
-        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+        commonPreInit();
 
         {   HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromBinaryStream(streamIn);
 
@@ -576,6 +576,15 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
     return false;
 }
 
+void Hydroponics::commonPreInit()
+{
+    if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+    if (isValidPin(_sdCardCSPin)) {
+        pinMode(_sdCardCSPin, OUTPUT);
+        digitalWrite(_sdCardCSPin, HIGH);
+    }
+}
+
 void Hydroponics::commonInit()
 {
     if ((_rtcSyncProvider = getRealTimeClock())) {
@@ -590,7 +599,7 @@ void Hydroponics::commonInit()
     }
 
     if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
-        setWiFiConnection(getWiFiSSID(), getWiFiPassword());
+        setWiFiConnection(getWiFiSSID(), getWiFiPassword()); // sets seed and encrypts
     }
 
     #ifndef HYDRUINO_DISABLE_GUI
