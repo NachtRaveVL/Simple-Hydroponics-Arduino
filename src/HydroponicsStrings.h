@@ -36,6 +36,9 @@ extern const PROGMEM char HS_Log_HasEnabled[];
 extern const PROGMEM char HS_Log_HasEnded[];
 extern const PROGMEM char HS_Log_LightingSequence[];
 extern const PROGMEM char HS_Log_MeasuredPumping[];
+extern const PROGMEM char HS_Log_PreFeedBalancing[];
+extern const PROGMEM char HS_Log_PreFeedTopOff[];
+extern const PROGMEM char HS_Log_PreLightSpraying[];
 extern const PROGMEM char HS_Log_SystemDataSaved[];
 extern const PROGMEM char HS_Log_SystemUptime[];
 

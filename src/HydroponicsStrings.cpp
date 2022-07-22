@@ -35,6 +35,9 @@ const PROGMEM char HS_Log_HasEnabled[] = {" has enabled"};
 const PROGMEM char HS_Log_HasEnded[] = {" has ended"};
 const PROGMEM char HS_Log_LightingSequence[] = {" lighting sequence"};
 const PROGMEM char HS_Log_MeasuredPumping[] = {" measured pumping: "};
+const PROGMEM char HS_Log_PreFeedBalancing[] = {" pre-feed balancing"};
+const PROGMEM char HS_Log_PreFeedTopOff[] = {" pre-feed top-off"};
+const PROGMEM char HS_Log_PreLightSpraying[] = {" pre-light spraying"};
 const PROGMEM char HS_Log_SystemDataSaved[] = {"System data saved"};
 const PROGMEM char HS_Log_SystemUptime[] = {"System uptime: "};
 
