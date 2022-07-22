@@ -352,7 +352,7 @@ protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init)
 
     const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: Disabled)
-    const int _eepromDeviceSize;                                    // EEPROM device size (default: 0/Disabled)
+    const uint32_t _eepromDeviceSize;                               // EEPROM device size (default: 0/Disabled)
     const byte _sdCardCSPin;                                        // SD card cable select (CS) pin (default: Disabled)
     const byte _ctrlInputPin1;                                      // Control input pin 1 (default: Disabled)
     const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
