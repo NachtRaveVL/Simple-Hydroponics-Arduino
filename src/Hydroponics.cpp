@@ -580,6 +580,7 @@ void Hydroponics::commonPreInit()
 {
     if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
     if (isValidPin(_sdCardCSPin)) {
+        SPI.begin(); // some archs won't init pinMode/set CS high, so we do it manually to be on the safe side
         pinMode(_sdCardCSPin, OUTPUT);
         digitalWrite(_sdCardCSPin, HIGH);
     }
