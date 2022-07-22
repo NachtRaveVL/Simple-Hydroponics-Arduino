@@ -7,7 +7,7 @@
 
 static RTC_DS3231 *_rtcSyncProvider = nullptr;
 time_t rtcNow() {
-    return _rtcSyncProvider ? _rtcSyncProvider->now().secondstime() : 0;
+    return _rtcSyncProvider ? _rtcSyncProvider->now().unixtime() : 0;
 }
 
 void handleInterrupt(byte pin)
@@ -573,10 +573,11 @@ void Hydroponics::commonInit()
         setSyncProvider(rtcNow);
     }
 
-    _logger._initDate = now();
+    _scheduler._lastDayNum = getCurrentTime().day();
+    _logger._initDate = unixNow();
 
     if (getIsAutosaveEnabled()) {
-        _lastAutosave = now();
+        _lastAutosave = unixNow();
     }
 
     if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
@@ -1057,7 +1058,7 @@ void Hydroponics::setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint1
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->autosaveEnabled = autosaveEnabled;
         _systemData->autosaveInterval = autosaveInterval;
-        _lastAutosave = now();
+        _lastAutosave = unixNow();
     }
 }
 
@@ -1159,7 +1160,11 @@ RTC_DS3231 *Hydroponics::getRealTimeClock(bool begin)
         _rtcBegan = _rtc->begin(_i2cWire);
 
         if (_rtcBegan) {
+            bool rtcBattFailBefore = _rtcBattFail;
             _rtcBattFail = _rtc->lostPower();
+            if (_rtcBattFail && !rtcBattFailBefore) {
+                logWarning(F("RTC battery failure, time needs reset."));
+            }
         } else {
             deallocateRTC();
         }
@@ -1342,7 +1347,7 @@ String Hydroponics::getWiFiPassword()
 void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
-    _lastAutosave = now();
+    _lastAutosave = unixNow();
     _scheduler.broadcastDayChange();
 }
 
@@ -1405,7 +1410,7 @@ static uint32_t getSDCardFreeSpace()
 void Hydroponics::checkFreeSpace()
 {
     if ((_logger.getIsLoggingEnabled() || _publisher.getIsPublishingEnabled()) &&
-        (!_lastSpaceCheck || now() >= _lastSpaceCheck + (HYDRUINO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
+        (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (HYDRUINO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
         if (_logger.getIsLoggingToSDCard() || _publisher.getIsPublishingToSDCard()) {
             uint32_t freeKB = getSDCardFreeSpace();
             while(freeKB < HYDRUINO_SYS_FREESPACE_LOWSPACE) {
@@ -1415,13 +1420,13 @@ void Hydroponics::checkFreeSpace()
             }
         }
         // TODO: URL free space
-        _lastSpaceCheck = now();
+        _lastSpaceCheck = unixNow();
     }
 }
 
 void Hydroponics::checkAutosave()
 {
-    if (getIsAutosaveEnabled() && now() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
+    if (getIsAutosaveEnabled() && unixNow() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
         switch (_systemData->autosaveEnabled) {
             case Hydroponics_Autosave_EnabledToSDCardJson:
                 saveToSDCard(true);
@@ -1438,6 +1443,6 @@ void Hydroponics::checkAutosave()
             default:
                 break;
         }
-        _lastAutosave = now();
+        _lastAutosave = unixNow();
     }
 }

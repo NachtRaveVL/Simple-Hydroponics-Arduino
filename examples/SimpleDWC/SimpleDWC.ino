@@ -3,8 +3,9 @@
 
 #include <Hydroponics.h>
 
-const byte AeratorRelayPin = 7;
-const DateTime LettuceSowDate = DateTime(2022, 5, 21);
+#define AeratorRelayPin     7
+#define GrowLightsRelayPin  8
+#define LettuceSowDate      DateTime(2022, 5, 21)
 
 Hydroponics hydroController;            // Controller using default XXX TODO pin DXX, and default Wire @400kHz
 
@@ -24,10 +25,15 @@ void setup() {
     feedWater->setVolumeUnits(Hydroponics_UnitsType_LiqVolume_Gallons);
     feedWater->setWaterVolume(feedWater->getMaxVolume());
 
-    // Add simple water aerator relay at AeratorRelayPin, and link it to the feed water reservoir and the relay power rail.
+    // Add water aerator relay at AeratorRelayPin, and link it to the feed water reservoir and the relay power rail.
     auto aerator = hydroController.addWaterAeratorRelay(AeratorRelayPin);
     aerator->setRail(relayPower);
     aerator->setReservoir(feedWater);
+
+    // Add grow lights relay at GrowLightsRelayPin, and link it to the feed water reservoir and the relay power rail.
+    auto growLights = hydroController.addGrowLightsRelay(GrowLightsRelayPin);
+    growLights->setRail(relayPower);
+    growLights->setReservoir(feedWater);
 
     // Add some lettuce, set to feed on a timer, that we planted in clay pebbles on LettuceSowDate, and link it to the feed water reservoir.
     auto lettuce = hydroController.addTimerFedCrop((Hydroponics_CropType)0, Hydroponics_SubstrateType_ClayPebbles, LettuceSowDate);

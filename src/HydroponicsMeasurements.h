@@ -51,9 +51,9 @@ struct HydroponicsMeasurement {
 
     void saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline void updateTimestamp() { timestamp = now(); }
+    void updateTimestamp();
     void updateFrame(int minFrame = 0);
-    inline void setMinFrame(int minFrame = 0) { frame = max(minFrame, frame); }
+    void setMinFrame(int minFrame = 0) { frame = max(minFrame, frame); }
 };
 
 // Single Value Sensor Data Measurement

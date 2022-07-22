@@ -112,7 +112,7 @@ void HydroponicsPublisher::advancePollingFrame()
     auto pollingFrame = hydroponics->getPollingFrame();
 
     if (pollingFrame && _pollingFrame != pollingFrame) {
-        time_t timestamp = now();
+        time_t timestamp = unixNow();
         _pollingFrame = pollingFrame;
 
         if (hydroponics->getInOperationalMode()) {
@@ -144,7 +144,7 @@ void HydroponicsPublisher::checkCanPublish()
         }
 
         if (allCurrent) {
-            time_t timestamp = now();
+            time_t timestamp = unixNow();
             _pollingFrame = hydroponics->getPollingFrame();
 
             if (hydroponics->getInOperationalMode()) {

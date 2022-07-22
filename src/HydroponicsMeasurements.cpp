@@ -91,7 +91,7 @@ HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement
 
 
 HydroponicsMeasurement::HydroponicsMeasurement()
-    : type(Unknown), frame(0), timestamp(now())
+    : type(Unknown), frame(0), timestamp(unixNow())
 { ; }
 
 HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn)
@@ -113,6 +113,11 @@ void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hyd
     dataOut->type = (int8_t)type;
     dataOut->measurementRow = measurementRow;
     dataOut->timestamp = timestamp;
+}
+
+void HydroponicsMeasurement::updateTimestamp()
+{
+    timestamp = unixNow();
 }
 
 void HydroponicsMeasurement::updateFrame(int minFrame)

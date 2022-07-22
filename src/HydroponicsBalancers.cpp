@@ -264,7 +264,7 @@ void HydroponicsTimedDosingBalancer::update()
     if (!_enabled || !_rangeTrigger) { return; }
 
     if (_balancerState != Hydroponics_BalancerState_Balanced && _balancerState != Hydroponics_BalancerState_Undefined &&
-        (!_lastDosingTime || now() > _lastDosingTime + (_mixTimeMins * SECS_PER_MIN))) {
+        (!_lastDosingTime || unixNow() > _lastDosingTime + (_mixTimeMins * SECS_PER_MIN))) {
         performDosing();
     }
 
@@ -332,6 +332,6 @@ void HydroponicsTimedDosingBalancer::performDosing()
         _dosingMillis = dosingMillis;
         _dosingActIndex = 0;
 
-        _lastDosingTime = now();
+        _lastDosingTime = unixNow();
     }
 }

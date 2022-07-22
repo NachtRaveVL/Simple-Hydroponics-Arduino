@@ -30,7 +30,7 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
                                  DateTime sowDate,
                                  int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(cropType, cropIndex)), classType((typeof(classType))classTypeIn),
-      _substrateType(substrateType), _sowDate(sowDate.secondstime()), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
+      _substrateType(substrateType), _sowDate(sowDate.unixtime()), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
     recalcGrowWeekAndPhase();
@@ -217,7 +217,7 @@ void HydroponicsCrop::handleFeedingState()
 
 void HydroponicsCrop::recalcGrowWeekAndPhase()
 {
-    TimeSpan dateSpan = DateTime(now()) - DateTime((uint32_t)_sowDate);
+    TimeSpan dateSpan(unixNow() - _sowDate);
     _growWeek = dateSpan.days() / DAYS_PER_WEEK;
 
     if (!_cropsData) { checkoutCropsLibData(); }
@@ -297,15 +297,15 @@ HydroponicsTimedCrop::~HydroponicsTimedCrop()
 
 bool HydroponicsTimedCrop::getNeedsFeeding() const
 {
-    return now() >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
-           now() < _lastFeedingDate + (_feedTimingMins[0] * SECS_PER_MIN);
+    return unixNow() >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
+           unixNow() < _lastFeedingDate + (_feedTimingMins[0] * SECS_PER_MIN);
 }
 
 void HydroponicsTimedCrop::notifyFeedingBegan()
 {
     HydroponicsCrop::notifyFeedingBegan();
 
-    _lastFeedingDate = now();
+    _lastFeedingDate = unixNow();
 }
 
 void HydroponicsTimedCrop::setFeedTimeOn(TimeSpan timeOn)

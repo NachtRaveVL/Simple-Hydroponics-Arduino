@@ -131,8 +131,8 @@ public:
     // Adds a new feed reservoir to the system using the given parameters.
     // Feed reservoirs, aka channels, are the reservoirs used to feed crops and provide a central point for managing feeding.
     shared_ptr<HydroponicsFeedReservoir> addFeedWaterReservoir(float maxVolume,                     // Maximum volume
-                                                               DateTime lastChangeDate = DateTime((uint32_t)now()), // Last water change date
-                                                               DateTime lastPruningDate = DateTime((uint32_t)0)); // Last pruning date
+                                                               DateTime lastChangeDate = DateTime((uint32_t)unixNow()), // Last water change date
+                                                               DateTime lastPruningDate = DateTime()); // Last pruning date
 
     // Adds a drainage pipe to the system using the given parameters.
     // Drainage pipes are never-filled infinite reservoirs that can always be pumped/drained into.

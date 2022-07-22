@@ -569,7 +569,7 @@ HydroponicsFeeding::~HydroponicsFeeding()
 void HydroponicsFeeding::reset()
 {
     clearActReqs();
-    stage = Init; stageStart = now();
+    stage = Init; stageStart = unixNow();
     canFeedAfter = 0;
     recalcFeeding();
     setupStaging();
@@ -802,7 +802,7 @@ void HydroponicsFeeding::update()
 
     switch (stage) {
         case Init: {
-            if (!canFeedAfter || now() >= canFeedAfter) {
+            if (!canFeedAfter || unixNow() >= canFeedAfter) {
                 int cropsHungry = 0;
                 auto crops = feedRes->getCrops();
                 for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
@@ -811,7 +811,7 @@ void HydroponicsFeeding::update()
                 }
 
                 if (cropsHungry / (float)crops.size() >= HYDRUINO_SCHEDULER_FEED_FRACTION - FLT_EPSILON) {
-                    stage = TopOff; stageStart = now();
+                    stage = TopOff; stageStart = unixNow();
                     setupStaging();
                 }
             }
@@ -819,13 +819,13 @@ void HydroponicsFeeding::update()
 
         case TopOff: {
             if (feedRes->getIsFilled() || !actuatorReqs.size()) {
-                stage = PreFeed; stageStart = now();
+                stage = PreFeed; stageStart = unixNow();
                 setupStaging();
             }
         } break;
 
         case PreFeed: {
-            if (!actuatorReqs.size() || now() >= stageStart + (getSchedulerInstance()->getPreFeedAeratorMins() * SECS_PER_MIN)) {
+            if (!actuatorReqs.size() || unixNow() >= stageStart + (getSchedulerInstance()->getPreFeedAeratorMins() * SECS_PER_MIN)) {
                 auto phBalancer = feedRes->getWaterPHBalancer();
                 auto tdsBalancer = feedRes->getWaterTDSBalancer();
                 auto waterTempBalancer = feedRes->getWaterTempBalancer();
@@ -834,9 +834,9 @@ void HydroponicsFeeding::update()
                     (!tdsBalancer || (tdsBalancer->getIsEnabled() && tdsBalancer->getIsBalanced())) &&
                     (!waterTempBalancer || (waterTempBalancer->getIsEnabled() && waterTempBalancer->getIsBalanced()))) {
                     // Can proceed after all tanks are marked balanced for min time
-                    if (!canFeedAfter) { canFeedAfter = now() + HYDRUINO_SCHEDULER_BALANCE_MINTIME; }
-                    else if (now() >= canFeedAfter) {
-                        stage = Feed; stageStart = now();
+                    if (!canFeedAfter) { canFeedAfter = unixNow() + HYDRUINO_SCHEDULER_BALANCE_MINTIME; }
+                    else if (unixNow() >= canFeedAfter) {
+                        stage = Feed; stageStart = unixNow();
                         setupStaging();
                         broadcastFeedingBegan();
                     }
@@ -856,7 +856,7 @@ void HydroponicsFeeding::update()
 
             if (cropsFed / (float)crops.size() >= HYDRUINO_SCHEDULER_FEED_FRACTION - FLT_EPSILON) {
                 stage = (getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? Drain : Done);
-                stageStart = now();
+                stageStart = unixNow();
                 setupStaging();
                 broadcastFeedingEnded();
             }
@@ -865,7 +865,7 @@ void HydroponicsFeeding::update()
         case Drain: {
             if (getHydroponicsInstance()->getSystemMode() != Hydroponics_SystemMode_DrainToWaste ||
                 feedRes->getIsEmpty()) {
-                stage = Done; stageStart = now();
+                stage = Done; stageStart = unixNow();
                 setupStaging();
             }
         } break;
@@ -934,9 +934,10 @@ void HydroponicsLighting::recalcLighting()
 
     for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
         auto crop = (HydroponicsCrop *)(cropIter->second);
-        Hydroponics_CropPhase cropPhase = crop ? crop->getCropPhase() : Hydroponics_CropPhase_Undefined;
+        auto cropPhase = crop ? (Hydroponics_CropPhase)min(Hydroponics_CropPhase_MainCount - 1, crop->getCropPhase())
+                              : Hydroponics_CropPhase_Undefined;
 
-        if ((int)cropPhase >= 0 && cropPhase < Hydroponics_CropPhase_MainCount) {
+        if ((int)cropPhase >= 0) {
             auto cropsLibData = getCropsLibraryInstance()->checkoutCropsData(crop->getCropType());
 
             if (cropsLibData) {
@@ -976,11 +977,12 @@ void HydroponicsLighting::setupStaging()
 {
     clearActReqs();
 
-    time_t time = now();
+    time_t currTime = getCurrentTime().unixtime();
+
     stage = Init;
-    if (time >= sprayStart) { stage = (typeof(stage))((int)stage + 1); }
-    if (time >= lightStart) { stage = (typeof(stage))((int)stage + 1); }
-    if (time >= lightEnd) { stage = (typeof(stage))((int)stage + 1); }
+    if (currTime >= sprayStart) { stage = Spray; }
+    if (currTime >= lightStart) { stage = Light; }
+    if (currTime >= lightEnd) { stage = Done; }
 
     switch(stage) {
         case Spray: {
@@ -1007,22 +1009,24 @@ void HydroponicsLighting::setupStaging()
 void HydroponicsLighting::update()
 {
     if (isDone()) { return; }
-    time_t time = now();
+    time_t currTime = getCurrentTime().unixtime();
 
     switch (stage) {
         case Init:
-            if ((sprayStart && time >= sprayStart) || (lightStart && time >= lightStart)) { setupStaging(); }
+            if ((sprayStart && currTime >= sprayStart) || (lightStart && currTime >= lightStart)) {
+                setupStaging();
+            }
             break;
 
         case Spray:
-            if ((lightStart && time >= lightStart) || (lightEnd && time >= lightEnd)) {
+            if ((lightStart && currTime >= lightStart) || (lightEnd && currTime >= lightEnd)) {
                 getLoggerInstance()->logLightingBegan(feedRes.get(), "TODO");
                 setupStaging();
             }
             break;
 
         case Light:
-            if (lightEnd && time >= lightEnd) {
+            if (lightEnd && currTime >= lightEnd) {
                 getLoggerInstance()->logLightingEnded(feedRes.get(), "TODO");
                 setupStaging();
             }
