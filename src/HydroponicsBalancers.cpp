@@ -71,9 +71,9 @@ Hydroponics_UnitsType HydroponicsBalancer::getTargetUnits() const
 
 void HydroponicsBalancer::setIncrementActuators(const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &incActuators)
 {
-    for (auto actIter = _incActuators.begin(); actIter != _incActuators.end(); ++actIter) {
-        if (incActuators.find(actIter->first) == incActuators.end()) {
-            auto actuator = actIter->second.first;
+    for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
+        if (incActuators.find(actuatorIter->first) == incActuators.end()) {
+            auto actuator = actuatorIter->second.first;
             if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
         }
     }
@@ -83,9 +83,9 @@ void HydroponicsBalancer::setIncrementActuators(const Map<Hydroponics_KeyType, P
 
 void HydroponicsBalancer::setDecrementActuators(const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &decActuators)
 {
-    for (auto actIter = _decActuators.begin(); actIter != _decActuators.end(); ++actIter) {
-        if (decActuators.find(actIter->first) == decActuators.end()) {
-            auto actuator = actIter->second.first;
+    for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
+        if (decActuators.find(actuatorIter->first) == decActuators.end()) {
+            auto actuator = actuatorIter->second.first;
             if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
         }
     }
@@ -129,16 +129,16 @@ float HydroponicsBalancer::getTargetRange() const
 
 void HydroponicsBalancer::disableIncActuators()
 {
-    for (auto actIter = _incActuators.begin(); actIter != _incActuators.end(); ++actIter) {
-        auto actuator = actIter->second.first;
+    for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
+        auto actuator = actuatorIter->second.first;
         if (actuator) { actuator->disableActuator(); }
     }
 }
 
 void HydroponicsBalancer::disableDecActuators()
 {
-    for (auto actIter = _decActuators.begin(); actIter != _decActuators.end(); ++actIter) {
-        auto actuator = actIter->second.first;
+    for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
+        auto actuator = actuatorIter->second.first;
         if (actuator) { actuator->disableActuator(); }
     }
 }

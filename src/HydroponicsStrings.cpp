@@ -41,6 +41,12 @@ const PROGMEM char HS_Log_PreLightSpraying[] = {" pre-light spraying"};
 const PROGMEM char HS_Log_SystemDataSaved[] = {"System data saved"};
 const PROGMEM char HS_Log_SystemUptime[] = {"System uptime: "};
 
+const PROGMEM char HS_Log_Field_pH[] = {"  ph: "};
+const PROGMEM char HS_Log_Field_TDS[] = {"  TDS: "};
+const PROGMEM char HS_Log_Field_Temp[] = {"  Temp: "};
+const PROGMEM char HS_Log_Field_Time[] = {"  Time: "};
+const PROGMEM char HS_Log_Field_Vol[] = {"  Time: "};
+
 const PROGMEM char HS_Key_ActiveLow[] = {"activeLow"};
 const PROGMEM char HS_Key_AdditiveName[] = {"additiveName"};
 const PROGMEM char HS_Key_AirTempRange[] = {"airTempRange"};

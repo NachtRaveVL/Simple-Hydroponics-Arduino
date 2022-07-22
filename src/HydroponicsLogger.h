@@ -35,16 +35,16 @@ public:
     void logActivation(HydroponicsActuator *actuator);
     void logDeactivation(HydroponicsActuator *actuator);
 
-    void logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString, String processInfo);
+    void logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString);
 
-    void logPumping(HydroponicsPumpObjectInterface *pump, String pumpString, String pumpingInfo);
+    void logPumping(HydroponicsPumpObjectInterface *pump, String pumpString);
 
     void logSystemUptime();
     void logSystemSave();
 
-    void logMessage(String msg);
-    void logWarning(String warn);
-    void logError(String err);
+    void logMessage(String msg, String suffix = String());
+    void logWarning(String warn, String suffix = String());
+    void logError(String err, String suffix = String());
     void flush();
 
     void setLogLevel(Hydroponics_LogLevel logLevel);
@@ -62,7 +62,7 @@ protected:
 
     friend class Hydroponics;
 
-    void log(String msg);
+    void log(String prefix, String msg, String suffix);
 
     void cleanupOldestLogs(bool force = false);
 };

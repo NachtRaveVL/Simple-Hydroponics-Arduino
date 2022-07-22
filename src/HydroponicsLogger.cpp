@@ -35,7 +35,7 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
     if (_loggerData) {
         auto sd = getHydroponicsInstance()->getSDCard();
 
-        if (sd && sd->exists(".")) {
+        if (sd) {
             String logFileName = getYYMMDDFilename(logFilePrefix, SFP(HS_txt));
             auto logFile = sd->open(logFileName, FILE_WRITE);
 
@@ -69,33 +69,28 @@ bool HydroponicsLogger::getIsLoggingToSDCard() const
 void HydroponicsLogger::logActivation(HydroponicsActuator *actuator)
 {
     if (actuator) {
-        String msg = actuator->getId().keyStr + SFP(HS_Log_HasEnabled);
-        logMessage(msg);
+        logMessage(actuator->getId().keyStr, SFP(HS_Log_HasEnabled));
     }
 }
 
 void HydroponicsLogger::logDeactivation(HydroponicsActuator *actuator)
 {
     if (actuator) {
-        String msg = actuator->getId().keyStr + SFP(HS_Log_HasDisabled);
-        logMessage(msg);
+        logMessage(actuator->getId().keyStr, SFP(HS_Log_HasDisabled));
     }
 }
 
-void HydroponicsLogger::logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString, String processInfo)
+void HydroponicsLogger::logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString)
 {
     if (feedReservoir) {
-        String msg = feedReservoir->getId().keyStr + processString + statusString +
-                     (processInfo.length() ? String(' ') + String('(') + processInfo + String(')') : String());
-        logMessage(msg);
+        logMessage(feedReservoir->getId().keyStr, processString + statusString);
     }
 }
 
-void HydroponicsLogger::logPumping(HydroponicsPumpObjectInterface *pump, String pumpString, String pumpingInfo)
+void HydroponicsLogger::logPumping(HydroponicsPumpObjectInterface *pump, String pumpString)
 {
     if (pump) {
-        String msg = ((HydroponicsObject *)pump)->getId().keyStr + pumpString + pumpingInfo;
-        logMessage(msg);
+        logMessage(((HydroponicsObject *)pump)->getId().keyStr, pumpString);
     }
 }
 
@@ -104,12 +99,11 @@ void HydroponicsLogger::logSystemUptime()
     TimeSpan elapsed(unixNow() - _initDate);
 
     if (elapsed.totalseconds()) {
-        String msg = SFP(HS_Log_SystemUptime) +
+        logMessage(SFP(HS_Log_SystemUptime),
             String(elapsed.days()) + String('d') + String(' ') +
             String(elapsed.hours()) + String('h') + String(' ') +
             String(elapsed.minutes()) + String('m') + String(' ') +
-            String(elapsed.seconds()) + String('s');
-        logMessage(msg);
+            String(elapsed.seconds()) + String('s'));
     }
 }
 
@@ -118,28 +112,28 @@ void HydroponicsLogger::logSystemSave()
     logMessage(SFP(HS_Log_SystemDataSaved));
 }
 
-void HydroponicsLogger::logMessage(String msg)
+void HydroponicsLogger::logMessage(String msg, String suffix)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_All) {
-        log(String(F("[INFO] ")) + msg);
+        log(String(F("[INFO] ")), msg, suffix);
     }
 }
 
-void HydroponicsLogger::logWarning(String warn)
+void HydroponicsLogger::logWarning(String warn, String suffix)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Warnings) {
-        log(String(F("[WARN] ")) + warn);
+        log(String(F("[WARN] ")), warn, suffix);
     }
 }
 
-void HydroponicsLogger::logError(String err)
+void HydroponicsLogger::logError(String err, String suffix)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Errors) {
-        log(String(F("[FAIL] ")) + err);
+        log(String(F("[FAIL] ")), err, suffix);
     }
 }
 
-void HydroponicsLogger::log(String msg)
+void HydroponicsLogger::log(String prefix, String msg, String suffix)
 {
     String timestamp = getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL);
 
@@ -147,7 +141,9 @@ void HydroponicsLogger::log(String msg)
         if (Serial) {
             Serial.print(timestamp);
             Serial.print(' ');
-            Serial.println(msg);
+            Serial.print(prefix);
+            Serial.print(msg);
+            Serial.println(suffix);
         }
     #endif
 
@@ -160,7 +156,9 @@ void HydroponicsLogger::log(String msg)
             if (logFile && logFile.availableForWrite()) {
                 logFile.print(timestamp);
                 logFile.print(' ');
-                logFile.println(msg);
+                logFile.print(prefix);
+                logFile.print(msg);
+                logFile.println(suffix);
             }
 
             if (logFile) { logFile.close(); }
