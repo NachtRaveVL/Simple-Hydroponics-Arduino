@@ -3,8 +3,8 @@
 
 #include <Hydroponics.h>
 
-#define AeratorRelayPin     7
-#define GrowLightsRelayPin  8
+#define AeratorRelayPin     4
+#define GrowLightsRelayPin  5
 #define LettuceSowDate      DateTime(2022, 5, 21)
 
 Hydroponics hydroController;            // Controller using default XXX TODO pin DXX, and default Wire @400kHz
@@ -12,7 +12,6 @@ Hydroponics hydroController;            // Controller using default XXX TODO pin
 void setup() {
     Serial.begin(115200);               // Begin Serial and Wire interfaces
     while(!Serial) { ; }                // Wait for USB serial to connect (remove in production)
-    Wire.setClock(hydroController.getI2CSpeed()); // Don't worry, Wire.begin() gets called plenty enough times internally
 
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else
     hydroController.init();
@@ -20,10 +19,9 @@ void setup() {
     // Adds our relay power rail as standard AC. This will manage how many active devices can be turned on at the same time.
     auto relayPower = hydroController.addSimplePowerRail(Hydroponics_RailType_AC110V);
 
-    // Adds the 4 gallon main water reservoir, and initializes it as full. This will contain sensors and feed crops.
-    auto feedWater = hydroController.addFeedWaterReservoir(4);
+    // Adds a 4 gallon main water reservoir, already filled with feed water.
+    auto feedWater = hydroController.addFeedWaterReservoir(4, true);
     feedWater->setVolumeUnits(Hydroponics_UnitsType_LiqVolume_Gallons);
-    feedWater->setWaterVolume(feedWater->getMaxVolume());
 
     // Add water aerator relay at AeratorRelayPin, and link it to the feed water reservoir and the relay power rail.
     auto aerator = hydroController.addWaterAeratorRelay(AeratorRelayPin);
@@ -35,8 +33,8 @@ void setup() {
     growLights->setRail(relayPower);
     growLights->setReservoir(feedWater);
 
-    // Add some lettuce, set to feed on a timer, that we planted in clay pebbles on LettuceSowDate, and link it to the feed water reservoir.
-    auto lettuce = hydroController.addTimerFedCrop((Hydroponics_CropType)0, Hydroponics_SubstrateType_ClayPebbles, LettuceSowDate);
+    // Add some lettuce, set to feed on a standard 15 mins on/45 mins off timer, that we planted in clay pebbles on LettuceSowDate, and link it to the feed water reservoir.
+    auto lettuce = hydroController.addTimerFedCrop(Hydroponics_CropType_Lettuce, Hydroponics_SubstrateType_ClayPebbles, LettuceSowDate);
     lettuce->setFeedReservoir(feedWater);
 
     // Launches controller into main operation.

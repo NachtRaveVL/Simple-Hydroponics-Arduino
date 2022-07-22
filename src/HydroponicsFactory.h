@@ -126,11 +126,13 @@ public:
     // Adds a new simple fluid reservoir to the system using the given parameters.
     // Fluid reservoirs are basically just buckets of some liquid solution with a known or measurable volume.
     shared_ptr<HydroponicsFluidReservoir> addFluidReservoir(Hydroponics_ReservoirType reservoirType, // Reservoir type
-                                                            float maxVolume);                        // Maximum volume
+                                                            float maxVolume,                         // Maximum volume
+                                                            bool beginFilled = false);               // If reservoir should begin filled or empty
 
     // Adds a new feed reservoir to the system using the given parameters.
     // Feed reservoirs, aka channels, are the reservoirs used to feed crops and provide a central point for managing feeding.
     shared_ptr<HydroponicsFeedReservoir> addFeedWaterReservoir(float maxVolume,                     // Maximum volume
+                                                               bool beginFilled = false,            // If feed reservoir should begin filled or empty
                                                                DateTime lastChangeDate = DateTime((uint32_t)unixNow()), // Last water change date
                                                                DateTime lastPruningDate = DateTime()); // Last pruning date
 
