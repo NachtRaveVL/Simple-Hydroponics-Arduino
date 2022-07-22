@@ -70,12 +70,23 @@ protected:
 };
 
 
-// Hydroponics Scheduler Feeding Stage Tracking
-struct HydroponicsFeeding {
+// Hydroponics Scheduler Process
+struct HydroponicsProcess {
     shared_ptr<HydroponicsFeedReservoir> feedRes;
-    enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage;
     Vector<shared_ptr<HydroponicsActuator> >::type actuatorReqs;
+
     time_t stageStart;
+
+    HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feedRes);
+
+    void clearActuatorReqs();
+    void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator> >::type &actuatorReqs);
+};
+
+// Hydroponics Scheduler Feeding Process
+struct HydroponicsFeeding : public HydroponicsProcess {
+    enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage;
+
     time_t canFeedAfter;
 
     float phSetpoint;
@@ -86,11 +97,10 @@ struct HydroponicsFeeding {
 
     HydroponicsFeeding(shared_ptr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsFeeding();
-    void clearActReqs();
+
     void recalcFeeding();
     void setupStaging();
     void update();
-    inline bool isDone() const { return stage == Done; }
 
 private:
     void reset();
@@ -98,23 +108,22 @@ private:
     void broadcastFeedingEnded();
 };
 
-// Hydroponics Scheduler Lighting Stage Tracking
-struct HydroponicsLighting {
-    shared_ptr<HydroponicsFeedReservoir> feedRes;
+// Hydroponics Scheduler Lighting Process
+struct HydroponicsLighting : public HydroponicsProcess {
     enum {Init,Spray,Light,Done,Unknown = -1} stage;
-    Vector<shared_ptr<HydroponicsActuator> >::type actuatorReqs;
 
     time_t sprayStart;
     time_t lightStart;
     time_t lightEnd;
 
+    float lightHours;
+
     HydroponicsLighting(shared_ptr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsLighting();
-    void clearActReqs();
+
     void recalcLighting();
     void setupStaging();
     void update();
-    inline bool isDone() const { return stage == Done; }
 };
 
 

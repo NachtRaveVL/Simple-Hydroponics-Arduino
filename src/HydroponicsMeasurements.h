@@ -64,7 +64,7 @@ struct HydroponicsSingleMeasurement : public HydroponicsMeasurement {
     HydroponicsSingleMeasurement();
     HydroponicsSingleMeasurement(float value,
                                  Hydroponics_UnitsType units,
-                                 time_t timestamp);
+                                 time_t timestamp = unixNow());
     HydroponicsSingleMeasurement(float value,
                                  Hydroponics_UnitsType units,
                                  time_t timestamp,
@@ -80,7 +80,7 @@ struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
 
     HydroponicsBinaryMeasurement();
     HydroponicsBinaryMeasurement(bool state,
-                                 time_t timestamp);
+                                 time_t timestamp = unixNow());
     HydroponicsBinaryMeasurement(bool state,
                                  time_t timestamp,
                                  uint16_t frame);
@@ -101,7 +101,7 @@ struct HydroponicsDoubleMeasurement : public HydroponicsMeasurement {
                                  Hydroponics_UnitsType units1, 
                                  float value2,
                                  Hydroponics_UnitsType units2, 
-                                 time_t timestamp);
+                                 time_t timestamp = unixNow());
     HydroponicsDoubleMeasurement(float value1,
                                  Hydroponics_UnitsType units1, 
                                  float value2,
@@ -127,7 +127,7 @@ struct HydroponicsTripleMeasurement : public HydroponicsMeasurement {
                                  Hydroponics_UnitsType units2, 
                                  float value3,
                                  Hydroponics_UnitsType units3,
-                                 time_t timestamp);
+                                 time_t timestamp = unixNow());
     HydroponicsTripleMeasurement(float value1,
                                  Hydroponics_UnitsType units1, 
                                  float value2,

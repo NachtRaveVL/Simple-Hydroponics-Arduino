@@ -127,6 +127,7 @@ template <class T1, class T2> struct Pair { typedef arx::pair<T1,T2> type; };
 #define HYDRUINO_USE_ARX_CONTAINERS
 #endif
 using namespace arx::stdx;
+extern time_t unixNow();
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsStrings.h"

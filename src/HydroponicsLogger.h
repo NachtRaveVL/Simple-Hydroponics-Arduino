@@ -35,14 +35,9 @@ public:
     void logActivation(HydroponicsActuator *actuator);
     void logDeactivation(HydroponicsActuator *actuator);
 
-    void logFeedingBegan(HydroponicsFeedReservoir *feedReservoir, String feedingInfo);
-    void logFeedingEnded(HydroponicsFeedReservoir *feedReservoir, String feedingInfo);
+    void logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString, String processInfo);
 
-    void logLightingBegan(HydroponicsFeedReservoir *feedReservoir, String lightingInfo);
-    void logLightingEnded(HydroponicsFeedReservoir *feedReservoir, String lightingInfo);
-
-    void logEstimatedPumping(HydroponicsPumpObjectInterface *pump, String estimationInfo);
-    void logMeasuredPumping(HydroponicsPumpObjectInterface *pump, String measuredInfo);
+    void logPumping(HydroponicsPumpObjectInterface *pump, String pumpString, String pumpingInfo);
 
     void logSystemUptime();
     void logSystemSave();
