@@ -162,6 +162,8 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
+        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+
         HYDRUINO_SOFT_ASSERT((int)systemMode >= 0 && systemMode < Hydroponics_SystemMode_Count, SFP(HS_Err_InvalidParameter));
         HYDRUINO_SOFT_ASSERT((int)measureMode >= 0 && measureMode < Hydroponics_MeasurementMode_Count, SFP(HS_Err_InvalidParameter));
         #ifndef HYDRUINO_DISABLE_GUI
@@ -197,6 +199,8 @@ bool Hydroponics::initFromEEPROM(bool jsonFormat)
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
+        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+
         if (getEEPROM() && _eepromBegan) {
             HydroponicsEEPROMStream eepromStream;
             return jsonFormat ? initFromJSONStream(&eepromStream) : initFromBinaryStream(&eepromStream);
@@ -225,6 +229,7 @@ bool Hydroponics::initFromSDCard(bool jsonFormat)
     HYDRUINO_HARD_ASSERT(!_systemData, SFP(HS_Err_AlreadyInitialized));
 
     if (!_systemData) {
+        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
         auto sd = getSDCard();
 
         if (sd) {
@@ -276,6 +281,8 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
+        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+
         {   StaticJsonDocument<HYDRUINO_JSON_DOC_SYSSIZE> doc;
             deserializeJson(doc, *streamIn);
             JsonObjectConst systemDataObj = doc.as<JsonObjectConst>();
@@ -438,6 +445,8 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
     HYDRUINO_SOFT_ASSERT(streamIn && streamIn->available(), SFP(HS_Err_InvalidParameter));
 
     if (!_systemData && streamIn && streamIn->available()) {
+        if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+
         {   HydroponicsSystemData *systemData = (HydroponicsSystemData *)newDataFromBinaryStream(streamIn);
 
             HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), SFP(HS_Err_ImportFailure));
