@@ -139,7 +139,7 @@ void testCrops()
 {
     Serial.println(); Serial.println("-- Crops --");
 
-    {   auto timedCrop = make_shared<HydroponicsTimedCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime((uint32_t)0));
+    {   auto timedCrop = make_shared<HydroponicsTimedCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
         timedCrop->setFeedReservoir(HydroponicsIdentity(String(F("ASDF"))));
 
         auto data = (HydroponicsTimedCropData *)(timedCrop->newSaveData());
@@ -155,7 +155,7 @@ void testCrops()
         Serial.println(); Serial.flush(); yield();
     }
 
-    {   auto adaptiveCrop = make_shared<HydroponicsAdaptiveCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime((uint32_t)0));
+    {   auto adaptiveCrop = make_shared<HydroponicsAdaptiveCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
         adaptiveCrop->setFeedReservoir(HydroponicsIdentity(String(F("ASDF"))));
         adaptiveCrop->setMoistureSensor(HydroponicsIdentity(String(F("JKL"))));
 

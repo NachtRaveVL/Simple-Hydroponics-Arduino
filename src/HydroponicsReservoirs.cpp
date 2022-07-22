@@ -494,7 +494,7 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(Hydroponics_PositionIndex res
                                                    DateTime lastPruningDate,
                                                    int classType)
     : HydroponicsFluidReservoir(Hydroponics_ReservoirType_FeedWater, reservoirIndex, maxVolume, classType),
-       _lastChangeDate(lastChangeDate.secondstime()), _lastPruningDate(lastPruningDate.secondstime()), _lastFeedingDate(0), _numFeedingsToday(0),
+       _lastChangeDate(lastChangeDate.unixtime()), _lastPruningDate(lastPruningDate.unixtime()), _lastFeedingDate(0), _numFeedingsToday(0),
        _tdsUnits(Hydroponics_UnitsType_Concentration_TDS), _tempUnits(defaultTemperatureUnits()),
        _needsWaterPHUpdate(true), _needsWaterTDSUpdate(true), _needsWaterTempUpdate(true), _needsAirTempUpdate(true), _needsAirCO2Update(true),
        _waterPHBalancer(nullptr), _waterTDSBalancer(nullptr), _waterTempBalancer(nullptr), _airTempBalancer(nullptr), _airCO2Balancer(nullptr)
@@ -512,9 +512,8 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
       _waterPHBalancer(nullptr), _waterTDSBalancer(nullptr), _waterTempBalancer(nullptr), _airTempBalancer(nullptr), _airCO2Balancer(nullptr)
 {
     if (_lastFeedingDate) {
-        DateTime lastFeeding = DateTime((uint32_t)_lastFeedingDate);
         auto hydroponics = getHydroponicsInstance();
-        lastFeeding = lastFeeding + TimeSpan(0, hydroponics ? hydroponics->getTimeZoneOffset() : 0, 0, 0);
+        DateTime lastFeeding = DateTime((uint32_t)(_lastFeedingDate + (hydroponics ? hydroponics->getTimeZoneOffset() * SECS_PER_HOUR : 0)));
         DateTime currTime = getCurrentTime();
 
         if (currTime.year() != lastFeeding.year() ||
@@ -1032,7 +1031,7 @@ DateTime HydroponicsFeedReservoir::getLastWaterChangeDate() const
 
 void HydroponicsFeedReservoir::notifyWaterChanged()
 {
-    _lastChangeDate = now();
+    _lastChangeDate = unixNow();
 }
 
 DateTime HydroponicsFeedReservoir::getLastPruningDate() const
@@ -1042,7 +1041,7 @@ DateTime HydroponicsFeedReservoir::getLastPruningDate() const
 
 void HydroponicsFeedReservoir::notifyPruningCompleted()
 {
-    _lastPruningDate = now();
+    _lastPruningDate = unixNow();
 }
 
 DateTime HydroponicsFeedReservoir::getLastFeeding() const
@@ -1058,7 +1057,7 @@ int HydroponicsFeedReservoir::getFeedingsToday() const
 void HydroponicsFeedReservoir::notifyFeedingBegan()
 {
     _numFeedingsToday++;
-    _lastFeedingDate = now();
+    _lastFeedingDate = unixNow();
 }
 
 void HydroponicsFeedReservoir::notifyFeedingEnded()
@@ -1254,7 +1253,7 @@ void HydroponicsInfiniteReservoir::setWaterVolume(HydroponicsSingleMeasurement w
 
 const HydroponicsSingleMeasurement &HydroponicsInfiniteReservoir::getWaterVolume()
 {
-    return HydroponicsSingleMeasurement(_alwaysFilled ? FLT_UNDEF : 0.0f, _volumeUnits, now(), 1);
+    return HydroponicsSingleMeasurement(_alwaysFilled ? FLT_UNDEF : 0.0f, _volumeUnits, unixNow(), 1);
 }
 
 void HydroponicsInfiniteReservoir::saveToData(HydroponicsData *dataOut)

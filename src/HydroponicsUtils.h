@@ -291,6 +291,9 @@ extern void delayFine(time_t timeMillis);
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
 
+// This will return the time in unixtime (secs since 1970).
+extern time_t unixNow();
+
 // This will handle interrupts for task manager.
 extern void handleInterrupt(byte pin);
 

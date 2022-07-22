@@ -162,8 +162,8 @@ class HydroponicsFeedReservoir : public HydroponicsFluidReservoir, public Hydrop
 public:
     HydroponicsFeedReservoir(Hydroponics_PositionIndex reservoirIndex,
                              float maxVolume,
-                             DateTime lastChangeDate = DateTime((uint32_t)now()),
-                             DateTime lastPruningDate = DateTime((uint32_t)0),
+                             DateTime lastChangeDate = DateTime((uint32_t)unixNow()),
+                             DateTime lastPruningDate = DateTime(),
                              int classType = Feed);
     HydroponicsFeedReservoir(const HydroponicsFeedReservoirData *dataIn);
     virtual ~HydroponicsFeedReservoir();

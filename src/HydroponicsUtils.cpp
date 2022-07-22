@@ -202,18 +202,21 @@ void publishData(HydroponicsSensor *sensor)
     }
 }
 
+time_t unixNow()
+{
+    return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; // rtcNow returns 0 if not set
+}
+
 DateTime getCurrentTime()
 {
     auto hydroponics = Hydroponics::getActiveInstance();
-    return DateTime((uint32_t)(now() + ((hydroponics ? hydroponics->getTimeZoneOffset() : 0L) * SECS_PER_HOUR)));
+    return DateTime((uint32_t)(unixNow() + (hydroponics ? hydroponics->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
 }
 
 time_t getCurrentDayStartTime()
 {
-    auto hydroponics = Hydroponics::getActiveInstance();
-    long timeZoneSecs = (hydroponics ? hydroponics->getTimeZoneOffset() : 0L) * SECS_PER_HOUR;
-    DateTime currTime = DateTime((uint32_t)(now() + timeZoneSecs));
-    return DateTime(currTime.year(), currTime.month(), currTime.day()).secondstime() + timeZoneSecs;
+    DateTime currTime = getCurrentTime();
+    return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime();
 }
 
 String getYYMMDDFilename(String prefix, String ext)
@@ -462,7 +465,6 @@ void delayFine(time_t timeMillis) {
         }
     }
 }
-
 
 bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam)
 {

@@ -283,7 +283,7 @@ bool HydroponicsBinarySensor::takeMeasurement(bool override)
         bool stateBefore = _lastMeasurement.state;
 
         bool state = digitalRead(_inputPin) == HIGH;
-        auto timestamp = now();
+        auto timestamp = unixNow();
 
         _lastMeasurement = HydroponicsBinaryMeasurement(state, timestamp);
 
@@ -431,7 +431,7 @@ void HydroponicsAnalogSensor::_takeMeasurement(unsigned int taskId)
             #endif // /if HYDRUINO_SENSOR_ANALOGREAD_SAMPLES > 1
 
             if (_inputInversion) { rawRead = _inputResolution.maxVal - rawRead; }
-            auto timestamp = now();
+            auto timestamp = unixNow();
 
             HydroponicsSingleMeasurement newMeasurement(
                 _inputResolution.transform(rawRead),
@@ -713,7 +713,7 @@ void HydroponicsDHTTempHumiditySensor::_takeMeasurement(unsigned int taskId)
 
             auto tempRead = _dht->readTemperature(readInFahrenheit, true);
             auto humidRead = _dht->readHumidity(true);
-            auto timestamp = now();
+            auto timestamp = unixNow();
 
             HydroponicsTripleMeasurement newMeasurement(
                 tempRead, readUnits, humidRead, Hydroponics_UnitsType_Percentile_0_100,
@@ -899,7 +899,7 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
                                                                    : Hydroponics_UnitsType_Temperature_Celsius;
 
                 auto tempRead = readInFahrenheit ? _dt->getTempF(_wireDevAddress) : _dt->getTempC(_wireDevAddress);
-                auto timestamp = now();
+                auto timestamp = unixNow();
 
                 HydroponicsSingleMeasurement newMeasurement(
                     tempRead,

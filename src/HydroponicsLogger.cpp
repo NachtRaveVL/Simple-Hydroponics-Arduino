@@ -136,10 +136,14 @@ void HydroponicsLogger::logMeasuredPumping(HydroponicsPumpObjectInterface *pump,
 
 void HydroponicsLogger::logSystemUptime()
 {
-    time_t elapsedTime = now() - _initDate;
-    DateTime elapsed((uint32_t)elapsedTime);
-    String msg = SFP(HS_Log_SystemUptime) + String(elapsedTime / SECS_PER_DAY) + String('d') + String(' ') +
-                 elapsed.timestamp(DateTime::TIMESTAMP_TIME);
+    TimeSpan elapsed(unixNow() - _initDate);
+
+    String msg = SFP(HS_Log_SystemUptime) +
+                 String(elapsed.days()) + String('d') + String(' ') +
+                 String(elapsed.hours()) + String('h') + String(' ') +
+                 String(elapsed.minutes()) + String('m') + String(' ') +
+                 String(elapsed.seconds()) + String('s');
+    logMessage(msg);
 }
 
 void HydroponicsLogger::logSystemSave()
