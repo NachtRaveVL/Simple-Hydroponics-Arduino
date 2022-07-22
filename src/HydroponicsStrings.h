@@ -42,6 +42,12 @@ extern const PROGMEM char HS_Log_PreLightSpraying[];
 extern const PROGMEM char HS_Log_SystemDataSaved[];
 extern const PROGMEM char HS_Log_SystemUptime[];
 
+extern const PROGMEM char HS_Log_Field_pH[];
+extern const PROGMEM char HS_Log_Field_TDS[];
+extern const PROGMEM char HS_Log_Field_Temp[];
+extern const PROGMEM char HS_Log_Field_Time[];
+extern const PROGMEM char HS_Log_Field_Vol[];
+
 extern const PROGMEM char HS_Key_ActiveLow[];
 extern const PROGMEM char HS_Key_AdditiveName[];
 extern const PROGMEM char HS_Key_AirTempRange[];

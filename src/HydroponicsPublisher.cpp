@@ -47,7 +47,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
     if (_publisherData) {
         auto sd = hydroponics->getSDCard();
 
-        if (sd && sd->exists(".")) {
+        if (sd) {
             String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HS_csv));
             auto dataFile = sd->open(dataFileName, FILE_WRITE);
 

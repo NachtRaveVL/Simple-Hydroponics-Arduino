@@ -367,11 +367,9 @@ void HydroponicsPumpRelayActuator::disableActuator()
         _pumpTimeAccMillis = 0;
         pumpMillis = timeMillis - _pumpTimeBegMillis;
 
-        getLoggerInstance()->logPumping(this, SFP(HS_Log_MeasuredPumping),
-            String('V') + String('o') + String('l') + String(':') + String(' ') + String(roundForExport(_pumpVolumeAcc, 1)) +
-                String(' ') + unitsTypeToSymbol(baseUnitsFromRate(getFlowRateUnits())) + String(',') + String(' ') +
-            String('T') + String('i') + String('m') + String('e') + String(':') + String(' ') +
-                String(pumpMillis) + String(' ') + String('m') + String('s'));
+        getLoggerInstance()->logPumping(this, SFP(HS_Log_MeasuredPumping));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol) + String(roundForExport(_pumpVolumeAcc, 1)), String(' ') + unitsTypeToSymbol(baseUnitsFromRate(getFlowRateUnits())));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time) + String(roundForExport(_pumpVolumeAcc, 1)), String(' ') + String('m') + String('s'));
     }
 }
 
@@ -411,21 +409,23 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
     if (reservoir) {
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
-                getLoggerInstance()->logPumping(this, SFP(HS_Log_EstimatedPumping),
-                    (_contFlowRate.value > FLT_EPSILON ?
-                        String('V') + String('o') + String('l') + String(':') + String(' ') + String(roundForExport(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)))) +
-                        String(' ') + unitsTypeToSymbol(baseUnitsFromRate(getFlowRateUnits())) + String(',') + String(' ') : String()) +
-                    String('T') + String('i') + String('m') + String('e') + String(':') + String(' ') +
-                        String(timeMillis) + String(' ') + String('m') + String('s'));
+                getLoggerInstance()->logPumping(this, SFP(HS_Log_EstimatedPumping));
+                if (_contFlowRate.value > FLT_EPSILON) {
+                    getLoggerInstance()->logMessage(
+                        SFP(HS_Log_Field_Vol) + String(roundForExport(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)))),
+                        String(' ') + unitsTypeToSymbol(baseUnitsFromRate(getFlowRateUnits())));
+                }
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time) + String(timeMillis), String(' ') + String('m') + String('s'));
                 return true;
             }
         #else
-            getLoggerInstance()->logPumping(this, SFP(HS_Log_EstimatedPumping),
-                (_contFlowRate.value > FLT_EPSILON ?
-                    String('V') + String('o') + String('l') + String(':') + String(' ') + String(roundForExport(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)))) +
-                    String(' ') + unitsTypeToSymbol(baseUnitsFromRate(getFlowRateUnits())) + String(',') + String(' ') : String()) +
-                String('T') + String('i') + String('m') + String('e') + String(':') + String(' ') +
-                    String(timeMillis) + String(' ') + String('m') + String('s'));
+            getLoggerInstance()->logPumping(this, SFP(HS_Log_EstimatedPumping));
+            if (_contFlowRate.value > FLT_EPSILON) {
+                getLoggerInstance()->logMessage(
+                    SFP(HS_Log_Field_Vol) + String(roundForExport(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)))),
+                    String(' ') + unitsTypeToSymbol(baseUnitsFromRate(getFlowRateUnits())));
+            }
+            getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time) + String(timeMillis), String(' ') + String('m') + String('s'));
             enableActuator();
             delayFine(timeMillis);
             disableActuator();
