@@ -733,8 +733,7 @@ void Hydroponics::launch()
     _logger.resolveLinks();
     _publisher.resolveLinks();
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        auto obj = iter->second;
-        if (obj) { obj->resolveLinks(); }
+        if (iter->second) { iter->second->resolveLinks(); }
     }
 
     // Forces all sensors to get a new measurement

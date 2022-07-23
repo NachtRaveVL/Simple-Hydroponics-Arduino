@@ -351,6 +351,11 @@ template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LI
 // Returns linkages list filtered down to just pump actuators that pump to a specific reservoir from a certain reservoir type.
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType);
 
+// Returns the # of crops found in the linkages list.
+template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
+// Returns the # of actuators of a certain type that operate on a specific reservoir.
+template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
+
 // Pins & Checks
 
 // Checks to see if the pin is an analog input pin.

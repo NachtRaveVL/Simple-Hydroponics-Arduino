@@ -545,9 +545,8 @@ void HydroponicsScheduler::performScheduling()
 
                 if (feedReservoir) {
                     {   auto feedingIter = _feedings.find(feedReservoir->getKey());
-                        auto cropsCount = linksFilterCrops(feedReservoir->getLinkages()).size();
 
-                        if (cropsCount) {
+                        if (linksCountCrops(feedReservoir->getLinkages())) {
                             if (feedingIter != _feedings.end()) {
                                 if (feedingIter->second) {
                                     feedingIter->second->recalcFeeding();
@@ -564,10 +563,9 @@ void HydroponicsScheduler::performScheduling()
                     }
 
                     {   auto lightingIter = _lightings.find(feedReservoir->getKey());
-                        auto sprayersCount = linksFilterActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_WaterSprayer).size();
-                        auto lightsCount = linksFilterActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_GrowLights).size();
 
-                        if (sprayersCount || lightsCount) {
+                        if (linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_WaterSprayer) ||
+                            linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_GrowLights)) {
                             if (lightingIter != _lightings.end()) {
                                 if (lightingIter->second) {
                                     lightingIter->second->recalcLighting();
@@ -653,7 +651,10 @@ void HydroponicsProcess::setActuatorReqs(const Vector<shared_ptr<HydroponicsActu
         }
     }
 
-    actuatorReqs = actuatorReqsIn;
+    actuatorReqs.clear();
+    for (auto actuatorInIter = actuatorReqsIn.begin(); actuatorInIter != actuatorReqsIn.end(); ++actuatorInIter) {
+        actuatorReqs.push_back((*actuatorInIter));
+    }
 }
 
 
@@ -1027,10 +1028,9 @@ void HydroponicsFeeding::update()
 
     if (actuatorReqs.size()) {
         for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
-            if (!(*actuatorIter)->getIsEnabled()) {
-                if (!(*actuatorIter)->enableActuator()) {
-                    // TODO: Something clever to track stalled actuators
-                }
+            auto actuator = (*actuatorIter);
+            if (actuator && !actuator->getIsEnabled() && !actuator->enableActuator()) {
+                // TODO: Something clever to track stalled actuators
             }
         }
     }
@@ -1128,7 +1128,7 @@ void HydroponicsLighting::recalcLighting()
         time_t dayLightSecs = lightHours * SECS_PER_HOUR;
 
         time_t daySprayerSecs = 0;
-        if (sprayingNeeded && linksFilterActuatorsByReservoirAndType(feedRes->getLinkages(), feedRes.get(), Hydroponics_ActuatorType_WaterSprayer).size()) {
+        if (sprayingNeeded && linksCountActuatorsByReservoirAndType(feedRes->getLinkages(), feedRes.get(), Hydroponics_ActuatorType_WaterSprayer)) {
             daySprayerSecs = getSchedulerInstance()->getPreLightSprayMins() * SECS_PER_MIN;
         }
 
@@ -1250,10 +1250,9 @@ void HydroponicsLighting::update()
 
     if (actuatorReqs.size()) {
         for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
-            if (!(*actuatorIter)->getIsEnabled()) {
-                if (!(*actuatorIter)->enableActuator()) {
-                    // TODO: Something clever to track stalled actuators
-                }
+            auto actuator = (*actuatorIter);
+            if (actuator && !actuator->getIsEnabled() && !actuator->enableActuator()) {
+                // TODO: Something clever to track stalled actuators
             }
         }
     }

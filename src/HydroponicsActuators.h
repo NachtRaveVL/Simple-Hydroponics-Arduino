@@ -190,7 +190,7 @@ public:
 
     virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
     virtual void disableActuator() override;
-    virtual bool getIsEnabled(float tolerance = 0.5) const override;
+    virtual bool getIsEnabled(float tolerance = 0.0f) const override;
 
     float getPWMAmount() const;
     int getPWMAmount(int) const;
