@@ -35,9 +35,9 @@ public:
     void logActivation(const HydroponicsActuator *actuator);
     void logDeactivation(const HydroponicsActuator *actuator);
 
-    void logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString, const String &statusString);
+    void logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString = String(), const String &statusString = String());
 
-    void logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString);
+    void logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString = String());
 
     void logSystemUptime();
     void logSystemSave();

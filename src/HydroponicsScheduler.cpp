@@ -373,7 +373,7 @@ void HydroponicsScheduler::setTotalFeedingsDay(unsigned int feedingsDay)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
 
-    if (_schedulerData) {
+    if (_schedulerData && _schedulerData->totalFeedingsDay != feedingsDay) {
         getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
         _schedulerData->totalFeedingsDay = feedingsDay;
 
@@ -385,7 +385,7 @@ void HydroponicsScheduler::setPreFeedAeratorMins(unsigned int aeratorMins)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
 
-    if (_schedulerData) {
+    if (_schedulerData && _schedulerData->preFeedAeratorMins != aeratorMins) {
         getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
         _schedulerData->preFeedAeratorMins = aeratorMins;
 
@@ -397,11 +397,21 @@ void HydroponicsScheduler::setPreLightSprayMins(unsigned int sprayMins)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
 
-    if (_schedulerData) {
+    if (_schedulerData && _schedulerData->preLightSprayMins != sprayMins) {
         getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
         _schedulerData->preLightSprayMins = sprayMins;
 
         setNeedsScheduling();
+    }
+}
+
+void HydroponicsScheduler::setAirReportInterval(TimeSpan interval)
+{
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
+
+    if (_schedulerData && _schedulerData->airReportInterval != interval.totalseconds()) {
+        getHydroponicsInstance()->_systemData->_bumpRevIfNotAlreadyModded();
+        _schedulerData->airReportInterval = interval.totalseconds();
     }
 }
 
@@ -451,6 +461,11 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoi
     }
 
     return 0.0f;
+}
+
+bool HydroponicsScheduler::getInDaytimeMode() const
+{
+    return _inDaytimeMode;
 }
 
 float HydroponicsScheduler::getBaseFeedMultiplier() const
@@ -520,9 +535,10 @@ unsigned int HydroponicsScheduler::getPreLightSprayMins() const
     return _schedulerData ? _schedulerData->preLightSprayMins : 0;
 }
 
-bool HydroponicsScheduler::getInDaytimeMode() const
+TimeSpan HydroponicsScheduler::getAirReportInterval() const
 {
-    return _inDaytimeMode;
+    HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
+    return TimeSpan(_schedulerData ? _schedulerData->airReportInterval : 0);
 }
 
 void HydroponicsScheduler::updateDayTracking()
@@ -659,7 +675,7 @@ void HydroponicsProcess::setActuatorReqs(const Vector<shared_ptr<HydroponicsActu
 
 
 HydroponicsFeeding::HydroponicsFeeding(shared_ptr<HydroponicsFeedReservoir> feedRes)
-    : HydroponicsProcess(feedRes), stage(Unknown), canFeedAfter(0),
+    : HydroponicsProcess(feedRes), stage(Unknown), canFeedAfter(0), lastAirReport(0),
       phSetpoint(0), tdsSetpoint(0), waterTempSetpoint(0), airTempSetpoint(0), co2Setpoint(0)
 {
     reset();
@@ -910,6 +926,15 @@ void HydroponicsFeeding::setupStaging()
 
 void HydroponicsFeeding::update()
 {
+    if ((!lastAirReport || unixNow() >= lastAirReport + getSchedulerInstance()->getAirReportInterval().totalseconds()) &&
+        (getSchedulerInstance()->getAirReportInterval().totalseconds() > 0) && // 0 disables
+        (feedRes->getAirTempSensor() || feedRes->getAirCO2Sensor())) {
+        getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_AirReport));
+        logAirSetpoints();
+        logAirMeasures();
+        lastAirReport = unixNow();
+    }
+
     switch (stage) {
         case Init: {
             if (!canFeedAfter || unixNow() >= canFeedAfter) {
@@ -923,7 +948,7 @@ void HydroponicsFeeding::update()
                     }
                 }
 
-                if (cropsHungry / (float)cropsCount >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON) {
+                if (!cropsCount || cropsHungry / (float)cropsCount >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON) {
                     stage = TopOff; stageStart = unixNow();
                     setupStaging();
 
@@ -949,17 +974,8 @@ void HydroponicsFeeding::update()
 
                     getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreFeedAeratorMins), aeratorMinsStr);
                 }
-                {   auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Setpoint), measurementToString(ph));
-                }
-                {   auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
-                    convertUnits(&tds, feedRes->getTDSUnits());
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
-                }
-                {   auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
-                    convertUnits(&temp, feedRes->getTemperatureUnits());
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
-                }
+                logWaterSetpoints();
+                logWaterMeasures();
             }
         } break;
 
@@ -997,7 +1013,7 @@ void HydroponicsFeeding::update()
                 }
             }
 
-            if (cropsFed / (float)cropsCount >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON ||
+            if (!cropsCount || cropsFed / (float)cropsCount >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON ||
                 feedRes->getIsEmpty()) {
                 stage = (getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? Drain : Done);
                 stageStart = unixNow();
@@ -1034,10 +1050,23 @@ void HydroponicsFeeding::update()
     }
 }
 
-void HydroponicsFeeding::broadcastFeedingBegan()
+void HydroponicsFeeding::logWaterSetpoints()
 {
-    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasBegan));
+    {   auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Setpoint), measurementToString(ph));
+    }
+    {   auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
+        convertUnits(&tds, feedRes->getTDSUnits());
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
+    }
+    {   auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+        convertUnits(&temp, feedRes->getTemperatureUnits());
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
+    }
+}
 
+void HydroponicsFeeding::logWaterMeasures()
+{
     if (feedRes->getWaterPHSensor()) {
         auto ph = feedRes->getWaterPH();
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Measured), measurementToString(ph));
@@ -1052,6 +1081,37 @@ void HydroponicsFeeding::broadcastFeedingBegan()
         convertUnits(&temp, feedRes->getTemperatureUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
     }
+}
+
+void HydroponicsFeeding::logAirSetpoints()
+{
+    {   auto temp = HydroponicsSingleMeasurement(airTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+        convertUnits(&temp, feedRes->getTemperatureUnits());
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
+    }
+    {   auto co2 = HydroponicsSingleMeasurement(co2Setpoint, Hydroponics_UnitsType_Concentration_PPM);
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_CO2_Setpoint), measurementToString(co2));
+    }
+}
+
+void HydroponicsFeeding::logAirMeasures()
+{
+    if (feedRes->getAirTempSensor()) {
+        auto temp = feedRes->getAirTemperature();
+        convertUnits(&temp, feedRes->getTemperatureUnits());
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
+    }
+    if (feedRes->getAirCO2Sensor()) {
+        auto co2 = feedRes->getAirCO2();
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_CO2_Measured), measurementToString(co2));
+    }
+}
+
+void HydroponicsFeeding::broadcastFeedingBegan()
+{
+    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasBegan));
+
+    logWaterMeasures();
 
     feedRes->notifyFeedingBegan();
 
@@ -1067,6 +1127,8 @@ void HydroponicsFeeding::broadcastFeedingBegan()
 void HydroponicsFeeding::broadcastFeedingEnded()
 {
     getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasEnded));
+
+    logWaterMeasures();
 
     feedRes->notifyFeedingEnded();
 
@@ -1237,12 +1299,7 @@ void HydroponicsLighting::update()
                 setupStaging();
 
                 getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasEnded));
-                {   String lightHrsStr; lightHrsStr.reserve(16);
-                    lightHrsStr.concat(SFP(HS_ColonSpace));
-                    lightHrsStr.concat(timeSpanToString(elapsedTime));
-
-                    getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Log_Field_Time_Measured), lightHrsStr);
-                }
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Measured), SFP(HS_ColonSpace), timeSpanToString(elapsedTime));
             }
         } break;
 
@@ -1267,7 +1324,8 @@ void HydroponicsLighting::update()
 
 
 HydroponicsSchedulerSubData::HydroponicsSchedulerSubData()
-    : HydroponicsSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, stdDosingRates{1.0f,0.5f,0.5f}, totalFeedingsDay(0), preFeedAeratorMins(30), preLightSprayMins(60)
+    : HydroponicsSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, stdDosingRates{1.0f,0.5f,0.5f},
+      totalFeedingsDay(0), preFeedAeratorMins(30), preLightSprayMins(60), airReportInterval(8 * SECS_PER_HOUR)
 {
     type = 0; // no type differentiation
 }
@@ -1284,6 +1342,7 @@ void HydroponicsSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     if (totalFeedingsDay > 0) { objectOut[SFP(HS_Key_TotalFeedingsDay)] = totalFeedingsDay; }
     if (preFeedAeratorMins != 30) { objectOut[SFP(HS_Key_PreFeedAeratorMins)] = preFeedAeratorMins; }
     if (preLightSprayMins != 60) { objectOut[SFP(HS_Key_PreLightSprayMins)] = preLightSprayMins; }
+    if (airReportInterval != (8 * SECS_PER_HOUR)) { objectOut[SFP(HS_Key_AirReportInterval)] = airReportInterval; }
 }
 
 void HydroponicsSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
@@ -1304,4 +1363,5 @@ void HydroponicsSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
     totalFeedingsDay = objectIn[SFP(HS_Key_TotalFeedingsDay)] | totalFeedingsDay;
     preFeedAeratorMins = objectIn[SFP(HS_Key_PreFeedAeratorMins)] | preFeedAeratorMins;
     preLightSprayMins = objectIn[SFP(HS_Key_PreLightSprayMins)] | preLightSprayMins;
+    airReportInterval = objectIn[SFP(HS_Key_AirReportInterval)] | airReportInterval;
 }

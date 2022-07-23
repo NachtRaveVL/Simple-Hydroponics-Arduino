@@ -40,10 +40,12 @@ public:
     void setTotalFeedingsDay(unsigned int feedingsDay);
     void setPreFeedAeratorMins(unsigned int aeratorMins);
     void setPreLightSprayMins(unsigned int sprayMins);
+    void setAirReportInterval(TimeSpan interval);
 
     void setNeedsScheduling();
 
     float getCombinedDosingRate(HydroponicsReservoir *reservoir, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
+    bool getInDaytimeMode() const;
 
     float getBaseFeedMultiplier() const;
     float getWeeklyDosingRate(int weekIndex, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix) const;
@@ -52,7 +54,7 @@ public:
     unsigned int getTotalFeedingsDay() const;
     unsigned int getPreFeedAeratorMins() const;
     unsigned int getPreLightSprayMins() const;
-    bool getInDaytimeMode() const;
+    TimeSpan getAirReportInterval() const;
 
 protected:
     HydroponicsSchedulerSubData *_schedulerData;            // Scheduler data (strong, saved to storage via system data)
@@ -89,6 +91,7 @@ struct HydroponicsFeeding : public HydroponicsProcess {
     enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage;
 
     time_t canFeedAfter;
+    time_t lastAirReport;
 
     float phSetpoint;
     float tdsSetpoint;
@@ -106,6 +109,10 @@ struct HydroponicsFeeding : public HydroponicsProcess {
 private:
     void reset();
     void setupBalancers();
+    void logWaterSetpoints();
+    void logWaterMeasures();
+    void logAirSetpoints();
+    void logAirMeasures();
     void broadcastFeedingBegan();
     void broadcastFeedingEnded();
 };
@@ -138,6 +145,7 @@ struct HydroponicsSchedulerSubData : public HydroponicsSubData {
     uint8_t totalFeedingsDay;                               // Total number of feedings per day, if any (else 0 for disable - default: 0)
     uint8_t preFeedAeratorMins;                             // Minimum time to run aerators (if present) before feed pumps turn on, in minutes (default: 30)
     uint8_t preLightSprayMins;                              // Minimum time to run sprayers/sprinklers (if present/needed) before grow lights turn on, in minutes (default: 60)
+    time_t airReportInterval;                               // Interval between air sensor reports, in seconds (default: 8hrs)
 
     HydroponicsSchedulerSubData();
     void toJSONObject(JsonObject &objectOut) const;
