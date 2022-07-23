@@ -70,9 +70,11 @@ bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis)
 {
     auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
     if (task && !task->isRepeating()) {
+        bool enabled = task->isEnabled();
         auto next = task->getNext();
         task->handleScheduling(intervalMillis, TIME_MILLIS, true);
         task->setNext(next);
+        task->setEnabled(enabled);
     }
     return task && task->isRepeating();
 }
@@ -81,9 +83,11 @@ bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis)
 {
     auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
     if (task && task->isRepeating()) {
+        bool enabled = task->isEnabled();
         auto next = task->getNext();
         task->handleScheduling(intervalMillis, TIME_MILLIS, false);
         task->setNext(next);
+        task->setEnabled(enabled);
     }
     return task && !task->isRepeating();
 }
