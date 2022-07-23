@@ -1042,7 +1042,7 @@ void HydroponicsFeeding::broadcastFeedingBegan()
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
     }
     if (feedRes->getWaterTDSSensor()) {
-        auto tds = feedRes->getWaterTDSSensor();
+        auto tds = feedRes->getWaterTDS();
         convertUnits(&tds, feedRes->getTDSUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
     }
