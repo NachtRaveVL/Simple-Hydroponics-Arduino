@@ -778,7 +778,7 @@ void Hydroponics::update()
 
 void Hydroponics::updateObjects(int pass)
 {
-    switch(pass) {
+    switch (pass) {
         case 1: {
             _publisher.advancePollingFrame();
 
@@ -1368,6 +1368,26 @@ void Hydroponics::notifyRTCTimeUpdated()
     _rtcBattFail = false;
     _lastAutosave = unixNow();
     _scheduler.broadcastDayChange();
+}
+
+void Hydroponics::notifyDayChanged()
+{
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        if (iter->second) {
+            if (iter->second->isReservoirType()) {
+                auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
+
+                if (reservoir && reservoir->isFeedClass()) {
+                    auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
+                    if (feedReservoir) {feedReservoir->notifyDayChanged(); }
+                }
+            } else if (iter->second->isCropType()) {
+                auto crop = static_pointer_cast<HydroponicsCrop>(iter->second);
+
+                if (crop) { crop->notifyDayChanged(); }
+            }
+        }
+    }
 }
 
 void Hydroponics::handleInterrupt(byte pin)

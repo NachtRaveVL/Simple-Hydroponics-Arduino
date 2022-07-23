@@ -60,17 +60,14 @@ public:
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
     virtual bool hasActuator(HydroponicsActuator *actuator) const override;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getActuators() const override;
 
     virtual bool addSensor(HydroponicsSensor *sensor) override;
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
     virtual bool hasSensor(HydroponicsSensor *sensor) const override;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getSensors() const override;
 
     virtual bool addCrop(HydroponicsCrop *crop) override;
     virtual bool removeCrop(HydroponicsCrop *crop) override;
     virtual bool hasCrop(HydroponicsCrop *crop) const override;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getCrops() const override;
 
     Hydroponics_ReservoirType getReservoirType() const;
     Hydroponics_PositionIndex getReservoirIndex() const;

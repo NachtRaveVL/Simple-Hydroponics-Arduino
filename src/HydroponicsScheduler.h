@@ -73,14 +73,14 @@ protected:
 // Hydroponics Scheduler Process
 struct HydroponicsProcess {
     shared_ptr<HydroponicsFeedReservoir> feedRes;
-    Vector<shared_ptr<HydroponicsActuator> >::type actuatorReqs;
+    Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs;
 
     time_t stageStart;
 
     HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feedRes);
 
     void clearActuatorReqs();
-    void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator> >::type &actuatorReqs);
+    void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqs);
 };
 
 // Hydroponics Scheduler Feeding Process

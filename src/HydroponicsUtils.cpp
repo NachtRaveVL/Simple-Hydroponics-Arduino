@@ -277,8 +277,11 @@ extern String stringFromMeasurement(float value, Hydroponics_UnitsType units, un
     String retVal; retVal.reserve(12);
 
     retVal.concat(roundForExport(value, additionalDecPlaces));
-    retVal.concat(' ');
-    retVal.concat(unitsTypeToSymbol(units));
+    String unitsSym = unitsTypeToSymbol(units, true); // also excludes dimensionless, e.g. pH
+    if (unitsSym.length()) {
+        retVal.concat(' ');
+        retVal.concat(unitsSym);
+    }
 
     return retVal;
 }
@@ -504,13 +507,13 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
 
     switch (unitsIn) {
         case Hydroponics_UnitsType_Raw_0_1:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Alkalinity_pH_0_14:
                     *valueOut = valueIn * 14.0f;
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_EC:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage (5 or 3.3) of meter -> typically 1v = 1EC, depending on calib
                         *valueOut = valueIn * 5.0f;
                     } else {
                         *valueOut = valueIn * convertParam;
@@ -518,7 +521,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_PPM500:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
                         *valueOut = valueIn * (5.0f * 500.0f);
                     } else {
                         *valueOut = valueIn * (convertParam * 500.0f);
@@ -526,7 +529,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_PPM640:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
                         *valueOut = valueIn * (5.0f * 640.0f);
                     } else {
                         *valueOut = valueIn * (convertParam * 640.0f);
@@ -534,7 +537,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
                     return true;
 
                 case Hydroponics_UnitsType_Concentration_PPM700:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
                         *valueOut = valueIn * (5.0f * 700.0f);
                     } else {
                         *valueOut = valueIn * (convertParam * 700.0f);
@@ -555,7 +558,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Percentile_0_100:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
                     *valueOut = valueIn / 100.0f;
                     return true;
@@ -566,7 +569,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Alkalinity_pH_0_14:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
                     *valueOut = valueIn / 14.0f;
                     return true;
@@ -577,9 +580,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Concentration_EC:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {  // convertParam = aRef voltage
                         *valueOut = valueIn / 5.0f;
                     } else {
                         *valueOut = valueIn / convertParam;
@@ -604,7 +607,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Temperature_Celsius:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Temperature_Fahrenheit:
                     *valueOut = valueIn * 1.8 + 32.0;
                     return true;
@@ -619,7 +622,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Temperature_Fahrenheit:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Temperature_Celsius:
                     *valueOut = (valueIn - 32.0) / 1.8;
                     return true;
@@ -634,7 +637,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Temperature_Kelvin:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Temperature_Celsius:
                     *valueOut = valueIn - 273.15;
                     return true;
@@ -649,7 +652,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_LiqVolume_Liters:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_LiqVolume_Gallons:
                     *valueOut = valueIn * 0.264172f;
                     return true;
@@ -660,7 +663,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_LiqVolume_Gallons:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_LiqVolume_Liters:
                     *valueOut = valueIn * 3.78541f;
                     return true;
@@ -671,7 +674,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_LiqFlowRate_LitersPerMin:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin:
                     *valueOut = valueIn * 0.264172f;
                     return true;
@@ -693,7 +696,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
                     *valueOut = valueIn * 3.78541f;
                     return true;
@@ -704,7 +707,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter:
                     *valueOut = valueIn * 0.264172f;
                     return true;
@@ -715,9 +718,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Concentration_PPM500:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {  // convertParam = aRef voltage
                         *valueOut = valueIn / (5.0f * 500.0f);
                     } else {
                         *valueOut = valueIn / (convertParam * 500.0f);
@@ -741,9 +744,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Concentration_PPM640:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) {  // convertParam = aRef voltage
                         *valueOut = valueIn / (5.0f * 640.0f);
                     } else {
                         *valueOut = valueIn / (convertParam * 640.0f);
@@ -767,9 +770,9 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Concentration_PPM700:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
                         *valueOut = valueIn / (5.0f * 700.0f);
                     } else {
                         *valueOut = valueIn / (convertParam * 700.0f);
@@ -793,7 +796,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Distance_Meters:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Distance_Feet:
                     *valueOut = valueIn * 3.28084f;
                     return true;
@@ -804,7 +807,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Distance_Feet:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Distance_Meters:
                     *valueOut = valueIn * 0.3048;
                     return true;
@@ -815,7 +818,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Weight_Kilogram:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Weight_Pounds:
                     *valueOut = valueIn * 2.20462f;
                     return true;
@@ -826,7 +829,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
             break;
 
         case Hydroponics_UnitsType_Weight_Pounds:
-            switch(unitsOut) {
+            switch (unitsOut) {
                 case Hydroponics_UnitsType_Weight_Kilogram:
                     *valueOut = valueIn * 0.453592f;
                     return true;
@@ -839,7 +842,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_Power_Wattage:
             switch (unitsOut) {
                 case Hydroponics_UnitsType_Power_Amperage:
-                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (!isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = rail voltage
                         *valueOut = valueIn / convertParam;
                         return true;
                     }
@@ -850,7 +853,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_Power_Amperage:
             switch (unitsOut) {
                 case Hydroponics_UnitsType_Power_Wattage:
-                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (!isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = rail voltage
                         *valueOut = valueIn * convertParam;
                         return true;
                     }
@@ -1642,7 +1645,7 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
         case Hydroponics_UnitsType_Percentile_0_100:
             return F("%");
         case Hydroponics_UnitsType_Alkalinity_pH_0_14:
-            return F("pH");
+            return !excludeSpecial ? F("pH") : String(); // technically unitless
         case Hydroponics_UnitsType_Concentration_EC:
             return F("EC"); // alt: mS/cm, TDS
         case Hydroponics_UnitsType_Temperature_Celsius:

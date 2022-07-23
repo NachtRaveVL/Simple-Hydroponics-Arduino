@@ -51,7 +51,6 @@ public:
     virtual bool addSensor(HydroponicsSensor *sensor) override;
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
     virtual bool hasSensor(HydroponicsSensor *sensor) const override;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getSensors() const override;
 
     void setFeedReservoir(HydroponicsIdentity reservoirId);
     void setFeedReservoir(shared_ptr<HydroponicsFeedReservoir> reservoir);

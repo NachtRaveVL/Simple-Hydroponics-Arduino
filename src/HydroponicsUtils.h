@@ -120,10 +120,6 @@ template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(Sign
 // Object is captured. Returns taskId or TASKMGR_INVALIDID on error. */
 template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
 
-// This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter, w/o capturing object.
-// Returns taskId or TASKMGR_INVALIDID on error.
-template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
-
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
 // Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
 template<class ObjectType> taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
@@ -341,34 +337,19 @@ inline float roundForExport(float value, unsigned int additionalDecPlaces = 0) {
 
 // Linkages & Filtering
 
-// Returns linkages list filtered down to actuators.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links);
-// Returns linkages list filtered down to actuators by type.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterActuatorsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ActuatorType actuatorType);
-// Returns linkages list filtered down to sensors.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterSensors(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links);
-// Returns linkages list filtered down to sensors by type.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterSensorsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_SensorType sensorType);
-// Returns linkages list filtered down to crops.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links);
-// Returns linkages list filtered down to crops by type.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterCropsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_CropType cropType);
-// Returns linkages list filtered down to reservoirs.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterReservoirs(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links);
-// Returns linkages list filtered down to reservoirs by type.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterReservoirsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ReservoirType reservoirType);
-// Returns linkages list filtered down to rails.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterRails(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links);
-// Returns linkages list filtered down to rails by type.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterRailsByType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_RailType railType);
-// Returns linkages list filtered down to pump actuators by source reservoir.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoir(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, HydroponicsReservoir *inputReservoir);
-// Returns linkages list filtered down to pump actuators by source reservoir type.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ReservoirType reservoirType);
-// Returns linkages list filtered down to pump actuators by destination reservoir.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoir(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, HydroponicsReservoir *outputReservoir);
-// Returns linkages list filtered down to pump actuators by destination reservoir type.
-template<size_t N = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, N>::type &links, Hydroponics_ReservoirType reservoirType);
+// Returns linkages list filtered down to just actuators.
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
+// Returns linkages list filtered down to just sensors.
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterSensors(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
+// Returns linkages list filtered down to just crops.
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
+
+// Returns linkages list filtered down to just actuators of a certain type that operate on a specific reservoir.
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
+// Returns linkages list filtered down to just pump actuators that pump from a specific reservoir to a certain reservoir type.
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ReservoirType destReservoirType);
+// Returns linkages list filtered down to just pump actuators that pump to a specific reservoir from a certain reservoir type.
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType);
 
 // Pins & Checks
 

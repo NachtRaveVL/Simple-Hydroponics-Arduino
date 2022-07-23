@@ -40,9 +40,12 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 // The following maxsizes only matter for architectures that do not have STL support
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        24                      // Maximum array size for system objects (max # of objects in system)
 #define HYDRUINO_OBJ_LINKS_MAXSIZE          12                      // Maximum array size for object linkage list, per obj (max # of linked objects)
-#define HYDRUINO_BAL_ACTUATORS_MAXSIZE      8                       // Maximum array size for balancer actuator increment/decrement lists (max # of balancing actuators)
-#define HYDRUINO_SCH_FEEDRES_MAXSIZE        4                       // Maximum array size for scheduler feeding/lighting lists (max # of feed reservoirs)
-#define HYDRUINO_SYS_ONEWIRE_MAXSIZE        4                       // Maximum array size for pin->OneWire instances list (max # of OneWire pins)
+#define HYDRUINO_OBJ_LINKSFILTER_DEFSIZE    8                       // Default array size for object linkage filtering
+#define HYDRUINO_BAL_INCACTUATORS_MAXSIZE   8                       // Maximum array size for balancer increment actuators list (max # of increment autodosers/actuators used during balancing)
+#define HYDRUINO_BAL_DECACTUATORS_MAXSIZE   4                       // Maximum array size for balancer decrement actuators list (max # of decrement autodosers/actuators used during balancing)
+#define HYDRUINO_SCH_REQACTUATORS_MAXSIZE   4                       // Maximum array size for scheduler required actuators list (max # of actuators active per process stage)
+#define HYDRUINO_SCH_FEEDRES_MAXSIZE        4                       // Maximum array size for scheduler feeding/lighting process lists (max # of feed reservoirs)
+#define HYDRUINO_SYS_ONEWIRE_MAXSIZE        4                       // Maximum array size for pin->OneWire instances list (max # of OneWire comm pins)
 #define HYDRUINO_SYS_PINLOCKS_MAXSIZE       4                       // Maximum array size for pin locks list (max # of simultaneous locks)
 
 #define HYDRUINO_CONTROL_LOOP_INTERVAL      100                     // Run interval of main control loop, in milliseconds
@@ -50,7 +53,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_MISC_LOOP_INTERVAL         250                     // Run interval of misc loop, in milliseconds
 
 #define HYDRUINO_ACT_PUMPCALC_MINWRTMILLIS  250                     // Minimum time millis needing to pass before a pump reports/writes changed volume to reservoir (reduces error accumulation)
-#define HYDRUINO_ACT_PUMPCALC_MINFLOWRATE   0.05                    // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
+#define HYDRUINO_ACT_PUMPCALC_MINFLOWRATE   0.05f                   // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
 #define HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF  5                       // Maximum polling frames # away an instantaneous flow rate can be for it to be used in pump/volume calculations (so it uses only recent measurements)
 
 #define HYDRUINO_CROP_NIGHT_BEGINHR         22                      // Hour of the day night begins (for night feeding multiplier)
@@ -68,13 +71,13 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_POS_SEARCH_FROMEND         HYDRUINO_POS_MAXSIZE    // Search from end to beginning, MAXSIZE-1 down to 0
 #define HYDRUINO_POS_EXPORT_BEGFROM         1                       // Whenever exported/user-facing position indexing starts at 1 or 0 (aka display offset)
 
-#define HYDRUINO_RANGEFORM_PH_HALF          1                       // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
-#define HYDRUINO_RANGEFORM_EC_HALF          0.5                     // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
-#define HYDRUINO_RANGEFORM_TEMP_HALF        5                       // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
-#define HYDRUINO_RANGEFORM_CO2_HALF         100                     // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
+#define HYDRUINO_RANGE_PH_HALF              1.0f                    // How far to go, in either direction, to form a range when pH is expressed as a single number, in pH (note: this also controls auto-balancer ranges)
+#define HYDRUINO_RANGE_EC_HALF              0.5f                    // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
+#define HYDRUINO_RANGE_TEMP_HALF            5.0f                    // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
+#define HYDRUINO_RANGE_CO2_HALF             100.0f                  // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
 
-#define HYDRUINO_SCHEDULER_FEED_FRACTION    0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
-#define HYDRUINO_SCHEDULER_BALANCE_MINTIME  30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
+#define HYDRUINO_SCH_FEED_FRACTION          0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
+#define HYDRUINO_SCH_BALANCE_MINTIME        30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay

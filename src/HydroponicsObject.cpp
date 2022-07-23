@@ -93,7 +93,7 @@ HydroponicsIdentity::HydroponicsIdentity(String name)
 Hydroponics_KeyType HydroponicsIdentity::regenKey()
 {
     String sep = String('.');
-    switch(type) {
+    switch (type) {
         case Actuator:
             keyStr = actuatorTypeToString(objTypeAs.actuatorType, true) + sep + positionIndexToString(posIndex, true);
             break;

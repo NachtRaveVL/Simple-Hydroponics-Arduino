@@ -111,21 +111,21 @@ void HydroponicsLogger::logSystemSave()
 void HydroponicsLogger::logMessage(String msg, String suffix1, String suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_All) {
-        log(String(F("[INFO] ")), msg, suffix1, suffix2);
+        log(F("[INFO] "), msg, suffix1, suffix2);
     }
 }
 
 void HydroponicsLogger::logWarning(String warn, String suffix1, String suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Warnings) {
-        log(String(F("[WARN] ")), warn, suffix1, suffix2);
+        log(F("[WARN] "), warn, suffix1, suffix2);
     }
 }
 
 void HydroponicsLogger::logError(String err, String suffix1, String suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Errors) {
-        log(String(F("[FAIL] ")), err, suffix1, suffix2);
+        log(F("[FAIL] "), err, suffix1, suffix2);
     }
 }
 

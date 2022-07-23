@@ -39,10 +39,10 @@ public:
     void setTargetUnits(Hydroponics_UnitsType targetUnits);
     Hydroponics_UnitsType getTargetUnits() const;
 
-    void setIncrementActuators(const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &incActuators);
-    void setDecrementActuators(const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &decActuators);
-    const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &getIncrementActuators();
-    const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &getDecrementActuators();
+    void setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators);
+    void setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators);
+    const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &getIncrementActuators();
+    const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators();
 
     void setEnabled(bool enabled);
     bool getIsEnabled() const;
@@ -62,8 +62,8 @@ protected:
     Hydroponics_BalancerState _balancerState;               // Current balancer state
     Signal<Hydroponics_BalancerState> _balancerSignal;      // Balancer signal
 
-    Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type _incActuators; // Increment actuators
-    Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type _decActuators; // Decrement actuators
+    Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type _incActuators; // Increment actuators
+    Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type _decActuators; // Decrement actuators
 
     void disableIncActuators();
     void disableDecActuators();
@@ -129,6 +129,7 @@ protected:
     int8_t _dosingActIndex;                                 // Next dosing actuator to run
 
     void performDosing();
+    void performDosing(shared_ptr<HydroponicsActuator> actuator, time_t timeMillis);
 };
 
 #endif // /ifndef HydroponicsBalancers_H
