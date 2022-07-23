@@ -382,7 +382,7 @@ protected:
     taskid_t _miscTaskId;                                           // Misc task Id if created, else TASKMGR_INVALIDID
     #endif
     bool _suspend;                                                  // If system is currently suspended from operation
-    uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, controlled by publisher)
+    uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                         // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                           // Last date autosave was performed, if able (UTC)
     String _configFileName;                                         // Config file name saved from init call, used for autosave (default: "hydruino.cfg")

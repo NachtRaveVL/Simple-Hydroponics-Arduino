@@ -32,19 +32,19 @@ public:
     bool beginLoggingToSDCard(String logFilePrefix);
     bool getIsLoggingToSDCard() const;
 
-    void logActivation(HydroponicsActuator *actuator);
-    void logDeactivation(HydroponicsActuator *actuator);
+    void logActivation(const HydroponicsActuator *actuator);
+    void logDeactivation(const HydroponicsActuator *actuator);
 
-    void logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString);
+    void logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString, const String &statusString);
 
-    void logPumping(HydroponicsPumpObjectInterface *pump, String pumpString);
+    void logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString);
 
     void logSystemUptime();
     void logSystemSave();
 
-    void logMessage(String msg, String suffix1 = String(), String suffix2 = String());
-    void logWarning(String warn, String suffix1 = String(), String suffix2 = String());
-    void logError(String err, String suffix1 = String(), String suffix2 = String());
+    void logMessage(const String &msg, const String &suffix1 = String(), const String &suffix2 = String());
+    void logWarning(const String &warn, const String &suffix1 = String(), const String &suffix2 = String());
+    void logError(const String &err, const String &suffix1 = String(), const String &suffix2 = String());
     void flush();
 
     void setLogLevel(Hydroponics_LogLevel logLevel);
@@ -58,13 +58,13 @@ protected:
     HydroponicsLoggerSubData *_loggerData;                  // Logger data (strong, saved to storage via system data)
 
     String _logFileName;                                    // Resolved log file name (based on day)
-    time_t _initDate;                                       // Init date (UTC, controlled by hydroponics)
+    time_t _initDate;                                       // Init date (UTC)
     time_t _lastSpaceCheck;                                 // Last time enough space was checked (UTC)
 
     friend class Hydroponics;
 
     void updateInitTracking();
-    void log(String prefix, String &msg, String &suffix1, String &suffix2);
+    void log(const String &prefix, const String &msg, const String &suffix1, const String &suffix2);
     void cleanupOldestLogs(bool force = false);
 };
 
