@@ -912,16 +912,17 @@ void HydroponicsFeeding::update()
         case Init: {
             if (!canFeedAfter || unixNow() >= canFeedAfter) {
                 int cropsHungry = 0;
-                auto crops = linksFilterCrops(feedRes->getLinkages());
 
-                for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                    auto crop = (HydroponicsCrop *)(*cropIter);
-                    if (crop->getNeedsFeeding()) { cropsHungry++; }
+                {   auto crops = linksFilterCrops(feedRes->getLinkages());
+                    for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
+                        if (((HydroponicsCrop *)(*cropIter))->getNeedsFeeding()) { cropsFed++; }
+                    }
                 }
 
                 if (cropsHungry / (float)crops.size() >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON) {
                     stage = TopOff; stageStart = unixNow();
                     setupStaging();
+
                     if (actuatorReqs.size()) {
                         getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_PreFeedTopOff), SFP(HS_Log_HasBegan));
                     }
@@ -935,31 +936,28 @@ void HydroponicsFeeding::update()
                 canFeedAfter = 0; // will be used to track how long balancers stay balanced
                 setupStaging();
 
-                {   auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
+                getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_PreFeedBalancing), SFP(HS_Log_HasBegan));
+                if (actuatorReqs.size()) {
+                    String aeratorMinsStr; aeratorMinsStr.reserve(8);
+                    aeratorMinsStr.concat(SFP(HS_ColonSpace));
+                    aeratorMinsStr.concat(getSchedulerInstance()->getPreFeedAeratorMins());
+                    aeratorMinsStr.concat('m');
+
+                    getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreFeedAeratorMins), aeratorMinsStr);
+                }
+                if (feedRes->getWaterPHSensor()) {
+                    auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
+                }
+                if (feedRes->getWaterTDSSensor()) {
                     auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
-                    auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
-
                     convertUnits(&tds, feedRes->getTDSUnits());
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
+                }
+                if (feedRes->getWaterTempSensor()) {
+                    auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
                     convertUnits(&temp, feedRes->getTemperatureUnits());
-
-                    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_PreFeedBalancing), SFP(HS_Log_HasBegan));
-                    if (actuatorReqs.size()) {
-                        String aeratorMinsStr; aeratorMinsStr.reserve(8);
-                        aeratorMinsStr.concat(SFP(HS_ColonSpace));
-                        aeratorMinsStr.concat(getSchedulerInstance()->getPreFeedAeratorMins());
-                        aeratorMinsStr.concat('m');
-
-                        getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreFeedAeratorMins), aeratorMinsStr);
-                    }
-                    if (feedRes->getWaterPHSensor()) {
-                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
-                    }
-                    if (feedRes->getWaterTDSSensor()) {
-                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
-                    }
-                    if (feedRes->getWaterTempSensor()) {
-                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
-                    }
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
                 }
             }
         } break;
@@ -988,11 +986,11 @@ void HydroponicsFeeding::update()
 
         case Feed: {
             int cropsFed = 0;
-            auto crops = linksFilterCrops(feedRes->getLinkages());
 
-            for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                auto crop = (HydroponicsCrop *)(*cropIter);
-                if (!crop->getNeedsFeeding()) { cropsFed++; }
+            {   auto crops = linksFilterCrops(feedRes->getLinkages());
+                for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
+                    if (!((HydroponicsCrop *)(*cropIter))->getNeedsFeeding()) { cropsFed++; }
+                }
             }
 
             if (cropsFed / (float)crops.size() >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON ||
@@ -1024,7 +1022,9 @@ void HydroponicsFeeding::update()
     if (actuatorReqs.size()) {
         for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
             if (!(*actuatorIter)->getIsEnabled()) {
-                (*actuatorIter)->enableActuator(); // TODO: do something appropriate for actuators that continually fail to enable
+                if (!(*actuatorIter)->enableActuator()) {
+                    // TODO: Something clever to track stalled actuators
+                }
             }
         }
     }
@@ -1032,24 +1032,26 @@ void HydroponicsFeeding::update()
 
 void HydroponicsFeeding::broadcastFeedingBegan()
 {
+    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasBegan));
     {   auto ph = feedRes->getWaterPHSensor() ? feedRes->getWaterPH() : HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
-        auto tds = feedRes->getWaterTDSSensor() ? feedRes->getWaterTDS() : HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
-        auto temp = feedRes->getWaterTempSensor() ? feedRes->getWaterTemperature() : HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
-
-        convertUnits(&tds, feedRes->getTDSUnits());
-        convertUnits(&temp, feedRes->getTemperatureUnits());
-
-        getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasBegan));
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
+    }
+    {   auto tds = feedRes->getWaterTDSSensor() ? feedRes->getWaterTDS() : HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
+        convertUnits(&tds, feedRes->getTDSUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
+    }
+    {   auto temp = feedRes->getWaterTempSensor() ? feedRes->getWaterTemperature() : HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+        convertUnits(&temp, feedRes->getTemperatureUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
     }
 
+    feedRes->notifyFeedingBegan();
+
     {   auto crops = linksFilterCrops(feedRes->getLinkages());
-        feedRes->notifyFeedingBegan();
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-            auto crop = (HydroponicsCrop *)(*cropIter);
-            crop->notifyFeedingBegan();
+            if (*cropIter) {
+                ((HydroponicsCrop *)(*cropIter))->notifyFeedingBegan();
+            }
         }
     }
 }
@@ -1058,11 +1060,13 @@ void HydroponicsFeeding::broadcastFeedingEnded()
 {
     getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasEnded));
 
+    feedRes->notifyFeedingEnded();
+
     {   auto crops = linksFilterCrops(feedRes->getLinkages());
-        feedRes->notifyFeedingEnded();
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-            auto crop = (HydroponicsCrop *)(*cropIter);
-            crop->notifyFeedingEnded();
+            if (*cropIter) {
+                ((HydroponicsCrop *)(*cropIter))->notifyFeedingEnded();
+            }
         }
     }
 }
@@ -1091,7 +1095,7 @@ void HydroponicsLighting::recalcLighting()
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
             auto crop = (HydroponicsCrop *)(*cropIter);
             auto cropPhase = crop ? (Hydroponics_CropPhase)constrain((int)(crop->getCropPhase()), 0, (int)Hydroponics_CropPhase_MainCount - 1)
-                                : Hydroponics_CropPhase_Undefined;
+                                  : Hydroponics_CropPhase_Undefined;
 
             if ((int)cropPhase >= 0) {
                 auto cropsLibData = getCropsLibraryInstance()->checkoutCropsData(crop->getCropType());
@@ -1241,7 +1245,9 @@ void HydroponicsLighting::update()
     if (actuatorReqs.size()) {
         for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
             if (!(*actuatorIter)->getIsEnabled()) {
-                (*actuatorIter)->enableActuator();
+                if (!(*actuatorIter)->enableActuator()) {
+                    // TODO: Something clever to track stalled actuators
+                }
             }
         }
     }
