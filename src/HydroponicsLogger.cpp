@@ -83,7 +83,7 @@ void HydroponicsLogger::logDeactivation(HydroponicsActuator *actuator)
 void HydroponicsLogger::logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString)
 {
     if (feedReservoir) {
-        logMessage(feedReservoir->getId().keyStr, processString + statusString);
+        logMessage(feedReservoir->getId().keyStr, processString, statusString);
     }
 }
 
@@ -99,11 +99,7 @@ void HydroponicsLogger::logSystemUptime()
     TimeSpan elapsed(unixNow() - _initDate);
 
     if (elapsed.totalseconds()) {
-        logMessage(SFP(HS_Log_SystemUptime),
-            String(elapsed.days()) + String('d') + String(' ') +
-            String(elapsed.hours()) + String('h') + String(' ') +
-            String(elapsed.minutes()) + String('m') + String(' ') +
-            String(elapsed.seconds()) + String('s'));
+        logMessage(SFP(HS_Log_SystemUptime), stringFromSpan(elapsed));
     }
 }
 
@@ -112,28 +108,28 @@ void HydroponicsLogger::logSystemSave()
     logMessage(SFP(HS_Log_SystemDataSaved));
 }
 
-void HydroponicsLogger::logMessage(String msg, String suffix)
+void HydroponicsLogger::logMessage(String msg, String suffix1, String suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_All) {
-        log(String(F("[INFO] ")), msg, suffix);
+        log(String(F("[INFO] ")), msg, suffix1, suffix2);
     }
 }
 
-void HydroponicsLogger::logWarning(String warn, String suffix)
+void HydroponicsLogger::logWarning(String warn, String suffix1, String suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Warnings) {
-        log(String(F("[WARN] ")), warn, suffix);
+        log(String(F("[WARN] ")), warn, suffix1, suffix2);
     }
 }
 
-void HydroponicsLogger::logError(String err, String suffix)
+void HydroponicsLogger::logError(String err, String suffix1, String suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Errors) {
-        log(String(F("[FAIL] ")), err, suffix);
+        log(String(F("[FAIL] ")), err, suffix1, suffix2);
     }
 }
 
-void HydroponicsLogger::log(String prefix, String msg, String suffix)
+void HydroponicsLogger::log(String prefix, String msg, String suffix1, String suffix2)
 {
     String timestamp = getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL);
 
@@ -143,7 +139,8 @@ void HydroponicsLogger::log(String prefix, String msg, String suffix)
             Serial.print(' ');
             Serial.print(prefix);
             Serial.print(msg);
-            Serial.println(suffix);
+            Serial.print(suffix1);
+            Serial.println(suffix2);
         }
     #endif
 
@@ -158,7 +155,8 @@ void HydroponicsLogger::log(String prefix, String msg, String suffix)
                 logFile.print(' ');
                 logFile.print(prefix);
                 logFile.print(msg);
-                logFile.println(suffix);
+                logFile.print(suffix1);
+                logFile.println(suffix2);
             }
 
             if (logFile) { logFile.close(); }

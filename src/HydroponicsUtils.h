@@ -225,13 +225,6 @@ extern HydroponicsLogger *getLoggerInstance();
 // Returns the active publisher instance. Not guaranteed to be non-null.
 extern HydroponicsPublisher *getPublisherInstance();
 
-// This logs a standard message to Logger output, with optional flush afterwards.
-extern void logMessage(String message, bool flushAfter = false);
-// This logs a standard message to Logger output, with optional flush afterwards.
-extern void logWarning(String warning, bool flushAfter = false);
-// This logs a standard message to Logger output, with optional flush afterwards.
-extern void logError(String error, bool flushAfter = false);
-
 // Publishes latest data from sensor to Publisher output.
 extern void publishData(HydroponicsSensor *sensor);
 
@@ -248,6 +241,12 @@ extern Hydroponics_KeyType stringHash(String string);
 // Returns a string from char array with an exact max length.
 // Null array or invalid length will abort function before encoding occurs, returning "null".
 extern String stringFromChars(const char *charsIn, size_t length);
+// Returns a string formatted to deal with variable time spans.
+extern String stringFromSpan(const TimeSpan &span);
+// Returns a string formatted to value and unit for dealing with measurements.
+extern String stringFromMeasurement(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces = 0);
+// Returns a string formatted to value and unit for dealing with measurements as value/units pair.
+extern String stringFromMeasurement(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces = 0);
 
 // Encodes a T-typed array to a comma-separated string.
 // Null array or invalid length will abort function before encoding occurs, returning "null".
@@ -383,9 +382,6 @@ extern bool checkPinIsDigital(byte pin);
 extern bool checkPinIsPWMOutput(byte pin);
 // Checks to see if the pin can be set up with an ISR to handle digital level changes.
 extern bool checkPinCanInterrupt(byte pin);
-
-// Sets random seed to an appropriate backing, in order: RTC's time, last analog pin's read (x4 to form 32-bit seed), or micros from system start.
-extern void setupRandomSeed();
 
 // Enums & Conversions
 

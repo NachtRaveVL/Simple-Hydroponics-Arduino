@@ -115,11 +115,6 @@ void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hyd
     dataOut->timestamp = timestamp;
 }
 
-void HydroponicsMeasurement::updateTimestamp()
-{
-    timestamp = unixNow();
-}
-
 void HydroponicsMeasurement::updateFrame(int minFrame)
 {
     auto hydroponics = getHydroponicsInstance();
