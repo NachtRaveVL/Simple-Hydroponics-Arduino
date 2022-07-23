@@ -899,13 +899,15 @@ void HydroponicsFeeding::setupStaging()
 
         case Done: {
             clearActuatorReqs();
-        }
+        } break;
+
+        default:
+            break;
     }
 }
 
 void HydroponicsFeeding::update()
 {
-
     switch (stage) {
         case Init: {
             if (!canFeedAfter || unixNow() >= canFeedAfter) {
@@ -1014,6 +1016,9 @@ void HydroponicsFeeding::update()
             stage = Init; stageStart = unixNow();
             setupStaging();
         } break;
+
+        default:
+            break;
     }
 
     if (actuatorReqs.size()) {
@@ -1079,24 +1084,26 @@ void HydroponicsLighting::recalcLighting()
 {
     float totalWeights = 0;
     float totalLightHours = 0;
-    auto crops = linksFilterCrops(feedRes->getLinkages());
     bool sprayingNeeded = false;
 
-    for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-        auto crop = (HydroponicsCrop *)(*cropIter);
-        auto cropPhase = crop ? (Hydroponics_CropPhase)constrain((int)(crop->getCropPhase()), 0, (int)Hydroponics_CropPhase_MainCount - 1)
-                              : Hydroponics_CropPhase_Undefined;
+    {   auto crops = linksFilterCrops(feedRes->getLinkages());
 
-        if ((int)cropPhase >= 0) {
-            auto cropsLibData = getCropsLibraryInstance()->checkoutCropsData(crop->getCropType());
+        for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
+            auto crop = (HydroponicsCrop *)(*cropIter);
+            auto cropPhase = crop ? (Hydroponics_CropPhase)constrain((int)(crop->getCropPhase()), 0, (int)Hydroponics_CropPhase_MainCount - 1)
+                                : Hydroponics_CropPhase_Undefined;
 
-            if (cropsLibData) {
-                auto weight = crop->getFeedingWeight();
-                totalWeights += weight;
-                totalLightHours += (cropsLibData->dailyLightHours[cropPhase] * weight);
-                sprayingNeeded = sprayingNeeded || cropsLibData->getNeedsSpraying();
+            if ((int)cropPhase >= 0) {
+                auto cropsLibData = getCropsLibraryInstance()->checkoutCropsData(crop->getCropType());
 
-                getCropsLibraryInstance()->returnCropsData(cropsLibData);
+                if (cropsLibData) {
+                    auto weight = crop->getFeedingWeight();
+                    totalWeights += weight;
+                    totalLightHours += (cropsLibData->dailyLightHours[cropPhase] * weight);
+                    sprayingNeeded = sprayingNeeded || cropsLibData->getNeedsSpraying();
+
+                    getCropsLibraryInstance()->returnCropsData(cropsLibData);
+                }
             }
         }
     }
@@ -1106,31 +1113,31 @@ void HydroponicsLighting::recalcLighting()
         totalLightHours = 12.0f;
     }
 
-    lightHours = (totalLightHours / totalWeights);
-    lightHours = constrain(lightHours, 0.0f, 24.0f);
-    time_t dayLightSecs = lightHours * SECS_PER_HOUR;
+    {   lightHours = (totalLightHours / totalWeights);
+        lightHours = constrain(lightHours, 0.0f, 24.0f);
+        time_t dayLightSecs = lightHours * SECS_PER_HOUR;
 
-    time_t daySprayerSecs = 0;
-    if (sprayingNeeded && linksFilterActuatorsByReservoirAndType(feedRes->getLinkages(), feedRes.get(), Hydroponics_ActuatorType_WaterSprayer).size()) {
-        daySprayerSecs = getSchedulerInstance()->getPreLightSprayMins() * SECS_PER_MIN;
+        time_t daySprayerSecs = 0;
+        if (sprayingNeeded && linksFilterActuatorsByReservoirAndType(feedRes->getLinkages(), feedRes.get(), Hydroponics_ActuatorType_WaterSprayer).size()) {
+            daySprayerSecs = getSchedulerInstance()->getPreLightSprayMins() * SECS_PER_MIN;
+        }
+
+        time_t dayStart = getCurrentDayStartTime();
+        lightStart = dayStart + ((SECS_PER_DAY - dayLightSecs) >> 1);
+        sprayStart = max(dayStart, lightStart - daySprayerSecs);
+        lightStart = sprayStart + daySprayerSecs;
+        lightEnd = lightStart + dayLightSecs;
     }
-
-    time_t dayStart = getCurrentDayStartTime();
-    lightStart = dayStart + ((SECS_PER_DAY - dayLightSecs) >> 1);
-    sprayStart = max(dayStart, lightStart - daySprayerSecs);
-    lightStart = sprayStart + daySprayerSecs;
-    lightEnd = lightStart + dayLightSecs;
 
     setupStaging();
 }
 
 void HydroponicsLighting::setupStaging()
 {
-
     switch (stage) {
         case Init: {
             clearActuatorReqs();
-        }
+        } break;
 
         case Spray: {
             Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
@@ -1158,7 +1165,7 @@ void HydroponicsLighting::setupStaging()
 
         case Done: {
             clearActuatorReqs();
-        }
+        } break;
 
         default:
             break;
@@ -1167,10 +1174,10 @@ void HydroponicsLighting::setupStaging()
 
 void HydroponicsLighting::update()
 {
-    time_t currTime = getCurrentTime().unixtime();
-
     switch (stage) {
-        case Init:
+        case Init: {
+            time_t currTime = getCurrentTime().unixtime();
+
             if (currTime >= sprayStart && currTime < lightEnd) {
                 stage = Spray; stageStart = unixNow();
                 setupStaging();
@@ -1185,10 +1192,10 @@ void HydroponicsLighting::update()
                     getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreLightSprayMins), sprayMinsStr);
                 }
             }
-            break;
+        } break;
 
-        case Spray:
-            if (currTime >= lightStart) {
+        case Spray: {
+            if (getCurrentTime().unixtime() >= lightStart) {
                 stage = Light; stageStart = unixNow();
                 setupStaging();
 
@@ -1204,10 +1211,10 @@ void HydroponicsLighting::update()
                 stage = Done; stageStart = unixNow();
                 setupStaging();
             }
-            break;
+        } break;
 
-        case Light:
-            if (currTime >= lightEnd) {
+        case Light: {
+            if (getCurrentTime().unixtime() >= lightEnd) {
                 TimeSpan elapsedTime(unixNow() - stageStart);
                 stage = Done; stageStart = unixNow();
                 setupStaging();
@@ -1220,12 +1227,12 @@ void HydroponicsLighting::update()
                     getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_DailyLightHours), lightHrsStr);
                 }
             }
-            break;
+        } break;
 
-        case Done:
+        case Done: {
             stage = Init; stageStart = unixNow();
             setupStaging();
-            break;
+        } break;
 
         default:
             break;
