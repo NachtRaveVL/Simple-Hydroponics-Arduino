@@ -66,28 +66,28 @@ bool HydroponicsLogger::getIsLoggingToSDCard() const
     return _loggerData && _loggerData->logToSDCard;
 }
 
-void HydroponicsLogger::logActivation(HydroponicsActuator *actuator)
+void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
 {
     if (actuator) {
         logMessage(actuator->getId().keyStr, SFP(HS_Log_HasEnabled));
     }
 }
 
-void HydroponicsLogger::logDeactivation(HydroponicsActuator *actuator)
+void HydroponicsLogger::logDeactivation(const HydroponicsActuator *actuator)
 {
     if (actuator) {
         logMessage(actuator->getId().keyStr, SFP(HS_Log_HasDisabled));
     }
 }
 
-void HydroponicsLogger::logProcess(HydroponicsFeedReservoir *feedReservoir, String processString, String statusString)
+void HydroponicsLogger::logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString, const String &statusString)
 {
     if (feedReservoir) {
         logMessage(feedReservoir->getId().keyStr, processString, statusString);
     }
 }
 
-void HydroponicsLogger::logPumping(HydroponicsPumpObjectInterface *pump, String pumpString)
+void HydroponicsLogger::logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString)
 {
     if (pump) {
         logMessage(((HydroponicsObject *)pump)->getId().keyStr, pumpString);
@@ -108,28 +108,28 @@ void HydroponicsLogger::logSystemSave()
     logMessage(SFP(HS_Log_SystemDataSaved));
 }
 
-void HydroponicsLogger::logMessage(String msg, String suffix1, String suffix2)
+void HydroponicsLogger::logMessage(const String &msg, const String &suffix1, const String &suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_All) {
         log(F("[INFO] "), msg, suffix1, suffix2);
     }
 }
 
-void HydroponicsLogger::logWarning(String warn, String suffix1, String suffix2)
+void HydroponicsLogger::logWarning(const String &warn, const String &suffix1, const String &suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Warnings) {
         log(F("[WARN] "), warn, suffix1, suffix2);
     }
 }
 
-void HydroponicsLogger::logError(String err, String suffix1, String suffix2)
+void HydroponicsLogger::logError(const String &err, const String &suffix1, const String &suffix2)
 {
     if (_loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None && _loggerData->logLevel <= Hydroponics_LogLevel_Errors) {
         log(F("[FAIL] "), err, suffix1, suffix2);
     }
 }
 
-void HydroponicsLogger::log(String prefix, String &msg, String &suffix1, String &suffix2)
+void HydroponicsLogger::log(const String &prefix, const String &msg, const String &suffix1, const String &suffix2)
 {
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         if (Serial) {
