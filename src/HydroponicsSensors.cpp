@@ -993,8 +993,8 @@ void HydroponicsSensorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsObjectData::toJSONObject(objectOut);
 
     if (isValidPin(inputPin)) { objectOut[SFP(HS_Key_InputPin)] = inputPin; }
-    if (cropName[0]) { objectOut[SFP(HS_Key_Crop)] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE); }
-    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = stringFromChars(reservoirName, HYDRUINO_NAME_MAXSIZE); }
+    if (cropName[0]) { objectOut[SFP(HS_Key_Crop)] = charsToString(cropName, HYDRUINO_NAME_MAXSIZE); }
+    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsSensorData::fromJSONObject(JsonObjectConst &objectIn)

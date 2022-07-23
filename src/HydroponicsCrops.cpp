@@ -544,7 +544,7 @@ void HydroponicsCropData::toJSONObject(JsonObject &objectOut) const
 
     if (substrateType != Hydroponics_SubstrateType_Undefined) { objectOut[SFP(HS_Key_SubstrateType)] = substrateTypeToString(substrateType); }
     if (sowDate) { objectOut[SFP(HS_Key_SowDate)] = sowDate; }
-    if (feedReservoir[0]) { objectOut[SFP(HS_Key_FeedReservoir)] = stringFromChars(feedReservoir, HYDRUINO_NAME_MAXSIZE); }
+    if (feedReservoir[0]) { objectOut[SFP(HS_Key_FeedReservoir)] = charsToString(feedReservoir, HYDRUINO_NAME_MAXSIZE); }
     if (!isFPEqual(feedingWeight, 1.0f)) { objectOut[SFP(HS_Key_FeedingWeight)] = feedingWeight; }
 }
 
@@ -593,7 +593,7 @@ void HydroponicsAdaptiveCropData::toJSONObject(JsonObject &objectOut) const
     HydroponicsCropData::toJSONObject(objectOut);
 
     if (moistureUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_MoistureUnits)] = unitsTypeToSymbol(moistureUnits); }
-    if (moistureSensor[0]) { objectOut[SFP(HS_Key_MoistureSensor)] = stringFromChars(moistureSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (moistureSensor[0]) { objectOut[SFP(HS_Key_MoistureSensor)] = charsToString(moistureSensor, HYDRUINO_NAME_MAXSIZE); }
     if (feedingTrigger.type != -1) {
         JsonObject feedingTriggerObj = objectOut.createNestedObject(SFP(HS_Key_FeedingTrigger));
         feedingTrigger.toJSONObject(feedingTriggerObj);

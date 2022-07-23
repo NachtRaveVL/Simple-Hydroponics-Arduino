@@ -216,7 +216,7 @@ void HydroponicsObjectData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    if (name[0]) { objectOut[SFP(HS_Key_Id)] = stringFromChars(name, HYDRUINO_NAME_MAXSIZE); }
+    if (name[0]) { objectOut[SFP(HS_Key_Id)] = charsToString(name, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsObjectData::fromJSONObject(JsonObjectConst &objectIn)

@@ -100,7 +100,7 @@ bool HydroponicsPublisher::getIsPublishingEnabled()
 void HydroponicsPublisher::notifyDayChanged()
 {
     if (getIsPublishingEnabled()) {
-        _dataFileName = getYYMMDDFilename(stringFromChars(_publisherData->dataFilePrefix, 16), SFP(HS_csv));
+        _dataFileName = getYYMMDDFilename(charsToString(_publisherData->dataFilePrefix, 16), SFP(HS_csv));
         cleanupOldestData();
     }
 }
@@ -306,7 +306,7 @@ void HydroponicsPublisherSubData::toJSONObject(JsonObject &objectOut) const
 {
     //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
-    if (dataFilePrefix[0]) { objectOut[SFP(HS_Key_DataFilePrefix)] = stringFromChars(dataFilePrefix, 16); }
+    if (dataFilePrefix[0]) { objectOut[SFP(HS_Key_DataFilePrefix)] = charsToString(dataFilePrefix, 16); }
     if (publishToSDCard != false) { objectOut[SFP(HS_Key_PublishToSDCard)] = publishToSDCard; }
 }
 

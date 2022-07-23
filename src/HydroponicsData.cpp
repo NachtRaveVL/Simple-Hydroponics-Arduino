@@ -82,7 +82,7 @@ HydroponicsData::HydroponicsData(const HydroponicsIdentity &id)
 void HydroponicsData::toJSONObject(JsonObject &objectOut) const
 {
     if (this->isStandardData()) {
-        objectOut[SFP(HS_Key_Type)] = stringFromChars(id.chars, sizeof(id.chars));
+        objectOut[SFP(HS_Key_Type)] = charsToString(id.chars, sizeof(id.chars));
     } else {
         int8_t typeVals[4] = {id.object.idType, id.object.objType, id.object.posIndex, id.object.classType};
         objectOut[SFP(HS_Key_Type)] = commaStringFromArray(typeVals, 4);

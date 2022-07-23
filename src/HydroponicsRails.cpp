@@ -546,7 +546,7 @@ void HydroponicsRegulatedRailData::toJSONObject(JsonObject &objectOut) const
     HydroponicsRailData::toJSONObject(objectOut);
 
     objectOut[SFP(HS_Key_MaxPower)] = maxPower;
-    if (powerSensor[0]) { objectOut[SFP(HS_Key_PowerSensor)] = stringFromChars(powerSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (powerSensor[0]) { objectOut[SFP(HS_Key_PowerSensor)] = charsToString(powerSensor, HYDRUINO_NAME_MAXSIZE); }
     if (limitTrigger.type != -1) {
         JsonObject limitTriggerObj = objectOut.createNestedObject(SFP(HS_Key_LimitTrigger));
         limitTrigger.toJSONObject(limitTriggerObj);

@@ -125,17 +125,17 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
         objectOut[SFP(HS_Key_DispOutMode)] = displayOutputModeToString(Hydroponics_DisplayOutputMode_Disabled);
         objectOut[SFP(HS_Key_CtrlInMode)] = controlInputModeToString(Hydroponics_ControlInputMode_Disabled);
     #endif
-    if (systemName[0]) { objectOut[SFP(HS_Key_SystemName)] = stringFromChars(systemName, HYDRUINO_NAME_MAXSIZE); }
+    if (systemName[0]) { objectOut[SFP(HS_Key_SystemName)] = charsToString(systemName, HYDRUINO_NAME_MAXSIZE); }
     if (timeZoneOffset != 0) { objectOut[SFP(HS_Key_TimeZoneOffset)] = timeZoneOffset; }
     if (pollingInterval && pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[SFP(HS_Key_PollingInterval)] = pollingInterval; }
     if (autosaveEnabled != Hydroponics_Autosave_Disabled) { objectOut[SFP(HS_Key_AutosaveEnabled)] = autosaveEnabled; }
     if (autosaveInterval && autosaveInterval != HYDRUINO_SYS_AUTOSAVE_INTERVAL) { objectOut[SFP(HS_Key_AutosaveInterval)] = autosaveInterval; }
-    if (wifiSSID[0]) { objectOut[SFP(HS_Key_WiFiSSID)] = stringFromChars(wifiSSID, HYDRUINO_NAME_MAXSIZE); }
+    if (wifiSSID[0]) { objectOut[SFP(HS_Key_WiFiSSID)] = charsToString(wifiSSID, HYDRUINO_NAME_MAXSIZE); }
     if (wifiPasswordSeed) {
         objectOut[SFP(HS_Key_WiFiPassword)] = hexStringFromBytes(wifiPassword, HYDRUINO_NAME_MAXSIZE);
         objectOut[SFP(HS_Key_WiFiPasswordSeed)] = wifiPasswordSeed;
     } else if (wifiPassword[0]) {
-        objectOut[SFP(HS_Key_WiFiPassword)] = stringFromChars((const char *)wifiPassword, HYDRUINO_NAME_MAXSIZE);
+        objectOut[SFP(HS_Key_WiFiPassword)] = charsToString((const char *)wifiPassword, HYDRUINO_NAME_MAXSIZE);
     }
 
     JsonObject schedulerObj = objectOut.createNestedObject(SFP(HS_Key_Scheduler));
@@ -204,7 +204,7 @@ void HydroponicsCalibrationData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    if (sensorName[0]) { objectOut[SFP(HS_Key_Sensor)] = stringFromChars(sensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (sensorName[0]) { objectOut[SFP(HS_Key_Sensor)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
     if (calibUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_CalibUnits)] = unitsTypeToSymbol(calibUnits); }
     objectOut[SFP(HS_Key_Multiplier)] = multiplier;
     objectOut[SFP(HS_Key_Offset)] = offset;
@@ -273,7 +273,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
     HydroponicsData::toJSONObject(objectOut);
 
     objectOut[SFP(HS_Key_Id)] = cropTypeToString(cropType);
-    if (cropName[0]) { objectOut[SFP(HS_Key_Crop)] = stringFromChars(cropName, HYDRUINO_NAME_MAXSIZE); }
+    if (cropName[0]) { objectOut[SFP(HS_Key_Crop)] = charsToString(cropName, HYDRUINO_NAME_MAXSIZE); }
 
     int mainPhaseTotalWeeks = phaseDurationWeeks[0] + phaseDurationWeeks[1] + phaseDurationWeeks[2];
     HYDRUINO_SOFT_ASSERT(!totalGrowWeeks || !mainPhaseTotalWeeks || mainPhaseTotalWeeks == totalGrowWeeks, SFP(HS_Err_ExportFailure));
@@ -456,7 +456,7 @@ void HydroponicsCustomAdditiveData::toJSONObject(JsonObject &objectOut) const
     HydroponicsData::toJSONObject(objectOut);
 
     objectOut[SFP(HS_Key_Id)] = reservoirTypeToString(reservoirType);
-    if (additiveName[0]) { objectOut[SFP(HS_Key_AdditiveName)] = stringFromChars(additiveName, HYDRUINO_NAME_MAXSIZE); }
+    if (additiveName[0]) { objectOut[SFP(HS_Key_AdditiveName)] = charsToString(additiveName, HYDRUINO_NAME_MAXSIZE); }
     bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX, 0.0f);
     if (hasWeeklyDosings) { objectOut[SFP(HS_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX); }
 }
