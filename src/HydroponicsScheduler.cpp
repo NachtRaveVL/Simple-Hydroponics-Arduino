@@ -681,29 +681,30 @@ void HydroponicsFeeding::recalcFeeding()
 {
     float totalWeights = 0;
     float totalSetpoints[5] = {0};
-    auto crops = linksFilterCrops(feedRes->getLinkages());
 
-    for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-        auto crop = (HydroponicsCrop *)(*cropIter);
-        auto cropsLibData = crop ? getCropsLibraryInstance()->checkoutCropsData(crop->getCropType()) : nullptr;
+    {   auto crops = linksFilterCrops(feedRes->getLinkages());
+        for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
+            auto crop = (HydroponicsCrop *)(*cropIter);
+            auto cropsLibData = crop ? getCropsLibraryInstance()->checkoutCropsData(crop->getCropType()) : nullptr;
 
-        if (cropsLibData) {
-            float weight = crop->getFeedingWeight();
-            totalWeights += weight;
+            if (cropsLibData) {
+                float weight = crop->getFeedingWeight();
+                totalWeights += weight;
 
-            float feedRate = ((cropsLibData->tdsRange[0] + cropsLibData->tdsRange[1]) * 0.5);
-            if (!getSchedulerInstance()->getInDaytimeMode()) {
-                feedRate *= cropsLibData->nightlyFeedMultiplier;
+                float feedRate = ((cropsLibData->tdsRange[0] + cropsLibData->tdsRange[1]) * 0.5);
+                if (!getSchedulerInstance()->getInDaytimeMode()) {
+                    feedRate *= cropsLibData->nightlyFeedMultiplier;
+                }
+                feedRate *= getSchedulerInstance()->getBaseFeedMultiplier();
+
+                totalSetpoints[0] += ((cropsLibData->phRange[0] + cropsLibData->phRange[1]) * 0.5) * weight;
+                totalSetpoints[1] += feedRate * weight;
+                totalSetpoints[2] += ((cropsLibData->waterTempRange[0] + cropsLibData->waterTempRange[1]) * 0.5) * weight;
+                totalSetpoints[3] += ((cropsLibData->airTempRange[0] + cropsLibData->airTempRange[1]) * 0.5) * weight;
+                totalSetpoints[4] += cropsLibData->co2Levels[(crop->getCropPhase() <= Hydroponics_CropPhase_Vegetative ? 0 : 1)] * weight;
+
+                getCropsLibraryInstance()->returnCropsData(cropsLibData);
             }
-            feedRate *= getSchedulerInstance()->getBaseFeedMultiplier();
-
-            totalSetpoints[0] += ((cropsLibData->phRange[0] + cropsLibData->phRange[1]) * 0.5) * weight;
-            totalSetpoints[1] += feedRate * weight;
-            totalSetpoints[2] += ((cropsLibData->waterTempRange[0] + cropsLibData->waterTempRange[1]) * 0.5) * weight;
-            totalSetpoints[3] += ((cropsLibData->airTempRange[0] + cropsLibData->airTempRange[1]) * 0.5) * weight;
-            totalSetpoints[4] += cropsLibData->co2Levels[(crop->getCropPhase() <= Hydroponics_CropPhase_Vegetative ? 0 : 1)] * weight;
-
-            getCropsLibraryInstance()->returnCropsData(cropsLibData);
         }
     }
 

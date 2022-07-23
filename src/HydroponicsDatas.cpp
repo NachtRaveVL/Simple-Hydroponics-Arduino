@@ -240,8 +240,8 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
       cropType(Hydroponics_CropType_Undefined), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6,6}, tdsRange{1.8,2.4}, nightlyFeedMultiplier(1),
-      waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
+      phRange{6.0f,6.0f}, tdsRange{1.8f,2.4f}, nightlyFeedMultiplier(1),
+      waterTempRange{25.0f,25.0f}, airTempRange{25.0f,25.0f}, co2Levels{700.0f,1400.0f},
       flags(0)
 {
     _size = sizeof(*this);
@@ -252,8 +252,8 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
       cropType(cropTypeIn), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6,6}, tdsRange{1.8,2.4}, nightlyFeedMultiplier(1),
-      waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
+      phRange{6.0f,6.0f}, tdsRange{1.8f,2.4f}, nightlyFeedMultiplier(1),
+      waterTempRange{25.0f,25.0f}, airTempRange{25.0f,25.0f}, co2Levels{700.0f,1400.0f},
       flags(0)
 {
     _size = sizeof(*this);

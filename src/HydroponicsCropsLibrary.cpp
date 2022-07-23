@@ -40,7 +40,7 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydrop
 
     HydroponicsCropsLibraryBook *book = nullptr;
 
-    if ((int)cropType >= 0 && cropType < Hydroponics_CropType_CustomCropCount) {
+    if ((int)cropType >= 0 && cropType < (Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount)) {
         auto iter = _cropsData.find(cropType);
 
         if (iter != _cropsData.end()) {
