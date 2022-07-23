@@ -855,15 +855,15 @@ void HydroponicsFeeding::setupStaging()
                         newActuatorReqs.push_back(pump); // feed water pump
                     }
                 }
+            }
 
-                if (!newActuatorReqs.size() && getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste) { // prefers feed water pumps, else direct to waste is feed
-                    feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ReservoirType_DrainageWater);
+            if (!newActuatorReqs.size() && getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste) { // prefers feed water pumps, else direct to waste is feed
+                auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ReservoirType_DrainageWater);
 
-                    for (auto pumpIter = feedPumps.begin(); pumpIter != feedPumps.end(); ++pumpIter) {
-                        auto pump = getSharedPtr<HydroponicsActuator>(*pumpIter);
-                        if (pump && pump->getActuatorType() == Hydroponics_ActuatorType_WaterPump) {
-                            newActuatorReqs.push_back(pump); // DTW feed water pump
-                        }
+                for (auto pumpIter = feedPumps.begin(); pumpIter != feedPumps.end(); ++pumpIter) {
+                    auto pump = getSharedPtr<HydroponicsActuator>(*pumpIter);
+                    if (pump && pump->getActuatorType() == Hydroponics_ActuatorType_WaterPump) {
+                        newActuatorReqs.push_back(pump); // DTW feed water pump
                     }
                 }
             }
