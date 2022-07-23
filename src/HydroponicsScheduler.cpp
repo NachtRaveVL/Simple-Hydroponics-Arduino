@@ -948,17 +948,14 @@ void HydroponicsFeeding::update()
 
                     getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreFeedAeratorMins), aeratorMinsStr);
                 }
-                if (feedRes->getWaterPHSensor()) {
-                    auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
+                {   auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
                     getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
                 }
-                if (feedRes->getWaterTDSSensor()) {
-                    auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
+                {   auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
                     convertUnits(&tds, feedRes->getTDSUnits());
                     getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
                 }
-                if (feedRes->getWaterTempSensor()) {
-                    auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+                {   auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
                     convertUnits(&temp, feedRes->getTemperatureUnits());
                     getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
                 }
@@ -1039,14 +1036,18 @@ void HydroponicsFeeding::update()
 void HydroponicsFeeding::broadcastFeedingBegan()
 {
     getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasBegan));
-    {   auto ph = feedRes->getWaterPHSensor() ? feedRes->getWaterPH() : HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
+
+    if (feedRes->getWaterPHSensor()) {
+        auto ph = feedRes->getWaterPH();
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
     }
-    {   auto tds = feedRes->getWaterTDSSensor() ? feedRes->getWaterTDS() : HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
+    if (feedRes->getWaterTDSSensor()) {
+        auto tds = feedRes->getWaterTDSSensor();
         convertUnits(&tds, feedRes->getTDSUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
     }
-    {   auto temp = feedRes->getWaterTempSensor() ? feedRes->getWaterTemperature() : HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+    if (feedRes->getWaterTempSensor()) {
+        auto temp = feedRes->getWaterTemperature();
         convertUnits(&temp, feedRes->getTemperatureUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
     }
@@ -1055,7 +1056,7 @@ void HydroponicsFeeding::broadcastFeedingBegan()
 
     {   auto crops = linksFilterCrops(feedRes->getLinkages());
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-            if (*cropIter) {
+            if ((*cropIter)) {
                 ((HydroponicsCrop *)(*cropIter))->notifyFeedingBegan();
             }
         }
@@ -1070,7 +1071,7 @@ void HydroponicsFeeding::broadcastFeedingEnded()
 
     {   auto crops = linksFilterCrops(feedRes->getLinkages());
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-            if (*cropIter) {
+            if ((*cropIter)) {
                 ((HydroponicsCrop *)(*cropIter))->notifyFeedingEnded();
             }
         }
