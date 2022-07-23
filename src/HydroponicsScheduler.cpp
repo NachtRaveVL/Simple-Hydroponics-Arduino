@@ -978,6 +978,7 @@ void HydroponicsFeeding::update()
                     else if (unixNow() >= canFeedAfter) {
                         stage = Feed; stageStart = unixNow();
                         setupStaging();
+
                         broadcastFeedingBegan();
                     }
                 } else {
@@ -1002,6 +1003,7 @@ void HydroponicsFeeding::update()
                 stage = (getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? Drain : Done);
                 stageStart = unixNow();
                 setupStaging();
+
                 broadcastFeedingEnded();
             }
         } break;

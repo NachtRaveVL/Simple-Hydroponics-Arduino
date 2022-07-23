@@ -425,6 +425,7 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
             enableActuator();
             delayFine(timeMillis);
             disableActuator();
+            return true;
         #endif
     }
     return false;
@@ -601,16 +602,14 @@ void HydroponicsPumpRelayActuator::pulsePumpingSensors()
 
 void HydroponicsPumpRelayActuator::handlePumpTime(time_t timeMillis)
 {
-    auto sourceRes = getReservoir();
-    auto destRes = getOutputReservoir();
-    if (sourceRes != destRes) {
+    if (getReservoir() != getOutputReservoir()) {
         float flowRateVal = _flowRate.frame && getFlowRateSensor() && !_flowRateSensor->getNeedsPolling(HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF) &&
                             _flowRate.value >= (_contFlowRate.value * HYDRUINO_ACT_PUMPCALC_MINFLOWRATE) - FLT_EPSILON ? _flowRate.value : _contFlowRate.value;
         float volumePumped = flowRateVal * (timeMillis / (float)secondsToMillis(SECS_PER_MIN));
         _pumpVolumeAcc += volumePumped;
 
-        if (sourceRes && sourceRes->isAnyFluidClass()) {
-            auto sourceFluidRes = static_pointer_cast<HydroponicsFluidReservoir>(sourceRes);
+        if (getReservoir() && getReservoir()->isAnyFluidClass()) {
+            auto sourceFluidRes = static_pointer_cast<HydroponicsFluidReservoir>(getReservoir());
             if (sourceFluidRes && !sourceFluidRes->getVolumeSensor()) { // only report if there isn't a volume sensor already doing it
                 auto volume = sourceFluidRes->getWaterVolume();
                 convertUnits(&volume, baseUnitsFromRate(getFlowRateUnits()));
@@ -618,8 +617,8 @@ void HydroponicsPumpRelayActuator::handlePumpTime(time_t timeMillis)
                 sourceFluidRes->setWaterVolume(volume);
             }
         }
-        if (destRes && destRes->isAnyFluidClass()) {
-            auto destFluidRes = static_pointer_cast<HydroponicsFluidReservoir>(destRes);
+        if (getOutputReservoir() && getOutputReservoir()->isAnyFluidClass()) {
+            auto destFluidRes = static_pointer_cast<HydroponicsFluidReservoir>(getOutputReservoir());
             if (destFluidRes && !destFluidRes->getVolumeSensor()) { // only report if there isn't a volume sensor already doing it
                 auto volume = destFluidRes->getWaterVolume();
                 convertUnits(&volume, baseUnitsFromRate(getFlowRateUnits()));
