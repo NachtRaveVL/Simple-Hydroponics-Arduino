@@ -65,6 +65,7 @@ protected:
 
     friend class Hydroponics;
 
+    void updateDayTracking();
     void performScheduling();
     void broadcastDayChange();
 };

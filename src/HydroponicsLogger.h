@@ -50,6 +50,7 @@ public:
     void setLogLevel(Hydroponics_LogLevel logLevel);
     Hydroponics_LogLevel getLogLevel() const;
     bool getIsLoggingEnabled() const;
+    time_t getSystemUptime() const;
 
     void notifyDayChanged();
 
@@ -62,8 +63,8 @@ protected:
 
     friend class Hydroponics;
 
-    void log(String prefix, String msg, String suffix1, String suffix2);
-
+    void updateInitTracking();
+    void log(String prefix, String &msg, String &suffix1, String &suffix2);
     void cleanupOldestLogs(bool force = false);
 };
 

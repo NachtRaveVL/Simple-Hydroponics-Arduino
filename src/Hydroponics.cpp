@@ -593,12 +593,10 @@ void Hydroponics::commonPostInit()
         setSyncProvider(rtcNow);
     }
 
-    _scheduler._lastDayNum = getCurrentTime().day();
-    _logger._initDate = unixNow();
+    _scheduler.updateDayTracking();
+    _logger.updateInitTracking();
 
-    if (getIsAutosaveEnabled()) {
-        _lastAutosave = unixNow();
-    }
+    _lastAutosave = getIsAutosaveEnabled() ? unixNow() : 0;
 
     if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
         setWiFiConnection(getWiFiSSID(), getWiFiPassword()); // sets seed and encrypts
@@ -674,9 +672,17 @@ void Hydroponics::commonPostSave()
 
 void controlLoop()
 {
-    if (Hydroponics::_activeInstance && Hydroponics::_activeInstance->getInOperationalMode()) {
+    if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
         Hydroponics::_activeInstance->updateObjects(0);
-        Hydroponics::_activeInstance->update();
+        Hydroponics::_activeInstance->_scheduler.update();
+
+        #if HYDRUINO_SYS_ENABLE_ALIVE_LOGGING
+            static time_t _lastImAlive = unixNow();
+            if (unixNow() >= _lastImAlive + 30) {
+                _lastImAlive = unixNow();
+                Hydroponics::_activeInstance->_logger.logMessage(F("controlLoopAlive"));
+            }
+        #endif
     }
 
     yield();
@@ -684,8 +690,16 @@ void controlLoop()
 
 void dataLoop()
 {
-    if (Hydroponics::_activeInstance && Hydroponics::_activeInstance->getInOperationalMode()) {
+    if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
         Hydroponics::_activeInstance->updateObjects(1);
+
+        #if HYDRUINO_SYS_ENABLE_ALIVE_LOGGING
+            static time_t _lastImAlive = unixNow();
+            if (unixNow() >= _lastImAlive + 30) {
+                _lastImAlive = unixNow();
+                Hydroponics::_activeInstance->_logger.logMessage(F("dataLoopAlive"));
+            }
+        #endif
     }
 
     yield();
@@ -693,12 +707,20 @@ void dataLoop()
 
 void miscLoop()
 {
-    if (Hydroponics::_activeInstance && Hydroponics::_activeInstance->getInOperationalMode()) {
+    if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
         Hydroponics::_activeInstance->checkFreeMemory();
         Hydroponics::_activeInstance->checkFreeSpace();
         Hydroponics::_activeInstance->checkAutosave();
         Hydroponics::_activeInstance->_logger.update();
         Hydroponics::_activeInstance->_publisher.update();
+
+        #if HYDRUINO_SYS_ENABLE_ALIVE_LOGGING
+            static time_t _lastImAlive = unixNow();
+            if (unixNow() >= _lastImAlive + 30) {
+                _lastImAlive = unixNow();
+                Hydroponics::_activeInstance->_logger.logMessage(F("miscLoopAlive"));
+            }
+        #endif
     }
 
     yield();
@@ -744,6 +766,7 @@ void Hydroponics::launch()
 
 void Hydroponics::suspend()
 {
+    _suspend = true;
     #ifndef HYDRUINO_DISABLE_MULTITASKING
         if (_controlTaskId != TASKMGR_INVALIDID) {
             auto controlTask = taskManager.getTask(_controlTaskId);
@@ -758,7 +781,6 @@ void Hydroponics::suspend()
             if (miscTask) { miscTask->setEnabled(false); }
         }
     #endif
-    _suspend = true;
 }
 
 void Hydroponics::update()
@@ -781,9 +803,8 @@ void Hydroponics::updateObjects(int pass)
             _publisher.advancePollingFrame();
 
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                auto obj = iter->second;
-                if (obj && obj->isSensorType()) {
-                    auto sensorObj = static_pointer_cast<HydroponicsSensor>(obj);
+                if (iter->second && iter->second->isSensorType()) {
+                    auto sensorObj = static_pointer_cast<HydroponicsSensor>(iter->second);
                     if (sensorObj && sensorObj->getNeedsPolling()) {
                         sensorObj->takeMeasurement(); // no force if already current for this frame #
                     }
@@ -794,9 +815,8 @@ void Hydroponics::updateObjects(int pass)
         case 0:
         default: {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                auto obj = iter->second;
-                if (obj) {
-                    obj->update();
+                if (iter->second) {
+                    iter->second->update();
                 }
             } 
         } break;
@@ -947,7 +967,7 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
         }
 
         if (retVal) {
-            getSchedulerInstance()->setNeedsScheduling();
+            _scheduler.setNeedsScheduling();
             return true;
         }
     }
@@ -972,7 +992,7 @@ bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *cu
         }
 
         if (retVal) {
-            getSchedulerInstance()->setNeedsScheduling();
+            _scheduler.setNeedsScheduling();
             return true;
         }
     }
@@ -1050,7 +1070,7 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
         // TODO: notify GUI to update
-        getSchedulerInstance()->setNeedsScheduling();
+        _scheduler.setNeedsScheduling();
     }
 }
 
@@ -1075,7 +1095,7 @@ void Hydroponics::setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint1
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->autosaveEnabled = autosaveEnabled;
         _systemData->autosaveInterval = autosaveInterval;
-        _lastAutosave = unixNow();
+        _lastAutosave = autosaveEnabled ? unixNow() : 0;
     }
 }
 
@@ -1364,7 +1384,8 @@ String Hydroponics::getWiFiPassword()
 void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
-    _lastAutosave = unixNow();
+    _lastAutosave = getIsAutosaveEnabled() ? unixNow() : 0;
+    _logger.updateInitTracking();
     _scheduler.broadcastDayChange();
 }
 
@@ -1477,7 +1498,7 @@ void Hydroponics::checkAutosave()
             case Hydroponics_Autosave_EnabledToEEPROMRaw:
                 saveToEEPROM(false);
                 break;
-            default:
+            case Hydroponics_Autosave_Disabled:
                 break;
         }
         _lastAutosave = unixNow();
