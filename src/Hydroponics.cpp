@@ -1145,6 +1145,15 @@ void Hydroponics::setWiFiConnection(String ssid, String password)
     }
 }
 
+void Hydroponics::setRealTimeClockTime(DateTime time)
+{
+    auto rtc = getRealTimeClock();
+    if (rtc) {
+        rtc->adjust(DateTime((uint32_t)(time.unixtime() + (getTimeZoneOffset() * SECS_PER_HOUR))));
+        notifyRTCTimeUpdated();
+    }
+}
+
 Hydroponics *Hydroponics::getActiveInstance()
 {
     return _activeInstance;
