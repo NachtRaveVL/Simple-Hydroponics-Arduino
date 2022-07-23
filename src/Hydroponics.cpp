@@ -1149,7 +1149,7 @@ void Hydroponics::setRealTimeClockTime(DateTime time)
 {
     auto rtc = getRealTimeClock();
     if (rtc) {
-        rtc->adjust(DateTime((uint32_t)(time.unixtime() + (getTimeZoneOffset() * SECS_PER_HOUR))));
+        rtc->adjust(DateTime((uint32_t)(time.unixtime() + (-getTimeZoneOffset() * SECS_PER_HOUR))));
         notifyRTCTimeUpdated();
     }
 }
