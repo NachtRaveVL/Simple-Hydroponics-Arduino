@@ -99,25 +99,38 @@ static String fileFromFullPath(String fullPath)
     return index != -1 ? fullPath.substring(index+1) : fullPath;
 }
 
-static String makeAssertMsg(String msg, const char *file, const char *func, int line)
+static String makeAssertMsg(const char *file, const char *func, int line)
 {
-    return String(F("Assertion Failure: ")) + fileFromFullPath(String(file)) + String(':') + String(line) +
-           String(F(" in ")) + String(func) + String(':') + String(' ') + msg;
+    String retVal;
+
+    retVal.concat(fileFromFullPath(String(file)));
+    retVal.concat(':');
+    retVal.concat(line);
+    retVal.concat(F(" in "));
+    retVal.concat(func);
+    retVal.concat(SFP(HS_ColonSpace));
+
+    return retVal;
 }
 
 void softAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        String message = makeAssertMsg(msg, file, func, line);
-        logWarning(message, true);
+        String assertMsg = makeAssertMsg(file, func, line);
+        getLoggerInstance()->logWarning(SFP(HS_Err_AssertionFailure), SFP(HS_ColonSpace), assertMsg);
+        getLoggerInstance()->logWarning(SFP(HS_DoubleSpace), msg);
+        getLoggerInstance()->flush();
     }
 }
 
 void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        String message = String(F("HARD ")) + makeAssertMsg(msg, file, func, line);
-        logError(message, true);
+        String assertMsg = makeAssertMsg(file, func, line);
+        getLoggerInstance()->logError(SFP(HS_Err_AssertionFailure), F(" HARD") + SFP(HS_ColonSpace), assertMsg);
+        getLoggerInstance()->logError(SFP(HS_DoubleSpace), msg);
+        getLoggerInstance()->flush();
+
         auto hydroponics = getHydroponicsInstance();
         if (hydroponics) { hydroponics->suspend(); }
         yield(); delay(10);
@@ -149,39 +162,6 @@ HydroponicsPublisher *getPublisherInstance()
 {
     auto hydroponics = Hydroponics::getActiveInstance();
     return hydroponics ? &(hydroponics->_publisher) : nullptr;
-}
-
-void logMessage(String message, bool flushAfter)
-{
-    if (message.length()) {
-        auto logger = getLoggerInstance();
-        if (logger) {
-            logger->logMessage(message);
-            if (flushAfter) { logger->flush(); }
-        }
-    }
-}
-
-void logWarning(String warning, bool flushAfter)
-{
-    if (warning.length()) {
-        auto logger = getLoggerInstance();
-        if (logger) {
-            logger->logWarning(warning);
-            if (flushAfter) { logger->flush(); }
-        }
-    }
-}
-
-void logError(String error, bool flushAfter)
-{
-    if (error.length()) {
-        auto logger = getLoggerInstance();
-        if (logger) {
-            logger->logError(error);
-            if (flushAfter) { logger->flush(); }
-        }
-    }
 }
 
 void publishData(HydroponicsSensor *sensor)
@@ -222,14 +202,23 @@ time_t getCurrentDayStartTime()
 String getYYMMDDFilename(String prefix, String ext)
 {
     DateTime currTime = getCurrentTime();
-    int8_t yy = currTime.year() % 100;
-    int8_t mm = currTime.month();
-    int8_t dd = currTime.day();
-    return prefix +
-        (yy >= 10 ? String(yy) : String('0') + String(yy)) +
-        (mm >= 10 ? String(mm) : String('0') + String(mm)) +
-        (dd >= 10 ? String(dd) : String('0') + String(dd)) +
-        String('.') + ext;
+    uint8_t yy = currTime.year() % 100;
+    uint8_t mm = currTime.month();
+    uint8_t dd = currTime.day();
+
+    String retVal; retVal.reserve(prefix.length() + 11);
+
+    retVal.concat(prefix);
+    if (yy < 10) { retVal.concat('0'); }
+    retVal.concat(yy);
+    if (mm < 10) { retVal.concat('0'); }
+    retVal.concat(mm);
+    if (dd < 10) { retVal.concat('0'); }
+    retVal.concat(dd);
+    retVal.concat('.');
+    retVal.concat(ext);
+
+    return retVal;
 }
 
 Hydroponics_KeyType stringHash(String string)
@@ -249,6 +238,49 @@ String stringFromChars(const char *charsIn, size_t length)
         retVal.concat(charsIn[index]);
     }
     return retVal.length() ? retVal : String(SFP(HS_null));
+}
+
+String stringFromSpan(const TimeSpan &span)
+{
+    String retVal; retVal.reserve(12);
+
+    if (span.days()) {
+        retVal.concat(span.days());
+        retVal.concat('d');
+    }
+    if (span.hours()) {
+        if (retVal.length()) { retVal.concat(' '); }
+        retVal.concat(span.hours());
+        retVal.concat('h');
+    }
+    if (span.minutes()) {
+        if (retVal.length()) { retVal.concat(' '); }
+        retVal.concat(span.minutes());
+        retVal.concat('m');
+    }
+    if (span.seconds()) {
+        if (retVal.length()) { retVal.concat(' '); }
+        retVal.concat(span.seconds());
+        retVal.concat('s');
+    }
+
+    return retVal;
+}
+
+extern String stringFromMeasurement(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces)
+{
+    return stringFromMeasurement(measurement.value, measurement.units, additionalDecPlaces);
+}
+
+extern String stringFromMeasurement(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces)
+{
+    String retVal; retVal.reserve(12);
+
+    retVal.concat(roundForExport(value, additionalDecPlaces));
+    retVal.concat(' ');
+    retVal.concat(unitsTypeToSymbol(units));
+
+    return retVal;
 }
 
 template<>
@@ -1121,47 +1153,6 @@ bool checkPinCanInterrupt(byte pin)
     return isValidPin(digitalPinToInterrupt(pin));
 }
 
-void setupRandomSeed()
-{
-    {   auto time = rtcNow();
-        if (time > 0) { randomSeed(time); return; }
-    }
-    #if NUM_ANALOG_INPUTS >= 16
-        randomSeed(((analogRead(A15) & 0xFF) << 24) | ((analogRead(A15) & 0xFF) << 16) | ((analogRead(A15) & 0xFF) << 8) | (analogRead(A15) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 15
-        randomSeed(((analogRead(A14) & 0xFF) << 24) | ((analogRead(A14) & 0xFF) << 16) | ((analogRead(A14) & 0xFF) << 8) | (analogRead(A14) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 14
-        randomSeed(((analogRead(A13) & 0xFF) << 24) | ((analogRead(A13) & 0xFF) << 16) | ((analogRead(A13) & 0xFF) << 8) | (analogRead(A13) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 13
-        randomSeed(((analogRead(A12) & 0xFF) << 24) | ((analogRead(A12) & 0xFF) << 16) | ((analogRead(A12) & 0xFF) << 8) | (analogRead(A12) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 12
-        randomSeed(((analogRead(A11) & 0xFF) << 24) | ((analogRead(A11) & 0xFF) << 16) | ((analogRead(A11) & 0xFF) << 8) | (analogRead(A11) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 11
-        randomSeed(((analogRead(A10) & 0xFF) << 24) | ((analogRead(A10) & 0xFF) << 16) | ((analogRead(A10) & 0xFF) << 8) | (analogRead(A10) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 10
-        randomSeed(((analogRead(A9) & 0xFF) << 24) | ((analogRead(A9) & 0xFF) << 16) | ((analogRead(A9) & 0xFF) << 8) | (analogRead(A9) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 9
-        randomSeed(((analogRead(A8) & 0xFF) << 24) | ((analogRead(A8) & 0xFF) << 16) | ((analogRead(A8) & 0xFF) << 8) | (analogRead(A8) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 8
-        randomSeed(((analogRead(A7) & 0xFF) << 24) | ((analogRead(A7) & 0xFF) << 16) | ((analogRead(A7) & 0xFF) << 8) | (analogRead(A7) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 7
-        randomSeed(((analogRead(A6) & 0xFF) << 24) | ((analogRead(A6) & 0xFF) << 16) | ((analogRead(A6) & 0xFF) << 8) | (analogRead(A6) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 6
-        randomSeed(((analogRead(A5) & 0xFF) << 24) | ((analogRead(A5) & 0xFF) << 16) | ((analogRead(A5) & 0xFF) << 8) | (analogRead(A5) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 5
-        randomSeed(((analogRead(A4) & 0xFF) << 24) | ((analogRead(A4) & 0xFF) << 16) | ((analogRead(A4) & 0xFF) << 8) | (analogRead(A4) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 4
-        randomSeed(((analogRead(A3) & 0xFF) << 24) | ((analogRead(A3) & 0xFF) << 16) | ((analogRead(A3) & 0xFF) << 8) | (analogRead(A3) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 3
-        randomSeed(((analogRead(A2) & 0xFF) << 24) | ((analogRead(A2) & 0xFF) << 16) | ((analogRead(A2) & 0xFF) << 8) | (analogRead(A2) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 2
-        randomSeed(((analogRead(A1) & 0xFF) << 24) | ((analogRead(A1) & 0xFF) << 16) | ((analogRead(A1) & 0xFF) << 8) | (analogRead(A1) & 0xFF)); return;
-    #elif NUM_ANALOG_INPUTS >= 1
-        randomSeed(((analogRead(A0) & 0xFF) << 24) | ((analogRead(A0) & 0xFF) << 16) | ((analogRead(A0) & 0xFF) << 8) | (analogRead(A0) & 0xFF)); return;
-    #endif
-    randomSeed(micros());
-}
-
 
 String systemModeToString(Hydroponics_SystemMode systemMode, bool excludeSpecial)
 {
@@ -1647,13 +1638,13 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
 {
     switch (unitsType) {
         case Hydroponics_UnitsType_Raw_0_1:
-            return F("raw(01)"); // alt: raw
+            return F("raw");
         case Hydroponics_UnitsType_Percentile_0_100:
             return F("%");
         case Hydroponics_UnitsType_Alkalinity_pH_0_14:
             return F("pH");
         case Hydroponics_UnitsType_Concentration_EC:
-            return F("mS/cm"); // alt: EC, TDS
+            return F("EC"); // alt: mS/cm, TDS
         case Hydroponics_UnitsType_Temperature_Celsius:
             return F("°C");
         case Hydroponics_UnitsType_Temperature_Fahrenheit:
@@ -1672,8 +1663,8 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
             return F("mL/L");
         case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
             return F("mL/gal");
-        case Hydroponics_UnitsType_Concentration_PPM500:
-            return F("ppm(500)"); // alt: PPM
+        case Hydroponics_UnitsType_Concentration_PPM:
+            return F("ppm");
         case Hydroponics_UnitsType_Concentration_PPM640:
             return F("ppm(640)");
         case Hydroponics_UnitsType_Concentration_PPM700:
@@ -1687,7 +1678,7 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
         case Hydroponics_UnitsType_Weight_Pounds:
             return F("lbs");
         case Hydroponics_UnitsType_Power_Wattage:
-            return F("W");
+            return F("W"); // alt: J/s
         case Hydroponics_UnitsType_Power_Amperage:
             return F("A");
         case Hydroponics_UnitsType_Count:
@@ -1819,9 +1810,7 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
         }
     }
     if (unitsSymbolStr.equals(F("J/s"))) { return Hydroponics_UnitsType_Power_Wattage; }
-    if (unitsSymbolStr.equalsIgnoreCase(F("ec")) || unitsSymbolStr.equalsIgnoreCase(F("tds"))) { return Hydroponics_UnitsType_Concentration_TDS; }
-    if (unitsSymbolStr.equalsIgnoreCase(F("ppm"))) { return Hydroponics_UnitsType_Concentration_PPM; }
-    if (unitsSymbolStr.equalsIgnoreCase(F("raw"))) { return Hydroponics_UnitsType_Raw_0_1; }
+    if (unitsSymbolStr.equalsIgnoreCase(F("mS/cm")) || unitsSymbolStr.equalsIgnoreCase(F("TDS"))) { return Hydroponics_UnitsType_Concentration_TDS; }
     return Hydroponics_UnitsType_Undefined;
 }
 

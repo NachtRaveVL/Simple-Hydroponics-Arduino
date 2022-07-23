@@ -42,9 +42,9 @@ public:
     void logSystemUptime();
     void logSystemSave();
 
-    void logMessage(String msg, String suffix = String());
-    void logWarning(String warn, String suffix = String());
-    void logError(String err, String suffix = String());
+    void logMessage(String msg, String suffix1 = String(), String suffix2 = String());
+    void logWarning(String warn, String suffix1 = String(), String suffix2 = String());
+    void logError(String err, String suffix1 = String(), String suffix2 = String());
     void flush();
 
     void setLogLevel(Hydroponics_LogLevel logLevel);
@@ -62,7 +62,7 @@ protected:
 
     friend class Hydroponics;
 
-    void log(String prefix, String msg, String suffix);
+    void log(String prefix, String msg, String suffix1, String suffix2);
 
     void cleanupOldestLogs(bool force = false);
 };

@@ -5,6 +5,8 @@
 
 #include "Hydroponics.h"
 
+const PROGMEM char HS_ColonSpace[] = {": "};
+const PROGMEM char HS_DoubleSpace[] = {"  "};
 const PROGMEM char HS_Count[] = {"Count"};
 const PROGMEM char HS_csv[] = {"csv"};
 const PROGMEM char HS_Disabled[] = {"Disabled"};
@@ -14,6 +16,7 @@ const PROGMEM char HS_null[] = {"null"};
 
 const PROGMEM char HS_Err_AllocationFailure[] = {"Allocation failure"};
 const PROGMEM char HS_Err_AlreadyInitialized[] = {"Already initialized"};
+const PROGMEM char HS_Err_AssertionFailure[] = {"Assertion failure"};
 const PROGMEM char HS_Err_ExportFailure[] = {"Export failure"};
 const PROGMEM char HS_Err_ImportFailure[] = {"Import failure"};
 const PROGMEM char HS_Err_InitializationFailure[] = {"Initialization failure"};

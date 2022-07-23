@@ -6,7 +6,9 @@
 #ifndef HydroponicsStrings_H
 #define HydroponicsStrings_H
 
+extern const PROGMEM char HS_ColonSpace[];
 extern const PROGMEM char HS_Count[];
+extern const PROGMEM char HS_DoubleSpace[];
 extern const PROGMEM char HS_csv[];
 extern const PROGMEM char HS_Disabled[];
 extern const PROGMEM char HS_txt[];
@@ -15,6 +17,7 @@ extern const PROGMEM char HS_null[];
 
 extern const PROGMEM char HS_Err_AllocationFailure[];
 extern const PROGMEM char HS_Err_AlreadyInitialized[];
+extern const PROGMEM char HS_Err_AssertionFailure[];
 extern const PROGMEM char HS_Err_ExportFailure[];
 extern const PROGMEM char HS_Err_ImportFailure[];
 extern const PROGMEM char HS_Err_InitializationFailure[];

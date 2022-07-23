@@ -580,8 +580,7 @@ void Hydroponics::commonPreInit()
 {
     if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
     if (isValidPin(_sdCardCSPin)) {
-        getSPI()->begin();
-        // some archs won't init pinMode/set CS high, so we do it manually to be on the safe side
+        getSPI()->begin(); // some archs won't init pinMode/set CS high, so we do it manually to be on the safe side
         pinMode(_sdCardCSPin, OUTPUT);
         digitalWrite(_sdCardCSPin, HIGH);
     }
@@ -1104,7 +1103,7 @@ void Hydroponics::setWiFiConnection(String ssid, String password)
             }
 
             if (password.length()) {
-                setupRandomSeed();
+                randomSeed(unixNow());
                 _systemData->wifiPasswordSeed = random(1, RANDOM_MAX);
 
                 randomSeed(_systemData->wifiPasswordSeed);
@@ -1183,7 +1182,7 @@ RTC_DS3231 *Hydroponics::getRealTimeClock(bool begin)
             bool rtcBattFailBefore = _rtcBattFail;
             _rtcBattFail = _rtc->lostPower();
             if (_rtcBattFail && !rtcBattFailBefore) {
-                logWarning(F("RTC battery failure, time needs reset."));
+                _logger.logWarning(F("RTC battery failure, time needs reset."));
             }
         } else {
             deallocateRTC();
