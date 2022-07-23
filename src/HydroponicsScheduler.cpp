@@ -636,7 +636,7 @@ void HydroponicsProcess::clearActuatorReqs()
 void HydroponicsProcess::setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn)
 {
     for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
-        if (*actuatorIter) {
+        if ((*actuatorIter)) {
             bool found = false;
             auto key = (*actuatorIter)->getKey();
             for (auto actuatorInIter = actuatorReqsIn.begin(); actuatorInIter != actuatorReqsIn.end(); ++actuatorInIter) {
