@@ -11,7 +11,7 @@ HydroponicsCrop *newCropObjectFromData(const HydroponicsCropData *dataIn)
     HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
-        switch(dataIn->id.object.classType) {
+        switch (dataIn->id.object.classType) {
             case 0: // Timed
                 return new HydroponicsTimedCrop((const HydroponicsTimedCropData *)dataIn);
             case 1: // Adaptive
@@ -98,11 +98,6 @@ bool HydroponicsCrop::removeSensor(HydroponicsSensor *sensor)
 bool HydroponicsCrop::hasSensor(HydroponicsSensor *sensor) const
 {
     return hasLinkage(sensor);
-}
-
-Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsCrop::getSensors() const
-{
-    return linksFilterSensors(_links);
 }
 
 void HydroponicsCrop::setFeedReservoir(HydroponicsIdentity reservoirId)

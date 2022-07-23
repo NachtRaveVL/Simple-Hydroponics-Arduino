@@ -348,6 +348,9 @@ public:
     // Called to notify system when RTC time is updated (also clears RTC battery failure flag)
     void notifyRTCTimeUpdated();
 
+    // Called by scheduler to announce that a significant time event has occurred
+    void notifyDayChanged();
+
 protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init)
 

@@ -37,7 +37,7 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
 {
     switch (idType) {
         case 0: // Actuator
-            switch(classType) {
+            switch (classType) {
                 case 0: // Relay
                     return new HydroponicsRelayActuatorData();
                 case 1: // Pump Relay
@@ -49,7 +49,7 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
             break;
 
         case 1: // Sensor
-            switch(classType) {
+            switch (classType) {
                 case 0: // Binary
                     return new HydroponicsBinarySensorData();
                 case 1: // Analog
@@ -63,7 +63,7 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
             break;
 
         case 2: // Crop
-            switch(classType) {
+            switch (classType) {
                 case 0: // Timed
                     return new HydroponicsTimedCropData();
                 case 1: // Adaptive
@@ -73,7 +73,7 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
             break;
 
         case 3: // Reservoir
-            switch(classType) {
+            switch (classType) {
                 case 0: // Fluid
                     return new HydroponicsFluidReservoirData();
                 case 1: // Feed
@@ -85,7 +85,7 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
             break;
 
         case 4: // Rail
-            switch(classType) {
+            switch (classType) {
                 case 0: // Simple
                     return new HydroponicsSimpleRailData();
                 case 1: // Regulated

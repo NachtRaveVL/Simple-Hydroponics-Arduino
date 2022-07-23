@@ -69,36 +69,54 @@ Hydroponics_UnitsType HydroponicsBalancer::getTargetUnits() const
     return _targetUnits;
 }
 
-void HydroponicsBalancer::setIncrementActuators(const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &incActuators)
+void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators)
 {
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
-        if (incActuators.find(actuatorIter->first) == incActuators.end()) {
-            auto actuator = actuatorIter->second.first;
-            if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
+        if (actuatorIter->first) {
+            bool found = false;
+            for (auto actuatorInIter = incActuators.begin(); actuatorInIter != incActuators.end(); ++actuatorInIter) {
+                if (actuatorIter->first == actuatorInIter->first) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found && actuatorIter->first->getIsEnabled()) {
+                actuatorIter->first->disableActuator();
+            }
         }
     }
 
     _incActuators = incActuators;
 }
 
-void HydroponicsBalancer::setDecrementActuators(const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &decActuators)
+void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators)
 {
     for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
-        if (decActuators.find(actuatorIter->first) == decActuators.end()) {
-            auto actuator = actuatorIter->second.first;
-            if (actuator && actuator->getIsEnabled()) { actuator->disableActuator(); }
+        if (actuatorIter->first) {
+            bool found = false;
+            for (auto actuatorInIter = decActuators.begin(); actuatorInIter != decActuators.end(); ++actuatorInIter) {
+                if (actuatorIter->first == actuatorInIter->first) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found && actuatorIter->first->getIsEnabled()) {
+                actuatorIter->first->disableActuator();
+            }
         }
     }
 
     _decActuators = decActuators;
 }
 
-const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &HydroponicsBalancer::getIncrementActuators()
+const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &HydroponicsBalancer::getIncrementActuators()
 {
     return _incActuators;
 }
 
-const Map<Hydroponics_KeyType, Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_ACTUATORS_MAXSIZE>::type &HydroponicsBalancer::getDecrementActuators()
+const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &HydroponicsBalancer::getDecrementActuators()
 {
     return _decActuators;
 }
@@ -130,7 +148,7 @@ float HydroponicsBalancer::getTargetRange() const
 void HydroponicsBalancer::disableIncActuators()
 {
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
-        auto actuator = actuatorIter->second.first;
+        auto actuator = actuatorIter->first;
         if (actuator) { actuator->disableActuator(); }
     }
 }
@@ -138,7 +156,7 @@ void HydroponicsBalancer::disableIncActuators()
 void HydroponicsBalancer::disableDecActuators()
 {
     for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
-        auto actuator = actuatorIter->second.first;
+        auto actuator = actuatorIter->first;
         if (actuator) { actuator->disableActuator(); }
     }
 }
@@ -216,11 +234,15 @@ void HydroponicsLinearEdgeBalancer::update()
                                                   : (x >= _edgeOffset - FLT_EPSILON ? 1.0 : 0.0f);
             val = constrain(val, 0.0f, 1.0f);
 
-            typeof(_incActuators) &actuatorsDir = _balancerState == Hydroponics_BalancerState_TooLow ? _incActuators : _decActuators;
-            for (auto iter = actuatorsDir.begin(); iter != actuatorsDir.end(); ++iter) {
-                auto actuator = iter->second.first;
-                if (actuator) {
-                    actuator->enableActuator(val * iter->second.second);
+            if (_balancerState == Hydroponics_BalancerState_TooLow) {
+                for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
+                    auto actuator = actuatorIter->first;
+                    if (actuator) { actuator->enableActuator(val * actuatorIter->second); }
+                }
+            } else {
+                for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
+                    auto actuator = actuatorIter->first;
+                    if (actuator) { actuator->enableActuator(val * actuatorIter->second); }
                 }
             }
         }
@@ -268,36 +290,35 @@ void HydroponicsTimedDosingBalancer::update()
         performDosing();
     }
 
-    if (_dosingActIndex >= 0) {
-        typeof(_incActuators) &actuatorsDir = _dosingDir == Hydroponics_BalancerState_TooLow ? _incActuators : _decActuators;
+    if (_dosingActIndex >= 0) { // has dosing that needs performed
+        if (_dosingDir == Hydroponics_BalancerState_TooLow) {
+            while (_dosingActIndex < _incActuators.size()) {
+                auto actuatorIter = _incActuators.begin();
+                for (int actuatorIndex = 0; actuatorIter != _incActuators.end() && actuatorIndex != _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
+                if (actuatorIter != _incActuators.end()) {
+                    performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
+                                  actuatorIter->second * _dosingMillis);
+                } else { break; }
+            }
 
-        while (_dosingActIndex < actuatorsDir.size()) {
-            auto iter = actuatorsDir.begin();
-            for (int actIndex = 0; iter != actuatorsDir.end() && actIndex != _dosingActIndex; ++iter, ++actIndex) { ; }
-            if (iter != actuatorsDir.end()) {
-                auto actuator = static_pointer_cast<HydroponicsActuator>(iter->second.first);
-                time_t timeMillis = iter->second.second * _dosingMillis;
+            if (_dosingActIndex >= _incActuators.size()) {
+                _dosingActIndex = -1; // dosing completed
+            }
+        } else {
+            while (_dosingActIndex < _decActuators.size()) {
+                auto actuatorIter = _decActuators.begin();
+                for (int actuatorIndex = 0; actuatorIter != _decActuators.end() && actuatorIndex != _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
+                if (actuatorIter != _decActuators.end()) {
+                    performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
+                                  actuatorIter->second * _dosingMillis);
+                } else { break; }
+            }
 
-                if (actuator && actuator->isAnyPumpClass()) {
-                    ((HydroponicsPumpObjectInterface *)(actuator.get()))->pump(timeMillis); // pumps have nice logging output
-                } else if (actuator) {
-                    #ifndef HYDRUINO_DISABLE_MULTITASKING
-                        scheduleActuatorTimedEnableOnce(actuator, timeMillis);
-                        _dosingActIndex++;
-                    #else
-                        actuator->enableActuator();
-                        delayFine(timeMillis);
-                        actuator->disableActuator();
-                        _dosingActIndex++;
-                        break; // only once per call
-                    #endif
-                }
-            } else { break; }
+            if (_dosingActIndex >= _decActuators.size()) {
+                _dosingActIndex = -1; // dosing completed
+            }
         }
-
-        if (_dosingActIndex >= actuatorsDir.size()) {
-            _dosingActIndex = -1; // dosing completed
-        }
+        
     }
 }
 
@@ -315,9 +336,12 @@ void HydroponicsTimedDosingBalancer::performDosing()
 {
     auto sensor = _rangeTrigger ? _rangeTrigger->getSensor() : nullptr;
     if (sensor) {
-        if (_dosingDir != _balancerState) {
+        if (_dosingDir != _balancerState) { // reset dir control on dir change
             _dosingMillis = 0;
-            _dosingDir = _balancerState;
+            _dosingActIndex = 0;
+            _dosingDir = Hydroponics_BalancerState_Undefined;
+            disableIncActuators();
+            disableDecActuators();
         }
 
         float dosingMillis = _baseDosingMillis;
@@ -328,10 +352,30 @@ void HydroponicsTimedDosingBalancer::performDosing()
             dosingMillis = constrain(dosingMillis, _baseDosingMillis * HYDRUINO_DOSETIME_FRACTION_MIN,
                                                    _baseDosingMillis * HYDRUINO_DOSETIME_FRACTION_MAX);
         }
+
         _lastDosingValue = dosingValue;
         _dosingMillis = dosingMillis;
         _dosingActIndex = 0;
+        _dosingDir = _balancerState;
 
         _lastDosingTime = unixNow();
+    }
+}
+
+void HydroponicsTimedDosingBalancer::performDosing(shared_ptr<HydroponicsActuator> actuator, time_t timeMillis)
+{
+    if (actuator && actuator->isAnyPumpClass()) {
+        ((HydroponicsPumpObjectInterface *)(actuator.get()))->pump(timeMillis); // pumps have nice logging output
+    } else if (actuator) {
+        #ifndef HYDRUINO_DISABLE_MULTITASKING
+            scheduleActuatorTimedEnableOnce(actuator, timeMillis);
+            _dosingActIndex++;
+        #else
+            actuator->enableActuator();
+            delayFine(timeMillis);
+            actuator->disableActuator();
+            _dosingActIndex++;
+            break; // only once per call
+        #endif
     }
 }

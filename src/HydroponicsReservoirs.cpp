@@ -11,7 +11,7 @@ HydroponicsReservoir *newReservoirObjectFromData(const HydroponicsReservoirData 
     HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
-        switch(dataIn->id.object.classType) {
+        switch (dataIn->id.object.classType) {
             case 0: // Fluid
                 return new HydroponicsFluidReservoir((const HydroponicsFluidReservoirData *)dataIn);
             case 1: // Feed
@@ -113,11 +113,6 @@ bool HydroponicsReservoir::hasActuator(HydroponicsActuator *actuator) const
     return hasLinkage(actuator);
 }
 
-Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsReservoir::getActuators() const
-{
-    return linksFilterActuators(_links);
-}
-
 bool HydroponicsReservoir::addSensor(HydroponicsSensor *sensor)
 {
     return addLinkage(sensor);
@@ -133,11 +128,6 @@ bool HydroponicsReservoir::hasSensor(HydroponicsSensor *sensor) const
     return hasLinkage(sensor);
 }
 
-Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsReservoir::getSensors() const
-{
-    return linksFilterSensors(_links);
-}
-
 bool HydroponicsReservoir::addCrop(HydroponicsCrop *crop)
 {
     return addLinkage(crop);
@@ -151,11 +141,6 @@ bool HydroponicsReservoir::removeCrop(HydroponicsCrop *crop)
 bool HydroponicsReservoir::hasCrop(HydroponicsCrop *crop) const
 {
     return hasLinkage(crop);
-}
-
-Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsReservoir::getCrops() const
-{
-    return linksFilterCrops(_links);
 }
 
 Hydroponics_ReservoirType HydroponicsReservoir::getReservoirType() const
@@ -889,7 +874,7 @@ const HydroponicsSingleMeasurement &HydroponicsFeedReservoir::getAirCO2()
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits)
 {
     if (!_waterPHBalancer && getWaterPHSensor()) {
-        _waterPHBalancer = new HydroponicsTimedDosingBalancer(getWaterPHSensor(), phSetpoint, HYDRUINO_RANGEFORM_PH_HALF, _maxVolume, _volumeUnits);
+        _waterPHBalancer = new HydroponicsTimedDosingBalancer(getWaterPHSensor(), phSetpoint, HYDRUINO_RANGE_PH_HALF, _maxVolume, _volumeUnits);
         HYDRUINO_SOFT_ASSERT(_waterPHBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_waterPHBalancer) {
@@ -915,7 +900,7 @@ HydroponicsBalancer *HydroponicsFeedReservoir::getWaterPHBalancer() const
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits)
 {
     if (!_waterTDSBalancer && getWaterTDSSensor()) {
-        _waterTDSBalancer = new HydroponicsTimedDosingBalancer(getWaterTDSSensor(), tdsSetpoint, HYDRUINO_RANGEFORM_EC_HALF, _maxVolume, _volumeUnits);
+        _waterTDSBalancer = new HydroponicsTimedDosingBalancer(getWaterTDSSensor(), tdsSetpoint, HYDRUINO_RANGE_EC_HALF, _maxVolume, _volumeUnits);
         HYDRUINO_SOFT_ASSERT(_waterTDSBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_waterTDSBalancer) {
@@ -941,8 +926,8 @@ HydroponicsBalancer *HydroponicsFeedReservoir::getWaterTDSBalancer() const
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterTempBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits)
 {
     if (!_waterTempBalancer && getWaterTempSensor()) {
-        auto tempRangeQuad = HYDRUINO_RANGEFORM_TEMP_HALF * 0.5f;
-        _waterTempBalancer = new HydroponicsLinearEdgeBalancer(getWaterTempSensor(), tempSetpoint, HYDRUINO_RANGEFORM_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
+        auto tempRangeQuad = HYDRUINO_RANGE_TEMP_HALF * 0.5f;
+        _waterTempBalancer = new HydroponicsLinearEdgeBalancer(getWaterTempSensor(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
         HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_waterTempBalancer) {
@@ -968,8 +953,8 @@ HydroponicsBalancer *HydroponicsFeedReservoir::getWaterTempBalancer() const
 HydroponicsBalancer *HydroponicsFeedReservoir::setAirTempBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits)
 {
     if (!_airTempBalancer && getAirTempSensor()) {
-        auto tempRangeQuad = HYDRUINO_RANGEFORM_TEMP_HALF * 0.5f;
-        _airTempBalancer = new HydroponicsLinearEdgeBalancer(getAirTempSensor(), tempSetpoint, HYDRUINO_RANGEFORM_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
+        auto tempRangeQuad = HYDRUINO_RANGE_TEMP_HALF * 0.5f;
+        _airTempBalancer = new HydroponicsLinearEdgeBalancer(getAirTempSensor(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
         HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_airTempBalancer) {
@@ -995,8 +980,8 @@ HydroponicsBalancer *HydroponicsFeedReservoir::getAirTempBalancer() const
 HydroponicsBalancer *HydroponicsFeedReservoir::setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits)
 {
     if (!_airCO2Balancer && getAirCO2Sensor()) {
-        auto co2RangeQuad = HYDRUINO_RANGEFORM_CO2_HALF * 0.5f;
-        _airCO2Balancer = new HydroponicsLinearEdgeBalancer(getAirCO2Sensor(), co2Setpoint, HYDRUINO_RANGEFORM_CO2_HALF, -co2RangeQuad * 0.5f, co2RangeQuad);
+        auto co2RangeQuad = HYDRUINO_RANGE_CO2_HALF * 0.5f;
+        _airCO2Balancer = new HydroponicsLinearEdgeBalancer(getAirCO2Sensor(), co2Setpoint, HYDRUINO_RANGE_CO2_HALF, -co2RangeQuad * 0.5f, co2RangeQuad);
         HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_airCO2Balancer) {

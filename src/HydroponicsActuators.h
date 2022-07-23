@@ -136,8 +136,8 @@ public:
     virtual void setFlowRateUnits(Hydroponics_UnitsType flowRateUnits) override;
     virtual Hydroponics_UnitsType getFlowRateUnits() const override;
 
-    virtual void setOutputReservoir(HydroponicsIdentity outputReservoirId) override;
-    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> outputReservoir) override;
+    virtual void setOutputReservoir(HydroponicsIdentity destReservoirId) override;
+    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> destReservoir) override;
     virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() override;
 
     virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
@@ -160,7 +160,7 @@ protected:
     float _pumpVolumeAcc;                                   // Accumulator for total volume of fluid pumped
     time_t _pumpTimeBegMillis;                              // Time millis pump was activated at
     time_t _pumpTimeAccMillis;                              // Time millis pump has been accumulated up to
-    HydroponicsDLinkObject<HydroponicsReservoir> _outputReservoir; // Output reservoir linkage
+    HydroponicsDLinkObject<HydroponicsReservoir> _destReservoir; // Output reservoir linkage
     HydroponicsDLinkObject<HydroponicsSensor> _flowRateSensor; // Flow rate sensor linkage
 
     virtual void saveToData(HydroponicsData *dataOut) override;
@@ -237,7 +237,7 @@ struct HydroponicsPumpRelayActuatorData : public HydroponicsRelayActuatorData
 {
     Hydroponics_UnitsType flowRateUnits;
     HydroponicsMeasurementData contFlowRate;
-    char outputReservoir[HYDRUINO_NAME_MAXSIZE];
+    char destReservoir[HYDRUINO_NAME_MAXSIZE];
     char flowRateSensor[HYDRUINO_NAME_MAXSIZE];
 
     HydroponicsPumpRelayActuatorData();

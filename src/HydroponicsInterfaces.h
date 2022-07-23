@@ -59,7 +59,6 @@ public:
     virtual bool addActuator(HydroponicsActuator *actuator) = 0;
     virtual bool removeActuator(HydroponicsActuator *actuator) = 0;
     virtual bool hasActuator(HydroponicsActuator *actuator) const = 0;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getActuators() const = 0;
 };
 
 // Sensor Attachments Interface
@@ -68,7 +67,6 @@ public:
     virtual bool addSensor(HydroponicsSensor *sensor) = 0;
     virtual bool removeSensor(HydroponicsSensor *sensor) = 0;
     virtual bool hasSensor(HydroponicsSensor *sensor) const = 0;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getSensors() const = 0;
 };
 
 // Crop Attachments Interface
@@ -77,7 +75,6 @@ public:
     virtual bool addCrop(HydroponicsCrop *crop) = 0;
     virtual bool removeCrop(HydroponicsCrop *crop) = 0;
     virtual bool hasCrop(HydroponicsCrop *crop) const = 0;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getCrops() const = 0;
 };
 
 // Reservoir Attachments Interface
@@ -86,7 +83,6 @@ public:
     virtual bool addReservoir(HydroponicsReservoir *reservoir) = 0;
     virtual bool removeReservoir(HydroponicsReservoir *reservoir) = 0;
     virtual bool hasReservoir(HydroponicsReservoir *reservoir) const = 0;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getReservoirs() const = 0;
 };
 
 // Rail Attachments Interface
@@ -95,7 +91,6 @@ public:
     virtual bool addRail(HydroponicsRail *rail) = 0;
     virtual bool removeRail(HydroponicsRail *rail) = 0;
     virtual bool hasRail(HydroponicsRail *rail) const = 0;
-    virtual Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getRails() const = 0;
 };
 
 
@@ -224,8 +219,8 @@ public:
     virtual void setFlowRateUnits(Hydroponics_UnitsType flowRateUnits) = 0;
     virtual Hydroponics_UnitsType getFlowRateUnits() const = 0;
 
-    virtual void setOutputReservoir(HydroponicsIdentity outputReservoirId) = 0;
-    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> outputReservoir) = 0;
+    virtual void setOutputReservoir(HydroponicsIdentity destReservoirId) = 0;
+    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> destReservoir) = 0;
     virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() = 0;
 
     virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;

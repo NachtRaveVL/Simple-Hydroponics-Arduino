@@ -11,7 +11,7 @@ HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
     HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
-        switch(dataIn->id.object.classType) {
+        switch (dataIn->id.object.classType) {
             case 0: // Simple
                 return new HydroponicsSimpleRail((const HydroponicsSimpleRailData *)dataIn);
             case 1: // Regulated
@@ -85,11 +85,6 @@ bool HydroponicsRail::hasActuator(HydroponicsActuator *actuator) const
     return hasLinkage(actuator);
 }
 
-Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsRail::getActuators() const
-{
-    return linksFilterActuators(_links);
-}
-
 bool HydroponicsRail::addSensor(HydroponicsSensor *sensor)
 {
     return addLinkage(sensor);
@@ -103,11 +98,6 @@ bool HydroponicsRail::removeSensor(HydroponicsSensor *sensor)
 bool HydroponicsRail::hasSensor(HydroponicsSensor *sensor) const
 {
     return hasLinkage(sensor);
-}
-
-Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsRail::getSensors() const
-{
-    return linksFilterSensors(_links);
 }
 
 Hydroponics_RailType HydroponicsRail::getRailType() const
@@ -170,7 +160,7 @@ HydroponicsSimpleRail::HydroponicsSimpleRail(const HydroponicsSimpleRailData *da
 HydroponicsSimpleRail::~HydroponicsSimpleRail()
 {
     {   auto actuators = linksFilterActuators(_links);
-        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
+        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(*iter)); }
     }
 }
 
@@ -254,7 +244,7 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
 HydroponicsRegulatedRail::~HydroponicsRegulatedRail()
 {
     {   auto actuators = linksFilterActuators(_links);
-        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(iter->second)); }
+        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(*iter)); }
     }
     if (_powerSensor) { detachPowerSensor(); }
     if (_limitTrigger) { detachLimitTrigger(); delete _limitTrigger; _limitTrigger = nullptr; }
