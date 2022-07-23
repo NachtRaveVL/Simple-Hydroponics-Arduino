@@ -1056,7 +1056,7 @@ void Hydroponics::setControlInputPinMap(byte *pinMap)
 void Hydroponics::setSystemName(String systemName)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
-    if (_systemData) {
+    if (_systemData && !systemName.equals(getSystemName())) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
         // TODO: notify GUI to update
@@ -1066,7 +1066,7 @@ void Hydroponics::setSystemName(String systemName)
 void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
-    if (_systemData) {
+    if (_systemData && _systemData->timeZoneOffset != timeZoneOffset) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
         // TODO: notify GUI to update
@@ -1077,15 +1077,23 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
 void Hydroponics::setPollingInterval(uint16_t pollingInterval)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
-    if (_systemData) {
+    if (_systemData && _systemData->pollingInterval != pollingInterval) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->pollingInterval = pollingInterval;
+
+        #ifndef HYDRUINO_DISABLE_MULTITASKING
+            if (_dataTaskId != TASKMGR_INVALIDID) {
+                auto dataTask = taskManager.getTask(_dataTaskId);
+                if (dataTask) {
+                    bool enabled = dataTask->isEnabled();
+                    auto next = dataTask->getNext();
+                    dataTask->handleScheduling(getPollingInterval(), TIME_MILLIS, true);
+                    dataTask->setNext(next);
+                    dataTask->setEnabled(enabled);
+                }
+            }
+        #endif
     }
-    #ifdef HYDRUINO_USE_TASKSCHEDULER
-        if (_dataTask) {
-            _dataTask->setInterval(getPollingInterval() * TASK_MILLISECOND);
-        }
-    #endif
 }
 
 void Hydroponics::setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint16_t autosaveInterval)
