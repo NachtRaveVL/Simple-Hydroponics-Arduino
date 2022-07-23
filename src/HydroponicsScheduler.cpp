@@ -950,15 +950,15 @@ void HydroponicsFeeding::update()
                     getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreFeedAeratorMins), aeratorMinsStr);
                 }
                 {   auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Setpoint), measurementToString(ph));
                 }
                 {   auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
                     convertUnits(&tds, feedRes->getTDSUnits());
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
                 }
                 {   auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
                     convertUnits(&temp, feedRes->getTemperatureUnits());
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
                 }
             }
         } break;
@@ -1040,17 +1040,17 @@ void HydroponicsFeeding::broadcastFeedingBegan()
 
     if (feedRes->getWaterPHSensor()) {
         auto ph = feedRes->getWaterPH();
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Measured), measurementToString(ph));
     }
     if (feedRes->getWaterTDSSensor()) {
         auto tds = feedRes->getWaterTDS();
         convertUnits(&tds, feedRes->getTDSUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Measured), measurementToString(tds, 1));
     }
     if (feedRes->getWaterTempSensor()) {
         auto temp = feedRes->getWaterTemperature();
         convertUnits(&temp, feedRes->getTemperatureUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
     }
 
     feedRes->notifyFeedingBegan();
@@ -1195,13 +1195,16 @@ void HydroponicsLighting::update()
                 setupStaging();
 
                 if (lightStart > sprayStart) {
-                    String sprayMinsStr; sprayMinsStr.reserve(8);
-                    sprayMinsStr.concat(SFP(HS_ColonSpace));
-                    sprayMinsStr.concat(getSchedulerInstance()->getPreLightSprayMins());
-                    sprayMinsStr.concat('m');
-
                     getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_PreLightSpraying), SFP(HS_Log_HasBegan));
-                    getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreLightSprayMins), sprayMinsStr);
+                    {   String sprayMinsStr; sprayMinsStr.reserve(8);
+                        sprayMinsStr.concat(SFP(HS_ColonSpace));
+                        sprayMinsStr.concat(getSchedulerInstance()->getPreLightSprayMins());
+                        sprayMinsStr.concat('m');
+
+                        getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreLightSprayMins), sprayMinsStr);
+                    }
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Start), DateTime((uint32_t)sprayStart).timestamp(DateTime::TIMESTAMP_TIME));
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Finish), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
                 }
             }
         } break;
@@ -1211,14 +1214,16 @@ void HydroponicsLighting::update()
                 stage = Light; stageStart = unixNow();
                 setupStaging();
 
+                getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasBegan));
                 {   String lightHrsStr; lightHrsStr.reserve(8);
                     lightHrsStr.concat(SFP(HS_ColonSpace));
                     lightHrsStr.concat(roundToString(lightHours));
                     lightHrsStr.concat('h');
 
-                    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasBegan));
                     getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_DailyLightHours), lightHrsStr);
                 }
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Start), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Finish), DateTime((uint32_t)lightEnd).timestamp(DateTime::TIMESTAMP_TIME));
             } else {
                 stage = Done; stageStart = unixNow();
                 setupStaging();
@@ -1231,12 +1236,12 @@ void HydroponicsLighting::update()
                 stage = Done; stageStart = unixNow();
                 setupStaging();
 
+                getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasEnded));
                 {   String lightHrsStr; lightHrsStr.reserve(16);
                     lightHrsStr.concat(SFP(HS_ColonSpace));
                     lightHrsStr.concat(timeSpanToString(elapsedTime));
 
-                    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasEnded));
-                    getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_DailyLightHours), lightHrsStr);
+                    getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Log_Field_Time_Measured), lightHrsStr);
                 }
             }
         } break;

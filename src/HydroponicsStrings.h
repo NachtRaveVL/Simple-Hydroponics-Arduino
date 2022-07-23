@@ -31,7 +31,7 @@ extern const PROGMEM char HS_Err_OperationFailure[];
 extern const PROGMEM char HS_Err_ParameterMismatch[];
 extern const PROGMEM char HS_Err_UnsupportedOperation[];
 
-extern const PROGMEM char HS_Log_EstimatedPumping[];
+extern const PROGMEM char HS_Log_CalculatedPumping[];
 extern const PROGMEM char HS_Log_FeedingSequence[];
 extern const PROGMEM char HS_Log_HasBegan[];
 extern const PROGMEM char HS_Log_HasDisabled[];
@@ -45,11 +45,18 @@ extern const PROGMEM char HS_Log_PreLightSpraying[];
 extern const PROGMEM char HS_Log_SystemDataSaved[];
 extern const PROGMEM char HS_Log_SystemUptime[];
 
-extern const PROGMEM char HS_Log_Field_pH[];
-extern const PROGMEM char HS_Log_Field_TDS[];
-extern const PROGMEM char HS_Log_Field_Temp[];
-extern const PROGMEM char HS_Log_Field_Time[];
-extern const PROGMEM char HS_Log_Field_Vol[];
+extern const PROGMEM char HS_Log_Field_pH_Setpoint[];
+extern const PROGMEM char HS_Log_Field_TDS_Setpoint[];
+extern const PROGMEM char HS_Log_Field_Temp_Setpoint[];
+extern const PROGMEM char HS_Log_Field_Time_Calculated[];
+extern const PROGMEM char HS_Log_Field_Vol_Calculated[];
+extern const PROGMEM char HS_Log_Field_pH_Measured[];
+extern const PROGMEM char HS_Log_Field_TDS_Measured[];
+extern const PROGMEM char HS_Log_Field_Temp_Measured[];
+extern const PROGMEM char HS_Log_Field_Time_Measured[];
+extern const PROGMEM char HS_Log_Field_Vol_Measured[];
+extern const PROGMEM char HS_Log_Field_Time_Start[];
+extern const PROGMEM char HS_Log_Field_Time_Finish[];
 
 extern const PROGMEM char HS_Key_ActiveLow[];
 extern const PROGMEM char HS_Key_AdditiveName[];

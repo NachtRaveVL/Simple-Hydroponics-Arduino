@@ -280,6 +280,9 @@ public:
     // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
     void setWiFiConnection(String ssid, String password);
 
+    // Sets the RTC's time to the passed time, with respect to set timezone. Will trigger significant time event.
+    void setRealTimeClockTime(DateTime time);
+
     // Accessors.
 
     // Currently active Hydroponics instance
