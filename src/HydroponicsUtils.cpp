@@ -229,7 +229,7 @@ Hydroponics_KeyType stringHash(String string)
     return hash != (Hydroponics_KeyType)-1 ? hash : 5381;
 }
 
-String stringFromChars(const char *charsIn, size_t length)
+String charsToString(const char *charsIn, size_t length)
 {
     if (!charsIn || !length) { return String(SFP(HS_null)); }
     String retVal; retVal.reserve(length);
@@ -239,7 +239,7 @@ String stringFromChars(const char *charsIn, size_t length)
     return retVal.length() ? retVal : String(SFP(HS_null));
 }
 
-String stringFromSpan(const TimeSpan &span)
+String timeSpanToString(const TimeSpan &span)
 {
     String retVal; retVal.reserve(12);
 
@@ -266,16 +266,16 @@ String stringFromSpan(const TimeSpan &span)
     return retVal;
 }
 
-extern String stringFromMeasurement(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces)
+extern String measurementToString(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces)
 {
-    return stringFromMeasurement(measurement.value, measurement.units, additionalDecPlaces);
+    return measurementToString(measurement.value, measurement.units, additionalDecPlaces);
 }
 
-extern String stringFromMeasurement(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces)
+extern String measurementToString(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces)
 {
     String retVal; retVal.reserve(12);
+    retVal.concat(roundToString(value, additionalDecPlaces));
 
-    retVal.concat(roundForExport(value, additionalDecPlaces));
     String unitsSym = unitsTypeToSymbol(units, true); // also excludes dimensionless, e.g. pH
     if (unitsSym.length()) {
         retVal.concat(' ');
@@ -1024,7 +1024,7 @@ Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode mea
     }
 }
 
-int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode)
+int defaultDecimalPlaces(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
         auto hydroponics = getHydroponicsInstance();

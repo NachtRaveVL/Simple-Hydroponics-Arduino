@@ -236,13 +236,13 @@ extern Hydroponics_KeyType stringHash(String string);
 
 // Returns a string from char array with an exact max length.
 // Null array or invalid length will abort function before encoding occurs, returning "null".
-extern String stringFromChars(const char *charsIn, size_t length);
+extern String charsToString(const char *charsIn, size_t length);
 // Returns a string formatted to deal with variable time spans.
-extern String stringFromSpan(const TimeSpan &span);
+extern String timeSpanToString(const TimeSpan &span);
 // Returns a string formatted to value and unit for dealing with measurements.
-extern String stringFromMeasurement(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces = 0);
+extern String measurementToString(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces = 0);
 // Returns a string formatted to value and unit for dealing with measurements as value/units pair.
-extern String stringFromMeasurement(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces = 0);
+extern String measurementToString(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces = 0);
 
 // Encodes a T-typed array to a comma-separated string.
 // Null array or invalid length will abort function before encoding occurs, returning "null".
@@ -330,10 +330,12 @@ extern Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode 
 // Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
 extern Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern int defaultDecimalPlacesRounding(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+extern int defaultDecimalPlaces(Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 
 // Rounds value according to default decimal places rounding, as typically used for data export, with optional additional decimal places.
-inline float roundForExport(float value, unsigned int additionalDecPlaces = 0) { return roundToDecimalPlaces(value, defaultDecimalPlacesRounding() + additionalDecPlaces); }
+inline float roundForExport(float value, unsigned int additionalDecPlaces = 0) { return roundToDecimalPlaces(value, defaultDecimalPlaces() + additionalDecPlaces); }
+// Rounds value according to default decimal places rounding, as typically used for data export, to string with optional additional decimal places.
+inline String roundToString(float value, unsigned int additionalDecPlaces = 0) { return String(roundToDecimalPlaces(value, defaultDecimalPlaces() + additionalDecPlaces), defaultDecimalPlaces() + additionalDecPlaces); }
 
 // Linkages & Filtering
 

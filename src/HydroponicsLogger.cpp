@@ -99,7 +99,7 @@ void HydroponicsLogger::logSystemUptime()
     TimeSpan elapsed(unixNow() - _initDate);
 
     if (elapsed.totalseconds()) {
-        logMessage(SFP(HS_Log_SystemUptime), stringFromSpan(elapsed));
+        logMessage(SFP(HS_Log_SystemUptime), timeSpanToString(elapsed));
     }
 }
 
@@ -205,7 +205,7 @@ time_t HydroponicsLogger::getSystemUptime() const
 void HydroponicsLogger::notifyDayChanged()
 {
     if (getIsLoggingEnabled()) {
-        _logFileName = getYYMMDDFilename(stringFromChars(_loggerData->logFilePrefix, 16), SFP(HS_txt));
+        _logFileName = getYYMMDDFilename(charsToString(_loggerData->logFilePrefix, 16), SFP(HS_txt));
         cleanupOldestLogs();
     }
 }
@@ -232,7 +232,7 @@ void HydroponicsLoggerSubData::toJSONObject(JsonObject &objectOut) const
     //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
     if (logLevel != Hydroponics_LogLevel_All) { objectOut[SFP(HS_Key_LogLevel)] = logLevel; }
-    if (logFilePrefix[0]) { objectOut[SFP(HS_Key_LogFilePrefix)] = stringFromChars(logFilePrefix, 16); }
+    if (logFilePrefix[0]) { objectOut[SFP(HS_Key_LogFilePrefix)] = charsToString(logFilePrefix, 16); }
     if (logToSDCard != false) { objectOut[SFP(HS_Key_LogToSDCard)] = logToSDCard; }
 }
 

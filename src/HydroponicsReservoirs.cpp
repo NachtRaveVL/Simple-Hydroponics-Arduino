@@ -1280,7 +1280,7 @@ void HydroponicsFluidReservoirData::toJSONObject(JsonObject &objectOut) const
     HydroponicsReservoirData::toJSONObject(objectOut);
 
     objectOut[SFP(HS_Key_MaxVolume)] = maxVolume;
-    if (volumeSensor[0]) { objectOut[SFP(HS_Key_VolumeSensor)] = stringFromChars(volumeSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (volumeSensor[0]) { objectOut[SFP(HS_Key_VolumeSensor)] = charsToString(volumeSensor, HYDRUINO_NAME_MAXSIZE); }
     if (filledTrigger.type != -1) {
         JsonObject filledTriggerObj = objectOut.createNestedObject(SFP(HS_Key_FilledTrigger));
         filledTrigger.toJSONObject(filledTriggerObj);
@@ -1322,13 +1322,13 @@ void HydroponicsFeedReservoirData::toJSONObject(JsonObject &objectOut) const
     if (numFeedingsToday > 0) { objectOut[SFP(HS_Key_NumFeedingsToday)] = numFeedingsToday; }
     if (tdsUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_TDSUnits)] = unitsTypeToSymbol(tdsUnits); }
     if (tempUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_TempUnits)] = unitsTypeToSymbol(tempUnits); }
-    if (waterPHSensor[0]) { objectOut[SFP(HS_Key_PHSensor)] = stringFromChars(waterPHSensor, HYDRUINO_NAME_MAXSIZE); }
-    if (waterTDSSensor[0]) { objectOut[SFP(HS_Key_TDSSensor)] = stringFromChars(waterTDSSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (waterPHSensor[0]) { objectOut[SFP(HS_Key_PHSensor)] = charsToString(waterPHSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (waterTDSSensor[0]) { objectOut[SFP(HS_Key_TDSSensor)] = charsToString(waterTDSSensor, HYDRUINO_NAME_MAXSIZE); }
     if (waterTempSensor[0]) {
-        objectOut[(airTempSensor[0] ? SFP(HS_Key_WaterTempSensor) : SFP(HS_Key_TempSensor))] = stringFromChars(waterTempSensor, HYDRUINO_NAME_MAXSIZE);
+        objectOut[(airTempSensor[0] ? SFP(HS_Key_WaterTempSensor) : SFP(HS_Key_TempSensor))] = charsToString(waterTempSensor, HYDRUINO_NAME_MAXSIZE);
     }
-    if (airTempSensor[0]) { objectOut[SFP(HS_Key_AirTempSensor)] = stringFromChars(airTempSensor, HYDRUINO_NAME_MAXSIZE); }
-    if (airCO2Sensor[0]) { objectOut[SFP(HS_Key_CO2Sensor)] = stringFromChars(airCO2Sensor, HYDRUINO_NAME_MAXSIZE); }
+    if (airTempSensor[0]) { objectOut[SFP(HS_Key_AirTempSensor)] = charsToString(airTempSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (airCO2Sensor[0]) { objectOut[SFP(HS_Key_CO2Sensor)] = charsToString(airCO2Sensor, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)

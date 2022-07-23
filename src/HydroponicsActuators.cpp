@@ -368,8 +368,8 @@ void HydroponicsPumpRelayActuator::disableActuator()
         pumpMillis = timeMillis - _pumpTimeBegMillis;
 
         getLoggerInstance()->logPumping(this, SFP(HS_Log_MeasuredPumping));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), stringFromMeasurement(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), 1));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time), String(timeMillis), String(' ') + String('m') + String('s'));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), 1));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time), roundToString(timeMillis / 1000.0f, 1), String('s'));
     }
 }
 
@@ -411,17 +411,17 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
             if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
                 getLoggerInstance()->logPumping(this, SFP(HS_Log_EstimatedPumping));
                 if (_contFlowRate.value > FLT_EPSILON) {
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), stringFromMeasurement(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
+                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
                 }
-                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time), String(timeMillis), String(' ') + String('m') + String('s'));
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time), roundToString(timeMillis / 1000.0f, 1), String('s'));
                 return true;
             }
         #else
             getLoggerInstance()->logPumping(this, SFP(HS_Log_EstimatedPumping));
             if (_contFlowRate.value > FLT_EPSILON) {
-                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), stringFromMeasurement(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
             }
-            getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time), String(timeMillis), String(' ') + String('m') + String('s'));
+            getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time), roundToString(timeMillis / 1000.0f, 1), String('s'));
             enableActuator();
             delayFine(timeMillis);
             disableActuator();
@@ -802,8 +802,8 @@ void HydroponicsActuatorData::toJSONObject(JsonObject &objectOut) const
         JsonObject contPowerDrawObj = objectOut.createNestedObject(SFP(HS_Key_ContPowerDraw));
         contPowerDraw.toJSONObject(contPowerDrawObj);
     }
-    if (railName[0]) { objectOut[SFP(HS_Key_Rail)] = stringFromChars(railName, HYDRUINO_NAME_MAXSIZE); }
-    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = stringFromChars(reservoirName, HYDRUINO_NAME_MAXSIZE); }
+    if (railName[0]) { objectOut[SFP(HS_Key_Rail)] = charsToString(railName, HYDRUINO_NAME_MAXSIZE); }
+    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -854,8 +854,8 @@ void HydroponicsPumpRelayActuatorData::toJSONObject(JsonObject &objectOut) const
         JsonObject contFlowRateObj = objectOut.createNestedObject(SFP(HS_Key_ContFlowRate));
         contFlowRate.toJSONObject(contFlowRateObj);
     }
-    if (destReservoir[0]) { objectOut[SFP(HS_Key_OutputReservoir)] = stringFromChars(destReservoir, HYDRUINO_NAME_MAXSIZE); }
-    if (flowRateSensor[0]) { objectOut[SFP(HS_Key_FlowRateSensor)] = stringFromChars(flowRateSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (destReservoir[0]) { objectOut[SFP(HS_Key_OutputReservoir)] = charsToString(destReservoir, HYDRUINO_NAME_MAXSIZE); }
+    if (flowRateSensor[0]) { objectOut[SFP(HS_Key_FlowRateSensor)] = charsToString(flowRateSensor, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)

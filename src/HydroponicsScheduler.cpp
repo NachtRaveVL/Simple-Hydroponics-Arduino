@@ -950,13 +950,13 @@ void HydroponicsFeeding::update()
                         getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreFeedAeratorMins), aeratorMinsStr);
                     }
                     if (feedRes->getWaterPHSensor()) {
-                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), stringFromMeasurement(ph));
+                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
                     }
                     if (feedRes->getWaterTDSSensor()) {
-                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), stringFromMeasurement(tds, 1));
+                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
                     }
                     if (feedRes->getWaterTempSensor()) {
-                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), stringFromMeasurement(temp));
+                        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
                     }
                 }
             }
@@ -1035,9 +1035,9 @@ void HydroponicsFeeding::broadcastFeedingBegan()
         convertUnits(&temp, feedRes->getTemperatureUnits());
 
         getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasBegan));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), stringFromMeasurement(ph));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), stringFromMeasurement(tds, 1));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), stringFromMeasurement(temp));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH), measurementToString(ph));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS), measurementToString(tds, 1));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp), measurementToString(temp));
     }
 
     {   auto crops = linksFilterCrops(feedRes->getLinkages());
@@ -1194,7 +1194,7 @@ void HydroponicsLighting::update()
 
                 {   String lightHrsStr; lightHrsStr.reserve(8);
                     lightHrsStr.concat(SFP(HS_ColonSpace));
-                    lightHrsStr.concat(roundForExport(lightHours));
+                    lightHrsStr.concat(roundToString(lightHours));
                     lightHrsStr.concat('h');
 
                     getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasBegan));
@@ -1212,8 +1212,13 @@ void HydroponicsLighting::update()
                 stage = Done; stageStart = unixNow();
                 setupStaging();
 
-                getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasEnded));
-                getLoggerInstance()->logMessage(SFP(HS_Key_DailyLightHours), SFP(HS_ColonSpace), stringFromSpan(elapsedTime));
+                {   String lightHrsStr; lightHrsStr.reserve(16);
+                    lightHrsStr.concat(SFP(HS_ColonSpace));
+                    lightHrsStr.concat(timeSpanToString(elapsedTime));
+
+                    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasEnded));
+                    getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_DailyLightHours), lightHrsStr);
+                }
             }
             break;
 
