@@ -88,7 +88,10 @@ void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<Hyd
         }
     }
 
-    _incActuators = incActuators;
+    _incActuators.clear();
+    for (auto actuatorInIter = incActuators.begin(); actuatorInIter != incActuators.end(); ++actuatorInIter) {
+        _incActuators.push_back((*actuatorInIter));
+    }
 }
 
 void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators)
@@ -109,7 +112,10 @@ void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<Hyd
         }
     }
 
-    _decActuators = decActuators;
+    _decActuators.clear();
+    for (auto actuatorInIter = decActuators.begin(); actuatorInIter != decActuators.end(); ++actuatorInIter) {
+        _decActuators.push_back((*actuatorInIter));
+    }
 }
 
 const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &HydroponicsBalancer::getIncrementActuators()
