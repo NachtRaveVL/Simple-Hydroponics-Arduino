@@ -170,8 +170,7 @@ Hydroponics_KeyType HydroponicsObject::getKey() const
 
 shared_ptr<HydroponicsObject> HydroponicsObject::getSharedPtr() const
 {
-    auto hydroponics = getHydroponicsInstance();
-    return hydroponics ? hydroponics->objectById(_id) : nullptr;
+    return getHydroponicsInstance() ? getHydroponicsInstance()->objectById(_id) : nullptr;
 }
 
 bool HydroponicsObject::addLinkage(HydroponicsObject *obj)

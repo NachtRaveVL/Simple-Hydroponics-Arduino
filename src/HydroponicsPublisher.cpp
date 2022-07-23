@@ -41,11 +41,10 @@ void HydroponicsPublisher::handleLowMemory()
 
 bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 {
-    auto hydroponics = getHydroponicsInstance();
     HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
 
     if (_publisherData) {
-        auto sd = hydroponics->getSDCard();
+        auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
             String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HS_csv));
@@ -53,9 +52,9 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 
             if (dataFile && dataFile.availableForWrite()) {
                 dataFile.close();
-                hydroponics->endSDCard(sd);
+                Hydroponics::_activeInstance->endSDCard(sd);
 
-                hydroponics->_systemData->_bumpRevIfNotAlreadyModded();
+                Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
                 strncpy(_publisherData->dataFilePrefix, dataFilePrefix.c_str(), 16);
                 _publisherData->publishToSDCard = true;
                 _dataFileName = dataFileName;
@@ -68,7 +67,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
             if (dataFile) { dataFile.close(); }
         }
 
-        if (sd) { hydroponics->endSDCard(sd); }
+        if (sd) { Hydroponics::_activeInstance->endSDCard(sd); }
     }
     return false;
 }
@@ -108,14 +107,13 @@ void HydroponicsPublisher::notifyDayChanged()
 
 void HydroponicsPublisher::advancePollingFrame()
 {
-    auto hydroponics = getHydroponicsInstance();
-    auto pollingFrame = hydroponics->getPollingFrame();
+    auto pollingFrame = Hydroponics::_activeInstance->getPollingFrame();
 
     if (pollingFrame && _pollingFrame != pollingFrame) {
         time_t timestamp = unixNow();
         _pollingFrame = pollingFrame;
 
-        if (hydroponics->getInOperationalMode()) {
+        if (Hydroponics::_activeInstance->getInOperationalMode()) {
             #ifndef HYDRUINO_DISABLE_MULTITASKING
                 scheduleObjectMethodCallOnce<HydroponicsPublisher>(this, &HydroponicsPublisher::publish, timestamp);
             #else
@@ -126,18 +124,16 @@ void HydroponicsPublisher::advancePollingFrame()
 
     if (++pollingFrame == 0) { pollingFrame = 1; } // use only valid frame #
 
-    hydroponics->_pollingFrame = pollingFrame;
+    Hydroponics::_activeInstance->_pollingFrame = pollingFrame;
 }
 
 void HydroponicsPublisher::checkCanPublish()
 {
-    auto hydroponics = getHydroponicsInstance();
-
-    if (_dataColumns && _columnCount && hydroponics->getIsPollingFrameOld(_pollingFrame)) {
+    if (_dataColumns && _columnCount && Hydroponics::_activeInstance->getIsPollingFrameOld(_pollingFrame)) {
         bool allCurrent = true;
 
         for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
-            if (hydroponics->getIsPollingFrameOld(_dataColumns[columnIndex].measurement.frame)) {
+            if (Hydroponics::_activeInstance->getIsPollingFrameOld(_dataColumns[columnIndex].measurement.frame)) {
                 allCurrent = false;
                 break;
             }
@@ -145,9 +141,9 @@ void HydroponicsPublisher::checkCanPublish()
 
         if (allCurrent) {
             time_t timestamp = unixNow();
-            _pollingFrame = hydroponics->getPollingFrame();
+            _pollingFrame = Hydroponics::_activeInstance->getPollingFrame();
 
-            if (hydroponics->getInOperationalMode()) {
+            if (Hydroponics::_activeInstance->getInOperationalMode()) {
                 #ifndef HYDRUINO_DISABLE_MULTITASKING
                     scheduleObjectMethodCallOnce<HydroponicsPublisher>(this, &HydroponicsPublisher::publish, timestamp);
                 #else
@@ -187,11 +183,10 @@ void HydroponicsPublisher::publish(time_t timestamp)
 void HydroponicsPublisher::performTabulation()
 {
     if (getIsPublishingEnabled()) {
-        auto hydroponics = getHydroponicsInstance();
         bool sameOrder = _dataColumns && _columnCount ? true : false;
         int columnCount = 0;
 
-        for (auto iter = hydroponics->_objects.begin(); iter != hydroponics->_objects.end(); ++iter) {
+        for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
             if (iter->second && iter->second->isSensorType()) {
                 auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
 
@@ -222,7 +217,7 @@ void HydroponicsPublisher::performTabulation()
                 if (_dataColumns) {
                     int columnIndex = 0;
 
-                    for (auto iter = hydroponics->_objects.begin(); iter != hydroponics->_objects.end(); ++iter) {
+                    for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
                         if (iter->second && iter->second->isSensorType()) {
                             auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
 
@@ -251,10 +246,8 @@ void HydroponicsPublisher::performTabulation()
 
 void HydroponicsPublisher::resetDataFile()
 {
-    auto hydroponics = getHydroponicsInstance();
-
     if (getIsPublishingToSDCard()) {
-        auto sd = hydroponics->getSDCard();
+        auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
             if (sd->exists(_dataFileName)) {
@@ -271,7 +264,7 @@ void HydroponicsPublisher::resetDataFile()
                 for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
                     dataFile.print(',');
 
-                    auto sensor = (HydroponicsSensor *)(hydroponics->_objects[_dataColumns[columnIndex].sensorKey].get());
+                    auto sensor = (HydroponicsSensor *)(Hydroponics::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
                     if (sensor && sensor == lastSensor) { ++measurementRow; }
                     else { measurementRow = 0; lastSensor = sensor; }
 
@@ -292,7 +285,7 @@ void HydroponicsPublisher::resetDataFile()
 
             if (dataFile) { dataFile.close(); }
 
-            hydroponics->endSDCard(sd);
+            Hydroponics::_activeInstance->endSDCard(sd);
         }
     }
 }

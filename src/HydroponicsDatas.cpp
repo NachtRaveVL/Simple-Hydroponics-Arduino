@@ -443,9 +443,8 @@ HydroponicsCustomAdditiveData::HydroponicsCustomAdditiveData(Hydroponics_Reservo
 {
     _size = sizeof(*this);
 
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) { 
-        auto additiveData = hydroponics->getCustomAdditiveData(reservoirType);
+    if (getHydroponicsInstance()) { 
+        auto additiveData = getHydroponicsInstance()->getCustomAdditiveData(reservoirType);
         if (additiveData && this != additiveData) {
             *this = *additiveData;
         }

@@ -131,8 +131,7 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
         getLoggerInstance()->logError(SFP(HS_DoubleSpace), msg);
         getLoggerInstance()->flush();
 
-        auto hydroponics = getHydroponicsInstance();
-        if (hydroponics) { hydroponics->suspend(); }
+        if (getHydroponicsInstance()) { getHydroponicsInstance()->suspend(); }
         yield(); delay(10);
         abort();
     }

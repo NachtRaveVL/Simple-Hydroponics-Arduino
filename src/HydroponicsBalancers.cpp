@@ -74,8 +74,9 @@ void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<Hyd
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
         if (actuatorIter->first) {
             bool found = false;
+            auto key = actuatorIter->first->getKey();
             for (auto actuatorInIter = incActuators.begin(); actuatorInIter != incActuators.end(); ++actuatorInIter) {
-                if (actuatorIter->first == actuatorInIter->first) {
+                if (key == actuatorInIter->first->getKey()) {
                     found = true;
                     break;
                 }
