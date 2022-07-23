@@ -911,15 +911,17 @@ void HydroponicsFeeding::update()
     switch (stage) {
         case Init: {
             if (!canFeedAfter || unixNow() >= canFeedAfter) {
+                int cropsCount = 0;
                 int cropsHungry = 0;
 
                 {   auto crops = linksFilterCrops(feedRes->getLinkages());
+                    cropsCount = crops.size();
                     for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                        if (((HydroponicsCrop *)(*cropIter))->getNeedsFeeding()) { cropsFed++; }
+                        if (((HydroponicsCrop *)(*cropIter))->getNeedsFeeding()) { cropsHungry++; }
                     }
                 }
 
-                if (cropsHungry / (float)crops.size() >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON) {
+                if (cropsHungry / (float)cropsCount >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON) {
                     stage = TopOff; stageStart = unixNow();
                     setupStaging();
 
@@ -985,15 +987,17 @@ void HydroponicsFeeding::update()
         } break;
 
         case Feed: {
+            int cropsCount = 0;
             int cropsFed = 0;
 
             {   auto crops = linksFilterCrops(feedRes->getLinkages());
+                cropsCount = crops.size();
                 for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
                     if (!((HydroponicsCrop *)(*cropIter))->getNeedsFeeding()) { cropsFed++; }
                 }
             }
 
-            if (cropsFed / (float)crops.size() >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON ||
+            if (cropsFed / (float)cropsCount >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON ||
                 feedRes->getIsEmpty()) {
                 stage = (getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? Drain : Done);
                 stageStart = unixNow();
