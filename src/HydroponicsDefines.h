@@ -78,6 +78,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_SCH_FEED_FRACTION          0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRUINO_SCH_BALANCE_MINTIME        30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
+#define HYDRUINO_SCH_AERATORS_FEEDRUN       true                    // Whenever or not aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay

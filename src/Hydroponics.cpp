@@ -12,8 +12,9 @@ time_t rtcNow() {
 
 void handleInterrupt(byte pin)
 {
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) { hydroponics->handleInterrupt(pin); }
+    if (Hydroponics::_activeInstance) {
+        Hydroponics::_activeInstance->handleInterrupt(pin);
+    }
 }
 
 
@@ -189,7 +190,7 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
             _logger.initFromData(&(_systemData->logger));
             _publisher.initFromData(&(_systemData->publisher));
 
-            commonInit();
+            commonPostInit();
         }
     }  
 }
@@ -337,7 +338,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
         }
 
         HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_InitializationFailure));
-        if (_systemData) { commonInit(); }
+        if (_systemData) { commonPostInit(); }
         return _systemData;
     }
 
@@ -495,7 +496,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
         }
 
         HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_InitializationFailure));
-        if (_systemData) { commonInit(); }
+        if (_systemData) { commonPostInit(); }
         return _systemData;
     }
 
@@ -586,7 +587,7 @@ void Hydroponics::commonPreInit()
     }
 }
 
-void Hydroponics::commonInit()
+void Hydroponics::commonPostInit()
 {
     if ((_rtcSyncProvider = getRealTimeClock())) {
         setSyncProvider(rtcNow);
@@ -608,7 +609,7 @@ void Hydroponics::commonInit()
     #endif
 
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-        Serial.print(F("Hydroponics::commonInit piezoBuzzerPin: "));
+        Serial.print(F("Hydroponics::commonPostInit piezoBuzzerPin: "));
         if (isValidPin(_piezoBuzzerPin)) { Serial.print(_piezoBuzzerPin); }
         else { Serial.print(SFP(HS_Disabled)); }
         Serial.print(F(", eepromDeviceSize: "));
@@ -673,10 +674,9 @@ void Hydroponics::commonPostSave()
 
 void controlLoop()
 {
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics && hydroponics->getInOperationalMode()) {
-        hydroponics->updateObjects(0);
-        hydroponics->_scheduler.update();
+    if (Hydroponics::_activeInstance && Hydroponics::_activeInstance->getInOperationalMode()) {
+        Hydroponics::_activeInstance->updateObjects(0);
+        Hydroponics::_activeInstance->update();
     }
 
     yield();
@@ -684,9 +684,8 @@ void controlLoop()
 
 void dataLoop()
 {
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics && hydroponics->getInOperationalMode()) {
-        hydroponics->updateObjects(1);
+    if (Hydroponics::_activeInstance && Hydroponics::_activeInstance->getInOperationalMode()) {
+        Hydroponics::_activeInstance->updateObjects(1);
     }
 
     yield();
@@ -694,13 +693,12 @@ void dataLoop()
 
 void miscLoop()
 {
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics && hydroponics->getInOperationalMode()) {
-        hydroponics->checkFreeMemory();
-        hydroponics->checkFreeSpace();
-        hydroponics->checkAutosave();
-        hydroponics->_logger.update();
-        hydroponics->_publisher.update();
+    if (Hydroponics::_activeInstance && Hydroponics::_activeInstance->getInOperationalMode()) {
+        Hydroponics::_activeInstance->checkFreeMemory();
+        Hydroponics::_activeInstance->checkFreeSpace();
+        Hydroponics::_activeInstance->checkAutosave();
+        Hydroponics::_activeInstance->_logger.update();
+        Hydroponics::_activeInstance->_publisher.update();
     }
 
     yield();

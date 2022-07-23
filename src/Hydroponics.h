@@ -411,7 +411,7 @@ protected:
     void deallocateSD();
 
     void commonPreInit();
-    void commonInit();
+    void commonPostInit();
     void commonPostSave();
 
     friend void ::controlLoop();

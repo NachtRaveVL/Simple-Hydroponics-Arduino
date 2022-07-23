@@ -8,11 +8,8 @@
 HydroponicsEEPROMStream::HydroponicsEEPROMStream()
     : Stream(), _eeprom(nullptr), _readAddress(0), _writeAddress(0), _end(0)
 {
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) {
-        if ((_eeprom = hydroponics->getEEPROM())) {
-            _end = _eeprom->getDeviceSize();
-        }
+    if (getHydroponicsInstance() && (_eeprom = getHydroponicsInstance()->getEEPROM())) {
+        _end = _eeprom->getDeviceSize();
     }
     HYDRUINO_HARD_ASSERT(_eeprom, SFP(HS_Err_UnsupportedOperation));
 }
@@ -20,8 +17,9 @@ HydroponicsEEPROMStream::HydroponicsEEPROMStream()
 HydroponicsEEPROMStream::HydroponicsEEPROMStream(size_t dataAddress, size_t dataSize)
       : Stream(), _eeprom(nullptr), _readAddress(dataAddress), _writeAddress(dataAddress), _end(dataAddress + dataSize)
 {
-    auto hydroponics = getHydroponicsInstance();
-    if (hydroponics) { _eeprom = hydroponics->getEEPROM(); }
+    if (getHydroponicsInstance()) {
+        _eeprom = getHydroponicsInstance()->getEEPROM();
+    }
     HYDRUINO_HARD_ASSERT(_eeprom, SFP(HS_Err_UnsupportedOperation));
 }
 

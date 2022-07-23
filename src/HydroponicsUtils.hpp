@@ -11,8 +11,7 @@
 template<class T>
 shared_ptr<T> HydroponicsDLinkObject<T>::getObj() {
     if (!obj && (bool)id) {
-        auto hydroponics = getHydroponicsInstance();
-        if (hydroponics) { obj = hydroponics->objectById(id); }
+        if (getHydroponicsInstance()) { obj = getHydroponicsInstance()->objectById(id); }
         if ((bool)obj) { id = obj->getId(); }
     }
     return obj;

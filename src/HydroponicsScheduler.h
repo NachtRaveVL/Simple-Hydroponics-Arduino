@@ -104,6 +104,7 @@ struct HydroponicsFeeding : public HydroponicsProcess {
 
 private:
     void reset();
+    void setupBalancers();
     void broadcastFeedingBegan();
     void broadcastFeedingEnded();
 };
