@@ -339,8 +339,6 @@ inline float roundForExport(float value, unsigned int additionalDecPlaces = 0) {
 
 // Returns linkages list filtered down to just actuators.
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
-// Returns linkages list filtered down to just sensors.
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterSensors(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
 // Returns linkages list filtered down to just crops.
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
 

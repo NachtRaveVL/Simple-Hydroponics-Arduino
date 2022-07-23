@@ -129,13 +129,11 @@ void HydroponicsLogger::logError(String err, String suffix1, String suffix2)
     }
 }
 
-void HydroponicsLogger::log(String prefix, String msg, String suffix1, String suffix2)
+void HydroponicsLogger::log(String prefix, String &msg, String &suffix1, String &suffix2)
 {
-    String timestamp = getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL);
-
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         if (Serial) {
-            Serial.print(timestamp);
+            Serial.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
             Serial.print(' ');
             Serial.print(prefix);
             Serial.print(msg);
@@ -151,7 +149,7 @@ void HydroponicsLogger::log(String prefix, String msg, String suffix1, String su
             auto logFile = sd->open(_logFileName, FILE_WRITE);
 
             if (logFile && logFile.availableForWrite()) {
-                logFile.print(timestamp);
+                logFile.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
                 logFile.print(' ');
                 logFile.print(prefix);
                 logFile.print(msg);
@@ -199,12 +197,22 @@ bool HydroponicsLogger::getIsLoggingEnabled() const
            (_loggerData->logToSDCard);
 }
 
+time_t HydroponicsLogger::getSystemUptime() const
+{
+    return unixNow() - _initDate ?: SECONDS_FROM_1970_TO_2000;
+}
+
 void HydroponicsLogger::notifyDayChanged()
 {
     if (getIsLoggingEnabled()) {
         _logFileName = getYYMMDDFilename(stringFromChars(_loggerData->logFilePrefix, 16), SFP(HS_txt));
         cleanupOldestLogs();
     }
+}
+
+void HydroponicsLogger::updateInitTracking()
+{
+    _initDate = unixNow();
 }
 
 void HydroponicsLogger::cleanupOldestLogs(bool force)

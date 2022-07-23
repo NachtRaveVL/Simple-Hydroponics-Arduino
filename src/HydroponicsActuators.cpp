@@ -368,7 +368,7 @@ void HydroponicsPumpRelayActuator::disableActuator()
         pumpMillis = timeMillis - _pumpTimeBegMillis;
 
         getLoggerInstance()->logPumping(this, SFP(HS_Log_MeasuredPumping));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), stringFromMeasurement(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits())));
+        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol), stringFromMeasurement(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), 1));
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time), String(timeMillis), String(' ') + String('m') + String('s'));
     }
 }

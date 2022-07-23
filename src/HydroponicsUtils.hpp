@@ -143,20 +143,6 @@ typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typenam
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-typename Vector<HydroponicsObject *, N>::type linksFilterSensors(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links)
-{
-    typename Vector<HydroponicsObject *, N>::type retVal;
-
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second && iter->second->isSensorType()) {
-            retVal.push_back(iter->second);
-        }
-    }
-
-    return retVal;
-}
-
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
 typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links)
 {
     typename Vector<HydroponicsObject *, N>::type retVal;

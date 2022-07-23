@@ -498,8 +498,8 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
 {
     if (_lastFeedingDate) {
         auto hydroponics = getHydroponicsInstance();
-        DateTime lastFeeding = DateTime((uint32_t)(_lastFeedingDate + (hydroponics ? hydroponics->getTimeZoneOffset() * SECS_PER_HOUR : 0)));
-        DateTime currTime = getCurrentTime();
+        auto lastFeeding = DateTime((uint32_t)(_lastFeedingDate + (hydroponics ? hydroponics->getTimeZoneOffset() * SECS_PER_HOUR : 0)));
+        auto currTime = getCurrentTime();
 
         if (currTime.year() != lastFeeding.year() ||
             currTime.month() != lastFeeding.month() ||

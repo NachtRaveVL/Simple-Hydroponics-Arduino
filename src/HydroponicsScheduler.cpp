@@ -35,12 +35,17 @@ void HydroponicsScheduler::update()
         {   DateTime currTime = getCurrentTime();
             bool inDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
 
-            if (_lastDayNum != currTime.day()) {
-                getLoggerInstance()->logSystemUptime();
+            if (_inDaytimeMode != inDaytimeMode) {
+                _inDaytimeMode = inDaytimeMode;
+                setNeedsScheduling();
+                // TODO: GUI update notify on day/night transition
             }
 
-            if (_inDaytimeMode != inDaytimeMode ||
-                _lastDayNum != currTime.day()) {
+            if (_lastDayNum != currTime.day()) {
+                // only log uptime upon actual day change and if uptime has been at least 1d
+                if (getLoggerInstance()->getSystemUptime() >= SECS_PER_DAY) {
+                    getLoggerInstance()->logSystemUptime();
+                }
                 broadcastDayChange();
             }
         }
@@ -91,7 +96,7 @@ void HydroponicsScheduler::setupWaterPHBalancer(HydroponicsReservoir *reservoir,
                 }
             }
 
-            if (!incActuators.size()) {
+            if (!incActuators.size()) { // prefer peristaltic, else use full pump
                 for (auto pumpIter = phUpPumps.begin(); pumpIter != phUpPumps.end(); ++pumpIter) {
                     auto pump = getSharedPtr<HydroponicsActuator>(*pumpIter);
                     if (pump && pump->getActuatorType() == Hydroponics_ActuatorType_WaterPump) {
@@ -114,7 +119,7 @@ void HydroponicsScheduler::setupWaterPHBalancer(HydroponicsReservoir *reservoir,
                 }
             }
 
-            if (!decActuators.size()) {
+            if (!decActuators.size()) { // prefer peristaltic, else use full pump
                 for (auto pumpIter = phDownPumps.begin(); pumpIter != phDownPumps.end(); ++pumpIter) {
                     auto pump = getSharedPtr<HydroponicsActuator>(*pumpIter);
                     if (pump && pump->getActuatorType() == Hydroponics_ActuatorType_WaterPump) {
@@ -144,7 +149,7 @@ void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir
                     }
                 }
 
-                if (!incActuators.size()) {
+                if (!incActuators.size()) { // prefer peristaltic, else use full pump
                     for (auto pumpIter = nutrientPumps.begin(); pumpIter != nutrientPumps.end(); ++pumpIter) {
                         auto pump = getSharedPtr<HydroponicsActuator>(*pumpIter);
                         if (pump && pump->getActuatorType() == Hydroponics_ActuatorType_WaterPump) {
@@ -173,7 +178,7 @@ void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir
                                 }
                             }
 
-                            if (incActuators.size() == prevIncSize) {
+                            if (incActuators.size() == prevIncSize) { // prefer peristaltic, else use full pump
                                 for (auto pumpIter = nutrientPumps.begin(); pumpIter != nutrientPumps.end(); ++pumpIter) {
                                     auto pump = getSharedPtr<HydroponicsActuator>(*pumpIter);
                                     if (pump && pump->getActuatorType() == Hydroponics_ActuatorType_WaterPump) {
@@ -204,7 +209,7 @@ void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir
                     }
                 }
 
-                if (!decActuators.size()) {
+                if (!decActuators.size()) { // prefer peristaltic, else use full pump
                     for (auto pumpIter = dilutionPumps.begin(); pumpIter != dilutionPumps.end(); ++pumpIter) {
                         auto pump = getSharedPtr<HydroponicsActuator>(*pumpIter);
                         if (pump && pump->getActuatorType() == Hydroponics_ActuatorType_WaterPump) {
@@ -520,15 +525,22 @@ bool HydroponicsScheduler::getInDaytimeMode() const
     return _inDaytimeMode;
 }
 
+void HydroponicsScheduler::updateDayTracking()
+{
+    auto currTime = getCurrentTime();
+    _lastDayNum = currTime.day();
+    _inDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
+    setNeedsScheduling();
+    // TODO: GUI update notify on major time event
+}
+
 void HydroponicsScheduler::performScheduling()
 {
     auto hydroponics = getHydroponicsInstance();
 
     for (auto iter = hydroponics->_objects.begin(); iter != hydroponics->_objects.end(); ++iter) {
         if (iter->second && iter->second->isReservoirType()) {
-            auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
-
-            if (reservoir && reservoir->isFeedClass()) {
+            if (((HydroponicsReservoir *)(iter->second.get()))->isFeedClass()) {
                 auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
 
                 if (feedReservoir) {
@@ -580,10 +592,7 @@ void HydroponicsScheduler::performScheduling()
 
 void HydroponicsScheduler::broadcastDayChange()
 {
-    DateTime currTime = getCurrentTime();
-    _lastDayNum = currTime.day();
-    _inDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
-    setNeedsScheduling();
+    updateDayTracking();
 
     #ifndef HYDRUINO_DISABLE_MULTITASKING
         // these can take a while to complete
@@ -621,7 +630,7 @@ HydroponicsProcess::HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feed
 void HydroponicsProcess::clearActuatorReqs()
 {
     while(actuatorReqs.size()) {
-        (*(actuatorReqs.begin()))->disableActuator();
+        actuatorReqs.begin()->get()->disableActuator();
         actuatorReqs.erase(actuatorReqs.begin());
     }
 }
@@ -910,7 +919,7 @@ void HydroponicsFeeding::update()
                 }
 
                 if (cropsHungry / (float)crops.size() >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON) {
-                    stage = TopOff; stageStart = time;
+                    stage = TopOff; stageStart = unixNow();
                     setupStaging();
                     if (actuatorReqs.size()) {
                         getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_PreFeedTopOff), SFP(HS_Log_HasBegan));
@@ -921,7 +930,7 @@ void HydroponicsFeeding::update()
 
         case TopOff: {
             if (feedRes->getIsFilled() || !actuatorReqs.size()) {
-                stage = PreFeed; stageStart = time;
+                stage = PreFeed; stageStart = unixNow();
                 canFeedAfter = 0; // will be used to track how long balancers stay balanced
                 setupStaging();
 
@@ -963,7 +972,7 @@ void HydroponicsFeeding::update()
                     // Can proceed after above are marked balanced for min time
                     if (!canFeedAfter) { canFeedAfter = time + HYDRUINO_SCH_BALANCE_MINTIME; }
                     else if (time >= canFeedAfter) {
-                        stage = Feed; stageStart = time;
+                        stage = Feed; stageStart = unixNow();
                         setupStaging();
                         broadcastFeedingBegan();
                     }
@@ -985,7 +994,7 @@ void HydroponicsFeeding::update()
             if (cropsFed / (float)crops.size() >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON ||
                 feedRes->getIsEmpty()) {
                 stage = (getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? Drain : Done);
-                stageStart = time;
+                stageStart = unixNow();
                 setupStaging();
                 broadcastFeedingEnded();
             }
@@ -994,7 +1003,7 @@ void HydroponicsFeeding::update()
         case Drain: {
             if (getHydroponicsInstance()->getSystemMode() != Hydroponics_SystemMode_DrainToWaste ||
                 feedRes->getIsEmpty()) {
-                stage = Done; stageStart = time;
+                stage = Done; stageStart = unixNow();
                 setupStaging();
             }
         } break;
