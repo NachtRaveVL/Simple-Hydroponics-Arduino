@@ -104,7 +104,7 @@ public:
     bool addLinkage(HydroponicsObject *obj);                // Adds reverse linkage to this object
     bool removeLinkage(HydroponicsObject *obj);             // Removes reverse linkage to this object
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object
-    const Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const;
+    const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const;
 
     const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object
     Hydroponics_KeyType getKey() const;                     // Returns the unique key of the object
@@ -112,7 +112,7 @@ public:
 
 protected:
     HydroponicsIdentity _id;                                // Object id
-    Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _links; // Linked objects (strong)
+    Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _links; // Linked objects (strong)
 
     virtual HydroponicsData *allocateData() const;          // Only up to base type classes (sensor, crop, etc.) does this need overriden
     virtual void saveToData(HydroponicsData *dataOut);      // *ALL* derived classes must override and implement

@@ -340,21 +340,21 @@ inline String roundToString(float value, unsigned int additionalDecPlaces = 0) {
 // Linkages & Filtering
 
 // Returns linkages list filtered down to just actuators.
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links);
 // Returns linkages list filtered down to just crops.
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links);
 
 // Returns linkages list filtered down to just actuators of a certain type that operate on a specific reservoir.
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
 // Returns linkages list filtered down to just pump actuators that pump from a specific reservoir to a certain reservoir type.
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ReservoirType destReservoirType);
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ReservoirType destReservoirType);
 // Returns linkages list filtered down to just pump actuators that pump to a specific reservoir from a certain reservoir type.
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType);
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType);
 
 // Returns the # of crops found in the linkages list.
-template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountCrops(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links);
+template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountCrops(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links);
 // Returns the # of actuators of a certain type that operate on a specific reservoir.
-template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, HydroponicsObject *, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
+template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
 
 // Pins & Checks
 

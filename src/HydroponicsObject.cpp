@@ -150,7 +150,12 @@ HydroponicsData *HydroponicsObject::newSaveData()
 
 bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
 {
-    _links[obj->getKey()] = obj;
+    auto iter = _links.find(obj->getKey());
+    if (iter != _links.end()) {
+        iter->second.second++;
+    } else {
+        _links[obj->getKey()] = make_pair(obj, (int8_t)1);
+    }
     return (_links.find(obj->getKey()) != _links.end());
 }
 
@@ -158,7 +163,9 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 {
     auto iter = _links.find(obj->_id);
     if (iter != _links.end()) {
-        _links.erase(iter);
+        if (--iter->second.second == 0) {
+            _links.erase(iter);
+        }
         return true;
     }
     return false;
@@ -169,7 +176,7 @@ bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
     return (_links.find(obj->_id) != _links.end());
 }
 
-const Map<Hydroponics_KeyType, HydroponicsObject *, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsObject::getLinkages() const
+const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsObject::getLinkages() const
 {
     return _links;
 }
