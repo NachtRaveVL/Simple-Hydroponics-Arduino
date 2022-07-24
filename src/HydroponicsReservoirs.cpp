@@ -451,6 +451,7 @@ void HydroponicsFluidReservoir::attachWaterVolumeSensor()
 {
     HYDRUINO_SOFT_ASSERT(getVolumeSensor(), SFP(HS_Err_MissingLinkage));
     if (getVolumeSensor()) {
+        _volumeSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFluidReservoir::handleWaterVolumeMeasure);
         _volumeSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -460,6 +461,7 @@ void HydroponicsFluidReservoir::detachWaterVolumeSensor()
 {
     HYDRUINO_SOFT_ASSERT(getVolumeSensor(), SFP(HS_Err_MissingLinkage));
     if (getVolumeSensor()) {
+        _volumeSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFluidReservoir::handleWaterVolumeMeasure);
         _volumeSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -1084,6 +1086,7 @@ void HydroponicsFeedReservoir::attachWaterPHSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterPHSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterPHSensor()) {
+        _waterPHSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterPHMeasure);
         _waterPHSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -1093,6 +1096,7 @@ void HydroponicsFeedReservoir::detachWaterPHSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterPHSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterPHSensor()) {
+        _waterPHSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterPHMeasure);
         _waterPHSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -1109,6 +1113,7 @@ void HydroponicsFeedReservoir::attachWaterTDSSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTDSSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTDSSensor()) {
+        _waterTDSSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTDSMeasure);
         _waterTDSSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -1118,6 +1123,7 @@ void HydroponicsFeedReservoir::detachWaterTDSSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTDSSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTDSSensor()) {
+        _waterTDSSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTDSMeasure);
         _waterTDSSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -1134,6 +1140,7 @@ void HydroponicsFeedReservoir::attachWaterTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTempSensor()) {
+        _waterTempSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTempMeasure);
         _waterTempSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -1143,6 +1150,7 @@ void HydroponicsFeedReservoir::detachWaterTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getWaterTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getWaterTempSensor()) {
+        _waterTempSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleWaterTempMeasure);
         _waterTempSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -1159,6 +1167,7 @@ void HydroponicsFeedReservoir::attachAirTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getAirTempSensor()) {
+        _airTempSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirTempMeasure);
         _airTempSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -1168,6 +1177,7 @@ void HydroponicsFeedReservoir::detachAirTempSensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirTempSensor(), SFP(HS_Err_MissingLinkage));
     if (getAirTempSensor()) {
+        _airTempSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirTempMeasure);
         _airTempSensor->getMeasurementSignal().detach(methodSlot);
     }
@@ -1184,6 +1194,7 @@ void HydroponicsFeedReservoir::attachAirCO2Sensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirCO2Sensor(), SFP(HS_Err_MissingLinkage));
     if (getAirCO2Sensor()) {
+        _airCO2Sensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirCO2Measure);
         _airCO2Sensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -1193,6 +1204,7 @@ void HydroponicsFeedReservoir::detachAirCO2Sensor()
 {
     HYDRUINO_SOFT_ASSERT(getAirCO2Sensor(), SFP(HS_Err_MissingLinkage));
     if (getAirCO2Sensor()) {
+        _airCO2Sensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsFeedReservoir::handleAirCO2Measure);
         _airCO2Sensor->getMeasurementSignal().detach(methodSlot);
     }

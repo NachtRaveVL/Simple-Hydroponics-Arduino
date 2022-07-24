@@ -148,6 +148,22 @@ HydroponicsData *HydroponicsObject::newSaveData()
     return data;
 }
 
+bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
+{
+    _links[obj->getKey()] = obj;
+    return (_links.find(obj->getKey()) != _links.end());
+}
+
+bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
+{
+    auto iter = _links.find(obj->_id);
+    if (iter != _links.end()) {
+        _links.erase(iter);
+        return true;
+    }
+    return false;
+}
+
 bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
 {
     return (_links.find(obj->_id) != _links.end());
@@ -171,22 +187,6 @@ Hydroponics_KeyType HydroponicsObject::getKey() const
 shared_ptr<HydroponicsObject> HydroponicsObject::getSharedPtr() const
 {
     return getHydroponicsInstance() ? getHydroponicsInstance()->objectById(_id) : nullptr;
-}
-
-bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
-{
-    _links[obj->getKey()] = obj;
-    return (_links.find(obj->getKey()) != _links.end());
-}
-
-bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
-{
-    auto iter = _links.find(obj->_id);
-    if (iter != _links.end()) {
-        _links.erase(iter);
-        return true;
-    }
-    return false;
 }
 
 HydroponicsData *HydroponicsObject::allocateData() const

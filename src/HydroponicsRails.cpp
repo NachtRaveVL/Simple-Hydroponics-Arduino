@@ -437,6 +437,7 @@ void HydroponicsRegulatedRail::attachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(getPowerSensor(), SFP(HS_Err_MissingLinkage));
     if (getPowerSensor()) {
+        _powerSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsRegulatedRail::handlePowerMeasure);
         _powerSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -446,6 +447,7 @@ void HydroponicsRegulatedRail::detachPowerSensor()
 {
     HYDRUINO_SOFT_ASSERT(getPowerSensor(), SFP(HS_Err_MissingLinkage));
     if (getPowerSensor()) {
+        _powerSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsRegulatedRail::handlePowerMeasure);
         _powerSensor->getMeasurementSignal().detach(methodSlot);
     }

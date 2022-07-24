@@ -57,8 +57,6 @@ void HydroponicsTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
 
 void HydroponicsTrigger::update()
 {
-    if (!_attached) { attachTrigger(); }
-
     if (_needsSensorUpdate && getSensor()) {
         handleSensorMeasure(_sensor->getLatestMeasurement());
 

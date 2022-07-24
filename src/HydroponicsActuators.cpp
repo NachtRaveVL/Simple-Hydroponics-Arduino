@@ -633,6 +633,7 @@ void HydroponicsPumpRelayActuator::attachFlowRateSensor()
 {
     HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), SFP(HS_Err_MissingLinkage));
     if (getFlowRateSensor()) {
+        _flowRateSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsPumpRelayActuator::handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -642,6 +643,7 @@ void HydroponicsPumpRelayActuator::detachFlowRateSensor()
 {
     HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), SFP(HS_Err_MissingLinkage));
     if (getFlowRateSensor()) {
+        _flowRateSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsPumpRelayActuator::handleFlowRateMeasure);
         _flowRateSensor->getMeasurementSignal().detach(methodSlot);
     }

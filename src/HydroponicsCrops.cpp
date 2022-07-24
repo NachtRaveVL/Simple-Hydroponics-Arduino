@@ -484,6 +484,7 @@ void HydroponicsAdaptiveCrop::attachSoilMoistureSensor()
 {
     HYDRUINO_SOFT_ASSERT(getMoistureSensor(), SFP(HS_Err_MissingLinkage));
     if (getMoistureSensor()) {
+        _moistureSensor->addLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsAdaptiveCrop::handleSoilMoistureMeasure);
         _moistureSensor->getMeasurementSignal().attach(methodSlot);
     }
@@ -493,6 +494,7 @@ void HydroponicsAdaptiveCrop::detachSoilMoistureSensor()
 {
     HYDRUINO_SOFT_ASSERT(getMoistureSensor(), SFP(HS_Err_MissingLinkage));
     if (getMoistureSensor()) {
+        _moistureSensor->removeLinkage(this);
         auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsAdaptiveCrop::handleSoilMoistureMeasure);
         _moistureSensor->getMeasurementSignal().detach(methodSlot);
     }
