@@ -97,7 +97,7 @@ void setup() {
         Serial.begin(115200);           // Begin USB Serial interface
         while(!Serial) { ; }            // Wait for USB Serial to connect (remove in production)
     #endif
-    #ifdef SETUP_ENABLE_WIFI
+    #if SETUP_ENABLE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_SSID);
     #endif
@@ -137,9 +137,8 @@ void setup() {
             hydroController.enableDataPublishingToSDCard(F(SETUP_DATA_FILE_PREFIX));
         #endif
 
-        // TODO: Object setup
+        // TODO: Object setup from above defines
     }
-    
 
     // TODO: UI initialization, other setup options
 
