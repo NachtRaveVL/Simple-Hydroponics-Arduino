@@ -1299,7 +1299,7 @@ void HydroponicsLighting::update()
                 setupStaging();
 
                 getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_LightingSequence), SFP(HS_Log_HasEnded));
-                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Measured), SFP(HS_ColonSpace), timeSpanToString(elapsedTime));
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Measured), timeSpanToString(elapsedTime));
             }
         } break;
 
