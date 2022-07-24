@@ -25,16 +25,19 @@ public:
     // Adds a new water heater relay to the system using the given parameters.
     // Water heaters can keep feed water heated during colder months and save off root damage.
     shared_ptr<HydroponicsRelayActuator> addWaterHeaterRelay(byte outputPin);                       // Digital output pin this actuator sits on
+    // Adds a new water sprayer relay to the system using the given parameters.
+    // Water sprayers can turn on before the lights turn on to provide crops with damp morning soil.
+    shared_ptr<HydroponicsRelayActuator> addWaterSprayerRelay(byte outputPin);                      // Digital output pin this actuator sits on
     // Adds a new water aerator relay to the system using the given parameters.
     // Water aerators can help plants grow while also discouraging pathogens from taking root.
     shared_ptr<HydroponicsRelayActuator> addWaterAeratorRelay(byte outputPin);                      // Digital output pin this actuator sits on
     // Adds a new fan exhaust relay to the system using the given parameters.
     // Fan exhausts can move air around to modify nearby CO2 levels that plants use to breathe.
     shared_ptr<HydroponicsRelayActuator> addFanExhaustRelay(byte outputPin);                        // Digital output pin this actuator sits on
-    // Adds a new PWM-based fan exhaust to the system using the given parameters.
+    // Adds a new analog PWM-based fan exhaust to the system using the given parameters.
     // PWM fan exhausts allow a graduated adaptive speed control to manage CO2 levels.
-    shared_ptr<HydroponicsPWMActuator> addFanExhaustPWM(byte outputPin,                             // PWM output pin this actuator sits on
-                                                        byte outputBitRes = 8);                     // PWM bit resolution to use
+    shared_ptr<HydroponicsPWMActuator> addAnalogPWMFanExhaust(byte outputPin,                       // PWM output pin this actuator sits on
+                                                              byte outputBitRes = 8);               // PWM bit resolution to use
     // Adds a new peristaltic dosing pump relay to the system using the given parameters.
     // Peristaltic pumps allow proper dosing of nutrients and other additives.
     shared_ptr<HydroponicsPumpRelayActuator> addPeristalticPumpRelay(byte outputPin);               // Digital output pin this actuator sits on
@@ -62,11 +65,14 @@ public:
     // CO2 sensors can be used to ensure proper CO2 levels.
     shared_ptr<HydroponicsAnalogSensor> addAnalogCO2Sensor(byte inputPin,                           // Analog input pin this sensor sits on
                                                            byte inputBitRes = 8);                   // ADC bit resolution to use
-
+    // Adds a new analog moisture sensor to the system using the given parameters.
+    // Soil moisture sensors can be used to drive feedings for crops.
+    shared_ptr<HydroponicsAnalogSensor> addAnalogMoistureSensor(byte inputPin,                      // Analog input pin this sensor sits on
+                                                                byte inputBitRes = 8);              // ADC bit resolution to use
     // Adds a new analog PWM-based pump flow sensor to the system using the given parameters.
     // Pump flow sensors can allow for more precise liquid volume pumping calculations.
-    shared_ptr<HydroponicsAnalogSensor> addPWMPumpFlowSensor(byte inputPin,                         // Analog input pin this sensor sits on
-                                                             byte inputBitRes = 8);                 // ADC bit resolution to use
+    shared_ptr<HydroponicsAnalogSensor> addAnalogPWMPumpFlowSensor(byte inputPin,                   // Analog input pin this sensor sits on
+                                                                    byte inputBitRes = 8);          // ADC bit resolution to use
     // Adds a new analog water height meter to the system using the given parameters.
     // Water height meters can be used to determine the volume of a container.
     shared_ptr<HydroponicsAnalogSensor> addAnalogWaterHeightMeter(byte inputPin,                    // Analog input pin this sensor sits on
@@ -76,7 +82,6 @@ public:
     // (Pro-tip: These widely available inexpensive sensors don't sit in the water and thus won't corrode.)
     shared_ptr<HydroponicsAnalogSensor> addUltrasonicDistanceSensor(byte inputPin,                  // Analog input pin this sensor sits on
                                                                     byte inputBitRes = 8);          // ADC bit resolution to use
-
     // Adds a new analog power usage meter to the system using the given parameters.
     // Power usage meters can be used to determine and manage the energy demands of a power rail.
     shared_ptr<HydroponicsAnalogSensor> addPowerUsageMeter(byte inputPin,                           // Analog input pin this sensor sits on

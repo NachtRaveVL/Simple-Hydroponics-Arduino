@@ -9,7 +9,7 @@
 #define SETUP_PIEZO_BUZZER_PIN      -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_SIZE    0               // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
 #define SETUP_SD_CARD_CS_PIN        -1              // SD card CS pin, else -1
-#define SETUP_CTRL_INPUT_PIN1       -1              // First pin of input ribbon, else -1 (ribbon pins can be individually customized later)
+#define SETUP_CTRL_INPUT_PINS       {-1}            // Control input pin ribbon, else {-1}
 #define SETUP_EEPROM_I2C_ADDR       B000            // EEPROM address
 #define SETUP_RTC_I2C_ADDR          B000            // RTC i2c address (only B000 can be used atm)
 #define SETUP_LCD_I2C_ADDR          B000            // LCD i2c address
@@ -19,7 +19,7 @@
 #define SETUP_WIFI_INST             WiFi            // WiFi class instance
 
 // System Settings
-#define SETUP_RUN_MODE              Recycling       // System run mode (Recycling, DrainToWaste)
+#define SETUP_SYSTEM_MODE           Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE          Default         // System measurement mode (Default, Imperial, Metric, Scientific)
 #define SETUP_LCD_OUT_MODE          Disabled        // System LCD output mode (Disabled, 20x4LCD, 20x4LCD_Swapped, 16x2LCD, 16x2LCD_Swapped)
 #define SETUP_CTRL_IN_MODE          Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
@@ -28,7 +28,7 @@
 #define SETUP_CONFIG_FILE           "hydruino.cfg"  // System config file name
 
 // WiFi Settings
-#define SETUP_ENABLE_WIFI           false           // Whenever or not WiFi is enabled
+#define SETUP_ENABLE_WIFI           false           // If WiFi is enabled
 #define SETUP_WIFI_SSID             "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS             "CHANGE_ME"     // WiFi password
 
@@ -39,10 +39,11 @@
 #define SETUP_DATA_FILE_PREFIX      "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 
+byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,
-                            SETUP_CTRL_INPUT_PIN1,
+                            _SETUP_CTRL_INPUT_PINS[0],
                             SETUP_EEPROM_I2C_ADDR,
                             SETUP_RTC_I2C_ADDR,
                             SETUP_LCD_I2C_ADDR,
@@ -60,6 +61,9 @@ void setup() {
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_SSID);
     #endif
+    if (isValidPin(_SETUP_CTRL_INPUT_PINS[0])) {
+        hydroController.setControlInputPinMap(_SETUP_CTRL_INPUT_PINS);
+    }
 
     // Sets system config name used in any of the following inits.
     hydroController.setSystemConfigFile(F(SETUP_CONFIG_FILE));
@@ -77,24 +81,26 @@ void setup() {
         #endif
         )) {
         // First time running controller, set up default initial empty environment.
-        hydroController.init(JOIN(Hydroponics_SystemMode_,SETUP_RUN_MODE),
-                             JOIN(Hydroponics_MeasurementMode_,SETUP_MEASURE_MODE),
-                             JOIN(Hydroponics_DisplayOutputMode_,SETUP_LCD_OUT_MODE),
-                             JOIN(Hydroponics_ControlInputMode_,SETUP_CTRL_IN_MODE));
+        hydroController.init(JOIN(Hydroponics_SystemMode,SETUP_SYSTEM_MODE),
+                             JOIN(Hydroponics_MeasurementMode,SETUP_MEASURE_MODE),
+                             JOIN(Hydroponics_DisplayOutputMode,SETUP_LCD_OUT_MODE),
+                             JOIN(Hydroponics_ControlInputMode,SETUP_CTRL_IN_MODE));
 
-        // Set settings
+        // Set Settings
         hydroController.setSystemName(F(SETUP_SYS_NAME));
         hydroController.setTimeZoneOffset(SETUP_SYS_TIMEZONE);
-        #if SETUP_ENABLE_WIFI
-            hydroController.setWiFiConnection(wifiSSID, wifiPassword);
-            hydroController.getWiFi();      // Forces start, may block for a while
-        #endif
         #if SETUP_LOG_SD_ENABLE
             hydroController.enableSysLoggingToSDCard(F(SETUP_LOG_FILE_PREFIX));
         #endif
         #if SETUP_DATA_SD_ENABLE
             hydroController.enableDataPublishingToSDCard(F(SETUP_DATA_FILE_PREFIX));
         #endif
+        #if SETUP_ENABLE_WIFI
+            hydroController.setWiFiConnection(wifiSSID, wifiPassword);
+            hydroController.getWiFi();      // Forces start, may block for a while
+        #endif
+
+        // No further setup is necessary, as system is assumed to be built/managed via UI.
     }
 
     // TODO: UI initialization, other setup options

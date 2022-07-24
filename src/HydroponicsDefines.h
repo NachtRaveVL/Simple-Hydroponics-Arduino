@@ -25,7 +25,7 @@
 #define RANDOM_MAX RAND_MAX
 #endif
 #ifndef JOIN
-#define JOIN_(X,Y) X##Y
+#define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
 #if defined(ESP8266) || defined(ESP32)
@@ -82,7 +82,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_SCH_FEED_FRACTION          0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRUINO_SCH_BALANCE_MINTIME        30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
-#define HYDRUINO_SCH_AERATORS_FEEDRUN       true                    // Whenever or not aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
+#define HYDRUINO_SCH_AERATORS_FEEDRUN       true                    // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
@@ -93,7 +93,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
 #define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
-#define HYDRUINO_SYS_ENABLE_ALIVE_LOGGING   false                   // Whenever or not system will periodically log alive messages (mainly used for debugging)
+#define HYDRUINO_SYS_ENABLE_ALIVE_LOGGING   false                   // If system will periodically log alive messages (mainly used for debugging)
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines

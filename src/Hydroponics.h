@@ -339,7 +339,7 @@ public:
     uint16_t getPollingFrame() const;
     // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
     bool getIsPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
-    // Whenever or not system autosaves are enabled or not
+    // Returns if system autosaves are enabled or not
     bool getIsAutosaveEnabled() const;
     // SSID for WiFi connection
     String getWiFiSSID();

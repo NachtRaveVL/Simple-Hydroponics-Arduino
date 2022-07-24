@@ -61,6 +61,25 @@ shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addWaterHeaterRelay(byt
     return nullptr;
 }
 
+shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addWaterSprayerRelay(byte outputPin)
+{
+    bool outputPinIsDigital = checkPinIsDigital(outputPin);
+    Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterSprayer));
+    HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HS_Err_InvalidPinOrType));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
+
+    if (outputPinIsDigital && positionIndex != -1) {
+        auto actuator = make_shared<HydroponicsRelayActuator>(
+            Hydroponics_ActuatorType_WaterSprayer,
+            positionIndex,
+            outputPin
+        );
+        if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
+    }
+
+    return nullptr;
+}
+
 shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addWaterAeratorRelay(byte outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
@@ -99,7 +118,7 @@ shared_ptr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(byte
     return nullptr;
 }
 
-shared_ptr<HydroponicsPWMActuator> HydroponicsFactory::addFanExhaustPWM(byte outputPin, byte outputBitRes)
+shared_ptr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(byte outputPin, byte outputBitRes)
 {
     bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
@@ -241,7 +260,26 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(byte 
     return nullptr;
 }
 
-shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addPWMPumpFlowSensor(byte inputPin, byte inputBitRes)
+shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogMoistureSensor(byte inputPin, byte inputBitRes = 8)
+{
+    bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
+    Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_SoilMoisture));
+    HYDRUINO_HARD_ASSERT(inputPinIsAnalog, SFP(HS_Err_InvalidPinOrType));
+    HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HS_Err_NoPositionsAvailable));
+
+    if (inputPinIsAnalog && positionIndex != -1) {
+        auto sensor = make_shared<HydroponicsAnalogSensor>(
+            Hydroponics_SensorType_SoilMoisture,
+            positionIndex,
+            inputPin, inputBitRes, true
+        );
+        if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
+    }
+
+    return nullptr;
+}
+
+shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPWMPumpFlowSensor(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterPumpFlowSensor));
