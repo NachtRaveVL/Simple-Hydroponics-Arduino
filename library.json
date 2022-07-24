@@ -27,8 +27,13 @@
             "name": "VerticalNFT",
             "base": "examples/VerticalNFT",
             "files": ["VerticalNFT.ino"]
+        },
+        {
+            "name": "FullSystem",
+            "base": "examples/FullSystem",
+            "files": ["FullSystem.ino"]
         }
     ],
-    "frameworks": ["arduino", "espidf"],
+    "frameworks": ["arduino", "espidf", "mbed"],
     "platforms": ["avr", "sam", "samd", "teensy", "espressif8266", "espressif32"]
 }

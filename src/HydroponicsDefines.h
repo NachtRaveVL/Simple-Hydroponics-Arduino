@@ -24,6 +24,10 @@
 #ifndef RANDOM_MAX
 #define RANDOM_MAX RAND_MAX
 #endif
+#ifndef JOIN
+#define JOIN_(X,Y) X##Y
+#define JOIN(X,Y) JOIN_(X,Y)
+#endif
 #if defined(ESP8266) || defined(ESP32)
 #define min _min
 #define max _max

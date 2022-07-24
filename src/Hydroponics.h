@@ -165,8 +165,8 @@ public:
                 byte rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
                 byte lcdI2CAddress = B000,                  // LCD i2c address
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
-                uint32_t i2cSpeed = 400000U,                // I2C speed
-                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed (ignored if on Teensy)
+                uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
+                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored if on Teensy)
                 WiFiClass &wifi = WiFi);                    // WiFi class instance
     // Library destructor. Just in case.
     ~Hydroponics();

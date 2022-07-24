@@ -8,27 +8,25 @@ Licensed under the non-restrictive MIT license.
 
 Created by NachtRaveVL, May 20th, 2022.
 
-**UNDER ACTIVE DEVELOPMENT BUT DONT EXPECT ANY MIRACLES**
+**UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop types to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Works with a large variety of common aquarium equipment and hobby sensors. Supports sensor data logging to MQTT (for IoT integration), .csv data files on an SD card or Network share (for custom graphing), and can be extended to work with other JSON-based Web APIs. System config can be hard coded or saved to SD card, EEPROM, or Network share. Hydruino also comes with LCD and input controller support similar in operation to low-cost 3D printers ([support provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made a custom 3D printed enclosure ([.stl's in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) along with some other goodies.
+This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop types to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Works with a large variety of common aquarium equipment and hobby sensors. Supports sensor data logging to MQTT (for IoT integration), .csv data files on an SD card or Network share (for custom graphing), and can be extended to work with other JSON-based Web APIs. System config can be hard coded or saved to SD card, EEPROM, or Network share. Hydruino also comes with LCD and input controller support similar in operation to low-cost 3D printers ([support provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some custom 3D printed stuff ([.stl's in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) along with some other goodies.
 
-Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
+Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, Pico, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
 
-Dependencies include: Adafruit BusIO, Adafruit Unified Sensor, ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction, LiquidCrystalIO, OneWire, RTClib, SimpleCollections, TaskManagerIO (disableable), tcMenu (disableable), and Time.
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), and Time.
 
 TODO datasheet links /TODO
 
 *If you value the work that we do, our small team always appreciates a subscription to our [Patreon](www.patreon.com/nachtrave).*
 
-## Reasoning
+## About
 
-In the most basic sense, automating crops is basically turning a bunch of relays on or off to push some dials up or down. This is not necessarily the most challenging of problems, as there exists a large variety of code projects out there that have tried their take on this same exact thing. Most barely had to hit 500+ lines of real honest code to arrive at a basic working setup.
+We want to make Hydroponics more accessible by utilizing the widely available IoT and IoT-like microcontrollers (MCUs) of today.
 
-You can pretty much do everything this controller does using the Cloud, a few IoT sensors, and some ingenuity - very little coding required. You can literally, right now, do everything this controller can, on a RasPi with similar little effort. In fact, several of these bigger hydroponic controller setups have existed for RasPi and others for quite some time now, with well established and tested code bases, full web interfaces, custom phone apps, and more.
+With the advances of technology bringing us even more compact MCUs at even lower costs, it becomes a lot more possible to simply use one of these small devices to do what amounts to turning a bunch of relays on and off in the right order. Hydroponics is a perfect application for these devices, especially as a data logger, feed balancer, and more.
 
-Few have seen the value in putting to use the heaps of old, cheap, slow Arduinos that we all have laying around doing absolutely nothing. But as time has passed, the prices of MCUs have sharply risen. Add in a global chip manufacturing crisis, a pandemic, massive inflation, food shortages, etc., it then becomes a little more apparent that it's overkill to use a costly RasPi to turn a bunch of relays on and off.
-
-For devices at scale in today's world, a cheap, readily available, reliable MCU can meet these new challenges. You don't need the shiny fast red sports car version when you're turning on and off switches. Be it Arduino, ESP32, RasPi Pico, or others, cheaper MCUs have exploded in popularity, and rightfully so. This project aims to take advantage of these while keeping costs down so that everyone can more easily access hydroponics.
+Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors from the hobby store, some aquarium pumps from the pet store, and other widely available low-cost hardware to build a working functional hydroponics controller systems. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the doors for more people to get involved in reducing their carbon footprint and becoming more knowledgeable - and ethical - about where their food comes from.
 
 ## Controller Setup
 
@@ -94,7 +92,7 @@ SPI devices can be chained together on the same shared data lines (no flipping o
 
 * The `CS` pin may be connected to any digital output pin, but it's common to use `SS` for the first device. Additional devices are not restricted to what pin they can or should use, but given it's a signal pin not using an interrupt-capable pin allows those to be used for interrupt driven mechanisms.
 
-SPI Devices Supported: SD card modules (4MHz)
+SPI Devices Supported: SD card modules (4+MHz)
 
 ### I2C Bus
 
@@ -110,28 +108,32 @@ I2C Devices Supported: DS3231 RTC modules, AT24C* EEPROM modules, 16x2/20x4 LCD 
 OneWire devices can be chained together on the same shared data lines (no flipping of wires). Devices can be of the same or different types, require minimal setup (and no soldering), and most can even operate in "parasite" power mode where they use the power from the data line (and an internal capacitor) to function (thus saving a `Vcc` line, only requiring `Data` and `GND`). OneWire runs only in the low kb/s speeds and is useful for digital sensors.
 
 * Typically, sensors are limited to 20 devices along a maximum 100m of wire.
-* When more than one OneWire device is on the same data data line, each device registers itself an enumeration index (0-X) along with an unique identifier (UUID). The device can then be referenced via this enumeration index (or UUID) by the system.
+* When more than one OneWire device is on the same data data line, each device registers itself an enumeration index (0-X) along with a 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID (or enumeration index) by the system in the future.
 
 ### Analog IO
 
 * Ensure AREF pin is set to the correct max input voltage to ensure analog sensors can use their full input range. The AREF pin, by default, is the same voltage as the MCU.
-  * Analog sensors will be able to customize per-pin voltage ranges in software later on - it's more important to know the max input voltage in use for correctly setting AREF.
-  * Not setting this correctly may affect measured analog values. Some sensors we've tested, for instance, are calibrated to operate up to 5.5v direct from factory.
-* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) support different bit resolutions for analog/PWM pins, but also may limit how many pins are able to use these higher resolutions. See the datasheet on your MCU for details.
+  * Analog sensors will be able to customize per-pin voltage ranges in software later on (as long as voltages are not negative) - it's more important to know the max input voltage in use for correctly setting AREF.
+  * Not setting this correctly may affect measured analog values. Some sensors we've tested, for instance, are calibrated to operate up to 5.5v direct from factory, others operate from -5v to +5v and have to be modified to output 0-5v.
+* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) support different bit resolutions for analog/PWM pins, but also may limit how many pins are able to use these higher resolutions. See the datasheet of your MCU for details.
 
 ### Sensors
 
-* If able to set in hardware, ensure pH and TDS meters use EC (mS/cm), aka PPM(500) or PPM(TDS). EC is considered a normalized measurement, while PPM can be split into different scale categories depending on sensor chemistry in use. PPM based sensors operating in a non-EC/PPM(500)/PPM(TDS)-based mode will need to have their PPM scale explicitly set.
-* Many different kinds of hobbyist sensors label its analog output `AO` (or `Ao`), and OneWire data `DO` (or `Do`, `DQ`, `Dq`) - however, always check your specific sensor's datasheet.
-  * Sensor pins used for event triggering when measurements go above/below a pre-set tolerance can be safely ignored, as the software implementation of this mechanism is more versatile.
-* Some meters (such as pH, but also seen on others) may also have additional `To` (or `TO`) pin for an analog temperature output to use in sensor value refinement. These can be set up as additional analog water temperature sensors and then tied to the pH meter object later on.
+* If able to set in hardware, ensure any TDS meters and soil moisture sensors use EC (aka mS/cm) mode. EC is considered a normalized measurement, while PPM can be split into different scale categories depending on sensor chemistry in use. PPM based sensors operating on anything other than a 1v=500ppm mode will need to have their PPM scale explicitly set.
+* Many different kinds of hobbyist sensors label their analog output `AO` (or `Ao`) - however, always check your specific sensor's datasheet.
+* Sensor pins used for event triggering when measurements go above/below a pre-set tolerance can be safely ignored, as the software implementation of this mechanism is more versatile.
 * CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, not to mention require `Vcc` for the heating element (5v @ 130mA for MQ-135) thus cannot use parasitic power mode. Then to calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
 
 We also ask that our users report any broken sensors (outside of bad calibration data) for us to consider adding support to (also consider sponsoring our work on [Patreon](www.patreon.com/nachtrave)).
 
 ## Memory Callouts
 
-The total number of objects (sensors, pumps, relays, probes, etc.) that the controller can support at once depends on how much free memory your MCU has available, with larger memory scaling with cost. We're currently targeting Mega2560 at minimum at this time.
+* The total number of and different types of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Objects range in size from 150 to 350 bytes or more depending on settings.
+* For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while more recent devices like the RasPi Pico have 2MB of Flash and 264kB of RAM. The ATMega2560 may struggle with full system builds and may be limited to specific system setups (such as no debug assertions, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled without issue.
+* For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various array structures the controller uses.
+  * If, for example, you had a large number of crops attached to a single feed reservoir, you can modify these defines to give more space for such object storage to avoid running into these storage limitations.
+* To save on the cost of code for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used (e.g. WiFi not being included in the build if you don't actually use any WiFi).
+  * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
 
 ## Example Usage
 
@@ -148,4 +150,3 @@ Below are several examples of controller usage.
 ```Arduino
 // TODO: Reinclude this example after modifications completed. -NR
 ```
-
