@@ -305,6 +305,9 @@ void HydroponicsTimedDosingBalancer::update()
                 if (actuatorIter != _incActuators.end()) {
                     performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
                                   actuatorIter->second * _dosingMillis);
+                    #ifdef HYDRUINO_DISABLE_MULTITASKING
+                        break; // only one dosing per call
+                    #endif
                 } else { break; }
             }
 
@@ -318,6 +321,9 @@ void HydroponicsTimedDosingBalancer::update()
                 if (actuatorIter != _decActuators.end()) {
                     performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
                                   actuatorIter->second * _dosingMillis);
+                    #ifdef HYDRUINO_DISABLE_MULTITASKING
+                        break; // only one dosing per call
+                    #endif
                 } else { break; }
             }
 
@@ -382,7 +388,6 @@ void HydroponicsTimedDosingBalancer::performDosing(shared_ptr<HydroponicsActuato
             delayFine(timeMillis);
             actuator->disableActuator();
             _dosingActIndex++;
-            break; // only once per call
         #endif
     }
 }

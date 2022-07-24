@@ -131,7 +131,7 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
 {
     if (!cond) {
         String assertMsg = makeAssertMsg(file, func, line);
-        getLoggerInstance()->logError(SFP(HS_Err_AssertionFailure), F(" HARD") + SFP(HS_ColonSpace), assertMsg);
+        getLoggerInstance()->logError(SFP(HS_Err_AssertionFailure), String(F(" HARD")) + SFP(HS_ColonSpace), assertMsg);
         getLoggerInstance()->logError(SFP(HS_DoubleSpace), msg);
         getLoggerInstance()->flush();
 
