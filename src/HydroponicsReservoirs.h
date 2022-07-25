@@ -47,8 +47,8 @@ public:
     virtual void handleLowMemory() override;
 
     virtual bool canActivate(HydroponicsActuator *actuator);
-    virtual bool getIsFilled() const = 0;
-    virtual bool getIsEmpty() const = 0;
+    virtual bool isFilled() const = 0;
+    virtual bool isEmpty() const = 0;
 
     virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits);
     virtual Hydroponics_UnitsType getVolumeUnits() const;
@@ -106,8 +106,8 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool getIsFilled() const override;
-    virtual bool getIsEmpty() const override;
+    virtual bool isFilled() const override;
+    virtual bool isEmpty() const override;
 
     virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits) override;
 
@@ -310,8 +310,8 @@ public:
     HydroponicsInfiniteReservoir(const HydroponicsInfiniteReservoirData *dataIn);
     virtual ~HydroponicsInfiniteReservoir();
 
-    virtual bool getIsFilled() const override;
-    virtual bool getIsEmpty() const override;
+    virtual bool isFilled() const override;
+    virtual bool isEmpty() const override;
 
     virtual void setWaterVolume(float waterVolume, Hydroponics_UnitsType waterVolumeUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setWaterVolume(HydroponicsSingleMeasurement waterVolume) override;

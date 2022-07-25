@@ -82,7 +82,7 @@ void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<Hyd
                 }
             }
 
-            if (!found && actuatorIter->first->getIsEnabled()) {
+            if (!found && actuatorIter->first->isEnabled()) {
                 actuatorIter->first->disableActuator();
             }
         }
@@ -106,7 +106,7 @@ void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<Hyd
                 }
             }
 
-            if (!found && actuatorIter->first->getIsEnabled()) {
+            if (!found && actuatorIter->first->isEnabled()) {
                 actuatorIter->first->disableActuator();
             }
         }
@@ -137,7 +137,7 @@ void HydroponicsBalancer::setEnabled(bool enabled)
     }
 }
 
-bool HydroponicsBalancer::getIsEnabled() const
+bool HydroponicsBalancer::isEnabled() const
 {
     return _enabled;
 }

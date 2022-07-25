@@ -57,10 +57,10 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool takeMeasurement(bool override = false) = 0;
+    virtual bool takeMeasurement(bool force = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
-    virtual bool getIsTakingMeasurement() const override;
-    virtual bool getNeedsPolling(uint32_t allowance = 0) const override;
+    virtual bool isTakingMeasurement() const override;
+    virtual bool needsPolling(uint32_t allowance = 0) const override;
 
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) = 0;
     virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const = 0;
@@ -80,7 +80,7 @@ public:
     Hydroponics_SensorType getSensorType() const;
     Hydroponics_PositionIndex getSensorIndex() const;
 
-    Signal<const HydroponicsMeasurement *> &getMeasurementSignal();
+    Signal<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> &getMeasurementSignal();
 
 protected:
     byte _inputPin;                                         // Input pin
@@ -88,7 +88,7 @@ protected:
     HydroponicsDLinkObject<HydroponicsCrop> _crop;          // Crop linkage
     HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
     const HydroponicsCalibrationData *_calibrationData;     // Calibration data
-    Signal<const HydroponicsMeasurement *> _measureSignal;  // New measurement signal
+    Signal<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> _measureSignal; // New measurement signal
 
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
@@ -108,7 +108,7 @@ public:
     HydroponicsBinarySensor(const HydroponicsBinarySensorData *dataIn);
     virtual ~HydroponicsBinarySensor();
 
-    virtual bool takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) override;
@@ -147,7 +147,7 @@ public:
     HydroponicsAnalogSensor(const HydroponicsAnalogSensorData *dataIn);
     virtual ~HydroponicsAnalogSensor();
 
-    virtual bool takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) override;
@@ -214,7 +214,7 @@ public:
     HydroponicsDHTTempHumiditySensor(const HydroponicsDHTTempHumiditySensorData *dataIn);
     virtual ~HydroponicsDHTTempHumiditySensor();
 
-    virtual bool takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     inline byte getMeasurementRowForTemperature() const { return 0; }
@@ -258,7 +258,7 @@ public:
     HydroponicsDSTemperatureSensor(const HydroponicsDSTemperatureSensorData *dataIn);
     virtual ~HydroponicsDSTemperatureSensor();
 
-    virtual bool takeMeasurement(bool override = false) override;
+    virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
 
     inline byte getMeasurementRowForTemperature() const { return 0; }

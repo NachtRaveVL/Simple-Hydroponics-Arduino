@@ -60,7 +60,7 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
     return false;
 }
 
-bool HydroponicsLogger::getIsLoggingToSDCard() const
+bool HydroponicsLogger::isLoggingToSDCard() const
 {
     HYDRUINO_SOFT_ASSERT(_loggerData, SFP(HS_Err_NotYetInitialized));
     return _loggerData && _loggerData->logToSDCard;
@@ -69,28 +69,28 @@ bool HydroponicsLogger::getIsLoggingToSDCard() const
 void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
 {
     if (actuator) {
-        logMessage(actuator->getId().keyStr, SFP(HS_Log_HasEnabled));
+        logMessage(actuator->getId().keyString, SFP(HS_Log_HasEnabled));
     }
 }
 
 void HydroponicsLogger::logDeactivation(const HydroponicsActuator *actuator)
 {
     if (actuator) {
-        logMessage(actuator->getId().keyStr, SFP(HS_Log_HasDisabled));
+        logMessage(actuator->getId().keyString, SFP(HS_Log_HasDisabled));
     }
 }
 
 void HydroponicsLogger::logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString, const String &statusString)
 {
     if (feedReservoir) {
-        logMessage(feedReservoir->getId().keyStr, processString, statusString);
+        logMessage(feedReservoir->getId().keyString, processString, statusString);
     }
 }
 
 void HydroponicsLogger::logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString)
 {
     if (pump) {
-        logMessage(((HydroponicsObject *)pump)->getId().keyStr, pumpString);
+        logMessage(((HydroponicsObject *)pump)->getId().keyString, pumpString);
     }
 }
 
@@ -142,7 +142,7 @@ void HydroponicsLogger::log(const String &prefix, const String &msg, const Strin
         }
     #endif
 
-    if (getIsLoggingToSDCard()) {
+    if (isLoggingToSDCard()) {
         auto sd = getHydroponicsInstance()->getSDCard();
 
         if (sd) {
@@ -190,7 +190,7 @@ Hydroponics_LogLevel HydroponicsLogger::getLogLevel() const
     return _loggerData ? _loggerData->logLevel : Hydroponics_LogLevel_None;
 }
 
-bool HydroponicsLogger::getIsLoggingEnabled() const
+bool HydroponicsLogger::isLoggingEnabled() const
 {
     HYDRUINO_SOFT_ASSERT(_loggerData, SFP(HS_Err_NotYetInitialized));
     return _loggerData && _loggerData->logLevel != Hydroponics_LogLevel_None &&
@@ -204,7 +204,7 @@ time_t HydroponicsLogger::getSystemUptime() const
 
 void HydroponicsLogger::notifyDayChanged()
 {
-    if (getIsLoggingEnabled()) {
+    if (isLoggingEnabled()) {
         _logFileName = getYYMMDDFilename(charsToString(_loggerData->logFilePrefix, 16), SFP(HS_txt));
         cleanupOldestLogs();
     }

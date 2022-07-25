@@ -158,13 +158,13 @@ struct HydroponicsCropsLibData : public HydroponicsData {
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 
-    inline bool getIsInvasive() const { return flags & HydroponicsCropsLibData_Flag_Invasive; }
-    inline bool getIsViner() const { return flags & HydroponicsCropsLibData_Flag_Viner; }
-    inline bool getIsLarge() const { return flags & HydroponicsCropsLibData_Flag_Large; }
-    inline bool getIsPerennial() const { return flags & HydroponicsCropsLibData_Flag_Perennial; }
-    inline bool getIsToxicToPets() const { return flags & HydroponicsCropsLibData_Flag_Toxic; }
-    inline bool getNeedsPrunning() const { return flags & HydroponicsCropsLibData_Flag_Pruning; }
-    inline bool getNeedsSpraying() const { return flags & HydroponicsCropsLibData_Flag_Spraying; }
+    inline bool isInvasive() const { return flags & HydroponicsCropsLibData_Flag_Invasive; }
+    inline bool isViner() const { return flags & HydroponicsCropsLibData_Flag_Viner; }
+    inline bool isLarge() const { return flags & HydroponicsCropsLibData_Flag_Large; }
+    inline bool isPerennial() const { return flags & HydroponicsCropsLibData_Flag_Perennial; }
+    inline bool isToxicToPets() const { return flags & HydroponicsCropsLibData_Flag_Toxic; }
+    inline bool needsPrunning() const { return flags & HydroponicsCropsLibData_Flag_Pruning; }
+    inline bool needsSpraying() const { return flags & HydroponicsCropsLibData_Flag_Spraying; }
 };
 
 

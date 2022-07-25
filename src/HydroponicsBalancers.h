@@ -30,7 +30,7 @@ public:
 
     virtual void setTargetSetpoint(float targetSetpoint) override;
     virtual Hydroponics_BalancerState getBalancerState() const override;
-    inline bool getIsBalanced() const { return getBalancerState() == Hydroponics_BalancerState_Balanced; }
+    inline bool isBalanced() const { return getBalancerState() == Hydroponics_BalancerState_Balanced; }
 
     virtual void update() override;
     virtual void resolveLinks() override;
@@ -45,7 +45,7 @@ public:
     const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators();
 
     void setEnabled(bool enabled);
-    bool getIsEnabled() const;
+    bool isEnabled() const;
 
     float getTargetSetpoint() const;
     float getTargetRange() const;

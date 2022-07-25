@@ -307,7 +307,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                 JsonObjectConst dataObj = doc.as<JsonObjectConst>();
                 HydroponicsData *data = newDataFromJSONObject(dataObj);
 
-                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HS_Err_ImportFailure));
+                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectectData()), SFP(HS_Err_ImportFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
@@ -317,7 +317,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                         setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
-                } else if (data && data->isObjectData()) {
+                } else if (data && data->isObjectectData()) {
                     HydroponicsObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
 
@@ -414,8 +414,8 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroponicsData *data = iter->second->newSaveData();
 
-                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), SFP(HS_Err_AllocationFailure));
-                if (data && data->isObjectData()) {
+                HYDRUINO_SOFT_ASSERT(data && data->isObjectectData(), SFP(HS_Err_AllocationFailure));
+                if (data && data->isObjectectData()) {
                     StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                     JsonObject objectDataObj = doc.to<JsonObject>();
@@ -465,7 +465,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             while (streamIn->available()) {
                 HydroponicsData *data = newDataFromBinaryStream(streamIn);
 
-                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HS_Err_AllocationFailure));
+                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectectData()), SFP(HS_Err_AllocationFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
@@ -475,7 +475,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                         setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
-                } else if (data && data->isObjectData()) {
+                } else if (data && data->isObjectectData()) {
                     HydroponicsObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
 
@@ -556,8 +556,8 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroponicsData *data = iter->second->newSaveData();
 
-                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), SFP(HS_Err_AllocationFailure));
-                if (data && data->isObjectData()) {
+                HYDRUINO_SOFT_ASSERT(data && data->isObjectectData(), SFP(HS_Err_AllocationFailure));
+                if (data && data->isObjectectData()) {
                     size_t bytesWritten = serializeDataToBinaryStream(data, streamOut);
                     delete data; data = nullptr;
 
@@ -596,7 +596,7 @@ void Hydroponics::commonPostInit()
     _scheduler.updateDayTracking();
     _logger.updateInitTracking();
 
-    _lastAutosave = getIsAutosaveEnabled() ? unixNow() : 0;
+    _lastAutosave = isAutosaveEnabled() ? unixNow() : 0;
 
     if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
         setWiFiConnection(getWiFiSSID(), getWiFiPassword()); // sets seed and encrypts
@@ -804,7 +804,7 @@ void Hydroponics::updateObjects(int pass)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 if (iter->second && iter->second->isSensorType()) {
                     auto sensorObj = static_pointer_cast<HydroponicsSensor>(iter->second);
-                    if (sensorObj && sensorObj->getNeedsPolling()) {
+                    if (sensorObj && sensorObj->needsPolling()) {
                         sensorObj->takeMeasurement(); // no force if already current for this frame #
                     }
                 }
@@ -838,7 +838,7 @@ bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
     if (obj && _objects.find(obj->getKey()) == _objects.end()) {
         _objects[obj->getKey()] = obj;
 
-        if (getInOperationalMode()) {
+        if (inOperationalMode()) {
             obj->resolveLinks();
 
             if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
@@ -872,7 +872,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
         while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
             auto iter = _objects.find(id.regenKey());
             if (iter != _objects.end()) {
-                if (id.keyStr == iter->second->getId().keyStr) {
+                if (id.keyString == iter->second->getId().keyString) {
                     return iter->second;
                 } else {
                     objectById_Col(id);
@@ -883,7 +883,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
         while(--id.posIndex >= 0) {
             auto iter = _objects.find(id.regenKey());
             if (iter != _objects.end()) {
-                if (id.keyStr == iter->second->getId().keyStr) {
+                if (id.keyString == iter->second->getId().keyString) {
                     return iter->second;
                 } else {
                     objectById_Col(id);
@@ -893,7 +893,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
     } else {
         auto iter = _objects.find(id.key);
         if (iter != _objects.end()) {
-            if (id.keyStr == iter->second->getId().keyStr) {
+            if (id.keyString == iter->second->getId().keyString) {
                 return iter->second;
             } else {
                 objectById_Col(id);
@@ -909,7 +909,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdent
     HYDRUINO_SOFT_ASSERT(false, F("Hashing collision")); // exhaustive search must be performed, publishing may miss values
 
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (id.keyStr == iter->second->getId().keyStr) {
+        if (id.keyString == iter->second->getId().keyString) {
             return iter->second;
         }
     }
@@ -1307,7 +1307,7 @@ void Hydroponics::dropOneWireForPin(byte pin)
     }
 }
 
-bool Hydroponics::getInOperationalMode() const
+bool Hydroponics::inOperationalMode() const
 {
     return !_suspend;
 }
@@ -1360,12 +1360,12 @@ uint16_t Hydroponics::getPollingFrame() const
     return _pollingFrame;
 }
 
-bool Hydroponics::getIsPollingFrameOld(unsigned int frame, unsigned int allowance) const
+bool Hydroponics::isPollingFrameOld(unsigned int frame, unsigned int allowance) const
 {
     return _pollingFrame - frame > allowance;
 }
 
-bool Hydroponics::getIsAutosaveEnabled() const
+bool Hydroponics::isAutosaveEnabled() const
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
     return _systemData ? _systemData->autosaveEnabled != Hydroponics_Autosave_Disabled : false;
@@ -1400,7 +1400,7 @@ String Hydroponics::getWiFiPassword()
 void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
-    _lastAutosave = getIsAutosaveEnabled() ? unixNow() : 0;
+    _lastAutosave = isAutosaveEnabled() ? unixNow() : 0;
     _logger.updateInitTracking();
     _scheduler.broadcastDayChange();
 }
@@ -1483,9 +1483,9 @@ static uint32_t getSDCardFreeSpace()
 
 void Hydroponics::checkFreeSpace()
 {
-    if ((_logger.getIsLoggingEnabled() || _publisher.getIsPublishingEnabled()) &&
+    if ((_logger.isLoggingEnabled() || _publisher.isPublishingEnabled()) &&
         (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (HYDRUINO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
-        if (_logger.getIsLoggingToSDCard() || _publisher.getIsPublishingToSDCard()) {
+        if (_logger.isLoggingToSDCard() || _publisher.isPublishingToSDCard()) {
             uint32_t freeKB = getSDCardFreeSpace();
             while(freeKB < HYDRUINO_SYS_FREESPACE_LOWSPACE) {
                 _logger.cleanupOldestLogs(true);
@@ -1500,7 +1500,7 @@ void Hydroponics::checkFreeSpace()
 
 void Hydroponics::checkAutosave()
 {
-    if (getIsAutosaveEnabled() && unixNow() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
+    if (isAutosaveEnabled() && unixNow() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
         switch (_systemData->autosaveEnabled) {
             case Hydroponics_Autosave_EnabledToSDCardJson:
                 saveToSDCard(true);

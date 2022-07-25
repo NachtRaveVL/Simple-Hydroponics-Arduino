@@ -49,7 +49,7 @@ void HydroponicsTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
 {
     ((HydroponicsTriggerSubData *)dataOut)->type = (int8_t)type;
     if (_sensor.getId()) {
-        strncpy(((HydroponicsTriggerSubData *)dataOut)->sensorName, _sensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsTriggerSubData *)dataOut)->sensorName, _sensor.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     ((HydroponicsTriggerSubData *)dataOut)->measurementRow = _measurementRow;
     ((HydroponicsTriggerSubData *)dataOut)->toleranceUnits = _toleranceUnits;
@@ -60,7 +60,7 @@ void HydroponicsTrigger::update()
     if (_needsSensorUpdate && getSensor()) {
         handleSensorMeasure(_sensor->getLatestMeasurement());
 
-        if (_needsSensorUpdate && !_sensor->getIsTakingMeasurement()) {
+        if (_needsSensorUpdate && !_sensor->isTakingMeasurement()) {
             _sensor->takeMeasurement(true);
         }
     }
@@ -94,7 +94,7 @@ Hydroponics_UnitsType HydroponicsTrigger::getToleranceUnits() const
 
 shared_ptr<HydroponicsSensor> HydroponicsTrigger::getSensor()
 {
-    return _sensor.getObj();
+    return _sensor.getObject();
 }
 
 byte HydroponicsTrigger::getMeasurementRow() const

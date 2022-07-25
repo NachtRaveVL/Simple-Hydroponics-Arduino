@@ -8,15 +8,6 @@
 
 #include "Hydroponics.h"
 
-template<class T>
-shared_ptr<T> HydroponicsDLinkObject<T>::getObj() {
-    if (!obj && (bool)id) {
-        if (getHydroponicsInstance()) { obj = getHydroponicsInstance()->objectById(id); }
-        if ((bool)obj) { id = obj->getId(); }
-    }
-    return obj;
-}
-
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 
 template<typename ParameterType, int Slots>

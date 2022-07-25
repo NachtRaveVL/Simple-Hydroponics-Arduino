@@ -45,9 +45,9 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool enableActuator(float intensity = 1.0f, bool override = false) = 0;
+    virtual bool enableActuator(float intensity = 1.0f, bool force = false) = 0;
     virtual bool getCanEnable() override;
-    virtual bool getIsEnabled(float tolerance = 0.0f) const = 0;
+    virtual bool isEnabled(float tolerance = 0.0f) const = 0;
 
     virtual void setContinuousPowerDraw(float contPowerDraw, Hydroponics_UnitsType contPowerDrawUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setContinuousPowerDraw(HydroponicsSingleMeasurement contPowerDraw) override;
@@ -93,9 +93,9 @@ public:
     HydroponicsRelayActuator(const HydroponicsRelayActuatorData *dataIn);
     virtual ~HydroponicsRelayActuator();
 
-    virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
+    virtual bool enableActuator(float intensity = 1.0f, bool force = false) override;
     virtual void disableActuator() override;
-    virtual bool getIsEnabled(float tolerance = 0.0f) const override;
+    virtual bool isEnabled(float tolerance = 0.0f) const override;
 
     bool getActiveLow() const;
 
@@ -121,7 +121,7 @@ public:
     virtual void update() override;
     virtual void resolveLinks() override;
 
-    virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
+    virtual bool enableActuator(float intensity = 1.0f, bool force = false) override;
     virtual void disableActuator() override;
 
     virtual bool canPump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) override;
@@ -188,9 +188,9 @@ public:
     HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn);
     virtual ~HydroponicsPWMActuator();
 
-    virtual bool enableActuator(float intensity = 1.0f, bool override = false) override;
+    virtual bool enableActuator(float intensity = 1.0f, bool force = false) override;
     virtual void disableActuator() override;
-    virtual bool getIsEnabled(float tolerance = 0.0f) const override;
+    virtual bool isEnabled(float tolerance = 0.0f) const override;
 
     float getPWMAmount() const;
     int getPWMAmount(int) const;

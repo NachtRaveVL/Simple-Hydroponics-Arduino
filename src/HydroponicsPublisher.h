@@ -25,14 +25,14 @@ public:
     virtual void handleLowMemory() override;
  
     bool beginPublishingToSDCard(String dataFilePrefix);
-    bool getIsPublishingToSDCard();
+    bool isPublishingToSDCard();
 
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
 
     void setNeedsTabulation();
 
     Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
-    bool getIsPublishingEnabled();
+    bool isPublishingEnabled();
 
     void notifyDayChanged();
 

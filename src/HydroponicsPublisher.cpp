@@ -72,7 +72,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
     return false;
 }
 
-bool HydroponicsPublisher::getIsPublishingToSDCard()
+bool HydroponicsPublisher::isPublishingToSDCard()
 {
     HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
     return _publisherData && _publisherData->publishToSDCard;
@@ -91,7 +91,7 @@ void HydroponicsPublisher::setNeedsTabulation()
     _needsTabulation = (bool)_publisherData;
 }
 
-bool HydroponicsPublisher::getIsPublishingEnabled()
+bool HydroponicsPublisher::isPublishingEnabled()
 {
     HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
     return _publisherData && (_publisherData->publishToSDCard);
@@ -99,7 +99,7 @@ bool HydroponicsPublisher::getIsPublishingEnabled()
 
 void HydroponicsPublisher::notifyDayChanged()
 {
-    if (getIsPublishingEnabled()) {
+    if (isPublishingEnabled()) {
         _dataFileName = getYYMMDDFilename(charsToString(_publisherData->dataFilePrefix, 16), SFP(HS_csv));
         cleanupOldestData();
     }
@@ -113,7 +113,7 @@ void HydroponicsPublisher::advancePollingFrame()
         time_t timestamp = unixNow();
         _pollingFrame = pollingFrame;
 
-        if (Hydroponics::_activeInstance->getInOperationalMode()) {
+        if (Hydroponics::_activeInstance->inOperationalMode()) {
             #ifndef HYDRUINO_DISABLE_MULTITASKING
                 scheduleObjectMethodCallOnce<HydroponicsPublisher>(this, &HydroponicsPublisher::publish, timestamp);
             #else
@@ -129,11 +129,11 @@ void HydroponicsPublisher::advancePollingFrame()
 
 void HydroponicsPublisher::checkCanPublish()
 {
-    if (_dataColumns && _columnCount && Hydroponics::_activeInstance->getIsPollingFrameOld(_pollingFrame)) {
+    if (_dataColumns && _columnCount && Hydroponics::_activeInstance->isPollingFrameOld(_pollingFrame)) {
         bool allCurrent = true;
 
         for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
-            if (Hydroponics::_activeInstance->getIsPollingFrameOld(_dataColumns[columnIndex].measurement.frame)) {
+            if (Hydroponics::_activeInstance->isPollingFrameOld(_dataColumns[columnIndex].measurement.frame)) {
                 allCurrent = false;
                 break;
             }
@@ -143,7 +143,7 @@ void HydroponicsPublisher::checkCanPublish()
             time_t timestamp = unixNow();
             _pollingFrame = Hydroponics::_activeInstance->getPollingFrame();
 
-            if (Hydroponics::_activeInstance->getInOperationalMode()) {
+            if (Hydroponics::_activeInstance->inOperationalMode()) {
                 #ifndef HYDRUINO_DISABLE_MULTITASKING
                     scheduleObjectMethodCallOnce<HydroponicsPublisher>(this, &HydroponicsPublisher::publish, timestamp);
                 #else
@@ -156,7 +156,7 @@ void HydroponicsPublisher::checkCanPublish()
 
 void HydroponicsPublisher::publish(time_t timestamp)
 {
-    if (getIsPublishingToSDCard()) {
+    if (isPublishingToSDCard()) {
         auto sd = getHydroponicsInstance()->getSDCard();
 
         if (sd) {
@@ -182,7 +182,7 @@ void HydroponicsPublisher::publish(time_t timestamp)
 
 void HydroponicsPublisher::performTabulation()
 {
-    if (getIsPublishingEnabled()) {
+    if (isPublishingEnabled()) {
         bool sameOrder = _dataColumns && _columnCount ? true : false;
         int columnCount = 0;
 
@@ -246,7 +246,7 @@ void HydroponicsPublisher::performTabulation()
 
 void HydroponicsPublisher::resetDataFile()
 {
-    if (getIsPublishingToSDCard()) {
+    if (isPublishingToSDCard()) {
         auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
@@ -269,7 +269,7 @@ void HydroponicsPublisher::resetDataFile()
                     else { measurementRow = 0; lastSensor = sensor; }
 
                     if (sensor) {
-                        dataFile.print(sensor->getId().keyStr);
+                        dataFile.print(sensor->getId().keyString);
                         dataFile.print('_');
                         dataFile.print(unitsCategoryToString(defaultMeasureCategoryForSensorType(sensor->getSensorType(), measurementRow)));
                         dataFile.print('_');

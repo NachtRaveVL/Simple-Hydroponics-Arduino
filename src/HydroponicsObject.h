@@ -38,7 +38,7 @@ struct HydroponicsIdentity {
         Hydroponics_RailType railType;                      // As rail type enumeration
     } objTypeAs;                                            // Enumeration type union
     Hydroponics_PositionIndex posIndex;                     // Position index
-    String keyStr;                                          // String key
+    String keyString;                                       // String key
     Hydroponics_KeyType key;                                // UInt Key
 
     // Default constructor (no id)
@@ -68,13 +68,14 @@ struct HydroponicsIdentity {
     HydroponicsIdentity(const HydroponicsData *dataIn);
 
     // String constructor
-    HydroponicsIdentity(const char *name);
-    HydroponicsIdentity(String name);
+    HydroponicsIdentity(const char *idKeyStr);
+    // String constructor
+    HydroponicsIdentity(const String &idKeyString);
 
     // Used to update key value after modification, returning new key by convenience
     Hydroponics_KeyType regenKey();
 
-    inline operator bool() const { return key != (Hydroponics_KeyType)-1 && keyStr.length(); }
+    inline operator bool() const { return key != (Hydroponics_KeyType)-1 && keyString.length(); }
     inline bool operator==(const HydroponicsIdentity &otherId) const { return key == otherId.key; }
     inline bool operator!=(const HydroponicsIdentity &otherId) const { return key != otherId.key; }
 };
@@ -101,9 +102,12 @@ public:
 
     HydroponicsData *newSaveData();                         // Saves object state to proper backing data
 
-    bool addLinkage(HydroponicsObject *obj);                // Adds reverse linkage to this object
-    bool removeLinkage(HydroponicsObject *obj);             // Removes reverse linkage to this object
+    bool addLinkage(HydroponicsObject *obj);                // Adds linkage to this object
+    bool removeLinkage(HydroponicsObject *obj);             // Removes linkage to this object
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object
+
+    // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
+    // Objects are considered strong pointers, since existence -> shared_ptr ref to this instance exists.
     const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const;
 
     const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object
@@ -123,7 +127,7 @@ private:
 
 
 // Shortcut to get shared pointer from object with static pointer cast built-in
-template <class T> shared_ptr<T> getSharedPtr(HydroponicsObject *object) { return static_pointer_cast<T>(object->getSharedPtr()); }
+template<class T> shared_ptr<T> getSharedPtr(const HydroponicsObject *object) { return static_pointer_cast<T>(object->getSharedPtr()); }
 
 
 // Hydroponics Sub Object Base

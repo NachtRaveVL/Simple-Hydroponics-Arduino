@@ -45,12 +45,12 @@ public:
     void setNeedsScheduling();
 
     float getCombinedDosingRate(HydroponicsReservoir *reservoir, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
-    bool getInDaytimeMode() const;
+    bool inDaytimeMode() const;
 
     float getBaseFeedMultiplier() const;
     float getWeeklyDosingRate(int weekIndex, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix) const;
     float getStandardDosingRate(Hydroponics_ReservoirType reservoirType) const;
-    bool getIsFlushWeek(int weekIndex);
+    bool isFlushWeek(int weekIndex);
     unsigned int getTotalFeedingsDay() const;
     unsigned int getPreFeedAeratorMins() const;
     unsigned int getPreLightSprayMins() const;

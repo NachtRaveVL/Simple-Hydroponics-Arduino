@@ -138,10 +138,10 @@ public:
 // Actuator Object Interface
 class HydroponicsActuatorObjectInterface {
 public:
-    virtual bool enableActuator(float intensity = 1.0f, bool override = false) = 0;
+    virtual bool enableActuator(float intensity = 1.0f, bool force = false) = 0;
     virtual void disableActuator() = 0;
     virtual bool getCanEnable() = 0;
-    virtual bool getIsEnabled(float tolerance = 0.0f) const = 0;
+    virtual bool isEnabled(float tolerance = 0.0f) const = 0;
 
     virtual void setContinuousPowerDraw(float contPowerDraw, Hydroponics_UnitsType contPowerDrawUnits = Hydroponics_UnitsType_Undefined) = 0;
     virtual void setContinuousPowerDraw(HydroponicsSingleMeasurement contPowerDraw) = 0;
@@ -151,16 +151,16 @@ public:
 // Sensor Object Interface
 class HydroponicsSensorObjectInterface {
 public:
-    virtual bool takeMeasurement(bool override = false) = 0;
+    virtual bool takeMeasurement(bool force = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
-    virtual bool getIsTakingMeasurement() const = 0;
-    virtual bool getNeedsPolling(uint32_t allowance = 0) const = 0;
+    virtual bool isTakingMeasurement() const = 0;
+    virtual bool needsPolling(uint32_t allowance = 0) const = 0;
 };
 
 // Crop Object Interface
 class HydroponicsCropObjectInterface {
 public:
-    virtual bool getNeedsFeeding() const = 0;
+    virtual bool needsFeeding() const = 0;
     virtual void notifyFeedingBegan() = 0;
     virtual void notifyFeedingEnded() = 0;
 };
@@ -169,8 +169,8 @@ public:
 class HydroponicsReservoirObjectInterface {
 public:
     virtual bool canActivate(HydroponicsActuator *actuator) = 0;
-    virtual bool getIsFilled() const = 0;
-    virtual bool getIsEmpty() const = 0;
+    virtual bool isFilled() const = 0;
+    virtual bool isEmpty() const = 0;
 
     virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits) = 0;
     virtual Hydroponics_UnitsType getVolumeUnits() const = 0;

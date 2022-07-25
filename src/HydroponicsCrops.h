@@ -44,7 +44,7 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool getNeedsFeeding() const = 0;
+    virtual bool needsFeeding() const = 0;
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 
@@ -117,7 +117,7 @@ public:
     HydroponicsTimedCrop(const HydroponicsTimedCropData *dataIn);
     virtual ~HydroponicsTimedCrop();
 
-    virtual bool getNeedsFeeding() const override;
+    virtual bool needsFeeding() const override;
     virtual void notifyFeedingBegan() override;
 
     void setFeedTimeOn(TimeSpan timeOn);
@@ -149,7 +149,7 @@ public:
     virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
-    virtual bool getNeedsFeeding() const override;
+    virtual bool needsFeeding() const override;
 
     void setMoistureUnits(Hydroponics_UnitsType moistureUnits);
     Hydroponics_UnitsType getMoistureUnits() const;

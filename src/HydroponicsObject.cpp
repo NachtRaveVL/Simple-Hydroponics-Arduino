@@ -8,9 +8,9 @@
 HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HS_Err_InvalidParameter));
 
-    if (dataIn && dataIn->isObjectData()) {
+    if (dataIn && dataIn->isObjectectData()) {
         switch (dataIn->id.object.idType) {
             case 0: // Actuator
                 return newActuatorObjectFromData((HydroponicsActuatorData *)dataIn);
@@ -31,41 +31,41 @@ HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn)
 
 
 HydroponicsIdentity::HydroponicsIdentity()
-    : type(Unknown), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyStr(), key((Hydroponics_KeyType)-1)
+    : type(Unknown), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyString(), key((Hydroponics_KeyType)-1)
 { ; }
 
 HydroponicsIdentity::HydroponicsIdentity(const HydroponicsIdentity &id, Hydroponics_PositionIndex positionIndex)
-    : type(id.type), objTypeAs{.actuatorType=id.objTypeAs.actuatorType}, posIndex(positionIndex), keyStr(), key((Hydroponics_KeyType)-1)
+    : type(id.type), objTypeAs{.actuatorType=id.objTypeAs.actuatorType}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
 
 HydroponicsIdentity::HydroponicsIdentity(Hydroponics_ActuatorType actuatorTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Actuator), objTypeAs{.actuatorType=actuatorTypeIn}, posIndex(positionIndex), keyStr(), key((Hydroponics_KeyType)-1)
+    : type(Actuator), objTypeAs{.actuatorType=actuatorTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
 
 HydroponicsIdentity::HydroponicsIdentity(Hydroponics_SensorType sensorTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Sensor), objTypeAs{.sensorType=sensorTypeIn}, posIndex(positionIndex), keyStr(), key((Hydroponics_KeyType)-1)
+    : type(Sensor), objTypeAs{.sensorType=sensorTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
 
 HydroponicsIdentity::HydroponicsIdentity(Hydroponics_CropType cropTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Crop), objTypeAs{.cropType=cropTypeIn}, posIndex(positionIndex), keyStr(), key((Hydroponics_KeyType)-1)
+    : type(Crop), objTypeAs{.cropType=cropTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
 
 HydroponicsIdentity::HydroponicsIdentity(Hydroponics_ReservoirType reservoirTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Reservoir), objTypeAs{.reservoirType=reservoirTypeIn}, posIndex(positionIndex), keyStr(), key((Hydroponics_KeyType)-1)
+    : type(Reservoir), objTypeAs{.reservoirType=reservoirTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
 
 HydroponicsIdentity::HydroponicsIdentity(Hydroponics_RailType railTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Rail), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyStr(), key((Hydroponics_KeyType)-1)
+    : type(Rail), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
@@ -74,20 +74,20 @@ HydroponicsIdentity::HydroponicsIdentity(const HydroponicsData *dataIn)
     : type((typeof(type))(dataIn->id.object.idType)),
       objTypeAs{.actuatorType=(Hydroponics_ActuatorType)(dataIn->id.object.objType)},
       posIndex(dataIn->id.object.posIndex),
-      keyStr(), key((Hydroponics_KeyType)-1)
+      keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
 
-HydroponicsIdentity::HydroponicsIdentity(const char *name)
-    : type(Unknown), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyStr(name), key((Hydroponics_KeyType)-1)
+HydroponicsIdentity::HydroponicsIdentity(const char *idKeyStr)
+    : type(Unknown), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyString(idKeyStr), key((Hydroponics_KeyType)-1)
 {
     // TODO: Advanced string detokenization (may not be needed tho)
     regenKey();
 }
 
-HydroponicsIdentity::HydroponicsIdentity(String name)
-    : HydroponicsIdentity(name.c_str())
+HydroponicsIdentity::HydroponicsIdentity(const String &idKeyString)
+    : HydroponicsIdentity(idKeyString.c_str())
 { ; }
 
 Hydroponics_KeyType HydroponicsIdentity::regenKey()
@@ -95,23 +95,23 @@ Hydroponics_KeyType HydroponicsIdentity::regenKey()
     String sep = String('.');
     switch (type) {
         case Actuator:
-            keyStr = actuatorTypeToString(objTypeAs.actuatorType, true) + sep + positionIndexToString(posIndex, true);
+            keyString = actuatorTypeToString(objTypeAs.actuatorType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Sensor:
-            keyStr = sensorTypeToString(objTypeAs.sensorType, true) + sep + positionIndexToString(posIndex, true);
+            keyString = sensorTypeToString(objTypeAs.sensorType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Crop:
-            keyStr = cropTypeToString(objTypeAs.cropType, true) + sep + positionIndexToString(posIndex, true);
+            keyString = cropTypeToString(objTypeAs.cropType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Reservoir:
-            keyStr = reservoirTypeToString(objTypeAs.reservoirType, true) + sep + positionIndexToString(posIndex, true);
+            keyString = reservoirTypeToString(objTypeAs.reservoirType, true) + sep + positionIndexToString(posIndex, true);
             break;
         case Rail:
-            keyStr = railTypeToString(objTypeAs.railType, true) + sep + positionIndexToString(posIndex, true);
+            keyString = railTypeToString(objTypeAs.railType, true) + sep + positionIndexToString(posIndex, true);
             break;
         default: break;
     }
-    key = stringHash(keyStr);
+    key = stringHash(keyString);
     return key;
 }
 
@@ -207,8 +207,8 @@ void HydroponicsObject::saveToData(HydroponicsData *dataOut)
     dataOut->id.object.idType = (int8_t)_id.type;
     dataOut->id.object.objType = (int8_t)_id.objTypeAs.actuatorType;
     dataOut->id.object.posIndex = (int8_t)_id.posIndex;
-    if (_id.keyStr.length()) {
-        strncpy(((HydroponicsObjectData *)dataOut)->name, _id.keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    if (_id.keyString.length()) {
+        strncpy(((HydroponicsObjectData *)dataOut)->name, _id.keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
 }
 

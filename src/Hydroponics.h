@@ -115,15 +115,15 @@ extern void __int_restore_irq(int *primask);
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 using namespace std;
-template <typename K, typename V, size_t N = 16> struct Map { typedef std::map<K,V> type; };
-template <typename T, size_t N = 16> struct Vector { typedef std::vector<T> type; };
-template <class T1, class T2> struct Pair { typedef std::pair<T1,T2> type; };
+template<typename K, typename V, size_t N = 16> struct Map { typedef std::map<K,V> type; };
+template<typename T, size_t N = 16> struct Vector { typedef std::vector<T> type; };
+template<class T1, class T2> struct Pair { typedef std::pair<T1,T2> type; };
 #define HYDRUINO_USE_STDCPP_CONTAINERS
 #else
 using namespace arx;
-template <typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> struct Map { typedef arx::map<K,V,N> type; };
-template <typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> struct Vector { typedef arx::vector<T,N> type; };
-template <class T1, class T2> struct Pair { typedef arx::pair<T1,T2> type; };
+template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> struct Map { typedef arx::map<K,V,N> type; };
+template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> struct Vector { typedef arx::vector<T,N> type; };
+template<class T1, class T2> struct Pair { typedef arx::pair<T1,T2> type; };
 #define HYDRUINO_USE_ARX_CONTAINERS
 #endif
 using namespace arx::stdx;
@@ -131,8 +131,9 @@ extern time_t unixNow();
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsStrings.h"
-#include "HydroponicsInlines.hpp"
+#include "HydroponicsInlines.hh"
 #include "HydroponicsInterfaces.h"
+#include "HydroponicsAttachments.h"
 #include "HydroponicsData.h"
 #include "HydroponicsObject.h"
 #include "HydroponicsMeasurements.h"
@@ -318,7 +319,7 @@ public:
     void dropOneWireForPin(byte pin);
 
     // Whenever the system is in operational mode (has been launched), or not
-    bool getInOperationalMode() const;
+    bool inOperationalMode() const;
     // System type mode (default: Recycling)
     Hydroponics_SystemMode getSystemMode() const;
     // System measurement mode (default: Metric)
@@ -338,9 +339,9 @@ public:
     // System polling frame number for sensor frame tracking
     uint16_t getPollingFrame() const;
     // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
-    bool getIsPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
+    bool isPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
     // Returns if system autosaves are enabled or not
-    bool getIsAutosaveEnabled() const;
+    bool isAutosaveEnabled() const;
     // SSID for WiFi connection
     String getWiFiSSID();
     // Password for WiFi connection (plaintext)
@@ -423,6 +424,9 @@ protected:
     void updateObjects(int pass);
 
     shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
+    
+    template<class T>
+    friend shared_ptr<T> HydroponicsDLinkObject<T>::getObject();
 
     void handleInterrupt(byte pin);
     friend void ::handleInterrupt(byte pin);
@@ -435,6 +439,8 @@ protected:
     void checkAutosave();
 };
 
+// Template implementations
+#include "HydroponicsAttachments.hpp"
 #include "HydroponicsUtils.hpp"
 
 #endif // /ifndef Hydroponics_H

@@ -8,9 +8,9 @@
 HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HS_Err_InvalidParameter));
 
-    if (dataIn && dataIn->isObjectData()) {
+    if (dataIn && dataIn->isObjectectData()) {
         switch (dataIn->id.object.classType) {
             case 0: // Simple
                 return new HydroponicsSimpleRail((const HydroponicsSimpleRailData *)dataIn);
@@ -210,7 +210,7 @@ void HydroponicsSimpleRail::handleActivation(HydroponicsActuator *actuator)
 {
     bool activeCountBefore = _activeCount;
 
-    if (actuator->getIsEnabled()) {
+    if (actuator->isEnabled()) {
         _activeCount++;
     } else {
         _activeCount--;
@@ -343,7 +343,7 @@ void HydroponicsRegulatedRail::setPowerSensor(shared_ptr<HydroponicsSensor> powe
 shared_ptr<HydroponicsSensor> HydroponicsRegulatedRail::getPowerSensor()
 {
     if (_powerSensor.resolveIfNeeded()) { attachPowerSensor(); }
-    return _powerSensor.getObj();
+    return _powerSensor.getObject();
 }
 
 void HydroponicsRegulatedRail::setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits)
@@ -399,7 +399,7 @@ void HydroponicsRegulatedRail::saveToData(HydroponicsData *dataOut)
 
     ((HydroponicsRegulatedRailData *)dataOut)->maxPower = roundForExport(_maxPower, 1);
     if (_powerSensor.getId()) {
-        strncpy(((HydroponicsRegulatedRailData *)dataOut)->powerSensor, _powerSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsRegulatedRailData *)dataOut)->powerSensor, _powerSensor.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     if (_limitTrigger) {
         _limitTrigger->saveToData(&(((HydroponicsRegulatedRailData *)dataOut)->limitTrigger));
@@ -411,7 +411,7 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
     if (!getPowerSensor() && actuator) {
         auto powerReq = actuator->getContinuousPowerDraw();
         auto powerDraw = getPowerDraw();
-        bool enabled = actuator->getIsEnabled();
+        bool enabled = actuator->isEnabled();
 
         convertUnits(&powerReq, getPowerUnits(), getRailVoltage());
 

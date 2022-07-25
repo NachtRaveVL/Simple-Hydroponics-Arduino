@@ -41,6 +41,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Maximum array size for control input pinmap (max # of ribbon pins)
 #define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk size for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk size (serialization buffer size)
+#define HYDRUINO_SENSOR_MEASUREMENT_SLOTS   8                       // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
 // The following maxsizes only matter for architectures that do not have STL support
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        24                      // Maximum array size for system objects (max # of objects in system)
 #define HYDRUINO_OBJ_LINKS_MAXSIZE          12                      // Maximum array size for object linkage list, per obj (max # of linked objects)

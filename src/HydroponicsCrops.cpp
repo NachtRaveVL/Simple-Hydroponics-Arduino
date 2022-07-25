@@ -8,9 +8,9 @@
 HydroponicsCrop *newCropObjectFromData(const HydroponicsCropData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HS_Err_InvalidParameter));
 
-    if (dataIn && dataIn->isObjectData()) {
+    if (dataIn && dataIn->isObjectectData()) {
         switch (dataIn->id.object.classType) {
             case 0: // Timed
                 return new HydroponicsTimedCrop((const HydroponicsTimedCropData *)dataIn);
@@ -58,7 +58,7 @@ void HydroponicsCrop::update()
 {
     HydroponicsObject::update();
 
-    auto feedingState = triggerStateFromBool(getNeedsFeeding());
+    auto feedingState = triggerStateFromBool(needsFeeding());
     if (_feedingState != feedingState) {
         _feedingState = feedingState;
         handleFeedingState();
@@ -120,7 +120,7 @@ void HydroponicsCrop::setFeedReservoir(shared_ptr<HydroponicsFeedReservoir> rese
 shared_ptr<HydroponicsFeedReservoir> HydroponicsCrop::getFeedReservoir()
 {
     if (_feedReservoir.resolveIfNeeded()) { _feedReservoir->addCrop(this); }
-    return static_pointer_cast<HydroponicsFeedReservoir>(_feedReservoir.getObj());
+    return static_pointer_cast<HydroponicsFeedReservoir>(_feedReservoir.getObject());
 }
 
 void HydroponicsCrop::setFeedingWeight(float weight)
@@ -196,7 +196,7 @@ void HydroponicsCrop::saveToData(HydroponicsData *dataOut)
     ((HydroponicsCropData *)dataOut)->substrateType = _substrateType;
     ((HydroponicsCropData *)dataOut)->sowDate = _sowDate;
     if (_feedReservoir.getId()) {
-        strncpy(((HydroponicsCropData *)dataOut)->feedReservoir, _feedReservoir.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsCropData *)dataOut)->feedReservoir, _feedReservoir.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     ((HydroponicsCropData *)dataOut)->feedingWeight = _feedingWeight;
 }
@@ -290,7 +290,7 @@ HydroponicsTimedCrop::HydroponicsTimedCrop(const HydroponicsTimedCropData *dataI
 HydroponicsTimedCrop::~HydroponicsTimedCrop()
 { ; }
 
-bool HydroponicsTimedCrop::getNeedsFeeding() const
+bool HydroponicsTimedCrop::needsFeeding() const
 {
     return unixNow() >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
            unixNow() < _lastFeedingDate + (_feedTimingMins[0] * SECS_PER_MIN);
@@ -381,7 +381,7 @@ void HydroponicsAdaptiveCrop::handleLowMemory()
     if (_feedingTrigger) { _feedingTrigger->handleLowMemory(); }
 }
 
-bool HydroponicsAdaptiveCrop::getNeedsFeeding() const
+bool HydroponicsAdaptiveCrop::needsFeeding() const
 {
     return ((_feedingTrigger ? _feedingTrigger->getTriggerState() : _feedingState) == Hydroponics_TriggerState_Triggered);
 }
@@ -422,7 +422,7 @@ void HydroponicsAdaptiveCrop::setMoistureSensor(shared_ptr<HydroponicsSensor> mo
 shared_ptr<HydroponicsSensor> HydroponicsAdaptiveCrop::getMoistureSensor()
 {
     if (_moistureSensor.resolveIfNeeded()) { attachSoilMoistureSensor(); }
-    return _moistureSensor.getObj();
+    return _moistureSensor.getObject();
 }
 
 void HydroponicsAdaptiveCrop::setSoilMoisture(float soilMoisture, Hydroponics_UnitsType soilMoistureUnits)
@@ -473,7 +473,7 @@ void HydroponicsAdaptiveCrop::saveToData(HydroponicsData *dataOut)
 
     ((HydroponicsAdaptiveCropData *)dataOut)->moistureUnits = _moistureUnits;
     if (_moistureSensor.getId()) {
-        strncpy(((HydroponicsAdaptiveCropData *)dataOut)->moistureSensor, _moistureSensor.getId().keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsAdaptiveCropData *)dataOut)->moistureSensor, _moistureSensor.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     if (_feedingTrigger) {
         _feedingTrigger->saveToData(&(((HydroponicsAdaptiveCropData *)dataOut)->feedingTrigger));

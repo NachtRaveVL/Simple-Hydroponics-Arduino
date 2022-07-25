@@ -19,7 +19,7 @@ HydroponicsData *_allocateDataFromBaseDecode(const HydroponicsData &baseDecode)
         } else if (baseDecode.isAdditiveData()) {
             retVal = new HydroponicsCustomAdditiveData();
         }
-    } else if (baseDecode.isObjectData()) {
+    } else if (baseDecode.isObjectectData()) {
         retVal = _allocateDataForObjType(baseDecode.id.object.idType, baseDecode.id.object.classType);
     }
 
@@ -196,7 +196,7 @@ HydroponicsCalibrationData::HydroponicsCalibrationData(HydroponicsIdentity senso
 {
     _size = sizeof(*this);
     if (sensorId) {
-        strncpy(sensorName, sensorId.keyStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(sensorName, sensorId.keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
 }
 
@@ -345,13 +345,13 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
 
     if (flags) {
         String flagsString;
-        if (getIsInvasive()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Invasive)); }
-        if (getIsViner()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Viner)); }
-        if (getIsLarge()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Large)); }
-        if (getIsPerennial()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Perennial)); }
-        if (getIsToxicToPets()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Toxic)); }
-        if (getNeedsPrunning()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Pruning)); }
-        if (getNeedsSpraying()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Spraying)); }
+        if (isInvasive()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Invasive)); }
+        if (isViner()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Viner)); }
+        if (isLarge()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Large)); }
+        if (isPerennial()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Perennial)); }
+        if (isToxicToPets()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Toxic)); }
+        if (needsPrunning()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Pruning)); }
+        if (needsSpraying()) { if (flagsString.length()) { flagsString.concat(','); } flagsString.concat(SFP(HS_Key_Spraying)); }
         objectOut[SFP(HS_Key_Flags)] = flagsString;
     }
 }

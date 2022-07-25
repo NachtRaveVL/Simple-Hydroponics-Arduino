@@ -7,17 +7,22 @@
 #define HydroponicsUtils_H
 
 struct HydroponicsBitResolution;
-template<class T> struct HydroponicsDLinkObject;
+
+#ifndef HYDRUINO_DISABLE_MULTITASKING
 template<typename ParameterType, int Slots> class SignalFireTask;
 template<class ObjectType, typename ParameterType> class MethodSlotCallTask;
 class ActuatorTimedEnableTask;
+#endif
 
 #include "Hydroponics.h"
 #include "HydroponicsObject.h"
+#ifndef HYDRUINO_DISABLE_MULTITASKING
+#include "BasicInterruptAbstraction.h"
+#endif
 
 
 // Simple class for describing an analog bit resolution.
-// This class is mainly used to calculate analog pin range boundaries. If override flag
+// This class is mainly used to calculate analog pin range boundaries. If force flag
 // is not set then architecture check is made that may truncate passed bit resolution.
 struct HydroponicsBitResolution {
     byte bitRes;                                // Bit resolution (# of bits)
@@ -25,7 +30,7 @@ struct HydroponicsBitResolution {
 
     // Convenience constructor
     HydroponicsBitResolution(byte bitRes,
-                             bool override = false);
+                             bool force = false);
 
     // Transforms value from raw integer (or initial) value into normalized raw (or transformed) value.
     inline float transform(int intValue) const { return constrain((float)maxVal / intValue, 0.0f, 1.0f); }
@@ -35,70 +40,13 @@ struct HydroponicsBitResolution {
 };
 
 
-// Delay/Dynamic Loaded/Linked Object Reference
-// Simple class for delay loading objects that get references to others during system
-// load. T should be a derived class type of HydroponicsObject, with getId() method.
-template<class T>
-struct HydroponicsDLinkObject {
-    HydroponicsIdentity id;
-    shared_ptr<T> obj;
-
-    HydroponicsDLinkObject()
-        : id(), obj(nullptr) { ; }
-    template<class U>
-    HydroponicsDLinkObject(const HydroponicsDLinkObject<U> &rhs)
-        : id(rhs.id), obj(static_pointer_cast<T>(rhs.obj)) { ; }
-    HydroponicsDLinkObject(HydroponicsIdentity idIn)
-        : id(idIn), obj(nullptr) { ; }
-    template<class U>
-    HydroponicsDLinkObject(shared_ptr<U> objIn)
-        : id(objIn->getId()), obj(static_pointer_cast<T>(objIn)) { ; }
-    HydroponicsDLinkObject(const char *keyStrIn)
-        : HydroponicsDLinkObject(HydroponicsIdentity(keyStrIn)) { ; }
-    ~HydroponicsDLinkObject() { ; }
-
-    inline bool isId() const { return !obj; }
-    inline bool isObj() const { return (bool)obj; }
-    inline bool needsResolved() const { return (!obj && (bool)id); }
-    inline bool resolveIfNeeded() { return (!obj ? (bool)getObj() : false); }
-    inline operator bool() const { return isObj(); }
-
-    HydroponicsIdentity getId() const { return (bool)obj ? obj->getId() : id;  }
-    Hydroponics_KeyType getKey() const { return (bool)obj ? obj->getKey() : id.key; }
-
-    shared_ptr<T> getObj();
-    inline T* operator->() { return getObj().get(); }
-
-    template<class U>
-    HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { id = rhs.id; obj = static_pointer_cast<T>(rhs.obj); }
-    HydroponicsDLinkObject<T> &operator=(const HydroponicsIdentity rhs) { id = rhs; obj = nullptr; }
-    template<class U>
-    HydroponicsDLinkObject<T> &operator=(shared_ptr<U> rhs) { obj = static_pointer_cast<T>(rhs); id = obj->getId(); }
-
-    template<class U>
-    bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return id.key == rhs->getKey(); }
-    bool operator==(const HydroponicsIdentity rhs) const { return id.key == rhs.key; }
-    template<class U>
-    bool operator==(shared_ptr<U> rhs) const { return id.key == rhs->getKey(); }
-    bool operator==(HydroponicsObject *rhs) const { return id.key == rhs->getKey(); }
-
-    template<class U>
-    bool operator!=(const HydroponicsDLinkObject<U> &rhs) const { return id.key != rhs->getKey(); }
-    bool operator!=(const HydroponicsIdentity rhs) const { return id.key != rhs.key; }
-    template<class U>
-    bool operator!=(shared_ptr<U> rhs) const { return id.key != rhs->getKey(); }
-    bool operator!=(HydroponicsObject *rhs) const { return id.key != rhs->getKey(); }
-};
-
-
 // Scheduling
 
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 
-#include "BasicInterruptAbstraction.h"
-
 // Standard interrupt abstraction
 extern BasicArduinoInterruptAbstraction interruptImpl;
+
 
 // This will schedule an actuator to enable on the next TaskManagerIO runloop using the given intensity and enable time millis.
 // Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
@@ -117,21 +65,20 @@ template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(shar
 template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam);
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter.
-// Object is captured. Returns taskId or TASKMGR_INVALIDID on error. */
+// Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
 template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
 
-// This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
+// This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter, w/o capturing object.
+// Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
+template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
+
+// This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created.
 // Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
 template<class ObjectType> taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
 // Returns taskId or TASKMGR_INVALIDID on error.
 template<class ObjectType> taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (ObjectType::*method)(taskid_t));
-
-// Given a valid task id, tries making the task repeating. Returns true if valid task and task is repeating, false otherwise.
-bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
-// Given a valid task id, tries making the task non-repeating. Returns true if valid task and task is non-repeating, false otherwise.
-bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
 
 
 // Signal Fire Task
@@ -193,6 +140,12 @@ private:
     float _enableIntensity;
     time_t _enableTimeMillis;
 };
+
+
+// Given a valid task id, tries making the task repeating. Returns true if valid task and task is repeating, false otherwise.
+bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
+// Given a valid task id, tries making the task non-repeating. Returns true if valid task and task is non-repeating, false otherwise.
+bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
 
 #endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
 

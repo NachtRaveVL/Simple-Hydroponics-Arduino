@@ -33,10 +33,10 @@ void HydroponicsScheduler::update()
 {
     if (_schedulerData) {
         {   DateTime currTime = getCurrentTime();
-            bool inDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
+            bool daytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
 
-            if (_inDaytimeMode != inDaytimeMode) {
-                _inDaytimeMode = inDaytimeMode;
+            if (_inDaytimeMode != daytimeMode) {
+                _inDaytimeMode = daytimeMode;
                 setNeedsScheduling();
                 // TODO: GUI update notify on day/night transition
             }
@@ -463,7 +463,7 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoi
     return 0.0f;
 }
 
-bool HydroponicsScheduler::getInDaytimeMode() const
+bool HydroponicsScheduler::inDaytimeMode() const
 {
     return _inDaytimeMode;
 }
@@ -505,7 +505,7 @@ float HydroponicsScheduler::getStandardDosingRate(Hydroponics_ReservoirType rese
     return 0.0f;
 }
 
-bool HydroponicsScheduler::getIsFlushWeek(int weekIndex)
+bool HydroponicsScheduler::isFlushWeek(int weekIndex)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
     HYDRUINO_SOFT_ASSERT(!_schedulerData || (weekIndex >= 0 && weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX), SFP(HS_Err_InvalidParameter));
@@ -661,7 +661,7 @@ void HydroponicsProcess::setActuatorReqs(const Vector<shared_ptr<HydroponicsActu
                     break;
                 }
             }
-            if (!found && (*actuatorIter)->getIsEnabled()) {
+            if (!found && (*actuatorIter)->isEnabled()) {
                 (*actuatorIter)->disableActuator();
             }
         }
@@ -708,7 +708,7 @@ void HydroponicsFeeding::recalcFeeding()
                 totalWeights += weight;
 
                 float feedRate = ((cropsLibData->tdsRange[0] + cropsLibData->tdsRange[1]) * 0.5);
-                if (!getSchedulerInstance()->getInDaytimeMode()) {
+                if (!getSchedulerInstance()->inDaytimeMode()) {
                     feedRate *= cropsLibData->nightlyFeedMultiplier;
                 }
                 feedRate *= getSchedulerInstance()->getBaseFeedMultiplier();
@@ -822,7 +822,7 @@ void HydroponicsFeeding::setupStaging()
         } break;
 
         case TopOff: {
-            if (!feedRes->getIsFilled()) {
+            if (!feedRes->isFilled()) {
                 Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
                 auto topOffPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(feedRes->getLinkages(), feedRes.get(), Hydroponics_ReservoirType_FreshWater);
 
@@ -944,7 +944,7 @@ void HydroponicsFeeding::update()
                 {   auto crops = linksFilterCrops(feedRes->getLinkages());
                     cropsCount = crops.size();
                     for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                        if (((HydroponicsCrop *)(*cropIter))->getNeedsFeeding()) { cropsHungry++; }
+                        if (((HydroponicsCrop *)(*cropIter))->needsFeeding()) { cropsHungry++; }
                     }
                 }
 
@@ -960,7 +960,7 @@ void HydroponicsFeeding::update()
         } break;
 
         case TopOff: {
-            if (feedRes->getIsFilled() || !actuatorReqs.size()) {
+            if (feedRes->isFilled() || !actuatorReqs.size()) {
                 stage = PreFeed; stageStart = unixNow();
                 canFeedAfter = 0; // will be used to track how long balancers stay balanced
                 setupStaging();
@@ -985,9 +985,9 @@ void HydroponicsFeeding::update()
                 auto tdsBalancer = feedRes->getWaterTDSBalancer();
                 auto waterTempBalancer = feedRes->getWaterTempBalancer();
 
-                if ((!phBalancer || (phBalancer->getIsEnabled() && phBalancer->getIsBalanced())) &&
-                    (!tdsBalancer || (tdsBalancer->getIsEnabled() && tdsBalancer->getIsBalanced())) &&
-                    (!waterTempBalancer || (waterTempBalancer->getIsEnabled() && waterTempBalancer->getIsBalanced()))) {
+                if ((!phBalancer || (phBalancer->isEnabled() && phBalancer->isBalanced())) &&
+                    (!tdsBalancer || (tdsBalancer->isEnabled() && tdsBalancer->isBalanced())) &&
+                    (!waterTempBalancer || (waterTempBalancer->isEnabled() && waterTempBalancer->isBalanced()))) {
                     // Can proceed after above are marked balanced for min time
                     if (!canFeedAfter) { canFeedAfter = unixNow() + HYDRUINO_SCH_BALANCE_MINTIME; }
                     else if (unixNow() >= canFeedAfter) {
@@ -1009,12 +1009,12 @@ void HydroponicsFeeding::update()
             {   auto crops = linksFilterCrops(feedRes->getLinkages());
                 cropsCount = crops.size();
                 for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                    if (!((HydroponicsCrop *)(*cropIter))->getNeedsFeeding()) { cropsFed++; }
+                    if (!((HydroponicsCrop *)(*cropIter))->needsFeeding()) { cropsFed++; }
                 }
             }
 
             if (!cropsCount || cropsFed / (float)cropsCount >= HYDRUINO_SCH_FEED_FRACTION - FLT_EPSILON ||
-                feedRes->getIsEmpty()) {
+                feedRes->isEmpty()) {
                 stage = (getHydroponicsInstance()->getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? Drain : Done);
                 stageStart = unixNow();
                 setupStaging();
@@ -1025,7 +1025,7 @@ void HydroponicsFeeding::update()
 
         case Drain: {
             if (getHydroponicsInstance()->getSystemMode() != Hydroponics_SystemMode_DrainToWaste ||
-                feedRes->getIsEmpty()) {
+                feedRes->isEmpty()) {
                 stage = Done; stageStart = unixNow();
                 setupStaging();
             }
@@ -1043,7 +1043,7 @@ void HydroponicsFeeding::update()
     if (actuatorReqs.size()) {
         for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
             auto actuator = (*actuatorIter);
-            if (actuator && !actuator->getIsEnabled() && !actuator->enableActuator()) {
+            if (actuator && !actuator->isEnabled() && !actuator->enableActuator()) {
                 // TODO: Something clever to track stalled actuators
             }
         }
@@ -1174,7 +1174,7 @@ void HydroponicsLighting::recalcLighting()
                     auto weight = crop->getFeedingWeight();
                     totalWeights += weight;
                     totalLightHours += (cropsLibData->dailyLightHours[cropPhase] * weight);
-                    sprayingNeeded = sprayingNeeded || cropsLibData->getNeedsSpraying();
+                    sprayingNeeded = sprayingNeeded || cropsLibData->needsSpraying();
 
                     getCropsLibraryInstance()->returnCropsData(cropsLibData);
                 }
@@ -1315,7 +1315,7 @@ void HydroponicsLighting::update()
     if (actuatorReqs.size()) {
         for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
             auto actuator = (*actuatorIter);
-            if (actuator && !actuator->getIsEnabled() && !actuator->enableActuator()) {
+            if (actuator && !actuator->isEnabled() && !actuator->enableActuator()) {
                 // TODO: Something clever to track stalled actuators
             }
         }

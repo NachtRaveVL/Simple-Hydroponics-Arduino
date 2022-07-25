@@ -6,7 +6,7 @@
 #include "Hydroponics.h"
 #include <pins_arduino.h>
 
-HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
+HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool force)
     : // TODO: Determine which other architectures have variable bit res analog pins
       #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
           bitRes(constrain(bitResIn, 8, 12)), maxVal(1 << constrain(bitResIn, 8, 12))
@@ -14,7 +14,7 @@ HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool override)
           bitRes(8), maxVal(256)
       #endif
 {
-    if (override) {
+    if (force) {
         bitRes = bitResIn;
         maxVal = 1 << bitResIn;
     } else {
@@ -39,8 +39,8 @@ void ActuatorTimedEnableTask::exec()
     if (_actuator->enableActuator(_enableIntensity)) {
         delayFine(_enableTimeMillis);
 
-        HYDRUINO_SOFT_ASSERT(_actuator->getIsEnabled(), SFP(HS_Err_OperationFailure));
-        if (_actuator->getIsEnabled()) {
+        HYDRUINO_SOFT_ASSERT(_actuator->isEnabled(), SFP(HS_Err_OperationFailure));
+        if (_actuator->isEnabled()) {
             _actuator->disableActuator();
         }
 
@@ -585,7 +585,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_Concentration_EC:
             switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {  // convertParam = aRef voltage
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
                         *valueOut = valueIn / 5.0f;
                     } else {
                         *valueOut = valueIn / convertParam;
@@ -723,7 +723,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_Concentration_PPM500:
             switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {  // convertParam = aRef voltage
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
                         *valueOut = valueIn / (5.0f * 500.0f);
                     } else {
                         *valueOut = valueIn / (convertParam * 500.0f);
@@ -749,7 +749,7 @@ bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueO
         case Hydroponics_UnitsType_Concentration_PPM640:
             switch (unitsOut) {
                 case Hydroponics_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) {  // convertParam = aRef voltage
+                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
                         *valueOut = valueIn / (5.0f * 640.0f);
                     } else {
                         *valueOut = valueIn / (convertParam * 640.0f);
