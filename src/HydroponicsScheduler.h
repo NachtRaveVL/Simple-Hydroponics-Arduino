@@ -22,13 +22,12 @@ public:
     void initFromData(HydroponicsSchedulerSubData *dataIn);
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     void setupWaterPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterPHBalancer);
     void setupWaterTDSBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTDSBalancer);
-    void setupWaterTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTempBalancer);
-    void setupAirTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airTempBalancer);
+    void setupWaterTemperatureBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTempBalancer);
+    void setupAirTemperatureBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airTempBalancer);
     void setupAirCO2Balancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airCO2Balancer);
 
     void setBaseFeedMultiplier(float feedMultiplier);
@@ -42,10 +41,11 @@ public:
     void setPreLightSprayMins(unsigned int sprayMins);
     void setAirReportInterval(TimeSpan interval);
 
-    void setNeedsScheduling();
+    inline void setNeedsScheduling() { _needsScheduling = _schedulerData; }
+    inline bool needsScheduling() { return _needsScheduling; }
 
     float getCombinedDosingRate(HydroponicsReservoir *reservoir, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
-    bool inDaytimeMode() const;
+    inline bool inDaytimeMode() const { return _inDaytimeMode; }
 
     float getBaseFeedMultiplier() const;
     float getWeeklyDosingRate(int weekIndex, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix) const;

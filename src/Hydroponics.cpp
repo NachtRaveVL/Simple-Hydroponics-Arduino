@@ -728,14 +728,6 @@ void miscLoop()
 
 void Hydroponics::launch()
 {
-    // Ensures linkage (and reverse linkage) of unlinked objects
-    _scheduler.resolveLinks();
-    _logger.resolveLinks();
-    _publisher.resolveLinks();
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (iter->second) { iter->second->resolveLinks(); }
-    }
-
     // Forces all sensors to get a new measurement
     _publisher.advancePollingFrame();
 
@@ -838,16 +830,11 @@ bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
     if (obj && _objects.find(obj->getKey()) == _objects.end()) {
         _objects[obj->getKey()] = obj;
 
-        if (inOperationalMode()) {
-            obj->resolveLinks();
-
-            if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
-                _scheduler.setNeedsScheduling();
-            }
-
-            if (obj->isSensorType()) {
-                _publisher.setNeedsTabulation();
-            }
+        if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
+            _scheduler.setNeedsScheduling();
+        }
+        if (obj->isSensorType()) {
+            _publisher.setNeedsTabulation();
         }
 
         return true;
@@ -872,7 +859,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
         while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
             auto iter = _objects.find(id.regenKey());
             if (iter != _objects.end()) {
-                if (id.keyString == iter->second->getId().keyString) {
+                if (id.keyString == iter->second->getKeyString()) {
                     return iter->second;
                 } else {
                     objectById_Col(id);
@@ -883,7 +870,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
         while(--id.posIndex >= 0) {
             auto iter = _objects.find(id.regenKey());
             if (iter != _objects.end()) {
-                if (id.keyString == iter->second->getId().keyString) {
+                if (id.keyString == iter->second->getKeyString()) {
                     return iter->second;
                 } else {
                     objectById_Col(id);
@@ -893,7 +880,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
     } else {
         auto iter = _objects.find(id.key);
         if (iter != _objects.end()) {
-            if (id.keyString == iter->second->getId().keyString) {
+            if (id.keyString == iter->second->getKeyString()) {
                 return iter->second;
             } else {
                 objectById_Col(id);
@@ -909,7 +896,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdent
     HYDRUINO_SOFT_ASSERT(false, F("Hashing collision")); // exhaustive search must be performed, publishing may miss values
 
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (id.keyString == iter->second->getId().keyString) {
+        if (id.keyString == iter->second->getKeyString()) {
             return iter->second;
         }
     }

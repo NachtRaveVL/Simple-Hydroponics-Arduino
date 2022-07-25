@@ -41,7 +41,6 @@ public:
     ~HydroponicsCrop();
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     virtual bool needsFeeding() const = 0;
@@ -135,7 +134,7 @@ protected:
 
 // Adaptive Sensing Crop
 // Crop type that can manage feedings based on sensor readings of the nearby soil.
-class HydroponicsAdaptiveCrop : public HydroponicsCrop, public HydroponicsSoilMoistureAwareInterface {
+class HydroponicsAdaptiveCrop : public HydroponicsCrop, public HydroponicsSoilMoistureSensorAttachmentInterface {
 public:
     HydroponicsAdaptiveCrop(Hydroponics_CropType cropType,
                             Hydroponics_PositionIndex cropIndex,
@@ -146,7 +145,6 @@ public:
     virtual ~HydroponicsAdaptiveCrop();
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     virtual bool needsFeeding() const override;
@@ -154,29 +152,18 @@ public:
     void setMoistureUnits(Hydroponics_UnitsType moistureUnits);
     Hydroponics_UnitsType getMoistureUnits() const;
 
-    virtual void setMoistureSensor(HydroponicsIdentity moistureSensorId) override;
-    virtual void setMoistureSensor(shared_ptr<HydroponicsSensor> moistureSensor) override;
-    virtual shared_ptr<HydroponicsSensor> getMoistureSensor() override;
-
-    virtual void setSoilMoisture(float soilMoisture, Hydroponics_UnitsType soilMoistureUnits = Hydroponics_UnitsType_Undefined) override;
-    virtual void setSoilMoisture(HydroponicsSingleMeasurement soilMoisture) override;
-    virtual const HydroponicsSingleMeasurement &getSoilMoisture() override;
+    virtual HydroponicsSensorAttachment &getSoilMoisture() override;
 
     void setFeedingTrigger(HydroponicsTrigger *feedingTrigger);
     const HydroponicsTrigger *getFeedingTrigger() const;
 
 protected:
     Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred (else default)
-    HydroponicsDLinkObject<HydroponicsSensor> _moistureSensor; // Soil moisture sensor
-    bool _needsSoilMoisture;                                // Needs soil moisture update tracking flag
-    HydroponicsSingleMeasurement _soilMoisture;             // Soil moisture measurement
+    HydroponicsSensorAttachment _soilMoisture;              // Soil moisture sensor attachment
     HydroponicsTrigger *_feedingTrigger;                    // Feeding trigger (owned)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    void attachSoilMoistureSensor();
-    void detachSoilMoistureSensor();
-    void handleSoilMoistureMeasure(const HydroponicsMeasurement *measurement);
     void attachFeedingTrigger();
     void detachFeedingTrigger();
     void handleFeedingTrigger(Hydroponics_TriggerState triggerState);

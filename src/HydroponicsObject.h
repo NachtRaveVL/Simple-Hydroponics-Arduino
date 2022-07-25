@@ -97,7 +97,6 @@ public:
     virtual ~HydroponicsObject();                           // Destructor
 
     virtual void update();                                  // Called over intervals of time by runloop
-    virtual void resolveLinks();                            // Called after unpack/during launch, to link delayed load objects
     virtual void handleLowMemory();                         // Called upon low memory condition to try and free memory up
 
     HydroponicsData *newSaveData();                         // Saves object state to proper backing data
@@ -108,10 +107,11 @@ public:
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
     // Objects are considered strong pointers, since existence -> shared_ptr ref to this instance exists.
-    const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const;
+    inline const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const { return _links; }
 
-    const HydroponicsIdentity &getId() const;               // Returns the unique Identity of the object
-    Hydroponics_KeyType getKey() const;                     // Returns the unique key of the object
+    inline const HydroponicsIdentity &getId() const { return _id; } // Returns the unique Identity of the object
+    inline Hydroponics_KeyType getKey() const { return _id.key; } // Returns the unique key of the object
+    inline const String &getKeyString() const { return _id.keyString; } // Returns the key string of the object
     shared_ptr<HydroponicsObject> getSharedPtr() const;     // Returns the shared_ptr instance of the object
 
 protected:
@@ -136,7 +136,6 @@ template<class T> shared_ptr<T> getSharedPtr(const HydroponicsObject *object) { 
 class HydroponicsSubObject {
 public:
     virtual void update() = 0;
-    virtual void resolveLinks() = 0;
     virtual void handleLowMemory() = 0;
 };
 

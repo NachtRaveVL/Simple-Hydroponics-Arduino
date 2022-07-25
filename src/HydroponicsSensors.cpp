@@ -120,14 +120,6 @@ void HydroponicsSensor::update()
     HydroponicsObject::update();
 }
 
-void HydroponicsSensor::resolveLinks()
-{
-    HydroponicsObject::resolveLinks();
-
-    if (_crop.needsResolved()) { getCrop(); }
-    if (_reservoir.needsResolved()) { getReservoir(); }
-}
-
 void HydroponicsSensor::handleLowMemory()
 {
     HydroponicsObject::handleLowMemory();
@@ -237,10 +229,10 @@ void HydroponicsSensor::saveToData(HydroponicsData *dataOut)
     dataOut->id.object.classType = (int8_t)classType;
     ((HydroponicsSensorData *)dataOut)->inputPin = _inputPin;
     if (_reservoir.getId()) {
-        strncpy(((HydroponicsSensorData *)dataOut)->reservoirName, _reservoir.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsSensorData *)dataOut)->reservoirName, _reservoir.getKeyString().c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     if (_crop.getId()) {
-        strncpy(((HydroponicsSensorData *)dataOut)->cropName, _crop.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsSensorData *)dataOut)->cropName, _crop.getKeyString().c_str(), HYDRUINO_NAME_MAXSIZE);
     }
 }
 
@@ -548,13 +540,6 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(const HydroponicsDigitalSenso
 
 HydroponicsDigitalSensor::~HydroponicsDigitalSensor()
 { ; }
-
-void HydroponicsDigitalSensor::resolveLinks()
-{
-    HydroponicsSensor::resolveLinks();
-
-    if (!(_wirePosIndex >= 0)) { resolveDeviceAddress(); }
-}
 
 bool HydroponicsDigitalSensor::setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex)
 {

@@ -49,7 +49,7 @@ void HydroponicsTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
 {
     ((HydroponicsTriggerSubData *)dataOut)->type = (int8_t)type;
     if (_sensor.getId()) {
-        strncpy(((HydroponicsTriggerSubData *)dataOut)->sensorName, _sensor.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsTriggerSubData *)dataOut)->sensorName, _sensor.getKeyString().c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     ((HydroponicsTriggerSubData *)dataOut)->measurementRow = _measurementRow;
     ((HydroponicsTriggerSubData *)dataOut)->toleranceUnits = _toleranceUnits;
@@ -57,6 +57,8 @@ void HydroponicsTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
 
 void HydroponicsTrigger::update()
 {
+    if (!_attached) { attachTrigger(); }
+
     if (_needsSensorUpdate && getSensor()) {
         handleSensorMeasure(_sensor->getLatestMeasurement());
 
@@ -64,12 +66,6 @@ void HydroponicsTrigger::update()
             _sensor->takeMeasurement(true);
         }
     }
-}
-
-void HydroponicsTrigger::resolveLinks()
-{
-    if (_sensor.needsResolved()) { getSensor(); }
-    if (!_attached) { attachTrigger(); }
 }
 
 void HydroponicsTrigger::handleLowMemory()

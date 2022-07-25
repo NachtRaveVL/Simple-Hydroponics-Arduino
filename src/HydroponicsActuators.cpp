@@ -42,7 +42,7 @@ HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
 HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))dataIn->id.object.classType),
       _outputPin(dataIn->outputPin), _enabled(false),
-      _contPowerDraw(&(dataIn->contPowerDraw)),
+      _contPowerUsage(&(dataIn->contPowerUsage)),
       _rail(dataIn->railName), _reservoir(dataIn->reservoirName)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HS_Err_InvalidPinOrType));
@@ -69,14 +69,6 @@ void HydroponicsActuator::update()
     }
 }
 
-void HydroponicsActuator::resolveLinks()
-{
-    HydroponicsObject::resolveLinks();
-
-    if (_rail.needsResolved()) { getRail(); }
-    if (_reservoir.needsResolved()) { getReservoir(); }
-}
-
 void HydroponicsActuator::handleLowMemory()
 { ; }
 
@@ -87,23 +79,23 @@ bool HydroponicsActuator::getCanEnable()
     return true;
 }
 
-void HydroponicsActuator::setContinuousPowerDraw(float contPowerDraw, Hydroponics_UnitsType contPowerDrawUnits)
+void HydroponicsActuator::setContinuousPowerUsage(float contPowerUsage, Hydroponics_UnitsType contPowerUsageUnits)
 {
-    _contPowerDraw.value = contPowerDraw;
-    _contPowerDraw.units = contPowerDrawUnits;
-    _contPowerDraw.updateTimestamp();
-    _contPowerDraw.updateFrame(1);
+    _contPowerUsage.value = contPowerUsage;
+    _contPowerUsage.units = contPowerUsageUnits;
+    _contPowerUsage.updateTimestamp();
+    _contPowerUsage.updateFrame(1);
 }
 
-void HydroponicsActuator::setContinuousPowerDraw(HydroponicsSingleMeasurement contPowerDraw)
+void HydroponicsActuator::setContinuousPowerUsage(HydroponicsSingleMeasurement contPowerUsage)
 {
-    _contPowerDraw = contPowerDraw;
-    _contPowerDraw.setMinFrame(1);
+    _contPowerUsage = contPowerUsage;
+    _contPowerUsage.setMinFrame(1);
 }
 
-const HydroponicsSingleMeasurement &HydroponicsActuator::getContinuousPowerDraw()
+const HydroponicsSingleMeasurement &HydroponicsActuator::getContinuousPowerUsage()
 {
-    return _contPowerDraw;
+    return _contPowerUsage;
 }
 
 void HydroponicsActuator::setRail(HydroponicsIdentity powerRailId)
@@ -183,14 +175,14 @@ void HydroponicsActuator::saveToData(HydroponicsData *dataOut)
 
     dataOut->id.object.classType = (int8_t)classType;
     ((HydroponicsActuatorData *)dataOut)->outputPin = _outputPin;
-    if (_contPowerDraw.frame) {
-        _contPowerDraw.saveToData(&(((HydroponicsActuatorData *)dataOut)->contPowerDraw));
+    if (_contPowerUsage.frame) {
+        _contPowerUsage.saveToData(&(((HydroponicsActuatorData *)dataOut)->contPowerUsage));
     }
     if (_reservoir.getId()) {
-        strncpy(((HydroponicsActuatorData *)dataOut)->reservoirName, _reservoir.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsActuatorData *)dataOut)->reservoirName, _reservoir.getKeyString().c_str(), HYDRUINO_NAME_MAXSIZE);
     }
     if (_rail.getId()) {
-        strncpy(((HydroponicsActuatorData *)dataOut)->railName, _rail.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsActuatorData *)dataOut)->railName, _rail.getKeyString().c_str(), HYDRUINO_NAME_MAXSIZE);
     }
 }
 
@@ -294,30 +286,31 @@ HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(Hydroponics_ActuatorT
                                                            byte outputPin, bool activeLow,
                                                            int classType)
     :  HydroponicsRelayActuator(actuatorType, actuatorIndex, outputPin, activeLow, classType),
-       _flowRateUnits(defaultLiquidFlowUnits()), _needsFlowRate(true), _pumpTimeAccMillis(0)
-{ ; }
+       _flowRateUnits(defaultLiquidFlowUnits()), _flowRate(this), _pumpVolumeAcc(0.0f), _pumpTimeBegMillis(0), _pumpTimeAccMillis(0)
+{
+    _flowRate.setMeasurementUnits(getFlowRateUnits());
+}
 
 HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(const HydroponicsPumpRelayActuatorData *dataIn)
-    : HydroponicsRelayActuator(dataIn), _needsFlowRate(true), _pumpTimeAccMillis(0),
+    : HydroponicsRelayActuator(dataIn), _pumpVolumeAcc(0.0f), _pumpTimeBegMillis(0), _pumpTimeAccMillis(0),
       _flowRateUnits(definedUnitsElse(dataIn->flowRateUnits, defaultLiquidFlowUnits())),
       _contFlowRate(&(dataIn->contFlowRate)),
       _destReservoir(dataIn->destReservoir),
-      _flowRateSensor(dataIn->flowRateSensor)
-{ ; }
+      _flowRate(this, dataIn->flowRateSensor)
+{
+    _flowRate.setMeasurementUnits(getFlowRateUnits());
+}
 
 HydroponicsPumpRelayActuator::~HydroponicsPumpRelayActuator()
 {
     if (_destReservoir) { _destReservoir->removeActuator(this); }
-    if (_flowRateSensor) { detachFlowRateSensor(); }
 }
 
 void HydroponicsPumpRelayActuator::update()
 {
     HydroponicsActuator::update();
 
-    if (_needsFlowRate && getFlowRateSensor()) {
-        handleFlowRateMeasure(_flowRateSensor->getLatestMeasurement());
-    }
+    _flowRate.updateMeasurementIfNeeded();
 
     if (_pumpTimeAccMillis) {
         time_t timeMillis = millis();
@@ -331,14 +324,6 @@ void HydroponicsPumpRelayActuator::update()
     if (_enabled) { checkPumpingReservoirs(); }
 
     if (_enabled) { pulsePumpingSensors(); }
-}
-
-void HydroponicsPumpRelayActuator::resolveLinks()
-{
-    HydroponicsActuator::resolveLinks();
-
-    if (_flowRateSensor.needsResolved()) { getFlowRateSensor(); }
-    if (_destReservoir.needsResolved()) { getOutputReservoir(); }
 }
 
 bool HydroponicsPumpRelayActuator::enableActuator(float intensity, bool force)
@@ -377,7 +362,7 @@ bool HydroponicsPumpRelayActuator::canPump(float volume, Hydroponics_UnitsType v
 {
     auto reservoir = getReservoir();
     if (reservoir && _contFlowRate.value > FLT_EPSILON) {
-        auto waterVolume = reservoir->getWaterVolume();
+        auto waterVolume = reservoir->getWaterVolume().getMeasurement();
         convertUnits(&volume, &volumeUnits, waterVolume.units);
         return volume <= waterVolume.value + FLT_EPSILON;
     }
@@ -472,7 +457,7 @@ void HydroponicsPumpRelayActuator::setFlowRateUnits(Hydroponics_UnitsType flowRa
         _flowRateUnits = flowRateUnits;
 
         convertUnits(&_contFlowRate, getFlowRateUnits());
-        convertUnits(&_flowRate, getFlowRateUnits());
+        _flowRate.setMeasurementUnits(getFlowRateUnits());
     }
 }
 
@@ -504,56 +489,9 @@ const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getContinuousF
     return _contFlowRate;
 }
 
-void HydroponicsPumpRelayActuator::setFlowRateSensor(HydroponicsIdentity flowRateSensorId)
+HydroponicsSensorAttachment &HydroponicsPumpRelayActuator::getFlowRate()
 {
-    if (_flowRateSensor != flowRateSensorId) {
-        if (_flowRateSensor) { detachFlowRateSensor(); }
-        _flowRateSensor = flowRateSensorId;
-        _needsFlowRate = true;
-    }
-}
-
-void HydroponicsPumpRelayActuator::setFlowRateSensor(shared_ptr<HydroponicsSensor> flowRateSensor)
-{
-    if (_flowRateSensor != flowRateSensor) {
-        if (_flowRateSensor) { detachFlowRateSensor(); }
-        _flowRateSensor = flowRateSensor;
-        if (_flowRateSensor) { attachFlowRateSensor(); }
-        _needsFlowRate = true;
-    }
-}
-
-shared_ptr<HydroponicsSensor> HydroponicsPumpRelayActuator::getFlowRateSensor()
-{
-    if (_flowRateSensor.resolveIfNeeded()) { attachFlowRateSensor(); }
-    return _flowRateSensor.getObject();
-}
-
-void HydroponicsPumpRelayActuator::setFlowRate(float flowRate, Hydroponics_UnitsType flowRateUnits)
-{
-    _flowRate.value = flowRate;
-    _flowRate.units = flowRateUnits;
-    _flowRate.updateTimestamp();
-    _flowRate.updateFrame(1);
-
-    convertUnits(&_flowRate, getFlowRateUnits());
-    _needsFlowRate = false;
-}
-
-void HydroponicsPumpRelayActuator::setFlowRate(HydroponicsSingleMeasurement flowRate)
-{
-    _flowRate = flowRate;
-    _flowRate.setMinFrame(1);
-
-    convertUnits(&_flowRate, getFlowRateUnits());
-    _needsFlowRate = false;
-}
-
-const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getFlowRate()
-{
-    if (_needsFlowRate && getFlowRateSensor()) {
-        handleFlowRateMeasure(_flowRateSensor->getLatestMeasurement());
-    }
+    _flowRate.updateMeasurementIfNeeded();
     return _flowRate;
 }
 
@@ -566,10 +504,10 @@ void HydroponicsPumpRelayActuator::saveToData(HydroponicsData *dataOut)
         _contFlowRate.saveToData(&(((HydroponicsPumpRelayActuatorData *)dataOut)->contFlowRate));
     }
     if (_destReservoir.getId()) {
-        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->destReservoir, _destReservoir.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
+        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->destReservoir, _destReservoir.getKeyString().c_str(), HYDRUINO_NAME_MAXSIZE);
     }
-    if (_flowRateSensor.getId()) {
-        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->flowRateSensor, _flowRateSensor.getId().keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
+    if (_flowRate.getId()) {
+        strncpy(((HydroponicsPumpRelayActuatorData *)dataOut)->flowRateSensor, _flowRate.getKeyString().c_str(), HYDRUINO_NAME_MAXSIZE);
     }
 }
 
@@ -585,16 +523,16 @@ void HydroponicsPumpRelayActuator::checkPumpingReservoirs()
 void HydroponicsPumpRelayActuator::pulsePumpingSensors()
 {
     if (getFlowRateSensor()) {
-        _flowRateSensor->takeMeasurement(true);
+        _flowRate->takeMeasurement(true);
     }
     HydroponicsSensor *sourceVolSensor;
     if (getReservoir() && _reservoir->isAnyFluidClass() &&
-        (sourceVolSensor = ((HydroponicsFluidReservoir *)_reservoir.get())->getVolumeSensor().get())) {
+        (sourceVolSensor = ((HydroponicsFluidReservoir *)_reservoir.get())->getWaterVolumeSensor().get())) {
         sourceVolSensor->takeMeasurement(true);
     }
     HydroponicsSensor *destVolSensor;
     if (getOutputReservoir() && _destReservoir->isAnyFluidClass() &&
-        (destVolSensor = ((HydroponicsFluidReservoir *)_destReservoir.get())->getVolumeSensor().get()) &&
+        (destVolSensor = ((HydroponicsFluidReservoir *)_destReservoir.get())->getWaterVolumeSensor().get()) &&
         destVolSensor != sourceVolSensor) {
         destVolSensor->takeMeasurement(true);
     }
@@ -603,56 +541,29 @@ void HydroponicsPumpRelayActuator::pulsePumpingSensors()
 void HydroponicsPumpRelayActuator::handlePumpTime(time_t timeMillis)
 {
     if (getReservoir() != getOutputReservoir()) {
-        float flowRateVal = _flowRate.frame && getFlowRateSensor() && !_flowRateSensor->needsPolling(HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF) &&
-                            _flowRate.value >= (_contFlowRate.value * HYDRUINO_ACT_PUMPCALC_MINFLOWRATE) - FLT_EPSILON ? _flowRate.value : _contFlowRate.value;
+        float flowRateVal = _flowRate.getMeasurementFrame() && getFlowRate() && !_flowRate->needsPolling(HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF) &&
+                            _flowRate.getMeasurementValue() >= (_contFlowRate.value * HYDRUINO_ACT_PUMPCALC_MINFLOWRATE) - FLT_EPSILON ? _flowRate.getMeasurementValue() : _contFlowRate.value;
         float volumePumped = flowRateVal * (timeMillis / (float)secondsToMillis(SECS_PER_MIN));
         _pumpVolumeAcc += volumePumped;
 
         if (getReservoir() && getReservoir()->isAnyFluidClass()) {
             auto sourceFluidRes = static_pointer_cast<HydroponicsFluidReservoir>(getReservoir());
-            if (sourceFluidRes && !sourceFluidRes->getVolumeSensor()) { // only report if there isn't a volume sensor already doing it
-                auto volume = sourceFluidRes->getWaterVolume();
+            if (sourceFluidRes && !sourceFluidRes->getWaterVolume()) { // only report if there isn't a volume sensor already doing it
+                auto volume = sourceFluidRes->getWaterVolume().getMeasurement();
                 convertUnits(&volume, baseUnitsFromRate(getFlowRateUnits()));
                 volume.value -= volumePumped;
-                sourceFluidRes->setWaterVolume(volume);
+                sourceFluidRes->getWaterVolume().setMeasurement(volume);
             }
         }
         if (getOutputReservoir() && getOutputReservoir()->isAnyFluidClass()) {
             auto destFluidRes = static_pointer_cast<HydroponicsFluidReservoir>(getOutputReservoir());
-            if (destFluidRes && !destFluidRes->getVolumeSensor()) { // only report if there isn't a volume sensor already doing it
-                auto volume = destFluidRes->getWaterVolume();
+            if (destFluidRes && !destFluidRes->getWaterVolume()) { // only report if there isn't a volume sensor already doing it
+                auto volume = destFluidRes->getWaterVolume().getMeasurement();
                 convertUnits(&volume, baseUnitsFromRate(getFlowRateUnits()));
                 volume.value += volumePumped;
-                destFluidRes->setWaterVolume(volume);
+                destFluidRes->getWaterVolume().setMeasurement(volume);
             }
         }
-    }
-}
-
-void HydroponicsPumpRelayActuator::attachFlowRateSensor()
-{
-    HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), SFP(HS_Err_MissingLinkage));
-    if (getFlowRateSensor()) {
-        _flowRateSensor->addLinkage(this);
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsPumpRelayActuator::handleFlowRateMeasure);
-        _flowRateSensor->getMeasurementSignal().attach(methodSlot);
-    }
-}
-
-void HydroponicsPumpRelayActuator::detachFlowRateSensor()
-{
-    HYDRUINO_SOFT_ASSERT(getFlowRateSensor(), SFP(HS_Err_MissingLinkage));
-    if (getFlowRateSensor()) {
-        _flowRateSensor->removeLinkage(this);
-        auto methodSlot = MethodSlot<typeof(*this), const HydroponicsMeasurement *>(this, &HydroponicsPumpRelayActuator::handleFlowRateMeasure);
-        _flowRateSensor->getMeasurementSignal().detach(methodSlot);
-    }
-}
-
-void HydroponicsPumpRelayActuator::handleFlowRateMeasure(const HydroponicsMeasurement *measurement)
-{
-    if (measurement && measurement->frame && _enabled) {
-        setFlowRate(getAsSingleMeasurement(measurement, 0, _contFlowRate.value, _flowRateUnits));
     }
 }
 
@@ -789,7 +700,7 @@ void HydroponicsPWMActuator::applyPWM()
 
 
 HydroponicsActuatorData::HydroponicsActuatorData()
-    : HydroponicsObjectData(), outputPin(-1), contPowerDraw(), railName{0}, reservoirName{0}
+    : HydroponicsObjectData(), outputPin(-1), contPowerUsage(), railName{0}, reservoirName{0}
 {
     _size = sizeof(*this);
 }
@@ -799,9 +710,9 @@ void HydroponicsActuatorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsObjectData::toJSONObject(objectOut);
 
     if (isValidPin(outputPin)) { objectOut[SFP(HS_Key_OutputPin)] = outputPin; }
-    if (contPowerDraw.value > FLT_EPSILON) {
-        JsonObject contPowerDrawObj = objectOut.createNestedObject(SFP(HS_Key_ContPowerDraw));
-        contPowerDraw.toJSONObject(contPowerDrawObj);
+    if (contPowerUsage.value > FLT_EPSILON) {
+        JsonObject contPowerUsageObj = objectOut.createNestedObject(SFP(HS_Key_ContPowerUsage));
+        contPowerUsage.toJSONObject(contPowerUsageObj);
     }
     if (railName[0]) { objectOut[SFP(HS_Key_Rail)] = charsToString(railName, HYDRUINO_NAME_MAXSIZE); }
     if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
@@ -812,8 +723,8 @@ void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsObjectData::fromJSONObject(objectIn);
 
     outputPin = objectIn[SFP(HS_Key_OutputPin)] | outputPin;
-    JsonVariantConst contPowerDrawVar = objectIn[SFP(HS_Key_ContPowerDraw)];
-    if (!contPowerDrawVar.isNull()) { contPowerDraw.fromJSONVariant(contPowerDrawVar); }
+    JsonVariantConst contPowerUsageVar = objectIn[SFP(HS_Key_ContPowerUsage)];
+    if (!contPowerUsageVar.isNull()) { contPowerUsage.fromJSONVariant(contPowerUsageVar); }
     const char *railStr = objectIn[SFP(HS_Key_Rail)];
     if (railStr && railStr[0]) { strncpy(railName, railStr, HYDRUINO_NAME_MAXSIZE); }
     const char *reservoirStr = objectIn[SFP(HS_Key_Reservoir)];

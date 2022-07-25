@@ -54,7 +54,6 @@ public:
     virtual ~HydroponicsSensor();
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     virtual bool takeMeasurement(bool force = false) = 0;
@@ -179,8 +178,6 @@ public:
                              int classType = Digital);
     HydroponicsDigitalSensor(const HydroponicsDigitalSensorData *dataIn, bool allocate1W = false);
     virtual ~HydroponicsDigitalSensor();
-
-    virtual void resolveLinks() override;
 
     virtual bool setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex);
     virtual Hydroponics_PositionIndex getWirePositionIndex() const;

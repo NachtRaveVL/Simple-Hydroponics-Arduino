@@ -22,9 +22,6 @@ void HydroponicsLogger::initFromData(HydroponicsLoggerSubData *dataIn)
 void HydroponicsLogger::update()
 { ; }
 
-void HydroponicsLogger::resolveLinks()
-{ ; }
-
 void HydroponicsLogger::handleLowMemory()
 { ; }
 
@@ -69,28 +66,28 @@ bool HydroponicsLogger::isLoggingToSDCard() const
 void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
 {
     if (actuator) {
-        logMessage(actuator->getId().keyString, SFP(HS_Log_HasEnabled));
+        logMessage(actuator->getKeyString(), SFP(HS_Log_HasEnabled));
     }
 }
 
 void HydroponicsLogger::logDeactivation(const HydroponicsActuator *actuator)
 {
     if (actuator) {
-        logMessage(actuator->getId().keyString, SFP(HS_Log_HasDisabled));
+        logMessage(actuator->getKeyString(), SFP(HS_Log_HasDisabled));
     }
 }
 
 void HydroponicsLogger::logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString, const String &statusString)
 {
     if (feedReservoir) {
-        logMessage(feedReservoir->getId().keyString, processString, statusString);
+        logMessage(feedReservoir->getKeyString(), processString, statusString);
     }
 }
 
 void HydroponicsLogger::logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString)
 {
     if (pump) {
-        logMessage(((HydroponicsObject *)pump)->getId().keyString, pumpString);
+        logMessage(((HydroponicsObject *)pump)->getKeyString(), pumpString);
     }
 }
 

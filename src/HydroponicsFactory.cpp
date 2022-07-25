@@ -482,7 +482,7 @@ shared_ptr<HydroponicsFluidReservoir> HydroponicsFactory::addFluidReservoir(Hydr
             maxVolume
         );
         if (getHydroponicsInstance()->registerObject(reservoir)) {
-            if (beginFilled) { reservoir->setWaterVolume(reservoir->getMaxVolume()); }
+            if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume()); }
             return reservoir;
         }
     }
@@ -505,7 +505,7 @@ shared_ptr<HydroponicsFeedReservoir> HydroponicsFactory::addFeedWaterReservoir(f
             lastPruningDate
         );
         if (getHydroponicsInstance()->registerObject(reservoir)) {
-            if (beginFilled) { reservoir->setWaterVolume(reservoir->getMaxVolume() * HYDRUINO_FEEDRES_FRACTION_FILLED); }
+            if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume() * HYDRUINO_FEEDRES_FRACTION_FILLED); }
             return reservoir;
         }
     }

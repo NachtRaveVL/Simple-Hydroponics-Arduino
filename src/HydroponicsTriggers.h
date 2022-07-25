@@ -41,7 +41,6 @@ public:
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const;
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     virtual void attachTrigger() = 0;

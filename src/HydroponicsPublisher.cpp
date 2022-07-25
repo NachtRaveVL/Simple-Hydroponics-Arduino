@@ -31,11 +31,6 @@ void HydroponicsPublisher::update()
     }
 }
 
-void HydroponicsPublisher::resolveLinks()
-{
-    setNeedsTabulation();
-}
-
 void HydroponicsPublisher::handleLowMemory()
 { ; }
 
@@ -84,11 +79,6 @@ void HydroponicsPublisher::publishData(Hydroponics_PositionIndex columnIndex, Hy
         _dataColumns[columnIndex].measurement = measurement;
         checkCanPublish();
     }
-}
-
-void HydroponicsPublisher::setNeedsTabulation()
-{
-    _needsTabulation = (bool)_publisherData;
 }
 
 bool HydroponicsPublisher::isPublishingEnabled()
@@ -269,7 +259,7 @@ void HydroponicsPublisher::resetDataFile()
                     else { measurementRow = 0; lastSensor = sensor; }
 
                     if (sensor) {
-                        dataFile.print(sensor->getId().keyString);
+                        dataFile.print(sensor->getKeyString());
                         dataFile.print('_');
                         dataFile.print(unitsCategoryToString(defaultMeasureCategoryForSensorType(sensor->getSensorType(), measurementRow)));
                         dataFile.print('_');

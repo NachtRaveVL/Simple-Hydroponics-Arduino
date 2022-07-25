@@ -197,8 +197,8 @@ void testReservoirs()
         feedRes->setVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
         feedRes->setWaterPHSensor(HydroponicsIdentity(String(F("JKL"))));
         feedRes->setWaterTDSSensor(HydroponicsIdentity(String(F("QWER"))));
-        feedRes->setWaterTempSensor(HydroponicsIdentity(String(F("UIOP"))));
-        feedRes->setAirTempSensor(HydroponicsIdentity(String(F("ZXCV"))));
+        feedRes->setWaterTemperatureSensor(HydroponicsIdentity(String(F("UIOP"))));
+        feedRes->setAirTemperatureSensor(HydroponicsIdentity(String(F("ZXCV"))));
         feedRes->setAirCO2Sensor(HydroponicsIdentity(String(F("BNM"))));
 
         auto data = (HydroponicsFeedReservoirData *)(feedRes->newSaveData());

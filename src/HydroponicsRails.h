@@ -37,11 +37,10 @@ public:
     virtual ~HydroponicsRail();
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     virtual bool canActivate(HydroponicsActuator *actuator) = 0;
-    virtual float getCapacity() const = 0;
+    virtual float getCapacity() = 0;
 
     virtual void setPowerUnits(Hydroponics_UnitsType powerUnits) override;
     virtual Hydroponics_UnitsType getPowerUnits() const override;
@@ -85,7 +84,7 @@ public:
     virtual ~HydroponicsSimpleRail();
 
     virtual bool canActivate(HydroponicsActuator *actuator) override;
-    virtual float getCapacity() const override;
+    virtual float getCapacity() override;
 
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
@@ -104,7 +103,7 @@ protected:
 // Regulated Power Rail
 // Power rail that has a max power rating and power sensor that can track power
 // usage, with limit trigger for over-power state limiting actuator activation.
-class HydroponicsRegulatedRail : public HydroponicsRail, public HydroponicsPowerAwareInterface {
+class HydroponicsRegulatedRail : public HydroponicsRail, public HydroponicsPowerSensorAttachmentInterface {
 public:
     HydroponicsRegulatedRail(Hydroponics_RailType railType,
                              Hydroponics_PositionIndex railIndex,
@@ -114,24 +113,17 @@ public:
     virtual ~HydroponicsRegulatedRail();
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     virtual bool canActivate(HydroponicsActuator *actuator) override;
-    virtual float getCapacity() const override;
+    virtual float getCapacity() override;
 
     virtual void setPowerUnits(Hydroponics_UnitsType powerUnits) override;
 
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
 
-    virtual void setPowerSensor(HydroponicsIdentity powerSensorId) override;
-    virtual void setPowerSensor(shared_ptr<HydroponicsSensor> powerSensor) override;
-    virtual shared_ptr<HydroponicsSensor> getPowerSensor() override;
-
-    virtual void setPowerDraw(float powerDraw, Hydroponics_UnitsType powerDrawUnits = Hydroponics_UnitsType_Undefined) override;
-    virtual void setPowerDraw(HydroponicsSingleMeasurement powerDraw) override;
-    virtual const HydroponicsSingleMeasurement &getPowerDraw() override;
+    virtual HydroponicsSensorAttachment &getPowerUsage() override;
 
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
     const HydroponicsTrigger *getLimitTrigger() const;
@@ -140,16 +132,12 @@ public:
 
 protected:
     float _maxPower;                                        // Maximum power
-    HydroponicsSingleMeasurement _powerDraw;                // Current power draw (total)
-    bool _needsPowerUpdate;                                 // Needs power draw update tracking flag
-    HydroponicsDLinkObject<HydroponicsSensor> _powerSensor; // Power sensor linkage
+    HydroponicsSensorAttachment _powerUsage;                 // Power draw sensor attachment
     HydroponicsTrigger *_limitTrigger;                      // Power limit trigger (owned)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
     void handleActivation(HydroponicsActuator *actuator);
-    void attachPowerSensor();
-    void detachPowerSensor();
     void handlePowerMeasure(const HydroponicsMeasurement *measurement);
     void attachLimitTrigger();
     void detachLimitTrigger();

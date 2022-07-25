@@ -26,7 +26,6 @@ public:
     void initFromData(HydroponicsLoggerSubData *dataIn);
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     bool beginLoggingToSDCard(String logFilePrefix);

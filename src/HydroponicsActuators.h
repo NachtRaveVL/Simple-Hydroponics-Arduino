@@ -42,16 +42,15 @@ public:
     virtual ~HydroponicsActuator();
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     virtual bool enableActuator(float intensity = 1.0f, bool force = false) = 0;
     virtual bool getCanEnable() override;
     virtual bool isEnabled(float tolerance = 0.0f) const = 0;
 
-    virtual void setContinuousPowerDraw(float contPowerDraw, Hydroponics_UnitsType contPowerDrawUnits = Hydroponics_UnitsType_Undefined) override;
-    virtual void setContinuousPowerDraw(HydroponicsSingleMeasurement contPowerDraw) override;
-    virtual const HydroponicsSingleMeasurement &getContinuousPowerDraw() override;
+    virtual void setContinuousPowerUsage(float contPowerUsage, Hydroponics_UnitsType contPowerUsageUnits = Hydroponics_UnitsType_Undefined) override;
+    virtual void setContinuousPowerUsage(HydroponicsSingleMeasurement contPowerUsage) override;
+    virtual const HydroponicsSingleMeasurement &getContinuousPowerUsage() override;
 
     virtual void setRail(HydroponicsIdentity powerRailId) override;
     virtual void setRail(shared_ptr<HydroponicsRail> powerRail) override;
@@ -70,7 +69,7 @@ public:
 protected:
     byte _outputPin;                                        // Output pin
     bool _enabled;                                          // Enabled state flag
-    HydroponicsSingleMeasurement _contPowerDraw;            // Continuous power draw
+    HydroponicsSingleMeasurement _contPowerUsage;            // Continuous power draw
     HydroponicsDLinkObject<HydroponicsRail> _rail;          // Power rail linkage
     HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
     Signal<HydroponicsActuator *> _activateSignal;          // Activation update signal
@@ -108,7 +107,7 @@ protected:
 
 // Pump-based Relay Actuator
 // This actuator acts as a water pump, and as such can attach to reservoirs
-class HydroponicsPumpRelayActuator : public HydroponicsRelayActuator, public HydroponicsPumpObjectInterface, public HydroponicsFlowAwareInterface {
+class HydroponicsPumpRelayActuator : public HydroponicsRelayActuator, public HydroponicsPumpObjectInterface, public HydroponicsFlowSensorAttachmentInterface {
 public:
     HydroponicsPumpRelayActuator(Hydroponics_ActuatorType actuatorType,
                                  Hydroponics_PositionIndex actuatorIndex,
@@ -119,7 +118,6 @@ public:
     virtual ~HydroponicsPumpRelayActuator();
 
     virtual void update() override;
-    virtual void resolveLinks() override;
 
     virtual bool enableActuator(float intensity = 1.0f, bool force = false) override;
     virtual void disableActuator() override;
@@ -144,34 +142,22 @@ public:
     virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) override;
     virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() override;
 
-    virtual void setFlowRateSensor(HydroponicsIdentity flowRateSensorId) override;
-    virtual void setFlowRateSensor(shared_ptr<HydroponicsSensor> flowRateSensor) override;
-    virtual shared_ptr<HydroponicsSensor> getFlowRateSensor() override;
-
-    virtual void setFlowRate(float flowRate, Hydroponics_UnitsType flowRateUnits = Hydroponics_UnitsType_Undefined) override;
-    virtual void setFlowRate(HydroponicsSingleMeasurement flowRate) override;
-    virtual const HydroponicsSingleMeasurement &getFlowRate() override;
+    virtual HydroponicsSensorAttachment &getFlowRate() override;
 
 protected:
     Hydroponics_UnitsType _flowRateUnits;                   // Flow rate units preferred
     HydroponicsSingleMeasurement _contFlowRate;             // Continuous flow rate
-    HydroponicsSingleMeasurement _flowRate;                 // Current flow rate
-    bool _needsFlowRate;                                    // Needs flow rate update tracking flag
+    HydroponicsSensorAttachment _flowRate;                  // Flow rate sensor attachment
     float _pumpVolumeAcc;                                   // Accumulator for total volume of fluid pumped
     time_t _pumpTimeBegMillis;                              // Time millis pump was activated at
     time_t _pumpTimeAccMillis;                              // Time millis pump has been accumulated up to
     HydroponicsDLinkObject<HydroponicsReservoir> _destReservoir; // Output reservoir linkage
-    HydroponicsDLinkObject<HydroponicsSensor> _flowRateSensor; // Flow rate sensor linkage
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
     void checkPumpingReservoirs();
     void pulsePumpingSensors();
     void handlePumpTime(time_t timeMillis);
-
-    void attachFlowRateSensor();
-    void detachFlowRateSensor();
-    void handleFlowRateMeasure(const HydroponicsMeasurement *measurement);
 };
 
 
@@ -213,7 +199,7 @@ protected:
 struct HydroponicsActuatorData : public HydroponicsObjectData
 {
     byte outputPin;
-    HydroponicsMeasurementData contPowerDraw;
+    HydroponicsMeasurementData contPowerUsage;
     char railName[HYDRUINO_NAME_MAXSIZE];
     char reservoirName[HYDRUINO_NAME_MAXSIZE];
 

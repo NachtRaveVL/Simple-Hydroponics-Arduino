@@ -63,11 +63,6 @@ void HydroponicsScheduler::update()
     }
 }
 
-void HydroponicsScheduler::resolveLinks()
-{
-    setNeedsScheduling();
-}
-
 void HydroponicsScheduler::handleLowMemory()
 {
     #ifdef HYDRUINO_USE_STDCPP_CONTAINERS
@@ -224,7 +219,7 @@ void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir
     }
 }
 
-void HydroponicsScheduler::setupWaterTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTempBalancer)
+void HydroponicsScheduler::setupWaterTemperatureBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTempBalancer)
 {
     if (reservoir && waterTempBalancer) {
         {   Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type incActuators;
@@ -244,7 +239,7 @@ void HydroponicsScheduler::setupWaterTempBalancer(HydroponicsReservoir *reservoi
     }
 }
 
-void HydroponicsScheduler::setupAirTempBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airTempBalancer)
+void HydroponicsScheduler::setupAirTemperatureBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airTempBalancer)
 {
     if (reservoir && airTempBalancer) {
         {   Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type incActuators;
@@ -415,11 +410,6 @@ void HydroponicsScheduler::setAirReportInterval(TimeSpan interval)
     }
 }
 
-void HydroponicsScheduler::setNeedsScheduling()
-{
-    _needsScheduling = (bool)_schedulerData;
-}
-
 float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoir, Hydroponics_ReservoirType reservoirType)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
@@ -461,11 +451,6 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoi
     }
 
     return 0.0f;
-}
-
-bool HydroponicsScheduler::inDaytimeMode() const
-{
-    return _inDaytimeMode;
 }
 
 float HydroponicsScheduler::getBaseFeedMultiplier() const
@@ -766,25 +751,25 @@ void HydroponicsFeeding::setupBalancers()
         if (tdsBalancer) { tdsBalancer->setEnabled(false); }
     }
 
-    if ((stage == PreFeed || stage == Feed) && feedRes->getWaterTempSensor()) {
-        auto waterTempBalancer = feedRes->setWaterTempBalancer(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+    if ((stage == PreFeed || stage == Feed) && feedRes->getWaterTemperatureSensor()) {
+        auto waterTempBalancer = feedRes->setWaterTemperatureBalancer(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
         if (waterTempBalancer) {
-            getSchedulerInstance()->setupWaterTempBalancer(feedRes.get(), waterTempBalancer);
+            getSchedulerInstance()->setupWaterTemperatureBalancer(feedRes.get(), waterTempBalancer);
             waterTempBalancer->setEnabled(true);
         }
     } else {
-        auto waterTempBalancer = feedRes->getWaterTempBalancer();
+        auto waterTempBalancer = feedRes->getWaterTemperatureBalancer();
         if (waterTempBalancer) { waterTempBalancer->setEnabled(false); }
     }
 
-    if (feedRes->getAirTempSensor()) {
-        auto airTempBalancer = feedRes->setAirTempBalancer(airTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+    if (feedRes->getAirTemperatureSensor()) {
+        auto airTempBalancer = feedRes->setAirTemperatureBalancer(airTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
         if (airTempBalancer) {
-            getSchedulerInstance()->setupAirTempBalancer(feedRes.get(), airTempBalancer);
+            getSchedulerInstance()->setupAirTemperatureBalancer(feedRes.get(), airTempBalancer);
             airTempBalancer->setEnabled(true);
         }
     } else {
-        auto airTempBalancer = feedRes->getAirTempBalancer();
+        auto airTempBalancer = feedRes->getAirTemperatureBalancer();
         if (airTempBalancer) { airTempBalancer->setEnabled(false); }
     }
 
@@ -928,7 +913,7 @@ void HydroponicsFeeding::update()
 {
     if ((!lastAirReport || unixNow() >= lastAirReport + getSchedulerInstance()->getAirReportInterval().totalseconds()) &&
         (getSchedulerInstance()->getAirReportInterval().totalseconds() > 0) && // 0 disables
-        (feedRes->getAirTempSensor() || feedRes->getAirCO2Sensor())) {
+        (feedRes->getAirTemperatureSensor() || feedRes->getAirCO2Sensor())) {
         getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_AirReport));
         logAirSetpoints();
         logAirMeasures();
@@ -983,7 +968,7 @@ void HydroponicsFeeding::update()
             if (!actuatorReqs.size() || unixNow() >= stageStart + (getSchedulerInstance()->getPreFeedAeratorMins() * SECS_PER_MIN)) {
                 auto phBalancer = feedRes->getWaterPHBalancer();
                 auto tdsBalancer = feedRes->getWaterTDSBalancer();
-                auto waterTempBalancer = feedRes->getWaterTempBalancer();
+                auto waterTempBalancer = feedRes->getWaterTemperatureBalancer();
 
                 if ((!phBalancer || (phBalancer->isEnabled() && phBalancer->isBalanced())) &&
                     (!tdsBalancer || (tdsBalancer->isEnabled() && tdsBalancer->isBalanced())) &&
@@ -1068,16 +1053,16 @@ void HydroponicsFeeding::logWaterSetpoints()
 void HydroponicsFeeding::logWaterMeasures()
 {
     if (feedRes->getWaterPHSensor()) {
-        auto ph = feedRes->getWaterPH();
+        auto ph = feedRes->getWaterPH().getMeasurement();
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Measured), measurementToString(ph));
     }
     if (feedRes->getWaterTDSSensor()) {
-        auto tds = feedRes->getWaterTDS();
+        auto tds = feedRes->getWaterTDS().getMeasurement();
         convertUnits(&tds, feedRes->getTDSUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Measured), measurementToString(tds, 1));
     }
-    if (feedRes->getWaterTempSensor()) {
-        auto temp = feedRes->getWaterTemperature();
+    if (feedRes->getWaterTemperatureSensor()) {
+        auto temp = feedRes->getWaterTemperature().getMeasurement();
         convertUnits(&temp, feedRes->getTemperatureUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
     }
@@ -1096,13 +1081,13 @@ void HydroponicsFeeding::logAirSetpoints()
 
 void HydroponicsFeeding::logAirMeasures()
 {
-    if (feedRes->getAirTempSensor()) {
-        auto temp = feedRes->getAirTemperature();
+    if (feedRes->getAirTemperatureSensor()) {
+        auto temp = feedRes->getAirTemperature().getMeasurement();
         convertUnits(&temp, feedRes->getTemperatureUnits());
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
     }
     if (feedRes->getAirCO2Sensor()) {
-        auto co2 = feedRes->getAirCO2();
+        auto co2 = feedRes->getAirCO2().getMeasurement();
         getLoggerInstance()->logMessage(SFP(HS_Log_Field_CO2_Measured), measurementToString(co2));
     }
 }

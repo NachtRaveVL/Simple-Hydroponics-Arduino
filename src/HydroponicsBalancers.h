@@ -33,7 +33,6 @@ public:
     inline bool isBalanced() const { return getBalancerState() == Hydroponics_BalancerState_Balanced; }
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
 
     void setTargetUnits(Hydroponics_UnitsType targetUnits);

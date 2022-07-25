@@ -130,9 +130,6 @@ HydroponicsObject::~HydroponicsObject()
 void HydroponicsObject::update()
 { ; }
 
-void HydroponicsObject::resolveLinks()
-{ ; }
-
 void HydroponicsObject::handleLowMemory()
 {
     #ifdef HYDRUINO_USE_STDCPP_CONTAINERS
@@ -174,21 +171,6 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
 {
     return (_links.find(obj->_id) != _links.end());
-}
-
-const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type HydroponicsObject::getLinkages() const
-{
-    return _links;
-}
-
-const HydroponicsIdentity &HydroponicsObject::getId() const
-{
-    return _id;
-}
-
-Hydroponics_KeyType HydroponicsObject::getKey() const
-{
-    return _id.key;
 }
 
 shared_ptr<HydroponicsObject> HydroponicsObject::getSharedPtr() const

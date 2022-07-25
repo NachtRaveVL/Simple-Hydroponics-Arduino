@@ -218,15 +218,15 @@ void setup() {
 
         // Digital Sensors
         #if SETUP_DS18_WTEMP_PIN >= 0
-        {   auto dsTempSensor = hydroController.addDSTemperatureSensor(SETUP_DS18_WTEMP_PIN, SETUP_USE_DIGITAL_BITRES);
-            dsTempSensor->setReservoir(feedReservoir);
-            feedReservoir->setWaterTempSensor(dsTempSensor);
+        {   auto dsTemperatureSensor = hydroController.addDSTemperatureSensor(SETUP_DS18_WTEMP_PIN, SETUP_USE_DIGITAL_BITRES);
+            dsTemperatureSensor->setReservoir(feedReservoir);
+            feedReservoir->setWaterTemperatureSensor(dsTemperatureSensor);
         }
         #endif
         #if SETUP_DHT_ATEMP_PIN >= 0
-        {   auto dhtTempSensor = hydroController.addDHTTempHumiditySensor(SETUP_DHT_ATEMP_PIN, SETUP_DHT_SENSOR_TYPE);
-            dhtTempSensor->setReservoir(feedReservoir);
-            feedReservoir->setAirTempSensor(dhtTempSensor);
+        {   auto dhtTemperatureSensor = hydroController.addDHTTempHumiditySensor(SETUP_DHT_ATEMP_PIN, SETUP_DHT_SENSOR_TYPE);
+            dhtTemperatureSensor->setReservoir(feedReservoir);
+            feedReservoir->setAirTemperatureSensor(dhtTemperatureSensor);
         }
         #endif
 

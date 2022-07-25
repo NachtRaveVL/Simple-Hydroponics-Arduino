@@ -94,7 +94,6 @@ extern void __int_restore_irq(int *primask);
 #include "ArduinoJson.h"                // JSON library
 #include "ArxContainer.h"               // STL-like container library
 #include "ArxSmartPtr.h"                // Shared pointer library
-#include "Callback.h"                   // Callback library
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "EasyBuzzer.h"                 // Async piezo buzzer library
@@ -132,6 +131,7 @@ extern time_t unixNow();
 #include "HydroponicsDefines.h"
 #include "HydroponicsStrings.h"
 #include "HydroponicsInlines.hh"
+#include "HydroponicsCallback.hh"
 #include "HydroponicsInterfaces.h"
 #include "HydroponicsAttachments.h"
 #include "HydroponicsData.h"

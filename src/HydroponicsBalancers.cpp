@@ -47,11 +47,6 @@ void HydroponicsBalancer::update()
     }
 }
 
-void HydroponicsBalancer::resolveLinks()
-{
-    if (_rangeTrigger) { _rangeTrigger->resolveLinks(); }
-}
-
 void HydroponicsBalancer::handleLowMemory()
 {
     if (_rangeTrigger) { _rangeTrigger->handleLowMemory(); }

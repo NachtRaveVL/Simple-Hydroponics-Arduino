@@ -21,7 +21,6 @@ public:
     void initFromData(HydroponicsPublisherSubData *dataIn);
 
     virtual void update() override;
-    virtual void resolveLinks() override;
     virtual void handleLowMemory() override;
  
     bool beginPublishingToSDCard(String dataFilePrefix);
@@ -29,7 +28,8 @@ public:
 
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
 
-    void setNeedsTabulation();
+    inline void setNeedsTabulation() { _needsTabulation = (bool)_publisherData; }
+    inline bool needsTabulation() { return _needsTabulation; }
 
     Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
     bool isPublishingEnabled();
