@@ -73,11 +73,11 @@ public:
     virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
 
     void setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData);
-    const HydroponicsCalibrationData *getUserCalibrationData() const;
+    inline const HydroponicsCalibrationData *getUserCalibrationData() const { return _calibrationData; }
 
-    byte getInputPin() const;
-    Hydroponics_SensorType getSensorType() const;
-    Hydroponics_PositionIndex getSensorIndex() const;
+    inline byte getInputPin() const { return _inputPin; }
+    inline Hydroponics_SensorType getSensorType() const { return _id.objTypeAs.sensorType; }
+    inline Hydroponics_PositionIndex getSensorIndex() const { return _id.posIndex; }
 
     Signal<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> &getMeasurementSignal();
 
@@ -115,7 +115,7 @@ public:
 
     bool tryRegisterAsISR();
 
-    bool getActiveLow() const;
+    inline bool getActiveLow() const { return _activeLow; }
 
     Signal<bool> &getStateSignal();
 
@@ -152,8 +152,8 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const override;
 
-    HydroponicsBitResolution getInputResolution() const;
-    bool getInputInversion() const;
+    inline HydroponicsBitResolution getInputResolution() const { return _inputResolution; }
+    inline bool getInputInversion() const { return _inputInversion; }
 
 protected:
     HydroponicsBitResolution _inputResolution;              // Analog input resolution
@@ -185,7 +185,7 @@ public:
     virtual bool setWireDeviceAddress(const uint8_t wireDevAddress[8]);
     virtual const uint8_t *getWireDeviceAddress() const;
 
-    OneWire *getOneWire();
+    inline OneWire *getOneWire() const { return _oneWire; }
 
 protected:
     byte _inputBitRes;                                      // Input bit resolution
@@ -228,7 +228,7 @@ public:
     virtual const uint8_t *getWireDeviceAddress() const override; // disabled
 
     void setComputeHeatIndex(bool computeHeatIndex);
-    bool getComputeHeatIndex() const;
+    inline bool getComputeHeatIndex() const { return _computeHeatIndex; }
 
 protected:
     byte _dhtType;                                          // DHT type
@@ -263,7 +263,7 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const override;
 
-    byte getPullupPin() const;
+    inline byte getPullupPin() const { return _pullupPin; }
 
 protected:
     DallasTemperature *_dt;                                 // DallasTemperature instance (owned)

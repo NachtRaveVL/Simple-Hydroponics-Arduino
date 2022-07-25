@@ -53,8 +53,8 @@ public:
     virtual bool removeSensor(HydroponicsSensor *sensor) override;
     virtual bool hasSensor(HydroponicsSensor *sensor) const override;
 
-    Hydroponics_RailType getRailType() const;
-    Hydroponics_PositionIndex getRailIndex() const;
+    inline Hydroponics_RailType getRailType() const { return _id.objTypeAs.railType; }
+    inline Hydroponics_PositionIndex getRailIndex() const { return _id.posIndex; }
     virtual float getRailVoltage() const override;
 
     Signal<HydroponicsRail *> &getCapacitySignal();
@@ -89,7 +89,7 @@ public:
     virtual bool addActuator(HydroponicsActuator *actuator) override;
     virtual bool removeActuator(HydroponicsActuator *actuator) override;
 
-    int getActiveCount();
+    inline int getActiveCount() { return _activeCount; }
 
 protected:
     int _activeCount;                                       // Current active count
@@ -128,7 +128,7 @@ public:
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
     const HydroponicsTrigger *getLimitTrigger() const;
 
-    float getMaxPower() const;
+    inline float getMaxPower() const { return _maxPower; }
 
 protected:
     float _maxPower;                                        // Maximum power

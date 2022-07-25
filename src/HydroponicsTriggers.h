@@ -48,10 +48,10 @@ public:
     virtual Hydroponics_TriggerState getTriggerState() const override;
 
     void setToleranceUnits(Hydroponics_UnitsType toleranceUnits);
-    Hydroponics_UnitsType getToleranceUnits() const;
+    inline Hydroponics_UnitsType getToleranceUnits() const { return _toleranceUnits; }
 
-    shared_ptr<HydroponicsSensor> getSensor();
-    byte getMeasurementRow() const;
+    inline shared_ptr<HydroponicsSensor> getSensor() { return _sensor.getObject(); }
+    inline byte getMeasurementRow() const { return _measurementRow; }
 
     Signal<Hydroponics_TriggerState> &getTriggerSignal();
 
@@ -96,9 +96,9 @@ public:
 
     void setTriggerTolerance(float tolerance);
 
-    float getTriggerTolerance() const;
-    float getDetriggerTolerance() const;
-    bool getTriggerBelow() const;
+    inline float getTriggerTolerance() const { return _triggerTolerance; }
+    inline float getDetriggerTolerance() const { return _detriggerTolerance; }
+    inline bool getTriggerBelow() const { return _triggerBelow; }
 
 protected:
     float _triggerTolerance;                                // Trigger tolerance limit
@@ -140,10 +140,10 @@ public:
 
     void setTriggerToleranceMid(float toleranceMid);
 
-    float getTriggerToleranceLow() const;
-    float getTriggerToleranceHigh() const;
-    float getDetriggerTolerance() const;
-    bool getTriggerOutside() const;
+    inline float getTriggerToleranceLow() const { return _triggerToleranceLow; }
+    inline float getTriggerToleranceHigh() const { return _triggerToleranceHigh; }
+    inline float getDetriggerTolerance() const { return _detriggerTolerance; }
+    inline bool getTriggerOutside() const { return _triggerOutside; }
 
 protected:
     float _triggerToleranceLow;                             // Low value tolerance

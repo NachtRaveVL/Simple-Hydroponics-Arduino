@@ -13,6 +13,7 @@ struct HydroponicsFeeding;
 struct HydroponicsLighting;
 
 #include "Hydroponics.h"
+#include "HydroponicsCrops.h"
 
 // Hydroponics Scheduler
 class HydroponicsScheduler : public HydroponicsSubObject {
@@ -34,7 +35,7 @@ public:
     void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
     void setStandardDosingRate(float dosingRate, Hydroponics_ReservoirType reservoirType);
     void setLastWeekAsFlush(Hydroponics_CropType cropType);
-    void setLastWeekAsFlush(HydroponicsCrop *crop);
+    inline void setLastWeekAsFlush(HydroponicsCrop *crop) { if (crop) { setFlushWeek(crop->getTotalGrowWeeks() - 1); } }
     void setFlushWeek(int weekIndex);
     void setTotalFeedingsDay(unsigned int feedingsDay);
     void setPreFeedAeratorMins(unsigned int aeratorMins);

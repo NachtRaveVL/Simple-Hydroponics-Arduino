@@ -192,26 +192,6 @@ void HydroponicsSensor::setUserCalibrationData(HydroponicsCalibrationData *userC
     }
 }
 
-const HydroponicsCalibrationData *HydroponicsSensor::getUserCalibrationData() const
-{
-    return _calibrationData;
-}
-
-byte HydroponicsSensor::getInputPin() const
-{
-    return _inputPin;
-}
-
-Hydroponics_SensorType HydroponicsSensor::getSensorType() const
-{
-    return _id.objTypeAs.sensorType;
-}
-
-Hydroponics_PositionIndex HydroponicsSensor::getSensorIndex() const
-{
-    return _id.posIndex;
-}
-
 Signal<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> &HydroponicsSensor::getMeasurementSignal()
 {
     return _measureSignal;
@@ -321,11 +301,6 @@ bool HydroponicsBinarySensor::tryRegisterAsISR()
         }
     #endif
     return _usingISR;
-}
-
-bool HydroponicsBinarySensor::getActiveLow() const
-{
-    return _activeLow;
 }
 
 Signal<bool> &HydroponicsBinarySensor::getStateSignal()
@@ -485,16 +460,6 @@ Hydroponics_UnitsType HydroponicsAnalogSensor::getMeasurementUnits(byte measurem
     return _measurementUnits;
 }
 
-HydroponicsBitResolution HydroponicsAnalogSensor::getInputResolution() const
-{
-    return _inputResolution;
-}
-
-bool HydroponicsAnalogSensor::getInputInversion() const
-{
-    return _inputInversion;
-}
-
 void HydroponicsAnalogSensor::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsSensor::saveToData(dataOut);
@@ -598,11 +563,6 @@ bool HydroponicsDigitalSensor::setWireDeviceAddress(const uint8_t wireDevAddress
 const uint8_t *HydroponicsDigitalSensor::getWireDeviceAddress() const
 {
     return _wireDevAddress;
-}
-
-OneWire *HydroponicsDigitalSensor::getOneWire()
-{
-    return _oneWire;
 }
 
 void HydroponicsDigitalSensor::resolveDeviceAddress()
@@ -790,12 +750,9 @@ const uint8_t *HydroponicsDHTTempHumiditySensor::getWireDeviceAddress() const
 
 void HydroponicsDHTTempHumiditySensor::setComputeHeatIndex(bool computeHeatIndex)
 {
-    _computeHeatIndex = computeHeatIndex;
-}
-
-bool HydroponicsDHTTempHumiditySensor::getComputeHeatIndex() const
-{
-    return _computeHeatIndex;
+    if (_computeHeatIndex != computeHeatIndex) {
+        _computeHeatIndex = computeHeatIndex;
+    }
 }
 
 void HydroponicsDHTTempHumiditySensor::saveToData(HydroponicsData *dataOut)
@@ -951,11 +908,6 @@ void HydroponicsDSTemperatureSensor::setMeasurementUnits(Hydroponics_UnitsType m
 Hydroponics_UnitsType HydroponicsDSTemperatureSensor::getMeasurementUnits(byte measurementRow) const
 {
     return _measurementUnits;
-}
-
-byte HydroponicsDSTemperatureSensor::getPullupPin() const
-{
-    return _pullupPin;
 }
 
 void HydroponicsDSTemperatureSensor::saveToData(HydroponicsData *dataOut)

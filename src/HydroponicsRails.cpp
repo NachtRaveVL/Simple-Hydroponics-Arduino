@@ -95,16 +95,6 @@ bool HydroponicsRail::hasSensor(HydroponicsSensor *sensor) const
     return hasLinkage(sensor);
 }
 
-Hydroponics_RailType HydroponicsRail::getRailType() const
-{
-    return _id.objTypeAs.railType;
-}
-
-Hydroponics_PositionIndex HydroponicsRail::getRailIndex() const
-{
-    return _id.posIndex;
-}
-
 float HydroponicsRail::getRailVoltage() const
 {
     return getRailVoltageFromType(_id.objTypeAs.railType);
@@ -187,11 +177,6 @@ bool HydroponicsSimpleRail::removeActuator(HydroponicsActuator *actuator)
         return true;
     }
     return false;
-}
-
-int HydroponicsSimpleRail::getActiveCount()
-{
-    return _activeCount;
 }
 
 void HydroponicsSimpleRail::saveToData(HydroponicsData *dataOut)
@@ -330,11 +315,6 @@ void HydroponicsRegulatedRail::setLimitTrigger(HydroponicsTrigger *limitTrigger)
 const HydroponicsTrigger *HydroponicsRegulatedRail::getLimitTrigger() const
 {
     return _limitTrigger;
-}
-
-float HydroponicsRegulatedRail::getMaxPower() const
-{
-    return _maxPower;
 }
 
 void HydroponicsRegulatedRail::saveToData(HydroponicsData *dataOut)

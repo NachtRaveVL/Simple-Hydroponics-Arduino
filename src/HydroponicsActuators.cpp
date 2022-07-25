@@ -144,21 +144,6 @@ shared_ptr<HydroponicsReservoir> HydroponicsActuator::getReservoir()
     return _reservoir.getObject();
 }
 
-byte HydroponicsActuator::getOutputPin() const
-{
-    return _outputPin;
-}
-
-Hydroponics_ActuatorType HydroponicsActuator::getActuatorType() const
-{
-    return _id.objTypeAs.actuatorType;
-}
-
-Hydroponics_PositionIndex HydroponicsActuator::getActuatorIndex() const
-{
-    return _id.posIndex;
-}
-
 Signal<HydroponicsActuator *> &HydroponicsActuator::getActivationSignal()
 {
     return _activateSignal;
@@ -266,11 +251,6 @@ void HydroponicsRelayActuator::disableActuator()
 bool HydroponicsRelayActuator::isEnabled(float tolerance) const
 {
     return _enabled;
-}
-
-bool HydroponicsRelayActuator::getActiveLow() const
-{
-    return _activeLow;
 }
 
 void HydroponicsRelayActuator::saveToData(HydroponicsData *dataOut)
@@ -652,11 +632,6 @@ bool HydroponicsPWMActuator::isEnabled(float tolerance) const
     return _enabled && _pwmAmount >= tolerance - FLT_EPSILON;
 }
 
-float HydroponicsPWMActuator::getPWMAmount() const
-{
-    return _pwmAmount;
-}
-
 int HydroponicsPWMActuator::getPWMAmount(int) const
 {
     return _pwmResolution.inverseTransform(_pwmAmount);
@@ -674,11 +649,6 @@ void HydroponicsPWMActuator::setPWMAmount(int amount)
     _pwmAmount = _pwmResolution.transform(amount);
 
     if (_enabled) { applyPWM(); }
-}
-
-HydroponicsBitResolution HydroponicsPWMActuator::getPWMResolution() const
-{
-    return _pwmResolution;
 }
 
 void HydroponicsPWMActuator::saveToData(HydroponicsData *dataOut)

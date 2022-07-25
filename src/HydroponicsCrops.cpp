@@ -118,52 +118,11 @@ shared_ptr<HydroponicsFeedReservoir> HydroponicsCrop::getFeedReservoir()
 
 void HydroponicsCrop::setFeedingWeight(float weight)
 {
-    _feedingWeight = weight;
-}
+    if (!isFPEqual(_feedingWeight, weight)) {
+        _feedingWeight = weight;
 
-float HydroponicsCrop::getFeedingWeight() const
-{
-    return _feedingWeight;
-}
-
-Hydroponics_CropType HydroponicsCrop::getCropType() const
-{
-    return _id.objTypeAs.cropType;
-}
-
-Hydroponics_PositionIndex HydroponicsCrop::getCropIndex() const
-{
-    return _id.posIndex;
-}
-
-Hydroponics_SubstrateType HydroponicsCrop::getSubstrateType() const
-{
-    return _substrateType;
-}
-
-DateTime HydroponicsCrop::getSowDate() const
-{
-    return DateTime((uint32_t)_sowDate);
-}
-
-const HydroponicsCropsLibData *HydroponicsCrop::getCropsLibData() const
-{
-    return _cropsData;
-}
-
-int HydroponicsCrop::getGrowWeek() const
-{
-    return _growWeek;
-}
-
-int HydroponicsCrop::getTotalGrowWeeks() const
-{
-    return _totalGrowWeeks;
-}
-
-Hydroponics_CropPhase HydroponicsCrop::getCropPhase() const
-{
-    return _cropPhase;
+        getSchedulerInstance()->setNeedsScheduling();
+    }
 }
 
 Signal<HydroponicsCrop *> &HydroponicsCrop::getFeedingSignal()
@@ -301,19 +260,9 @@ void HydroponicsTimedCrop::setFeedTimeOn(TimeSpan timeOn)
     _feedTimingMins[0] = timeOn.totalseconds() / SECS_PER_MIN;
 }
 
-TimeSpan HydroponicsTimedCrop::getFeedTimeOn() const
-{
-    return TimeSpan(_feedTimingMins[0] * SECS_PER_MIN);
-}
-
 void HydroponicsTimedCrop::setFeedTimeOff(TimeSpan timeOff)
 {
     _feedTimingMins[1] = timeOff.totalseconds() / SECS_PER_MIN;
-}
-
-TimeSpan HydroponicsTimedCrop::getFeedTimeOff() const
-{
-    return TimeSpan(_feedTimingMins[1] * SECS_PER_MIN);
 }
 
 void HydroponicsTimedCrop::saveToData(HydroponicsData *dataOut)
@@ -399,11 +348,6 @@ void HydroponicsAdaptiveCrop::setFeedingTrigger(HydroponicsTrigger *feedingTrigg
         _feedingTrigger = feedingTrigger;
         if (_feedingTrigger) { attachFeedingTrigger(); }
     }
-}
-
-const HydroponicsTrigger *HydroponicsAdaptiveCrop::getFeedingTrigger() const
-{
-    return _feedingTrigger;
 }
 
 void HydroponicsAdaptiveCrop::saveToData(HydroponicsData *dataOut)

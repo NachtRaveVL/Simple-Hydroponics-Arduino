@@ -32,13 +32,13 @@ float getMeasurementValue(const HydroponicsMeasurement *measurement, Hydroponics
     if (measurement) {
         switch (measurement->type) {
             case 0: // Binary
-                if (measurementRow == 0) { return ((HydroponicsBinaryMeasurement *)measurement)->state ? binTrue : 0.0f; }
+                return ((HydroponicsBinaryMeasurement *)measurement)->state ? binTrue : 0.0f;
             case 1: // Single
-                if (measurementRow == 0) { return ((HydroponicsSingleMeasurement *)measurement)->value; }
+                return ((HydroponicsSingleMeasurement *)measurement)->value;
             case 2: // Double
-                if (measurementRow > 0 && measurementRow < 2) { return ((HydroponicsDoubleMeasurement *)measurement)->value[measurementRow]; }
+                return ((HydroponicsDoubleMeasurement *)measurement)->value[measurementRow];
             case 3: // Triple
-                if (measurementRow > 0 && measurementRow < 3) { return ((HydroponicsTripleMeasurement *)measurement)->value[measurementRow]; }
+                return ((HydroponicsTripleMeasurement *)measurement)->value[measurementRow];
             default: break;
         }
     }
@@ -50,13 +50,13 @@ Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurem
     if (measurement) {
         switch (measurement->type) {
             case 0: // Binary
-                if (measurementRow == 0) { return binUnits; }
+                return binUnits;
             case 1: // Single
-                if (measurementRow == 0) { return ((HydroponicsSingleMeasurement *)measurement)->units; }
+                return ((HydroponicsSingleMeasurement *)measurement)->units;
             case 2: // Double
-                if (measurementRow > 0 && measurementRow < 2) { return ((HydroponicsDoubleMeasurement *)measurement)->units[measurementRow]; }
+                return ((HydroponicsDoubleMeasurement *)measurement)->units[measurementRow];
             case 3: // Triple
-                if (measurementRow > 0 && measurementRow < 3) { return ((HydroponicsTripleMeasurement *)measurement)->units[measurementRow]; }
+                return ((HydroponicsTripleMeasurement *)measurement)->units[measurementRow];
             default: break;
         }
     }
@@ -73,13 +73,13 @@ HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement
     if (measurement) {
         switch (measurement->type) {
             case 0: // Binary
-                if (measurementRow == 0) { return ((HydroponicsBinaryMeasurement *)measurement)->getAsSingleMeasurement(binTrue, binUnits); }
+                return ((HydroponicsBinaryMeasurement *)measurement)->getAsSingleMeasurement(binTrue, binUnits);
             case 1: // Single
-                if (measurementRow == 0) { return HydroponicsSingleMeasurement(*((HydroponicsSingleMeasurement *)measurement)); }
+                return HydroponicsSingleMeasurement(*((HydroponicsSingleMeasurement *)measurement));
             case 2: // Double
-                if (measurementRow > 0 && measurementRow < 2) { return ((HydroponicsDoubleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow); }
+                return ((HydroponicsDoubleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow);
             case 3: // Triple
-                if (measurementRow > 0 && measurementRow < 3) { return ((HydroponicsTripleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow); }
+                return ((HydroponicsTripleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow);
             default: break;
         }
     }

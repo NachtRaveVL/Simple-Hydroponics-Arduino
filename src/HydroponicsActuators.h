@@ -60,9 +60,9 @@ public:
     virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
     virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
 
-    byte getOutputPin() const;
-    Hydroponics_ActuatorType getActuatorType() const;
-    Hydroponics_PositionIndex getActuatorIndex() const;
+    inline byte getOutputPin() const { return _outputPin; }
+    inline Hydroponics_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
+    inline Hydroponics_PositionIndex getActuatorIndex() const { return _id.posIndex; }
 
     Signal<HydroponicsActuator *> &getActivationSignal();
 
@@ -96,7 +96,7 @@ public:
     virtual void disableActuator() override;
     virtual bool isEnabled(float tolerance = 0.0f) const override;
 
-    bool getActiveLow() const;
+    inline bool getActiveLow() const { return _activeLow; }
 
 protected:
     bool _activeLow;                                        // If pulling pin to a LOW state infers ACTIVE status (default: true)
@@ -178,12 +178,12 @@ public:
     virtual void disableActuator() override;
     virtual bool isEnabled(float tolerance = 0.0f) const override;
 
-    float getPWMAmount() const;
+    inline float getPWMAmount() const { return _pwmAmount; }
     int getPWMAmount(int) const;
     void setPWMAmount(float amount);
     void setPWMAmount(int amount);
 
-    HydroponicsBitResolution getPWMResolution() const;
+    inline HydroponicsBitResolution getPWMResolution() const { return _pwmResolution; }
 
 protected:
     float _pwmAmount;                                       // Current set PWM amount

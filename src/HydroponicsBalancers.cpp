@@ -59,11 +59,6 @@ void HydroponicsBalancer::setTargetUnits(Hydroponics_UnitsType targetUnits)
     }
 }
 
-Hydroponics_UnitsType HydroponicsBalancer::getTargetUnits() const
-{
-    return _targetUnits;
-}
-
 void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators)
 {
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
@@ -130,21 +125,6 @@ void HydroponicsBalancer::setEnabled(bool enabled)
 
         _needsTriggerUpdate = true;
     }
-}
-
-bool HydroponicsBalancer::isEnabled() const
-{
-    return _enabled;
-}
-
-float HydroponicsBalancer::getTargetSetpoint() const
-{
-    return _targetSetpoint;
-}
-
-float HydroponicsBalancer::getTargetRange() const
-{
-    return _targetRange;
 }
 
 void HydroponicsBalancer::disableIncActuators()
@@ -251,16 +231,6 @@ void HydroponicsLinearEdgeBalancer::update()
     }
 }
 
-float HydroponicsLinearEdgeBalancer::getEdgeOffset() const
-{
-    return _edgeOffset;
-}
-
-float HydroponicsLinearEdgeBalancer::getEdgeLength() const
-{
-    return _edgeLength;
-}
-
 
 HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, unsigned int mixTimeMins, byte measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing), _baseDosingMillis(baseDosingMillis), _mixTimeMins(mixTimeMins),
@@ -328,16 +298,6 @@ void HydroponicsTimedDosingBalancer::update()
         }
         
     }
-}
-
-time_t HydroponicsTimedDosingBalancer::getBaseDosingMillis() const
-{
-    return _baseDosingMillis;
-}
-
-unsigned int HydroponicsTimedDosingBalancer::getMixTimeMins() const
-{
-    return _mixTimeMins;
 }
 
 void HydroponicsTimedDosingBalancer::performDosing()

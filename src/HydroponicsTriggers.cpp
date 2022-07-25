@@ -83,21 +83,6 @@ void HydroponicsTrigger::setToleranceUnits(Hydroponics_UnitsType toleranceUnits)
     }
 }
 
-Hydroponics_UnitsType HydroponicsTrigger::getToleranceUnits() const
-{
-    return _toleranceUnits;
-}
-
-shared_ptr<HydroponicsSensor> HydroponicsTrigger::getSensor()
-{
-    return _sensor.getObject();
-}
-
-byte HydroponicsTrigger::getMeasurementRow() const
-{
-    return _measurementRow;
-}
-
 Signal<Hydroponics_TriggerState> &HydroponicsTrigger::getTriggerSignal()
 {
     return _triggerSignal;
@@ -159,21 +144,6 @@ void HydroponicsMeasurementValueTrigger::setTriggerTolerance(float tolerance)
 
         _needsSensorUpdate = true;
     }
-}
-
-float HydroponicsMeasurementValueTrigger::getTriggerTolerance() const
-{
-    return _triggerTolerance;
-}
-
-float HydroponicsMeasurementValueTrigger::getDetriggerTolerance() const
-{
-    return _detriggerTolerance;
-}
-
-bool HydroponicsMeasurementValueTrigger::getTriggerBelow() const
-{
-    return _triggerBelow;
 }
 
 void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMeasurement *measurement)
@@ -274,26 +244,6 @@ void HydroponicsMeasurementRangeTrigger::setTriggerToleranceMid(float toleranceM
 
         _needsSensorUpdate = true;
     }
-}
-
-float HydroponicsMeasurementRangeTrigger::getTriggerToleranceLow() const
-{
-    return _triggerToleranceLow;
-}
-
-float HydroponicsMeasurementRangeTrigger::getTriggerToleranceHigh() const
-{
-    return _triggerToleranceHigh;
-}
-
-float HydroponicsMeasurementRangeTrigger::getDetriggerTolerance() const
-{
-    return _detriggerTolerance;
-}
-
-bool HydroponicsMeasurementRangeTrigger::getTriggerOutside() const
-{
-    return _triggerOutside;
 }
 
 void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMeasurement *measurement)

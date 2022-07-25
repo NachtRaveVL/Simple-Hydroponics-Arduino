@@ -38,7 +38,7 @@ public:
     virtual void handleLowMemory() override;
 
     void setTargetUnits(Hydroponics_UnitsType targetUnits);
-    Hydroponics_UnitsType getTargetUnits() const;
+    inline Hydroponics_UnitsType getTargetUnits() const { return _targetUnits; }
 
     void setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators);
     void setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators);
@@ -46,10 +46,10 @@ public:
     const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators();
 
     void setEnabled(bool enabled);
-    bool isEnabled() const;
+    inline bool isEnabled() const { return _enabled; }
 
-    float getTargetSetpoint() const;
-    float getTargetRange() const;
+    inline float getTargetSetpoint() const { return _targetSetpoint; }
+    inline float getTargetRange() const { return _targetRange; }
 
     Signal<Hydroponics_BalancerState> &getBalancerSignal();
 
@@ -88,8 +88,8 @@ public:
 
     virtual void update() override;
 
-    float getEdgeOffset() const;
-    float getEdgeLength() const;
+    inline float getEdgeOffset() const { return _edgeOffset; }
+    inline float getEdgeLength() const { return _edgeLength; }
 
 protected:
     float _edgeOffset;                                      // Edge offset
@@ -116,8 +116,8 @@ public:
 
     virtual void update() override;
 
-    time_t getBaseDosingMillis() const;
-    unsigned int getMixTimeMins() const;
+    inline time_t getBaseDosingMillis() const { return _baseDosingMillis; }
+    inline unsigned int getMixTimeMins() const { return _mixTimeMins; }
 
 protected:
     uint8_t _mixTimeMins;                                   // Time allowance for mixing, in minutes

@@ -56,17 +56,17 @@ public:
     shared_ptr<HydroponicsFeedReservoir> getFeedReservoir();
 
     void setFeedingWeight(float weight);
-    float getFeedingWeight() const;
+    inline float getFeedingWeight() const { return _feedingWeight; }
 
-    Hydroponics_CropType getCropType() const;
-    Hydroponics_PositionIndex getCropIndex() const;
-    Hydroponics_SubstrateType getSubstrateType() const;
-    DateTime getSowDate() const;
+    inline Hydroponics_CropType getCropType() const { return _id.objTypeAs.cropType; }
+    inline Hydroponics_PositionIndex getCropIndex() const { return _id.posIndex; }
+    inline Hydroponics_SubstrateType getSubstrateType() const { return _substrateType; }
+    inline DateTime getSowDate() const { return DateTime((uint32_t)_sowDate); }
 
-    const HydroponicsCropsLibData *getCropsLibData() const;
-    int getGrowWeek() const;
-    int getTotalGrowWeeks() const;
-    Hydroponics_CropPhase getCropPhase() const;
+    inline const HydroponicsCropsLibData *getCropsLibData() const { return _cropsData; }
+    inline int getGrowWeek() const { return _growWeek; }
+    inline int getTotalGrowWeeks() const { return _totalGrowWeeks; }
+    inline Hydroponics_CropPhase getCropPhase() const { return _cropPhase; }
 
     Signal<HydroponicsCrop *> &getFeedingSignal();
 
@@ -120,10 +120,10 @@ public:
     virtual void notifyFeedingBegan() override;
 
     void setFeedTimeOn(TimeSpan timeOn);
-    TimeSpan getFeedTimeOn() const;
+    inline TimeSpan getFeedTimeOn() const { return TimeSpan(_feedTimingMins[0] * SECS_PER_MIN); }
 
     void setFeedTimeOff(TimeSpan timeOff);
-    TimeSpan getFeedTimeOff() const;
+    inline TimeSpan getFeedTimeOff() const { return TimeSpan(_feedTimingMins[1] * SECS_PER_MIN); }
 
 protected:
     time_t _lastFeedingDate;                                // Last feeding date (UTC)
@@ -155,7 +155,7 @@ public:
     virtual HydroponicsSensorAttachment &getSoilMoisture() override;
 
     void setFeedingTrigger(HydroponicsTrigger *feedingTrigger);
-    const HydroponicsTrigger *getFeedingTrigger() const;
+    inline const HydroponicsTrigger *getFeedingTrigger() const { return _feedingTrigger; }
 
 protected:
     Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred (else default)

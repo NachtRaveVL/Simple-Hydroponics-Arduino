@@ -335,11 +335,6 @@ void HydroponicsScheduler::setLastWeekAsFlush(Hydroponics_CropType cropType)
     }
 }
 
-void HydroponicsScheduler::setLastWeekAsFlush(HydroponicsCrop *crop)
-{
-    if (crop) { setFlushWeek(crop->getTotalGrowWeeks() - 1); }
-}
-
 void HydroponicsScheduler::setFlushWeek(int weekIndex)
 {
     HYDRUINO_SOFT_ASSERT(_schedulerData, SFP(HS_Err_NotYetInitialized));
