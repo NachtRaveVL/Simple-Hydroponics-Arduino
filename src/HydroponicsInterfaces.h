@@ -229,7 +229,7 @@ class HydroponicsFlowSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getFlowRate() = 0;
 
-    template<class T = HydroponicsSensor> inline void setFlowRateSensor(shared_ptr<T> sensor) { getFlowRate() = sensor; }
+    template<class T> inline void setFlowRateSensor(shared_ptr<T> sensor) { getFlowRate() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getFlowRateSensor() { static_pointer_cast<T>(getFlowRate().getObject()); }
 };
 
@@ -238,7 +238,7 @@ class HydroponicsVolumeSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterVolume() = 0;
 
-    template<class T = HydroponicsSensor> inline void setWaterVolumeSensor(shared_ptr<T> sensor) { getWaterVolume() = sensor; }
+    template<class T> inline void setWaterVolumeSensor(shared_ptr<T> sensor) { getWaterVolume() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getWaterVolumeSensor() { static_pointer_cast<T>(getWaterVolume().getObject()); }
 };
 
@@ -247,7 +247,7 @@ class HydroponicsPowerSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getPowerUsage() = 0;
 
-    template<class T = HydroponicsSensor> inline void setPowerUsageSensor(shared_ptr<T> sensor) { getPowerUsage() = sensor; }
+    template<class T> inline void setPowerUsageSensor(shared_ptr<T> sensor) { getPowerUsage() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getPowerUsageSensor() { static_pointer_cast<T>(getPowerUsage().getObject()); }
 };
 
@@ -256,7 +256,7 @@ class HydroponicsWaterTemperatureSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterTemperature() = 0;
 
-    template<class T = HydroponicsSensor> inline void setWaterTemperatureSensor(shared_ptr<T> sensor) { getWaterTemperature() = sensor; }
+    template<class T> inline void setWaterTemperatureSensor(shared_ptr<T> sensor) { getWaterTemperature() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getWaterTemperatureSensor() { static_pointer_cast<T>(getWaterTemperature().getObject()); }
 };
 
@@ -265,7 +265,7 @@ class HydroponicsWaterPHSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterPH() = 0;
 
-    template<class T = HydroponicsSensor> inline void setWaterPHSensor(shared_ptr<T> sensor) { getWaterPH() = sensor; }
+    template<class T> inline void setWaterPHSensor(shared_ptr<T> sensor) { getWaterPH() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getWaterPHSensor() { static_pointer_cast<T>(getWaterPH().getObject()); }
 };
 
@@ -274,7 +274,7 @@ class HydroponicsWaterTDSSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterTDS() = 0;
 
-    template<class T = HydroponicsSensor> inline void setWaterTDSSensor(shared_ptr<T> sensor) { getWaterTDS() = sensor; }
+    template<class T> inline void setWaterTDSSensor(shared_ptr<T> sensor) { getWaterTDS() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getWaterTDSSensor() { static_pointer_cast<T>(getWaterTDS().getObject()); }
 };
 
@@ -283,7 +283,7 @@ class HydroponicsSoilMoistureSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getSoilMoisture() = 0;
 
-    template<class T = HydroponicsSensor> inline void setSoilMoistureSensor(shared_ptr<T> sensor) { getSoilMoisture() = sensor; }
+    template<class T> inline void setSoilMoistureSensor(shared_ptr<T> sensor) { getSoilMoisture() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getSoilMoistureSensor() { static_pointer_cast<T>(getSoilMoisture().getObject()); }
 };
 
@@ -292,7 +292,7 @@ class HydroponicsAirTemperatureSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getAirTemperature() = 0;
 
-    template<class T = HydroponicsSensor> inline void setAirTemperatureSensor(shared_ptr<T> sensor) { getAirTemperature() = sensor; }
+    template<class T> inline void setAirTemperatureSensor(shared_ptr<T> sensor) { getAirTemperature() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getAirTemperatureSensor() { static_pointer_cast<T>(getAirTemperature().getObject()); }
 };
 
@@ -301,7 +301,7 @@ class HydroponicsAirHumiditySensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getAirHumidity() = 0;
 
-    template<class T = HydroponicsSensor> inline void setAirHumiditySensor(shared_ptr<T> sensor) { getAirHumidity() = sensor; }
+    template<class T> inline void setAirHumiditySensor(shared_ptr<T> sensor) { getAirHumidity() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getAirHumiditySensor() { static_pointer_cast<T>(getAirHumidity().getObject()); }
 };
 
@@ -310,7 +310,7 @@ class HydroponicsAirCO2SensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getAirCO2() = 0;
 
-    template<class T = HydroponicsSensor> inline void setAirCO2Sensor(shared_ptr<T> sensor) { getAirCO2() = sensor; }
+    template<class T> inline void setAirCO2Sensor(shared_ptr<T> sensor) { getAirCO2() = sensor; }
     template<class T = HydroponicsSensor> inline shared_ptr<T> getAirCO2Sensor() { static_pointer_cast<T>(getAirCO2().getObject()); }
 };
 

@@ -8,6 +8,8 @@
 #define HydroponicsBalancers_H
 
 class HydroponicsBalancer;
+class HydroponicsLinearEdgeBalancer;
+class HydroponicsTimedDosingBalancer;
 
 #include "Hydroponics.h"
 #include "HydroponicsObject.h"

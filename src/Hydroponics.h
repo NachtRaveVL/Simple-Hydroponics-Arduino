@@ -287,7 +287,7 @@ public:
     // Accessors.
 
     // Currently active Hydroponics instance
-    static Hydroponics *getActiveInstance();
+    static inline Hydroponics *getActiveInstance() { return _activeInstance; }
     // i2c Wire interface instance (customizable)
     inline TwoWire *getI2C() const { return _i2cWire; }
     // i2c clock speed, in Hz (default: 400kHz)
@@ -401,10 +401,11 @@ protected:
     HydroponicsPublisher _publisher;                                // Publisher piggy-back instance
 
     friend class HydroponicsScheduler;
-    friend HydroponicsScheduler *::getSchedulerInstance();
     friend class HydroponicsLogger;
-    friend HydroponicsLogger *::getLoggerInstance();
     friend class HydroponicsPublisher;
+    friend Hydroponics *::getHydroponicsInstance();
+    friend HydroponicsScheduler *::getSchedulerInstance();
+    friend HydroponicsLogger *::getLoggerInstance();
     friend HydroponicsPublisher *::getPublisherInstance();
 
     void allocateEEPROM();

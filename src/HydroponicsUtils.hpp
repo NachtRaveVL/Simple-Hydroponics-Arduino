@@ -112,12 +112,6 @@ bool arrayElementsEqual(const T *arrayIn, size_t length, T value)
     return true;
 }
 
-template<typename T>
-T mapValue(T value, T inMin, T inMax, T outMin, T outMax)
-{
-    return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-}
-
 
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
 typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links)

@@ -7,7 +7,6 @@
 #define HydroponicsUtils_H
 
 struct HydroponicsBitResolution;
-
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 template<typename ParameterType, int Slots> class SignalFireTask;
 template<class ObjectType, typename ParameterType> class MethodSlotCallTask;
@@ -19,7 +18,6 @@ class ActuatorTimedEnableTask;
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 #include "BasicInterruptAbstraction.h"
 #endif
-
 
 // Simple class for describing an analog bit resolution.
 // This class is mainly used to calculate analog pin range boundaries. If force flag
@@ -192,10 +190,10 @@ extern Hydroponics_KeyType stringHash(String string);
 extern String charsToString(const char *charsIn, size_t length);
 // Returns a string formatted to deal with variable time spans.
 extern String timeSpanToString(const TimeSpan &span);
-// Returns a string formatted to value and unit for dealing with measurements.
-extern String measurementToString(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces = 0);
 // Returns a string formatted to value and unit for dealing with measurements as value/units pair.
 extern String measurementToString(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces = 0);
+// Returns a string formatted to value and unit for dealing with measurements.
+inline String measurementToString(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces = 0) { return measurementToString(measurement.value, measurement.units, additionalDecPlaces); }
 
 // Encodes a T-typed array to a comma-separated string.
 // Null array or invalid length will abort function before encoding occurs, returning "null".
@@ -228,7 +226,7 @@ int occurrencesInStringIgnoreCase(String string, String subString);
 template<typename T> bool arrayElementsEqual(const T *arrayIn, size_t length, T value);
 
 // Similar to the standard map function, but does it on any type.
-template<typename T> T mapValue(T value, T inMin, T inMax, T outMin, T outMax);
+template<typename T> inline T mapValue(T value, T inMin, T inMax, T outMin, T outMax) { return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin; }
 
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
 extern int freeMemory();
@@ -240,7 +238,7 @@ extern void delayFine(time_t timeMillis);
 extern time_t rtcNow();
 
 // This will return the time in unixtime (secs since 1970).
-extern time_t unixNow();
+inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
 
 // This will handle interrupts for task manager.
 extern void handleInterrupt(byte pin);
@@ -316,11 +314,11 @@ extern bool checkPinIsAnalogInput(byte pin);
 // Checks to see if the pin is an analog output pin.
 extern bool checkPinIsAnalogOutput(byte pin);
 // Checks to see if the pin is a standard digital (non-analog) pin.
-extern bool checkPinIsDigital(byte pin);
+inline bool checkPinIsDigital(byte pin) { return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin); }
 // Checks to see if the pin can produce a digital PWM output signal.
-extern bool checkPinIsPWMOutput(byte pin);
+inline bool checkPinIsPWMOutput(byte pin) { return digitalPinHasPWM(pin); }
 // Checks to see if the pin can be set up with an ISR to handle digital level changes.
-extern bool checkPinCanInterrupt(byte pin);
+inline bool checkPinCanInterrupt(byte pin) { return isValidPin(digitalPinToInterrupt(pin)); }
 
 // Enums & Conversions
 

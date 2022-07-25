@@ -146,7 +146,7 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
 
 Hydroponics *getHydroponicsInstance()
 {
-    return Hydroponics::getActiveInstance();
+    return Hydroponics::_activeInstance;
 }
 
 HydroponicsScheduler *getSchedulerInstance()
@@ -183,11 +183,6 @@ void publishData(HydroponicsSensor *sensor)
             }
         }
     }
-}
-
-time_t unixNow()
-{
-    return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; // rtcNow returns 0 if not set
 }
 
 DateTime getCurrentTime()
@@ -268,11 +263,6 @@ String timeSpanToString(const TimeSpan &span)
     }
 
     return retVal;
-}
-
-extern String measurementToString(const HydroponicsSingleMeasurement &measurement, unsigned int additionalDecPlaces)
-{
-    return measurementToString(measurement.value, measurement.units, additionalDecPlaces);
 }
 
 extern String measurementToString(float value, Hydroponics_UnitsType units, unsigned int additionalDecPlaces)
@@ -1142,21 +1132,6 @@ bool checkPinIsAnalogOutput(byte pin)
                 return false;
         }
     #endif
-}
-
-bool checkPinIsDigital(byte pin)
-{
-    return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin);
-}
-
-bool checkPinIsPWMOutput(byte pin)
-{
-    return digitalPinHasPWM(pin);
-}
-
-bool checkPinCanInterrupt(byte pin)
-{
-    return isValidPin(digitalPinToInterrupt(pin));
 }
 
 

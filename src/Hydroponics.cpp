@@ -1141,11 +1141,6 @@ void Hydroponics::setRealTimeClockTime(DateTime time)
     }
 }
 
-Hydroponics *Hydroponics::getActiveInstance()
-{
-    return _activeInstance;
-}
-
 uint32_t Hydroponics::getSDCardSpeed() const
 {
     #if defined(CORE_TEENSY)

@@ -99,19 +99,16 @@ public:
     inline T* operator->() { return getObject().get(); }
     inline T* operator*() { return getObject().get(); }
 
-    template<class U> inline HydroponicsAttachment<T> &operator=(const HydroponicsAttachment<U> &rhs) { if (_obj != rhs._obj) { detachObject(); _obj = rhs._obj; if (_obj) { attachObject(); } } return *this; }
     template<class U> inline HydroponicsAttachment<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
     inline HydroponicsAttachment<T> &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
     template<class U> inline HydroponicsAttachment<T> &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
     template<class U> inline HydroponicsAttachment<T> &operator=(const U *rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
 
-    template<class U> inline bool operator==(const HydroponicsAttachment<U> &rhs) const { return _obj == rhs._obj; }
     template<class U> inline bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return _obj == rhs; }
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _obj == rhs; }
     template<class U> inline bool operator==(const shared_ptr<U> &rhs) const { return _obj == rhs; }
     template<class U> inline bool operator==(const U *rhs) const { return _obj == rhs; }
 
-    template<class U> inline bool operator!=(const HydroponicsAttachment<U> &rhs) const { return _obj != rhs._obj; }
     template<class U> inline bool operator!=(const HydroponicsDLinkObject<U> &rhs) const { return _obj != rhs; }
     inline bool operator!=(const HydroponicsIdentity &rhs) const { return _obj != rhs; }
     template<class U> inline bool operator!=(const shared_ptr<U> &rhs) const { return _obj != rhs; }
@@ -141,6 +138,11 @@ public:
 
     virtual void attachObject() override;
     virtual void detachObject() override;
+
+    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const HydroponicsDLinkObject<U> &rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { detachObject(); HydroponicsAttachment<T>::_obj = rhs; if (HydroponicsAttachment<T>::_obj) { attachObject(); } } return *this; }
+    inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const HydroponicsIdentity &rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { detachObject(); HydroponicsAttachment<T>::_obj = rhs; if (HydroponicsAttachment<T>::_obj) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(shared_ptr<U> rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { detachObject(); HydroponicsAttachment<T>::_obj = rhs; if (HydroponicsAttachment<T>::_obj) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const U *rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { detachObject(); HydroponicsAttachment<T>::_obj = rhs; if (HydroponicsAttachment<T>::_obj) { attachObject(); } } return *this; }
 
 protected:
     SignalGetterPtr _signalGetter;                          // Signal getter method ptr
@@ -189,6 +191,11 @@ public:
 
     inline Hydroponics_PositionIndex getMeasurementRow() const { return _measurementRow; }
     inline float getMeasurementConvertParam() const { return _convertParam; }
+
+    template<class U> inline HydroponicsSensorAttachment &operator=(const HydroponicsDLinkObject<U> &rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
+    inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsSensorAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { if (_obj != rhs) { detachObject(); _obj = rhs; if (_obj) { attachObject(); } } return *this; }
 
 protected:
     HydroponicsSingleMeasurement _measurement;              // Local measurement
