@@ -46,11 +46,7 @@ void HydroponicsRail::update()
 {
     HydroponicsObject::update();
 
-    auto limitState = triggerStateFromBool(getCapacity() >= 1.0f - FLT_EPSILON);
-    if (_limitState != limitState) {
-        _limitState = limitState;
-        handleLimitState();
-    }
+    handleLimit(triggerStateFromBool(getCapacity() >= 1.0f - FLT_EPSILON));
 }
 
 void HydroponicsRail::handleLowMemory()
@@ -130,14 +126,20 @@ void HydroponicsRail::saveToData(HydroponicsData *dataOut)
     ((HydroponicsRailData *)dataOut)->powerUnits = _powerUnits;
 }
 
-void HydroponicsRail::handleLimitState()
+void HydroponicsRail::handleLimit(Hydroponics_TriggerState limitState)
 {
-    if (_limitState == Hydroponics_TriggerState_NotTriggered) {
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
-        #else
-            _capacitySignal.fire(this);
-        #endif
+    if (limitState == Hydroponics_TriggerState_Disabled || limitState == Hydroponics_TriggerState_Undefined) { return; }
+
+    if (_limitState != limitState) {
+        _limitState = limitState;
+
+        if (_limitState == Hydroponics_TriggerState_NotTriggered) {
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
+            #else
+                _capacitySignal.fire(this);
+            #endif
+        }
     }
 }
 
@@ -197,36 +199,39 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType
                              Hydroponics_PositionIndex railIndex,
                              float maxPower,
                              int classType = Regulated)
-    : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this)
+    : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
+    _powerUsage.setProcessMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
+
+    _limitTrigger.setUpdateMethod(&HydroponicsRail::handleLimit);
 }
 
 HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRailData *dataIn)
     : HydroponicsRail(dataIn),
       _maxPower(dataIn->maxPower),
-      _powerUsage(this),
-      _limitTrigger(newTriggerObjectFromSubData(&(dataIn->limitTrigger)))
+      _powerUsage(this), _limitTrigger(this)
 {
-    if (_limitTrigger) { attachLimitTrigger(); }
-
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
     _powerUsage.setProcessMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
     _powerUsage = dataIn->powerSensor;
+
+    _limitTrigger.setUpdateMethod(&HydroponicsRail::handleLimit);
+    _limitTrigger = newTriggerObjectFromSubData(&(dataIn->limitTrigger));
 }
 
 HydroponicsRegulatedRail::~HydroponicsRegulatedRail()
-{
-    if (_limitTrigger) { detachLimitTrigger(); delete _limitTrigger; _limitTrigger = nullptr; }
-}
+{ ; }
 
 void HydroponicsRegulatedRail::update()
 {
     HydroponicsRail::update();
 
-    if (_limitTrigger) { _limitTrigger->update(); }
+    if (_limitTrigger.getObject()) { _limitTrigger->update(); }
 
     _powerUsage.updateMeasurementIfNeeded();
+
+    _limitTrigger.updateTriggerIfNeeded();
 }
 
 void HydroponicsRegulatedRail::handleLowMemory()
@@ -266,20 +271,6 @@ HydroponicsSensorAttachment &HydroponicsRegulatedRail::getPowerUsage()
 {
     _powerUsage.updateMeasurementIfNeeded();
     return _powerUsage;
-}
-
-void HydroponicsRegulatedRail::setLimitTrigger(HydroponicsTrigger *limitTrigger)
-{
-    if (_limitTrigger != limitTrigger) {
-        if (_limitTrigger) { detachLimitTrigger(); delete _limitTrigger; }
-        _limitTrigger = limitTrigger;
-        if (_limitTrigger) { attachLimitTrigger(); }
-    }
-}
-
-const HydroponicsTrigger *HydroponicsRegulatedRail::getLimitTrigger() const
-{
-    return _limitTrigger;
 }
 
 void HydroponicsRegulatedRail::saveToData(HydroponicsData *dataOut)
@@ -334,32 +325,6 @@ void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *
         #else
             _capacitySignal.fire(this);
         #endif
-    }
-}
-
-void HydroponicsRegulatedRail::attachLimitTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HS_Err_MissingLinkage));
-    if (_limitTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsRegulatedRail::handleLimitTrigger);
-        _limitTrigger->getTriggerSignal().attach(methodSlot);
-    }
-}
-
-void HydroponicsRegulatedRail::detachLimitTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HS_Err_MissingLinkage));
-    if (_limitTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsRegulatedRail::handleLimitTrigger);
-        _limitTrigger->getTriggerSignal().detach(methodSlot);
-    }
-}
-
-void HydroponicsRegulatedRail::handleLimitTrigger(Hydroponics_TriggerState triggerState)
-{
-    if (triggerState != Hydroponics_TriggerState_Undefined && triggerState != Hydroponics_TriggerState_Disabled && _limitState != triggerState) {
-        _limitState = triggerState;
-        handleLimitState();
     }
 }
 

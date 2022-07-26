@@ -119,7 +119,7 @@ public:
 // Crop Object Interface
 class HydroponicsCropObjectInterface {
 public:
-    virtual bool needsFeeding() const = 0;
+    virtual bool needsFeeding() = 0;
     virtual void notifyFeedingBegan() = 0;
     virtual void notifyFeedingEnded() = 0;
 };

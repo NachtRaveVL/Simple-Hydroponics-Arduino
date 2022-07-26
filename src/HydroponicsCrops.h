@@ -43,7 +43,7 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool needsFeeding() const = 0;
+    virtual bool needsFeeding() = 0;
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 
@@ -83,7 +83,7 @@ protected:
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    virtual void handleFeedingTrigger(Hydroponics_TriggerState triggerState);
+    virtual void handleFeeding(Hydroponics_TriggerState feedingState);
     friend class HydroponicsAdaptiveCrop;
 
     void recalcGrowWeekAndPhase();
@@ -108,7 +108,7 @@ public:
     HydroponicsTimedCrop(const HydroponicsTimedCropData *dataIn);
     virtual ~HydroponicsTimedCrop();
 
-    virtual bool needsFeeding() const override;
+    virtual bool needsFeeding() override;
     virtual void notifyFeedingBegan() override;
 
     void setFeedTimeOn(TimeSpan timeOn);
@@ -123,6 +123,7 @@ protected:
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
+
 
 // Adaptive Sensing Crop
 // Crop type that can manage feedings based on sensor readings of the nearby soil.
@@ -139,20 +140,20 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool needsFeeding() const override;
+    virtual bool needsFeeding() override;
 
     void setMoistureUnits(Hydroponics_UnitsType moistureUnits);
     Hydroponics_UnitsType getMoistureUnits() const;
 
     virtual HydroponicsSensorAttachment &getSoilMoisture() override;
 
-    void setFeedingTrigger(HydroponicsTrigger *feedingTrigger);
-    inline const HydroponicsTrigger *getFeedingTrigger() const { return _feedingTrigger; }
+    inline void setFeedingTrigger(shared_ptr<HydroponicsTrigger> feedingTrigger) { _feedingTrigger = feedingTrigger; }
+    inline shared_ptr<HydroponicsTrigger> getFeedingTrigger(bool force = false) { _feedingTrigger.updateTriggerIfNeeded(force); return _feedingTrigger.getObject(); }
 
 protected:
     Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred (else default)
     HydroponicsSensorAttachment _soilMoisture;              // Soil moisture sensor attachment
-    HydroponicsTrigger *_feedingTrigger;                    // Feeding trigger (owned)
+    HydroponicsTriggerAttachment _feedingTrigger;           // Feeding trigger attachment
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };

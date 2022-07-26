@@ -62,7 +62,8 @@ protected:
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    virtual void handleLimitState();
+    void handleLimit(Hydroponics_TriggerState limitState);
+    friend class HydroponicsRegulatedRail;
 };
 
 // Simple Power Rail
@@ -118,21 +119,22 @@ public:
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
     const HydroponicsTrigger *getLimitTrigger() const;
 
+    inline void setLimitTrigger(shared_ptr<HydroponicsTrigger> limitTrigger) { _limitTrigger = limitTrigger; }
+    inline shared_ptr<HydroponicsTrigger> getLimitTrigger(bool force = false) { _limitTrigger.updateTriggerIfNeeded(force); return _limitTrigger.getObject(); }
+
     inline float getMaxPower() const { return _maxPower; }
 
 protected:
     float _maxPower;                                        // Maximum power
-    HydroponicsSensorAttachment _powerUsage;                 // Power draw sensor attachment
-    HydroponicsTrigger *_limitTrigger;                      // Power limit trigger (owned)
+    HydroponicsSensorAttachment _powerUsage;                // Power usage sensor attachment
+    HydroponicsTriggerAttachment _limitTrigger;             // Power limit trigger attachment
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
     void handleActivation(HydroponicsActuator *actuator);
     friend class HydroponicsRail;
+
     void handlePowerMeasure(const HydroponicsMeasurement *measurement);
-    void attachLimitTrigger();
-    void detachLimitTrigger();
-    void handleLimitTrigger(Hydroponics_TriggerState triggerState);
 };
 
 

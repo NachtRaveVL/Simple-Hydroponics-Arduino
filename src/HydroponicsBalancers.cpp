@@ -39,7 +39,7 @@ Hydroponics_BalancerState HydroponicsBalancer::getBalancerState() const
 void HydroponicsBalancer::update()
 {
     if (_enabled) {
-        _rangeTrigger->update();
+        if (_rangeTrigger.getObject()) { _rangeTrigger->update(); }
 
         _rangeTrigger.updateTriggerIfNeeded();
     }
@@ -47,7 +47,7 @@ void HydroponicsBalancer::update()
 
 void HydroponicsBalancer::handleLowMemory()
 {
-    _rangeTrigger->handleLowMemory();
+    if (_rangeTrigger) { _rangeTrigger->handleLowMemory(); }
 }
 
 void HydroponicsBalancer::setTargetUnits(Hydroponics_UnitsType targetUnits)
@@ -56,6 +56,7 @@ void HydroponicsBalancer::setTargetUnits(Hydroponics_UnitsType targetUnits)
         _targetUnits = targetUnits;
 
         _rangeTrigger->setToleranceUnits(getTargetUnits());
+        _rangeTrigger.setNeedsTriggerState();
     }
 }
 
