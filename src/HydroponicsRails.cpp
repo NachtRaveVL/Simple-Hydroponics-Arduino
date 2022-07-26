@@ -205,13 +205,14 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType
 HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRailData *dataIn)
     : HydroponicsRail(dataIn),
       _maxPower(dataIn->maxPower),
-      _powerUsage(this, dataIn->powerSensor),
+      _powerUsage(this),
       _limitTrigger(newTriggerObjectFromSubData(&(dataIn->limitTrigger)))
 {
     if (_limitTrigger) { attachLimitTrigger(); }
 
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setUpdateMethod((HydroponicsSensorAttachment::UpdateMethodPtr)&HydroponicsRegulatedRail::handlePowerMeasure);
+    _powerUsage.setProcessMethod((HydroponicsSensorAttachment::ProcessMethodPtr)&HydroponicsRegulatedRail::handlePowerMeasure);
+    _powerUsage = dataIn->powerSensor;
 }
 
 HydroponicsRegulatedRail::~HydroponicsRegulatedRail()

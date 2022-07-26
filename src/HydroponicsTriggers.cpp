@@ -31,9 +31,11 @@ HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, byte measur
 { ; }
 
 HydroponicsTrigger::HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, byte measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _sensor(sensor), _measurementRow(measurementRow), _attached(false), _needsSensorUpdate(true),
+    : type((typeof(type))typeIn), _sensor(), _measurementRow(measurementRow), _attached(false), _needsSensorUpdate(true),
       _toleranceUnits(Hydroponics_UnitsType_Undefined), _triggerState(Hydroponics_TriggerState_Disabled)
-{ ; }
+{
+    _sensor = sensor;
+}
 
 HydroponicsTrigger::HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn)
     : type((typeof(type))(dataIn->type)), _sensor(dataIn->sensorName), _measurementRow(dataIn->measurementRow), _attached(false), _needsSensorUpdate(true),

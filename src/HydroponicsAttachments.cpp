@@ -11,38 +11,6 @@ HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *pare
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true), _processMethod(nullptr), _updateMethod(nullptr)
 { ; }
 
-HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *parent, const HydroponicsIdentity &sensorId, Hydroponics_PositionIndex measurementRow)
-    : HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
-          parent, sensorId, &HydroponicsSensor::getMeasurementSignal, MethodSlot<HydroponicsSensorAttachment, const HydroponicsMeasurement *>(this, &HydroponicsSensorAttachment::handleMeasurement)),
-      _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true), _processMethod(nullptr), _updateMethod(nullptr)
-{ ; }
-
-HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *parent, const char *sensorKeyStr, Hydroponics_PositionIndex measurementRow)
-    : HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
-          parent, HydroponicsIdentity(sensorKeyStr), &HydroponicsSensor::getMeasurementSignal, MethodSlot<HydroponicsSensorAttachment, const HydroponicsMeasurement *>(this, &HydroponicsSensorAttachment::handleMeasurement)),
-      _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true), _processMethod(nullptr), _updateMethod(nullptr)
-{ ; }
-
-HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *parent, shared_ptr<HydroponicsSensor> sensor, Hydroponics_PositionIndex measurementRow)
-    : HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
-          parent, sensor, &HydroponicsSensor::getMeasurementSignal, MethodSlot<HydroponicsSensorAttachment, const HydroponicsMeasurement *>(this, &HydroponicsSensorAttachment::handleMeasurement)),
-      _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true), _processMethod(nullptr), _updateMethod(nullptr)
-{
-    if (isResolved()) {
-        handleMeasurement(_obj->getLatestMeasurement());
-    }
-}
-
-HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *parent, const HydroponicsSensor *sensor, Hydroponics_PositionIndex measurementRow)
-    : HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
-          parent, sensor, &HydroponicsSensor::getMeasurementSignal, MethodSlot<HydroponicsSensorAttachment, const HydroponicsMeasurement *>(this, &HydroponicsSensorAttachment::handleMeasurement)),
-      _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
-{
-    if (isResolved()) {
-        handleMeasurement(_obj->getLatestMeasurement());
-    }
-}
-
 HydroponicsSensorAttachment::~HydroponicsSensorAttachment()
 { ; }
 

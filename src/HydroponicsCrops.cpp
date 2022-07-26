@@ -42,7 +42,7 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
 
 HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      _substrateType(dataIn->substrateType), _sowDate(dataIn->sowDate), _feedReservoir(this, dataIn->feedReservoir),
+      _substrateType(dataIn->substrateType), _sowDate(dataIn->sowDate), _feedReservoir(this),
       _cropsData(nullptr), _growWeek(0), _feedingWeight(dataIn->feedingWeight),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
@@ -51,6 +51,7 @@ HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
         getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
     }
     recalcGrowWeekAndPhase();
+    _feedReservoir = dataIn->feedReservoir;
 }
 
 HydroponicsCrop::~HydroponicsCrop()
@@ -65,6 +66,8 @@ HydroponicsCrop::~HydroponicsCrop()
 void HydroponicsCrop::update()
 {
     HydroponicsObject::update();
+
+    _feedReservoir.resolveIfNeeded();
 
     auto feedingState = triggerStateFromBool(needsFeeding());
     if (_feedingState != feedingState) {
@@ -247,12 +250,12 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(Hydroponics_CropType cropType,
 }
 
 HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropData *dataIn)
-    : HydroponicsCrop(dataIn),
+    : HydroponicsCrop(dataIn), _soilMoisture(this),
       _moistureUnits(definedUnitsElse(dataIn->moistureUnits, Hydroponics_UnitsType_Concentration_EC)),
-      _soilMoisture(this, dataIn->moistureSensor),
       _feedingTrigger(newTriggerObjectFromSubData(&(dataIn->feedingTrigger)))
 {
     _soilMoisture.setMeasurementUnits(getMoistureUnits());
+    _soilMoisture = dataIn->moistureSensor;
 }
 
 HydroponicsAdaptiveCrop::~HydroponicsAdaptiveCrop()

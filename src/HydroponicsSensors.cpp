@@ -103,15 +103,23 @@ HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
 
 HydroponicsSensor::HydroponicsSensor(const HydroponicsSensorData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      _inputPin(dataIn->inputPin), _isTakingMeasure(false), _calibrationData(nullptr),
-      _crop(this, dataIn->cropName), _reservoir(this, dataIn->reservoirName)
+      _inputPin(dataIn->inputPin), _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
     _calibrationData = getCalibrationsStoreInstance()->getUserCalibrationData(_id.key);
+    _crop = dataIn->cropName;
+    _reservoir = dataIn->reservoirName;
 }
 
 HydroponicsSensor::~HydroponicsSensor()
 {
     _isTakingMeasure = false;
+}
+
+void HydroponicsSensor::update() {
+    HydroponicsObject::update();
+
+    _crop.resolveIfNeeded();
+    _reservoir.resolveIfNeeded();
 }
 
 bool HydroponicsSensor::isTakingMeasurement() const

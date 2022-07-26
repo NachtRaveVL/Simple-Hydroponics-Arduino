@@ -78,7 +78,6 @@ protected:
     Hydroponics_TriggerState _feedingState;                 // Current feeding signal state
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)
 
-    
     Signal<HydroponicsCrop *> _feedingSignal;               // Feeding requested signal
 
     virtual HydroponicsData *allocateData() const override;

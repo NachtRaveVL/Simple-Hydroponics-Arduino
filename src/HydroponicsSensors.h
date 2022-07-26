@@ -53,6 +53,8 @@ public:
     HydroponicsSensor(const HydroponicsSensorData *dataIn);
     virtual ~HydroponicsSensor();
 
+    virtual void update() override;
+
     virtual bool takeMeasurement(bool force = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
     virtual bool isTakingMeasurement() const override;

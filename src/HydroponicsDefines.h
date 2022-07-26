@@ -95,6 +95,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
 #define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
 #define HYDRUINO_SYS_ENABLE_ALIVE_LOGGING   false                   // If system will periodically log alive messages (mainly used for debugging)
+#define HYDRUINO_SYS_ENABLE_DRY_RUN         false                   // Disables actuators from actually enabling in order to simulate (mainly used for debugging)
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines

@@ -156,12 +156,13 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(Hydroponics_ReservoirType r
 HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReservoirData *dataIn)
     : HydroponicsReservoir(dataIn),
       _maxVolume(dataIn->maxVolume),
-      _waterVolume(this, dataIn->volumeSensor),
+      _waterVolume(this),
       _filledTrigger(newTriggerObjectFromSubData(&(dataIn->filledTrigger))),
       _emptyTrigger(newTriggerObjectFromSubData(&(dataIn->emptyTrigger)))
 {
     if (_filledTrigger) { attachFilledTrigger(); }
     if (_emptyTrigger) { attachEmptyTrigger(); }
+    _waterVolume = dataIn->volumeSensor;
 }
 
 HydroponicsFluidReservoir::~HydroponicsFluidReservoir()
@@ -340,8 +341,7 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
       _lastFeedingDate(dataIn->lastFeedingDate), _numFeedingsToday(dataIn->numFeedingsToday),
       _tdsUnits(definedUnitsElse(dataIn->tdsUnits, Hydroponics_UnitsType_Concentration_TDS)),
       _tempUnits(definedUnitsElse(dataIn->tempUnits, defaultTemperatureUnits())),
-      _waterPH(this, dataIn->waterPHSensor), _waterTDS(this, dataIn->waterTDSSensor), _waterTemp(this, dataIn->waterTempSensor),
-      _airTemp(this, dataIn->airTempSensor), _airCO2(this, dataIn->airCO2Sensor),
+      _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
       _waterPHBalancer(nullptr), _waterTDSBalancer(nullptr), _waterTempBalancer(nullptr), _airTempBalancer(nullptr), _airCO2Balancer(nullptr)
 {
     if (_lastFeedingDate) {
@@ -355,6 +355,11 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
             _numFeedingsToday = 0;
         }
     } else { _numFeedingsToday = 0; }
+    _waterPH = dataIn->waterPHSensor;
+    _waterTDS = dataIn->waterTDSSensor;
+    _waterTemp = dataIn->waterTempSensor;
+    _airTemp = dataIn->airTempSensor;
+    _airCO2 = dataIn->airCO2Sensor;
 }
 
 HydroponicsFeedReservoir::~HydroponicsFeedReservoir()
