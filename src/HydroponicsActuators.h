@@ -52,13 +52,9 @@ public:
     virtual void setContinuousPowerUsage(HydroponicsSingleMeasurement contPowerUsage) override;
     virtual const HydroponicsSingleMeasurement &getContinuousPowerUsage() override;
 
-    virtual void setRail(HydroponicsIdentity powerRailId) override;
-    virtual void setRail(shared_ptr<HydroponicsRail> powerRail) override;
-    virtual shared_ptr<HydroponicsRail> getRail() override;
+    virtual HydroponicsAttachment<HydroponicsRail> &getParentRail() override;
 
-    virtual void setReservoir(HydroponicsIdentity reservoirId) override;
-    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
-    virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
+    virtual HydroponicsAttachment<HydroponicsReservoir> &getParentReservoir() override;
 
     inline byte getOutputPin() const { return _outputPin; }
     inline Hydroponics_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
@@ -69,9 +65,9 @@ public:
 protected:
     byte _outputPin;                                        // Output pin
     bool _enabled;                                          // Enabled state flag
-    HydroponicsSingleMeasurement _contPowerUsage;            // Continuous power draw
-    HydroponicsDLinkObject<HydroponicsRail> _rail;          // Power rail linkage
-    HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
+    HydroponicsSingleMeasurement _contPowerUsage;           // Continuous power draw
+    HydroponicsAttachment<HydroponicsRail> _rail;           // Power rail attachment
+    HydroponicsAttachment<HydroponicsReservoir> _reservoir; // Reservoir attachment
     Signal<HydroponicsActuator *> _activateSignal;          // Activation update signal
 
     virtual HydroponicsData *allocateData() const override;
@@ -127,16 +123,12 @@ public:
     virtual bool canPump(time_t timeMillis) override;
     virtual bool pump(time_t timeMillis) override;
 
-    virtual void setReservoir(HydroponicsIdentity reservoirId) override;
-    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
-    virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
-
     virtual void setFlowRateUnits(Hydroponics_UnitsType flowRateUnits) override;
     virtual Hydroponics_UnitsType getFlowRateUnits() const override;
 
-    virtual void setOutputReservoir(HydroponicsIdentity destReservoirId) override;
-    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> destReservoir) override;
-    virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() override;
+    virtual HydroponicsAttachment<HydroponicsReservoir> &getParentReservoir() override;
+
+    virtual HydroponicsAttachment<HydroponicsReservoir> &getDestinationReservoir() override;
 
     virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) override;
     virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) override;
@@ -148,10 +140,10 @@ protected:
     Hydroponics_UnitsType _flowRateUnits;                   // Flow rate units preferred
     HydroponicsSingleMeasurement _contFlowRate;             // Continuous flow rate
     HydroponicsSensorAttachment _flowRate;                  // Flow rate sensor attachment
+    HydroponicsAttachment<HydroponicsReservoir> _destReservoir; // Destination output reservoir
     float _pumpVolumeAcc;                                   // Accumulator for total volume of fluid pumped
     time_t _pumpTimeBegMillis;                              // Time millis pump was activated at
     time_t _pumpTimeAccMillis;                              // Time millis pump has been accumulated up to
-    HydroponicsDLinkObject<HydroponicsReservoir> _destReservoir; // Output reservoir linkage
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 

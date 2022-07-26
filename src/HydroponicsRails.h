@@ -23,7 +23,7 @@ extern HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 // Hydroponics Power Rail Base
 // This is the base class for all power rails, which defines how the rail is identified,
 // where it lives, what's attached to it, and who can activate under it.
-class HydroponicsRail : public HydroponicsObject, public HydroponicsRailObjectInterface, public HydroponicsActuatorAttachmentsInterface, public HydroponicsSensorAttachmentsInterface {
+class HydroponicsRail : public HydroponicsObject, public HydroponicsRailObjectInterface {
 public:
     const enum { Simple, Regulated, Unknown = -1 } classType; // Power rail class (custom RTTI)
     inline bool isSimpleClass() const { return classType == Simple; }
@@ -39,19 +39,14 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
+    virtual bool addLinkage(HydroponicsObject *obj) override;
+    virtual bool removeLinkage(HydroponicsObject *obj) override;
+
     virtual bool canActivate(HydroponicsActuator *actuator) = 0;
     virtual float getCapacity() = 0;
 
     virtual void setPowerUnits(Hydroponics_UnitsType powerUnits) override;
     virtual Hydroponics_UnitsType getPowerUnits() const override;
-
-    virtual bool addActuator(HydroponicsActuator *actuator) override;
-    virtual bool removeActuator(HydroponicsActuator *actuator) override;
-    virtual bool hasActuator(HydroponicsActuator *actuator) const override;
-
-    virtual bool addSensor(HydroponicsSensor *sensor) override;
-    virtual bool removeSensor(HydroponicsSensor *sensor) override;
-    virtual bool hasSensor(HydroponicsSensor *sensor) const override;
 
     inline Hydroponics_RailType getRailType() const { return _id.objTypeAs.railType; }
     inline Hydroponics_PositionIndex getRailIndex() const { return _id.posIndex; }
@@ -86,9 +81,6 @@ public:
     virtual bool canActivate(HydroponicsActuator *actuator) override;
     virtual float getCapacity() override;
 
-    virtual bool addActuator(HydroponicsActuator *actuator) override;
-    virtual bool removeActuator(HydroponicsActuator *actuator) override;
-
     inline int getActiveCount() { return _activeCount; }
 
 protected:
@@ -98,6 +90,7 @@ protected:
     virtual void saveToData(HydroponicsData *dataOut) override;
 
     void handleActivation(HydroponicsActuator *actuator);
+    friend class HydroponicsRail;
 };
 
 // Regulated Power Rail
@@ -120,9 +113,6 @@ public:
 
     virtual void setPowerUnits(Hydroponics_UnitsType powerUnits) override;
 
-    virtual bool addActuator(HydroponicsActuator *actuator) override;
-    virtual bool removeActuator(HydroponicsActuator *actuator) override;
-
     virtual HydroponicsSensorAttachment &getPowerUsage() override;
 
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
@@ -138,6 +128,7 @@ protected:
     virtual void saveToData(HydroponicsData *dataOut) override;
 
     void handleActivation(HydroponicsActuator *actuator);
+    friend class HydroponicsRail;
     void handlePowerMeasure(const HydroponicsMeasurement *measurement);
     void attachLimitTrigger();
     void detachLimitTrigger();

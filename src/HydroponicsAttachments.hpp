@@ -125,28 +125,28 @@ template<class T, class ParameterType, int Slots> template<class U>
 HydroponicsSignalAttachment<T,ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, SignalGetterPtr signalGetter, MethodSlot<U,ParameterType> handleMethod)
     : HydroponicsAttachment<T>(parent), _signalGetter(signalGetter), _handleMethod(handleMethod)
 {
-    HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
 }
 
 template<class T, class ParameterType, int Slots> template<class U>
 HydroponicsSignalAttachment<T,ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, const HydroponicsIdentity &id, SignalGetterPtr signalGetter, MethodSlot<U,ParameterType> handleMethod)
     : HydroponicsAttachment<T>(parent, id), _signalGetter(signalGetter), _handleMethod(handleMethod)
 {
-    HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
 }
 
 template<class T, class ParameterType, int Slots> template<class U>
 HydroponicsSignalAttachment<T,ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, const char *idKeyStr, SignalGetterPtr signalGetter, MethodSlot<U,ParameterType> handleMethod)
     : HydroponicsAttachment<T>(parent, HydroponicsIdentity(idKeyStr)), _signalGetter(signalGetter), _handleMethod(handleMethod)
 {
-    HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
 }
 
 template<class T, class ParameterType, int Slots> template<class U>
 HydroponicsSignalAttachment<T,ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, shared_ptr<T> obj, SignalGetterPtr signalGetter, MethodSlot<U,ParameterType> handleMethod)
     : HydroponicsAttachment<T>(parent, obj), _signalGetter(signalGetter), _handleMethod(handleMethod)
 {
-    HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
     if (isResolved()) {
         (get()->*_signalGetter)().attach(_handleMethod);
     }
@@ -156,7 +156,7 @@ template<class T, class ParameterType, int Slots> template<class U>
 HydroponicsSignalAttachment<T,ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, const T *obj, SignalGetterPtr signalGetter, MethodSlot<U,ParameterType> handleMethod)
     : HydroponicsAttachment<T>(parent, obj), _signalGetter(signalGetter), _handleMethod(handleMethod)
 {
-    HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
     if (isResolved()) {
         (get()->*_signalGetter)().attach(_handleMethod);
     }

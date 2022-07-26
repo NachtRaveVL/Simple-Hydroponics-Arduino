@@ -101,8 +101,8 @@ public:
 
     HydroponicsData *newSaveData();                         // Saves object state to proper backing data
 
-    bool addLinkage(HydroponicsObject *obj);                // Adds linkage to this object
-    bool removeLinkage(HydroponicsObject *obj);             // Removes linkage to this object
+    virtual bool addLinkage(HydroponicsObject *obj);        // Adds linkage to this object, returns true upon initial add
+    virtual bool removeLinkage(HydroponicsObject *obj);     // Removes linkage from this object, returns true upon last remove
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).

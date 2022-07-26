@@ -436,6 +436,7 @@ class HydroponicsObject;
 class HydroponicsSubObject;
 class HydroponicsActuator;
 class HydroponicsSensor;
+template <class T> class HydroponicsAttachment;
 class HydroponicsSensorAttachment;
 class HydroponicsCrop;
 class HydroponicsReservoir;

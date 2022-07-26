@@ -8,12 +8,6 @@
 
 struct HydroponicsJSONSerializableInterface;
 
-class HydroponicsActuatorAttachmentsInterface;
-class HydroponicsSensorAttachmentsInterface;
-class HydroponicsCropAttachmentsInterface;
-class HydroponicsRailAttachmentsInterface;
-class HydroponicsReservoirAttachmentsInterface;
-
 class HydroponicsActuatorAttachmentInterface;
 class HydroponicsSensorAttachmentInterface;
 class HydroponicsCropAttachmentInterface;
@@ -29,6 +23,7 @@ class HydroponicsReservoirObjectInterface;
 class HydroponicsTriggerObjectInterface;
 class HydroponicsPumpObjectInterface;
 
+class HydroponicsFeedReservoirAttachmentInterface;
 class HydroponicsFlowSensorAttachmentInterface;
 class HydroponicsVolumeSensorAttachmentInterface;
 class HydroponicsPowerSensorAttachmentInterface;
@@ -53,85 +48,49 @@ struct HydroponicsJSONSerializableInterface {
 };
 
 
-// Actuator Attachments Interface
-class HydroponicsActuatorAttachmentsInterface {
-public:
-    virtual bool addActuator(HydroponicsActuator *actuator) = 0;
-    virtual bool removeActuator(HydroponicsActuator *actuator) = 0;
-    virtual bool hasActuator(HydroponicsActuator *actuator) const = 0;
-};
-
-// Sensor Attachments Interface
-class HydroponicsSensorAttachmentsInterface {
-public:
-    virtual bool addSensor(HydroponicsSensor *sensor) = 0;
-    virtual bool removeSensor(HydroponicsSensor *sensor) = 0;
-    virtual bool hasSensor(HydroponicsSensor *sensor) const = 0;
-};
-
-// Crop Attachments Interface
-class HydroponicsCropAttachmentsInterface {
-public:
-    virtual bool addCrop(HydroponicsCrop *crop) = 0;
-    virtual bool removeCrop(HydroponicsCrop *crop) = 0;
-    virtual bool hasCrop(HydroponicsCrop *crop) const = 0;
-};
-
-// Reservoir Attachments Interface
-class HydroponicsReservoirAttachmentsInterface {
-public:
-    virtual bool addReservoir(HydroponicsReservoir *reservoir) = 0;
-    virtual bool removeReservoir(HydroponicsReservoir *reservoir) = 0;
-    virtual bool hasReservoir(HydroponicsReservoir *reservoir) const = 0;
-};
-
-// Rail Attachments Interface
-class HydroponicsRailAttachmentsInterface {
-public:
-    virtual bool addRail(HydroponicsRail *rail) = 0;
-    virtual bool removeRail(HydroponicsRail *rail) = 0;
-    virtual bool hasRail(HydroponicsRail *rail) const = 0;
-};
-
-
 // Actuator Attachment Interface
 class HydroponicsActuatorAttachmentInterface {
 public:
-    virtual void setActuator(HydroponicsIdentity actuatorId) = 0;
-    virtual void setActuator(shared_ptr<HydroponicsActuator> actuator) = 0;
-    virtual shared_ptr<HydroponicsActuator> getActuator() = 0;
+    virtual HydroponicsAttachment<HydroponicsActuator> &getParentActuator() = 0;
+
+    template<class T> inline void setActuator(shared_ptr<T> actuator) { getParentActuator() = actuator; }
+    template<class T = HydroponicsActuator> inline shared_ptr<T> getActuator() { static_pointer_cast<T>(getParentActuator().getObject()); }
 };
 
 // Sensor Attachment Interface
 class HydroponicsSensorAttachmentInterface {
 public:
-    virtual void setSensor(HydroponicsIdentity sensorId) = 0;
-    virtual void setSensor(shared_ptr<HydroponicsSensor> sensor) = 0;
-    virtual shared_ptr<HydroponicsSensor> getSensor() = 0;
+    virtual HydroponicsAttachment<HydroponicsSensor> &getParentSensor() = 0;
+
+    template<class T> inline void setSensor(shared_ptr<T> sensor) { getParentSensor() = sensor; }
+    template<class T = HydroponicsSensor> inline shared_ptr<T> getSensor() { static_pointer_cast<T>(getParentSensor().getObject()); }
 };
 
 // Crop Attachment Interface
 class HydroponicsCropAttachmentInterface {
 public:
-    virtual void setCrop(HydroponicsIdentity cropId) = 0;
-    virtual void setCrop(shared_ptr<HydroponicsCrop> crop) = 0;
-    virtual shared_ptr<HydroponicsCrop> getCrop() = 0;
+    virtual HydroponicsAttachment<HydroponicsCrop> &getParentCrop() = 0;
+
+    template<class T> inline void setCrop(shared_ptr<T> crop) { getParentCrop() = crop; }
+    template<class T = HydroponicsCrop> inline shared_ptr<T> getCrop() { static_pointer_cast<T>(getParentCrop().getObject()); }
 };
 
 // Reservoir Attachment Interface
 class HydroponicsReservoirAttachmentInterface {
 public:
-    virtual void setReservoir(HydroponicsIdentity reservoirId) = 0;
-    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) = 0;
-    virtual shared_ptr<HydroponicsReservoir> getReservoir() = 0;
+    virtual HydroponicsAttachment<HydroponicsReservoir> &getParentReservoir() = 0;
+
+    template<class T> inline void setReservoir(shared_ptr<T> reservoir) { getParentReservoir() = reservoir; }
+    template<class T = HydroponicsReservoir> inline shared_ptr<T> getReservoir() { static_pointer_cast<T>(getParentReservoir().getObject()); }
 };
 
 // Rail Attachment Interface
 class HydroponicsRailAttachmentInterface {
 public:
-    virtual void setRail(HydroponicsIdentity powerRailId) = 0;
-    virtual void setRail(shared_ptr<HydroponicsRail> powerRail) = 0;
-    virtual shared_ptr<HydroponicsRail> getRail() = 0;
+    virtual HydroponicsAttachment<HydroponicsRail> &getParentRail() = 0;
+
+    template<class T> inline void setRail(shared_ptr<T> rail) { getParentRail() = rail; }
+    template<class T = HydroponicsRail> inline shared_ptr<T> getRail() { static_pointer_cast<T>(getParentRail().getObject()); }
 };
 
 
@@ -204,7 +163,7 @@ public:
 };
 
 // Pump Object Interface
-class HydroponicsPumpObjectInterface : public HydroponicsReservoirAttachmentInterface {
+class HydroponicsPumpObjectInterface {
 public:
     virtual bool canPump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) = 0;
     virtual bool pump(float volume, Hydroponics_UnitsType volumeUnits = Hydroponics_UnitsType_Undefined) = 0;
@@ -214,15 +173,28 @@ public:
     virtual void setFlowRateUnits(Hydroponics_UnitsType flowRateUnits) = 0;
     virtual Hydroponics_UnitsType getFlowRateUnits() const = 0;
 
-    virtual void setOutputReservoir(HydroponicsIdentity destReservoirId) = 0;
-    virtual void setOutputReservoir(shared_ptr<HydroponicsReservoir> destReservoir) = 0;
-    virtual shared_ptr<HydroponicsReservoir> getOutputReservoir() = 0;
+    virtual HydroponicsAttachment<HydroponicsReservoir> &getParentReservoir() = 0;
+    template<class T> inline void setInputReservoir(shared_ptr<T> reservoir) { getParentReservoir() = reservoir; }
+    template<class T = HydroponicsReservoir> inline shared_ptr<T> getInputReservoir() { static_pointer_cast<T>(getParentReservoir().getObject()); }
+
+    virtual HydroponicsAttachment<HydroponicsReservoir> &getDestinationReservoir() = 0;
+    template<class T> inline void setOutputReservoir(shared_ptr<T> reservoir) { getDestinationReservoir() = reservoir; }
+    template<class T = HydroponicsReservoir> inline shared_ptr<T> getOutputReservoir() { static_pointer_cast<T>(getDestinationReservoir().getObject()); }
 
     virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
     virtual void setContinuousFlowRate(HydroponicsSingleMeasurement contFlowRate) = 0;
     virtual const HydroponicsSingleMeasurement &getContinuousFlowRate() = 0;
 };
 
+
+// Flow Rate Aware Interface
+class HydroponicsFeedReservoirAttachmentInterface {
+public:
+    virtual HydroponicsAttachment<HydroponicsFeedReservoir> &getFeedingReservoir() = 0;
+
+    template<class T> inline void setFeedReservoir(shared_ptr<T> reservoir) { getFeedingReservoir() = reservoir; }
+    template<class T = HydroponicsSensor> inline shared_ptr<T> getFeedReservoir() { static_pointer_cast<T>(getFeedingReservoir().getObject()); }
+};
 
 // Flow Rate Aware Interface
 class HydroponicsFlowSensorAttachmentInterface {

@@ -30,7 +30,7 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
                                  DateTime sowDate,
                                  int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(cropType, cropIndex)), classType((typeof(classType))classTypeIn),
-      _substrateType(substrateType), _sowDate(sowDate.unixtime()), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
+      _substrateType(substrateType), _sowDate(sowDate.unixtime()), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
     recalcGrowWeekAndPhase();
@@ -39,7 +39,7 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
 
 HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      _substrateType(dataIn->substrateType), _sowDate(dataIn->sowDate), _feedReservoir(dataIn->feedReservoir),
+      _substrateType(dataIn->substrateType), _sowDate(dataIn->sowDate), _feedReservoir(this, dataIn->feedReservoir),
       _cropsData(nullptr), _growWeek(0), _feedingWeight(dataIn->feedingWeight),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
@@ -51,7 +51,6 @@ HydroponicsCrop::~HydroponicsCrop()
 {
     detachCustomCrop();
     if (_cropsData) { returnCropsLibData(); }
-    if (_feedReservoir) { _feedReservoir->removeCrop(this); }
 }
 
 void HydroponicsCrop::update()
@@ -78,42 +77,10 @@ void HydroponicsCrop::notifyFeedingBegan()
 void HydroponicsCrop::notifyFeedingEnded()
 { ; }
 
-bool HydroponicsCrop::addSensor(HydroponicsSensor *sensor)
+HydroponicsAttachment<HydroponicsFeedReservoir> &HydroponicsCrop::getFeedingReservoir()
 {
-    return addLinkage(sensor);
-}
-
-bool HydroponicsCrop::removeSensor(HydroponicsSensor *sensor)
-{
-    return removeLinkage(sensor);
-}
-
-bool HydroponicsCrop::hasSensor(HydroponicsSensor *sensor) const
-{
-    return hasLinkage(sensor);
-}
-
-void HydroponicsCrop::setFeedReservoir(HydroponicsIdentity reservoirId)
-{
-    if (_feedReservoir != reservoirId) {
-        if (_feedReservoir) { _feedReservoir->removeCrop(this); }
-        _feedReservoir = reservoirId;
-    }
-}
-
-void HydroponicsCrop::setFeedReservoir(shared_ptr<HydroponicsFeedReservoir> reservoir)
-{
-    if (_feedReservoir != reservoir) {
-        if (_feedReservoir) { _feedReservoir->removeCrop(this); }
-        _feedReservoir = reservoir;
-        if (_feedReservoir) { _feedReservoir->addCrop(this); }
-    }
-}
-
-shared_ptr<HydroponicsFeedReservoir> HydroponicsCrop::getFeedReservoir()
-{
-    if (_feedReservoir.resolveIfNeeded()) { _feedReservoir->addCrop(this); }
-    return static_pointer_cast<HydroponicsFeedReservoir>(_feedReservoir.getObject());
+    _feedReservoir.resolveIfNeeded();
+    return _feedReservoir;
 }
 
 void HydroponicsCrop::setFeedingWeight(float weight)

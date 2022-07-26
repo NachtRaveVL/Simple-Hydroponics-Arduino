@@ -53,9 +53,6 @@ public:
     HydroponicsSensor(const HydroponicsSensorData *dataIn);
     virtual ~HydroponicsSensor();
 
-    virtual void update() override;
-    virtual void handleLowMemory() override;
-
     virtual bool takeMeasurement(bool force = false) = 0;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const = 0;
     virtual bool isTakingMeasurement() const override;
@@ -64,13 +61,9 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) = 0;
     virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const = 0;
 
-    virtual void setCrop(HydroponicsIdentity cropId) override;
-    virtual void setCrop(shared_ptr<HydroponicsCrop> crop) override;
-    virtual shared_ptr<HydroponicsCrop> getCrop() override;
+    virtual HydroponicsAttachment<HydroponicsCrop> &getParentCrop() override;
 
-    virtual void setReservoir(HydroponicsIdentity reservoirId) override;
-    virtual void setReservoir(shared_ptr<HydroponicsReservoir> reservoir) override;
-    virtual shared_ptr<HydroponicsReservoir> getReservoir() override;
+    virtual HydroponicsAttachment<HydroponicsReservoir> &getParentReservoir() override;
 
     void setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData);
     inline const HydroponicsCalibrationData *getUserCalibrationData() const { return _calibrationData; }
@@ -84,8 +77,8 @@ public:
 protected:
     byte _inputPin;                                         // Input pin
     bool _isTakingMeasure;                                  // Taking measurement flag
-    HydroponicsDLinkObject<HydroponicsCrop> _crop;          // Crop linkage
-    HydroponicsDLinkObject<HydroponicsReservoir> _reservoir; // Reservoir linkage
+    HydroponicsAttachment<HydroponicsCrop> _crop;           // Crop attachment
+    HydroponicsAttachment<HydroponicsReservoir> _reservoir; // Reservoir attachment
     const HydroponicsCalibrationData *_calibrationData;     // Calibration data
     Signal<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> _measureSignal; // New measurement signal
 

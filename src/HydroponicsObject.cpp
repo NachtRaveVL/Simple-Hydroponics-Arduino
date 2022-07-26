@@ -152,8 +152,9 @@ bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
         iter->second.second++;
     } else {
         _links[obj->getKey()] = make_pair(obj, (int8_t)1);
+        return true;
     }
-    return (_links.find(obj->getKey()) != _links.end());
+    return false;
 }
 
 bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
@@ -162,8 +163,8 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
     if (iter != _links.end()) {
         if (--iter->second.second == 0) {
             _links.erase(iter);
+            return true;
         }
-        return true;
     }
     return false;
 }

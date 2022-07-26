@@ -57,11 +57,6 @@ void HydroponicsReservoir::update()
     }
 }
 
-void HydroponicsReservoir::handleLowMemory()
-{
-    HydroponicsObject::handleLowMemory();
-}
-
 bool HydroponicsReservoir::canActivate(HydroponicsActuator *actuator)
 {
     bool doEmptyCheck;
@@ -91,51 +86,6 @@ void HydroponicsReservoir::setVolumeUnits(Hydroponics_UnitsType volumeUnits)
 Hydroponics_UnitsType HydroponicsReservoir::getVolumeUnits() const
 {
     return definedUnitsElse(_volumeUnits, defaultLiquidVolumeUnits());
-}
-
-bool HydroponicsReservoir::addActuator(HydroponicsActuator *actuator)
-{
-    return addLinkage(actuator);
-}
-
-bool HydroponicsReservoir::removeActuator(HydroponicsActuator *actuator)
-{
-    return removeLinkage(actuator);
-}
-
-bool HydroponicsReservoir::hasActuator(HydroponicsActuator *actuator) const
-{
-    return hasLinkage(actuator);
-}
-
-bool HydroponicsReservoir::addSensor(HydroponicsSensor *sensor)
-{
-    return addLinkage(sensor);
-}
-
-bool HydroponicsReservoir::removeSensor(HydroponicsSensor *sensor)
-{
-    return removeLinkage(sensor);
-}
-
-bool HydroponicsReservoir::hasSensor(HydroponicsSensor *sensor) const
-{
-    return hasLinkage(sensor);
-}
-
-bool HydroponicsReservoir::addCrop(HydroponicsCrop *crop)
-{
-    return addLinkage(crop);
-}
-
-bool HydroponicsReservoir::removeCrop(HydroponicsCrop *crop)
-{
-    return removeLinkage(crop);
-}
-
-bool HydroponicsReservoir::hasCrop(HydroponicsCrop *crop) const
-{
-    return hasLinkage(crop);
 }
 
 Hydroponics_ReservoirType HydroponicsReservoir::getReservoirType() const
@@ -232,7 +182,7 @@ void HydroponicsFluidReservoir::update()
 
 void HydroponicsFluidReservoir::handleLowMemory()
 {
-    HydroponicsReservoir::handleLowMemory();
+    HydroponicsObject::handleLowMemory();
 
     if (_filledTrigger) { _filledTrigger->handleLowMemory(); }
     if (_emptyTrigger) { _emptyTrigger->handleLowMemory(); }
@@ -276,11 +226,6 @@ void HydroponicsFluidReservoir::setFilledTrigger(HydroponicsTrigger *filledTrigg
     }
 }
 
-const HydroponicsTrigger *HydroponicsFluidReservoir::getFilledTrigger() const
-{
-    return _filledTrigger;
-}
-
 void HydroponicsFluidReservoir::setEmptyTrigger(HydroponicsTrigger *emptyTrigger)
 {
     if (_emptyTrigger != emptyTrigger) {
@@ -288,16 +233,6 @@ void HydroponicsFluidReservoir::setEmptyTrigger(HydroponicsTrigger *emptyTrigger
         _emptyTrigger = emptyTrigger;
         if (_emptyTrigger) { attachEmptyTrigger(); }
     }
-}
-
-const HydroponicsTrigger *HydroponicsFluidReservoir::getEmptyTrigger() const
-{
-    return _emptyTrigger;
-}
-
-float HydroponicsFluidReservoir::getMaxVolume()
-{
-    return _maxVolume;
 }
 
 void HydroponicsFluidReservoir::saveToData(HydroponicsData *dataOut)
@@ -468,11 +403,6 @@ void HydroponicsFeedReservoir::setTDSUnits(Hydroponics_UnitsType tdsUnits)
     }
 }
 
-Hydroponics_UnitsType HydroponicsFeedReservoir::getTDSUnits() const
-{
-    return definedUnitsElse(_tdsUnits, Hydroponics_UnitsType_Concentration_TDS);
-}
-
 void HydroponicsFeedReservoir::setTemperatureUnits(Hydroponics_UnitsType tempUnits)
 {
     if (_tempUnits != tempUnits) {
@@ -481,11 +411,6 @@ void HydroponicsFeedReservoir::setTemperatureUnits(Hydroponics_UnitsType tempUni
         _waterTemp.setMeasurementUnits(getTemperatureUnits());
         _airTemp.setMeasurementUnits(getTemperatureUnits());
     }
-}
-
-Hydroponics_UnitsType HydroponicsFeedReservoir::getTemperatureUnits() const
-{
-    return definedUnitsElse(_tempUnits, defaultTemperatureUnits());
 }
 
 HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterPH()
@@ -539,11 +464,6 @@ void HydroponicsFeedReservoir::setWaterPHBalancer(HydroponicsBalancer *phBalance
     }
 }
 
-HydroponicsBalancer *HydroponicsFeedReservoir::getWaterPHBalancer() const
-{
-    return _waterPHBalancer;
-}
-
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits)
 {
     if (!_waterTDSBalancer && getWaterTDSSensor()) {
@@ -563,11 +483,6 @@ void HydroponicsFeedReservoir::setWaterTDSBalancer(HydroponicsBalancer *tdsBalan
         if (_waterTDSBalancer) { delete _waterTDSBalancer; }
         _waterTDSBalancer = tdsBalancer;
     }
-}
-
-HydroponicsBalancer *HydroponicsFeedReservoir::getWaterTDSBalancer() const
-{
-    return _waterTDSBalancer;
 }
 
 HydroponicsBalancer *HydroponicsFeedReservoir::setWaterTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits)
@@ -592,11 +507,6 @@ void HydroponicsFeedReservoir::setWaterTemperatureBalancer(HydroponicsBalancer *
     }
 }
 
-HydroponicsBalancer *HydroponicsFeedReservoir::getWaterTemperatureBalancer() const
-{
-    return _waterTempBalancer;
-}
-
 HydroponicsBalancer *HydroponicsFeedReservoir::setAirTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits)
 {
     if (!_airTempBalancer && getAirTemperatureSensor()) {
@@ -617,11 +527,6 @@ void HydroponicsFeedReservoir::setAirTemperatureBalancer(HydroponicsBalancer *ai
         if (_airTempBalancer) { delete _airTempBalancer; }
         _airTempBalancer = airTempBalancer;
     }
-}
-
-HydroponicsBalancer *HydroponicsFeedReservoir::getAirTemperatureBalancer() const
-{
-    return _airTempBalancer;
 }
 
 HydroponicsBalancer *HydroponicsFeedReservoir::setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits)
@@ -646,44 +551,14 @@ void HydroponicsFeedReservoir::setAirCO2Balancer(HydroponicsBalancer *co2Balance
     }
 }
 
-HydroponicsBalancer *HydroponicsFeedReservoir::getAirCO2Balancer() const
-{
-    return _airCO2Balancer;
-}
-
-Hydroponics_PositionIndex HydroponicsFeedReservoir::getChannelNumber() const
-{
-    return _id.posIndex;
-}
-
-DateTime HydroponicsFeedReservoir::getLastWaterChangeDate() const
-{
-    return DateTime((uint32_t)_lastChangeDate);
-}
-
 void HydroponicsFeedReservoir::notifyWaterChanged()
 {
     _lastChangeDate = unixNow();
 }
 
-DateTime HydroponicsFeedReservoir::getLastPruningDate() const
-{
-    return DateTime((uint32_t)_lastPruningDate);
-}
-
 void HydroponicsFeedReservoir::notifyPruningCompleted()
 {
     _lastPruningDate = unixNow();
-}
-
-DateTime HydroponicsFeedReservoir::getLastFeeding() const
-{
-    return DateTime((uint32_t)_lastFeedingDate);
-}
-
-int HydroponicsFeedReservoir::getFeedingsToday() const
-{
-    return _numFeedingsToday;
 }
 
 void HydroponicsFeedReservoir::notifyFeedingBegan()

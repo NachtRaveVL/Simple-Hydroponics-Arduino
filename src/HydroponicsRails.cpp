@@ -35,7 +35,11 @@ HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
 { ; }
 
 HydroponicsRail::~HydroponicsRail()
-{ ; }
+{
+    {   auto actuators = linksFilterActuators<HYDRUINO_OBJ_LINKS_MAXSIZE>(_links);
+        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeLinkage(*iter); }
+    }
+}
 
 void HydroponicsRail::update()
 {
@@ -53,6 +57,42 @@ void HydroponicsRail::handleLowMemory()
     HydroponicsObject::handleLowMemory();
 }
 
+bool HydroponicsRail::addLinkage(HydroponicsObject *object)
+{
+    if (HydroponicsObject::addLinkage(object)) {
+        if (object->isActuatorType()) {
+            HYDRUINO_HARD_ASSERT(isSimpleClass() || isRegulatedClass(), HS_Err_OperationFailure);
+            if (isSimpleClass()) {
+                auto methodSlot = MethodSlot<HydroponicsSimpleRail, HydroponicsActuator *>((HydroponicsSimpleRail *)this, &HydroponicsSimpleRail::handleActivation);
+                ((HydroponicsActuator *)object)->getActivationSignal().attach(methodSlot);
+            } else if (isRegulatedClass()) {
+                auto methodSlot = MethodSlot<HydroponicsRegulatedRail, HydroponicsActuator *>((HydroponicsRegulatedRail *)this, &HydroponicsRegulatedRail::handleActivation);
+                ((HydroponicsActuator *)object)->getActivationSignal().attach(methodSlot);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+bool HydroponicsRail::removeLinkage(HydroponicsObject *object)
+{
+    if (HydroponicsObject::removeLinkage(object)) {
+        if (object->isActuatorType()) {
+            HYDRUINO_HARD_ASSERT(isSimpleClass() || isRegulatedClass(), HS_Err_OperationFailure);
+            if (isSimpleClass()) {
+                auto methodSlot = MethodSlot<HydroponicsSimpleRail, HydroponicsActuator *>((HydroponicsSimpleRail *)this, &HydroponicsSimpleRail::handleActivation);
+                ((HydroponicsActuator *)object)->getActivationSignal().detach(methodSlot);
+            } else if (isRegulatedClass()) {
+                auto methodSlot = MethodSlot<HydroponicsRegulatedRail, HydroponicsActuator *>((HydroponicsRegulatedRail *)this, &HydroponicsRegulatedRail::handleActivation);
+                ((HydroponicsActuator *)object)->getActivationSignal().detach(methodSlot);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 void HydroponicsRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
 {
     if (_powerUnits != powerUnits) {
@@ -63,36 +103,6 @@ void HydroponicsRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
 Hydroponics_UnitsType HydroponicsRail::getPowerUnits() const
 {
     return definedUnitsElse(_powerUnits, Hydroponics_UnitsType_Power_Wattage);
-}
-
-bool HydroponicsRail::addActuator(HydroponicsActuator *actuator)
-{
-    return addLinkage(actuator);
-}
-
-bool HydroponicsRail::removeActuator(HydroponicsActuator *actuator)
-{
-    return removeLinkage(actuator);
-}
-
-bool HydroponicsRail::hasActuator(HydroponicsActuator *actuator) const
-{
-    return hasLinkage(actuator);
-}
-
-bool HydroponicsRail::addSensor(HydroponicsSensor *sensor)
-{
-    return addLinkage(sensor);
-}
-
-bool HydroponicsRail::removeSensor(HydroponicsSensor *sensor)
-{
-    return removeLinkage(sensor);
-}
-
-bool HydroponicsRail::hasSensor(HydroponicsSensor *sensor) const
-{
-    return hasLinkage(sensor);
 }
 
 float HydroponicsRail::getRailVoltage() const
@@ -143,11 +153,7 @@ HydroponicsSimpleRail::HydroponicsSimpleRail(const HydroponicsSimpleRailData *da
 { ; }
 
 HydroponicsSimpleRail::~HydroponicsSimpleRail()
-{
-    {   auto actuators = linksFilterActuators(_links);
-        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(*iter)); }
-    }
-}
+{ ; }
 
 bool HydroponicsSimpleRail::canActivate(HydroponicsActuator *actuator)
 {
@@ -157,26 +163,6 @@ bool HydroponicsSimpleRail::canActivate(HydroponicsActuator *actuator)
 float HydroponicsSimpleRail::getCapacity()
 {
     return _activeCount / (float)_maxActiveAtOnce;
-}
-
-bool HydroponicsSimpleRail::addActuator(HydroponicsActuator *actuator)
-{
-    if (HydroponicsRail::addActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsSimpleRail::handleActivation);
-        actuator->getActivationSignal().attach(methodSlot);
-        return true;
-    }
-    return false;
-}
-
-bool HydroponicsSimpleRail::removeActuator(HydroponicsActuator *actuator)
-{
-    if (HydroponicsRail::removeActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsSimpleRail::handleActivation);
-        actuator->getActivationSignal().detach(methodSlot);
-        return true;
-    }
-    return false;
 }
 
 void HydroponicsSimpleRail::saveToData(HydroponicsData *dataOut)
@@ -229,9 +215,6 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
 
 HydroponicsRegulatedRail::~HydroponicsRegulatedRail()
 {
-    {   auto actuators = linksFilterActuators(_links);
-        for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeActuator((HydroponicsActuator *)(*iter)); }
-    }
     if (_limitTrigger) { detachLimitTrigger(); delete _limitTrigger; _limitTrigger = nullptr; }
 }
 
@@ -275,26 +258,6 @@ void HydroponicsRegulatedRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
 
         _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());
     }
-}
-
-bool HydroponicsRegulatedRail::addActuator(HydroponicsActuator *actuator)
-{
-    if (HydroponicsRail::addActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsRegulatedRail::handleActivation);
-        actuator->getActivationSignal().attach(methodSlot);
-        return true;
-    }
-    return false;
-}
-
-bool HydroponicsRegulatedRail::removeActuator(HydroponicsActuator *actuator)
-{
-    if (HydroponicsRail::removeActuator(actuator)) {
-        auto methodSlot = MethodSlot<typeof(*this), HydroponicsActuator *>(this, &HydroponicsRegulatedRail::handleActivation);
-        actuator->getActivationSignal().detach(methodSlot);
-        return true;
-    }
-    return false;
 }
 
 HydroponicsSensorAttachment &HydroponicsRegulatedRail::getPowerUsage()

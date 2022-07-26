@@ -27,7 +27,7 @@ extern HydroponicsReservoir *newReservoirObjectFromData(const HydroponicsReservo
 // This is the base class for all reservoirs, which defines how the reservoir is
 // identified, where it lives, what's attached to it, if it is full or empty, and
 // who can activate under it.
-class HydroponicsReservoir : public HydroponicsObject, public HydroponicsReservoirObjectInterface, public HydroponicsActuatorAttachmentsInterface, public HydroponicsSensorAttachmentsInterface, public HydroponicsCropAttachmentsInterface {
+class HydroponicsReservoir : public HydroponicsObject, public HydroponicsReservoirObjectInterface {
 public:
     const enum { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
     inline bool isFluidClass() const { return classType == Fluid; }
@@ -43,7 +43,6 @@ public:
     virtual ~HydroponicsReservoir();
 
     virtual void update() override;
-    virtual void handleLowMemory() override;
 
     virtual bool canActivate(HydroponicsActuator *actuator);
     virtual bool isFilled() = 0;
@@ -53,18 +52,6 @@ public:
     virtual Hydroponics_UnitsType getVolumeUnits() const;
 
     virtual HydroponicsSensorAttachment &getWaterVolume() = 0;
-
-    virtual bool addActuator(HydroponicsActuator *actuator) override;
-    virtual bool removeActuator(HydroponicsActuator *actuator) override;
-    virtual bool hasActuator(HydroponicsActuator *actuator) const override;
-
-    virtual bool addSensor(HydroponicsSensor *sensor) override;
-    virtual bool removeSensor(HydroponicsSensor *sensor) override;
-    virtual bool hasSensor(HydroponicsSensor *sensor) const override;
-
-    virtual bool addCrop(HydroponicsCrop *crop) override;
-    virtual bool removeCrop(HydroponicsCrop *crop) override;
-    virtual bool hasCrop(HydroponicsCrop *crop) const override;
 
     Hydroponics_ReservoirType getReservoirType() const;
     Hydroponics_PositionIndex getReservoirIndex() const;
@@ -110,12 +97,12 @@ public:
     virtual HydroponicsSensorAttachment &getWaterVolume() override;
 
     void setFilledTrigger(HydroponicsTrigger *filledTrigger);
-    const HydroponicsTrigger *getFilledTrigger() const;
+    inline const HydroponicsTrigger *getFilledTrigger() const { return _filledTrigger; }
 
     void setEmptyTrigger(HydroponicsTrigger *emptyTrigger);
-    const HydroponicsTrigger *getEmptyTrigger() const;
+    inline const HydroponicsTrigger *getEmptyTrigger() const { return _emptyTrigger; }
 
-    float getMaxVolume();
+    inline float getMaxVolume() const { return _maxVolume; }
 
 protected:
     float _maxVolume;                                       // Maximum volume
@@ -154,10 +141,10 @@ public:
     virtual void handleLowMemory() override;
 
     void setTDSUnits(Hydroponics_UnitsType tdsUnits);
-    Hydroponics_UnitsType getTDSUnits() const;
+    inline Hydroponics_UnitsType getTDSUnits() const { return definedUnitsElse(_tdsUnits, Hydroponics_UnitsType_Concentration_TDS); }
 
     void setTemperatureUnits(Hydroponics_UnitsType tempUnits);
-    Hydroponics_UnitsType getTemperatureUnits() const;
+    inline Hydroponics_UnitsType getTemperatureUnits() const { return definedUnitsElse(_tempUnits, defaultTemperatureUnits()); }
 
     virtual HydroponicsSensorAttachment &getWaterPH() override;
 
@@ -171,34 +158,34 @@ public:
 
     HydroponicsBalancer *setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);
     void setWaterPHBalancer(HydroponicsBalancer *phBalancer);
-    HydroponicsBalancer *getWaterPHBalancer() const;
+    inline HydroponicsBalancer *getWaterPHBalancer() const { return _waterPHBalancer; }
 
     HydroponicsBalancer *setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits);
     void setWaterTDSBalancer(HydroponicsBalancer *tdsBalancer);
-    HydroponicsBalancer *getWaterTDSBalancer() const;
+    inline HydroponicsBalancer *getWaterTDSBalancer() const { return _waterTDSBalancer; }
 
     HydroponicsBalancer *setWaterTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
     void setWaterTemperatureBalancer(HydroponicsBalancer *waterTempBalancer);
-    HydroponicsBalancer *getWaterTemperatureBalancer() const;
+    inline HydroponicsBalancer *getWaterTemperatureBalancer() const { return _waterTempBalancer; }
 
     HydroponicsBalancer *setAirTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
     void setAirTemperatureBalancer(HydroponicsBalancer *airTempBalancer);
-    HydroponicsBalancer *getAirTemperatureBalancer() const;
+    inline HydroponicsBalancer *getAirTemperatureBalancer() const { return _airTempBalancer; }
 
     HydroponicsBalancer *setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits);
     void setAirCO2Balancer(HydroponicsBalancer *co2Balancer);
-    HydroponicsBalancer *getAirCO2Balancer() const;
+    inline HydroponicsBalancer *getAirCO2Balancer() const { return _airCO2Balancer; }
 
-    Hydroponics_PositionIndex getChannelNumber() const;
+    inline Hydroponics_PositionIndex getChannelNumber() const { return _id.posIndex; }
 
-    DateTime getLastWaterChangeDate() const;
+    inline DateTime getLastWaterChangeDate() const { return DateTime((uint32_t)_lastChangeDate); }
     void notifyWaterChanged();
 
-    DateTime getLastPruningDate() const;
+    inline DateTime getLastPruningDate() const { return DateTime((uint32_t)_lastPruningDate); }
     void notifyPruningCompleted();
 
-    DateTime getLastFeeding() const;
-    int getFeedingsToday() const;
+    inline DateTime getLastFeeding() const { return DateTime((uint32_t)_lastFeedingDate); }
+    inline int8_t getFeedingsToday() const { return _numFeedingsToday; }
     void notifyFeedingBegan();
     void notifyFeedingEnded();
     void notifyDayChanged();
@@ -207,7 +194,7 @@ protected:
     time_t _lastChangeDate;                                 // Last water change date (recycling systems only, UTC)
     time_t _lastPruningDate;                                // Last pruning date (pruning crops only, UTC)
     time_t _lastFeedingDate;                                // Last feeding date (UTC)
-    int _numFeedingsToday;                                  // Number of feedings performed today
+    int8_t _numFeedingsToday;                               // Number of feedings performed today
     Hydroponics_UnitsType _tdsUnits;                        // TDS units preferred (else default)
     Hydroponics_UnitsType _tempUnits;                       // Temperature units preferred (else default)
 

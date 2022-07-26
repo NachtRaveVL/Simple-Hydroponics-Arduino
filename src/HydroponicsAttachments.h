@@ -91,7 +91,7 @@ public:
     virtual void detachObject();
 
     inline T* get() { return getObject().get(); }
-    inline const HydroponicsIdentity &getId() const { return _obj.getId();  }
+    inline const HydroponicsIdentity &getId() const { return _obj.getId(); }
     inline Hydroponics_KeyType getKey() const { return _obj.getKey(); }
     inline const String &getKeyString() const { return _obj.getKeyString(); }
 

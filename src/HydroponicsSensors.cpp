@@ -96,7 +96,7 @@ HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
                                      byte inputPin,
                                      int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(sensorType, sensorIndex)), classType((typeof(classType))classTypeIn),
-      _inputPin(inputPin), _isTakingMeasure(false), _calibrationData(nullptr)
+      _inputPin(inputPin), _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
     _calibrationData = getCalibrationsStoreInstance()->getUserCalibrationData(_id.key);
 }
@@ -104,25 +104,14 @@ HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
 HydroponicsSensor::HydroponicsSensor(const HydroponicsSensorData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
       _inputPin(dataIn->inputPin), _isTakingMeasure(false), _calibrationData(nullptr),
-      _crop(dataIn->cropName), _reservoir(dataIn->reservoirName)
+      _crop(this, dataIn->cropName), _reservoir(this, dataIn->reservoirName)
 {
     _calibrationData = getCalibrationsStoreInstance()->getUserCalibrationData(_id.key);
 }
 
 HydroponicsSensor::~HydroponicsSensor()
 {
-    if (_crop) { _crop->removeSensor(this); }
-    if (_reservoir) { _reservoir->removeSensor(this); }
-}
-
-void HydroponicsSensor::update()
-{
-    HydroponicsObject::update();
-}
-
-void HydroponicsSensor::handleLowMemory()
-{
-    HydroponicsObject::handleLowMemory();
+    _isTakingMeasure = false;
 }
 
 bool HydroponicsSensor::isTakingMeasurement() const
@@ -137,50 +126,16 @@ bool HydroponicsSensor::needsPolling(uint32_t allowance) const
     return hydroponics && latestMeasurement ? hydroponics->isPollingFrameOld(latestMeasurement->frame, allowance) : false;
 }
 
-void HydroponicsSensor::setCrop(HydroponicsIdentity cropId)
+HydroponicsAttachment<HydroponicsCrop> &HydroponicsSensor::getParentCrop()
 {
-    if (_crop != cropId) {
-        if (_crop) { _crop->removeSensor(this); }
-        _crop = cropId;
-    }
+    _crop.resolveIfNeeded();
+    return _crop;
 }
 
-void HydroponicsSensor::setCrop(shared_ptr<HydroponicsCrop> crop)
+HydroponicsAttachment<HydroponicsReservoir> &HydroponicsSensor::getParentReservoir()
 {
-    if (_crop != crop) {
-        if (_crop) { _crop->removeSensor(this); }
-        _crop = crop;
-        if (_crop) { _crop->addSensor(this); }
-    }
-}
-
-shared_ptr<HydroponicsCrop> HydroponicsSensor::getCrop()
-{
-    if (_crop.resolveIfNeeded()) { _crop->addSensor(this); }
-    return _crop.getObject();
-}
-
-void HydroponicsSensor::setReservoir(HydroponicsIdentity reservoirId)
-{
-    if (_reservoir != reservoirId) {
-        if (_reservoir) { _reservoir->removeSensor(this); }
-        _reservoir = reservoirId;
-    }
-}
-
-void HydroponicsSensor::setReservoir(shared_ptr<HydroponicsReservoir> reservoir)
-{
-    if (_reservoir != reservoir) {
-        if (_reservoir) { _reservoir->removeSensor(this); }
-        _reservoir = reservoir;
-        if (_reservoir) { _reservoir->addSensor(this); }
-    }
-}
-
-shared_ptr<HydroponicsReservoir> HydroponicsSensor::getReservoir()
-{
-    if (_reservoir.resolveIfNeeded()) { _reservoir->addSensor(this); }
-    return _reservoir.getObject();
+    _reservoir.resolveIfNeeded();
+    return _reservoir;
 }
 
 void HydroponicsSensor::setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData)
@@ -347,9 +302,7 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(const HydroponicsAnalogSensorDa
 }
 
 HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
-{
-    _isTakingMeasure = false;
-}
+{ ; }
 
 bool HydroponicsAnalogSensor::takeMeasurement(bool force)
 {
@@ -617,7 +570,6 @@ HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(const Hydropo
 
 HydroponicsDHTTempHumiditySensor::~HydroponicsDHTTempHumiditySensor()
 {
-    _isTakingMeasure = false;
     if (_dht) { delete _dht; _dht = nullptr; }
 }
 
@@ -803,7 +755,6 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(const Hydroponics
 
 HydroponicsDSTemperatureSensor::~HydroponicsDSTemperatureSensor()
 {
-    _isTakingMeasure = false;
     if (_dt) { delete _dt; _dt = nullptr; }
 }
 

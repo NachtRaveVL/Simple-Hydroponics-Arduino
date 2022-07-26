@@ -169,7 +169,7 @@ typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputRes
             auto actuator = (HydroponicsActuator *)(iter->second.first);
 
             if (actuator->isAnyPumpClass() && actuator->getReservoir().get() == srcReservoir) {
-                auto outputReservoir = ((HydroponicsPumpObjectInterface *)actuator)->getOutputReservoir();
+                auto outputReservoir = ((HydroponicsPumpObjectInterface *)actuator)->getDestinationReservoir();
 
                 if (outputReservoir && outputReservoir->getReservoirType() == destReservoirType) {
                     retVal.push_back(iter->second.first);
@@ -190,8 +190,8 @@ typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputRe
         if (iter->second.first && iter->second.first->isActuatorType()) {
             auto actuator = (HydroponicsActuator *)(iter->second.first);
 
-            if (actuator->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuator)->getOutputReservoir().get() == destReservoir) {
-                auto inputReservoir = ((HydroponicsPumpObjectInterface *)actuator)->getReservoir().get();
+            if (actuator->isAnyPumpClass() && ((HydroponicsPumpObjectInterface *)actuator)->getDestinationReservoir().get() == destReservoir) {
+                auto inputReservoir = ((HydroponicsPumpObjectInterface *)actuator)->getInputReservoir().get();
 
                 if (inputReservoir && inputReservoir->getReservoirType() == srcReservoirType) {
                     retVal.push_back(iter->second.first);

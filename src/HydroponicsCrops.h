@@ -25,7 +25,7 @@ extern HydroponicsCrop *newCropObjectFromData(const HydroponicsCropData *dataIn)
 // This is the base class for all crops, which defines how the crop is identified, at
 // what point it is in the growth cycle, which sensors are attached to it, what reservoir
 // feeds it, etc.
-class HydroponicsCrop : public HydroponicsObject, public HydroponicsCropObjectInterface, public HydroponicsSensorAttachmentsInterface {
+class HydroponicsCrop : public HydroponicsObject, public HydroponicsCropObjectInterface, public HydroponicsFeedReservoirAttachmentInterface {
 public:
     const enum { Timed, Adaptive, Unknown = -1 } classType; // Crop class type (custom RTTI)
     inline bool isTimedClass() const { return classType == Timed; }
@@ -47,13 +47,7 @@ public:
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 
-    virtual bool addSensor(HydroponicsSensor *sensor) override;
-    virtual bool removeSensor(HydroponicsSensor *sensor) override;
-    virtual bool hasSensor(HydroponicsSensor *sensor) const override;
-
-    void setFeedReservoir(HydroponicsIdentity reservoirId);
-    void setFeedReservoir(shared_ptr<HydroponicsFeedReservoir> reservoir);
-    shared_ptr<HydroponicsFeedReservoir> getFeedReservoir();
+    virtual HydroponicsAttachment<HydroponicsFeedReservoir> &getFeedingReservoir() override;
 
     void setFeedingWeight(float weight);
     inline float getFeedingWeight() const { return _feedingWeight; }
@@ -75,6 +69,7 @@ public:
 protected:
     Hydroponics_SubstrateType _substrateType;               // Substrate type
     time_t _sowDate;                                        // Sow date (UTC)
+    HydroponicsAttachment<HydroponicsFeedReservoir> _feedReservoir; // Feed reservoir attachment
 
     const HydroponicsCropsLibData *_cropsData;              // Crops library data (checked out iff !nullptr)
     int _growWeek;                                          // Current grow week
@@ -83,8 +78,7 @@ protected:
     Hydroponics_TriggerState _feedingState;                 // Current feeding signal state
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)
 
-    Map<Hydroponics_KeyType, HydroponicsSensor *>::type _sensors; // Attached crop sensors (weak)
-    HydroponicsDLinkObject<HydroponicsFeedReservoir> _feedReservoir; // Feed reservoir linkage
+    
     Signal<HydroponicsCrop *> _feedingSignal;               // Feeding requested signal
 
     virtual HydroponicsData *allocateData() const override;
