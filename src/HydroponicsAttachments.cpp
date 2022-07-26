@@ -48,21 +48,17 @@ HydroponicsSensorAttachment::~HydroponicsSensorAttachment()
 
 void HydroponicsSensorAttachment::attachObject()
 {
-    if (needsResolved()) {
-        HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::attachObject();
+    HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::attachObject();
 
-        if (isResolved()) {
-            handleMeasurement(_obj->getLatestMeasurement());
-        }
+    if (isResolved()) {
+        handleMeasurement(_obj->getLatestMeasurement());
     }
 }
 
 void HydroponicsSensorAttachment::detachObject()
 {
-    if (isResolved()) {
-        HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::detachObject();
-        setNeedsMeasurement();
-    }
+    HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::detachObject();
+    setNeedsMeasurement();
 }
 
 void HydroponicsSensorAttachment::updateMeasurementIfNeeded(bool resolveIfNeeded)

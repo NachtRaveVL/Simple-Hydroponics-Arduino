@@ -34,6 +34,7 @@ public:
     inline bool needsResolved() const { return isId() && (bool)_id; }
     inline bool resolveIfNeeded() { return needsResolved() && (bool)getObject(); }
 
+    template<class U> inline void setObject(U obj) { this->operator=(obj); }
     shared_ptr<T> getObject();
 
     inline T* get() { return getObject().get(); }
@@ -85,6 +86,7 @@ public:
     inline bool needsResolved() const { return _obj.needsResolved(); }
     inline bool resolveIfNeeded() { return needsResolved() && (bool)getObject(); }
 
+    template<class U> inline void setObject(U obj) { this->operator=(obj); }
     inline shared_ptr<T> getObject() { if (needsResolved()) { attachObject(); } return isResolved() ? _obj.getObject() : nullptr; }
 
     virtual void attachObject();

@@ -106,18 +106,14 @@ HydroponicsAttachment<T>::~HydroponicsAttachment()
 template<class T>
 void HydroponicsAttachment<T>::attachObject()
 {
-    if (_obj.resolveIfNeeded()) {
-        _obj->addLinkage(_parent);
-    }
+    _obj->addLinkage(_parent);
 }
 
 template<class T>
 void HydroponicsAttachment<T>::detachObject()
 {
-    if (isResolved()) {
-        _obj->removeLinkage(_parent);
-        _obj = (T *)nullptr;
-    }
+    _obj->removeLinkage(_parent);
+    _obj = (T *)nullptr;
 }
 
 
@@ -173,12 +169,10 @@ HydroponicsSignalAttachment<T,ParameterType,Slots>::~HydroponicsSignalAttachment
 template<class T, class ParameterType, int Slots>
 void HydroponicsSignalAttachment<T,ParameterType,Slots>::attachObject()
 {
-    if (needsResolved()) {
-        HydroponicsAttachment<T>::attachObject();
+    HydroponicsAttachment<T>::attachObject();
 
-        if (isResolved()) {
-            (get()->*_signalGetter)().attach(_handleMethod);
-        }
+    if (isResolved()) {
+        (get()->*_signalGetter)().attach(_handleMethod);
     }
 }
 
@@ -186,10 +180,8 @@ template<class T, class ParameterType, int Slots>
 void HydroponicsSignalAttachment<T,ParameterType,Slots>::detachObject()
 {
     if (isResolved()) {
-        HydroponicsAttachment<T>::detachObject();
-
-        if (!isResolved()) {
-            (get()->*_signalGetter)().detach(_handleMethod);
-        }
+        (get()->*_signalGetter)().detach(_handleMethod);
     }
+
+    HydroponicsAttachment<T>::detachObject();
 }
