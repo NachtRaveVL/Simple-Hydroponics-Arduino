@@ -15,7 +15,7 @@ class HydroponicsTimedDosingBalancer;
 #include "HydroponicsObject.h"
 #include "HydroponicsTriggers.h"
 
-// TODO
+// Hydroponics Balancer Base
 class HydroponicsBalancer : public HydroponicsSubObject, public HydroponicsBalancerObjectInterface {
 public:
     const enum { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
@@ -42,8 +42,8 @@ public:
 
     void setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators);
     void setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators);
-    const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &getIncrementActuators();
-    const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators();
+    inline const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &getIncrementActuators() { return _incActuators; }
+    inline const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators() { return _decActuators; }
 
     void setEnabled(bool enabled);
     inline bool isEnabled() const { return _enabled; }
@@ -54,11 +54,10 @@ public:
     Signal<Hydroponics_BalancerState> &getBalancerSignal();
 
 protected:
-    HydroponicsMeasurementRangeTrigger *_rangeTrigger;      // Target range trigger
+    HydroponicsTriggerAttachment _rangeTrigger;             // Target range trigger
     float _targetSetpoint;                                  // Target setpoint value
     float _targetRange;                                     // Target range value
     bool _enabled;                                          // Enabled flag
-    bool _needsTriggerUpdate;                               // Needs trigger update tracking flag
     Hydroponics_UnitsType _targetUnits;                     // Target units
     Hydroponics_BalancerState _balancerState;               // Current balancer state
     Signal<Hydroponics_BalancerState> _balancerSignal;      // Balancer signal
@@ -66,12 +65,9 @@ protected:
     Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type _incActuators; // Increment actuators
     Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type _decActuators; // Decrement actuators
 
-    void disableIncActuators();
-    void disableDecActuators();
+    void disableAllActuators();
 
-    void attachRangeTrigger();
-    void detachRangeTrigger();
-    void handleRangeTrigger(Hydroponics_TriggerState triggerState);
+    void handleTrigger(Hydroponics_TriggerState triggerState);
 };
 
 

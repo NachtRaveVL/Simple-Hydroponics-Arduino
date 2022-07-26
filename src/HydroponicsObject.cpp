@@ -65,10 +65,15 @@ HydroponicsIdentity::HydroponicsIdentity(Hydroponics_ReservoirType reservoirType
 }
 
 HydroponicsIdentity::HydroponicsIdentity(Hydroponics_RailType railTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(Rail), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
+    : type(SubObject), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
+
+HydroponicsIdentity::HydroponicsIdentity(const HydroponicsSubObject *obj)
+    : type(), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyString(),
+      key((Hydroponics_KeyType)(uintptr_t)obj)
+{ ; }
 
 HydroponicsIdentity::HydroponicsIdentity(const HydroponicsData *dataIn)
     : type((typeof(type))(dataIn->id.object.idType)),
@@ -109,6 +114,8 @@ Hydroponics_KeyType HydroponicsIdentity::regenKey()
         case Rail:
             keyString = railTypeToString(objTypeAs.railType, true) + sep + positionIndexToString(posIndex, true);
             break;
+        case SubObject:
+            return key;
         default: break;
     }
     key = stringHash(keyString);

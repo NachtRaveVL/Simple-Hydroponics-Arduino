@@ -260,7 +260,11 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
 
 HydroponicsAdaptiveCrop::~HydroponicsAdaptiveCrop()
 {
-    if (_feedingTrigger) { detachFeedingTrigger(); delete _feedingTrigger; _feedingTrigger = nullptr; }
+    if (_feedingTrigger) {
+        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
+        _feedingTrigger->getTriggerSignal().detach(methodSlot);
+        delete _feedingTrigger; _feedingTrigger = nullptr;
+    }
 }
 
 void HydroponicsAdaptiveCrop::update()
@@ -307,9 +311,16 @@ HydroponicsSensorAttachment &HydroponicsAdaptiveCrop::getSoilMoisture()
 void HydroponicsAdaptiveCrop::setFeedingTrigger(HydroponicsTrigger *feedingTrigger)
 {
     if (_feedingTrigger != feedingTrigger) {
-        if (_feedingTrigger) { detachFeedingTrigger(); delete _feedingTrigger; }
+        if (_feedingTrigger) {
+            auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
+            _feedingTrigger->getTriggerSignal().detach(methodSlot);
+            delete _feedingTrigger; _feedingTrigger = nullptr;
+        }
         _feedingTrigger = feedingTrigger;
-        if (_feedingTrigger) { attachFeedingTrigger(); }
+        if (_feedingTrigger) {
+            auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
+            _feedingTrigger->getTriggerSignal().attach(methodSlot);
+        }
     }
 }
 
@@ -323,24 +334,6 @@ void HydroponicsAdaptiveCrop::saveToData(HydroponicsData *dataOut)
     }
     if (_feedingTrigger) {
         _feedingTrigger->saveToData(&(((HydroponicsAdaptiveCropData *)dataOut)->feedingTrigger));
-    }
-}
-
-void HydroponicsAdaptiveCrop::attachFeedingTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_feedingTrigger, SFP(HS_Err_MissingLinkage));
-    if (_feedingTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
-        _feedingTrigger->getTriggerSignal().attach(methodSlot);
-    }
-}
-
-void HydroponicsAdaptiveCrop::detachFeedingTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_feedingTrigger, SFP(HS_Err_MissingLinkage));
-    if (_feedingTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
-        _feedingTrigger->getTriggerSignal().detach(methodSlot);
     }
 }
 

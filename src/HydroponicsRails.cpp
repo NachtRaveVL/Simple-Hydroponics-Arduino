@@ -211,7 +211,7 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
     if (_limitTrigger) { attachLimitTrigger(); }
 
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setProcessMethod((HydroponicsSensorAttachment::ProcessMethodPtr)&HydroponicsRegulatedRail::handlePowerMeasure);
+    _powerUsage.setProcessMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
     _powerUsage = dataIn->powerSensor;
 }
 

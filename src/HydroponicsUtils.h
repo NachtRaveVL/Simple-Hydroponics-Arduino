@@ -397,6 +397,8 @@ extern Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr
 
 // Converts from boolean value to triggered/not-triggered trigger state.
 inline Hydroponics_TriggerState triggerStateFromBool(bool value) { return value ? Hydroponics_TriggerState_Triggered : Hydroponics_TriggerState_NotTriggered; }
+// Converts from triggered/not-triggered trigger state back into boolean value.
+inline bool triggerStateToBool(Hydroponics_TriggerState state) { return state == Hydroponics_TriggerState_Triggered; }
 
 // Explicit Specializations
 

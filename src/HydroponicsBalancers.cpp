@@ -6,29 +6,28 @@
 #include "Hydroponics.h"
 
 HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, byte measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _rangeTrigger(nullptr), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false), _needsTriggerUpdate(true),
+    : type((typeof(type))typeIn), _rangeTrigger((HydroponicsObject *)this), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false),
       _targetUnits(Hydroponics_UnitsType_Undefined), _balancerState(Hydroponics_BalancerState_Undefined)
 {
     float halfTargetRange = targetRange * 0.5f;
-    _rangeTrigger = new HydroponicsMeasurementRangeTrigger(sensor, targetSetpoint - halfTargetRange, targetSetpoint + halfTargetRange, true, halfTargetRange, measurementRow);
-    HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_AllocationFailure));
-    if (_rangeTrigger) { attachRangeTrigger(); }
+    _rangeTrigger = make_shared<HydroponicsMeasurementRangeTrigger>(sensor, targetSetpoint - halfTargetRange, targetSetpoint + halfTargetRange, true, halfTargetRange, measurementRow);
+    HYDRUINO_HARD_ASSERT(_rangeTrigger, SFP(HS_Err_AllocationFailure));
+    _rangeTrigger.setUpdateMethod(&HydroponicsBalancer::handleTrigger);
 }
 
 HydroponicsBalancer::~HydroponicsBalancer()
 {
     //discardFromTaskManager(&_balancerSignal);
     _enabled = false;
-    disableIncActuators();
-    disableDecActuators();
-    if (_rangeTrigger) { detachRangeTrigger(); delete _rangeTrigger; _rangeTrigger = nullptr; }
+    disableAllActuators();
 }
 
 void HydroponicsBalancer::setTargetSetpoint(float targetSetpoint)
 {
     if (!isFPEqual(_targetSetpoint, targetSetpoint)) {
         _targetSetpoint = targetSetpoint;
-        if (_rangeTrigger) { _rangeTrigger->setTriggerToleranceMid(_targetSetpoint); }
+
+        ((HydroponicsMeasurementRangeTrigger *)_rangeTrigger.get())->updateTriggerMidpoint(_targetSetpoint);
     }
 }
 
@@ -39,11 +38,10 @@ Hydroponics_BalancerState HydroponicsBalancer::getBalancerState() const
 
 void HydroponicsBalancer::update()
 {
-    if (_rangeTrigger) { _rangeTrigger->update(); }
-    if (!_enabled || !_rangeTrigger) { return; }
+    if (_enabled) {
+        _rangeTrigger->update();
 
-    if (_needsTriggerUpdate && _rangeTrigger) {
-        handleRangeTrigger(_rangeTrigger->getTriggerState());
+        _rangeTrigger.updateTriggerIfNeeded();
     }
 }
 
@@ -56,6 +54,8 @@ void HydroponicsBalancer::setTargetUnits(Hydroponics_UnitsType targetUnits)
 {
     if (_targetUnits != targetUnits) {
         _targetUnits = targetUnits;
+
+        _rangeTrigger->setToleranceUnits(getTargetUnits());
     }
 }
 
@@ -108,71 +108,43 @@ void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<Hyd
     }
 }
 
-const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &HydroponicsBalancer::getIncrementActuators()
-{
-    return _incActuators;
-}
-
-const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &HydroponicsBalancer::getDecrementActuators()
-{
-    return _decActuators;
-}
-
 void HydroponicsBalancer::setEnabled(bool enabled)
 {
     if (_enabled != enabled) {
         _enabled = enabled;
 
-        _needsTriggerUpdate = true;
+        if (_enabled) {
+            _rangeTrigger->attachTrigger();
+        } else {
+            _rangeTrigger->detachTrigger();
+        }
+        _rangeTrigger.setNeedsTriggerState();
     }
 }
 
-void HydroponicsBalancer::disableIncActuators()
+void HydroponicsBalancer::disableAllActuators()
 {
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
         auto actuator = actuatorIter->first;
         if (actuator) { actuator->disableActuator(); }
     }
-}
-
-void HydroponicsBalancer::disableDecActuators()
-{
     for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
         auto actuator = actuatorIter->first;
         if (actuator) { actuator->disableActuator(); }
     }
 }
 
-void HydroponicsBalancer::attachRangeTrigger()
+void HydroponicsBalancer::handleTrigger(Hydroponics_TriggerState triggerState)
 {
-    HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_MissingLinkage));
-    if (_rangeTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsBalancer::handleRangeTrigger);
-        _rangeTrigger->getTriggerSignal().attach(methodSlot);
-    }
-}
-
-void HydroponicsBalancer::detachRangeTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_rangeTrigger, SFP(HS_Err_MissingLinkage));
-    if (_rangeTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsBalancer::handleRangeTrigger);
-        _rangeTrigger->getTriggerSignal().detach(methodSlot);
-    }
-}
-
-void HydroponicsBalancer::handleRangeTrigger(Hydroponics_TriggerState triggerState)
-{
-    if (!_enabled || !_rangeTrigger || triggerState == Hydroponics_TriggerState_Undefined || triggerState == Hydroponics_TriggerState_Disabled) { return; }
+    if (!_enabled || triggerState == Hydroponics_TriggerState_Undefined || triggerState == Hydroponics_TriggerState_Disabled) { return; }
 
     auto sensor = _rangeTrigger->getSensor();
     if (sensor) {
-        _needsTriggerUpdate = false;
         auto balancerStateBefore = _balancerState;
         auto measurementValue = getMeasurementValue(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
         auto measurementUnits = getMeasurementUnits(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
 
-        convertUnits(&measurementValue, &measurementUnits, _targetUnits);
+        convertUnits(&measurementValue, &measurementUnits, getTargetUnits());
 
         float halfTargetRange = _targetRange * 0.5f;
         if (measurementValue > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
@@ -308,8 +280,7 @@ void HydroponicsTimedDosingBalancer::performDosing()
             _dosingMillis = 0;
             _dosingActIndex = 0;
             _dosingDir = Hydroponics_BalancerState_Undefined;
-            disableIncActuators();
-            disableDecActuators();
+            disableAllActuators();
         }
 
         float dosingMillis = _baseDosingMillis;

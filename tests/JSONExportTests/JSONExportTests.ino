@@ -157,7 +157,7 @@ void testCrops()
 
     {   auto adaptiveCrop = make_shared<HydroponicsAdaptiveCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
         adaptiveCrop->setFeedReservoir(HydroponicsIdentity(String(F("ASDF"))));
-        adaptiveCrop->setMoistureSensor(HydroponicsIdentity(String(F("JKL"))));
+        adaptiveCrop->setSoilMoistureSensor(HydroponicsIdentity(String(F("JKL"))));
 
         auto data = (HydroponicsAdaptiveCropData *)(adaptiveCrop->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -178,7 +178,7 @@ void testReservoirs()
     Serial.println(); Serial.println("-- Reservoirs --");
 
     {   auto fluidRes = make_shared<HydroponicsFluidReservoir>(Hydroponics_ReservoirType_NutrientPremix, 0, 5);
-        fluidRes->setVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
+        fluidRes->setWaterVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
 
         auto data = (HydroponicsFluidReservoirData *)(fluidRes->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -194,7 +194,7 @@ void testReservoirs()
     }
 
     {   auto feedRes = make_shared<HydroponicsFeedReservoir>(0, 5);
-        feedRes->setVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
+        feedRes->setWaterVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
         feedRes->setWaterPHSensor(HydroponicsIdentity(String(F("JKL"))));
         feedRes->setWaterTDSSensor(HydroponicsIdentity(String(F("QWER"))));
         feedRes->setWaterTemperatureSensor(HydroponicsIdentity(String(F("UIOP"))));
@@ -250,7 +250,7 @@ void testRails()
     }
 
     {   auto regRail = make_shared<HydroponicsRegulatedRail>(Hydroponics_RailType_AC110V, 0, 15);
-        regRail->setPowerSensor(HydroponicsIdentity(String(F("ASDF"))));
+        regRail->setPowerUsageSensor(HydroponicsIdentity(String(F("ASDF"))));
 
         auto data = (HydroponicsRegulatedRailData *)(regRail->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;

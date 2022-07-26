@@ -155,8 +155,6 @@ protected:
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    void attachFeedingTrigger();
-    void detachFeedingTrigger();
     void handleFeedingTrigger(Hydroponics_TriggerState triggerState);
 };
 

@@ -22,12 +22,13 @@ extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
 // This class is mainly used to simplify object key generation, which is used when we
 // want to uniquely refer to objects in the Hydroponics system.
 struct HydroponicsIdentity {
-    enum { Actuator, Sensor, Crop, Reservoir, Rail, Unknown = -1 } type; // Object type (custom RTTI)
+    enum { Actuator, Sensor, Crop, Reservoir, Rail, SubObject, Unknown = -1 } type; // Object type (custom RTTI)
     inline bool isActuatorType() const { return type == Actuator; }
     inline bool isSensorType() const { return type == Sensor; }
     inline bool isCropType() const { return type == Crop; }
     inline bool isReservoirType() const { return type == Reservoir; }
     inline bool isRailType() const { return type == Rail; }
+    inline bool isSubObject() const { return type == SubObject; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
     union {
@@ -64,6 +65,9 @@ struct HydroponicsIdentity {
     HydroponicsIdentity(Hydroponics_RailType railType,
                         Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
 
+    // Sub-object null-id constructor
+    HydroponicsIdentity(const HydroponicsSubObject *obj);
+
     // Data constructor
     HydroponicsIdentity(const HydroponicsData *dataIn);
 
@@ -90,6 +94,7 @@ public:
     inline bool isCropType() const { return _id.isCropType(); }
     inline bool isReservoirType() const { return _id.isReservoirType(); }
     inline bool isRailType() const { return _id.isRailType(); }
+    inline bool isSubObject() const { return _id.isSubObject(); }
     inline bool isUnknownType() const { return _id.isUnknownType(); }
 
     HydroponicsObject(HydroponicsIdentity id);              // Standard constructor
@@ -125,9 +130,8 @@ private:
     HydroponicsObject() = default;                          // Private constructor to disable derived/public access
 };
 
-
-// Shortcut to get shared pointer from object with static pointer cast built-in
-template<class T> shared_ptr<T> getSharedPtr(const HydroponicsObject *object) { return static_pointer_cast<T>(object->getSharedPtr()); }
+// Shortcut to get shared pointer from object with static pointer cast built-in.
+template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsObject *object) { return static_pointer_cast<T>(object->getSharedPtr()); }
 
 
 // Hydroponics Sub Object Base
@@ -135,9 +139,20 @@ template<class T> shared_ptr<T> getSharedPtr(const HydroponicsObject *object) { 
 // but want to replicate some of the same functionality. Not required to be inherited from.
 class HydroponicsSubObject {
 public:
+    inline const HydroponicsIdentity &getId() const { return HydroponicsIdentity(this); }
+    inline Hydroponics_KeyType getKey() const { return (Hydroponics_KeyType)(uintptr_t)this; }
+    template<class T> inline shared_ptr<T> getSharedPtr() const { return shared_ptr<T>(this); }; // Only meant to be used once
+
     virtual void update() = 0;
     virtual void handleLowMemory() = 0;
+
+    inline bool addLinkage(HydroponicsObject *obj) { return false; }
+    inline bool removeLinkage(HydroponicsObject *obj) { return false; }
 };
+
+// Shortcut to get shared pointer from object with static pointer cast built-in.
+// Only meant to be used once during initial object assignment directly from new operator (e.g. <attachment> = new HydroSubObject()).
+template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsSubObject *subObj) { return subObj->getSharedPtr<T>(); }
 
 
 // Hydroponics Object Data Intermediate

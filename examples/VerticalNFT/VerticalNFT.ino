@@ -264,7 +264,7 @@ void setup() {
         #if SETUP_FEED_PUMP_PIN >= 0
         {   auto feedPump = hydroController.addWaterPumpRelay(SETUP_FEED_PUMP_PIN);
             feedPump->setRail(acRelayPower);
-            feedPump->setReservoir(feedReservoir);
+            feedPump->setInputReservoir(feedReservoir);
             #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
                 feedPump->setFlowRateSensor(HydroponicsIdentity(Hydroponics_SensorType_WaterPumpFlowSensor, 1)); // delayed ref (auto-resolves on launch)
             #endif
@@ -305,7 +305,7 @@ void setup() {
         {   auto nutrientMix = hydroController.addFluidReservoir(Hydroponics_ReservoirType_NutrientPremix, 1, true);
             auto nutrientPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             nutrientPump->setRail(dcRelayPower);
-            nutrientPump->setReservoir(nutrientMix);
+            nutrientPump->setInputReservoir(nutrientMix);
             nutrientPump->setOutputReservoir(feedReservoir);
             // TODO: set ballpark continuous peristaltic pump rate
         }
@@ -314,7 +314,7 @@ void setup() {
         {   auto freshWater = hydroController.addFluidReservoir(Hydroponics_ReservoirType_FreshWater, 1, true);
             auto dilutionPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             dilutionPump->setRail(dcRelayPower);
-            dilutionPump->setReservoir(freshWater);
+            dilutionPump->setInputReservoir(freshWater);
             dilutionPump->setOutputReservoir(feedReservoir);
             // TODO: set ballpark continuous peristaltic pump rate
         }
@@ -323,7 +323,7 @@ void setup() {
         {   auto phUpSolution = hydroController.addFluidReservoir(Hydroponics_ReservoirType_PhUpSolution, 1, true);
             auto pHUpPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             pHUpPump->setRail(dcRelayPower);
-            pHUpPump->setReservoir(phUpSolution);
+            pHUpPump->setInputReservoir(phUpSolution);
             pHUpPump->setOutputReservoir(feedReservoir);
             // TODO: set ballpark continuous peristaltic pump rate
         }
@@ -332,7 +332,7 @@ void setup() {
         {   auto phDownSolution = hydroController.addFluidReservoir(Hydroponics_ReservoirType_PhDownSolution, 1, true);
             auto pHDownPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             pHDownPump->setRail(dcRelayPower);
-            pHDownPump->setReservoir(phDownSolution);
+            pHDownPump->setInputReservoir(phDownSolution);
             pHDownPump->setOutputReservoir(feedReservoir);
             // TODO: set ballpark continuous peristaltic pump rate
         }
@@ -346,7 +346,7 @@ void setup() {
                                                                    JOIN(Hydroponics_SubstrateType,SETUP_CROP1_SUBSTRATE),
                                                                    SETUP_CROP1_SOW_DATE);
                     moistureSensor->setCrop(crop);
-                    crop->setMoistureSensor(moistureSensor);
+                    crop->setSoilMoistureSensor(moistureSensor);
                 #else
                     auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP1_TYPE),
                                                                 JOIN(Hydroponics_SubstrateType,SETUP_CROP1_SUBSTRATE),
@@ -365,7 +365,7 @@ void setup() {
                                                                    JOIN(Hydroponics_SubstrateType,SETUP_CROP2_SUBSTRATE),
                                                                    SETUP_CROP2_SOW_DATE);
                     moistureSensor->setCrop(crop);
-                    crop->setMoistureSensor(moistureSensor);
+                    crop->setSoilMoistureSensor(moistureSensor);
                 #else
                     auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP2_TYPE),
                                                                 JOIN(Hydroponics_SubstrateType,SETUP_CROP2_SUBSTRATE),
@@ -384,7 +384,7 @@ void setup() {
                                                                    JOIN(Hydroponics_SubstrateType,SETUP_CROP3_SUBSTRATE),
                                                                    SETUP_CROP3_SOW_DATE);
                     moistureSensor->setCrop(crop);
-                    crop->setMoistureSensor(moistureSensor);
+                    crop->setSoilMoistureSensor(moistureSensor);
                 #else
                     auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP3_TYPE),
                                                                 JOIN(Hydroponics_SubstrateType,SETUP_CROP3_SUBSTRATE),
@@ -403,7 +403,7 @@ void setup() {
                                                                    JOIN(Hydroponics_SubstrateType,SETUP_CROP4_SUBSTRATE),
                                                                    SETUP_CROP4_SOW_DATE);
                     moistureSensor->setCrop(crop);
-                    crop->setMoistureSensor(moistureSensor);
+                    crop->setSoilMoistureSensor(moistureSensor);
                 #else
                     auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP4_TYPE),
                                                                 JOIN(Hydroponics_SubstrateType,SETUP_CROP4_SUBSTRATE),
@@ -422,7 +422,7 @@ void setup() {
                                                                    JOIN(Hydroponics_SubstrateType,SETUP_CROP5_SUBSTRATE),
                                                                    SETUP_CROP5_SOW_DATE);
                     moistureSensor->setCrop(crop);
-                    crop->setMoistureSensor(moistureSensor);
+                    crop->setSoilMoistureSensor(moistureSensor);
                 #else
                     auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP5_TYPE),
                                                                 JOIN(Hydroponics_SubstrateType,SETUP_CROP5_SUBSTRATE),

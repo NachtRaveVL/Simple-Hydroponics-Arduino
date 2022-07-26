@@ -41,17 +41,19 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Maximum array size for control input pinmap (max # of ribbon pins)
 #define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk size for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk size (serialization buffer size)
+// The following maxsizes apply to all architectures
 #define HYDRUINO_SENSOR_MEASUREMENT_SLOTS   8                       // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
+#define HYDRUINO_TRIGGER_STATE_SLOTS        4                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
 // The following maxsizes only matter for architectures that do not have STL support
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        24                      // Maximum array size for system objects (max # of objects in system)
-#define HYDRUINO_OBJ_LINKS_MAXSIZE          12                      // Maximum array size for object linkage list, per obj (max # of linked objects)
-#define HYDRUINO_OBJ_LINKSFILTER_DEFSIZE    8                       // Default array size for object linkage filtering
-#define HYDRUINO_BAL_INCACTUATORS_MAXSIZE   8                       // Maximum array size for balancer increment actuators list (max # of increment autodosers/actuators used during balancing)
+#define HYDRUINO_OBJ_LINKS_MAXSIZE          16                      // Maximum array size for object linkage list, per obj (max # of linked objects)
+#define HYDRUINO_OBJ_LINKSFILTER_DEFSIZE    12                      // Default array size for object linkage filtering
+#define HYDRUINO_BAL_INCACTUATORS_MAXSIZE   12                      // Maximum array size for balancer increment actuators list (max # of increment autodosers/actuators used during balancing)
 #define HYDRUINO_BAL_DECACTUATORS_MAXSIZE   4                       // Maximum array size for balancer decrement actuators list (max # of decrement autodosers/actuators used during balancing)
-#define HYDRUINO_SCH_REQACTUATORS_MAXSIZE   4                       // Maximum array size for scheduler required actuators list (max # of actuators active per process stage)
+#define HYDRUINO_SCH_REQACTUATORS_MAXSIZE   6                       // Maximum array size for scheduler required actuators list (max # of actuators active per process stage)
 #define HYDRUINO_SCH_FEEDRES_MAXSIZE        4                       // Maximum array size for scheduler feeding/lighting process lists (max # of feed reservoirs)
-#define HYDRUINO_SYS_ONEWIRE_MAXSIZE        4                       // Maximum array size for pin->OneWire instances list (max # of OneWire comm pins)
-#define HYDRUINO_SYS_PINLOCKS_MAXSIZE       4                       // Maximum array size for pin locks list (max # of simultaneous locks)
+#define HYDRUINO_SYS_ONEWIRE_MAXSIZE        6                       // Maximum array size for pin->OneWire instances list (max # of OneWire comm pins)
+#define HYDRUINO_SYS_PINLOCKS_MAXSIZE       6                       // Maximum array size for pin locks list (max # of simultaneous locks)
 
 #define HYDRUINO_CONTROL_LOOP_INTERVAL      100                     // Run interval of main control loop, in milliseconds
 #define HYDRUINO_DATA_LOOP_INTERVAL         2000                    // Default run interval of data loop, in milliseconds (customizable later)
@@ -439,6 +441,8 @@ class HydroponicsActuator;
 class HydroponicsSensor;
 template <class T> class HydroponicsAttachment;
 class HydroponicsSensorAttachment;
+class HydroponicsTriggerAttachment;
+class HydroponicsBalancerAttachment;
 class HydroponicsCrop;
 class HydroponicsReservoir;
 class HydroponicsFeedReservoir;

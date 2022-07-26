@@ -14,6 +14,7 @@ struct HydroponicsTriggerSubData;
 
 #include "Hydroponics.h"
 #include "HydroponicsObject.h"
+#include "HydroponicsSensors.h"
 
 // Creates trigger object from passed trigger sub data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData *dataIn);
@@ -36,7 +37,6 @@ public:
                        byte measurementRow = 0,
                        int type = Unknown);
     HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn);
-    virtual ~HydroponicsTrigger();
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const;
 
@@ -48,23 +48,21 @@ public:
     virtual Hydroponics_TriggerState getTriggerState() const override;
 
     void setToleranceUnits(Hydroponics_UnitsType toleranceUnits);
-    inline Hydroponics_UnitsType getToleranceUnits() const { return _toleranceUnits; }
+    inline Hydroponics_UnitsType getToleranceUnits() { return definedUnitsElse(_toleranceUnits, _sensor ? _sensor->getMeasurementUnits(_sensor.getMeasurementRow()) : Hydroponics_UnitsType_Undefined); }
 
-    inline shared_ptr<HydroponicsSensor> getSensor() { return _sensor.getObject(); }
-    inline byte getMeasurementRow() const { return _measurementRow; }
+    inline shared_ptr<HydroponicsSensor> getSensor(bool force = false) { _sensor.updateMeasurementIfNeeded(force); return _sensor.getObject(); }
+    inline byte getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
-    Signal<Hydroponics_TriggerState> &getTriggerSignal();
+    Signal<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> &getTriggerSignal();
 
 protected:
-    HydroponicsDLinkObject<HydroponicsSensor> _sensor;      // Attached sensor
-    byte _measurementRow;                                   // Measurement data row to check against
+    HydroponicsSensorAttachment _sensor;                    // Sensor attachment
     bool _attached;                                         // Attached flag
-    bool _needsSensorUpdate;                                // Needs sensor measure update call tracking flag
     Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
     Hydroponics_TriggerState _triggerState;                 // Current trigger state
-    Signal<Hydroponics_TriggerState> _triggerSignal;        // Trigger signal
+    Signal<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> _triggerSignal; // Trigger signal
 
-    virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) = 0;
+    virtual void handleMeasurement(const HydroponicsMeasurement *measurement) = 0;
 };
 
 
@@ -87,7 +85,6 @@ public:
                                        float detriggerTol = 0,
                                        byte measurementRow = 0);
     HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
-    ~HydroponicsMeasurementValueTrigger();
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
 
@@ -105,7 +102,8 @@ protected:
     float _detriggerTol;                                    // Detrigger tolerance additive
     bool _triggerBelow;                                     // Trigger below flag
 
-    virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) override;
+    virtual void handleMeasurement(const HydroponicsMeasurement *measurement) override;
+    friend class HydroponicsTrigger;
 };
 
 
@@ -131,14 +129,13 @@ public:
                                        float detriggerTol = 0,
                                        byte measurementRow = 0);
     HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
-    ~HydroponicsMeasurementRangeTrigger();
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
 
     virtual void attachTrigger() override;
     virtual void detachTrigger() override;
 
-    void setTriggerToleranceMid(float toleranceMid);
+    void updateTriggerMidpoint(float toleranceMid);
 
     inline float getTriggerToleranceLow() const { return _triggerTolLow; }
     inline float getTriggerToleranceHigh() const { return _triggerTolHigh; }
@@ -151,7 +148,8 @@ protected:
     float _detriggerTol;                                    // Detrigger tolerance additive
     bool _triggerOutside;                                   // Trigger on outside flag
 
-    virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) override;
+    virtual void handleMeasurement(const HydroponicsMeasurement *measurement) override;
+    friend class HydroponicsTrigger;
 };
 
 
