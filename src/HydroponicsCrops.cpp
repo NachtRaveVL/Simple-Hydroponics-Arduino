@@ -50,8 +50,8 @@ HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
         getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
     }
-    recalcGrowWeekAndPhase();
     _feedReservoir = dataIn->feedReservoir;
+    recalcGrowWeekAndPhase();
 }
 
 HydroponicsCrop::~HydroponicsCrop()
@@ -71,8 +71,7 @@ void HydroponicsCrop::update()
 
     auto feedingState = triggerStateFromBool(needsFeeding());
     if (_feedingState != feedingState) {
-        _feedingState = feedingState;
-        handleFeedingState();
+        handleFeedingTrigger(feedingState);
     }
 }
 
@@ -132,8 +131,10 @@ void HydroponicsCrop::saveToData(HydroponicsData *dataOut)
     ((HydroponicsCropData *)dataOut)->feedingWeight = _feedingWeight;
 }
 
-void HydroponicsCrop::handleFeedingState()
+void HydroponicsCrop::handleFeedingTrigger(Hydroponics_TriggerState feedingState)
 {
+    _feedingState = feedingState;
+
     #ifndef HYDRUINO_DISABLE_MULTITASKING
         scheduleSignalFireOnce<HydroponicsCrop *>(getSharedPtr(), _feedingSignal, this);
     #else
@@ -177,10 +178,9 @@ void HydroponicsCrop::returnCropsLibData()
 void HydroponicsCrop::handleCustomCropUpdated(Hydroponics_CropType cropType)
 {
     if (getCropType() == cropType) {
-        returnCropsLibData(); // force re-checkout
+        returnCropsLibData(); // forces re-checkout
         recalcGrowWeekAndPhase();
-        auto scheduler = getSchedulerInstance();
-        if (scheduler) { scheduler->setNeedsScheduling(); }
+        if (getSchedulerInstance()) { getSchedulerInstance()->setNeedsScheduling(); }
     }
 }
 
@@ -261,7 +261,7 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
 HydroponicsAdaptiveCrop::~HydroponicsAdaptiveCrop()
 {
     if (_feedingTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
+        auto methodSlot = MethodSlot<HydroponicsCrop, Hydroponics_TriggerState>(this, &HydroponicsCrop::handleFeedingTrigger);
         _feedingTrigger->getTriggerSignal().detach(methodSlot);
         delete _feedingTrigger; _feedingTrigger = nullptr;
     }
@@ -312,13 +312,13 @@ void HydroponicsAdaptiveCrop::setFeedingTrigger(HydroponicsTrigger *feedingTrigg
 {
     if (_feedingTrigger != feedingTrigger) {
         if (_feedingTrigger) {
-            auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
+            auto methodSlot = MethodSlot<HydroponicsCrop, Hydroponics_TriggerState>(this, &HydroponicsCrop::handleFeedingTrigger);
             _feedingTrigger->getTriggerSignal().detach(methodSlot);
             delete _feedingTrigger; _feedingTrigger = nullptr;
         }
         _feedingTrigger = feedingTrigger;
         if (_feedingTrigger) {
-            auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsAdaptiveCrop::handleFeedingTrigger);
+            auto methodSlot = MethodSlot<HydroponicsCrop, Hydroponics_TriggerState>(this, &HydroponicsCrop::handleFeedingTrigger);
             _feedingTrigger->getTriggerSignal().attach(methodSlot);
         }
     }
@@ -334,14 +334,6 @@ void HydroponicsAdaptiveCrop::saveToData(HydroponicsData *dataOut)
     }
     if (_feedingTrigger) {
         _feedingTrigger->saveToData(&(((HydroponicsAdaptiveCropData *)dataOut)->feedingTrigger));
-    }
-}
-
-void HydroponicsAdaptiveCrop::handleFeedingTrigger(Hydroponics_TriggerState triggerState)
-{
-    if (triggerState != Hydroponics_TriggerState_Undefined && triggerState != Hydroponics_TriggerState_Disabled) {
-        _feedingState = triggerState;
-        handleFeedingState();
     }
 }
 

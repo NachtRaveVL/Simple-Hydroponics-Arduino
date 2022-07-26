@@ -47,7 +47,7 @@ void HydroponicsBalancer::update()
 
 void HydroponicsBalancer::handleLowMemory()
 {
-    if (_rangeTrigger) { _rangeTrigger->handleLowMemory(); }
+    _rangeTrigger->handleLowMemory();
 }
 
 void HydroponicsBalancer::setTargetUnits(Hydroponics_UnitsType targetUnits)
@@ -141,17 +141,16 @@ void HydroponicsBalancer::handleTrigger(Hydroponics_TriggerState triggerState)
     auto sensor = _rangeTrigger->getSensor();
     if (sensor) {
         auto balancerStateBefore = _balancerState;
-        auto measurementValue = getMeasurementValue(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
-        auto measurementUnits = getMeasurementUnits(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+        auto measure = getAsSingleMeasurement(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
 
-        convertUnits(&measurementValue, &measurementUnits, getTargetUnits());
+        convertUnits(&measure, getTargetUnits());
 
         float halfTargetRange = _targetRange * 0.5f;
-        if (measurementValue > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
-            measurementValue < _targetSetpoint + halfTargetRange - FLT_EPSILON) {
+        if (measure.value > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
+            measure.value < _targetSetpoint + halfTargetRange - FLT_EPSILON) {
             _balancerState = Hydroponics_BalancerState_Balanced;
         } else {
-            _balancerState = measurementValue > _targetSetpoint ? Hydroponics_BalancerState_TooHigh : Hydroponics_BalancerState_TooLow;
+            _balancerState = measure.value > _targetSetpoint ? Hydroponics_BalancerState_TooHigh : Hydroponics_BalancerState_TooLow;
         }
 
         if (_balancerState != balancerStateBefore) {
@@ -175,12 +174,12 @@ HydroponicsLinearEdgeBalancer::~HydroponicsLinearEdgeBalancer()
 void HydroponicsLinearEdgeBalancer::update()
 {
     HydroponicsBalancer::update();
-    if (!_enabled || !_rangeTrigger) { return; }
+    if (!_enabled) { return; }
 
     if (_balancerState != Hydroponics_BalancerState_Balanced && _balancerState != Hydroponics_BalancerState_Undefined) {
-        auto sensor = _rangeTrigger->getSensor();
-        if (sensor) {
-            auto measure = getAsSingleMeasurement(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+        if (_rangeTrigger->getSensor()) {
+            auto measure = getAsSingleMeasurement(_rangeTrigger->getSensor()->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+
             convertUnits(&measure.value, &measure.units, _targetUnits);
 
             float x = fabsf(measure.value - _targetSetpoint);
@@ -227,7 +226,7 @@ HydroponicsTimedDosingBalancer::~HydroponicsTimedDosingBalancer()
 void HydroponicsTimedDosingBalancer::update()
 {
     HydroponicsBalancer::update();
-    if (!_enabled || !_rangeTrigger) { return; }
+    if (!_enabled) { return; }
 
     if (_balancerState != Hydroponics_BalancerState_Balanced && _balancerState != Hydroponics_BalancerState_Undefined &&
         (!_lastDosingTime || unixNow() > _lastDosingTime + (_mixTimeMins * SECS_PER_MIN))) {
@@ -274,8 +273,7 @@ void HydroponicsTimedDosingBalancer::update()
 
 void HydroponicsTimedDosingBalancer::performDosing()
 {
-    auto sensor = _rangeTrigger ? _rangeTrigger->getSensor() : nullptr;
-    if (sensor) {
+    if (_rangeTrigger->getSensor()) {
         if (_dosingDir != _balancerState) { // reset dir control on dir change
             _dosingMillis = 0;
             _dosingActIndex = 0;
@@ -284,7 +282,7 @@ void HydroponicsTimedDosingBalancer::performDosing()
         }
 
         float dosingMillis = _baseDosingMillis;
-        auto dosingValue = getMeasurementValue(sensor->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
+        auto dosingValue = getMeasurementValue(_rangeTrigger->getSensor()->getLatestMeasurement(), _rangeTrigger->getMeasurementRow());
         if (_dosingMillis) {
             auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosingMillis;
             dosingMillis = (_targetSetpoint - dosingValue) * dosingRatePerMs;
