@@ -240,7 +240,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
       cropType(Hydroponics_CropType_Undefined), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6.0f,6.0f}, tdsRange{1.8f,2.4f}, nightlyFeedMultiplier(1),
+      phRange{6.0f,6.0f}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25.0f,25.0f}, airTempRange{25.0f,25.0f}, co2Levels{700.0f,1400.0f},
       flags(0)
 {
@@ -252,7 +252,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
       cropType(cropTypeIn), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
-      phRange{6.0f,6.0f}, tdsRange{1.8f,2.4f}, nightlyFeedMultiplier(1),
+      phRange{6.0f,6.0f}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25.0f,25.0f}, airTempRange{25.0f,25.0f}, co2Levels{700.0f,1400.0f},
       flags(0)
 {
@@ -317,13 +317,13 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
         }
     }
 
-    if (!isFPEqual(nightlyFeedMultiplier, 1.0f)) { objectOut[SFP(HS_Key_NightlyFeedMultiplier)] = nightlyFeedMultiplier; }
+    if (!isFPEqual(nightlyFeedRate, 1.0f)) { objectOut[SFP(HS_Key_NightlyFeedRate)] = nightlyFeedRate; }
 
     if (!(isFPEqual(waterTempRange[0], 25.0f) && isFPEqual(waterTempRange[1], 25.0f))) {
         if (!isFPEqual(waterTempRange[0], waterTempRange[1])) {
-            objectOut[SFP(HS_Key_WaterTempRange)] = commaStringFromArray(waterTempRange, 2);
+            objectOut[SFP(HS_Key_WaterTemperatureRange)] = commaStringFromArray(waterTempRange, 2);
         } else {
-            objectOut[SFP(HS_Key_WaterTempRange)] = waterTempRange[0];
+            objectOut[SFP(HS_Key_WaterTemperatureRange)] = waterTempRange[0];
         }
     }
 
@@ -394,9 +394,9 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
         tdsRange[1] = tdsRangeVar[SFP(HS_Key_Max)] | tdsRangeVar[1];
     }
 
-    nightlyFeedMultiplier = objectIn[SFP(HS_Key_NightlyFeedMultiplier)] | nightlyFeedMultiplier;
+    nightlyFeedRate = objectIn[SFP(HS_Key_NightlyFeedRate)] | nightlyFeedRate;
 
-    {   JsonVariantConst waterTempRangeVar = objectIn[SFP(HS_Key_WaterTempRange)];
+    {   JsonVariantConst waterTempRangeVar = objectIn[SFP(HS_Key_WaterTemperatureRange)];
         commaStringToArray(waterTempRangeVar, waterTempRange, 2);
         waterTempRange[0] = waterTempRangeVar[SFP(HS_Key_Min)] | waterTempRangeVar[0] | waterTempRange[0];
         waterTempRange[1] = waterTempRangeVar[SFP(HS_Key_Max)] | waterTempRangeVar[1] | waterTempRange[1];

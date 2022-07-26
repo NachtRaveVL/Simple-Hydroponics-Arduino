@@ -91,19 +91,19 @@ Signal<Hydroponics_TriggerState> &HydroponicsTrigger::getTriggerSignal()
 }
 
 
-HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float tolerance, bool triggerBelow, float detriggerTolerance, byte measurementRow)
+HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float tolerance, bool triggerBelow, float detriggerTol, byte measurementRow)
     : HydroponicsTrigger(sensorId, measurementRow, MeasureValue),
-      _triggerTolerance(tolerance), _detriggerTolerance(detriggerTolerance), _triggerBelow(triggerBelow)
+      _triggerTol(tolerance), _detriggerTol(detriggerTol), _triggerBelow(triggerBelow)
 { ; }
 
-HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float tolerance, bool triggerBelow, float detriggerTolerance, byte measurementRow)
+HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float tolerance, bool triggerBelow, float detriggerTol, byte measurementRow)
     : HydroponicsTrigger(sensor, measurementRow, MeasureValue),
-      _triggerTolerance(tolerance), _detriggerTolerance(detriggerTolerance), _triggerBelow(triggerBelow)
+      _triggerTol(tolerance), _detriggerTol(detriggerTol), _triggerBelow(triggerBelow)
 { ; }
 
 HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn)
     : HydroponicsTrigger(dataIn),
-      _triggerTolerance(dataIn->dataAs.measureValue.tolerance), _detriggerTolerance(dataIn->detriggerTolerance),
+      _triggerTol(dataIn->dataAs.measureValue.tolerance), _detriggerTol(dataIn->detriggerTol),
       _triggerBelow(dataIn->dataAs.measureValue.triggerBelow)
 { ; }
 
@@ -116,8 +116,8 @@ void HydroponicsMeasurementValueTrigger::saveToData(HydroponicsTriggerSubData *d
 {
     HydroponicsTrigger::saveToData(dataOut);
 
-    ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureValue.tolerance = _triggerTolerance;
-    ((HydroponicsTriggerSubData *)dataOut)->detriggerTolerance = _detriggerTolerance;
+    ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureValue.tolerance = _triggerTol;
+    ((HydroponicsTriggerSubData *)dataOut)->detriggerTol = _detriggerTol;
     ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureValue.triggerBelow = _triggerBelow;
 }
 
@@ -141,8 +141,8 @@ void HydroponicsMeasurementValueTrigger::detachTrigger()
 
 void HydroponicsMeasurementValueTrigger::setTriggerTolerance(float tolerance)
 {
-    if (!isFPEqual(_triggerTolerance, tolerance)) {
-        _triggerTolerance = tolerance;
+    if (!isFPEqual(_triggerTol, tolerance)) {
+        _triggerTol = tolerance;
 
         _needsSensorUpdate = true;
     }
@@ -163,9 +163,9 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMe
             convertUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
             if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {
-                float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTolerance : 0);
-                newState = (_triggerBelow ? measurementValue <= _triggerTolerance + tolAdditive + FLT_EPSILON
-                                          : measurementValue >= _triggerTolerance - tolAdditive - FLT_EPSILON);
+                float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTol : 0);
+                newState = (_triggerBelow ? measurementValue <= _triggerTol + tolAdditive + FLT_EPSILON
+                                          : measurementValue >= _triggerTol - tolAdditive - FLT_EPSILON);
             }
         }
 
@@ -183,23 +183,23 @@ void HydroponicsMeasurementValueTrigger::handleSensorMeasure(const HydroponicsMe
 }
 
 
-HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTolerance, byte measurementRow)
+HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, byte measurementRow)
     : HydroponicsTrigger(sensorId, measurementRow, MeasureRange),
-      _triggerToleranceLow(toleranceLow), _triggerToleranceHigh(toleranceHigh), _detriggerTolerance(detriggerTolerance),
+      _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)
 { ; }
 
-HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTolerance, byte measurementRow)
+HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, byte measurementRow)
     : HydroponicsTrigger(sensor, measurementRow, MeasureRange),
-      _triggerToleranceLow(toleranceLow), _triggerToleranceHigh(toleranceHigh), _detriggerTolerance(detriggerTolerance),
+      _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)
 { ; }
 
 HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn)
     : HydroponicsTrigger(dataIn),
-      _triggerToleranceLow(dataIn->dataAs.measureRange.toleranceLow),
-      _triggerToleranceHigh(dataIn->dataAs.measureRange.toleranceHigh),
-      _detriggerTolerance(dataIn->detriggerTolerance),
+      _triggerTolLow(dataIn->dataAs.measureRange.toleranceLow),
+      _triggerTolHigh(dataIn->dataAs.measureRange.toleranceHigh),
+      _detriggerTol(dataIn->detriggerTol),
       _triggerOutside(dataIn->dataAs.measureRange.triggerOutside)
 { ; }
 
@@ -212,9 +212,9 @@ void HydroponicsMeasurementRangeTrigger::saveToData(HydroponicsTriggerSubData *d
 {
     HydroponicsTrigger::saveToData(dataOut);
 
-    ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureRange.toleranceLow = _triggerToleranceLow;
-    ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureRange.toleranceHigh = _triggerToleranceHigh;
-    ((HydroponicsTriggerSubData *)dataOut)->detriggerTolerance = _detriggerTolerance;
+    ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureRange.toleranceLow = _triggerTolLow;
+    ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureRange.toleranceHigh = _triggerTolHigh;
+    ((HydroponicsTriggerSubData *)dataOut)->detriggerTol = _detriggerTol;
     ((HydroponicsTriggerSubData *)dataOut)->dataAs.measureRange.triggerOutside = _triggerOutside;
 }
 
@@ -238,11 +238,11 @@ void HydroponicsMeasurementRangeTrigger::detachTrigger()
 
 void HydroponicsMeasurementRangeTrigger::setTriggerToleranceMid(float toleranceMid)
 {
-    float toleranceRangeHalf = (_triggerToleranceHigh - _triggerToleranceLow) * 0.5f;
+    float toleranceRangeHalf = (_triggerTolHigh - _triggerTolLow) * 0.5f;
 
-    if (!isFPEqual(_triggerToleranceLow, toleranceMid - toleranceRangeHalf)) {
-        _triggerToleranceLow = toleranceMid - toleranceRangeHalf;
-        _triggerToleranceHigh = toleranceMid + toleranceRangeHalf;
+    if (!isFPEqual(_triggerTolLow, toleranceMid - toleranceRangeHalf)) {
+        _triggerTolLow = toleranceMid - toleranceRangeHalf;
+        _triggerTolHigh = toleranceMid + toleranceRangeHalf;
 
         _needsSensorUpdate = true;
     }
@@ -259,14 +259,14 @@ void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMe
         convertUnits(&measurementValue, &measurementUnits, _toleranceUnits);
 
         if (_toleranceUnits == Hydroponics_UnitsType_Undefined || measurementUnits == _toleranceUnits) {
-            float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTolerance : 0);
+            float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTol : 0);
 
             if (!_triggerOutside) {
-                newState = (measurementValue >= _triggerToleranceLow - tolAdditive - FLT_EPSILON &&
-                            measurementValue <= _triggerToleranceHigh + tolAdditive + FLT_EPSILON);
+                newState = (measurementValue >= _triggerTolLow - tolAdditive - FLT_EPSILON &&
+                            measurementValue <= _triggerTolHigh + tolAdditive + FLT_EPSILON);
             } else {
-                newState = (measurementValue <= _triggerToleranceLow + tolAdditive + FLT_EPSILON &&
-                            measurementValue >= _triggerToleranceHigh - tolAdditive - FLT_EPSILON);
+                newState = (measurementValue <= _triggerTolLow + tolAdditive + FLT_EPSILON &&
+                            measurementValue >= _triggerTolHigh - tolAdditive - FLT_EPSILON);
             }
         }
 
@@ -285,7 +285,7 @@ void HydroponicsMeasurementRangeTrigger::handleSensorMeasure(const HydroponicsMe
 
 
 HydroponicsTriggerSubData::HydroponicsTriggerSubData()
-    : HydroponicsSubData(), sensorName{0}, measurementRow(0), dataAs{.measureRange={0.0f,0.0f,false}}, detriggerTolerance(0), toleranceUnits(Hydroponics_UnitsType_Undefined)
+    : HydroponicsSubData(), sensorName{0}, measurementRow(0), dataAs{.measureRange={0.0f,0.0f,false}}, detriggerTol(0), toleranceUnits(Hydroponics_UnitsType_Undefined)
 { ; }
 
 void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
@@ -306,7 +306,7 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
             break;
         default: break;
     }
-    if (detriggerTolerance > 0) { objectOut[SFP(HS_Key_DetriggerTolerance)] = detriggerTolerance; }
+    if (detriggerTol > 0) { objectOut[SFP(HS_Key_DetriggerTol)] = detriggerTol; }
     if (toleranceUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_ToleranceUnits)] = unitsTypeToSymbol(toleranceUnits); }
 }
 
@@ -329,6 +329,6 @@ void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
             break;
         default: break;
     }
-    detriggerTolerance = objectIn[SFP(HS_Key_DetriggerTolerance)] | detriggerTolerance;
+    detriggerTol = objectIn[SFP(HS_Key_DetriggerTol)] | detriggerTol;
     toleranceUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_ToleranceUnits)]);
 }

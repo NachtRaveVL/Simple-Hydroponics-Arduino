@@ -689,7 +689,7 @@ void HydroponicsFeeding::recalcFeeding()
 
                 float feedRate = ((cropsLibData->tdsRange[0] + cropsLibData->tdsRange[1]) * 0.5);
                 if (!getSchedulerInstance()->inDaytimeMode()) {
-                    feedRate *= cropsLibData->nightlyFeedMultiplier;
+                    feedRate *= cropsLibData->nightlyFeedRate;
                 }
                 feedRate *= getSchedulerInstance()->getBaseFeedMultiplier();
 

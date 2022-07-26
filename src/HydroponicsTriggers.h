@@ -77,14 +77,14 @@ protected:
 class HydroponicsMeasurementValueTrigger : public HydroponicsTrigger {
 public:
     HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId,
-                                       float triggerTolerance,
+                                       float triggerTol,
                                        bool triggerBelow = true,
-                                       float detriggerTolerance = 0,
+                                       float detriggerTol = 0,
                                        byte measurementRow = 0);
     HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor,
-                                       float triggerTolerance,
+                                       float triggerTol,
                                        bool triggerBelow = true,
-                                       float detriggerTolerance = 0,
+                                       float detriggerTol = 0,
                                        byte measurementRow = 0);
     HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementValueTrigger();
@@ -96,13 +96,13 @@ public:
 
     void setTriggerTolerance(float tolerance);
 
-    inline float getTriggerTolerance() const { return _triggerTolerance; }
-    inline float getDetriggerTolerance() const { return _detriggerTolerance; }
+    inline float getTriggerTolerance() const { return _triggerTol; }
+    inline float getDetriggerTolerance() const { return _detriggerTol; }
     inline bool getTriggerBelow() const { return _triggerBelow; }
 
 protected:
-    float _triggerTolerance;                                // Trigger tolerance limit
-    float _detriggerTolerance;                              // Detrigger tolerance additive
+    float _triggerTol;                                      // Trigger tolerance limit
+    float _detriggerTol;                                    // Detrigger tolerance additive
     bool _triggerBelow;                                     // Trigger below flag
 
     virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) override;
@@ -122,13 +122,13 @@ public:
                                        float toleranceLow,
                                        float toleranceHigh,
                                        bool triggerOutside = true,
-                                       float detriggerTolerance = 0,
+                                       float detriggerTol = 0,
                                        byte measurementRow = 0);
     HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor,
                                        float toleranceLow,
                                        float toleranceHigh,
                                        bool triggerOutside = true,
-                                       float detriggerTolerance = 0,
+                                       float detriggerTol = 0,
                                        byte measurementRow = 0);
     HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
     ~HydroponicsMeasurementRangeTrigger();
@@ -140,15 +140,15 @@ public:
 
     void setTriggerToleranceMid(float toleranceMid);
 
-    inline float getTriggerToleranceLow() const { return _triggerToleranceLow; }
-    inline float getTriggerToleranceHigh() const { return _triggerToleranceHigh; }
-    inline float getDetriggerTolerance() const { return _detriggerTolerance; }
+    inline float getTriggerToleranceLow() const { return _triggerTolLow; }
+    inline float getTriggerToleranceHigh() const { return _triggerTolHigh; }
+    inline float getDetriggerTolerance() const { return _detriggerTol; }
     inline bool getTriggerOutside() const { return _triggerOutside; }
 
 protected:
-    float _triggerToleranceLow;                             // Low value tolerance
-    float _triggerToleranceHigh;                            // High value tolerance
-    float _detriggerTolerance;                              // Detrigger tolerance additive
+    float _triggerTolLow;                                   // Low value tolerance
+    float _triggerTolHigh;                                  // High value tolerance
+    float _detriggerTol;                                    // Detrigger tolerance additive
     bool _triggerOutside;                                   // Trigger on outside flag
 
     virtual void handleSensorMeasure(const HydroponicsMeasurement *measurement) override;
@@ -170,7 +170,7 @@ struct HydroponicsTriggerSubData : public HydroponicsSubData {
             bool triggerOutside;
         } measureRange;
     } dataAs;
-    float detriggerTolerance;
+    float detriggerTol;
     Hydroponics_UnitsType toleranceUnits;
 
     HydroponicsTriggerSubData();

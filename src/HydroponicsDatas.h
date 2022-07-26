@@ -147,7 +147,7 @@ struct HydroponicsCropsLibData : public HydroponicsData {
     byte dailyLightHours[Hydroponics_CropPhase_MainCount];      // How many light hours per day is needed per main stages (seed,veg,bloom&> or all - default: 20,18,12)
     float phRange[2];                                           // Ideal pH range (min,max or mid - default: 6)
     float tdsRange[2];                                          // Ideal TDS/EC range (min,max or mid - default: 1.8,2.4)
-    float nightlyFeedMultiplier;                                // Nightly feed multiplier, if crop uses a lower TDS/EC at night (default: 1)
+    float nightlyFeedRate;                                      // Nightly feed multiplier, if crop uses a lower TDS/EC at night (default: 1)
     float waterTempRange[2];                                    // Ideal water temperature range, in Celsius (min,max or mid - default: 25)
     float airTempRange[2];                                      // Ideal air temperature range, in Celsius (min,max or mid - default: 25)
     float co2Levels[2];                                         // Ideal CO2 levels per <=veg/>=bloom stages, in PPM (seed&veg,bloom&> or all - default: 700, 1400)
