@@ -46,7 +46,7 @@ public:
 
 protected:
     Map<Hydroponics_CropType, HydroponicsCropsLibraryBook *>::type _cropsData; // Loaded crop library data
-    bool _hasCustomCrops;                                   // Has custom crops flag
+    bool _hasCustomCrops = false;                           // Has custom crops flag
     Signal<Hydroponics_CropType> _cropDataSignal;           // Custom crop data updated signal    
 
     String jsonStringForCrop(Hydroponics_CropType cropType);

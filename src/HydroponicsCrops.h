@@ -90,8 +90,6 @@ protected:
     void checkoutCropsLibData();
     void returnCropsLibData();
 
-    void attachCustomCrop();
-    void detachCustomCrop();
     void handleCustomCropUpdated(Hydroponics_CropType cropType);
 };
 

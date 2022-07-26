@@ -6,7 +6,7 @@
 #include "Hydroponics.h"
 
 HydroponicsLogger::HydroponicsLogger()
-    : _loggerData(nullptr), _logFileName(), _lastSpaceCheck(0)
+    : _loggerData(nullptr), _logFileName(), _initDate(0), _lastSpaceCheck(0)
 { ; }
 
 HydroponicsLogger::~HydroponicsLogger()

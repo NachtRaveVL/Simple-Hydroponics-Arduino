@@ -26,11 +26,12 @@ HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 
 HydroponicsRail::HydroponicsRail(Hydroponics_RailType railType, Hydroponics_PositionIndex railIndex, int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
-      _powerUnits(Hydroponics_UnitsType_Power_Wattage)
+      _powerUnits(Hydroponics_UnitsType_Power_Wattage), _limitState(Hydroponics_TriggerState_Undefined)
 { ; }
 
 HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
+      _limitState(Hydroponics_TriggerState_Undefined),
       _powerUnits(definedUnitsElse(dataIn->powerUnits, Hydroponics_UnitsType_Power_Wattage))
 { ; }
 

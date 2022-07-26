@@ -1367,7 +1367,7 @@ String Hydroponics::getWiFiPassword()
 
         if (_systemData->wifiPasswordSeed) {
             randomSeed(_systemData->wifiPasswordSeed);
-            for (int charIndex = 0; charIndex <= HYDRUINO_NAME_MAXSIZE; ++charIndex) {
+            for (int charIndex = 0; charIndex < HYDRUINO_NAME_MAXSIZE; ++charIndex) {
                 wifiPassword[charIndex] = (char)(_systemData->wifiPassword[charIndex] ^ (byte)random(256));
             }
         } else {

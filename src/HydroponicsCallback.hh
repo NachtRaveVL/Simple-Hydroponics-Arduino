@@ -37,10 +37,10 @@ public:
 // an interrupt so the receipient will want to be fairly quick about how they process it.
 template <class ParameterType, int Slots = 8> class Signal {
     Slot<ParameterType>* _connections[Slots];
-	int _nextSlot = 0;
+	int _nextSlot;
 
 public:
-    Signal() { }
+    Signal() : _connections{nullptr}, _nextSlot(0) { }
 
     // Since the signal takes copies of all the input slots via clone() it needs to clean up after itself when being destroyed.
     virtual ~Signal() {

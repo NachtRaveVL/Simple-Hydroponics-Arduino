@@ -278,6 +278,8 @@ bool HydroponicsPumpRelayActuator::enableActuator(float intensity, bool force)
         _pumpVolumeAcc = 0;
         _pumpTimeBegMillis = _pumpTimeAccMillis = max(1, timeMillis);
     }
+
+    return _enabled;
 }
 
 void HydroponicsPumpRelayActuator::disableActuator()
