@@ -25,11 +25,11 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    void setupWaterPHBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterPHBalancer);
-    void setupWaterTDSBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTDSBalancer);
-    void setupWaterTemperatureBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *waterTempBalancer);
-    void setupAirTemperatureBalancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airTempBalancer);
-    void setupAirCO2Balancer(HydroponicsReservoir *reservoir, HydroponicsBalancer *airCO2Balancer);
+    void setupWaterPHBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterPHBalancer);
+    void setupWaterTDSBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterTDSBalancer);
+    void setupWaterTemperatureBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterTempBalancer);
+    void setupAirTemperatureBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> airTempBalancer);
+    void setupAirCO2Balancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> airCO2Balancer);
 
     void setBaseFeedMultiplier(float feedMultiplier);
     void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
@@ -74,12 +74,14 @@ protected:
 };
 
 
-// Hydroponics Scheduler Process
+// Hydroponics Scheduler Process Base
+// Processes are created and managed by Scheduler to manage the feeding and lighting
+// necessary for crops to grow.
 struct HydroponicsProcess {
-    shared_ptr<HydroponicsFeedReservoir> feedRes;
-    Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs;
+    shared_ptr<HydroponicsFeedReservoir> feedRes;           // Feed reservoir
+    Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs; // Actuators required for this stage (keep-enabled list)
 
-    time_t stageStart;
+    time_t stageStart;                                      // Stage start time
 
     HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feedRes);
 
@@ -89,16 +91,16 @@ struct HydroponicsProcess {
 
 // Hydroponics Scheduler Feeding Process
 struct HydroponicsFeeding : public HydroponicsProcess {
-    enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage;
+    enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
 
-    time_t canFeedAfter;
-    time_t lastAirReport;
+    time_t canFeedAfter;                                    // Time next feeding can occur (UTC)
+    time_t lastAirReport;                                   // Last time an air report was generated (UTC)
 
-    float phSetpoint;
-    float tdsSetpoint;
-    float waterTempSetpoint;
-    float airTempSetpoint;
-    float co2Setpoint;
+    float phSetpoint;                                       // Calculated pH setpoint for detected crops
+    float tdsSetpoint;                                      // Calculated TDS setpoint for detected crops
+    float waterTempSetpoint;                                // Calculated water temp setpoint for detected crops
+    float airTempSetpoint;                                  // Calculated air temp setpoint for detected crops
+    float co2Setpoint;                                      // Calculated co2 level setpoint for detected crops
 
     HydroponicsFeeding(shared_ptr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsFeeding();
@@ -120,13 +122,13 @@ private:
 
 // Hydroponics Scheduler Lighting Process
 struct HydroponicsLighting : public HydroponicsProcess {
-    enum {Init,Spray,Light,Done,Unknown = -1} stage;
+    enum {Init,Spray,Light,Done,Unknown = -1} stage;        // Current lighting stage
 
-    time_t sprayStart;
-    time_t lightStart;
-    time_t lightEnd;
+    time_t sprayStart;                                      // Time when spraying should start (TZ)
+    time_t lightStart;                                      // Time when lighting should start / spraying should end (TZ, same as sprayStart when no spraying needed)
+    time_t lightEnd;                                        // Time when lighting should finish
 
-    float lightHours;
+    float lightHours;                                       // Calculated light hours for detected crops
 
     HydroponicsLighting(shared_ptr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsLighting();

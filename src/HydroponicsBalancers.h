@@ -16,6 +16,9 @@ class HydroponicsTimedDosingBalancer;
 #include "HydroponicsTriggers.h"
 
 // Hydroponics Balancer Base
+// This is the base class for all balancers, which are used to modify the external
+// environment via increment / decrement actuators that can increase or decrease a
+// measured value. Balancers allow for a setpoint to be used to drive such devices.
 class HydroponicsBalancer : public HydroponicsSubObject, public HydroponicsBalancerObjectInterface {
 public:
     const enum { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
@@ -51,7 +54,7 @@ public:
     inline float getTargetSetpoint() const { return _targetSetpoint; }
     inline float getTargetRange() const { return _targetRange; }
 
-    Signal<Hydroponics_BalancerState> &getBalancerSignal();
+    Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> &getBalancerSignal();
 
 protected:
     HydroponicsTriggerAttachment _rangeTrigger;             // Target range trigger
@@ -60,7 +63,7 @@ protected:
     bool _enabled;                                          // Enabled flag
     Hydroponics_UnitsType _targetUnits;                     // Target units
     Hydroponics_BalancerState _balancerState;               // Current balancer state
-    Signal<Hydroponics_BalancerState> _balancerSignal;      // Balancer signal
+    Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> _balancerSignal; // Balancer signal
 
     Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type _incActuators; // Increment actuators
     Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type _decActuators; // Decrement actuators
@@ -71,7 +74,11 @@ protected:
 };
 
 
-// TODO
+// Linear Edge Balancer
+// A linear edge balancer is a balancer that provides the ability to form high and low
+// areas of actuator control either by a vertical edge or a linear-gradient edge that
+// interpolates along an edge's length. A vertical edge in this case can be thought of as
+// an edge with zero length, which is the default. Useful for fans, heaters, and others.
 class HydroponicsLinearEdgeBalancer : public HydroponicsBalancer {
 public:
     HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor,
@@ -80,7 +87,6 @@ public:
                                   float edgeOffset = 0,
                                   float edgeLength = 0,
                                   byte measurementRow = 0);
-    virtual ~HydroponicsLinearEdgeBalancer();
 
     virtual void update() override;
 
@@ -93,7 +99,12 @@ protected:
 };
 
 
-// TODO
+// Timed Auto-Dosing Balancer
+// Auto-doser that dispenses liquids from another fluid reservoirs via pumping to
+// achieve a certain environment condition, with mixing wait time between dosing.
+// Dosing rates (treated as a percentage of dose-time) can be configured via Scheduler.
+// After first dosing in either direction the system can become more or less aggressive
+// in subsequent dispensing to help speed up the balancing process.
 class HydroponicsTimedDosingBalancer : public HydroponicsBalancer {
 public:
     HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor,
@@ -108,7 +119,6 @@ public:
                                    float reservoirVolume,
                                    Hydroponics_UnitsType volumeUnits,
                                    byte measurementRow = 0);
-    virtual ~HydroponicsTimedDosingBalancer();
 
     virtual void update() override;
 

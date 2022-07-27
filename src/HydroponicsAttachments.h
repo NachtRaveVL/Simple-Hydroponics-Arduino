@@ -150,6 +150,9 @@ protected:
 // This attachment registers the parent object with a Sensor's new measurement Signal
 // upon dereference, and unregisters the parent object from the Sensor at time of
 // destruction or reassignment.
+// Custom process method can handle new raw measurements, while custom update method
+// can handle updates to the single result measure (read as: called upon every new
+// measure). Custom process method must call setMeasurement to set resolved measure.
 class HydroponicsSensorAttachment : public HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> {
 public:
     typedef void (HydroponicsObject::*ProcessMethodPtr)(const HydroponicsMeasurement *measurement);
@@ -196,7 +199,7 @@ protected:
     HydroponicsSingleMeasurement _measurement;              // Local measurement
     Hydroponics_PositionIndex _measurementRow;              // Measurement row
     float _convertParam;                                    // Convert param (default: FLT_UNDEF)
-    bool _needsMeasurement;                                 // Measurement data old tracking flag
+    bool _needsMeasurement;                                 // Stale measurement tracking flag
     ProcessMethodPtr _processMethod;                        // Custom process method
     UpdateMethodPtr _updateMethod;                          // Custom update method
 
@@ -204,7 +207,13 @@ protected:
 };
 
 
-// TODO
+// Trigger State Attachment Point
+// This attachment registers the parent object with a Triggers's trigger Signal
+// upon dereference, and unregisters the parent object from the Trigger at time of
+// destruction or reassignment.
+// Custom process method can handle new raw state, while custom update method can
+// handle changes to the trigger state (read as: only called upon change). Custom
+// process method must call setTriggerState to set resolved state.
 class HydroponicsTriggerAttachment  : public HydroponicsSignalAttachment<HydroponicsTrigger, Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> {
 public:
     typedef void (HydroponicsObject::*ProcessMethodPtr)(Hydroponics_TriggerState triggerState);
@@ -237,7 +246,7 @@ public:
 
 protected:
     Hydroponics_TriggerState _triggerState;                 // Tracked trigger state
-    bool _needsTriggerState;                                // State data old tracking flag
+    bool _needsTriggerState;                                // Stale data tracking flag
     ProcessMethodPtr _processMethod;                        // Custom process method
     UpdateMethodPtr _updateMethod;                          // Custom update method
 
@@ -245,11 +254,50 @@ protected:
 };
 
 
-// TODO
-class HydroponicsBalancerAttachment {
+// Balancer State Attachment Point
+// This attachment registers the parent object with a Balancer's balance Signal
+// upon dereference, and unregisters the parent object from the Balancer at time of
+// destruction or reassignment.
+// Custom process method can handle new raw state, while custom update method can
+// handle changes to the balancer state (read as: only called upon change). Custom
+// process method must call setBalancerState to set resolved state.
+class HydroponicsBalancerAttachment : public HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> {
 public:
+    typedef void (HydroponicsObject::*ProcessMethodPtr)(Hydroponics_BalancerState balancerState);
+    typedef void (HydroponicsObject::*UpdateMethodPtr)(Hydroponics_BalancerState balancerState);
+
+    HydroponicsBalancerAttachment(HydroponicsObject *parent);
+    virtual ~HydroponicsBalancerAttachment();
+
+    virtual void attachObject() override;
+    virtual void detachObject() override;
+
+    void updateBalancerIfNeeded(bool force = false);
+
+    template<class T> inline void setProcessMethod(void (T::*processMethod)(Hydroponics_BalancerState)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsBalancerState(); }
+    template<class T> inline void setUpdateMethod(void (T::*updateMethod)(Hydroponics_BalancerState))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
+    inline ProcessMethodPtr getProcessMethod() const { return _processMethod; }
+    inline UpdateMethodPtr getUpdateMethod() const { return _updateMethod; }
+
+    inline void setNeedsBalancerState() { _needsBalancerState = true; }
+    inline bool needsBalancerState() { return _needsBalancerState; }
+
+    void setBalancerState(Hydroponics_BalancerState balancerState);
+
+    inline Hydroponics_BalancerState getBalancerState(bool force = false) { updateBalancerIfNeeded(force); return _balancerState; }
+
+    inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
+    inline HydroponicsSensorAttachment &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); }
+    template<class U> inline HydroponicsSensorAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
+    template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
 
 protected:
+    Hydroponics_BalancerState _balancerState;               // Tracked balancer state
+    bool _needsBalancerState;                               // Stale date tracking flag
+    ProcessMethodPtr _processMethod;                        // Custom process method
+    UpdateMethodPtr _updateMethod;                          // Custom update method
+
+    void handleBalancer(Hydroponics_BalancerState balancerState);
 };
 
 #endif // /ifndef HydroponicsAttachments_H

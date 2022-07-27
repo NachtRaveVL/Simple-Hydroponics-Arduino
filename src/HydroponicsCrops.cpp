@@ -205,9 +205,6 @@ HydroponicsTimedCrop::HydroponicsTimedCrop(const HydroponicsTimedCropData *dataI
       _feedTimingMins{dataIn->feedTimingMins[0], dataIn->feedTimingMins[1]}
 { ; }
 
-HydroponicsTimedCrop::~HydroponicsTimedCrop()
-{ ; }
-
 bool HydroponicsTimedCrop::needsFeeding()
 {
     return unixNow() >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
@@ -264,9 +261,6 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
     _feedingTrigger.setUpdateMethod(&HydroponicsCrop::handleFeeding);
     _feedingTrigger = newTriggerObjectFromSubData(&(dataIn->feedingTrigger));
 }
-
-HydroponicsAdaptiveCrop::~HydroponicsAdaptiveCrop()
-{ ; }
 
 void HydroponicsAdaptiveCrop::update()
 {

@@ -38,7 +38,7 @@ public:
                     DateTime sowDate,
                     int classType = Unknown);
     HydroponicsCrop(const HydroponicsCropData *dataIn);
-    ~HydroponicsCrop();
+    virtual ~HydroponicsCrop();
 
     virtual void update() override;
     virtual void handleLowMemory() override;
@@ -106,7 +106,6 @@ public:
                          TimeSpan timeOn = TimeSpan(0,0,15,0), TimeSpan timeOff = TimeSpan(0,0,45,0),
                          int classType = Timed);
     HydroponicsTimedCrop(const HydroponicsTimedCropData *dataIn);
-    virtual ~HydroponicsTimedCrop();
 
     virtual bool needsFeeding() override;
     virtual void notifyFeedingBegan() override;
@@ -135,7 +134,6 @@ public:
                             DateTime sowDate,
                             int classType = Adaptive);
     HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropData *dataIn);
-    virtual ~HydroponicsAdaptiveCrop();
 
     virtual void update() override;
     virtual void handleLowMemory() override;
@@ -151,7 +149,7 @@ public:
     inline shared_ptr<HydroponicsTrigger> getFeedingTrigger(bool force = false) { _feedingTrigger.updateTriggerIfNeeded(force); return _feedingTrigger.getObject(); }
 
 protected:
-    Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred (else default)
+    Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred
     HydroponicsSensorAttachment _soilMoisture;              // Soil moisture sensor attachment
     HydroponicsTriggerAttachment _feedingTrigger;           // Feeding trigger attachment
 

@@ -10,6 +10,7 @@ HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, f
       _targetUnits(Hydroponics_UnitsType_Undefined), _balancerState(Hydroponics_BalancerState_Undefined)
 {
     float halfTargetRange = targetRange * 0.5f;
+
     _rangeTrigger = make_shared<HydroponicsMeasurementRangeTrigger>(sensor, targetSetpoint - halfTargetRange, targetSetpoint + halfTargetRange, true, halfTargetRange, measurementRow);
     HYDRUINO_HARD_ASSERT(_rangeTrigger, SFP(HS_Err_AllocationFailure));
     _rangeTrigger.setUpdateMethod(&HydroponicsBalancer::handleTrigger);
@@ -123,6 +124,11 @@ void HydroponicsBalancer::setEnabled(bool enabled)
     }
 }
 
+Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> &HydroponicsBalancer::getBalancerSignal()
+{
+    return _balancerSignal;
+}
+
 void HydroponicsBalancer::disableAllActuators()
 {
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
@@ -167,9 +173,6 @@ void HydroponicsBalancer::handleTrigger(Hydroponics_TriggerState triggerState)
 
 HydroponicsLinearEdgeBalancer::HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float edgeOffset, float edgeLength, byte measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, LinearEdge), _edgeOffset(edgeOffset), _edgeLength(edgeLength)
-{ ; }
-
-HydroponicsLinearEdgeBalancer::~HydroponicsLinearEdgeBalancer()
 { ; }
 
 void HydroponicsLinearEdgeBalancer::update()
@@ -221,9 +224,6 @@ HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<Hydrop
     _mixTimeMins = mapValue<float>(reservoirVolume, 30, 200, 10, 30);
 }
 
-HydroponicsTimedDosingBalancer::~HydroponicsTimedDosingBalancer()
-{ ; }
-
 void HydroponicsTimedDosingBalancer::update()
 {
     HydroponicsBalancer::update();
@@ -243,7 +243,7 @@ void HydroponicsTimedDosingBalancer::update()
                     performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
                                   actuatorIter->second * _dosingMillis);
                     #ifdef HYDRUINO_DISABLE_MULTITASKING
-                        break; // only one dosing per call
+                        break; // only one dosing per call when done this way
                     #endif
                 } else { break; }
             }
@@ -259,7 +259,7 @@ void HydroponicsTimedDosingBalancer::update()
                     performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
                                   actuatorIter->second * _dosingMillis);
                     #ifdef HYDRUINO_DISABLE_MULTITASKING
-                        break; // only one dosing per call
+                        break; // only one dosing per call when done this way
                     #endif
                 } else { break; }
             }
@@ -302,9 +302,9 @@ void HydroponicsTimedDosingBalancer::performDosing()
 
 void HydroponicsTimedDosingBalancer::performDosing(shared_ptr<HydroponicsActuator> actuator, time_t timeMillis)
 {
-    if (actuator && actuator->isAnyPumpClass()) {
+    if (actuator->isAnyPumpClass()) {
         ((HydroponicsPumpObjectInterface *)(actuator.get()))->pump(timeMillis); // pumps have nice logging output
-    } else if (actuator) {
+    } else {
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             scheduleActuatorTimedEnableOnce(actuator, timeMillis);
             _dosingActIndex++;

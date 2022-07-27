@@ -139,7 +139,6 @@ public:
                             bool inputInversion = false,
                             int classType = Analog);
     HydroponicsAnalogSensor(const HydroponicsAnalogSensorData *dataIn);
-    virtual ~HydroponicsAnalogSensor();
 
     virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroponicsMeasurement *getLatestMeasurement() const override;
@@ -172,7 +171,6 @@ public:
                              bool allocate1W = false,
                              int classType = Digital);
     HydroponicsDigitalSensor(const HydroponicsDigitalSensorData *dataIn, bool allocate1W = false);
-    virtual ~HydroponicsDigitalSensor();
 
     virtual bool setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex);
     virtual Hydroponics_PositionIndex getWirePositionIndex() const;

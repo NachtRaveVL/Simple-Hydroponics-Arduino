@@ -56,7 +56,9 @@ public:
 
 protected:
     Hydroponics_UnitsType _powerUnits;                      // Power units preferred
+
     Hydroponics_TriggerState _limitState;                   // Current limit state
+
     Signal<HydroponicsRail *> _capacitySignal;              // Capacity changed signal
 
     virtual HydroponicsData *allocateData() const override;
@@ -77,7 +79,6 @@ public:
                           int maxActiveAtOnce = 2,
                           int classType = Simple);
     HydroponicsSimpleRail(const HydroponicsSimpleRailData *dataIn);
-    virtual ~HydroponicsSimpleRail();
 
     virtual bool canActivate(HydroponicsActuator *actuator) override;
     virtual float getCapacity() override;
@@ -104,7 +105,6 @@ public:
                              float maxPower,
                              int classType = Regulated);
     HydroponicsRegulatedRail(const HydroponicsRegulatedRailData *dataIn);
-    virtual ~HydroponicsRegulatedRail();
 
     virtual void update() override;
     virtual void handleLowMemory() override;
@@ -126,7 +126,9 @@ public:
 
 protected:
     float _maxPower;                                        // Maximum power
+
     HydroponicsSensorAttachment _powerUsage;                // Power usage sensor attachment
+
     HydroponicsTriggerAttachment _limitTrigger;             // Power limit trigger attachment
 
     virtual void saveToData(HydroponicsData *dataOut) override;

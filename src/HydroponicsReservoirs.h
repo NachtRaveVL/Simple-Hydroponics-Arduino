@@ -40,7 +40,6 @@ public:
                          Hydroponics_PositionIndex reservoirIndex,
                          int classType = Unknown);
     HydroponicsReservoir(const HydroponicsReservoirData *dataIn);
-    virtual ~HydroponicsReservoir();
 
     virtual void update() override;
 
@@ -60,9 +59,11 @@ public:
     Signal<HydroponicsReservoir *> &getEmptySignal();
 
 protected:
-    Hydroponics_UnitsType _volumeUnits;                     // Volume units preferred (else default)
+    Hydroponics_UnitsType _volumeUnits;                     // Volume units preferred
+
     Hydroponics_TriggerState _filledState;                  // Current filled state
     Hydroponics_TriggerState _emptyState;                   // Current empty state
+
     Signal<HydroponicsReservoir *> _filledSignal;           // Filled state signal
     Signal<HydroponicsReservoir *> _emptySignal;            // Empty state signal
 
@@ -85,7 +86,6 @@ public:
                               float maxVolume,
                               int classType = Fluid);
     HydroponicsFluidReservoir(const HydroponicsFluidReservoirData *dataIn);
-    virtual ~HydroponicsFluidReservoir();
 
     virtual void update() override;
     virtual void handleLowMemory() override;
@@ -129,7 +129,6 @@ public:
                              DateTime lastPruningDate = DateTime(),
                              int classType = Feed);
     HydroponicsFeedReservoir(const HydroponicsFeedReservoirData *dataIn);
-    virtual ~HydroponicsFeedReservoir();
 
     virtual void update() override;
     virtual void handleLowMemory() override;
@@ -150,47 +149,48 @@ public:
 
     virtual HydroponicsSensorAttachment &getAirCO2() override;
 
-    HydroponicsBalancer *setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);
-    void setWaterPHBalancer(HydroponicsBalancer *phBalancer);
-    inline HydroponicsBalancer *getWaterPHBalancer() const { return _waterPHBalancer; }
+    shared_ptr<HydroponicsBalancer> setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);
+    inline void setWaterPHBalancer(shared_ptr<HydroponicsBalancer> phBalancer) { _waterPHBalancer.setObject(phBalancer); }
+    inline shared_ptr<HydroponicsBalancer> getWaterPHBalancer(bool force = false) { _waterPHBalancer.updateBalancerIfNeeded(force); return _waterPHBalancer.getObject(); }
 
-    HydroponicsBalancer *setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits);
-    void setWaterTDSBalancer(HydroponicsBalancer *tdsBalancer);
-    inline HydroponicsBalancer *getWaterTDSBalancer() const { return _waterTDSBalancer; }
+    shared_ptr<HydroponicsBalancer> setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits);
+    inline void setWaterTDSBalancer(shared_ptr<HydroponicsBalancer> tdsBalancer) { _waterTDSBalancer.setObject(tdsBalancer); }
+    inline shared_ptr<HydroponicsBalancer> getWaterTDSBalancer(bool force = false) { _waterTDSBalancer.updateBalancerIfNeeded(force); return _waterTDSBalancer.getObject(); }
 
-    HydroponicsBalancer *setWaterTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
-    void setWaterTemperatureBalancer(HydroponicsBalancer *waterTempBalancer);
-    inline HydroponicsBalancer *getWaterTemperatureBalancer() const { return _waterTempBalancer; }
+    shared_ptr<HydroponicsBalancer> setWaterTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
+    inline void setWaterTemperatureBalancer(shared_ptr<HydroponicsBalancer> waterTempBalancer) { _waterTempBalancer.setObject(waterTempBalancer); }
+    inline shared_ptr<HydroponicsBalancer> getWaterTemperatureBalancer(bool force = false) { _waterTempBalancer.updateBalancerIfNeeded(force); return _waterTempBalancer.getObject(); }
 
-    HydroponicsBalancer *setAirTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
-    void setAirTemperatureBalancer(HydroponicsBalancer *airTempBalancer);
-    inline HydroponicsBalancer *getAirTemperatureBalancer() const { return _airTempBalancer; }
+    shared_ptr<HydroponicsBalancer> setAirTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
+    inline void setAirTemperatureBalancer(shared_ptr<HydroponicsBalancer> airTempBalancer) { _airTempBalancer.setObject(airTempBalancer); }
+    inline shared_ptr<HydroponicsBalancer> getAirTemperatureBalancer(bool force = false) { _airTempBalancer.updateBalancerIfNeeded(force); return _airTempBalancer.getObject(); }
 
-    HydroponicsBalancer *setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits);
-    void setAirCO2Balancer(HydroponicsBalancer *co2Balancer);
-    inline HydroponicsBalancer *getAirCO2Balancer() const { return _airCO2Balancer; }
+    shared_ptr<HydroponicsBalancer> setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits);
+    inline void setAirCO2Balancer(shared_ptr<HydroponicsBalancer> co2Balancer) { _airCO2Balancer.setObject(co2Balancer); }
+    inline shared_ptr<HydroponicsBalancer> getAirCO2Balancer(bool force = false) { _airCO2Balancer.updateBalancerIfNeeded(force); return _airCO2Balancer.getObject(); }
 
     inline Hydroponics_PositionIndex getChannelNumber() const { return _id.posIndex; }
 
     inline DateTime getLastWaterChangeDate() const { return DateTime((uint32_t)_lastChangeDate); }
-    void notifyWaterChanged();
+    inline void notifyWaterChanged() { _lastChangeDate = unixNow(); }
 
     inline DateTime getLastPruningDate() const { return DateTime((uint32_t)_lastPruningDate); }
-    void notifyPruningCompleted();
+    inline void notifyPruningCompleted() { _lastPruningDate = unixNow(); }
 
     inline DateTime getLastFeeding() const { return DateTime((uint32_t)_lastFeedingDate); }
     inline int8_t getFeedingsToday() const { return _numFeedingsToday; }
-    void notifyFeedingBegan();
-    void notifyFeedingEnded();
-    void notifyDayChanged();
+    inline void notifyFeedingBegan() { _numFeedingsToday++; _lastFeedingDate = unixNow(); }
+    inline void notifyFeedingEnded() { ; }
+    inline void notifyDayChanged() { _numFeedingsToday = 0; }
 
 protected:
     time_t _lastChangeDate;                                 // Last water change date (recycling systems only, UTC)
     time_t _lastPruningDate;                                // Last pruning date (pruning crops only, UTC)
     time_t _lastFeedingDate;                                // Last feeding date (UTC)
     int8_t _numFeedingsToday;                               // Number of feedings performed today
-    Hydroponics_UnitsType _tdsUnits;                        // TDS units preferred (else default)
-    Hydroponics_UnitsType _tempUnits;                       // Temperature units preferred (else default)
+
+    Hydroponics_UnitsType _tdsUnits;                        // TDS units preferred
+    Hydroponics_UnitsType _tempUnits;                       // Temperature units preferred
 
     HydroponicsSensorAttachment _waterPH;                   // Water PH sensor attachment
     HydroponicsSensorAttachment _waterTDS;                  // Water TDS sensor attachment
@@ -198,11 +198,11 @@ protected:
     HydroponicsSensorAttachment _airTemp;                   // Air temp sensor attachment
     HydroponicsSensorAttachment _airCO2;                    // Air CO2 sensor attachment
 
-    HydroponicsBalancer *_waterPHBalancer;                  // Water pH balancer (assigned by scheduler when needed)
-    HydroponicsBalancer *_waterTDSBalancer;                 // Water TDS balancer (assigned by scheduler when needed)
-    HydroponicsBalancer *_waterTempBalancer;                // Water temperature balancer (assigned by scheduler when needed)
-    HydroponicsBalancer *_airTempBalancer;                  // Air temperature balancer (assigned by user if desired)
-    HydroponicsBalancer *_airCO2Balancer;                   // Air CO2 balancer (assigned by user if desired)
+    HydroponicsBalancerAttachment _waterPHBalancer;         // Water pH balancer (assigned by scheduler when needed)
+    HydroponicsBalancerAttachment _waterTDSBalancer;        // Water TDS balancer (assigned by scheduler when needed)
+    HydroponicsBalancerAttachment _waterTempBalancer;       // Water temperature balancer (assigned by scheduler when needed)
+    HydroponicsBalancerAttachment _airTempBalancer;         // Air temperature balancer (assigned by user if desired)
+    HydroponicsBalancerAttachment _airCO2Balancer;          // Air CO2 balancer (assigned by user if desired)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -219,7 +219,6 @@ public:
                                  bool alwaysFilled = true,
                                  int classType = Pipe);
     HydroponicsInfiniteReservoir(const HydroponicsInfiniteReservoirData *dataIn);
-    virtual ~HydroponicsInfiniteReservoir();
 
     virtual bool isFilled() override;
     virtual bool isEmpty() override;

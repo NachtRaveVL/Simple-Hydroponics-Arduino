@@ -309,9 +309,6 @@ HydroponicsAnalogSensor::HydroponicsAnalogSensor(const HydroponicsAnalogSensorDa
     }
 }
 
-HydroponicsAnalogSensor::~HydroponicsAnalogSensor()
-{ ; }
-
 bool HydroponicsAnalogSensor::takeMeasurement(bool force)
 {
     if (isValidPin(_inputPin) && (force || needsPolling()) && !_isTakingMeasure) {
@@ -463,9 +460,6 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(const HydroponicsDigitalSenso
         }
     }
 }
-
-HydroponicsDigitalSensor::~HydroponicsDigitalSensor()
-{ ; }
 
 bool HydroponicsDigitalSensor::setWirePositionIndex(Hydroponics_PositionIndex wirePosIndex)
 {

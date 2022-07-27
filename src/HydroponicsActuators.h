@@ -39,7 +39,6 @@ public:
                         byte outputPin = -1,
                         int classType = Unknown);
     HydroponicsActuator(const HydroponicsActuatorData *dataIn);
-    virtual ~HydroponicsActuator();
 
     virtual void update() override;
     virtual void handleLowMemory() override;
@@ -111,7 +110,6 @@ public:
                                  bool activeLow = true,
                                  int classType = RelayPump);
     HydroponicsPumpRelayActuator(const HydroponicsPumpRelayActuatorData *dataIn);
-    virtual ~HydroponicsPumpRelayActuator();
 
     virtual void update() override;
 

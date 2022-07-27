@@ -53,9 +53,6 @@ HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
     _reservoir = dataIn->reservoirName;
 }
 
-HydroponicsActuator::~HydroponicsActuator()
-{ ; }
-
 void HydroponicsActuator::update()
 {
     HydroponicsObject::update();
@@ -253,9 +250,6 @@ HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(const HydroponicsPump
     _destReservoir = dataIn->destReservoir;
     _flowRate = dataIn->flowRateSensor;
 }
-
-HydroponicsPumpRelayActuator::~HydroponicsPumpRelayActuator()
-{ ; }
 
 void HydroponicsPumpRelayActuator::update()
 {

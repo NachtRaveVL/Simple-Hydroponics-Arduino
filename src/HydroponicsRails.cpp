@@ -155,9 +155,6 @@ HydroponicsSimpleRail::HydroponicsSimpleRail(const HydroponicsSimpleRailData *da
     : HydroponicsRail(dataIn), _activeCount(0), _maxActiveAtOnce(dataIn->maxActiveAtOnce)
 { ; }
 
-HydroponicsSimpleRail::~HydroponicsSimpleRail()
-{ ; }
-
 bool HydroponicsSimpleRail::canActivate(HydroponicsActuator *actuator)
 {
     return _activeCount < _maxActiveAtOnce;
@@ -219,9 +216,6 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
     _limitTrigger.setUpdateMethod(&HydroponicsRail::handleLimit);
     _limitTrigger = newTriggerObjectFromSubData(&(dataIn->limitTrigger));
 }
-
-HydroponicsRegulatedRail::~HydroponicsRegulatedRail()
-{ ; }
 
 void HydroponicsRegulatedRail::update()
 {

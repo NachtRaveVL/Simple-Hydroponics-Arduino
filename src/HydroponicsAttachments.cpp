@@ -155,3 +155,60 @@ void HydroponicsTriggerAttachment::handleTrigger(Hydroponics_TriggerState trigge
         setTriggerState(triggerState);
     }
 }
+
+
+HydroponicsBalancerAttachment::HydroponicsBalancerAttachment(HydroponicsObject *parent)
+    : HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>(
+        parent,
+        &HydroponicsBalancer::getBalancerSignal,
+        MethodSlot<HydroponicsBalancerAttachment,Hydroponics_BalancerState>(this, &HydroponicsBalancerAttachment::handleBalancer)),
+      _needsBalancerState(true), _processMethod(nullptr), _updateMethod(nullptr)
+{
+    HYDRUINO_HARD_ASSERT(_obj.isResolved(), SFP(HS_Err_UnsupportedOperation));
+}
+
+HydroponicsBalancerAttachment::~HydroponicsBalancerAttachment()
+{
+    if (isResolved()) { _obj->setEnabled(false); }
+}
+
+void HydroponicsBalancerAttachment::attachObject()
+{
+    HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::attachObject();
+
+    handleBalancer(_obj->getBalancerState());
+}
+
+void HydroponicsBalancerAttachment::detachObject()
+{
+    if (isResolved()) { _obj->setEnabled(false); }
+
+    HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::detachObject();
+}
+
+void HydroponicsBalancerAttachment::updateBalancerIfNeeded(bool force)
+{
+    resolveIfNeeded();
+    if (isResolved() && (_needsBalancerState || force)) {
+        handleBalancer(_obj->getBalancerState());
+    }
+}
+
+void HydroponicsBalancerAttachment::setBalancerState(Hydroponics_BalancerState balancerState)
+{
+    _needsBalancerState = false;
+    if (_balancerState != balancerState) {
+        _balancerState = balancerState;
+
+        if (_updateMethod) { (_parent->*_updateMethod)(balancerState); }
+    }
+}
+
+void HydroponicsBalancerAttachment::handleBalancer(Hydroponics_BalancerState balancerState)
+{
+    if (_processMethod) {
+        (_parent->*_processMethod)(balancerState);
+    } else {
+        setBalancerState(balancerState);
+    }
+}
