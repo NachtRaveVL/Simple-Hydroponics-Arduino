@@ -71,7 +71,7 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sd
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
       _systemData(nullptr), _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0),
-      _configFileName(F("hydruino.cfg"))
+      _sysConfigFile(F("hydruino.cfg")), _sysDataAddress(-1)
 {
     _activeInstance = this;
     if (isValidPin(_piezoBuzzerPin)) {
@@ -202,8 +202,8 @@ bool Hydroponics::initFromEEPROM(bool jsonFormat)
     if (!_systemData) {
         commonPreInit();
 
-        if (getEEPROM() && _eepromBegan) {
-            HydroponicsEEPROMStream eepromStream;
+        if (getEEPROM() && _eepromBegan && _sysDataAddress != -1) {
+            HydroponicsEEPROMStream eepromStream(_sysDataAddress, _eepromDeviceSize - _sysDataAddress);
             return jsonFormat ? initFromJSONStream(&eepromStream) : initFromBinaryStream(&eepromStream);
         }
     }
@@ -216,8 +216,8 @@ bool Hydroponics::saveToEEPROM(bool jsonFormat)
     HYDRUINO_HARD_ASSERT(_systemData, SFP(HS_Err_NotYetInitialized));
 
     if (_systemData) {
-        if (getEEPROM() && _eepromBegan) {
-            HydroponicsEEPROMStream eepromStream;
+        if (getEEPROM() && _eepromBegan && _sysDataAddress != -1) {
+            HydroponicsEEPROMStream eepromStream(_sysDataAddress, _eepromDeviceSize - _sysDataAddress);
             return jsonFormat ? saveToJSONStream(&eepromStream) : saveToBinaryStream(&eepromStream);
         }
     }
@@ -235,7 +235,7 @@ bool Hydroponics::initFromSDCard(bool jsonFormat)
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(_configFileName.c_str(), FILE_READ);
+            auto configFile = sd->open(_sysConfigFile.c_str(), FILE_READ);
 
             if (configFile && configFile.available()) {
                 retVal = jsonFormat ? initFromJSONStream(&configFile) : initFromBinaryStream(&configFile);
@@ -260,10 +260,10 @@ bool Hydroponics::saveToSDCard(bool jsonFormat)
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(_configFileName.c_str(), FILE_READ);
+            auto configFile = sd->open(_sysConfigFile.c_str(), FILE_READ);
 
             if (configFile && configFile.availableForWrite()) {
-                retVal = jsonFormat ? saveToJSONStream(&configFile) : saveToBinaryStream(&configFile);
+                retVal = jsonFormat ? saveToJSONStream(&configFile, false) : saveToBinaryStream(&configFile);
             }
 
             if (configFile) { configFile.close(); }
@@ -626,7 +626,7 @@ void Hydroponics::commonPostInit()
         if (isValidPin(_ctrlInputPin1)) { Serial.print(_ctrlInputPin1); }
         else { Serial.print(SFP(HS_Disabled)); }
         Serial.print(F(", EEPROMi2cAddress: 0x"));
-        Serial.print(_eepromI2CAddr, HEX);
+        Serial.print(_eepromI2CAddr & ~HYDRUINO_SYS_I2CEEPROM_BASEADDR, HEX);
         Serial.print(F(", RTCi2cAddress: 0x"));
         Serial.print(_rtcI2CAddr, HEX);
         Serial.print(F(", LCDi2cAddress: 0x"));
@@ -1087,11 +1087,6 @@ void Hydroponics::setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint1
         _systemData->autosaveInterval = autosaveInterval;
         _lastAutosave = autosaveEnabled ? unixNow() : 0;
     }
-}
-
-void Hydroponics::setSystemConfigFile(String configFileName)
-{
-    _configFileName = configFileName;
 }
 
 void Hydroponics::setWiFiConnection(String ssid, String password)

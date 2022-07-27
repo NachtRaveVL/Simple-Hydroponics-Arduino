@@ -183,7 +183,7 @@ public:
               Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
 
-    // Initializes system from EEPROM save, returning success flag
+    // Initializes system from EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
     bool initFromEEPROM(bool jsonFormat = false);
     // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFile)
     bool initFromSDCard(bool jsonFormat = true);
@@ -194,7 +194,7 @@ public:
     // TODO: Network URL init
     //bool initFromNetworkURL(urlDataTODO, configFileName = "hydruino.cfg");
 
-    // Saves current system setup to EEPROM save, returning success flag
+    // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
     bool saveToEEPROM(bool jsonFormat = false);
     // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFile)
     bool saveToSDCard(bool jsonFormat = true);
@@ -219,7 +219,7 @@ public:
 
     // System Logging.
 
-    // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to specified prefix. Returns success boolean.
+    // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to the specified prefix. Returns success boolean.
     inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy") { return _logger.beginLoggingToSDCard(logFilePrefix); }
     // TODO: Network URL sys logging
     //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix = "logs/hy");
@@ -280,8 +280,10 @@ public:
     void setPollingInterval(uint16_t pollingInterval);
     // Sets system autosave enable mode and optional autosave interval, in minutes.
     void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
-    // Sets system config file as used by various methods.
-    void setSystemConfigFile(String configFileName);
+    // Sets system config file as used in init and save by SD Card.
+    inline void setSystemConfigFile(String configFileName) { _sysConfigFile = configFileName; }
+    // Sets EEPROM system data address as used in init and save by EEPROM.
+    inline void setSystemDataAddress(uint16_t sysDataAddress) { _sysDataAddress = sysDataAddress; }
     // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
     void setWiFiConnection(String ssid, String password);
 
@@ -346,6 +348,10 @@ public:
     bool isPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
     // Returns if system autosaves are enabled or not
     bool isAutosaveEnabled() const;
+    // System config file used in init and save by SD Card
+    inline String getSystemConfigFile() const { return _sysConfigFile; }
+    // System data address used in init and save by EEPROM
+    inline uint16_t getSystemDataAddress() const { return _sysDataAddress; }
     // SSID for WiFi connection
     String getWiFiSSID();
     // Password for WiFi connection (plaintext)
@@ -393,7 +399,8 @@ protected:
     uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                         // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                           // Last date autosave was performed, if able (UTC)
-    String _configFileName;                                         // Config file name saved from init call, used for autosave (default: "hydruino.cfg")
+    String _sysConfigFile;                                          // SD Card system config filename used in init and save (default: "hydruino.cfg")
+    uint16_t _sysDataAddress;                                       // EEPROM system data address used in init and save (default: -1/disabled)
 
     Map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
     Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount>::type _additives; // Custom additives data

@@ -239,7 +239,12 @@ The Vertical NFT Example sketch is the standard implementation for our 3D printe
 #define SETUP_CTRL_IN_MODE          Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
 #define SETUP_SYS_NAME              "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE          +0              // System timezone offset
-#define SETUP_CONFIG_FILE           "hydruino.cfg"  // System config file name
+
+// System Saves Settings
+#define SETUP_SAVES_SD_CARD_ENABLE  true            // If saving/loading from SD card is enabled
+#define SETUP_SD_CARD_CONFIG_FILE   "hydruino.cfg"  // System config file name for SD Card saves
+#define SETUP_SAVES_EEPROM_ENABLE   false           // If saving/loading from EEPROM is enabled
+#define SETUP_EEPROM_SYSDATA_ADDR   0               // System data memory offset for EEPROM saves
 
 // WiFi Settings
 #define SETUP_ENABLE_WIFI           false           // If WiFi is enabled

@@ -27,7 +27,12 @@
 #define SETUP_CTRL_IN_MODE          Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
 #define SETUP_SYS_NAME              "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE          +0              // System timezone offset
-#define SETUP_CONFIG_FILE           "hydruino.cfg"  // System config file name
+
+// System Saves Settings
+#define SETUP_SAVES_SD_CARD_ENABLE  true            // If saving/loading from SD card is enabled
+#define SETUP_SD_CARD_CONFIG_FILE   "hydruino.cfg"  // System config file name for SD Card saves
+#define SETUP_SAVES_EEPROM_ENABLE   false           // If saving/loading from EEPROM is enabled
+#define SETUP_EEPROM_SYSDATA_ADDR   0               // System data memory offset for EEPROM saves
 
 // WiFi Settings
 #define SETUP_ENABLE_WIFI           false           // If WiFi is enabled
@@ -127,6 +132,7 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
 #define SETUP_USE_DIGITAL_BITRES    12
 
 void setup() {
+    // Setup base interfaces
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         Serial.begin(115200);           // Begin USB Serial interface
         while(!Serial) { ; }            // Wait for USB Serial to connect (remove in production)
@@ -138,12 +144,20 @@ void setup() {
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_SSID);
     #endif
+
+    // Sets control input pins, if any
     if (isValidPin(_SETUP_CTRL_INPUT_PINS[0])) {
         hydroController.setControlInputPinMap(_SETUP_CTRL_INPUT_PINS);
     }
 
     // Sets system config name used in any of the following inits.
-    hydroController.setSystemConfigFile(F(SETUP_CONFIG_FILE));
+    #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
+        hydroController.setSystemConfigFile(F(SETUP_SD_CARD_CONFIG_FILE));
+    #endif
+    // Sets the EEPROM memory address for system data.
+    #if SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
+        hydroController.setSystemDataAddress(SETUP_EEPROM_SYSDATA_ADDR);
+    #endif
 
     // Enables external crop library with external data devices, needed for storage constrained devices.
     #if SETUP_EXTCROPLIB_SD_ENABLE
@@ -155,14 +169,13 @@ void setup() {
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false
-        #if SETUP_SD_CARD_CS_PIN >= 0
+        //#if SETUP_ENABLE_WIFI && SETUP_SAVELOAD_NETWORKURL_ENABLE
+            //|| hydroController.initFromURL(wifiSSID, wifiPassword, urlDataTODO)
+        //#endif
+        #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
             || hydroController.initFromSDCard()
-        #endif
-        #if SETUP_EEPROM_DEVICE_SIZE
+        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
             || hydroController.initFromEEPROM()
-        #endif
-        #if SETUP_ENABLE_WIFI
-            //|| hydroController.initFromURL(wifiSSID, wifiPassword, TODO)
         #endif
         )) {
         // First time running controller, set up default initial empty environment.
@@ -183,6 +196,11 @@ void setup() {
         #if SETUP_ENABLE_WIFI
             hydroController.setWiFiConnection(wifiSSID, wifiPassword);
             hydroController.getWiFi();      // Forces start, but may block for a while if not already initialized
+        #endif
+        #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson);    
+        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToEEPROMRaw);
         #endif
 
         // Base Objects

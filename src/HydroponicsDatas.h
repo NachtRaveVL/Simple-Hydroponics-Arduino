@@ -17,12 +17,13 @@ struct HydroponicsCustomAdditiveData;
 #include "HydroponicsPublisher.h"
 #include "HydroponicsLogger.h"
 
+// Autosave Enumeration
 enum Hydroponics_Autosave {
-    Hydroponics_Autosave_EnabledToSDCardJson,
-    Hydroponics_Autosave_EnabledToSDCardRaw,
-    Hydroponics_Autosave_EnabledToEEPROMJson,
-    Hydroponics_Autosave_EnabledToEEPROMRaw,
-    Hydroponics_Autosave_Disabled = -1
+    Hydroponics_Autosave_EnabledToSDCardJson,                   // Autosave to SD Card in Json
+    Hydroponics_Autosave_EnabledToSDCardRaw,                    // Autosave to SD Card in binary
+    Hydroponics_Autosave_EnabledToEEPROMJson,                   // Autosave to EEPROM in Json
+    Hydroponics_Autosave_EnabledToEEPROMRaw,                    // Autosave to EEPROM in binary
+    Hydroponics_Autosave_Disabled = -1                          // Autosave disabled
 };
 
 // User System Setup Data
