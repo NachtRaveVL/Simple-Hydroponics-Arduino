@@ -49,12 +49,12 @@ public:
     virtual bool isEmpty() = 0;
 
     virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits);
-    virtual Hydroponics_UnitsType getVolumeUnits() const;
+    virtual Hydroponics_UnitsType getVolumeUnits() const { return definedUnitsElse(_volumeUnits, defaultLiquidVolumeUnits()); }
 
     virtual HydroponicsSensorAttachment &getWaterVolume() = 0;
 
-    Hydroponics_ReservoirType getReservoirType() const;
-    Hydroponics_PositionIndex getReservoirIndex() const;
+    inline Hydroponics_ReservoirType getReservoirType() const { return _id.objTypeAs.reservoirType; }
+    inline Hydroponics_PositionIndex getReservoirIndex() const { return _id.posIndex; }
 
     Signal<HydroponicsReservoir *> &getFilledSignal();
     Signal<HydroponicsReservoir *> &getEmptySignal();
@@ -69,8 +69,9 @@ protected:
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    virtual void handleFilledState();
-    virtual void handleEmptyState();
+    virtual void handleFilledState(Hydroponics_TriggerState filledState);
+    virtual void handleEmptyState(Hydroponics_TriggerState emptyState);
+    friend class HydroponicsFluidReservoir;
 };
 
 
@@ -96,31 +97,24 @@ public:
 
     virtual HydroponicsSensorAttachment &getWaterVolume() override;
 
-    void setFilledTrigger(HydroponicsTrigger *filledTrigger);
-    inline const HydroponicsTrigger *getFilledTrigger() const { return _filledTrigger; }
+    inline void setFilledTrigger(shared_ptr<HydroponicsTrigger> filledTrigger) { _filledTrigger = filledTrigger; }
+    inline shared_ptr<HydroponicsTrigger> getFilledTrigger(bool force = false) { _filledTrigger.updateTriggerIfNeeded(force); return _filledTrigger.getObject(); }
 
-    void setEmptyTrigger(HydroponicsTrigger *emptyTrigger);
-    inline const HydroponicsTrigger *getEmptyTrigger() const { return _emptyTrigger; }
+    inline void setEmptyTrigger(shared_ptr<HydroponicsTrigger> emptyTrigger) { _emptyTrigger = emptyTrigger; }
+    inline shared_ptr<HydroponicsTrigger> getEmptyTrigger(bool force = false) { _emptyTrigger.updateTriggerIfNeeded(force); return _emptyTrigger.getObject(); }
 
     inline float getMaxVolume() const { return _maxVolume; }
 
 protected:
     float _maxVolume;                                       // Maximum volume
     HydroponicsSensorAttachment _waterVolume;               // Water volume sensor attachment
-    HydroponicsTrigger *_filledTrigger;                     // Filled trigger (owned)
-    HydroponicsTrigger *_emptyTrigger;                      // Empty trigger (owned)
+    HydroponicsTriggerAttachment _filledTrigger;            // Filled trigger (owned)
+    HydroponicsTriggerAttachment _emptyTrigger;             // Empty trigger (owned)
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    virtual void handleFilledState() override;
-    virtual void handleEmptyState() override;
-
-    void attachFilledTrigger();
-    void detachFilledTrigger();
-    void handleFilledTrigger(Hydroponics_TriggerState triggerState);
-    void attachEmptyTrigger();
-    void detachEmptyTrigger();
-    void handleEmptyTrigger(Hydroponics_TriggerState triggerState);
+    virtual void handleFilledState(Hydroponics_TriggerState filledState) override;
+    virtual void handleEmptyState(Hydroponics_TriggerState filledState) override;
 };
 
 

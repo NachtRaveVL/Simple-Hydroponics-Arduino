@@ -217,7 +217,7 @@ bool HydroponicsBinarySensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
         bool stateBefore = _lastMeasurement.state;
 
-        bool state = digitalRead(_inputPin) == HIGH;
+        bool state = (digitalRead(_inputPin) == (_activeLow ? LOW : HIGH));
         auto timestamp = unixNow();
 
         _lastMeasurement = HydroponicsBinaryMeasurement(state, timestamp);

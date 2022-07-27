@@ -243,7 +243,7 @@ void HydroponicsRegulatedRail::handleLowMemory()
 
 bool HydroponicsRegulatedRail::canActivate(HydroponicsActuator *actuator)
 {
-    if (_limitTrigger && _limitTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered) { return false; }
+    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState())) { return false; }
 
     HydroponicsSingleMeasurement powerReq = actuator->getContinuousPowerUsage();
     convertUnits(&powerReq, getPowerUnits(), getRailVoltage());
@@ -253,7 +253,7 @@ bool HydroponicsRegulatedRail::canActivate(HydroponicsActuator *actuator)
 
 float HydroponicsRegulatedRail::getCapacity()
 {
-    if (_limitTrigger && _limitTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered) { return 1.0f; }
+    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState())) { return 1.0f; }
     float retVal = _powerUsage.getMeasurementValue() / _maxPower;
     return constrain(retVal, 0.0f, 1.0f);
 }

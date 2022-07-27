@@ -45,16 +45,9 @@ void HydroponicsReservoir::update()
 {
     HydroponicsObject::update();
 
-    auto filledState = triggerStateFromBool(isFilled());
-    if (_filledState != filledState) {
-        _filledState = filledState;
-        handleFilledState();
-    }
-    auto emptyState = triggerStateFromBool(isEmpty());
-    if (_emptyState != emptyState) {
-        _emptyState = emptyState;
-        handleEmptyState();
-    }
+    handleFilledState(triggerStateFromBool(isFilled()));
+
+    handleEmptyState(triggerStateFromBool(isEmpty()));
 }
 
 bool HydroponicsReservoir::canActivate(HydroponicsActuator *actuator)
@@ -83,21 +76,6 @@ void HydroponicsReservoir::setVolumeUnits(Hydroponics_UnitsType volumeUnits)
     }
 }
 
-Hydroponics_UnitsType HydroponicsReservoir::getVolumeUnits() const
-{
-    return definedUnitsElse(_volumeUnits, defaultLiquidVolumeUnits());
-}
-
-Hydroponics_ReservoirType HydroponicsReservoir::getReservoirType() const
-{
-    return _id.objTypeAs.reservoirType;
-}
-
-Hydroponics_PositionIndex HydroponicsReservoir::getReservoirIndex() const
-{
-    return _id.posIndex;
-}
-
 Signal<HydroponicsReservoir *> &HydroponicsReservoir::getFilledSignal()
 {
     return _filledSignal;
@@ -121,25 +99,37 @@ void HydroponicsReservoir::saveToData(HydroponicsData *dataOut)
     ((HydroponicsReservoirData *)dataOut)->volumeUnits = _volumeUnits;
 }
 
-void HydroponicsReservoir::handleFilledState()
+void HydroponicsReservoir::handleFilledState(Hydroponics_TriggerState filledState)
 {
-    if (_emptyState == Hydroponics_TriggerState_Triggered) {
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _emptySignal, this);
-        #else
-            _emptySignal.fire(this);
-        #endif
+    if (filledState == Hydroponics_TriggerState_Disabled || filledState == Hydroponics_TriggerState_Undefined) { return; }
+
+    if (_filledState != filledState) {
+        _filledState = filledState;
+
+        if (triggerStateToBool(_filledState)) {
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _filledSignal, this);
+            #else
+                _filledSignal.fire(this);
+            #endif
+        }
     }
 }
 
-void HydroponicsReservoir::handleEmptyState()
+void HydroponicsReservoir::handleEmptyState(Hydroponics_TriggerState emptyState)
 {
-    if (_filledState == Hydroponics_TriggerState_Triggered) {
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _filledSignal, this);
-        #else
-            _filledSignal.fire(this);
-        #endif
+    if (emptyState == Hydroponics_TriggerState_Disabled || emptyState == Hydroponics_TriggerState_Undefined) { return; }
+
+    if (_emptyState != emptyState) {
+        _emptyState = emptyState;
+
+        if (triggerStateToBool(_emptyState)) {
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsReservoir *>(getSharedPtr(), _emptySignal, this);
+            #else
+                _emptySignal.fire(this);
+            #endif
+        }
     }
 }
 
@@ -149,36 +139,38 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(Hydroponics_ReservoirType r
                                                      float maxVolume,
                                                      int classType)
     : HydroponicsReservoir(reservoirType, reservoirIndex, classType),
-      _maxVolume(maxVolume), _waterVolume(this),
-      _filledTrigger(nullptr), _emptyTrigger(nullptr)
+      _maxVolume(maxVolume), _waterVolume(this), _filledTrigger(this), _emptyTrigger(this)
 { ; }
 
 HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReservoirData *dataIn)
     : HydroponicsReservoir(dataIn),
-      _maxVolume(dataIn->maxVolume),
-      _waterVolume(this),
-      _filledTrigger(newTriggerObjectFromSubData(&(dataIn->filledTrigger))),
-      _emptyTrigger(newTriggerObjectFromSubData(&(dataIn->emptyTrigger)))
+      _maxVolume(dataIn->maxVolume), _waterVolume(this), _filledTrigger(this), _emptyTrigger(this)
 {
-    if (_filledTrigger) { attachFilledTrigger(); }
-    if (_emptyTrigger) { attachEmptyTrigger(); }
     _waterVolume = dataIn->volumeSensor;
+
+    _filledTrigger.setUpdateMethod(&HydroponicsReservoir::handleFilledState);
+    _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
+
+    _emptyTrigger.setUpdateMethod(&HydroponicsReservoir::handleEmptyState);
+    _emptyTrigger = newTriggerObjectFromSubData(&(dataIn->emptyTrigger));
 }
 
 HydroponicsFluidReservoir::~HydroponicsFluidReservoir()
-{
-    if (_filledTrigger) { detachFilledTrigger(); delete _filledTrigger; _filledTrigger = nullptr; }
-    if (_emptyTrigger) { detachEmptyTrigger(); delete _emptyTrigger; _emptyTrigger = nullptr; }
-}
+{ ; }
 
 void HydroponicsFluidReservoir::update()
 {
     HydroponicsReservoir::update();
 
-    if (_filledTrigger) { _filledTrigger->update(); }
-    if (_emptyTrigger) { _emptyTrigger->update(); }
+    if (_filledTrigger.getObject()) { _filledTrigger->update(); }
+
+    if (_emptyTrigger.getObject()) { _emptyTrigger->update(); }
 
     _waterVolume.updateMeasurementIfNeeded();
+
+    _filledTrigger.updateTriggerIfNeeded();
+
+    _emptyTrigger.updateTriggerIfNeeded();
 }
 
 void HydroponicsFluidReservoir::handleLowMemory()
@@ -191,14 +183,14 @@ void HydroponicsFluidReservoir::handleLowMemory()
 
 bool HydroponicsFluidReservoir::isFilled()
 {
-    if (_filledTrigger) { return _filledTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered; }
+    if (_filledTrigger.getObject()) { return triggerStateToBool(_filledTrigger.getTriggerState()); }
     return _waterVolume.getMeasurementValue() >= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
                                                                                                                      : _maxVolume) - FLT_EPSILON;
 }
 
 bool HydroponicsFluidReservoir::isEmpty()
 {
-    if (_emptyTrigger) { return _emptyTrigger->getTriggerState() == Hydroponics_TriggerState_Triggered; }
+    if (_emptyTrigger.getObject()) { return triggerStateToBool(_emptyTrigger.getTriggerState()); }
     return _waterVolume.getMeasurementValue() <= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
                                                                                                                      : 0) + FLT_EPSILON;
 }
@@ -218,24 +210,6 @@ HydroponicsSensorAttachment &HydroponicsFluidReservoir::getWaterVolume()
     return _waterVolume;
 }
 
-void HydroponicsFluidReservoir::setFilledTrigger(HydroponicsTrigger *filledTrigger)
-{
-    if (_filledTrigger != filledTrigger) {
-        if (_filledTrigger) { detachFilledTrigger(); delete _filledTrigger; }
-        _filledTrigger = filledTrigger;
-        if (_filledTrigger) { attachFilledTrigger(); }
-    }
-}
-
-void HydroponicsFluidReservoir::setEmptyTrigger(HydroponicsTrigger *emptyTrigger)
-{
-    if (_emptyTrigger != emptyTrigger) {
-        if (_emptyTrigger) { detachEmptyTrigger(); delete _emptyTrigger; }
-        _emptyTrigger = emptyTrigger;
-        if (_emptyTrigger) { attachEmptyTrigger(); }
-    }
-}
-
 void HydroponicsFluidReservoir::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsReservoir::saveToData(dataOut);
@@ -252,73 +226,23 @@ void HydroponicsFluidReservoir::saveToData(HydroponicsData *dataOut)
     }
 }
 
-void HydroponicsFluidReservoir::handleFilledState()
+void HydroponicsFluidReservoir::handleFilledState(Hydroponics_TriggerState filledState)
 {
-    if (_filledState == Hydroponics_TriggerState_Triggered && !getWaterVolume()) {
+    HydroponicsReservoir::handleFilledState(filledState);
+
+    if (_filledState == Hydroponics_TriggerState_Triggered && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
                                                                                                            : _maxVolume, _volumeUnits);
     }
-    HydroponicsReservoir::handleFilledState();
 }
 
-void HydroponicsFluidReservoir::handleEmptyState()
+void HydroponicsFluidReservoir::handleEmptyState(Hydroponics_TriggerState emptyState)
 {
-    if (_emptyState == Hydroponics_TriggerState_Triggered && !getWaterVolume()) {
+    HydroponicsReservoir::handleEmptyState(emptyState);
+
+    if (_emptyState == Hydroponics_TriggerState_Triggered && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
                                                                                                            : 0, _volumeUnits);
-    }
-    HydroponicsReservoir::handleEmptyState();
-}
-
-void HydroponicsFluidReservoir::attachFilledTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HS_Err_MissingLinkage));
-    if (_filledTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleFilledTrigger);
-        _filledTrigger->getTriggerSignal().attach(methodSlot);
-    }
-}
-
-void HydroponicsFluidReservoir::detachFilledTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HS_Err_MissingLinkage));
-    if (_filledTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleFilledTrigger);
-        _filledTrigger->getTriggerSignal().detach(methodSlot);
-    }
-}
-
-void HydroponicsFluidReservoir::handleFilledTrigger(Hydroponics_TriggerState triggerState)
-{
-    if (triggerState != Hydroponics_TriggerState_Undefined && triggerState != Hydroponics_TriggerState_Disabled && _filledState != triggerState) {
-        _filledState = triggerState;
-        handleFilledState();
-    }
-}
-
-void HydroponicsFluidReservoir::attachEmptyTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HS_Err_MissingLinkage));
-    if (_emptyTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleEmptyTrigger);
-        _emptyTrigger->getTriggerSignal().attach(methodSlot);
-    }
-}
-
-void HydroponicsFluidReservoir::detachEmptyTrigger()
-{
-    HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HS_Err_MissingLinkage));
-    if (_emptyTrigger) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_TriggerState>(this, &HydroponicsFluidReservoir::handleEmptyTrigger);
-        _emptyTrigger->getTriggerSignal().detach(methodSlot);
-    }
-}
-
-void HydroponicsFluidReservoir::handleEmptyTrigger(Hydroponics_TriggerState triggerState)
-{
-    if (triggerState != Hydroponics_TriggerState_Undefined && triggerState != Hydroponics_TriggerState_Disabled && _emptyState != triggerState) {
-        _emptyState = triggerState;
-        handleEmptyState();
     }
 }
 
