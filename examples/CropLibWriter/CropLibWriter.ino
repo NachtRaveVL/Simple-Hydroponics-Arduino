@@ -1,5 +1,25 @@
 // Simple-Hydroponics-Arduino Crop Library Writer Example
 // In this example we program an SD Card or EEPROM to hold onto the crop library data.
+// Since dead code is stripped out of the final binary on most Arduino-like build
+// processes, we can take advantage of that fact to create an "empty" system that only
+// does one thing: programs the SD Card or EEPROM attached to it. This sketch can be
+// ran on a device to "prep" such devices, and thus can easily offload any program data.
+// 
+// Make sure that you have not defined HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY so that the
+// full crops library is built onto onboard Flash. You may refer to:
+// https://forum.arduino.cc/index.php?topic=602603.0 on how to define custom build flags
+// manually via modifying platform[.local].txt.
+//
+// In Hydroponics.h:
+// 
+// // Uncomment or -D this define to disable building-in of Crops Library data (note: saves considerable size on sketch). Required for constrained devices.
+// //#define HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY   // If enabled, must use external device (such as SD Card or EEPROM) for Crops Library support.
+// 
+// // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
+// #define HYDRUINO_ENABLE_DEBUG_OUTPUT
+//
+// Alternatively, in platform[.local].txt:
+// build.extra_flags=-DHYDRUINO_ENABLE_DEBUG_OUTPUT
 
 #include <Hydroponics.h>
 
@@ -42,11 +62,10 @@ void setup() {
     String writingCrop = F("Writing Crop: ");
     String dotDotDot = F("...");
 
-    // Right here would be the place to program in any custom crop data.
-    HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
-    strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
-
-    getCropsLibraryInstance()->setCustomCropData(&customCrop1);
+    // Right here would be the place to program in any custom crop data that you want available.
+    //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
+    //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
+    //getCropsLibraryInstance()->setCustomCropData(&customCrop1);
 
     getLoggerInstance()->logMessage(F("Writing crops library..."));
 
@@ -69,12 +88,12 @@ void setup() {
                         StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                         JsonObject jsonObject = doc.to<JsonObject>();
                         if (!serializeJsonPretty(jsonObject, file)) { // Could also write out in binary but don't bother
-                            getLoggerInstance()->logError(F("Failure writing to file!"));
+                            getLoggerInstance()->logError(F("Failure writing to crop data file!"));
                         }
                         file.close();
                     } else {
                         if (file) { file.close(); }
-                        getLoggerInstance()->logError(F("Failure opening file for writing!"));
+                        getLoggerInstance()->logError(F("Failure opening crop data file for writing!"));
                     }
 
                     getCropsLibraryInstance()->returnCropsData(cropData);
@@ -92,8 +111,10 @@ void setup() {
         if (eeprom) {
             getLoggerInstance()->logMessage(F("... Writing EEPROM data..."));
 
-            // A lookup table of uint16_t[Hydroponics_CropType_Count] is created to aid in offset lookup
-            uint16_t writeOffset = SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * Hydroponics_CropType_Count);
+            // A lookup table of uint16_t[Hydroponics_CropType_Count] is created to aid in offset lookup,
+            // which is positioned right after an initial uint16_t total size value.
+            uint16_t writeOffset = SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * Hydroponics_CropType_Count + 1);
+            uint16_t totalSize = 0;
 
             for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
                 auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
@@ -109,12 +130,21 @@ void setup() {
                     if (bytesWritten && eeprom->updateBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * cropType),
                                                                   (const byte *)&writeOffset, sizeof(uint16_t))) {
                         writeOffset += bytesWritten;
+                        totalSize += bytesWritten;
                     } else {
-                        getLoggerInstance()->logError(F("Failure writing EEPROM data!"));
+                        getLoggerInstance()->logError(F("Failure writing crop data to EEPROM!"));
                     }
-                } else { // Unused crop data
-                    
-                    eeprom->setBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * cropType), 0, sizeof(uint16_t));
+
+                    getCropsLibraryInstance()->returnCropsData(cropData);
+                } else if (!eeprom->setBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * cropType), 0, sizeof(uint16_t))) {
+                    getLoggerInstance()->logError(F("Failure writing table data to EEPROM!"));
+                }
+            }
+
+            if (totalSize) {
+                totalSize += (sizeof(uint16_t) * Hydroponics_CropType_Count + 1);
+                if (!eeprom->updateBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS, (const byte *)&totalSize, sizeof(uint16_t))) {
+                    getLoggerInstance()->logError(F("Failure writing total size to EEPROM!"));
                 }
             }
         }

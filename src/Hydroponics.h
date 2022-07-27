@@ -38,8 +38,8 @@
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
-// Uncomment or -D this define to disable building-in of Crops Library data (note: saves considerable size on sketch). Required for low-end device support, e.g. Mega2560.
-//#define HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY   // If enabled, must use external device (such as SD or EEPROM) for Crops Library support. Only custom crops supported otherwise.
+// Uncomment or -D this define to disable building-in of Crops Library data (note: saves considerable size on sketch). Required for constrained devices.
+//#define HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY   // If enabled, must use external device (such as SD Card or EEPROM) for Crops Library support.
 
 // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT

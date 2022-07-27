@@ -223,8 +223,8 @@ HydroponicsCropsLibraryBook * HydroponicsCropsLibrary::newBookFromType(Hydroponi
 
         if (eeprom) {
             uint16_t lookupOffset = 0;
-            eeprom->readBlock(_libEEPROMDataAddress + (sizeof(uint16_t) * (int)cropType),
-                                (byte *)&lookupOffset, sizeof(lookupOffset));
+            eeprom->readBlock(_libEEPROMDataAddress + (sizeof(uint16_t) * (int)(cropType + 1)), // +1 for initial total size word
+                              (byte *)&lookupOffset, sizeof(lookupOffset));
             auto eepromStream = HydroponicsEEPROMStream(_libEEPROMDataAddress + lookupOffset, sizeof(HydroponicsCropsLibData));
             retVal = new HydroponicsCropsLibraryBook(eepromStream, _libEEPROMJSONFormat);
         }

@@ -10,23 +10,23 @@ Created by NachtRaveVL, May 20th, 2022.
 
 **UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be stored internally in built-in Flash, or externally on SD card or EEPROM to allow storage constrained devices to still run. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data logging to MQTT (for IoT integration), .csv data files on an SD card or Network share for custom processing, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. System config can be hard coded, saved to SD card, EEPROM, or Network share. Hydruino also comes with LCD and input controller support similar in operation to low-cost 3D printers ([support provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some ([custom 3D printed stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied)) along with some other goodies.
+This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or stored externally, along with config and user calibration data, on a SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data logging to MQTT (for IoT integration), .csv data files on an SD card or Network share, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support, or with advanced LCD and input controller support similar in operation to low-cost 3D printers - ([provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some ([custom 3D printed stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied)) along with some other goodies.
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, Pico, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
 
 Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), and Time.
 
-Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
+Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
 *If you value the work that we do, our small team always appreciates a subscription to our [Patreon](www.patreon.com/nachtrave).*
 
 ## About
 
-We want to make Hydroponics more accessible by utilizing the widely available IoT and IoT-like microcontrollers (MCUs) of today.
+We want to make Hydroponics more accessible by utilizing the widely available IoT and IoT-like microcontrollers (MCUs) of both today and yesterday.
 
-With the advances of technology bringing us even more compact MCUs at even lower costs, it becomes a lot more possible to simply use one of these small devices to do what amounts to turning a bunch of relays on and off in the right order. Hydroponics is a perfect application for these devices, especially as a data logger, feed balancer, and more.
+With the advances in technology bringing us even more compact MCUs at even lower costs, it becomes a lot more possible to simply use one of these small devices to do what amounts to turning a bunch of relays on and off in the right order. Hydroponics is a perfect application for these devices, especially as a data logger, feed balancer, and more.
 
-Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors from the hobby store, some aquarium pumps from the pet store, and other widely available low-cost hardware to build a working functional hydroponics controller systems. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the doors for more people to get involved in reducing their carbon footprint and becoming more knowledgeable - and ethical - about where their food comes from.
+Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors from the hobby store, some aquarium pumps from the pet store, and other widely available low-cost hardware to build a working functional hydroponics controller systems. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the doors for more people to get involved in reducing their carbon footprint and becoming more knowledgeable about their food.
 
 ## Controller Setup
 
@@ -50,8 +50,8 @@ From Hydroponics.h:
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
-// Uncomment or -D this define to disable building-in of Crops Library data (note: saves considerable size on sketch). Required for low-end device support, e.g. Mega2560.
-//#define HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY   // If enabled, must use external device (such as SD or EEPROM) for Crops Library support.
+// Uncomment or -D this define to disable building-in of Crops Library data (note: saves considerable size on sketch). Required for constrained devices.
+//#define HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY   // If enabled, must use external device (such as SD Card or EEPROM) for Crops Library support.
 
 // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -132,11 +132,12 @@ We also ask that our users report any broken sensors (outside of bad calibration
 ## Memory Callouts
 
 * The total number of and different types of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Objects range in size from 150 to 350 bytes or more depending on settings.
-* For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while more recent devices like the RasPi Pico have 2MB of Flash and 264kB of RAM. The ATMega2560 may struggle with full system builds and may be limited to specific system setups (such as no debug assertions, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled without issue.
+* For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while more recent devices like the RasPi Pico have 2MB of Flash and 264kB of RAM. The ATMega2560 may struggle with full system builds and may be limited to specific system setups (such as no debug assertions, external crop library, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled without issue.
 * For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various array structures the controller uses.
-  * If, for example, you had a large number of crops attached to a single feed reservoir, you can modify these defines to give more space for such object storage to avoid running into these storage limitations.
+  * If, for example, you had a large number of crops attached to a single feed reservoir, you can modify these defines to give more space for such object storage to avoid running into any storage limitations.
 * To save on the cost of code for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used (e.g. WiFi not being included in the build if you don't actually use any WiFi).
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
+* See the Crop Writer Example to see how to externalize the Crops Library onto an SD Card or EEPROM.
 
 ## Example Usage
 
@@ -144,12 +145,22 @@ Below are several examples of controller usage.
 
 ### Simple Deep Water Culture (DWC) System Example
 
+The Simple DWC Example sketch shows how a simple Hydruino system can be setup using the most minimal of work. In this sketch only that what you need is built into the final binary, making it an ideal lean choice for those who don't need anything fancy.
+
 ```Arduino
 // TODO: Reinclude this example after modifications completed. -NR
 ```
 
 ### Vertical Nutrient Film Technique (NFT) System Example
 
+The Vertical NFT Example sketch is the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired.
+
 ```Arduino
 // TODO: Reinclude this example after modifications completed. -NR
 ```
+
+### Other Examples
+
+The Full System Example sketch will build an empty system with all object and system features enabled. It works similarly to the Vertical NFT Example, except is meant for systems where a UI will be used to create the objects. It involves the least amount of coding and setup, but comes at the highest cost.
+
+The Crops Writer Example sketch can be used to write the Crops Library data onto an SD Card or EEPROM so that storage constrained devices, such as the ATMega2560, can still build at least the Vertical NFT system.
