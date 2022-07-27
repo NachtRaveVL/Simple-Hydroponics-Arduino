@@ -28,7 +28,7 @@
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP32) || defined(ESP8266)
 #define min _min
 #define max _max
 #endif

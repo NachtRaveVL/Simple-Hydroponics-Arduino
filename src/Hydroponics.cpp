@@ -579,9 +579,15 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
 
 void Hydroponics::commonPreInit()
 {
-    if (_i2cWire) { _i2cWire->setClock(_i2cSpeed); }
+    if (_i2cWire) {
+        _i2cWire->setClock(_i2cSpeed);
+        #if !(defined(ESP32) || defined(ESP8266))
+            _i2cWire->begin();
+        #endif
+    }
     if (isValidPin(_sdCardCSPin)) {
-        getSPI()->begin(); // some archs won't init pinMode/set CS high, so we do it manually to be on the safe side
+        getSPI()->begin();
+        // some archs won't init pinMode/set CS high, so we do it manually to be on the safe side
         pinMode(_sdCardCSPin, OUTPUT);
         digitalWrite(_sdCardCSPin, HIGH);
     }

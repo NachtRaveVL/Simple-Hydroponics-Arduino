@@ -74,9 +74,9 @@ private:
 
 // Crops Library Book
 struct HydroponicsCropsLibraryBook {
-    HydroponicsCropsLibData data;
-    int count;
-    bool fromData;
+    HydroponicsCropsLibData data;                           // Crop library data
+    int count;                                              // Reference count
+    bool userSet;                                           // If data was user set (not read from device)
 
     HydroponicsCropsLibraryBook();
     HydroponicsCropsLibraryBook(String jsonStringIn);

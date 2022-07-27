@@ -66,11 +66,22 @@ There are several initialization mode settings exposed through this controller t
 
 #### Class Instantiation
 
-The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's XXX TODO, i2c Wire class instance, if on Espressif then i2c SDA pin and i2c SCL pin, and lastly i2c clock speed. The default constructor values of the controller, if left unspecified, is XXX TODO i2c Wire class instance `Wire` @`400k`Hz.
+The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin, input ribbon pin1, EEPROM i2c address, RTC i2c address, LCD i2c address,, i2c Wire class instance, i2c clock speed, SD Card SPI speed (hard-wired to `25M`Hz on Teensy), and WiFi class instance. The default constructor values of the controller, if left unspecified, has no pins set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, SD Card SPI speed @ `4M`Hz, and WiFi class instance `WiFi`.
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
-// TODO: Reinclude this example after modifications completed. -NR
+    // Library constructor. Typically called during class instantiation, before setup().
+    Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
+                uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
+                byte sdCardCSPin = -1,                      // SD card CS pin, else -1
+                byte controlInputPin1 = -1,                 // First pin of input ribbon, else -1 (ribbon pins can be individually customized later)
+                byte eepromI2CAddress = B000,               // EEPROM address
+                byte rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
+                byte lcdI2CAddress = B000,                  // LCD i2c address
+                TwoWire &i2cWire = Wire,                    // I2C wire class instance
+                uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
+                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored if on Teensy)
+                WiFiClass &wifi = WiFi);                    // WiFi class instance
 ```
 
 ## Hookup Callouts
@@ -148,7 +159,55 @@ Below are several examples of controller usage.
 The Simple DWC Example sketch shows how a simple Hydruino system can be setup using the most minimal of work. In this sketch only that what you need is built into the final binary, making it an ideal lean choice for those who don't need anything fancy.
 
 ```Arduino
-// TODO: Reinclude this example after modifications completed. -NR
+#include <Hydroponics.h>
+
+#define SETUP_GROW_LIGHTS_PIN       8               // Grow lights relay pin (digital)
+#define SETUP_WATER_AERATOR_PIN     7               // Aerator relay pin (digital)
+#define SETUP_FEED_RESERVOIR_SIZE   5               // Reservoir size, in default measurement units
+#define SETUP_AC_POWER_RAIL_TYPE    AC110V          // Rail power type used for AC rail (AC110V, AC220V)
+
+#define SETUP_CROP1_TYPE            Lettuce         // Type of crop planted at position 1, else Undefined
+#define SETUP_CROP1_SUBSTRATE       ClayPebbles     // Type of crop substrate at position 1
+#define SETUP_CROP1_SOW_DATE        DateTime(2022, 5, 21) // Date that crop was planted at position 1
+
+Hydroponics hydroController;            // Controller using default settings
+
+void setup() {
+    // Initializes controller with default environment, no logging, eeprom, SD, or anything else.
+    hydroController.init();
+
+    // Adds a simple relay power rail using standard AC. This will manage how many active devices can be turned on at the same time.
+    auto relayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
+
+    // Adds a 5 unit main water reservoir, already filled with feed water.
+    auto feedReservoir = hydroController.addFeedWaterReservoir(SETUP_FEED_RESERVOIR_SIZE, true);
+
+    // Adds a water aerator at SETUP_WATER_AERATOR_PIN, and links it to the feed water reservoir and the relay power rail.
+    auto aerator = hydroController.addWaterAeratorRelay(SETUP_WATER_AERATOR_PIN);
+    aerator->setRail(relayPower);
+    aerator->setReservoir(feedReservoir);
+
+    // Add grow lights relay at SETUP_GROW_LIGHTS_PIN, and links it to the feed water reservoir and the relay power rail.
+    auto lights = hydroController.addGrowLightsRelay(SETUP_GROW_LIGHTS_PIN);
+    lights->setRail(relayPower);
+    lights->setReservoir(feedReservoir);
+
+    // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
+    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP1_TYPE),
+                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP1_SUBSTRATE),
+                                                SETUP_CROP1_SOW_DATE);
+    crop->setFeedReservoir(feedReservoir);
+
+    // Launches controller into main operation.
+    hydroController.launch();
+}
+
+void loop()
+{
+    // Hydruino will manage most updates for us.
+    hydroController.update();
+}
+
 ```
 
 ### Vertical Nutrient Film Technique (NFT) System Example
@@ -156,8 +215,106 @@ The Simple DWC Example sketch shows how a simple Hydruino system can be setup us
 The Vertical NFT Example sketch is the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired.
 
 ```Arduino
-// TODO: Reinclude this example after modifications completed. -NR
+#include <Hydroponics.h>
+
+// Pins & Class Instances
+#define SETUP_PIEZO_BUZZER_PIN      -1              // Piezo buzzer pin, else -1
+#define SETUP_EEPROM_DEVICE_SIZE    I2C_DEVICESIZE_24LC256 // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
+#define SETUP_SD_CARD_CS_PIN        SS              // SD card CS pin, else -1
+#define SETUP_CTRL_INPUT_PINS       {31.33,30,32}   // Control input pin ribbon, else {-1}
+#define SETUP_EEPROM_I2C_ADDR       B000            // EEPROM address
+#define SETUP_RTC_I2C_ADDR          B000            // RTC i2c address (only B000 can be used atm)
+#define SETUP_LCD_I2C_ADDR          B000            // LCD i2c address
+#define SETUP_I2C_WIRE_INST         Wire            // I2C wire class instance
+#define SETUP_I2C_SPEED             400000U         // I2C speed, in Hz
+#define SETUP_ESP_I2C_SDA           SDA             // I2C SDA pin, if on ESP
+#define SETUP_ESP_I2C_SCL           SCL             // I2C SCL pin, if on ESP
+#define SETUP_SD_CARD_SPI_SPEED     4000000U        // SD card SPI speed, in Hz (ignored if on Teensy)
+#define SETUP_WIFI_INST             WiFi            // WiFi class instance
+
+// System Settings
+#define SETUP_SYSTEM_MODE           Recycling       // System run mode (Recycling, DrainToWaste)
+#define SETUP_MEASURE_MODE          Imperial        // System measurement mode (Default, Imperial, Metric, Scientific)
+#define SETUP_LCD_OUT_MODE          Disabled        // System LCD output mode (Disabled, 20x4LCD, 20x4LCD_Swapped, 16x2LCD, 16x2LCD_Swapped)
+#define SETUP_CTRL_IN_MODE          Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
+#define SETUP_SYS_NAME              "Hydruino"      // System name
+#define SETUP_SYS_TIMEZONE          +0              // System timezone offset
+#define SETUP_CONFIG_FILE           "hydruino.cfg"  // System config file name
+
+// WiFi Settings
+#define SETUP_ENABLE_WIFI           false           // If WiFi is enabled
+#define SETUP_WIFI_SSID             "CHANGE_ME"     // WiFi SSID
+#define SETUP_WIFI_PASS             "CHANGE_ME"     // WiFi password
+
+// Logging & Data Publishing Settings
+#define SETUP_LOG_SD_ENABLE         true            // If system logging is enabled to SD card
+#define SETUP_LOG_FILE_PREFIX       "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
+#define SETUP_DATA_SD_ENABLE        true            // If system data publishing is enabled to SD card
+#define SETUP_DATA_FILE_PREFIX      "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
+
+// External Crops Library Data Settings
+#define SETUP_EXTCROPLIB_SD_ENABLE  true            // If crops library should be read from an external SD card
+#define SETUP_EXTCROPLIB_SD_PREFIX  "lib/crop"      // Crop data SD data file prefix (appended with ##.dat)
+#define SETUP_EXTCROPLIB_EEPROM_ENABLE  true        // If crops library should be read from an external EEPROM
+#define SETUP_EXTCROPLIB_EEPROM_ADDRESS 0           // Crop data EEPROM data begin address
+
+// Base Setup
+#define SETUP_FEED_RESERVOIR_SIZE   4               // Reservoir size, in default measurement units
+#define SETUP_AC_POWER_RAIL_TYPE    AC110V          // Rail power type used for AC rail (AC110V, AC220V)
+#define SETUP_DC_POWER_RAIL_TYPE    DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
+#define SETUP_AC_SUPPLY_POWER       0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_DC_SUPPLY_POWER       0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
+
+// Device Setup
+#define SETUP_PH_METER_PIN          A0              // pH meter sensor pin (analog), else -1
+#define SETUP_TDS_METER_PIN         A1              // TDS meter sensor pin (analog), else -1
+#define SETUP_CO2_SENSOR_PIN        -1              // CO2 meter sensor pin (analog), else -1
+#define SETUP_POWER_SENSOR_PIN      -1              // Power meter sensor pin (analog), else -1
+#define SETUP_FLOW_RATE_SENSOR_PIN  -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
+#define SETUP_DS18_WTEMP_PIN        3               // DS18* water temp sensor data pin (digital), else -1
+#define SETUP_DHT_ATEMP_PIN         4               // DHT* air temp sensor data pin (digital), else -1
+#define SETUP_DHT_SENSOR_TYPE       DHT12           // DHT sensor type enum (use DHT* defines)
+#define SETUP_VOL_FILLED_PIN        -1              // Water level filled indicator pin (digital/ISR), else -1
+#define SETUP_VOL_EMPTY_PIN         -1              // Water level empty indicator pin (digital/ISR), else -1
+#define SETUP_GROW_LIGHTS_PIN       22              // Grow lights relay pin (digital), else -1
+#define SETUP_WATER_AERATOR_PIN     24              // Aerator relay pin (digital), else -1
+#define SETUP_FEED_PUMP_PIN         26              // Water level low indicator pin, else -1
+#define SETUP_WATER_HEATER_PIN      28              // Water heater relay pin (digital), else -1
+#define SETUP_WATER_SPRAYER_PIN     -1              // Water sprayer relay pin (digital), else -1
+#define SETUP_FAN_EXHAUST_PIN       -1              // Fan exhaust relay pin (digital/PWM), else -1
+#define SETUP_NUTRIENT_MIX_PIN      23              // Nutrient premix peristaltic pump relay pin (digital), else -1
+#define SETUP_FRESH_WATER_PIN       25              // Fresh water peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_UP_PIN             27              // pH up solution peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_DOWN_PIN           29              // pH down solution peristaltic pump relay pin (digital), else -1
+
+// Crop Setup
+#define SETUP_CROP_ON_TIME          15              // Minutes feeding pumps are to be turned on for
+#define SETUP_CROP_OFF_TIME         45              // Minutes feeding pumps are to be turned off for
+#define SETUP_CROP1_TYPE            Lettuce         // Type of crop planted at position 1, else Undefined
+#define SETUP_CROP1_SUBSTRATE       ClayPebbles     // Type of crop substrate at position 1
+#define SETUP_CROP1_SOW_DATE        DateTime(2022, 5, 21) // Date that crop was planted at position 1
+#define SETUP_CROP1_SOILM_PIN       -1              // Soil moisture sensor for crop at position 1 pin (analog), else -1
+#define SETUP_CROP2_TYPE            Lettuce         // Type of crop planted at position 2, else Undefined
+#define SETUP_CROP2_SUBSTRATE       ClayPebbles     // Type of crop substrate at position 2
+#define SETUP_CROP2_SOW_DATE        DateTime(2022, 5, 21) // Date that crop was planted at position 2
+#define SETUP_CROP2_SOILM_PIN       -1              // Soil moisture sensor for crop at position 2 pin (analog), else -1
+#define SETUP_CROP3_TYPE            Lettuce         // Type of crop planted at position 3, else Undefined
+#define SETUP_CROP3_SUBSTRATE       ClayPebbles     // Type of crop substrate at position 3
+#define SETUP_CROP3_SOW_DATE        DateTime(2022, 5, 21) // Date that crop was planted at position 3
+#define SETUP_CROP3_SOILM_PIN       -1              // Soil moisture sensor for crop at position 3 pin (analog), else -1
+#define SETUP_CROP4_TYPE            Lettuce         // Type of crop planted at position 4, else Undefined
+#define SETUP_CROP4_SUBSTRATE       ClayPebbles     // Type of crop substrate at position 4
+#define SETUP_CROP4_SOW_DATE        DateTime(2022, 5, 21) // Date that crop was planted at position 4
+#define SETUP_CROP4_SOILM_PIN       -1              // Soil moisture sensor for crop at position 4 pin (analog), else -1
+#define SETUP_CROP5_TYPE            Lettuce         // Type of crop planted at position 5, else Undefined
+#define SETUP_CROP5_SUBSTRATE       ClayPebbles     // Type of crop substrate at position 5
+#define SETUP_CROP5_SOW_DATE        DateTime(2022, 5, 21) // Date that crop was planted at position 5
+#define SETUP_CROP5_SOILM_PIN       -1              // Soil moisture sensor for crop at position 5 pin (analog), else -1
+
+...
 ```
+
+The rest of the Example sketch is used to initialize the system and does not require modification.
 
 ### Other Examples
 

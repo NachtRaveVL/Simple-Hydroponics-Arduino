@@ -1,5 +1,7 @@
 // Simple-Hydroponics-Arduino Simple Deep Water Culture (DWC) Example
-// TODO
+// This sketch shows how a simple Hydruino system can be setup using the most minimal of
+// work. In this sketch only that what you need is built into the final binary, making
+// it an ideal lean choice for those who don't need anything fancy.
 
 #include <Hydroponics.h>
 
@@ -15,9 +17,6 @@
 Hydroponics hydroController;            // Controller using default settings
 
 void setup() {
-    Serial.begin(115200);               // Begin USB Serial interface
-    while(!Serial) { ; }                // Wait for USB Serial to connect (remove in production)
-
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else.
     hydroController.init();
 

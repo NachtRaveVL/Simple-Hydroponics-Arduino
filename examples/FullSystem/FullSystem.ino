@@ -15,6 +15,8 @@
 #define SETUP_LCD_I2C_ADDR          B000            // LCD i2c address
 #define SETUP_I2C_WIRE_INST         Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED             400000U         // I2C speed, in Hz
+#define SETUP_ESP_I2C_SDA           SDA             // I2C SDA pin, if on ESP
+#define SETUP_ESP_I2C_SCL           SCL             // I2C SCL pin, if on ESP
 #define SETUP_SD_CARD_SPI_SPEED     4000000U        // SD card SPI speed, in Hz (ignored if on Teensy)
 #define SETUP_WIFI_INST             WiFi            // WiFi class instance
 
@@ -39,10 +41,10 @@
 #define SETUP_DATA_FILE_PREFIX      "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 // External Crops Library Data Settings
-#define SETUP_EXTCROPLIB_SD_ENABLE false           // If crops library should be read from an external SD card
-#define SETUP_EXTCROPLIB_SD_PREFIX "lib/crop"      // Crop data SD data file prefix (appended with ##.dat)
-#define SETUP_EXTCROPLIB_EEPROM_ENABLE  false      // If crops library should be read from an external EEPROM
-#define SETUP_EXTCROPLIB_EEPROM_ADDRESS 0          // Crop data EEPROM data begin address
+#define SETUP_EXTCROPLIB_SD_ENABLE  false           // If crops library should be read from an external SD card
+#define SETUP_EXTCROPLIB_SD_PREFIX  "lib/crop"      // Crop data SD data file prefix (appended with ##.dat)
+#define SETUP_EXTCROPLIB_EEPROM_ENABLE  false       // If crops library should be read from an external EEPROM
+#define SETUP_EXTCROPLIB_EEPROM_ADDRESS 0           // Crop data EEPROM data begin address
 
 
 byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -62,6 +64,9 @@ void setup() {
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         Serial.begin(115200);           // Begin USB Serial interface
         while(!Serial) { ; }            // Wait for USB Serial to connect (remove in production)
+    #endif
+    #if defined(ESP32) || defined(ESP8266)
+        SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
     #if SETUP_ENABLE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);

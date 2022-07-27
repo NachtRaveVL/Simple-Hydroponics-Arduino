@@ -3,12 +3,14 @@
 // Since dead code is stripped out of the final binary on most Arduino-like build
 // processes, we can take advantage of that fact to create an "empty" system that only
 // does one thing: programs the SD Card or EEPROM attached to it. This sketch can be
-// ran on a device to "prep" such devices, and thus can easily offload any program data.
+// ran on a device to "prep" such storage, and thus can easily offload any program data.
+// Endianness is not a concern this war since the same device does both writing & reading.
 // 
-// Make sure that you have not defined HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY so that the
-// full crops library is built onto onboard Flash. You may refer to:
-// https://forum.arduino.cc/index.php?topic=602603.0 on how to define custom build flags
-// manually via modifying platform[.local].txt.
+// Make sure that any EEPROM Write-Protect jumpers are disabled, and that you have not
+// defined HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY so that the full crops library
+// is built onto onboard Flash. You may also enable Serial log output by defining
+// HYDRUINO_ENABLE_DEBUG_OUTPUT. You may refer to: https://forum.arduino.cc/index.php?topic=602603.0
+// on how to define custom build flags manually via modifying platform[.local].txt.
 //
 // In Hydroponics.h:
 // 
@@ -30,13 +32,15 @@
 #define SETUP_RTC_I2C_ADDR          B000            // RTC i2c address (only B000 can be used atm)
 #define SETUP_I2C_WIRE_INST         Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED             400000U         // I2C speed, in Hz
+#define SETUP_ESP_I2C_SDA           SDA             // I2C SDA pin, if on ESP
+#define SETUP_ESP_I2C_SCL           SCL             // I2C SCL pin, if on ESP
 #define SETUP_SD_CARD_SPI_SPEED     4000000U        // SD card SPI speed, in Hz (ignored if on Teensy)
 
 // External Crops Library Data Settings
-#define SETUP_EXTCROPLIB_SD_ENABLE true            // If crops library should be written to an external SD card
-#define SETUP_EXTCROPLIB_SD_PREFIX "lib/crop"      // Crop data SD data file prefix (appended with ##.dat)
-#define SETUP_EXTCROPLIB_EEPROM_ENABLE  true       // If crops library should be written to an external EEPROM
-#define SETUP_EXTCROPLIB_EEPROM_ADDRESS 0          // Crop data EEPROM data begin address
+#define SETUP_EXTCROPLIB_SD_ENABLE  true            // If crops library should be written to an external SD card
+#define SETUP_EXTCROPLIB_SD_PREFIX  "lib/crop"      // Crop data SD data file prefix (appended with ##.dat)
+#define SETUP_EXTCROPLIB_EEPROM_ENABLE  true        // If crops library should be written to an external EEPROM
+#define SETUP_EXTCROPLIB_EEPROM_ADDRESS 0           // Crop data EEPROM data begin address
 
 
 Hydroponics hydroController(-1,
@@ -55,8 +59,11 @@ void setup() {
         Serial.begin(115200);           // Begin USB Serial interface
         while(!Serial) { ; }            // Wait for USB Serial to connect (remove in production)
     #endif
+    #if defined(ESP32) || defined(ESP8266)
+        SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
+    #endif
 
-    // Just a lone initializer is all that's needed since we won't be actually using the controller.
+    // Just a lone initializer is all that's needed since we won't actually be using the controller.
     hydroController.init();
 
     String writingCrop = F("Writing Crop: ");
@@ -101,7 +108,11 @@ void setup() {
             }
 
             getHydroponicsInstance()->endSDCard(sd);
+        } else {
+            getLoggerInstance()->logWarning(F("No SD Card device."));
         }
+
+        getLoggerInstance()->flush();
     }
     #endif
 
@@ -147,7 +158,11 @@ void setup() {
                     getLoggerInstance()->logError(F("Failure writing total size to EEPROM!"));
                 }
             }
+        } else {
+            getLoggerInstance()->logWarning(F("No EEPROM device."));
         }
+
+        getLoggerInstance()->flush();
     }
     #endif
 

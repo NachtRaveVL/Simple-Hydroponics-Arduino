@@ -6,11 +6,11 @@
 #include "Hydroponics.h"
 
 HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook()
-    : data(), count(1), fromData(false)
+    : data(), count(1), userSet(false)
 { ; }
 
 HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook(String jsonStringIn)
-    : data(), count(1), fromData(false)
+    : data(), count(1), userSet(false)
 {
     StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
     deserializeJson(doc, jsonStringIn);
@@ -19,7 +19,7 @@ HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook(String jsonStringIn)
 }
 
 HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook(Stream &streamIn, bool jsonFormat)
-    : data(), count(1), fromData(true)
+    : data(), count(1), userSet(false)
 {
     if (jsonFormat) {
         StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
@@ -32,7 +32,7 @@ HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook(Stream &streamIn, bool 
 }
 
 HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook(const HydroponicsCropsLibData &dataIn)
-    : data(dataIn), count(1), fromData(false)
+    : data(dataIn), count(1), userSet(false)
 { ; }
 
 
@@ -80,7 +80,6 @@ const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydrop
 
         HYDRUINO_SOFT_ASSERT(book || cropType >= Hydroponics_CropType_CustomCrop1, SFP(HS_Err_AllocationFailure));
         if (book) {
-            book->fromData = true;
             _cropsData[cropType] = book;
             HYDRUINO_HARD_ASSERT(_cropsData.find(cropType) != _cropsData.end(), SFP(HS_Err_OperationFailure));
         }
@@ -101,8 +100,8 @@ void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cro
         if (book) {
             book->count -= 1;
 
-            if (book->data.cropType < Hydroponics_CropType_CustomCrop1 && // don't delete custom
-                book->count <= 0) {
+            if (book->count <= 0 && // delete on 0 count
+               (book->data.cropType < Hydroponics_CropType_CustomCrop1 || !book->userSet)) { // don't delete custom unless not user set
                 if (iter->second) { delete iter->second; }
                 _cropsData.erase(iter);
             }
@@ -127,7 +126,7 @@ bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *c
 
             HYDRUINO_SOFT_ASSERT(book, SFP(HS_Err_AllocationFailure));
             if (book) {
-                book->fromData = false;
+                book->userSet = true;
                 _cropsData[cropData->cropType] = book;
                 retVal = (_cropsData.find(cropData->cropType) != _cropsData.end());
             }

@@ -158,6 +158,7 @@ extern time_t unixNow();
 #include "HydroponicsFactory.h"
 
 // Hydroponics Controller
+// Main controller interface of the Hydroponics system.
 class Hydroponics : public HydroponicsFactory {
 public:
     // Library constructor. Typically called during class instantiation, before setup().
