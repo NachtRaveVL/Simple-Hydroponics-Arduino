@@ -262,7 +262,7 @@ public:
 
 protected:
     DallasTemperature *_dt;                                 // DallasTemperature instance (owned)
-    byte _pullupPin;                                        // Pullup pin
+    byte _pullupPin;                                        // Pullup pin, if used
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
