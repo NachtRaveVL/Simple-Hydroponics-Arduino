@@ -293,7 +293,7 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsSubData::toJSONObject(objectOut);
 
-    if (sensorName[0]) { objectOut[SFP(HS_Key_Sensor)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (sensorName[0]) { objectOut[SFP(HS_Key_SensorName)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
     if (measurementRow > 0) { objectOut[SFP(HS_Key_MeasurementRow)] = measurementRow; }
     switch (type) {
         case 0: // MeasureValue
@@ -315,8 +315,8 @@ void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsSubData::fromJSONObject(objectIn);
 
-    const char *sensorStr = objectIn[SFP(HS_Key_Sensor)];
-    if (sensorStr && sensorStr[0]) { strncpy(sensorName, sensorStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *sensorNameStr = objectIn[SFP(HS_Key_SensorName)];
+    if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
     measurementRow = objectIn[SFP(HS_Key_MeasurementRow)] | measurementRow;
     switch (type) {
         case 0: // MeasureValue

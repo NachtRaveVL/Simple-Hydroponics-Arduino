@@ -101,7 +101,7 @@ HydroponicsTriggerAttachment::HydroponicsTriggerAttachment(HydroponicsObject *pa
         parent,
         &HydroponicsTrigger::getTriggerSignal,
         MethodSlot<HydroponicsTriggerAttachment,Hydroponics_TriggerState>(this, &HydroponicsTriggerAttachment::handleTrigger)),
-      _needsTriggerState(true), _processMethod(nullptr), _updateMethod(nullptr)
+      _triggerState(Hydroponics_TriggerState_Undefined), _needsTriggerState(true), _processMethod(nullptr), _updateMethod(nullptr)
 {
     HYDRUINO_HARD_ASSERT(_obj.isResolved(), SFP(HS_Err_UnsupportedOperation));
 }
@@ -162,7 +162,7 @@ HydroponicsBalancerAttachment::HydroponicsBalancerAttachment(HydroponicsObject *
         parent,
         &HydroponicsBalancer::getBalancerSignal,
         MethodSlot<HydroponicsBalancerAttachment,Hydroponics_BalancerState>(this, &HydroponicsBalancerAttachment::handleBalancer)),
-      _needsBalancerState(true), _processMethod(nullptr), _updateMethod(nullptr)
+      _balancerState(Hydroponics_BalancerState_Undefined), _needsBalancerState(true), _processMethod(nullptr), _updateMethod(nullptr)
 {
     HYDRUINO_HARD_ASSERT(_obj.isResolved(), SFP(HS_Err_UnsupportedOperation));
 }

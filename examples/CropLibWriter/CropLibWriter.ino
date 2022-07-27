@@ -66,9 +66,6 @@ void setup() {
     // Just a lone initializer is all that's needed since we won't actually be using the controller.
     hydroController.init();
 
-    String writingCrop = F("Writing Crop: ");
-    String dotDotDot = F("...");
-
     // Right here would be the place to program in any custom crop data that you want available.
     //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
     //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
@@ -86,9 +83,9 @@ void setup() {
                 auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
 
                 if (cropData) {
-                    getLoggerInstance()->logMessage(writingCrop, String(cropData->cropName), dotDotDot);
+                    getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
                     String filename = getNNFilename(F(SETUP_EXTCROPLIB_SD_PREFIX), cropType, SFP(HS_dat));
-                    getLoggerInstance()->logMessage(F("... to file: "), filename, dotDotDot);
+                    getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                     auto file = sd->open(filename, O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
                     if (file.availableForWrite()) {
@@ -109,7 +106,7 @@ void setup() {
 
             getHydroponicsInstance()->endSDCard(sd);
         } else {
-            getLoggerInstance()->logWarning(F("No SD Card device."));
+            getLoggerInstance()->logWarning(F("Could not find SD Card device. Check that you have it set up properly."));
         }
 
         getLoggerInstance()->flush();
@@ -131,8 +128,8 @@ void setup() {
                 auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
 
                 if (cropData) {
-                    getLoggerInstance()->logMessage(writingCrop, String(cropData->cropName), dotDotDot);
-                    getLoggerInstance()->logMessage(F("... to offset: "), String(writeOffset), dotDotDot);
+                    getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
+                    getLoggerInstance()->logMessage(F("... to offset: "), String(writeOffset));
 
                     auto eepromStream = HydroponicsEEPROMStream(writeOffset, sizeof(HydroponicsCropsLibData));
                     size_t bytesWritten = serializeDataToBinaryStream(cropData, &eepromStream); // Could also write out in JSON but why
@@ -154,12 +151,14 @@ void setup() {
 
             if (totalSize) {
                 totalSize += (sizeof(uint16_t) * Hydroponics_CropType_Count + 1);
-                if (!eeprom->updateBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS, (const byte *)&totalSize, sizeof(uint16_t))) {
+                if (eeprom->updateBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS, (const byte *)&totalSize, sizeof(uint16_t))) {
+                    getLoggerInstance()->logMessage(F("Total bytes written to EEPROM: "), String(totalSize));
+                } else {
                     getLoggerInstance()->logError(F("Failure writing total size to EEPROM!"));
                 }
             }
         } else {
-            getLoggerInstance()->logWarning(F("No EEPROM device."));
+            getLoggerInstance()->logWarning(F("Could not find EEPROM device. Check that you have it set up properly."));
         }
 
         getLoggerInstance()->flush();

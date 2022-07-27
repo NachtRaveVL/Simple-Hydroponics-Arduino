@@ -242,7 +242,7 @@ Hydroponics_KeyType stringHash(String string)
 String charsToString(const char *charsIn, size_t length)
 {
     if (!charsIn || !length) { return String(SFP(HS_null)); }
-    String retVal; retVal.reserve(length);
+    String retVal; retVal.reserve(length + 1);
     for (size_t index = 0; index < length && charsIn[index] != '\0'; ++index) {
         retVal.concat(charsIn[index]);
     }

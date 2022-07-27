@@ -883,8 +883,8 @@ void HydroponicsSensorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsObjectData::toJSONObject(objectOut);
 
     if (isValidPin(inputPin)) { objectOut[SFP(HS_Key_InputPin)] = inputPin; }
-    if (cropName[0]) { objectOut[SFP(HS_Key_Crop)] = charsToString(cropName, HYDRUINO_NAME_MAXSIZE); }
-    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
+    if (cropName[0]) { objectOut[SFP(HS_Key_CropName)] = charsToString(cropName, HYDRUINO_NAME_MAXSIZE); }
+    if (reservoirName[0]) { objectOut[SFP(HS_Key_ReservoirName)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsSensorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -892,10 +892,10 @@ void HydroponicsSensorData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsObjectData::fromJSONObject(objectIn);
 
     inputPin = objectIn[SFP(HS_Key_InputPin)] | inputPin;
-    const char *cropStr = objectIn[SFP(HS_Key_Crop)];
+    const char *cropStr = objectIn[SFP(HS_Key_CropName)];
     if (cropStr && cropStr[0]) { strncpy(cropName, cropStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *reservoirStr = objectIn[SFP(HS_Key_Reservoir)];
-    if (reservoirStr && reservoirStr[0]) { strncpy(reservoirName, reservoirStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *reservoirNameStr = objectIn[SFP(HS_Key_ReservoirName)];
+    if (reservoirNameStr && reservoirNameStr[0]) { strncpy(reservoirName, reservoirNameStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
 HydroponicsBinarySensorData::HydroponicsBinarySensorData()

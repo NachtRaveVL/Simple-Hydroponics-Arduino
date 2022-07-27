@@ -631,8 +631,8 @@ void HydroponicsActuatorData::toJSONObject(JsonObject &objectOut) const
         JsonObject contPowerUsageObj = objectOut.createNestedObject(SFP(HS_Key_ContPowerUsage));
         contPowerUsage.toJSONObject(contPowerUsageObj);
     }
-    if (railName[0]) { objectOut[SFP(HS_Key_Rail)] = charsToString(railName, HYDRUINO_NAME_MAXSIZE); }
-    if (reservoirName[0]) { objectOut[SFP(HS_Key_Reservoir)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
+    if (railName[0]) { objectOut[SFP(HS_Key_RailName)] = charsToString(railName, HYDRUINO_NAME_MAXSIZE); }
+    if (reservoirName[0]) { objectOut[SFP(HS_Key_ReservoirName)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -642,10 +642,10 @@ void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
     outputPin = objectIn[SFP(HS_Key_OutputPin)] | outputPin;
     JsonVariantConst contPowerUsageVar = objectIn[SFP(HS_Key_ContPowerUsage)];
     if (!contPowerUsageVar.isNull()) { contPowerUsage.fromJSONVariant(contPowerUsageVar); }
-    const char *railStr = objectIn[SFP(HS_Key_Rail)];
-    if (railStr && railStr[0]) { strncpy(railName, railStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *reservoirStr = objectIn[SFP(HS_Key_Reservoir)];
-    if (reservoirStr && reservoirStr[0]) { strncpy(reservoirName, reservoirStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *railNameStr = objectIn[SFP(HS_Key_RailName)];
+    if (railNameStr && railNameStr[0]) { strncpy(railName, railNameStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *reservoirNameStr = objectIn[SFP(HS_Key_ReservoirName)];
+    if (reservoirNameStr && reservoirNameStr[0]) { strncpy(reservoirName, reservoirNameStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
 HydroponicsRelayActuatorData::HydroponicsRelayActuatorData()

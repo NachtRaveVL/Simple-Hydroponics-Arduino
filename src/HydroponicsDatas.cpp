@@ -204,7 +204,7 @@ void HydroponicsCalibrationData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    if (sensorName[0]) { objectOut[SFP(HS_Key_Sensor)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (sensorName[0]) { objectOut[SFP(HS_Key_SensorName)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
     if (calibUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_CalibUnits)] = unitsTypeToSymbol(calibUnits); }
     objectOut[SFP(HS_Key_Multiplier)] = multiplier;
     objectOut[SFP(HS_Key_Offset)] = offset;
@@ -214,8 +214,8 @@ void HydroponicsCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsData::fromJSONObject(objectIn);
 
-    const char *sensorStr = objectIn[SFP(HS_Key_Sensor)];
-    if (sensorStr && sensorStr[0]) { strncpy(sensorName, sensorStr, HYDRUINO_NAME_MAXSIZE); }
+    const char *sensorNameStr = objectIn[SFP(HS_Key_SensorName)];
+    if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
     calibUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_CalibUnits)]);
     multiplier = objectIn[SFP(HS_Key_Multiplier)] | multiplier;
     offset = objectIn[SFP(HS_Key_Offset)] | offset;
@@ -273,7 +273,7 @@ void HydroponicsCropsLibData::toJSONObject(JsonObject &objectOut) const
     HydroponicsData::toJSONObject(objectOut);
 
     objectOut[SFP(HS_Key_Id)] = cropTypeToString(cropType);
-    if (cropName[0]) { objectOut[SFP(HS_Key_Crop)] = charsToString(cropName, HYDRUINO_NAME_MAXSIZE); }
+    if (cropName[0]) { objectOut[SFP(HS_Key_CropName)] = charsToString(cropName, HYDRUINO_NAME_MAXSIZE); }
 
     int mainPhaseTotalWeeks = phaseDurationWeeks[0] + phaseDurationWeeks[1] + phaseDurationWeeks[2];
     HYDRUINO_SOFT_ASSERT(!totalGrowWeeks || !mainPhaseTotalWeeks || mainPhaseTotalWeeks == totalGrowWeeks, SFP(HS_Err_ExportFailure));
@@ -361,7 +361,7 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsData::fromJSONObject(objectIn);
 
     cropType = cropTypeFromString(objectIn[SFP(HS_Key_Id)] | objectIn[SFP(HS_Key_CropType)]);
-    const char *cropStr = objectIn[SFP(HS_Key_Crop)];
+    const char *cropStr = objectIn[SFP(HS_Key_CropName)];
     if (cropStr && cropStr[0]) { strncpy(cropName, cropStr, HYDRUINO_NAME_MAXSIZE); }
 
     totalGrowWeeks = objectIn[SFP(HS_Key_TotalGrowWeeks)] | totalGrowWeeks;

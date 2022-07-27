@@ -139,7 +139,7 @@ template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsObject *obj
 // but want to replicate some of the same functionality. Not required to be inherited from.
 class HydroponicsSubObject {
 public:
-    inline const HydroponicsIdentity &getId() const { return HydroponicsIdentity(this); }
+    inline HydroponicsIdentity getId() const { return HydroponicsIdentity(this); }
     inline Hydroponics_KeyType getKey() const { return (Hydroponics_KeyType)(uintptr_t)this; }
     template<class T> inline shared_ptr<T> getSharedPtr() const { return shared_ptr<T>(this); }; // Only meant to be used once
 

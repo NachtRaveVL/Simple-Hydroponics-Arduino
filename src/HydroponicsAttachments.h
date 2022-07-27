@@ -45,10 +45,10 @@ public:
     inline T* operator->() { return get(); }
     inline T* operator*() { return get(); }
 
-    template<class U> inline HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { _id = rhs._id; _obj = static_pointer_cast<T>(rhs._obj); }
-    inline HydroponicsDLinkObject<T> &operator=(const HydroponicsIdentity &rhs) { _id = rhs; _obj = nullptr; }
-    inline HydroponicsDLinkObject<T> &operator=(const char *rhs) { _id = HydroponicsIdentity(rhs); _obj = nullptr; }
-    template<class U> inline HydroponicsDLinkObject<T> &operator=(shared_ptr<U> &rhs) { _id = (rhs ? rhs->getId() : HydroponicsIdentity()); _obj = static_pointer_cast<T>(rhs); }
+    template<class U> inline HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { _id = rhs._id; _obj = static_pointer_cast<T>(rhs._obj); return *this; }
+    inline HydroponicsDLinkObject<T> &operator=(const HydroponicsIdentity &rhs) { _id = rhs; _obj = nullptr; return *this; }
+    inline HydroponicsDLinkObject<T> &operator=(const char *rhs) { _id = HydroponicsIdentity(rhs); _obj = nullptr; return *this; }
+    template<class U> inline HydroponicsDLinkObject<T> &operator=(shared_ptr<U> &rhs) { _id = (rhs ? rhs->getId() : HydroponicsIdentity()); _obj = static_pointer_cast<T>(rhs); return *this; }
     template<class U> inline HydroponicsDLinkObject<T> &operator=(const U *rhs);
 
     template<class U> inline bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return _id.key == rhs.getKey(); }
@@ -99,10 +99,10 @@ public:
     inline T* operator->() { return getObject().get(); }
     inline T* operator*() { return getObject().get(); }
 
-    inline HydroponicsAttachment<T> &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    inline HydroponicsAttachment<T> &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); }
-    template<class U> inline HydroponicsAttachment<T> &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    template<class U> inline HydroponicsAttachment<T> &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
+    inline HydroponicsAttachment<T> &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    inline HydroponicsAttachment<T> &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); return *this; }
+    template<class U> inline HydroponicsAttachment<T> &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsAttachment<T> &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
 
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _obj == rhs; }
     inline bool operator==(const char *rhs) { return *this == HydroponicsIdentity(rhs); }
@@ -135,10 +135,10 @@ public:
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const HydroponicsIdentity &rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { if (isResolved()) { detachObject(); } HydroponicsAttachment<T>::_obj = rhs; if (isResolved()) { attachObject(); } } }
-    inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); }
-    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(shared_ptr<U> rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { if (isResolved()) { detachObject(); } HydroponicsAttachment<T>::_obj = rhs; if (isResolved()) { attachObject(); } } }
-    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const U *rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { if (isResolved()) { detachObject(); } HydroponicsAttachment<T>::_obj = rhs; if (isResolved()) { attachObject(); } } }
+    inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const HydroponicsIdentity &rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { if (isResolved()) { detachObject(); } HydroponicsAttachment<T>::_obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); return *this; }
+    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(shared_ptr<U> rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { if (isResolved()) { detachObject(); } HydroponicsAttachment<T>::_obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const U *rhs) { if (HydroponicsAttachment<T>::_obj != rhs) { if (isResolved()) { detachObject(); } HydroponicsAttachment<T>::_obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
 
 protected:
     SignalGetterPtr _signalGetter;                          // Signal getter method ptr
@@ -190,10 +190,10 @@ public:
     inline Hydroponics_PositionIndex getMeasurementRow() const { return _measurementRow; }
     inline float getMeasurementConvertParam() const { return _convertParam; }
 
-    inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    inline HydroponicsSensorAttachment &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); }
-    template<class U> inline HydroponicsSensorAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
+    inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    inline HydroponicsSensorAttachment &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); return *this; }
+    template<class U> inline HydroponicsSensorAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
 
 protected:
     HydroponicsSingleMeasurement _measurement;              // Local measurement
@@ -239,10 +239,10 @@ public:
 
     inline Hydroponics_TriggerState getTriggerState(bool force = false) { updateTriggerIfNeeded(force); return _triggerState; }
 
-    inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    inline HydroponicsSensorAttachment &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); }
-    template<class U> inline HydroponicsSensorAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
+    inline HydroponicsTriggerAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    inline HydroponicsTriggerAttachment &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); return *this; }
+    template<class U> inline HydroponicsTriggerAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsTriggerAttachment &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
 
 protected:
     Hydroponics_TriggerState _triggerState;                 // Tracked trigger state
@@ -286,10 +286,10 @@ public:
 
     inline Hydroponics_BalancerState getBalancerState(bool force = false) { updateBalancerIfNeeded(force); return _balancerState; }
 
-    inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    inline HydroponicsSensorAttachment &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); }
-    template<class U> inline HydroponicsSensorAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
-    template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } }
+    inline HydroponicsBalancerAttachment &operator=(const HydroponicsIdentity &rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    inline HydroponicsBalancerAttachment &operator=(const char *rhs) { *this = HydroponicsIdentity(rhs); return *this; }
+    template<class U> inline HydroponicsBalancerAttachment &operator=(shared_ptr<U> rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
+    template<class U> inline HydroponicsBalancerAttachment &operator=(const U *rhs) { if (_obj != rhs) { if (isResolved()) { detachObject(); } _obj = rhs; if (isResolved()) { attachObject(); } } return *this; }
 
 protected:
     Hydroponics_BalancerState _balancerState;               // Tracked balancer state

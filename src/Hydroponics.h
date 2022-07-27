@@ -220,14 +220,14 @@ public:
     // System Logging.
 
     // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to specified prefix. Returns success boolean.
-    inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy") { _logger.beginLoggingToSDCard(logFilePrefix); }
+    inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy") { return _logger.beginLoggingToSDCard(logFilePrefix); }
     // TODO: Network URL sys logging
     //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix = "logs/hy");
 
     // Data Publishing.
 
     // Enables data publishing to the SD card. Log file names will concat YYMMDD.csv to the specified prefix. Returns success boolean.
-    inline bool enableDataPublishingToSDCard(String dataFilePrefix = "data/hy") { _publisher.beginPublishingToSDCard(dataFilePrefix); }
+    inline bool enableDataPublishingToSDCard(String dataFilePrefix = "data/hy") { return _publisher.beginPublishingToSDCard(dataFilePrefix); }
     // TODO: Network URL data pub
     //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix = "data/hy");
     // TODO: MQTT data pub
