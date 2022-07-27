@@ -57,12 +57,15 @@ public:
     Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> &getBalancerSignal();
 
 protected:
-    HydroponicsTriggerAttachment _rangeTrigger;             // Target range trigger
     float _targetSetpoint;                                  // Target setpoint value
     float _targetRange;                                     // Target range value
     bool _enabled;                                          // Enabled flag
+
     Hydroponics_UnitsType _targetUnits;                     // Target units
     Hydroponics_BalancerState _balancerState;               // Current balancer state
+
+    HydroponicsTriggerAttachment _rangeTrigger;             // Target range trigger
+
     Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> _balancerSignal; // Balancer signal
 
     Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type _incActuators; // Increment actuators

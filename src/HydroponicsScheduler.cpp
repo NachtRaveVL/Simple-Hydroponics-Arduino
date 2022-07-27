@@ -648,13 +648,15 @@ void HydroponicsProcess::setActuatorReqs(const Vector<shared_ptr<HydroponicsActu
     for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
         bool found = false;
         auto key = (*actuatorIter)->getKey();
+    
         for (auto actuatorInIter = actuatorReqsIn.begin(); actuatorInIter != actuatorReqsIn.end(); ++actuatorInIter) {
             if (key == (*actuatorInIter)->getKey()) {
                 found = true;
                 break;
             }
         }
-        if (!found && (*actuatorIter)->isEnabled()) {
+    
+        if (!found && (*actuatorIter)->isEnabled()) { // disables actuators not found in new list
             (*actuatorIter)->disableActuator();
         }
     }

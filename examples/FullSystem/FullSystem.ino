@@ -33,10 +33,16 @@
 #define SETUP_WIFI_PASS             "CHANGE_ME"     // WiFi password
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE         false           // Whenever or system logging is enabled to SD card
+#define SETUP_LOG_SD_ENABLE         true            // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX       "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE        false           // Whenever or system data publishing is enabled to SD card
+#define SETUP_DATA_SD_ENABLE        true            // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX      "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
+
+// External Crops Library Data Settings
+#define SETUP_EXTCROPLIB_SD_ENABLE false           // If crops library should be read from an external SD card
+#define SETUP_EXTCROPLIB_SD_PREFIX "lib/crop"      // Crop data SD data file prefix (appended with ##.dat)
+#define SETUP_EXTCROPLIB_EEPROM_ENABLE  false      // If crops library should be read from an external EEPROM
+#define SETUP_EXTCROPLIB_EEPROM_ADDRESS 0          // Crop data EEPROM data begin address
 
 
 byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -67,6 +73,14 @@ void setup() {
 
     // Sets system config name used in any of the following inits.
     hydroController.setSystemConfigFile(F(SETUP_CONFIG_FILE));
+
+    // Enables external crop library with external data devices, needed for storage constrained devices.
+    #if SETUP_EXTCROPLIB_SD_ENABLE
+        getCropsLibraryInstance()->beginCropsLibraryFromSDCard(F(SETUP_EXTCROPLIB_SD_PREFIX));
+    #endif
+    #if SETUP_EXTCROPLIB_EEPROM_ENABLE
+        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EXTCROPLIB_EEPROM_ADDRESS);
+    #endif
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false

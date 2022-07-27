@@ -66,25 +66,23 @@ bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalib
 
 bool HydroponicsCalibrationsStore::dropUserCalibrationData(const HydroponicsCalibrationData *calibrationData)
 {
-    HYDRUINO_SOFT_ASSERT(calibrationData, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(calibrationData, SFP(HS_Err_InvalidParameter));
+    Hydroponics_KeyType key = stringHash(calibrationData->sensorName);
+    auto iter = _calibrationData.find(key);
 
-    if (calibrationData) {
-        Hydroponics_KeyType key = stringHash(calibrationData->sensorName);
-        auto iter = _calibrationData.find(key);
+    if (iter != _calibrationData.end()) {
+        if (iter->second) { delete iter->second; }
+        _calibrationData.erase(iter);
 
-        if (iter != _calibrationData.end()) {
-            if (iter->second) { delete iter->second; }
-            _calibrationData.erase(iter);
+        #ifndef HYDRUINO_DISABLE_MULTITASKING
+            scheduleSignalFireOnce<Hydroponics_KeyType>(_calibrationSignal, key);
+        #else
+            _calibrationSignal.fire(key);
+        #endif
 
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                scheduleSignalFireOnce<Hydroponics_KeyType>(_calibrationSignal, key);
-            #else
-                _calibrationSignal.fire(key);
-            #endif
-
-            return true;
-        }
+        return true;
     }
+
     return false;
 }
 

@@ -38,6 +38,9 @@
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
+// Uncomment or -D this define to disable building-in of Crops Library data (note: saves considerable size on sketch). Required for low-end device support, e.g. Mega2560.
+//#define HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY   // If enabled, must use external device (such as SD or EEPROM) for Crops Library support. Only custom crops supported otherwise.
+
 // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
@@ -216,18 +219,18 @@ public:
     // System Logging.
 
     // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to specified prefix. Returns success boolean.
-    bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy");
+    inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy") { _logger.beginLoggingToSDCard(logFilePrefix); }
     // TODO: Network URL sys logging
-    //bool enableSysLoggingToNetworkURL(urlData, String logFilePrefix = "logs/hy");
+    //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix = "logs/hy");
 
     // Data Publishing.
 
     // Enables data publishing to the SD card. Log file names will concat YYMMDD.csv to the specified prefix. Returns success boolean.
-    bool enableDataPublishingToSDCard(String dataFilePrefix = "data/hy");
+    inline bool enableDataPublishingToSDCard(String dataFilePrefix = "data/hy") { _publisher.beginPublishingToSDCard(dataFilePrefix); }
     // TODO: Network URL data pub
-    //bool enableDataPublishingToNetworkURL(urlData, String dataFilePrefix = "data/hy");
+    //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix = "data/hy");
     // TODO: MQTT data pub
-    //bool enableDataPublishingToMQTT(mqttBroker, deviceData);
+    //bool enableDataPublishingToMQTT(mqttBrokerTODO, deviceDataTODO);
     // TODO: Web API data pub
     //bool enableDataPublishingToWebAPI(urlDataTODO, apiInterfaceTODO);
 

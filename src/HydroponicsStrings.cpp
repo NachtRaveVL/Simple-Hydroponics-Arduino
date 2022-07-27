@@ -9,6 +9,7 @@ const PROGMEM char HS_ColonSpace[] = {": "};
 const PROGMEM char HS_DoubleSpace[] = {"  "};
 const PROGMEM char HS_Count[] = {"Count"};
 const PROGMEM char HS_csv[] = {"csv"};
+const PROGMEM char HS_dat[] = {"dat"};
 const PROGMEM char HS_Disabled[] = {"Disabled"};
 const PROGMEM char HS_txt[] = {"txt"};
 const PROGMEM char HS_Undefined[] = {"Undefined"};

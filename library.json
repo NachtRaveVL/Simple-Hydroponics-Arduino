@@ -32,6 +32,11 @@
             "name": "FullSystem",
             "base": "examples/FullSystem",
             "files": ["FullSystem.ino"]
+        },
+        {
+            "name": "CropLibWriter",
+            "base": "examples/CropLibWriter",
+            "files": ["CropLibWriter.ino"]
         }
     ],
     "frameworks": ["arduino", "espidf", "mbed"],

@@ -235,7 +235,7 @@ bool Hydroponics::initFromSDCard(bool jsonFormat)
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(_configFileName.c_str());
+            auto configFile = sd->open(_configFileName.c_str(), FILE_READ);
 
             if (configFile && configFile.available()) {
                 retVal = jsonFormat ? initFromJSONStream(&configFile) : initFromBinaryStream(&configFile);
@@ -260,7 +260,7 @@ bool Hydroponics::saveToSDCard(bool jsonFormat)
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(_configFileName.c_str());
+            auto configFile = sd->open(_configFileName.c_str(), FILE_READ);
 
             if (configFile && configFile.availableForWrite()) {
                 retVal = jsonFormat ? saveToJSONStream(&configFile) : saveToBinaryStream(&configFile);
@@ -814,16 +814,6 @@ void Hydroponics::updateObjects(int pass)
     }
 }
 
-bool Hydroponics::enableSysLoggingToSDCard(String logFilePrefix)
-{
-    return _logger.beginLoggingToSDCard(logFilePrefix);
-}
-
-bool Hydroponics::enableDataPublishingToSDCard(String dataFilePrefix)
-{
-    return _publisher.beginPublishingToSDCard(dataFilePrefix);
-}
-
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
     HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HS_Err_InvalidParameter));
@@ -962,11 +952,11 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
 
 bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData)
 {
-    HYDRUINO_SOFT_ASSERT(customAdditiveData, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(customAdditiveData, SFP(HS_Err_InvalidParameter));
     HYDRUINO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
                                                  customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), SFP(HS_Err_InvalidParameter));
 
-    if (customAdditiveData && customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
+    if (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
         customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
         auto iter = _additives.find(customAdditiveData->reservoirType);
         bool retVal = false;

@@ -6,8 +6,9 @@
 #include "Hydroponics.h"
 
 HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, byte measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _rangeTrigger((HydroponicsObject *)this), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false),
-      _targetUnits(Hydroponics_UnitsType_Undefined), _balancerState(Hydroponics_BalancerState_Undefined)
+    : type((typeof(type))typeIn), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false),
+      _targetUnits(Hydroponics_UnitsType_Undefined), _balancerState(Hydroponics_BalancerState_Undefined),
+      _rangeTrigger((HydroponicsObject *)this)
 {
     float halfTargetRange = targetRange * 0.5f;
 
@@ -64,19 +65,18 @@ void HydroponicsBalancer::setTargetUnits(Hydroponics_UnitsType targetUnits)
 void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators)
 {
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
-        if (actuatorIter->first) {
-            bool found = false;
-            auto key = actuatorIter->first->getKey();
-            for (auto actuatorInIter = incActuators.begin(); actuatorInIter != incActuators.end(); ++actuatorInIter) {
-                if (key == actuatorInIter->first->getKey()) {
-                    found = true;
-                    break;
-                }
-            }
+        bool found = false;
+        auto key = actuatorIter->first->getKey();
 
-            if (!found && actuatorIter->first->isEnabled()) {
-                actuatorIter->first->disableActuator();
+        for (auto actuatorInIter = incActuators.begin(); actuatorInIter != incActuators.end(); ++actuatorInIter) {
+            if (key == actuatorInIter->first->getKey()) {
+                found = true;
+                break;
             }
+        }
+
+        if (!found && actuatorIter->first->isEnabled()) { // disables actuators not found in new list, prevents same used actuators from prev cycle from cycling off/on on stage switch
+            actuatorIter->first->disableActuator();
         }
     }
 
@@ -89,18 +89,18 @@ void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<Hyd
 void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators)
 {
     for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
-        if (actuatorIter->first) {
-            bool found = false;
-            for (auto actuatorInIter = decActuators.begin(); actuatorInIter != decActuators.end(); ++actuatorInIter) {
-                if (actuatorIter->first == actuatorInIter->first) {
-                    found = true;
-                    break;
-                }
-            }
+        bool found = false;
+        auto key = actuatorIter->first->getKey();
 
-            if (!found && actuatorIter->first->isEnabled()) {
-                actuatorIter->first->disableActuator();
+        for (auto actuatorInIter = decActuators.begin(); actuatorInIter != decActuators.end(); ++actuatorInIter) {
+            if (key == actuatorInIter->first->getKey()) {
+                found = true;
+                break;
             }
+        }
+
+        if (!found && actuatorIter->first->isEnabled()) { // disables actuators not found in new list
+            actuatorIter->first->disableActuator();
         }
     }
 

@@ -12,7 +12,7 @@ struct HydroponicsSubData;
 #include "Hydroponics.h"
 
 // Serializes Hydroponics data structure to a binary output stream (essentially a memcpy), with optional skipBytes
-extern size_t serializeDataToBinaryStream(HydroponicsData *data, Stream *streamOut, size_t skipBytes = sizeof(void*));
+extern size_t serializeDataToBinaryStream(const HydroponicsData *data, Stream *streamOut, size_t skipBytes = sizeof(void*));
 // Deserializes Hydroponics data structure from a binary input stream (essentially a memcpy), with optional skipBytes
 extern size_t deserializeDataFromBinaryStream(HydroponicsData *data, Stream *streamIn, size_t skipBytes = sizeof(void*));
 

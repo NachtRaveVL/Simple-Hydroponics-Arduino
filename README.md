@@ -10,13 +10,13 @@ Created by NachtRaveVL, May 20th, 2022.
 
 **UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop types to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Works with a large variety of common aquarium equipment and hobby sensors. Supports sensor data logging to MQTT (for IoT integration), .csv data files on an SD card or Network share (for custom graphing), and can be extended to work with other JSON-based Web APIs. System config can be hard coded or saved to SD card, EEPROM, or Network share. Hydruino also comes with LCD and input controller support similar in operation to low-cost 3D printers ([support provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some custom 3D printed stuff ([.stl's in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) along with some other goodies.
+This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be stored internally in built-in Flash, or externally on SD card or EEPROM to allow storage constrained devices to still run. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data logging to MQTT (for IoT integration), .csv data files on an SD card or Network share for custom processing, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. System config can be hard coded, saved to SD card, EEPROM, or Network share. Hydruino also comes with LCD and input controller support similar in operation to low-cost 3D printers ([support provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some ([custom 3D printed stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied)) along with some other goodies.
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, Pico, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
 
 Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, EasyBuzzer, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), and Time.
 
-TODO datasheet links /TODO
+Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
 *If you value the work that we do, our small team always appreciates a subscription to our [Patreon](www.patreon.com/nachtrave).*
 
@@ -49,6 +49,9 @@ From Hydroponics.h:
 
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
+
+// Uncomment or -D this define to disable building-in of Crops Library data (note: saves considerable size on sketch). Required for low-end device support, e.g. Mega2560.
+//#define HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY   // If enabled, must use external device (such as SD or EEPROM) for Crops Library support.
 
 // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT

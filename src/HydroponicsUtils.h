@@ -179,8 +179,11 @@ extern void publishData(HydroponicsSensor *sensor);
 extern DateTime getCurrentTime();
 // Returns the UTC seconds time that today started, accounting for time zone offset based on active hydroponics instance.
 extern time_t getCurrentDayStartTime();
+
 // Returns a proper filename for a storage monitoring file (log, data, etc) that uses YYMMDD as filename.
 extern String getYYMMDDFilename(String prefix, String ext);
+// Returns a proper filename for a storage library data file that uses ## as filename.
+extern String getNNFilename(String prefix, unsigned int value, String ext);
 
 // Computes a hash for a string using a fast and efficient (read as: good enough for our use) hashing algorithm.
 extern Hydroponics_KeyType stringHash(String string);

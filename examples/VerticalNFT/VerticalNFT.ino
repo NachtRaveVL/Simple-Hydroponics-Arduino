@@ -36,6 +36,12 @@
 #define SETUP_DATA_SD_ENABLE        true            // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX      "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
+// External Crops Library Data Settings
+#define SETUP_EXTCROPLIB_SD_ENABLE true            // If crops library should be read from an external SD card
+#define SETUP_EXTCROPLIB_SD_PREFIX "lib/crop"      // Crop data SD data file prefix (appended with ##.dat)
+#define SETUP_EXTCROPLIB_EEPROM_ENABLE  true       // If crops library should be read from an external EEPROM
+#define SETUP_EXTCROPLIB_EEPROM_ADDRESS 0          // Crop data EEPROM data begin address
+
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE   4               // Reservoir size, in default measurement units
 #define SETUP_AC_POWER_RAIL_TYPE    AC110V          // Rail power type used for AC rail (AC110V, AC220V)
@@ -128,9 +134,17 @@ void setup() {
     if (isValidPin(_SETUP_CTRL_INPUT_PINS[0])) {
         hydroController.setControlInputPinMap(_SETUP_CTRL_INPUT_PINS);
     }
-    
+
     // Sets system config name used in any of the following inits.
     hydroController.setSystemConfigFile(F(SETUP_CONFIG_FILE));
+
+    // Enables external crop library with external data devices, needed for storage constrained devices.
+    #if SETUP_EXTCROPLIB_SD_ENABLE
+        getCropsLibraryInstance()->beginCropsLibraryFromSDCard(F(SETUP_EXTCROPLIB_SD_PREFIX));
+    #endif
+    #if SETUP_EXTCROPLIB_EEPROM_ENABLE
+        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EXTCROPLIB_EEPROM_ADDRESS);
+    #endif
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false
@@ -161,7 +175,7 @@ void setup() {
         #endif
         #if SETUP_ENABLE_WIFI
             hydroController.setWiFiConnection(wifiSSID, wifiPassword);
-            hydroController.getWiFi();      // Forces start, may block for a while
+            hydroController.getWiFi();      // Forces start, but may block for a while if not already initialized
         #endif
 
         // Base Objects

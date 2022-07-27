@@ -10,6 +10,7 @@ extern const PROGMEM char HS_ColonSpace[];
 extern const PROGMEM char HS_Count[];
 extern const PROGMEM char HS_DoubleSpace[];
 extern const PROGMEM char HS_csv[];
+extern const PROGMEM char HS_dat[];
 extern const PROGMEM char HS_Disabled[];
 extern const PROGMEM char HS_txt[];
 extern const PROGMEM char HS_Undefined[];

@@ -219,6 +219,17 @@ String getYYMMDDFilename(String prefix, String ext)
     return retVal;
 }
 
+String getNNFilename(String prefix, unsigned int value, String ext)
+{
+    String retVal; retVal.reserve(prefix.length() + 7);
+
+    retVal.concat(prefix);
+    if (value < 10) { retVal.concat('0'); }
+    retVal.concat(value);
+
+    return retVal;
+}
+
 Hydroponics_KeyType stringHash(String string)
 {
     Hydroponics_KeyType hash = 5381;

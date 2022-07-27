@@ -5,7 +5,7 @@
 
 #include "Hydroponics.h"
 
-size_t serializeDataToBinaryStream(HydroponicsData *data, Stream *streamOut, size_t skipBytes)
+size_t serializeDataToBinaryStream(const HydroponicsData *data, Stream *streamOut, size_t skipBytes)
 {
     return streamOut->write((const byte *)((intptr_t)data + skipBytes), data->_size - skipBytes);
 }
