@@ -310,6 +310,11 @@ template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountCrops(const typena
 // Returns the # of actuators of a certain type that operate on a specific reservoir.
 template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
 
+// Recombines filtered object list back into shared_ptr actuator list.
+template<size_t N> void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, typename Vector<shared_ptr<HydroponicsActuator>, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType);
+// Recombines filtered object list back into shared_ptr actuator list paired with rate value.
+template<size_t N> void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, float rateValue, typename Vector<typename Pair<shared_ptr<HydroponicsActuator>, float>::type, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType);
+
 // Pins & Checks
 
 // Checks to see if the pin is an analog input pin.

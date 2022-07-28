@@ -13,9 +13,6 @@ HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *pare
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true), _processMethod(nullptr), _updateMethod(nullptr)
 { ; }
 
-HydroponicsSensorAttachment::~HydroponicsSensorAttachment()
-{ ; }
-
 void HydroponicsSensorAttachment::attachObject()
 {
     HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::attachObject();
@@ -34,8 +31,7 @@ void HydroponicsSensorAttachment::detachObject()
 
 void HydroponicsSensorAttachment::updateMeasurementIfNeeded(bool force)
 {
-    resolveIfNeeded();
-    if (isResolved() && (_needsMeasurement || force)) {
+    if (getObject() && (_needsMeasurement || force)) {
         handleMeasurement(_obj->getLatestMeasurement());
         _obj->takeMeasurement((_needsMeasurement || force));
     }
@@ -123,16 +119,16 @@ void HydroponicsTriggerAttachment::detachObject()
     HydroponicsSignalAttachment<HydroponicsTrigger, Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>::detachObject();
 }
 
-void HydroponicsTriggerAttachment::updateTriggerIfNeeded(bool force)
+Hydroponics_TriggerState HydroponicsTriggerAttachment::updateTriggerIfNeeded(bool force)
 {
-    resolveIfNeeded();
-    if (isResolved() && (_needsTriggerState || force)) {
+    if (getObject() && (_needsTriggerState || force)) {
         handleTrigger(_obj->getTriggerState());
 
         if (_obj->getSensor()) {
             _obj->getSensor()->takeMeasurement((_needsTriggerState || force));
         }
     }
+    return _triggerState;
 }
 
 void HydroponicsTriggerAttachment::setTriggerState(Hydroponics_TriggerState triggerState)
@@ -182,12 +178,12 @@ void HydroponicsBalancerAttachment::detachObject()
     HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::detachObject();
 }
 
-void HydroponicsBalancerAttachment::updateBalancerIfNeeded(bool force)
+Hydroponics_BalancerState HydroponicsBalancerAttachment::updateBalancerIfNeeded(bool force)
 {
-    resolveIfNeeded();
-    if (isResolved() && (_needsBalancerState || force)) {
+    if (getObject() && (_needsBalancerState || force)) {
         handleBalancer(_obj->getBalancerState());
     }
+    return _balancerState;
 }
 
 void HydroponicsBalancerAttachment::setBalancerState(Hydroponics_BalancerState balancerState)

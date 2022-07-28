@@ -89,16 +89,18 @@ struct HydroponicsProcess {
     void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn);
 };
 
+// Hydroponics Scheduler Feeding Process Log Type
 enum HydroponicsFeedingLogType {
-    HydroponicsFeedingLogType_WaterSetpoints,
-    HydroponicsFeedingLogType_WaterMeasures,
-    HydroponicsFeedingLogType_AirSetpoints,
-    HydroponicsFeedingLogType_AirMeasures
+    HydroponicsFeedingLogType_WaterSetpoints,               // Water setpoints
+    HydroponicsFeedingLogType_WaterMeasures,                // Water measurements
+    HydroponicsFeedingLogType_AirSetpoints,                 // Air setpoints
+    HydroponicsFeedingLogType_AirMeasures                   // Air measurements
 };
 
+// Hydroponics Scheduler Feeding Process Broadcast Type
 enum HydroponicsFeedingBroadcastType {
-    HydroponicsFeedingBroadcastType_Began,
-    HydroponicsFeedingBroadcastType_Ended
+    HydroponicsFeedingBroadcastType_Began,                  // Began main process
+    HydroponicsFeedingBroadcastType_Ended                   // Ended main process
 };
 
 // Hydroponics Scheduler Feeding Process

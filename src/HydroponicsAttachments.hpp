@@ -33,7 +33,7 @@ shared_ptr<T> HydroponicsDLinkObject<T>::getObject()
 template<class T> template<class U>
 HydroponicsDLinkObject<T> &HydroponicsDLinkObject<T>::operator=(const U *rhs)
 {
-    _id = (rhs ? rhs->getId() : _id); // saves id if nulling out, used for attachment tracking
+    _id = (rhs ? rhs->getId() : HydroponicsIdentity());
     _obj = (rhs ? ::getSharedPtr<T>(rhs) : nullptr);
     return *this;
 }
@@ -69,6 +69,25 @@ void HydroponicsAttachment<T>::detachObject()
         _obj->removeLinkage(_parent);
     }
     _obj = nullptr;
+}
+
+template<class T> template<class U>
+void HydroponicsAttachment<T>::setObject(U obj)
+{
+    if (_obj != obj) {
+        if (isResolved()) { detachObject(); }
+        _obj = obj;
+        if (isResolved()) { attachObject(); }
+    }
+}
+
+template<class T>
+shared_ptr<T> HydroponicsAttachment<T>::getObject()
+{
+    if (needsResolved() && _obj.getObject()) {
+        attachObject();
+    }
+    return _obj.getObject();
 }
 
 

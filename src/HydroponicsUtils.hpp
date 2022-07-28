@@ -235,4 +235,28 @@ int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType
     return retVal;
 }
 
+template<size_t N>
+void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, typename Vector<shared_ptr<HydroponicsActuator>, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
+{
+    for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
+        auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
+        HYDRUINO_HARD_ASSERT(actuator, SFP(HS_Err_OperationFailure));
+        if (actuator->getActuatorType() == actuatorType) {
+            actuatorsOut.push_back(actuator);
+        }
+    }
+}
+
+template<size_t N>
+void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, float rateValue, typename Vector<typename Pair<shared_ptr<HydroponicsActuator>, float>::type, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
+{
+    for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
+        auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
+        HYDRUINO_HARD_ASSERT(actuator, SFP(HS_Err_OperationFailure));
+        if (actuator->getActuatorType() == actuatorType) {
+            actuatorsOut.push_back(make_pair(actuator, rateValue));
+        }
+    }
+}
+
 #endif // /ifndef HydroponicsUtils_HPP
