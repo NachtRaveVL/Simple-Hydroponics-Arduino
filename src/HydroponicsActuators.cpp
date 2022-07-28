@@ -702,7 +702,7 @@ void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsPWMActuatorData::HydroponicsPWMActuatorData()
-    : HydroponicsActuatorData(), outputBitResolution(8)
+    : HydroponicsActuatorData(), outputBitResolution(10)
 {
     _size = sizeof(*this);
 }
@@ -711,7 +711,7 @@ void HydroponicsPWMActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsActuatorData::toJSONObject(objectOut);
 
-    if (outputBitResolution != 8) { objectOut[SFP(HS_Key_OutputBitRes)] = outputBitResolution; }
+    if (outputBitResolution != 10) { objectOut[SFP(HS_Key_OutputBitRes)] = outputBitResolution; }
 }
 
 void HydroponicsPWMActuatorData::fromJSONObject(JsonObjectConst &objectIn)

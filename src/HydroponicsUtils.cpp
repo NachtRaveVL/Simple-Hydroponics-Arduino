@@ -6,21 +6,9 @@
 #include "Hydroponics.h"
 #include <pins_arduino.h>
 
-HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn, bool force)
-    : // TODO: Determine which other architectures have variable bit res analog pins
-      #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-          bitRes(constrain(bitResIn, 8, 12)), maxVal(1 << constrain(bitResIn, 8, 12))
-      #else
-          bitRes(8), maxVal(256)
-      #endif
-{
-    if (force) {
-        bitRes = bitResIn;
-        maxVal = 1 << bitResIn;
-    } else {
-        HYDRUINO_SOFT_ASSERT(bitRes == bitResIn, SFP(HS_Err_ParameterMismatch));
-    }
-}
+HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn)
+    : bitRes(bitResIn), maxVal(1 << bitResIn)
+{ ; }
 
 
 #ifndef HYDRUINO_DISABLE_MULTITASKING

@@ -20,15 +20,12 @@ class ActuatorTimedEnableTask;
 #endif
 
 // Simple class for describing an analog bit resolution.
-// This class is mainly used to calculate analog pin range boundaries. If force flag
-// is not set then architecture check is made that may truncate passed bit resolution.
+// This class is mainly used to calculate analog pin range boundary values.
 struct HydroponicsBitResolution {
     byte bitRes;                                // Bit resolution (# of bits)
     int maxVal;                                 // Maximum value (2 ^ (# of bits))
 
-    // Convenience constructor
-    HydroponicsBitResolution(byte bitRes,
-                             bool force = false);
+    HydroponicsBitResolution(byte bitRes);      // Constructor
 
     // Transforms value from raw integer (or initial) value into normalized raw (or transformed) value.
     inline float transform(int intValue) const { return constrain((float)maxVal / intValue, 0.0f, 1.0f); }

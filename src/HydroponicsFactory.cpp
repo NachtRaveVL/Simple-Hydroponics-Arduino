@@ -241,7 +241,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTemperatureSens
     return nullptr;
 }
 
-shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(byte inputPin, byte inputBitRes = 8)
+shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirCarbonDioxide));
@@ -260,7 +260,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(byte 
     return nullptr;
 }
 
-shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogMoistureSensor(byte inputPin, byte inputBitRes = 8)
+shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogMoistureSensor(byte inputPin, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_SoilMoisture));
@@ -336,7 +336,7 @@ shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addUltrasonicDistanceSen
     return nullptr;
 }
 
-shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addPowerUsageMeter(byte inputPin, bool isWattageBased, byte inputBitRes = 8)
+shared_ptr<HydroponicsAnalogSensor> HydroponicsFactory::addPowerUsageMeter(byte inputPin, bool isWattageBased, byte inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PowerUsageMeter));
@@ -396,10 +396,7 @@ shared_ptr<HydroponicsDSTemperatureSensor> HydroponicsFactory::addDSTemperatureS
     return nullptr;
 }
 
-shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedCrop(Hydroponics_CropType cropType,
-                                                              Hydroponics_SubstrateType substrateType,
-                                                              DateTime sowDate,
-                                                              byte minsOn, byte minsOff)
+shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedCrop(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, DateTime sowDate, byte minsOn, byte minsOff)
 {
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, SFP(HS_Err_InvalidParameter));
@@ -422,10 +419,7 @@ shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedCrop(Hydroponics
     return nullptr;
 }
 
-shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedPerennialCrop(Hydroponics_CropType cropType,
-                                                                       Hydroponics_SubstrateType substrateType,
-                                                                       DateTime lastHarvestDate,
-                                                                       byte minsOn, byte minsOff)
+shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedPerennialCrop(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, DateTime lastHarvestDate, byte minsOn, byte minsOff)
 {
     auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
     time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
@@ -434,9 +428,7 @@ shared_ptr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedPerennialCrop(Hy
     return crop;
 }
 
-shared_ptr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedCrop(Hydroponics_CropType cropType,
-                                                                    Hydroponics_SubstrateType substrateType,
-                                                                    DateTime sowDate)
+shared_ptr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedCrop(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, DateTime sowDate)
 {
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(cropType));
     HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydroponics_CropType_Count, SFP(HS_Err_InvalidParameter));
@@ -457,9 +449,7 @@ shared_ptr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedCrop(Hydro
     return nullptr;
 }
 
-shared_ptr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedPerennialCrop(Hydroponics_CropType cropType,
-                                                                             Hydroponics_SubstrateType substrateType,
-                                                                             DateTime lastHarvestDate)
+shared_ptr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedPerennialCrop(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, DateTime lastHarvestDate)
 {
     auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
     time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);

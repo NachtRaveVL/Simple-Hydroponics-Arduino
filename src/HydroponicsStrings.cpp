@@ -28,7 +28,6 @@ const PROGMEM char HS_Err_MissingLinkage[] = {"Missing or no linkage"};
 const PROGMEM char HS_Err_NoPositionsAvailable[] = {"No positions available"};
 const PROGMEM char HS_Err_NotYetInitialized[] = {"Not yet initialized"};
 const PROGMEM char HS_Err_OperationFailure[] = {"Operation failure"};
-const PROGMEM char HS_Err_ParameterMismatch[] = {"Parameter mismatch"};
 const PROGMEM char HS_Err_UnsupportedOperation[] = {"Unsupported operation"};
 
 const PROGMEM char HS_Log_AirReport[] = {" air report:"};

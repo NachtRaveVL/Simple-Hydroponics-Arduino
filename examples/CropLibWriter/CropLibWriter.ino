@@ -91,7 +91,7 @@ void setup() {
                     if (file.availableForWrite()) {
                         StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                         JsonObject jsonObject = doc.to<JsonObject>();
-                        if (!serializeJsonPretty(jsonObject, file)) { // Could also write out in binary but don't bother
+                        if (!serializeJsonPretty(jsonObject, file)) { // Could also write out in binary but we have acres of cheap storage
                             getLoggerInstance()->logError(F("Failure writing to crop data file!"));
                         }
                         file.close();
@@ -122,7 +122,7 @@ void setup() {
             getLoggerInstance()->logMessage(F("... Writing EEPROM data..."));
 
             // A lookup table of uint16_t[Hydroponics_CropType_Count] is created to aid in offset lookup,
-            // which is positioned right after an initial uint16_t total size value.
+            // which is positioned right after an initial uint16_t total size value (hence the +1).
             uint16_t writeOffset = SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * Hydroponics_CropType_Count + 1);
             uint16_t totalSize = 0;
 
@@ -134,7 +134,7 @@ void setup() {
                     getLoggerInstance()->logMessage(F("... to offset: "), String(writeOffset));
 
                     auto eepromStream = HydroponicsEEPROMStream(writeOffset, sizeof(HydroponicsCropsLibData));
-                    size_t bytesWritten = serializeDataToBinaryStream(cropData, &eepromStream); // Could also write out in JSON but why
+                    size_t bytesWritten = serializeDataToBinaryStream(cropData, &eepromStream); // Could also write out in JSON but inefficient
 
                     // After writing data out, write offset out to lookup table
                     if (bytesWritten && eeprom->updateBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * cropType),

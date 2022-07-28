@@ -135,7 +135,7 @@ public:
     HydroponicsAnalogSensor(Hydroponics_SensorType sensorType,
                             Hydroponics_PositionIndex sensorIndex,
                             byte inputPin,
-                            byte inputBitRes = 8,
+                            byte inputBitRes = 10,
                             bool inputInversion = false,
                             int classType = Analog);
     HydroponicsAnalogSensor(const HydroponicsAnalogSensorData *dataIn);

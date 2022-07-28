@@ -925,7 +925,6 @@ void HydroponicsFeeding::update()
             }
         }
     }
-
 }
 
 void HydroponicsFeeding::logFeeding(HydroponicsFeedingLogType logType)

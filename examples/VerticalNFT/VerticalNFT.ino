@@ -127,7 +127,7 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
 #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
 #define SETUP_USE_ANALOG_BITRES     12
 #else
-#define SETUP_USE_ANALOG_BITRES     8
+#define SETUP_USE_ANALOG_BITRES     10
 #endif
 #define SETUP_USE_DIGITAL_BITRES    12
 

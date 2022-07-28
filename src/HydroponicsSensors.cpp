@@ -354,7 +354,6 @@ void HydroponicsAnalogSensor::_takeMeasurement(unsigned int taskId)
                 #endif
                 rawRead = analogRead(_inputPin);
             #endif // /if HYDRUINO_SENSOR_ANALOGREAD_SAMPLES > 1
-
             if (_inputInversion) { rawRead = _inputResolution.maxVal - rawRead; }
             auto timestamp = unixNow();
 
@@ -367,7 +366,6 @@ void HydroponicsAnalogSensor::_takeMeasurement(unsigned int taskId)
             if (_calibrationData) {
                 _calibrationData->transform(&newMeasurement);
             }
-
             convertUnits(&newMeasurement, outUnits);
 
             _lastMeasurement = newMeasurement;
@@ -623,14 +621,12 @@ void HydroponicsDHTTempHumiditySensor::_takeMeasurement(unsigned int taskId)
             if (_calibrationData) {
                 _calibrationData->transform(&newMeasurement.value[0], &newMeasurement.units[0]);
             }
-
             convertUnits(&newMeasurement.value[0], &newMeasurement.units[0], outUnits[0]);
             convertUnits(&newMeasurement.value[1], &newMeasurement.units[1], outUnits[1]);
 
             if (_computeHeatIndex) {
                 convertUnits(newMeasurement.value[0], &newMeasurement.value[2], newMeasurement.units[0], readUnits, &newMeasurement.units[2]);
                 newMeasurement.value[2] = _dht->computeHeatIndex(newMeasurement.value[2], humidRead, readInFahrenheit);
-
                 convertUnits(&newMeasurement.value[2], &newMeasurement.units[2], outUnits[2]);
             }
 
@@ -734,7 +730,7 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(Hydroponics_Posit
         _dt->setWaitForConversion(true); // reads will be done in their own task, waits will delay and yield
         _dt->begin();
         if (_dt->getResolution() != _inputBitRes) { _dt->setResolution(_inputBitRes); }
-        HYDRUINO_SOFT_ASSERT(_dt->getResolution() == _inputBitRes, SFP(HS_Err_ParameterMismatch));
+        HYDRUINO_SOFT_ASSERT(_dt->getResolution() == _inputBitRes, SFP(HS_Err_OperationFailure));
     } else if (_dt) { delete _dt; _dt = nullptr; }
 }
 
@@ -751,7 +747,7 @@ HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(const Hydroponics
         _dt->setWaitForConversion(true); // reads will be done in their own task, waits will delay and yield
         _dt->begin();
         if (_dt->getResolution() != _inputBitRes) { _dt->setResolution(_inputBitRes); }
-        HYDRUINO_SOFT_ASSERT(_dt->getResolution() == _inputBitRes, SFP(HS_Err_ParameterMismatch));
+        HYDRUINO_SOFT_ASSERT(_dt->getResolution() == _inputBitRes, SFP(HS_Err_OperationFailure));
     } else if (_dt) { delete _dt; _dt = nullptr; }
 }
 
@@ -809,7 +805,6 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
                     if (_calibrationData) {
                         _calibrationData->transform(&newMeasurement);
                     }
-
                     convertUnits(&newMeasurement, outUnits);
 
                     _lastMeasurement = newMeasurement;
@@ -921,7 +916,7 @@ void HydroponicsBinarySensorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsAnalogSensorData::HydroponicsAnalogSensorData()
-    : HydroponicsSensorData(), inputBitRes(8), inputInversion(false), measurementUnits(Hydroponics_UnitsType_Undefined)
+    : HydroponicsSensorData(), inputBitRes(10), inputInversion(false), measurementUnits(Hydroponics_UnitsType_Undefined)
 {
     _size = sizeof(*this);
 }

@@ -29,7 +29,6 @@ extern const PROGMEM char HS_Err_MissingLinkage[];
 extern const PROGMEM char HS_Err_NoPositionsAvailable[];
 extern const PROGMEM char HS_Err_NotYetInitialized[];
 extern const PROGMEM char HS_Err_OperationFailure[];
-extern const PROGMEM char HS_Err_ParameterMismatch[];
 extern const PROGMEM char HS_Err_UnsupportedOperation[];
 
 extern const PROGMEM char HS_Log_AirReport[];
