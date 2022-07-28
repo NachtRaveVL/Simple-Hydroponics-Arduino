@@ -18,6 +18,10 @@ struct HydroponicsObjectData;
 // Creates object from passed object data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
 
+// Shortcut to get shared pointer for object with static pointer cast built-in.
+template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? static_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
+
+
 // Simple class for referencing an object in the Hydroponics system.
 // This class is mainly used to simplify object key generation, which is used when we
 // want to uniquely refer to objects in the Hydroponics system.
@@ -106,9 +110,9 @@ public:
 
     HydroponicsData *newSaveData();                         // Saves object state to proper backing data
 
-    virtual bool addLinkage(HydroponicsObjInterface *obj) override; // Adds linkage to this object, returns true upon initial add
-    virtual bool removeLinkage(HydroponicsObjInterface *obj) override; // Removes linkage from this object, returns true upon last remove
-    bool hasLinkage(HydroponicsObjInterface *obj) const;    // Checks object linkage to this object
+    virtual bool addLinkage(HydroponicsObject *obj) override; // Adds linkage to this object, returns true upon initial add
+    virtual bool removeLinkage(HydroponicsObject *obj) override; // Removes linkage from this object, returns true upon last remove
+    bool hasLinkage(HydroponicsObject *obj) const;    // Checks object linkage to this object
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
     // Objects are considered strong pointers, since existence -> shared_ptr ref to this instance exists.
@@ -130,9 +134,6 @@ private:
     HydroponicsObject() = default;                          // Private constructor to disable derived/public access
 };
 
-// Shortcut to get shared pointer from object with static pointer cast built-in.
-template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsObject *object) { return static_pointer_cast<T>(object->getSharedPtr()); }
-
 
 // Hydroponics Sub Object Base
 // A base class for sub objects that are typically found embedded in bigger main objects,
@@ -141,18 +142,12 @@ class HydroponicsSubObject : public HydroponicsObjInterface {
 public:
     virtual HydroponicsIdentity getId() const override;
     virtual Hydroponics_KeyType getKey() const override;
+    inline const String &getKeyString() const { return SFP(HS_null); }
     virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const override;
 
-    virtual void update() = 0;
-    virtual void handleLowMemory() = 0;
-
-    virtual bool addLinkage(HydroponicsObjInterface *obj) override;
-    virtual bool removeLinkage(HydroponicsObjInterface *obj) override;
+    virtual bool addLinkage(HydroponicsObject *obj) override;
+    virtual bool removeLinkage(HydroponicsObject *obj) override;
 };
-
-// Shortcut to get shared pointer from object with static pointer cast built-in.
-// Only meant to be used once during initial object assignment directly from new operator (e.g. <attachment> = new HydroSubObject()).
-template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsSubObject *subObj) { return subObj->getSharedPtr(); }
 
 
 // Hydroponics Object Data Intermediate

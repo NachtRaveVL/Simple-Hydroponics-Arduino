@@ -48,7 +48,7 @@ public:
     inline HydroponicsDLinkObject &operator=(const HydroponicsIdentity &rhs) { _id = rhs; _obj = nullptr; return *this; }
     inline HydroponicsDLinkObject &operator=(const char *rhs) { _id = HydroponicsIdentity(rhs); _obj = nullptr; return *this; }
     template<class U> inline HydroponicsDLinkObject &operator=(shared_ptr<U> &rhs) { _id = (rhs ? rhs->getId() : HydroponicsIdentity()); _obj = static_pointer_cast<HydroponicsObjInterface>(rhs); return *this; }
-    inline HydroponicsDLinkObject &operator=(const HydroponicsObjInterface *rhs) { _id = (rhs ? rhs->getId() : HydroponicsIdentity()); _obj = (rhs ? rhs->getSharedPtr() : nullptr); return *this; }
+    inline HydroponicsDLinkObject &operator=(const HydroponicsObjInterface *rhs) { _id = (rhs ? rhs->getId() : HydroponicsIdentity()); _obj = getSharedPtr<HydroponicsObjInterface>(rhs); return *this; }
 
     inline bool operator==(const HydroponicsDLinkObject &rhs) const { return _id.key == rhs.getKey(); }
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _id.key == rhs.key; }

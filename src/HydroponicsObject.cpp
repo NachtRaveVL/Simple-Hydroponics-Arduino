@@ -152,19 +152,19 @@ HydroponicsData *HydroponicsObject::newSaveData()
     return data;
 }
 
-bool HydroponicsObject::addLinkage(HydroponicsObjInterface *obj)
+bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
 {
     auto iter = _links.find(obj->getKey());
     if (iter != _links.end()) {
         iter->second.second++;
     } else {
-        _links[obj->getKey()] = make_pair((HydroponicsObject *)obj, (int8_t)1);
+        _links[obj->getKey()] = make_pair(obj, (int8_t)1);
         return true;
     }
     return false;
 }
 
-bool HydroponicsObject::removeLinkage(HydroponicsObjInterface *obj)
+bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 {
     auto iter = _links.find(obj->getKey());
     if (iter != _links.end()) {
@@ -176,7 +176,7 @@ bool HydroponicsObject::removeLinkage(HydroponicsObjInterface *obj)
     return false;
 }
 
-bool HydroponicsObject::hasLinkage(HydroponicsObjInterface *obj) const
+bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
 {
     return (_links.find(obj->getId()) != _links.end());
 }
@@ -228,12 +228,12 @@ shared_ptr<HydroponicsObjInterface> HydroponicsSubObject::getSharedPtr() const
     return shared_ptr<HydroponicsObjInterface>(this);
 }
 
-bool HydroponicsSubObject::addLinkage(HydroponicsObjInterface *obj)
+bool HydroponicsSubObject::addLinkage(HydroponicsObject *obj)
 {
     return false;
 }
 
-bool HydroponicsSubObject::removeLinkage(HydroponicsObjInterface *obj)
+bool HydroponicsSubObject::removeLinkage(HydroponicsObject *obj)
 {
     return false;
 }

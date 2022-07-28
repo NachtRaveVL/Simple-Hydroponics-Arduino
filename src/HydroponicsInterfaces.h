@@ -55,8 +55,11 @@ public:
     virtual Hydroponics_KeyType getKey() const = 0;
     virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const = 0;
 
-    virtual bool addLinkage(HydroponicsObjInterface *obj);
-    virtual bool removeLinkage(HydroponicsObjInterface *obj);
+    virtual void update() = 0;
+    virtual void handleLowMemory() = 0;
+
+    virtual bool addLinkage(HydroponicsObject *obj) = 0;
+    virtual bool removeLinkage(HydroponicsObject *obj) = 0;
 };
 
 

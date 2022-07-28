@@ -27,21 +27,21 @@ HydroponicsAttachment::HydroponicsAttachment(HydroponicsObjInterface *parent)
 HydroponicsAttachment::~HydroponicsAttachment()
 {
     if (isResolved() && !getId().isSubObject()) {
-        _obj->removeLinkage(_parent);
+        _obj->removeLinkage((HydroponicsObject *)_parent);
     }
 }
 
 void HydroponicsAttachment::attachObject()
 {
     if (!getId().isSubObject()) {
-        _obj->addLinkage(_parent);
+        _obj->addLinkage((HydroponicsObject *)_parent);
     }
 }
 
 void HydroponicsAttachment::detachObject()
 {
     if (!getId().isSubObject()) {
-        _obj->removeLinkage(_parent);
+        _obj->removeLinkage((HydroponicsObject *)_parent);
     }
     _obj = (HydroponicsObjInterface *)nullptr;
 }
