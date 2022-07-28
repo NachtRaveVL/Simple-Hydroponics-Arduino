@@ -156,6 +156,7 @@ void setup() {
             if (totalSize) {
                 totalSize += (sizeof(uint16_t) * Hydroponics_CropType_Count + 1);
                 if (eeprom->updateBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS, (const byte *)&totalSize, sizeof(uint16_t))) {
+                    getLoggerInstance()->logMessage(F("Crops lib data begin address: 0x"), String(SETUP_EXTCROPLIB_EEPROM_ADDRESS, 16));
                     getLoggerInstance()->logMessage(F("Total bytes written to EEPROM: "), String(totalSize));
                 } else {
                     getLoggerInstance()->logError(F("Failure writing total size to EEPROM!"));

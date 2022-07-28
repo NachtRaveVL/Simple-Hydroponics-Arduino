@@ -112,7 +112,7 @@ public:
 
     virtual bool addLinkage(HydroponicsObject *obj) override; // Adds linkage to this object, returns true upon initial add
     virtual bool removeLinkage(HydroponicsObject *obj) override; // Removes linkage from this object, returns true upon last remove
-    bool hasLinkage(HydroponicsObject *obj) const;    // Checks object linkage to this object
+    bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
     // Objects are considered strong pointers, since existence -> shared_ptr ref to this instance exists.

@@ -192,7 +192,7 @@ public:
     // Initializes system from custom binary stream, returning success flag
     bool initFromBinaryStream(Stream *streamIn);
     // TODO: Network URL init
-    //bool initFromNetworkURL(urlDataTODO, configFileName = "hydruino.cfg");
+    //bool initFromNetworkURL(urlDataTODO);
 
     // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
     bool saveToEEPROM(bool jsonFormat = false);
@@ -203,7 +203,7 @@ public:
     // Saves current system setup 
     bool saveToBinaryStream(Stream *streamOut);
     // TODO: Network URL save
-    //bool saveToNetworkURL(urlDataTODO, configFileName = "hydruino.cfg");
+    //bool saveToNetworkURL(urlDataTODO);
 
     // System Operation.
 
@@ -220,16 +220,16 @@ public:
     // System Logging.
 
     // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to the specified prefix. Returns success boolean.
-    inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy") { return _logger.beginLoggingToSDCard(logFilePrefix); }
+    inline bool enableSysLoggingToSDCard(String logFilePrefix) { return _logger.beginLoggingToSDCard(logFilePrefix); }
     // TODO: Network URL sys logging
-    //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix = "logs/hy");
+    //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix);
 
     // Data Publishing.
 
     // Enables data publishing to the SD card. Log file names will concat YYMMDD.csv to the specified prefix. Returns success boolean.
-    inline bool enableDataPublishingToSDCard(String dataFilePrefix = "data/hy") { return _publisher.beginPublishingToSDCard(dataFilePrefix); }
+    inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return _publisher.beginPublishingToSDCard(dataFilePrefix); }
     // TODO: Network URL data pub
-    //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix = "data/hy");
+    //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix);
     // TODO: MQTT data pub
     //bool enableDataPublishingToMQTT(mqttBrokerTODO, deviceDataTODO);
     // TODO: Web API data pub

@@ -27,7 +27,7 @@ public:
     static HydroponicsCropsLibrary *getInstance();
 
     // Begins crops library from external SD card library, with specified prefix and data format.
-    void beginCropsLibraryFromSDCard(String libraryCropPrefix = "lib/crop", bool jsonFormat = true);
+    void beginCropsLibraryFromSDCard(String libraryCropPrefix, bool jsonFormat = true);
 
     // Begins crops library from external EEPROM, with specified begin address and data format.
     void beginCropsLibraryFromEEPROM(size_t dataAddress = 0, bool jsonFormat = false);
