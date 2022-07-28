@@ -28,7 +28,7 @@ struct HydroponicsBitResolution {
     HydroponicsBitResolution(byte bitRes);      // Constructor
 
     // Transforms value from raw integer (or initial) value into normalized raw (or transformed) value.
-    inline float transform(int intValue) const { return constrain((float)maxVal / intValue, 0.0f, 1.0f); }
+    inline float transform(int intValue) const { return constrain(intValue / (float)maxVal, 0.0f, 1.0f); }
 
     // Inverse transforms value from normalized raw (or transformed) value back into raw integer (or initial) value.
     inline int inverseTransform(float rawValue) const { return constrain((int)((float)maxVal * rawValue), 0, maxVal); }
