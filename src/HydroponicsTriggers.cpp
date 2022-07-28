@@ -137,7 +137,7 @@ void HydroponicsMeasurementValueTrigger::attachTrigger()
 {
     if (!_attached) {
         _sensor.attachObject();
-        _attached = _sensor.isResolved();
+        _attached = true;
     }
 }
 
@@ -145,7 +145,7 @@ void HydroponicsMeasurementValueTrigger::detachTrigger()
 {
     if (_attached) {
         _sensor.detachObject();
-        _attached = _sensor.isResolved();
+        _attached = false;
     }
 }
 
@@ -227,7 +227,7 @@ void HydroponicsMeasurementRangeTrigger::attachTrigger()
 {
     if (!_attached) {
         _sensor.attachObject();
-        _attached = _sensor.isResolved();
+        _attached = true;
     }
 }
 
@@ -235,7 +235,7 @@ void HydroponicsMeasurementRangeTrigger::detachTrigger()
 {
     if (_attached) {
         _sensor.detachObject();
-        _attached = _sensor.isResolved();
+        _attached = false;
     }
 }
 

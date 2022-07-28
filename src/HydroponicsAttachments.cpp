@@ -151,6 +151,7 @@ void HydroponicsTriggerAttachment::attachObject()
 {
     HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>::attachObject();
 
+    get()->attachTrigger();
     handleTrigger(get()->getTriggerState());
 }
 
@@ -166,9 +167,7 @@ Hydroponics_TriggerState HydroponicsTriggerAttachment::updateTriggerIfNeeded(boo
     if (resolve() && (_needsTriggerState || poll)) {
         handleTrigger(get()->getTriggerState());
 
-        if (get()->getSensor()) {
-            get()->getSensor()->takeMeasurement((_needsTriggerState || poll));
-        }
+        get()->getSensor((_needsTriggerState || poll));
     }
     return _triggerState;
 }
@@ -224,6 +223,8 @@ Hydroponics_BalancerState HydroponicsBalancerAttachment::updateBalancerIfNeeded(
 {
     if (resolve() && (_needsBalancerState || poll)) {
         handleBalancer(get()->getBalancerState());
+
+        get()->getRangeTrigger((_needsBalancerState || poll));
     }
     return _balancerState;
 }

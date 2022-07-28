@@ -13,12 +13,12 @@ HydroponicsScheduler::~HydroponicsScheduler()
 {
     while (_feedings.size()) {
         auto feedingIter = _feedings.begin();
-        if (feedingIter->second) { delete feedingIter->second; }
+        delete feedingIter->second;
         _feedings.erase(feedingIter);
     }
     while (_lightings.size()) {
         auto lightingIter = _lightings.begin();
-        if (lightingIter->second) { delete lightingIter->second; }
+        delete lightingIter->second;
         _lightings.erase(lightingIter);
     }
 }

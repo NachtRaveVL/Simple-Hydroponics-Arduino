@@ -436,7 +436,7 @@ protected:
     void updateObjects(int pass);
 
     shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
-    
+
     template<class T>
     friend shared_ptr<T> HydroponicsDLinkObject::getObject();
 
