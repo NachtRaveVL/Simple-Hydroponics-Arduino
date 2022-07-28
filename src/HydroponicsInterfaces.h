@@ -48,6 +48,18 @@ struct HydroponicsJSONSerializableInterface {
 };
 
 
+// Hydroponics Object Interface
+class HydroponicsObjInterface {
+public:
+    virtual HydroponicsIdentity getId() const = 0;
+    virtual Hydroponics_KeyType getKey() const = 0;
+    virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const = 0;
+
+    virtual bool addLinkage(HydroponicsObjInterface *obj);
+    virtual bool removeLinkage(HydroponicsObjInterface *obj);
+};
+
+
 // Actuator Attachment Interface
 class HydroponicsActuatorAttachmentInterface {
 public:

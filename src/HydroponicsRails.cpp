@@ -54,10 +54,10 @@ void HydroponicsRail::handleLowMemory()
     HydroponicsObject::handleLowMemory();
 }
 
-bool HydroponicsRail::addLinkage(HydroponicsObject *object)
+bool HydroponicsRail::addLinkage(HydroponicsObjInterface *object)
 {
     if (HydroponicsObject::addLinkage(object)) {
-        if (object->isActuatorType()) {
+        if (((HydroponicsObject *)object)->isActuatorType()) {
             HYDRUINO_HARD_ASSERT(isSimpleClass() || isRegulatedClass(), HS_Err_OperationFailure);
             if (isSimpleClass()) {
                 auto methodSlot = MethodSlot<HydroponicsSimpleRail, HydroponicsActuator *>((HydroponicsSimpleRail *)this, &HydroponicsSimpleRail::handleActivation);
@@ -72,10 +72,10 @@ bool HydroponicsRail::addLinkage(HydroponicsObject *object)
     return false;
 }
 
-bool HydroponicsRail::removeLinkage(HydroponicsObject *object)
+bool HydroponicsRail::removeLinkage(HydroponicsObjInterface *object)
 {
     if (HydroponicsObject::removeLinkage(object)) {
-        if (object->isActuatorType()) {
+        if (((HydroponicsObject *)object)->isActuatorType()) {
             HYDRUINO_HARD_ASSERT(isSimpleClass() || isRegulatedClass(), HS_Err_OperationFailure);
             if (isSimpleClass()) {
                 auto methodSlot = MethodSlot<HydroponicsSimpleRail, HydroponicsActuator *>((HydroponicsSimpleRail *)this, &HydroponicsSimpleRail::handleActivation);

@@ -87,7 +87,7 @@ struct HydroponicsIdentity {
 
 // Hydroponic Object Base
 // A simple base class for referring to objects in the Hydroponics system.
-class HydroponicsObject {
+class HydroponicsObject : public HydroponicsObjInterface {
 public:
     inline bool isActuatorType() const { return _id.isActuatorType(); }
     inline bool isSensorType() const { return _id.isSensorType(); }
@@ -106,18 +106,18 @@ public:
 
     HydroponicsData *newSaveData();                         // Saves object state to proper backing data
 
-    virtual bool addLinkage(HydroponicsObject *obj);        // Adds linkage to this object, returns true upon initial add
-    virtual bool removeLinkage(HydroponicsObject *obj);     // Removes linkage from this object, returns true upon last remove
-    bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object
+    virtual bool addLinkage(HydroponicsObjInterface *obj) override; // Adds linkage to this object, returns true upon initial add
+    virtual bool removeLinkage(HydroponicsObjInterface *obj) override; // Removes linkage from this object, returns true upon last remove
+    bool hasLinkage(HydroponicsObjInterface *obj) const;    // Checks object linkage to this object
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
     // Objects are considered strong pointers, since existence -> shared_ptr ref to this instance exists.
     inline const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const { return _links; }
 
-    inline const HydroponicsIdentity &getId() const { return _id; } // Returns the unique Identity of the object
-    inline Hydroponics_KeyType getKey() const { return _id.key; } // Returns the unique key of the object
+    virtual HydroponicsIdentity getId() const override;     // Returns the unique Identity of the object
+    virtual Hydroponics_KeyType getKey() const override;    // Returns the unique key of the object
     inline const String &getKeyString() const { return _id.keyString; } // Returns the key string of the object
-    shared_ptr<HydroponicsObject> getSharedPtr() const;     // Returns the shared_ptr instance of the object
+    virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const  override; // Returns the shared_ptr instance of the object
 
 protected:
     HydroponicsIdentity _id;                                // Object id
@@ -137,17 +137,17 @@ template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsObject *obj
 // Hydroponics Sub Object Base
 // A base class for sub objects that are typically found embedded in bigger main objects,
 // but want to replicate some of the same functionality. Not required to be inherited from.
-class HydroponicsSubObject {
+class HydroponicsSubObject : public HydroponicsObjInterface {
 public:
-    inline HydroponicsIdentity getId() const { return HydroponicsIdentity(this); }
-    inline Hydroponics_KeyType getKey() const { return (Hydroponics_KeyType)(intptr_t)this; }
-    inline shared_ptr<HydroponicsObject> getSharedPtr() const { return shared_ptr<HydroponicsObject>((HydroponicsObject *)this); }; // Only meant to be used once
+    virtual HydroponicsIdentity getId() const override;
+    virtual Hydroponics_KeyType getKey() const override;
+    virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const override;
 
     virtual void update() = 0;
     virtual void handleLowMemory() = 0;
 
-    inline bool addLinkage(HydroponicsObject *obj) { return false; }
-    inline bool removeLinkage(HydroponicsObject *obj) { return false; }
+    virtual bool addLinkage(HydroponicsObjInterface *obj) override;
+    virtual bool removeLinkage(HydroponicsObjInterface *obj) override;
 };
 
 // Shortcut to get shared pointer from object with static pointer cast built-in.

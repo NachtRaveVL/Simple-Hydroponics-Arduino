@@ -18,7 +18,7 @@ HydroponicsDLinkObject::HydroponicsDLinkObject(const char *idKeyStr)
 { ; }
 
 
-HydroponicsAttachment::HydroponicsAttachment(HydroponicsObject *parent)
+HydroponicsAttachment::HydroponicsAttachment(HydroponicsObjInterface *parent)
     : _parent(parent), _obj()
 {
     HYDRUINO_HARD_ASSERT(_parent, SFP(HS_Err_InvalidParameter));
@@ -43,11 +43,11 @@ void HydroponicsAttachment::detachObject()
     if (!getId().isSubObject()) {
         _obj->removeLinkage(_parent);
     }
-    _obj = nullptr;
+    _obj = (HydroponicsObjInterface *)nullptr;
 }
 
 
-HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *parent, Hydroponics_PositionIndex measurementRow)
+HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, Hydroponics_PositionIndex measurementRow)
     : HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
           parent,
           &HydroponicsSensor::getMeasurementSignal,
@@ -75,6 +75,7 @@ void HydroponicsSensorAttachment::updateMeasurementIfNeeded(bool poll)
 {
     if (resolve() && (_needsMeasurement || poll)) {
         handleMeasurement(get()->getLatestMeasurement());
+
         get()->takeMeasurement((_needsMeasurement || poll));
     }
 }
@@ -134,7 +135,7 @@ void HydroponicsSensorAttachment::handleMeasurement(const HydroponicsMeasurement
 }
 
 
-HydroponicsTriggerAttachment::HydroponicsTriggerAttachment(HydroponicsObject *parent)
+HydroponicsTriggerAttachment::HydroponicsTriggerAttachment(HydroponicsObjInterface *parent)
     : HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>(
         parent,
         &HydroponicsTrigger::getTriggerSignal,
@@ -192,7 +193,7 @@ void HydroponicsTriggerAttachment::handleTrigger(Hydroponics_TriggerState trigge
 }
 
 
-HydroponicsBalancerAttachment::HydroponicsBalancerAttachment(HydroponicsObject *parent)
+HydroponicsBalancerAttachment::HydroponicsBalancerAttachment(HydroponicsObjInterface *parent)
     : HydroponicsSignalAttachment<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>(
         parent,
         &HydroponicsBalancer::getBalancerSignal,

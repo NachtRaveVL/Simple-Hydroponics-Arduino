@@ -39,8 +39,8 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool addLinkage(HydroponicsObject *obj) override;
-    virtual bool removeLinkage(HydroponicsObject *obj) override;
+    virtual bool addLinkage(HydroponicsObjInterface *obj) override;
+    virtual bool removeLinkage(HydroponicsObjInterface *obj) override;
 
     virtual bool canActivate(HydroponicsActuator *actuator) = 0;
     virtual float getCapacity() = 0;

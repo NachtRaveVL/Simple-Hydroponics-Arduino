@@ -152,21 +152,21 @@ HydroponicsData *HydroponicsObject::newSaveData()
     return data;
 }
 
-bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
+bool HydroponicsObject::addLinkage(HydroponicsObjInterface *obj)
 {
     auto iter = _links.find(obj->getKey());
     if (iter != _links.end()) {
         iter->second.second++;
     } else {
-        _links[obj->getKey()] = make_pair(obj, (int8_t)1);
+        _links[obj->getKey()] = make_pair((HydroponicsObject *)obj, (int8_t)1);
         return true;
     }
     return false;
 }
 
-bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
+bool HydroponicsObject::removeLinkage(HydroponicsObjInterface *obj)
 {
-    auto iter = _links.find(obj->_id);
+    auto iter = _links.find(obj->getKey());
     if (iter != _links.end()) {
         if (--iter->second.second == 0) {
             _links.erase(iter);
@@ -176,12 +176,22 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
     return false;
 }
 
-bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
+bool HydroponicsObject::hasLinkage(HydroponicsObjInterface *obj) const
 {
-    return (_links.find(obj->_id) != _links.end());
+    return (_links.find(obj->getId()) != _links.end());
 }
 
-shared_ptr<HydroponicsObject> HydroponicsObject::getSharedPtr() const
+HydroponicsIdentity HydroponicsObject::getId() const
+{
+    return _id;
+}
+
+Hydroponics_KeyType HydroponicsObject::getKey() const
+{
+    return _id.key;
+}
+
+shared_ptr<HydroponicsObjInterface> HydroponicsObject::getSharedPtr() const
 {
     return getHydroponicsInstance() ? getHydroponicsInstance()->objectById(_id) : nullptr;
 }
@@ -200,6 +210,32 @@ void HydroponicsObject::saveToData(HydroponicsData *dataOut)
     if (_id.keyString.length()) {
         strncpy(((HydroponicsObjectData *)dataOut)->name, _id.keyString.c_str(), HYDRUINO_NAME_MAXSIZE);
     }
+}
+
+
+HydroponicsIdentity HydroponicsSubObject::getId() const
+{
+    return HydroponicsIdentity(this);
+}
+
+Hydroponics_KeyType HydroponicsSubObject::getKey() const
+{
+    return (Hydroponics_KeyType)(intptr_t)this;
+}
+
+shared_ptr<HydroponicsObjInterface> HydroponicsSubObject::getSharedPtr() const
+{
+    return shared_ptr<HydroponicsObjInterface>(this);
+}
+
+bool HydroponicsSubObject::addLinkage(HydroponicsObjInterface *obj)
+{
+    return false;
+}
+
+bool HydroponicsSubObject::removeLinkage(HydroponicsObjInterface *obj)
+{
+    return false;
 }
 
 

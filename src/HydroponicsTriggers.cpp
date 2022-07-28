@@ -26,10 +26,10 @@ HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData 
 
 
 HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, byte measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _sensor((HydroponicsObject *)this), _attached(false),
+    : type((typeof(type))typeIn), _sensor(this), _attached(false),
       _toleranceUnits(Hydroponics_UnitsType_Undefined), _triggerState(Hydroponics_TriggerState_Disabled)
 {
-    _sensor = sensorId;
+    _sensor.setObject(sensorId);
 
     HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HS_Err_OperationFailure);
     if (isMeasureValueType()) {
@@ -40,10 +40,10 @@ HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, byte measur
 }
 
 HydroponicsTrigger::HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, byte measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _sensor((HydroponicsObject *)this), _attached(false),
+    : type((typeof(type))typeIn), _sensor(this), _attached(false),
       _toleranceUnits(Hydroponics_UnitsType_Undefined), _triggerState(Hydroponics_TriggerState_Disabled)
 {
-    _sensor = sensor;
+    _sensor.setObject(sensor);
 
     HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HS_Err_OperationFailure);
     if (isMeasureValueType()) {
@@ -54,10 +54,10 @@ HydroponicsTrigger::HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, byt
 }
 
 HydroponicsTrigger::HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn)
-    : type((typeof(type))(dataIn->type)), _sensor((HydroponicsObject *)this), _attached(false),
+    : type((typeof(type))(dataIn->type)), _sensor(this), _attached(false),
       _toleranceUnits(dataIn->toleranceUnits), _triggerState(Hydroponics_TriggerState_Disabled)
 {
-    _sensor = dataIn->sensorName;
+    _sensor.setObject(dataIn->sensorName);
     setToleranceUnits(dataIn->toleranceUnits);
 
     HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HS_Err_OperationFailure);

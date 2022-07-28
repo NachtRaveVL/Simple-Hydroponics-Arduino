@@ -362,7 +362,8 @@ HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirCO2(bool poll)
 shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits)
 {
     if (!_waterPHBalancer && getWaterPHSensor()) {
-        _waterPHBalancer = new HydroponicsTimedDosingBalancer(_waterPH.getObject(), phSetpoint, HYDRUINO_RANGE_PH_HALF, _maxVolume, _volumeUnits);
+        auto sensor = _waterPH.getObject();
+        _waterPHBalancer = make_shared<HydroponicsTimedDosingBalancer>(sensor, phSetpoint, HYDRUINO_RANGE_PH_HALF, _maxVolume, _volumeUnits);
         HYDRUINO_SOFT_ASSERT(_waterPHBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_waterPHBalancer) {
@@ -375,7 +376,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterPHBalancer(flo
 shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits)
 {
     if (!_waterTDSBalancer && getWaterTDSSensor()) {
-        _waterTDSBalancer = new HydroponicsTimedDosingBalancer(_waterTDS.getObject(), tdsSetpoint, HYDRUINO_RANGE_EC_HALF, _maxVolume, _volumeUnits);
+        _waterTDSBalancer = make_shared<HydroponicsTimedDosingBalancer>(_waterTDS.getObject(), tdsSetpoint, HYDRUINO_RANGE_EC_HALF, _maxVolume, _volumeUnits);
         HYDRUINO_SOFT_ASSERT(_waterTDSBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_waterTDSBalancer) {
@@ -389,7 +390,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterTemperatureBal
 {
     if (!_waterTempBalancer && getWaterTemperatureSensor()) {
         auto tempRangeQuad = HYDRUINO_RANGE_TEMP_HALF * 0.5f;
-        _waterTempBalancer = new HydroponicsLinearEdgeBalancer(_waterTemp.getObject(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
+        _waterTempBalancer = make_shared<HydroponicsLinearEdgeBalancer>(_waterTemp.getObject(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
         HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_waterTempBalancer) {
@@ -403,7 +404,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setAirTemperatureBalan
 {
     if (!_airTempBalancer && getAirTemperatureSensor()) {
         auto tempRangeQuad = HYDRUINO_RANGE_TEMP_HALF * 0.5f;
-        _airTempBalancer = new HydroponicsLinearEdgeBalancer(_airTemp.getObject(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
+        _airTempBalancer = make_shared<HydroponicsLinearEdgeBalancer>(_airTemp.getObject(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
         HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_airTempBalancer) {
@@ -417,7 +418,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setAirCO2Balancer(floa
 {
     if (!_airCO2Balancer && getAirCO2Sensor()) {
         auto co2RangeQuad = HYDRUINO_RANGE_CO2_HALF * 0.5f;
-        _airCO2Balancer = new HydroponicsLinearEdgeBalancer(_airCO2.getObject(), co2Setpoint, HYDRUINO_RANGE_CO2_HALF, -co2RangeQuad * 0.5f, co2RangeQuad);
+        _airCO2Balancer = make_shared<HydroponicsLinearEdgeBalancer>(_airCO2.getObject(), co2Setpoint, HYDRUINO_RANGE_CO2_HALF, -co2RangeQuad * 0.5f, co2RangeQuad);
         HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
     }
     if (_airCO2Balancer) {

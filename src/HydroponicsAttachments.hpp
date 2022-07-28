@@ -9,18 +9,10 @@ template<class U>
 shared_ptr<U> HydroponicsDLinkObject::getObject()
 {
     if (needsResolved() && Hydroponics::_activeInstance) {
-        _obj = Hydroponics::_activeInstance->objectById(_id);
+        _obj = static_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->objectById(_id));
         if ((bool)_obj) { _id = _obj->getId(); } // ensures complete id
     }
-    return reinterpret_pointer_cast<U>(_obj);
-}
-
-template<class U>
-HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const U *rhs)
-{
-    _id = (rhs ? rhs->getId() : HydroponicsIdentity());
-    _obj = (rhs ? rhs->getSharedPtr() : nullptr);
-    return *this;
+    return static_pointer_cast<U>(_obj);
 }
 
 
@@ -45,7 +37,7 @@ shared_ptr<U> HydroponicsAttachment::getObject()
 
 
 template<class ParameterType, int Slots> template<class T, class U>
-HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void), MethodSlot<U,ParameterType> handleMethod)
+HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void), MethodSlot<U,ParameterType> handleMethod)
     : HydroponicsAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleMethod(handleMethod)
 {
     HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
