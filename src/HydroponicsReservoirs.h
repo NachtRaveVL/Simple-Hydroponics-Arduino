@@ -50,7 +50,7 @@ public:
     virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits);
     virtual Hydroponics_UnitsType getVolumeUnits() const { return definedUnitsElse(_volumeUnits, defaultLiquidVolumeUnits()); }
 
-    virtual HydroponicsSensorAttachment &getWaterVolume() = 0;
+    virtual HydroponicsSensorAttachment &getWaterVolume(bool poll = false) = 0;
 
     inline Hydroponics_ReservoirType getReservoirType() const { return _id.objTypeAs.reservoirType; }
     inline Hydroponics_PositionIndex getReservoirIndex() const { return _id.posIndex; }
@@ -95,7 +95,7 @@ public:
 
     virtual void setVolumeUnits(Hydroponics_UnitsType volumeUnits) override;
 
-    virtual HydroponicsSensorAttachment &getWaterVolume() override;
+    virtual HydroponicsSensorAttachment &getWaterVolume(bool poll = false) override;
 
     inline void setFilledTrigger(shared_ptr<HydroponicsTrigger> filledTrigger) { _filledTrigger = filledTrigger; }
     inline shared_ptr<HydroponicsTrigger> getFilledTrigger(bool force = false) { _filledTrigger.updateTriggerIfNeeded(force); return _filledTrigger.getObject(); }
@@ -139,15 +139,15 @@ public:
     void setTemperatureUnits(Hydroponics_UnitsType tempUnits);
     inline Hydroponics_UnitsType getTemperatureUnits() const { return definedUnitsElse(_tempUnits, defaultTemperatureUnits()); }
 
-    virtual HydroponicsSensorAttachment &getWaterPH() override;
+    virtual HydroponicsSensorAttachment &getWaterPH(bool poll = false) override;
 
-    virtual HydroponicsSensorAttachment &getWaterTDS() override;
+    virtual HydroponicsSensorAttachment &getWaterTDS(bool poll = false) override;
 
-    virtual HydroponicsSensorAttachment &getWaterTemperature() override;
+    virtual HydroponicsSensorAttachment &getWaterTemperature(bool poll = false) override;
 
-    virtual HydroponicsSensorAttachment &getAirTemperature() override;
+    virtual HydroponicsSensorAttachment &getAirTemperature(bool poll = false) override;
 
-    virtual HydroponicsSensorAttachment &getAirCO2() override;
+    virtual HydroponicsSensorAttachment &getAirCO2(bool poll = false) override;
 
     shared_ptr<HydroponicsBalancer> setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);
     inline void setWaterPHBalancer(shared_ptr<HydroponicsBalancer> phBalancer) { _waterPHBalancer.setObject(phBalancer); }
@@ -223,7 +223,7 @@ public:
     virtual bool isFilled() override;
     virtual bool isEmpty() override;
 
-    virtual HydroponicsSensorAttachment &getWaterVolume() override;
+    virtual HydroponicsSensorAttachment &getWaterVolume(bool poll = false) override;
 
 protected:
     HydroponicsSensorAttachment _waterVolume;               // Water volume sensor attachment (defunct)

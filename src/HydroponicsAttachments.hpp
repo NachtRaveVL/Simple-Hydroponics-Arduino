@@ -5,74 +5,27 @@
 
 #include "Hydroponics.h"
 
-template<class T>
-HydroponicsDLinkObject<T>::HydroponicsDLinkObject()
-    : _id(), _obj(nullptr)
-{ ; }
-
-template<class T>
-HydroponicsDLinkObject<T>::HydroponicsDLinkObject(const HydroponicsIdentity &id)
-    : _id(id), _obj(nullptr)
-{ ; }
-
-template<class T>
-HydroponicsDLinkObject<T>::HydroponicsDLinkObject(const char *idKeyStr)
-    : _id(HydroponicsIdentity(idKeyStr)), _obj(nullptr)
-{ ; }
-
-template<class T>
-shared_ptr<T> HydroponicsDLinkObject<T>::getObject()
+template<class U>
+shared_ptr<U> HydroponicsDLinkObject::getObject()
 {
-    if (needsResolved() && !_id.isSubObject() && Hydroponics::_activeInstance) {
-        _obj = reinterpret_pointer_cast<T>(Hydroponics::_activeInstance->objectById(_id));
+    if (needsResolved() && Hydroponics::_activeInstance) {
+        _obj = Hydroponics::_activeInstance->objectById(_id);
         if ((bool)_obj) { _id = _obj->getId(); } // ensures complete id
     }
-    return _obj;
+    return reinterpret_pointer_cast<U>(_obj);
 }
 
-template<class T> template<class U>
-HydroponicsDLinkObject<T> &HydroponicsDLinkObject<T>::operator=(const U *rhs)
+template<class U>
+HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const U *rhs)
 {
     _id = (rhs ? rhs->getId() : HydroponicsIdentity());
-    _obj = (rhs ? ::getSharedPtr<T>(rhs) : nullptr);
+    _obj = (rhs ? rhs->getSharedPtr() : nullptr);
     return *this;
 }
 
 
-template<class T>
-HydroponicsAttachment<T>::HydroponicsAttachment(HydroponicsObject *parent)
-    : _parent(parent), _obj()
-{
-    HYDRUINO_HARD_ASSERT(_parent, SFP(HS_Err_InvalidParameter));
-}
-
-template<class T>
-HydroponicsAttachment<T>::~HydroponicsAttachment()
-{
-    if (isResolved()&& !getId().isSubObject()) {
-        _obj->removeLinkage(_parent);
-    }
-}
-
-template<class T>
-void HydroponicsAttachment<T>::attachObject()
-{
-    if (!getId().isSubObject()) {
-        _obj->addLinkage(_parent);
-    }
-}
-
-template<class T>
-void HydroponicsAttachment<T>::detachObject()
-{
-    if (!getId().isSubObject()) {
-        _obj->removeLinkage(_parent);
-    }
-    _obj = nullptr;
-}
-
-template<class T> template<class U>
-void HydroponicsAttachment<T>::setObject(U obj)
+template<class U>
+void HydroponicsAttachment::setObject(U obj)
 {
     if (_obj != obj) {
         if (isResolved()) { detachObject(); }
@@ -81,41 +34,45 @@ void HydroponicsAttachment<T>::setObject(U obj)
     }
 }
 
-template<class T>
-shared_ptr<T> HydroponicsAttachment<T>::getObject()
+template<class U>
+shared_ptr<U> HydroponicsAttachment::getObject()
 {
-    if (needsResolved() && _obj.getObject()) {
+    if (_obj.needsResolved() && _obj.resolve()) {
         attachObject();
     }
-    return _obj.getObject();
+    return _obj.getObject<U>();
 }
 
 
-template<class T, class ParameterType, int Slots> template<class U>
-HydroponicsSignalAttachment<T,ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, SignalGetterPtr signalGetter, MethodSlot<U,ParameterType> handleMethod)
-    : HydroponicsAttachment<T>(parent), _signalGetter(signalGetter), _handleMethod(handleMethod)
+template<class ParameterType, int Slots> template<class T, class U>
+HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObject *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void), MethodSlot<U,ParameterType> handleMethod)
+    : HydroponicsAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleMethod(handleMethod)
 {
     HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
 }
 
-template<class T, class ParameterType, int Slots>
-HydroponicsSignalAttachment<T,ParameterType,Slots>::~HydroponicsSignalAttachment()
+template<class ParameterType, int Slots>
+HydroponicsSignalAttachment<ParameterType,Slots>::~HydroponicsSignalAttachment()
 {
-    if (isResolved()) { (get()->*_signalGetter)().detach(_handleMethod); }
+    if (isResolved()) {
+        (get()->*_signalGetter)().detach(_handleMethod);
+    }
 }
 
-template<class T, class ParameterType, int Slots>
-void HydroponicsSignalAttachment<T,ParameterType,Slots>::attachObject()
+template<class ParameterType, int Slots>
+void HydroponicsSignalAttachment<ParameterType,Slots>::attachObject()
 {
-    HydroponicsAttachment<T>::attachObject();
+    HydroponicsAttachment::attachObject();
 
     (get()->*_signalGetter)().attach(_handleMethod);
 }
 
-template<class T, class ParameterType, int Slots>
-void HydroponicsSignalAttachment<T,ParameterType,Slots>::detachObject()
+template<class ParameterType, int Slots>
+void HydroponicsSignalAttachment<ParameterType,Slots>::detachObject()
 {
-    if (isResolved()) { (get()->*_signalGetter)().detach(_handleMethod); }
+    if (isResolved()) {
+        (get()->*_signalGetter)().detach(_handleMethod);
+    }
 
-    HydroponicsAttachment<T>::detachObject();
+    HydroponicsAttachment::detachObject();
 }

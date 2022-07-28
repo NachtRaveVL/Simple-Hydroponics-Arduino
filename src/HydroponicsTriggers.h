@@ -50,7 +50,7 @@ public:
     void setToleranceUnits(Hydroponics_UnitsType toleranceUnits);
     inline Hydroponics_UnitsType getToleranceUnits() { return definedUnitsElse(_toleranceUnits, _sensor ? _sensor->getMeasurementUnits(_sensor.getMeasurementRow()) : Hydroponics_UnitsType_Undefined); }
 
-    inline shared_ptr<HydroponicsSensor> getSensor(bool force = false) { _sensor.updateMeasurementIfNeeded(force); return _sensor.getObject(); }
+    inline shared_ptr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateMeasurementIfNeeded(poll); return _sensor.getObject(); }
     inline byte getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
     Signal<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> &getTriggerSignal();

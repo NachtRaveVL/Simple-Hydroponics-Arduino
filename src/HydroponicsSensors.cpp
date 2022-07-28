@@ -118,8 +118,8 @@ HydroponicsSensor::~HydroponicsSensor()
 void HydroponicsSensor::update() {
     HydroponicsObject::update();
 
-    _crop.resolveIfNeeded();
-    _reservoir.resolveIfNeeded();
+    _crop.resolve();
+    _reservoir.resolve();
 }
 
 bool HydroponicsSensor::isTakingMeasurement() const
@@ -134,15 +134,15 @@ bool HydroponicsSensor::needsPolling(uint32_t allowance) const
     return hydroponics && latestMeasurement ? hydroponics->isPollingFrameOld(latestMeasurement->frame, allowance) : false;
 }
 
-HydroponicsAttachment<HydroponicsCrop> &HydroponicsSensor::getParentCrop()
+HydroponicsAttachment &HydroponicsSensor::getParentCrop(bool resolve)
 {
-    _crop.resolveIfNeeded();
+    if (resolve) { _crop.resolve(); }
     return _crop;
 }
 
-HydroponicsAttachment<HydroponicsReservoir> &HydroponicsSensor::getParentReservoir()
+HydroponicsAttachment &HydroponicsSensor::getParentReservoir(bool resolve)
 {
-    _reservoir.resolveIfNeeded();
+    if (resolve) { _reservoir.resolve(); }
     return _reservoir;
 }
 

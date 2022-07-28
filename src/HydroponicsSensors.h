@@ -63,9 +63,9 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, byte measurementRow = 0) = 0;
     virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const = 0;
 
-    virtual HydroponicsAttachment<HydroponicsCrop> &getParentCrop() override;
+    virtual HydroponicsAttachment &getParentCrop(bool resolve = true) override;
 
-    virtual HydroponicsAttachment<HydroponicsReservoir> &getParentReservoir() override;
+    virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) override;
 
     void setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData);
     inline const HydroponicsCalibrationData *getUserCalibrationData() const { return _calibrationData; }
@@ -79,8 +79,8 @@ public:
 protected:
     byte _inputPin;                                         // Input pin
     bool _isTakingMeasure;                                  // Taking measurement flag
-    HydroponicsAttachment<HydroponicsCrop> _crop;           // Crop attachment
-    HydroponicsAttachment<HydroponicsReservoir> _reservoir; // Reservoir attachment
+    HydroponicsAttachment _crop;                            // Crop attachment
+    HydroponicsAttachment _reservoir;                       // Reservoir attachment
     const HydroponicsCalibrationData *_calibrationData;     // Calibration data
     Signal<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> _measureSignal; // New measurement signal
 

@@ -215,13 +215,14 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
 
     _limitTrigger.setUpdateMethod(&HydroponicsRail::handleLimit);
     _limitTrigger = newTriggerObjectFromSubData(&(dataIn->limitTrigger));
+    HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HS_Err_AllocationFailure));
 }
 
 void HydroponicsRegulatedRail::update()
 {
     HydroponicsRail::update();
 
-    if (_limitTrigger.getObject()) { _limitTrigger->update(); }
+    if (_limitTrigger.resolve()) { _limitTrigger->update(); }
 
     _powerUsage.updateMeasurementIfNeeded();
 
@@ -237,7 +238,7 @@ void HydroponicsRegulatedRail::handleLowMemory()
 
 bool HydroponicsRegulatedRail::canActivate(HydroponicsActuator *actuator)
 {
-    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState())) { return false; }
+    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState(true))) { return false; }
 
     HydroponicsSingleMeasurement powerReq = actuator->getContinuousPowerUsage();
     convertUnits(&powerReq, getPowerUnits(), getRailVoltage());
@@ -247,7 +248,7 @@ bool HydroponicsRegulatedRail::canActivate(HydroponicsActuator *actuator)
 
 float HydroponicsRegulatedRail::getCapacity()
 {
-    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState())) { return 1.0f; }
+    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState(true))) { return 1.0f; }
     float retVal = _powerUsage.getMeasurementValue() / _maxPower;
     return constrain(retVal, 0.0f, 1.0f);
 }
@@ -261,9 +262,9 @@ void HydroponicsRegulatedRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
     }
 }
 
-HydroponicsSensorAttachment &HydroponicsRegulatedRail::getPowerUsage()
+HydroponicsSensorAttachment &HydroponicsRegulatedRail::getPowerUsage(bool poll)
 {
-    _powerUsage.updateMeasurementIfNeeded();
+    _powerUsage.updateMeasurementIfNeeded(poll);
     return _powerUsage;
 }
 
@@ -284,7 +285,7 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
 {
     if (!getPowerUsage() && actuator) {
         auto powerReq = actuator->getContinuousPowerUsage();
-        auto powerUsage = getPowerUsage().getMeasurement();
+        auto powerUsage = getPowerUsage().getMeasurement(true);
         bool enabled = actuator->isEnabled();
 
         convertUnits(&powerReq, getPowerUnits(), getRailVoltage());

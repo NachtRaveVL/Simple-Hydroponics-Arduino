@@ -438,7 +438,7 @@ protected:
     shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
     
     template<class T>
-    friend shared_ptr<T> HydroponicsDLinkObject<T>::getObject();
+    friend shared_ptr<T> HydroponicsDLinkObject::getObject();
 
     void handleInterrupt(byte pin);
     friend void ::handleInterrupt(byte pin);

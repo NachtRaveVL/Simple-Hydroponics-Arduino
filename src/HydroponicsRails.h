@@ -114,7 +114,7 @@ public:
 
     virtual void setPowerUnits(Hydroponics_UnitsType powerUnits) override;
 
-    virtual HydroponicsSensorAttachment &getPowerUsage() override;
+    virtual HydroponicsSensorAttachment &getPowerUsage(bool poll = false) override;
 
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
     const HydroponicsTrigger *getLimitTrigger() const;
@@ -126,9 +126,7 @@ public:
 
 protected:
     float _maxPower;                                        // Maximum power
-
     HydroponicsSensorAttachment _powerUsage;                // Power usage sensor attachment
-
     HydroponicsTriggerAttachment _limitTrigger;             // Power limit trigger attachment
 
     virtual void saveToData(HydroponicsData *dataOut) override;

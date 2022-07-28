@@ -47,7 +47,7 @@ public:
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 
-    virtual HydroponicsAttachment<HydroponicsFeedReservoir> &getFeedingReservoir() override;
+    virtual HydroponicsAttachment &getFeedingReservoir(bool resolve = true) override;
 
     void setFeedingWeight(float weight);
     inline float getFeedingWeight() const { return _feedingWeight; }
@@ -69,15 +69,13 @@ public:
 protected:
     Hydroponics_SubstrateType _substrateType;               // Substrate type
     time_t _sowDate;                                        // Sow date (UTC)
-    HydroponicsAttachment<HydroponicsFeedReservoir> _feedReservoir; // Feed reservoir attachment
-
+    HydroponicsAttachment _feedReservoir;                   // Feed reservoir attachment
     const HydroponicsCropsLibData *_cropsData;              // Crops library data (checked out iff !nullptr)
     int _growWeek;                                          // Current grow week
     int _totalGrowWeeks;                                    // Total grow weeks (cached)
     Hydroponics_CropPhase _cropPhase;                       // Current crop phase
     Hydroponics_TriggerState _feedingState;                 // Current feeding signal state
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)
-
     Signal<HydroponicsCrop *> _feedingSignal;               // Feeding requested signal
 
     virtual HydroponicsData *allocateData() const override;
@@ -143,7 +141,7 @@ public:
     void setMoistureUnits(Hydroponics_UnitsType moistureUnits);
     Hydroponics_UnitsType getMoistureUnits() const;
 
-    virtual HydroponicsSensorAttachment &getSoilMoisture() override;
+    virtual HydroponicsSensorAttachment &getSoilMoisture(bool poll = false) override;
 
     inline void setFeedingTrigger(shared_ptr<HydroponicsTrigger> feedingTrigger) { _feedingTrigger = feedingTrigger; }
     inline shared_ptr<HydroponicsTrigger> getFeedingTrigger(bool force = false) { _feedingTrigger.updateTriggerIfNeeded(force); return _feedingTrigger.getObject(); }

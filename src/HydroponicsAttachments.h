@@ -6,9 +6,9 @@
 #ifndef HydroponicsAttachments_H
 #define HydroponicsAttachments_H
 
-template<class T> class HydroponicsDLinkObject;
-template<class T> class HydroponicsAttachment;
-template<class T, class ParameterType, int Slots> class HydroponicsSignalAttachment;
+class HydroponicsDLinkObject;
+class HydroponicsAttachment;
+template<class ParameterType, int Slots> class HydroponicsSignalAttachment;
 class HydroponicsSensorAttachment;
 class HydroponicsTriggerAttachment;
 class HydroponicsBalancerAttachment;
@@ -20,44 +20,43 @@ class HydroponicsBalancerAttachment;
 // Delay/Dynamic Loaded/Linked Object Reference
 // Simple class for delay loading objects that get references to others during system
 // load. T should be a derived class type of HydroponicsObject, with getId() method.
-template<class T>
 class HydroponicsDLinkObject {
 public:
     HydroponicsDLinkObject();
     HydroponicsDLinkObject(const HydroponicsIdentity &id);
     HydroponicsDLinkObject(const char *idKeyStr);
 
-    inline bool isId() const { return !_obj && !_id.isSubObject(); }
+    inline bool isId() const { return !_obj; }
     inline bool isObject() const { return (bool)_obj; }
     inline bool isResolved() const { return isObject(); }
     inline bool needsResolved() const { return isId() && (bool)_id; }
-    inline bool resolveIfNeeded() { return needsResolved() && (bool)getObject(); }
+    inline bool resolve() { return (bool)getObject<HydroponicsObject>(); }
 
     template<class U> inline void setObject(U obj) { this->operator=(obj); }
-    shared_ptr<T> getObject();
+    template<class U = HydroponicsObject> shared_ptr<U> getObject();
 
-    inline T* get() { return getObject().get(); }
+    template<class U = HydroponicsObject> inline U* get() { return getObject<U>().get(); }
     inline const HydroponicsIdentity &getId() const { return _id; }
     inline Hydroponics_KeyType getKey() const { return getId().key; }
     inline const String &getKeyString() const { return getId().keyString; }
 
-    inline operator bool() const { return (bool)_obj; }
-    inline T* operator->() { return get(); }
-    inline T* operator*() { return get(); }
+    inline operator bool() const { isResolved(); }
+    inline HydroponicsObject* operator->() { return get<HydroponicsObject>(); }
+    inline HydroponicsObject* operator*() { return get<HydroponicsObject>(); }
 
-    template<class U> inline HydroponicsDLinkObject<T> &operator=(const HydroponicsDLinkObject<U> &rhs) { _id = rhs._id; _obj = static_pointer_cast<T>(rhs._obj); return *this; }
-    inline HydroponicsDLinkObject<T> &operator=(const HydroponicsIdentity &rhs) { _id = rhs; _obj = nullptr; return *this; }
-    inline HydroponicsDLinkObject<T> &operator=(const char *rhs) { _id = HydroponicsIdentity(rhs); _obj = nullptr; return *this; }
-    template<class U> inline HydroponicsDLinkObject<T> &operator=(shared_ptr<U> &rhs) { _id = (rhs ? rhs->getId() : HydroponicsIdentity()); _obj = static_pointer_cast<T>(rhs); return *this; }
-    template<class U> inline HydroponicsDLinkObject<T> &operator=(const U *rhs);
+    inline HydroponicsDLinkObject &operator=(const HydroponicsDLinkObject &rhs) { _id = rhs._id; _obj = rhs._obj; return *this; }
+    inline HydroponicsDLinkObject &operator=(const HydroponicsIdentity &rhs) { _id = rhs; _obj = nullptr; return *this; }
+    inline HydroponicsDLinkObject &operator=(const char *rhs) { _id = HydroponicsIdentity(rhs); _obj = nullptr; return *this; }
+    template<class U> inline HydroponicsDLinkObject &operator=(shared_ptr<U> &rhs) { _id = (rhs ? rhs->getId() : HydroponicsIdentity()); _obj = reinterpret_pointer_cast<HydroponicsObject>(rhs); return *this; }
+    template<class U> HydroponicsDLinkObject &operator=(const U *rhs);
 
-    template<class U> inline bool operator==(const HydroponicsDLinkObject<U> &rhs) const { return _id.key == rhs.getKey(); }
+    inline bool operator==(const HydroponicsDLinkObject &rhs) const { return _id.key == rhs.getKey(); }
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _id.key == rhs.key; }
     inline bool operator==(const char *rhs) const { return _id.key == HydroponicsIdentity(rhs).key; }
     template<class U> inline bool operator==(const shared_ptr<U> &rhs) const { return _id.key == (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
     template<class U> inline bool operator==(const U *rhs) const { return _id.key == (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
 
-    template<class U> inline bool operator!=(const HydroponicsDLinkObject<U> &rhs) const { return _id.key != rhs.getKey(); }
+    inline bool operator!=(const HydroponicsDLinkObject &rhs) const { return _id.key != rhs.getKey(); }
     inline bool operator!=(const HydroponicsIdentity &rhs) const { return _id.key != rhs.key; }
     inline bool operator!=(const char *rhs) const { return _id.key != HydroponicsIdentity(rhs).key; }
     template<class U> inline bool operator!=(const shared_ptr<U> &rhs) const { return _id.key != (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
@@ -65,14 +64,13 @@ public:
 
 protected:
     HydroponicsIdentity _id;                                // Object identity
-    shared_ptr<T> _obj;                                     // Shared pointer to object
+    shared_ptr<HydroponicsObject> _obj;                     // Shared pointer to object
 };
 
 
 // Simple Attachment Point Base
 // This attachment registers the parent object with the linked object's linkages upon
 // dereference, and unregisters the parent object at time of destruction or reassignment.
-template<class T>
 class HydroponicsAttachment {
 public:
     HydroponicsAttachment(HydroponicsObject *parent);
@@ -85,24 +83,24 @@ public:
     inline bool isObject() const { return _obj.isObject(); }
     inline bool isResolved() const { return _obj.isResolved(); }
     inline bool needsResolved() const { return _obj.needsResolved(); }
-    inline bool resolveIfNeeded() { return needsResolved() && (bool)getObject(); }
+    inline bool resolve() { return (bool)getObject<HydroponicsObject>(); }
 
     template<class U> void setObject(U obj);
-    shared_ptr<T> getObject();
+    template<class U = HydroponicsObject> shared_ptr<U> getObject();
 
-    inline T* get() { return getObject().get(); }
+    template<class U = HydroponicsObject> inline U* get() { return _obj.get<U>(); }
     inline const HydroponicsIdentity &getId() const { return _obj.getId(); }
     inline Hydroponics_KeyType getKey() const { return _obj.getKey(); }
     inline const String &getKeyString() const { return _obj.getKeyString(); }
 
-    inline operator bool() const { return (bool)_obj; }
-    inline T* operator->() { return getObject().get(); }
-    inline T* operator*() { return getObject().get(); }
+    inline operator bool() const { return isResolved(); }
+    inline HydroponicsObject* operator->() { return get<HydroponicsObject>(); }
+    inline HydroponicsObject* operator*() { return get<HydroponicsObject>(); }
 
-    inline HydroponicsAttachment<T> &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
-    inline HydroponicsAttachment<T> &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
-    template<class U> inline HydroponicsAttachment<T> &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
-    template<class U> inline HydroponicsAttachment<T> &operator=(const U *rhs) { setObject(rhs); return *this; }
+    inline HydroponicsAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
+    inline HydroponicsAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
+    template<class U> inline HydroponicsAttachment &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
+    template<class U> inline HydroponicsAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _obj == rhs; }
     inline bool operator==(const char *rhs) { return *this == HydroponicsIdentity(rhs); }
@@ -115,7 +113,7 @@ public:
     template<class U> inline bool operator!=(const U *rhs) const { return _obj != rhs; }
 
 protected:
-    HydroponicsDLinkObject<T> _obj;                         // Dynamic link object
+    HydroponicsDLinkObject _obj;                            // Dynamic link object
     HydroponicsObject *_parent;                             // Parent object pointer (strong due to reverse ownership)
 };
 
@@ -124,21 +122,21 @@ protected:
 // This attachment registers the parent object with a Signal getter off the linked object
 // upon dereference, and unregisters the parent object from the Signal at time of
 // destruction or reassignment.
-template<class T, class ParameterType, int Slots = 8>
-class HydroponicsSignalAttachment : public HydroponicsAttachment<T> {
+template<class ParameterType, int Slots = 8>
+class HydroponicsSignalAttachment : public HydroponicsAttachment {
 public:
-    typedef Signal<ParameterType,Slots> &(T::*SignalGetterPtr)(void);
+    typedef Signal<ParameterType,Slots> &(HydroponicsObject::*SignalGetterPtr)(void);
 
-    template<class U> HydroponicsSignalAttachment(HydroponicsObject *parent, SignalGetterPtr signalGetter, MethodSlot<U,ParameterType> handleMethod);
+    template<class T, class U> HydroponicsSignalAttachment(HydroponicsObject *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void), MethodSlot<U,ParameterType> handleMethod);
     virtual ~HydroponicsSignalAttachment();
 
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
-    inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
-    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
-    template<class U> inline HydroponicsSignalAttachment<T,ParameterType,Slots> &operator=(const U *rhs) { setObject(rhs); return *this; }
+    inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
+    inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
+    template<class U> inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
+    template<class U> inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const U *rhs) { setObject(rhs); return *this; }
 
 protected:
     SignalGetterPtr _signalGetter;                          // Signal getter method ptr
@@ -153,21 +151,20 @@ protected:
 // Custom process method can handle new raw measurements, while custom update method
 // can handle updates to the single result measure (read as: called upon every new
 // measure). Custom process method must call setMeasurement to set resolved measure.
-class HydroponicsSensorAttachment : public HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> {
+class HydroponicsSensorAttachment : public HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> {
 public:
     typedef void (HydroponicsObject::*ProcessMethodPtr)(const HydroponicsMeasurement *measurement);
     typedef void (HydroponicsObject::*UpdateMethodPtr)(const HydroponicsSingleMeasurement &measurement);
 
     HydroponicsSensorAttachment(HydroponicsObject *parent, Hydroponics_PositionIndex measurementRow = 0);
-    virtual ~HydroponicsSensorAttachment();
 
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    void updateMeasurementIfNeeded(bool force = false);
+    void updateMeasurementIfNeeded(bool poll = false);
 
-    template<class T> inline void setProcessMethod(void (T::*processMethod)(const HydroponicsMeasurement *)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsMeasurement(); }
-    template<class T> inline void setUpdateMethod(void (T::*updateMethod)(const HydroponicsSingleMeasurement &measurement))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
+    template<class U> inline void setProcessMethod(void (U::*processMethod)(const HydroponicsMeasurement *)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsMeasurement(); }
+    template<class U> inline void setUpdateMethod(void (U::*updateMethod)(const HydroponicsSingleMeasurement &measurement))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
 
     inline void setProcessMethod(ProcessMethodPtr processMethod) { _processMethod = processMethod; setNeedsMeasurement(); }
     inline void setUpdateMethod(UpdateMethodPtr updateMethod)  { _updateMethod = updateMethod; }
@@ -182,13 +179,19 @@ public:
     inline void setNeedsMeasurement() { _needsMeasurement = true; }
     inline bool needsMeasurement() { return _needsMeasurement; }
 
-    inline const HydroponicsSingleMeasurement &getMeasurement(bool force = false) { updateMeasurementIfNeeded(force); return _measurement; }
-    inline uint16_t getMeasurementFrame(bool force = false) { updateMeasurementIfNeeded(force); return _measurement.frame; }
-    inline float getMeasurementValue(bool force = false) { updateMeasurementIfNeeded(force); return _measurement.value; }
-    inline Hydroponics_UnitsType getMeasurementUnits(bool force = false) { updateMeasurementIfNeeded(force); return _measurement.units; }
+    inline const HydroponicsSingleMeasurement &getMeasurement(bool poll = false) { updateMeasurementIfNeeded(poll); return _measurement; }
+    inline uint16_t getMeasurementFrame(bool poll = false) { updateMeasurementIfNeeded(poll); return _measurement.frame; }
+    inline float getMeasurementValue(bool poll = false) { updateMeasurementIfNeeded(poll); return _measurement.value; }
+    inline Hydroponics_UnitsType getMeasurementUnits(bool poll = false) { updateMeasurementIfNeeded(poll); return _measurement.units; }
 
     inline Hydroponics_PositionIndex getMeasurementRow() const { return _measurementRow; }
     inline float getMeasurementConvertParam() const { return _convertParam; }
+
+    inline shared_ptr<HydroponicsSensor> getObject() { return HydroponicsAttachment::getObject<HydroponicsSensor>(); }
+    inline HydroponicsSensor* get() { return HydroponicsAttachment::get<HydroponicsSensor>(); }
+
+    inline HydroponicsSensor* operator->() { return HydroponicsAttachment::getObject<HydroponicsSensor>().get(); }
+    inline HydroponicsSensor* operator*() { return HydroponicsAttachment::getObject<HydroponicsSensor>().get(); }
 
     inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsSensorAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
@@ -214,7 +217,7 @@ protected:
 // Custom process method can handle new raw state, while custom update method can
 // handle changes to the trigger state (read as: only called upon change). Custom
 // process method must call setTriggerState to set resolved state.
-class HydroponicsTriggerAttachment  : public HydroponicsSignalAttachment<HydroponicsTrigger, Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> {
+class HydroponicsTriggerAttachment  : public HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> {
 public:
     typedef void (HydroponicsObject::*ProcessMethodPtr)(Hydroponics_TriggerState triggerState);
     typedef void (HydroponicsObject::*UpdateMethodPtr)(Hydroponics_TriggerState triggerState);
@@ -225,7 +228,7 @@ public:
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    Hydroponics_TriggerState updateTriggerIfNeeded(bool force = false);
+    Hydroponics_TriggerState updateTriggerIfNeeded(bool poll = false);
 
     template<class T> inline void setProcessMethod(void (T::*processMethod)(Hydroponics_TriggerState)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsTriggerState(); }
     template<class T> inline void setUpdateMethod(void (T::*updateMethod)(Hydroponics_TriggerState))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
@@ -237,7 +240,13 @@ public:
 
     void setTriggerState(Hydroponics_TriggerState triggerState);
 
-    inline Hydroponics_TriggerState getTriggerState(bool force = false) { return updateTriggerIfNeeded(force); }
+    inline Hydroponics_TriggerState getTriggerState(bool poll = false) { return updateTriggerIfNeeded(poll); }
+
+    inline shared_ptr<HydroponicsTrigger> getObject() { return HydroponicsAttachment::getObject<HydroponicsTrigger>(); }
+    inline HydroponicsTrigger* get() { return HydroponicsAttachment::get<HydroponicsTrigger>(); }
+
+    inline HydroponicsTrigger* operator->() { return HydroponicsAttachment::getObject<HydroponicsTrigger>().get(); }
+    inline HydroponicsTrigger* operator*() { return HydroponicsAttachment::getObject<HydroponicsTrigger>().get(); }
 
     inline HydroponicsTriggerAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsTriggerAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
@@ -261,7 +270,7 @@ protected:
 // Custom process method can handle new raw state, while custom update method can
 // handle changes to the balancer state (read as: only called upon change). Custom
 // process method must call setBalancerState to set resolved state.
-class HydroponicsBalancerAttachment : public HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> {
+class HydroponicsBalancerAttachment : public HydroponicsSignalAttachment<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> {
 public:
     typedef void (HydroponicsObject::*ProcessMethodPtr)(Hydroponics_BalancerState balancerState);
     typedef void (HydroponicsObject::*UpdateMethodPtr)(Hydroponics_BalancerState balancerState);
@@ -272,7 +281,7 @@ public:
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    Hydroponics_BalancerState updateBalancerIfNeeded(bool force = false);
+    Hydroponics_BalancerState updateBalancerIfNeeded(bool poll = false);
 
     template<class T> inline void setProcessMethod(void (T::*processMethod)(Hydroponics_BalancerState)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsBalancerState(); }
     template<class T> inline void setUpdateMethod(void (T::*updateMethod)(Hydroponics_BalancerState))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
@@ -284,7 +293,13 @@ public:
 
     void setBalancerState(Hydroponics_BalancerState balancerState);
 
-    inline Hydroponics_BalancerState getBalancerState(bool force = false) { return updateBalancerIfNeeded(force); }
+    inline Hydroponics_BalancerState getBalancerState(bool poll = false) { return updateBalancerIfNeeded(poll); }
+
+    inline shared_ptr<HydroponicsBalancer> getObject() { return HydroponicsAttachment::getObject<HydroponicsBalancer>(); }
+    inline HydroponicsBalancer* get() { return HydroponicsAttachment::get<HydroponicsBalancer>(); }
+
+    inline HydroponicsBalancer* operator->() { return HydroponicsAttachment::getObject<HydroponicsBalancer>().get(); }
+    inline HydroponicsBalancer* operator*() { return HydroponicsAttachment::getObject<HydroponicsBalancer>().get(); }
 
     inline HydroponicsBalancerAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsBalancerAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }

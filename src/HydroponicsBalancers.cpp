@@ -42,7 +42,7 @@ void HydroponicsBalancer::update()
 {
     if (!_enabled) { return; }
 
-    if (_rangeTrigger.getObject()) { _rangeTrigger->update(); }
+    if (_rangeTrigger.resolve()) { _rangeTrigger->update(); }
 
     _rangeTrigger.updateTriggerIfNeeded();
 }

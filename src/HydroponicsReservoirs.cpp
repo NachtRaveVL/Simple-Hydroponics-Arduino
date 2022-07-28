@@ -147,18 +147,20 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReser
 
     _filledTrigger.setUpdateMethod(&HydroponicsReservoir::handleFilledState);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
+    HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HS_Err_AllocationFailure));
 
     _emptyTrigger.setUpdateMethod(&HydroponicsReservoir::handleEmptyState);
     _emptyTrigger = newTriggerObjectFromSubData(&(dataIn->emptyTrigger));
+    HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HS_Err_AllocationFailure));
 }
 
 void HydroponicsFluidReservoir::update()
 {
     HydroponicsReservoir::update();
 
-    if (_filledTrigger.getObject()) { _filledTrigger->update(); }
+    if (_filledTrigger.resolve()) { _filledTrigger->update(); }
 
-    if (_emptyTrigger.getObject()) { _emptyTrigger->update(); }
+    if (_emptyTrigger.resolve()) { _emptyTrigger->update(); }
 
     _waterVolume.updateMeasurementIfNeeded();
 
@@ -177,14 +179,14 @@ void HydroponicsFluidReservoir::handleLowMemory()
 
 bool HydroponicsFluidReservoir::isFilled()
 {
-    if (_filledTrigger.getObject()) { return triggerStateToBool(_filledTrigger.getTriggerState()); }
+    if (_filledTrigger.resolve()) { return triggerStateToBool(_filledTrigger.getTriggerState(true)); }
     return _waterVolume.getMeasurementValue() >= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
                                                                                                                      : _maxVolume) - FLT_EPSILON;
 }
 
 bool HydroponicsFluidReservoir::isEmpty()
 {
-    if (_emptyTrigger.getObject()) { return triggerStateToBool(_emptyTrigger.getTriggerState()); }
+    if (_emptyTrigger.resolve()) { return triggerStateToBool(_emptyTrigger.getTriggerState(true)); }
     return _waterVolume.getMeasurementValue() <= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
                                                                                                                      : 0) + FLT_EPSILON;
 }
@@ -198,9 +200,9 @@ void HydroponicsFluidReservoir::setVolumeUnits(Hydroponics_UnitsType volumeUnits
     }
 }
 
-HydroponicsSensorAttachment &HydroponicsFluidReservoir::getWaterVolume()
+HydroponicsSensorAttachment &HydroponicsFluidReservoir::getWaterVolume(bool poll)
 {
-    _waterVolume.updateMeasurementIfNeeded();
+    _waterVolume.updateMeasurementIfNeeded(poll);
     return _waterVolume;
 }
 
@@ -327,33 +329,33 @@ void HydroponicsFeedReservoir::setTemperatureUnits(Hydroponics_UnitsType tempUni
     }
 }
 
-HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterPH()
+HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterPH(bool poll)
 {
-    _waterPH.updateMeasurementIfNeeded();
+    _waterPH.updateMeasurementIfNeeded(poll);
     return _waterPH;
 }
 
-HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterTDS()
+HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterTDS(bool poll)
 {
-    _waterTDS.updateMeasurementIfNeeded();
+    _waterTDS.updateMeasurementIfNeeded(poll);
     return _waterTDS;
 }
 
-HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterTemperature()
+HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterTemperature(bool poll)
 {
-    _waterTemp.updateMeasurementIfNeeded();
+    _waterTemp.updateMeasurementIfNeeded(poll);
     return _waterTemp;
 }
 
-HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirTemperature()
+HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirTemperature(bool poll)
 {
-    _airTemp.updateMeasurementIfNeeded();
+    _airTemp.updateMeasurementIfNeeded(poll);
     return _airTemp;
 }
 
-HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirCO2()
+HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirCO2(bool poll)
 {
-    _airCO2.updateMeasurementIfNeeded();
+    _airCO2.updateMeasurementIfNeeded(poll);
     return _airCO2;
 }
 
@@ -474,7 +476,7 @@ bool HydroponicsInfiniteReservoir::isEmpty()
     return !_alwaysFilled;
 }
 
-HydroponicsSensorAttachment &HydroponicsInfiniteReservoir::getWaterVolume()
+HydroponicsSensorAttachment &HydroponicsInfiniteReservoir::getWaterVolume(bool poll)
 {
     _waterVolume.setMeasurement(HydroponicsSingleMeasurement(
         _alwaysFilled ? FLT_UNDEF : 0.0f,

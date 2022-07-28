@@ -57,8 +57,8 @@ void HydroponicsActuator::update()
 {
     HydroponicsObject::update();
 
-    _rail.resolveIfNeeded();
-    _reservoir.resolveIfNeeded();
+    _rail.resolve();
+    _reservoir.resolve();
 
     if (_enabled && getActuatorInWaterFromType(getActuatorType())) {
         auto reservoir = getReservoir();
@@ -73,8 +73,8 @@ void HydroponicsActuator::handleLowMemory()
 
 bool HydroponicsActuator::getCanEnable()
 {
-    if (getRail() && !_rail->canActivate(this)) { return false; }
-    if (getReservoir() && !_reservoir->canActivate(this)) { return false; }
+    if (getRail() && !getRail()->canActivate(this)) { return false; }
+    if (getReservoir() && !getReservoir()->canActivate(this)) { return false; }
     return true;
 }
 
@@ -97,15 +97,15 @@ const HydroponicsSingleMeasurement &HydroponicsActuator::getContinuousPowerUsage
     return _contPowerUsage;
 }
 
-HydroponicsAttachment<HydroponicsRail> &HydroponicsActuator::getParentRail()
+HydroponicsAttachment &HydroponicsActuator::getParentRail(bool resolve)
 {
-    _rail.resolveIfNeeded();
+    if (resolve) { _rail.resolve(); }
     return _rail;
 }
 
-HydroponicsAttachment<HydroponicsReservoir> &HydroponicsActuator::getParentReservoir()
+HydroponicsAttachment &HydroponicsActuator::getParentReservoir(bool resolve)
 {
-    _reservoir.resolveIfNeeded();
+    if (resolve) { _reservoir.resolve(); }
     return _reservoir;
 }
 
@@ -255,8 +255,9 @@ void HydroponicsPumpRelayActuator::update()
 {
     HydroponicsActuator::update();
 
+    _destReservoir.resolve();
+
     _flowRate.updateMeasurementIfNeeded();
-    _destReservoir.resolveIfNeeded();
 
     if (_pumpTimeAccMillis) {
         time_t timeMillis = millis();
@@ -269,7 +270,7 @@ void HydroponicsPumpRelayActuator::update()
 
     if (_enabled) { checkPumpingReservoirs(); }
 
-    if (_enabled) { pulsePumpingSensors(); }
+    if (_enabled) { pollPumpingSensors(); }
 }
 
 bool HydroponicsPumpRelayActuator::enableActuator(float intensity, bool force)
@@ -364,15 +365,15 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
     return false;
 }
 
-HydroponicsAttachment<HydroponicsReservoir> &HydroponicsPumpRelayActuator::getParentReservoir()
+HydroponicsAttachment &HydroponicsPumpRelayActuator::getParentReservoir(bool resolve)
 {
-    _reservoir.resolveIfNeeded();
+    if (resolve) { _reservoir.resolve(); }
     return _reservoir;
 }
 
-HydroponicsAttachment<HydroponicsReservoir> &HydroponicsPumpRelayActuator::getDestinationReservoir()
+HydroponicsAttachment &HydroponicsPumpRelayActuator::getDestinationReservoir(bool resolve)
 {
-    _destReservoir.resolveIfNeeded();
+    if (resolve) { _destReservoir.resolve(); }
     return _destReservoir;
 }
 
@@ -414,9 +415,9 @@ const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getContinuousF
     return _contFlowRate;
 }
 
-HydroponicsSensorAttachment &HydroponicsPumpRelayActuator::getFlowRate()
+HydroponicsSensorAttachment &HydroponicsPumpRelayActuator::getFlowRate(bool poll)
 {
-    _flowRate.updateMeasurementIfNeeded();
+    _flowRate.updateMeasurementIfNeeded(poll);
     return _flowRate;
 }
 
@@ -438,26 +439,26 @@ void HydroponicsPumpRelayActuator::saveToData(HydroponicsData *dataOut)
 
 void HydroponicsPumpRelayActuator::checkPumpingReservoirs()
 {
-    auto sourceRes = getReservoir();
-    auto destRes = getDestinationReservoir();
+    auto sourceRes = getInputReservoir();
+    auto destRes = getOutputReservoir();
     if ((sourceRes && sourceRes->isEmpty()) || (destRes && destRes->isFilled())) {
         disableActuator();
     }
 }
 
-void HydroponicsPumpRelayActuator::pulsePumpingSensors()
+void HydroponicsPumpRelayActuator::pollPumpingSensors()
 {
     if (getFlowRateSensor()) {
         _flowRate->takeMeasurement(true);
     }
     HydroponicsSensor *sourceVolSensor;
-    if (getReservoir() && _reservoir->isAnyFluidClass() &&
-        (sourceVolSensor = ((HydroponicsFluidReservoir *)_reservoir.get())->getWaterVolumeSensor().get())) {
+    if (getInputReservoir() && _reservoir.get<HydroponicsReservoir>()->isAnyFluidClass() &&
+        (sourceVolSensor = _reservoir.get<HydroponicsFluidReservoir>()->getWaterVolumeSensor().get())) {
         sourceVolSensor->takeMeasurement(true);
     }
     HydroponicsSensor *destVolSensor;
-    if (getDestinationReservoir() && _destReservoir->isAnyFluidClass() &&
-        (destVolSensor = ((HydroponicsFluidReservoir *)_destReservoir.get())->getWaterVolumeSensor().get()) &&
+    if (getOutputReservoir() && _destReservoir.get<HydroponicsReservoir>()->isAnyFluidClass() &&
+        (destVolSensor = _destReservoir.get<HydroponicsFluidReservoir>()->getWaterVolumeSensor().get()) &&
         destVolSensor != sourceVolSensor) {
         destVolSensor->takeMeasurement(true);
     }
@@ -466,24 +467,24 @@ void HydroponicsPumpRelayActuator::pulsePumpingSensors()
 void HydroponicsPumpRelayActuator::handlePumpTime(time_t timeMillis)
 {
     if (getInputReservoir() != getOutputReservoir()) {
-        float flowRateVal = _flowRate.getMeasurementFrame() && getFlowRate() && !_flowRate->needsPolling(HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF) &&
+        float flowRateVal = _flowRate.getMeasurementFrame() && getFlowRateSensor() && !_flowRate->needsPolling(HYDRUINO_ACT_PUMPCALC_MAXFRAMEDIFF) &&
                             _flowRate.getMeasurementValue() >= (_contFlowRate.value * HYDRUINO_ACT_PUMPCALC_MINFLOWRATE) - FLT_EPSILON ? _flowRate.getMeasurementValue() : _contFlowRate.value;
         float volumePumped = flowRateVal * (timeMillis / (float)secondsToMillis(SECS_PER_MIN));
         _pumpVolumeAcc += volumePumped;
 
-        if (getReservoir() && getReservoir()->isAnyFluidClass()) {
+        if (getInputReservoir() && _reservoir.get<HydroponicsReservoir>()->isAnyFluidClass()) {
             auto sourceFluidRes = getInputReservoir<HydroponicsFluidReservoir>();
             if (sourceFluidRes && !sourceFluidRes->getWaterVolume()) { // only report if there isn't a volume sensor already doing it
-                auto volume = sourceFluidRes->getWaterVolume().getMeasurement();
+                auto volume = sourceFluidRes->getWaterVolume().getMeasurement(true);
                 convertUnits(&volume, baseUnitsFromRate(getFlowRateUnits()));
                 volume.value -= volumePumped;
                 sourceFluidRes->getWaterVolume().setMeasurement(volume);
             }
         }
-        if (getDestinationReservoir() && getDestinationReservoir()->isAnyFluidClass()) {
+        if (getOutputReservoir() && _destReservoir.get<HydroponicsReservoir>()->isAnyFluidClass()) {
             auto destFluidRes = getOutputReservoir<HydroponicsFluidReservoir>();
             if (destFluidRes && !destFluidRes->getWaterVolume()) { // only report if there isn't a volume sensor already doing it
-                auto volume = destFluidRes->getWaterVolume().getMeasurement();
+                auto volume = destFluidRes->getWaterVolume().getMeasurement(true);
                 convertUnits(&volume, baseUnitsFromRate(getFlowRateUnits()));
                 volume.value += volumePumped;
                 destFluidRes->getWaterVolume().setMeasurement(volume);

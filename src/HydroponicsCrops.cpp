@@ -69,7 +69,7 @@ void HydroponicsCrop::update()
 {
     HydroponicsObject::update();
 
-    _feedReservoir.resolveIfNeeded();
+    _feedReservoir.resolve();
 
     handleFeeding(triggerStateFromBool(needsFeeding()));
 }
@@ -87,9 +87,9 @@ void HydroponicsCrop::notifyFeedingBegan()
 void HydroponicsCrop::notifyFeedingEnded()
 { ; }
 
-HydroponicsAttachment<HydroponicsFeedReservoir> &HydroponicsCrop::getFeedingReservoir()
+HydroponicsAttachment &HydroponicsCrop::getFeedingReservoir(bool resolve)
 {
-    _feedReservoir.resolveIfNeeded();
+    if (resolve) { _feedReservoir.resolve(); }
     return _feedReservoir;
 }
 
@@ -260,13 +260,14 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
 
     _feedingTrigger.setUpdateMethod(&HydroponicsCrop::handleFeeding);
     _feedingTrigger = newTriggerObjectFromSubData(&(dataIn->feedingTrigger));
+    HYDRUINO_SOFT_ASSERT(_feedingTrigger, SFP(HS_Err_AllocationFailure));
 }
 
 void HydroponicsAdaptiveCrop::update()
 {
     HydroponicsCrop::update();
 
-    if (_feedingTrigger.getObject()) { _feedingTrigger->update(); }
+    if (_feedingTrigger.resolve()) { _feedingTrigger->update(); }
 
     _soilMoisture.updateMeasurementIfNeeded();
 
@@ -282,7 +283,7 @@ void HydroponicsAdaptiveCrop::handleLowMemory()
 
 bool HydroponicsAdaptiveCrop::needsFeeding()
 {
-    return triggerStateToBool(_feedingTrigger.getTriggerState());
+    return triggerStateToBool(_feedingTrigger.getTriggerState(true));
 }
 
 void HydroponicsAdaptiveCrop::setMoistureUnits(Hydroponics_UnitsType moistureUnits)
@@ -299,9 +300,9 @@ Hydroponics_UnitsType HydroponicsAdaptiveCrop::getMoistureUnits() const
     return definedUnitsElse(_moistureUnits, Hydroponics_UnitsType_Concentration_EC);
 }
 
-HydroponicsSensorAttachment &HydroponicsAdaptiveCrop::getSoilMoisture()
+HydroponicsSensorAttachment &HydroponicsAdaptiveCrop::getSoilMoisture(bool poll)
 {
-    _soilMoisture.updateMeasurementIfNeeded();
+    _soilMoisture.updateMeasurementIfNeeded(poll);
     return _soilMoisture;
 }
 

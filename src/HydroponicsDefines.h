@@ -22,13 +22,13 @@
 #define DISABLED                            0x0                     // Disabled define (convenience)
 #endif
 #ifndef RANDOM_MAX
-#define RANDOM_MAX RAND_MAX
+#define RANDOM_MAX RAND_MAX                                         // Missing def
 #endif
-#ifndef JOIN
+#ifndef JOIN                                                        // Define joiner
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
-#if defined(ESP32) || defined(ESP8266)
+#if defined(ESP32) || defined(ESP8266)                              // ESP missing defs
 #define min _min
 #define max _max
 #endif
@@ -435,29 +435,31 @@ enum Hydroponics_UnitsType {
     Hydroponics_UnitsType_Undefined = -1                    // Internal use only
 };
 
+// Forward decls
 class Hydroponics;
+class HydroponicsScheduler;
+class HydroponicsLogger;
+class HydroponicsPublisher;
 struct HydroponicsIdentity;
 class HydroponicsObject;
 class HydroponicsSubObject;
-class HydroponicsActuator;
-class HydroponicsSensor;
-template <class T> class HydroponicsAttachment;
-class HydroponicsSensorAttachment;
-class HydroponicsTriggerAttachment;
-class HydroponicsBalancerAttachment;
-class HydroponicsCrop;
-class HydroponicsReservoir;
-class HydroponicsFeedReservoir;
-class HydroponicsRail;
 struct HydroponicsData;
-struct HydroponicsObjectData;
 struct HydroponicsSubData;
+struct HydroponicsObjectData;
 struct HydroponicsMeasurement;
 struct HydroponicsSingleMeasurement;
 class HydroponicsTrigger;
 class HydroponicsBalancer;
-class HydroponicsScheduler;
-class HydroponicsLogger;
-class HydroponicsPublisher;
+class HydroponicsDLinkObject;
+class HydroponicsAttachment;
+class HydroponicsSensorAttachment;
+class HydroponicsTriggerAttachment;
+class HydroponicsBalancerAttachment;
+class HydroponicsActuator;
+class HydroponicsSensor;
+class HydroponicsCrop;
+class HydroponicsReservoir;
+class HydroponicsFeedReservoir;
+class HydroponicsRail;
 
 #endif // /ifndef HydroponicsDefines_H

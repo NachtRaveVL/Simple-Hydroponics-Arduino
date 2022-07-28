@@ -140,8 +140,8 @@ template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsObject *obj
 class HydroponicsSubObject {
 public:
     inline HydroponicsIdentity getId() const { return HydroponicsIdentity(this); }
-    inline Hydroponics_KeyType getKey() const { return (Hydroponics_KeyType)(uintptr_t)this; }
-    template<class T> inline shared_ptr<T> getSharedPtr() const { return shared_ptr<T>(this); }; // Only meant to be used once
+    inline Hydroponics_KeyType getKey() const { return (Hydroponics_KeyType)(intptr_t)this; }
+    inline shared_ptr<HydroponicsObject> getSharedPtr() const { return shared_ptr<HydroponicsObject>((HydroponicsObject *)this); }; // Only meant to be used once
 
     virtual void update() = 0;
     virtual void handleLowMemory() = 0;
@@ -152,7 +152,7 @@ public:
 
 // Shortcut to get shared pointer from object with static pointer cast built-in.
 // Only meant to be used once during initial object assignment directly from new operator (e.g. <attachment> = new HydroSubObject()).
-template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsSubObject *subObj) { return subObj->getSharedPtr<T>(); }
+template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsSubObject *subObj) { return subObj->getSharedPtr(); }
 
 
 // Hydroponics Object Data Intermediate

@@ -5,8 +5,50 @@
 
 #include "Hydroponics.h"
 
+HydroponicsDLinkObject::HydroponicsDLinkObject()
+    : _id(), _obj(nullptr)
+{ ; }
+
+HydroponicsDLinkObject::HydroponicsDLinkObject(const HydroponicsIdentity &id)
+    : _id(id), _obj(nullptr)
+{ ; }
+
+HydroponicsDLinkObject::HydroponicsDLinkObject(const char *idKeyStr)
+    : _id(HydroponicsIdentity(idKeyStr)), _obj(nullptr)
+{ ; }
+
+
+HydroponicsAttachment::HydroponicsAttachment(HydroponicsObject *parent)
+    : _parent(parent), _obj()
+{
+    HYDRUINO_HARD_ASSERT(_parent, SFP(HS_Err_InvalidParameter));
+}
+
+HydroponicsAttachment::~HydroponicsAttachment()
+{
+    if (isResolved() && !getId().isSubObject()) {
+        _obj->removeLinkage(_parent);
+    }
+}
+
+void HydroponicsAttachment::attachObject()
+{
+    if (!getId().isSubObject()) {
+        _obj->addLinkage(_parent);
+    }
+}
+
+void HydroponicsAttachment::detachObject()
+{
+    if (!getId().isSubObject()) {
+        _obj->removeLinkage(_parent);
+    }
+    _obj = nullptr;
+}
+
+
 HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *parent, Hydroponics_PositionIndex measurementRow)
-    : HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
+    : HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
           parent,
           &HydroponicsSensor::getMeasurementSignal,
           MethodSlot<HydroponicsSensorAttachment, const HydroponicsMeasurement *>(this, &HydroponicsSensorAttachment::handleMeasurement)),
@@ -15,25 +57,25 @@ HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObject *pare
 
 void HydroponicsSensorAttachment::attachObject()
 {
-    HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::attachObject();
+    HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::attachObject();
 
     if (isResolved()) {
-        handleMeasurement(_obj->getLatestMeasurement());
+        handleMeasurement(get()->getLatestMeasurement());
     }
 }
 
 void HydroponicsSensorAttachment::detachObject()
 {
-    HydroponicsSignalAttachment<HydroponicsSensor, const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::detachObject();
+    HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::detachObject();
 
     setNeedsMeasurement();
 }
 
-void HydroponicsSensorAttachment::updateMeasurementIfNeeded(bool force)
+void HydroponicsSensorAttachment::updateMeasurementIfNeeded(bool poll)
 {
-    if (getObject() && (_needsMeasurement || force)) {
-        handleMeasurement(_obj->getLatestMeasurement());
-        _obj->takeMeasurement((_needsMeasurement || force));
+    if (resolve() && (_needsMeasurement || poll)) {
+        handleMeasurement(get()->getLatestMeasurement());
+        get()->takeMeasurement((_needsMeasurement || poll));
     }
 }
 
@@ -93,7 +135,7 @@ void HydroponicsSensorAttachment::handleMeasurement(const HydroponicsMeasurement
 
 
 HydroponicsTriggerAttachment::HydroponicsTriggerAttachment(HydroponicsObject *parent)
-    : HydroponicsSignalAttachment<HydroponicsTrigger, Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>(
+    : HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>(
         parent,
         &HydroponicsTrigger::getTriggerSignal,
         MethodSlot<HydroponicsTriggerAttachment,Hydroponics_TriggerState>(this, &HydroponicsTriggerAttachment::handleTrigger)),
@@ -102,30 +144,30 @@ HydroponicsTriggerAttachment::HydroponicsTriggerAttachment(HydroponicsObject *pa
 
 HydroponicsTriggerAttachment::~HydroponicsTriggerAttachment()
 {
-    if (isResolved()) { _obj->detachTrigger(); }
+    if (isResolved()) { get()->detachTrigger(); }
 }
 
 void HydroponicsTriggerAttachment::attachObject()
 {
-    HydroponicsSignalAttachment<HydroponicsTrigger, Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>::attachObject();
+    HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>::attachObject();
 
-    handleTrigger(_obj->getTriggerState());
+    handleTrigger(get()->getTriggerState());
 }
 
 void HydroponicsTriggerAttachment::detachObject()
 {
-    if (isResolved()) { _obj->detachTrigger(); }
+    if (isResolved()) { get()->detachTrigger(); }
 
-    HydroponicsSignalAttachment<HydroponicsTrigger, Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>::detachObject();
+    HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>::detachObject();
 }
 
-Hydroponics_TriggerState HydroponicsTriggerAttachment::updateTriggerIfNeeded(bool force)
+Hydroponics_TriggerState HydroponicsTriggerAttachment::updateTriggerIfNeeded(bool poll)
 {
-    if (getObject() && (_needsTriggerState || force)) {
-        handleTrigger(_obj->getTriggerState());
+    if (resolve() && (_needsTriggerState || poll)) {
+        handleTrigger(get()->getTriggerState());
 
-        if (_obj->getSensor()) {
-            _obj->getSensor()->takeMeasurement((_needsTriggerState || force));
+        if (get()->getSensor()) {
+            get()->getSensor()->takeMeasurement((_needsTriggerState || poll));
         }
     }
     return _triggerState;
@@ -152,7 +194,7 @@ void HydroponicsTriggerAttachment::handleTrigger(Hydroponics_TriggerState trigge
 
 
 HydroponicsBalancerAttachment::HydroponicsBalancerAttachment(HydroponicsObject *parent)
-    : HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>(
+    : HydroponicsSignalAttachment<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>(
         parent,
         &HydroponicsBalancer::getBalancerSignal,
         MethodSlot<HydroponicsBalancerAttachment,Hydroponics_BalancerState>(this, &HydroponicsBalancerAttachment::handleBalancer)),
@@ -161,27 +203,27 @@ HydroponicsBalancerAttachment::HydroponicsBalancerAttachment(HydroponicsObject *
 
 HydroponicsBalancerAttachment::~HydroponicsBalancerAttachment()
 {
-    if (isResolved()) { _obj->setEnabled(false); }
+    if (isResolved()) { get()->setEnabled(false); }
 }
 
 void HydroponicsBalancerAttachment::attachObject()
 {
-    HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::attachObject();
+    HydroponicsSignalAttachment<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::attachObject();
 
-    handleBalancer(_obj->getBalancerState());
+    handleBalancer(get()->getBalancerState());
 }
 
 void HydroponicsBalancerAttachment::detachObject()
 {
-    if (isResolved()) { _obj->setEnabled(false); }
+    if (isResolved()) { get()->setEnabled(false); }
 
-    HydroponicsSignalAttachment<HydroponicsBalancer, Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::detachObject();
+    HydroponicsSignalAttachment<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::detachObject();
 }
 
-Hydroponics_BalancerState HydroponicsBalancerAttachment::updateBalancerIfNeeded(bool force)
+Hydroponics_BalancerState HydroponicsBalancerAttachment::updateBalancerIfNeeded(bool poll)
 {
-    if (getObject() && (_needsBalancerState || force)) {
-        handleBalancer(_obj->getBalancerState());
+    if (resolve() && (_needsBalancerState || poll)) {
+        handleBalancer(get()->getBalancerState());
     }
     return _balancerState;
 }
