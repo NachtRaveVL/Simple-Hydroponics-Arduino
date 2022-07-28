@@ -65,13 +65,13 @@ HydroponicsIdentity::HydroponicsIdentity(Hydroponics_ReservoirType reservoirType
 }
 
 HydroponicsIdentity::HydroponicsIdentity(Hydroponics_RailType railTypeIn, Hydroponics_PositionIndex positionIndex)
-    : type(SubObject), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
+    : type(Rail), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyString(), key((Hydroponics_KeyType)-1)
 {
     regenKey();
 }
 
 HydroponicsIdentity::HydroponicsIdentity(const HydroponicsSubObject *obj)
-    : type(), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyString(),
+    : type(SubObject), objTypeAs{.actuatorType=(Hydroponics_ActuatorType)-1}, posIndex(-1), keyString(),
       key((Hydroponics_KeyType)(uintptr_t)obj)
 { ; }
 

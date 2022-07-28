@@ -27,13 +27,13 @@ public:
     HydroponicsDLinkObject(const HydroponicsIdentity &id);
     HydroponicsDLinkObject(const char *idKeyStr);
 
-    inline bool isId() const { return !_obj; }
+    inline bool isId() const { return !_obj && !_id.isSubObject(); }
     inline bool isObject() const { return (bool)_obj; }
     inline bool isResolved() const { return isObject(); }
     inline bool needsResolved() const { return isId() && (bool)_id; }
     inline bool resolveIfNeeded() { return needsResolved() && (bool)getObject(); }
 
-    template<class U> inline void setObject(U obj) { *this = obj; }
+    template<class U> inline void setObject(U obj) { this->operator=(obj); }
     shared_ptr<T> getObject();
 
     inline T* get() { return getObject().get(); }
@@ -87,7 +87,7 @@ public:
     inline bool needsResolved() const { return _obj.needsResolved(); }
     inline bool resolveIfNeeded() { return needsResolved() && (bool)getObject(); }
 
-    template<class U> inline void setObject(U obj) { *this = obj; }
+    template<class U> inline void setObject(U obj) { this->operator=(obj); }
     inline shared_ptr<T> getObject() { if (needsResolved() && _obj.getObject()) { attachObject(); } return _obj.getObject(); }
 
     inline T* get() { return getObject().get(); }

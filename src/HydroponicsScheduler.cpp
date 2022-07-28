@@ -736,7 +736,7 @@ void HydroponicsFeeding::recalcFeeding()
     setupStaging();
 }
 
-void HydroponicsFeeding::setupBalancers()
+void HydroponicsFeeding::setupStaging()
 {
     if (stage == PreFeed) {
         if (feedRes->getWaterPHSensor()) {
@@ -792,11 +792,6 @@ void HydroponicsFeeding::setupBalancers()
         auto co2Balancer = feedRes->getAirCO2Balancer();
         if (co2Balancer) { co2Balancer->setEnabled(false); }
     }
-}
-
-void HydroponicsFeeding::setupStaging()
-{
-    setupBalancers();
 
     switch (stage) {
         case Init: {
@@ -931,8 +926,8 @@ void HydroponicsFeeding::update()
         (getSchedulerInstance()->getAirReportInterval().totalseconds() > 0) && // 0 disables
         (feedRes->getAirTemperatureSensor() || feedRes->getAirCO2Sensor())) {
         getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_AirReport));
-        logAirSetpoints();
-        logAirMeasures();
+        logFeeding(HydroponicsFeedingLogType_AirSetpoints);
+        logFeeding(HydroponicsFeedingLogType_AirMeasures);
         lastAirReport = unixNow();
     }
 
@@ -975,8 +970,8 @@ void HydroponicsFeeding::update()
 
                     getLoggerInstance()->logMessage(SFP(HS_DoubleSpace), SFP(HS_Key_PreFeedAeratorMins), aeratorMinsStr);
                 }
-                logWaterSetpoints();
-                logWaterMeasures();
+                logFeeding(HydroponicsFeedingLogType_WaterSetpoints);
+                logFeeding(HydroponicsFeedingLogType_WaterMeasures);
             }
         } break;
 
@@ -995,7 +990,7 @@ void HydroponicsFeeding::update()
                         stage = Feed; stageStart = unixNow();
                         setupStaging();
 
-                        broadcastFeedingBegan();
+                        broadcastFeeding(HydroponicsFeedingBroadcastType_Began);
                     }
                 } else {
                     canFeedAfter = 0;
@@ -1020,7 +1015,7 @@ void HydroponicsFeeding::update()
                 stageStart = unixNow();
                 setupStaging();
 
-                broadcastFeedingEnded();
+                broadcastFeeding(HydroponicsFeedingBroadcastType_Ended);
             }
         } break;
 
@@ -1049,95 +1044,79 @@ void HydroponicsFeeding::update()
             }
         }
     }
+
 }
 
-void HydroponicsFeeding::logWaterSetpoints()
+void HydroponicsFeeding::logFeeding(HydroponicsFeedingLogType logType)
 {
-    {   auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Setpoint), measurementToString(ph));
-    }
-    {   auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
-        convertUnits(&tds, feedRes->getTDSUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
-    }
-    {   auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
-        convertUnits(&temp, feedRes->getTemperatureUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
+    switch (logType) {
+        case HydroponicsFeedingLogType_WaterSetpoints:
+            {   auto ph = HydroponicsSingleMeasurement(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Setpoint), measurementToString(ph));
+            }
+            {   auto tds = HydroponicsSingleMeasurement(tdsSetpoint, Hydroponics_UnitsType_Concentration_TDS);
+                convertUnits(&tds, feedRes->getTDSUnits());
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
+            }
+            {   auto temp = HydroponicsSingleMeasurement(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+                convertUnits(&temp, feedRes->getTemperatureUnits());
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
+            }
+            break;
+
+        case HydroponicsFeedingLogType_WaterMeasures:
+             if (feedRes->getWaterPHSensor()) {
+                auto ph = feedRes->getWaterPH().getMeasurement();
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Measured), measurementToString(ph));
+            }
+            if (feedRes->getWaterTDSSensor()) {
+                auto tds = feedRes->getWaterTDS().getMeasurement();
+                convertUnits(&tds, feedRes->getTDSUnits());
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Measured), measurementToString(tds, 1));
+            }
+            if (feedRes->getWaterTemperatureSensor()) {
+                auto temp = feedRes->getWaterTemperature().getMeasurement();
+                convertUnits(&temp, feedRes->getTemperatureUnits());
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
+            }
+            break;
+
+        case HydroponicsFeedingLogType_AirSetpoints:
+            {   auto temp = HydroponicsSingleMeasurement(airTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
+                convertUnits(&temp, feedRes->getTemperatureUnits());
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
+            }
+            {   auto co2 = HydroponicsSingleMeasurement(co2Setpoint, Hydroponics_UnitsType_Concentration_PPM);
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_CO2_Setpoint), measurementToString(co2));
+            }
+            break;
+
+        case HydroponicsFeedingLogType_AirMeasures:
+            if (feedRes->getAirTemperatureSensor()) {
+                auto temp = feedRes->getAirTemperature().getMeasurement();
+                convertUnits(&temp, feedRes->getTemperatureUnits());
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
+            }
+            if (feedRes->getAirCO2Sensor()) {
+                auto co2 = feedRes->getAirCO2().getMeasurement();
+                getLoggerInstance()->logMessage(SFP(HS_Log_Field_CO2_Measured), measurementToString(co2));
+            }
+            break;
     }
 }
 
-void HydroponicsFeeding::logWaterMeasures()
+void HydroponicsFeeding::broadcastFeeding(HydroponicsFeedingBroadcastType broadcastType)
 {
-    if (feedRes->getWaterPHSensor()) {
-        auto ph = feedRes->getWaterPH().getMeasurement();
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_pH_Measured), measurementToString(ph));
-    }
-    if (feedRes->getWaterTDSSensor()) {
-        auto tds = feedRes->getWaterTDS().getMeasurement();
-        convertUnits(&tds, feedRes->getTDSUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_TDS_Measured), measurementToString(tds, 1));
-    }
-    if (feedRes->getWaterTemperatureSensor()) {
-        auto temp = feedRes->getWaterTemperature().getMeasurement();
-        convertUnits(&temp, feedRes->getTemperatureUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
-    }
-}
+    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence),
+                                    SFP(broadcastType == HydroponicsFeedingBroadcastType_Began ? HS_Log_HasBegan : HS_Log_HasEnded));
+    logFeeding(HydroponicsFeedingLogType_WaterMeasures);
 
-void HydroponicsFeeding::logAirSetpoints()
-{
-    {   auto temp = HydroponicsSingleMeasurement(airTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
-        convertUnits(&temp, feedRes->getTemperatureUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Setpoint), measurementToString(temp));
-    }
-    {   auto co2 = HydroponicsSingleMeasurement(co2Setpoint, Hydroponics_UnitsType_Concentration_PPM);
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_CO2_Setpoint), measurementToString(co2));
-    }
-}
-
-void HydroponicsFeeding::logAirMeasures()
-{
-    if (feedRes->getAirTemperatureSensor()) {
-        auto temp = feedRes->getAirTemperature().getMeasurement();
-        convertUnits(&temp, feedRes->getTemperatureUnits());
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Temp_Measured), measurementToString(temp));
-    }
-    if (feedRes->getAirCO2Sensor()) {
-        auto co2 = feedRes->getAirCO2().getMeasurement();
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_CO2_Measured), measurementToString(co2));
-    }
-}
-
-void HydroponicsFeeding::broadcastFeedingBegan()
-{
-    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasBegan));
-
-    logWaterMeasures();
-
-    feedRes->notifyFeedingBegan();
+    broadcastType == HydroponicsFeedingBroadcastType_Began ? feedRes->notifyFeedingBegan() : feedRes->notifyFeedingEnded();
 
     {   auto crops = linksFilterCrops(feedRes->getLinkages());
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-            if ((*cropIter)) {
-                ((HydroponicsCrop *)(*cropIter))->notifyFeedingBegan();
-            }
-        }
-    }
-}
-
-void HydroponicsFeeding::broadcastFeedingEnded()
-{
-    getLoggerInstance()->logProcess(feedRes.get(), SFP(HS_Log_FeedingSequence), SFP(HS_Log_HasEnded));
-
-    logWaterMeasures();
-
-    feedRes->notifyFeedingEnded();
-
-    {   auto crops = linksFilterCrops(feedRes->getLinkages());
-        for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-            if ((*cropIter)) {
-                ((HydroponicsCrop *)(*cropIter))->notifyFeedingEnded();
-            }
+            broadcastType == HydroponicsFeedingBroadcastType_Began ? ((HydroponicsCrop *)(*cropIter))->notifyFeedingBegan()
+                                                                   : ((HydroponicsCrop *)(*cropIter))->notifyFeedingEnded();
         }
     }
 }

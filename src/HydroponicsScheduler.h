@@ -89,6 +89,18 @@ struct HydroponicsProcess {
     void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn);
 };
 
+enum HydroponicsFeedingLogType {
+    HydroponicsFeedingLogType_WaterSetpoints,
+    HydroponicsFeedingLogType_WaterMeasures,
+    HydroponicsFeedingLogType_AirSetpoints,
+    HydroponicsFeedingLogType_AirMeasures
+};
+
+enum HydroponicsFeedingBroadcastType {
+    HydroponicsFeedingBroadcastType_Began,
+    HydroponicsFeedingBroadcastType_Ended
+};
+
 // Hydroponics Scheduler Feeding Process
 struct HydroponicsFeeding : public HydroponicsProcess {
     enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
@@ -111,13 +123,8 @@ struct HydroponicsFeeding : public HydroponicsProcess {
 
 private:
     void reset();
-    void setupBalancers();
-    void logWaterSetpoints();
-    void logWaterMeasures();
-    void logAirSetpoints();
-    void logAirMeasures();
-    void broadcastFeedingBegan();
-    void broadcastFeedingEnded();
+    void logFeeding(HydroponicsFeedingLogType logType);
+    void broadcastFeeding(HydroponicsFeedingBroadcastType broadcastType);
 };
 
 // Hydroponics Scheduler Lighting Process
@@ -126,7 +133,7 @@ struct HydroponicsLighting : public HydroponicsProcess {
 
     time_t sprayStart;                                      // Time when spraying should start (TZ)
     time_t lightStart;                                      // Time when lighting should start / spraying should end (TZ, same as sprayStart when no spraying needed)
-    time_t lightEnd;                                        // Time when lighting should finish
+    time_t lightEnd;                                        // Time when lighting should finish (TZ)
 
     float lightHours;                                       // Calculated light hours for detected crops
 

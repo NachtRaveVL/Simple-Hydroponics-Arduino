@@ -67,8 +67,8 @@ void HydroponicsAttachment<T>::detachObject()
 {
     if (!getId().isSubObject()) {
         _obj->removeLinkage(_parent);
-        _obj = nullptr;
     }
+    _obj = nullptr;
 }
 
 

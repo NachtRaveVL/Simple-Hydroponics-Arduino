@@ -102,6 +102,8 @@ void setup() {
 
                     getCropsLibraryInstance()->returnCropsData(cropData);
                 }
+
+                yield();
             }
 
             getHydroponicsInstance()->endSDCard(sd);
@@ -147,6 +149,8 @@ void setup() {
                 } else if (!eeprom->setBlockVerify(SETUP_EXTCROPLIB_EEPROM_ADDRESS + (sizeof(uint16_t) * cropType), 0, sizeof(uint16_t))) {
                     getLoggerInstance()->logError(F("Failure writing table data to EEPROM!"));
                 }
+
+                yield();
             }
 
             if (totalSize) {
@@ -169,7 +173,4 @@ void setup() {
 }
 
 void loop()
-{
-    // Hydruino will manage most updates for us.
-    hydroController.update();
-}
+{ ; }

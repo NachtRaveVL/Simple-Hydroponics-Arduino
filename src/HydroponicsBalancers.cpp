@@ -40,11 +40,11 @@ Hydroponics_BalancerState HydroponicsBalancer::getBalancerState() const
 
 void HydroponicsBalancer::update()
 {
-    if (_enabled) {
-        if (_rangeTrigger.getObject()) { _rangeTrigger->update(); }
+    if (!_enabled) { return; }
 
-        _rangeTrigger.updateTriggerIfNeeded();
-    }
+    if (_rangeTrigger.getObject()) { _rangeTrigger->update(); }
+
+    _rangeTrigger.updateTriggerIfNeeded();
 }
 
 void HydroponicsBalancer::handleLowMemory()
@@ -178,6 +178,7 @@ HydroponicsLinearEdgeBalancer::HydroponicsLinearEdgeBalancer(shared_ptr<Hydropon
 void HydroponicsLinearEdgeBalancer::update()
 {
     HydroponicsBalancer::update();
+
     if (!_enabled) { return; }
 
     if (_balancerState != Hydroponics_BalancerState_Balanced && _balancerState != Hydroponics_BalancerState_Undefined) {
@@ -268,7 +269,6 @@ void HydroponicsTimedDosingBalancer::update()
                 _dosingActIndex = -1; // dosing completed
             }
         }
-        
     }
 }
 
