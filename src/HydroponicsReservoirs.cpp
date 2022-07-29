@@ -163,10 +163,6 @@ void HydroponicsFluidReservoir::update()
     if (_emptyTrigger.resolve()) { _emptyTrigger->update(); }
 
     _waterVolume.updateMeasurementIfNeeded();
-
-    _filledTrigger.updateTriggerIfNeeded();
-
-    _emptyTrigger.updateTriggerIfNeeded();
 }
 
 void HydroponicsFluidReservoir::handleLowMemory()
@@ -179,14 +175,14 @@ void HydroponicsFluidReservoir::handleLowMemory()
 
 bool HydroponicsFluidReservoir::isFilled()
 {
-    if (_filledTrigger.resolve()) { return triggerStateToBool(_filledTrigger.getTriggerState(true)); }
+    if (_filledTrigger.resolve() && triggerStateToBool(_filledTrigger.getTriggerState())) { return true; }
     return _waterVolume.getMeasurementValue() >= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
                                                                                                                      : _maxVolume) - FLT_EPSILON;
 }
 
 bool HydroponicsFluidReservoir::isEmpty()
 {
-    if (_emptyTrigger.resolve()) { return triggerStateToBool(_emptyTrigger.getTriggerState(true)); }
+    if (_emptyTrigger.resolve() && triggerStateToBool(_emptyTrigger.getTriggerState())) { return true; }
     return _waterVolume.getMeasurementValue() <= (_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
                                                                                                                      : 0) + FLT_EPSILON;
 }

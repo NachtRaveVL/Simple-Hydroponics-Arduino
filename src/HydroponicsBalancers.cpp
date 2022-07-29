@@ -43,8 +43,6 @@ void HydroponicsBalancer::update()
     if (!_enabled) { return; }
 
     if (_rangeTrigger.resolve()) { _rangeTrigger->update(); }
-
-    _rangeTrigger.updateTriggerIfNeeded();
 }
 
 void HydroponicsBalancer::handleLowMemory()
@@ -58,7 +56,6 @@ void HydroponicsBalancer::setTargetUnits(Hydroponics_UnitsType targetUnits)
         _targetUnits = targetUnits;
 
         _rangeTrigger->setToleranceUnits(getTargetUnits());
-        _rangeTrigger.setNeedsTriggerState();
     }
 }
 
@@ -107,20 +104,6 @@ void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<Hyd
     _decActuators.clear();
     for (auto actuatorInIter = decActuators.begin(); actuatorInIter != decActuators.end(); ++actuatorInIter) {
         _decActuators.push_back((*actuatorInIter));
-    }
-}
-
-void HydroponicsBalancer::setEnabled(bool enabled)
-{
-    if (_enabled != enabled) {
-        _enabled = enabled;
-
-        if (_enabled) {
-            _rangeTrigger->attachTrigger();
-        } else {
-            _rangeTrigger->detachTrigger();
-        }
-        _rangeTrigger.setNeedsTriggerState();
     }
 }
 

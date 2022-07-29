@@ -52,7 +52,7 @@ HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface
           parent,
           &HydroponicsSensor::getMeasurementSignal,
           MethodSlot<HydroponicsSensorAttachment, const HydroponicsMeasurement *>(this, &HydroponicsSensorAttachment::handleMeasurement)),
-      _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true), _processMethod(nullptr), _updateMethod(nullptr)
+      _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true), _processMethod(nullptr)
 { ; }
 
 void HydroponicsSensorAttachment::attachObject()
@@ -90,8 +90,6 @@ void HydroponicsSensorAttachment::setMeasurement(float value, Hydroponics_UnitsT
 
     convertUnits(&_measurement, outUnits, _convertParam);
     _needsMeasurement = false;
-
-    if (_updateMethod) { (_parent->*_updateMethod)(_measurement); }
 }
 
 void HydroponicsSensorAttachment::setMeasurement(HydroponicsSingleMeasurement measurement)
@@ -102,8 +100,6 @@ void HydroponicsSensorAttachment::setMeasurement(HydroponicsSingleMeasurement me
 
     convertUnits(&_measurement, outUnits, _convertParam);
     _needsMeasurement = false;
-
-    if (_updateMethod) { (_parent->*_updateMethod)(_measurement); }
 }
 
 void HydroponicsSensorAttachment::setMeasurementRow(Hydroponics_PositionIndex measurementRow)
@@ -140,7 +136,7 @@ HydroponicsTriggerAttachment::HydroponicsTriggerAttachment(HydroponicsObjInterfa
         parent,
         &HydroponicsTrigger::getTriggerSignal,
         MethodSlot<HydroponicsTriggerAttachment,Hydroponics_TriggerState>(this, &HydroponicsTriggerAttachment::handleTrigger)),
-      _triggerState(Hydroponics_TriggerState_Undefined), _needsTriggerState(true), _processMethod(nullptr), _updateMethod(nullptr)
+      _updateMethod(nullptr)
 { ; }
 
 HydroponicsTriggerAttachment::~HydroponicsTriggerAttachment()
@@ -163,33 +159,14 @@ void HydroponicsTriggerAttachment::detachObject()
     HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS>::detachObject();
 }
 
-Hydroponics_TriggerState HydroponicsTriggerAttachment::updateTriggerIfNeeded(bool poll)
+Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState()
 {
-    if (resolve() && (_needsTriggerState || poll)) {
-        handleTrigger(get()->getTriggerState());
-
-        get()->getSensor((_needsTriggerState || poll));
-    }
-    return _triggerState;
-}
-
-void HydroponicsTriggerAttachment::setTriggerState(Hydroponics_TriggerState triggerState)
-{
-    _needsTriggerState = false;
-    if (_triggerState != triggerState) {
-        _triggerState = triggerState;
-
-        if (_updateMethod) { (_parent->*_updateMethod)(triggerState); }
-    }
+    return get()->getTriggerState();
 }
 
 void HydroponicsTriggerAttachment::handleTrigger(Hydroponics_TriggerState triggerState)
 {
-    if (_processMethod) {
-        (_parent->*_processMethod)(triggerState);
-    } else {
-        setTriggerState(triggerState);
-    }
+    if (_updateMethod) { (_parent->*_updateMethod)(triggerState); }
 }
 
 
@@ -198,7 +175,7 @@ HydroponicsBalancerAttachment::HydroponicsBalancerAttachment(HydroponicsObjInter
         parent,
         &HydroponicsBalancer::getBalancerSignal,
         MethodSlot<HydroponicsBalancerAttachment,Hydroponics_BalancerState>(this, &HydroponicsBalancerAttachment::handleBalancer)),
-      _balancerState(Hydroponics_BalancerState_Undefined), _needsBalancerState(true), _processMethod(nullptr), _updateMethod(nullptr)
+      _updateMethod(nullptr)
 { ; }
 
 HydroponicsBalancerAttachment::~HydroponicsBalancerAttachment()
@@ -220,31 +197,12 @@ void HydroponicsBalancerAttachment::detachObject()
     HydroponicsSignalAttachment<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS>::detachObject();
 }
 
-Hydroponics_BalancerState HydroponicsBalancerAttachment::updateBalancerIfNeeded(bool poll)
+Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState()
 {
-    if (resolve() && (_needsBalancerState || poll)) {
-        handleBalancer(get()->getBalancerState());
-
-        get()->getRangeTrigger((_needsBalancerState || poll));
-    }
-    return _balancerState;
-}
-
-void HydroponicsBalancerAttachment::setBalancerState(Hydroponics_BalancerState balancerState)
-{
-    _needsBalancerState = false;
-    if (_balancerState != balancerState) {
-        _balancerState = balancerState;
-
-        if (_updateMethod) { (_parent->*_updateMethod)(balancerState); }
-    }
+    return get()->getBalancerState();
 }
 
 void HydroponicsBalancerAttachment::handleBalancer(Hydroponics_BalancerState balancerState)
 {
-    if (_processMethod) {
-        (_parent->*_processMethod)(balancerState);
-    } else {
-        setBalancerState(balancerState);
-    }
+    if (_updateMethod) { (_parent->*_updateMethod)(balancerState); }
 }

@@ -48,12 +48,12 @@ public:
     inline const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &getIncrementActuators() { return _incActuators; }
     inline const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators() { return _decActuators; }
 
-    void setEnabled(bool enabled);
+    inline void setEnabled(bool enabled) { _enabled = enabled; }
     inline bool isEnabled() const { return _enabled; }
 
     inline float getTargetSetpoint() const { return _targetSetpoint; }
     inline float getTargetRange() const { return _targetRange; }
-    inline shared_ptr<HydroponicsTrigger> getRangeTrigger(bool poll = false) { _rangeTrigger.updateTriggerIfNeeded(poll); return _rangeTrigger.getObject(); }
+    inline shared_ptr<HydroponicsTrigger> getRangeTrigger() { return _rangeTrigger.getObject(); }
 
     Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> &getBalancerSignal();
 

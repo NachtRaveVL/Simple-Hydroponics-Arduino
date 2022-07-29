@@ -164,12 +164,9 @@ public:
     void updateMeasurementIfNeeded(bool poll = false);
 
     template<class U> inline void setProcessMethod(void (U::*processMethod)(const HydroponicsMeasurement *)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsMeasurement(); }
-    template<class U> inline void setUpdateMethod(void (U::*updateMethod)(const HydroponicsSingleMeasurement &measurement))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
 
     inline void setProcessMethod(ProcessMethodPtr processMethod) { _processMethod = processMethod; setNeedsMeasurement(); }
-    inline void setUpdateMethod(UpdateMethodPtr updateMethod)  { _updateMethod = updateMethod; }
     inline ProcessMethodPtr getProcessMethod() const { return _processMethod; }
-    inline UpdateMethodPtr getUpdateMethod() const { return _updateMethod; }
 
     void setMeasurement(float value, Hydroponics_UnitsType units = Hydroponics_UnitsType_Undefined);
     void setMeasurement(HydroponicsSingleMeasurement measurement);
@@ -204,7 +201,6 @@ protected:
     float _convertParam;                                    // Convert param (default: FLT_UNDEF)
     bool _needsMeasurement;                                 // Stale measurement tracking flag
     ProcessMethodPtr _processMethod;                        // Custom process method
-    UpdateMethodPtr _updateMethod;                          // Custom update method
 
     void handleMeasurement(const HydroponicsMeasurement *measurement);
 };
@@ -228,19 +224,10 @@ public:
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    Hydroponics_TriggerState updateTriggerIfNeeded(bool poll = false);
-
-    template<class T> inline void setProcessMethod(void (T::*processMethod)(Hydroponics_TriggerState)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsTriggerState(); }
     template<class T> inline void setUpdateMethod(void (T::*updateMethod)(Hydroponics_TriggerState))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
-    inline ProcessMethodPtr getProcessMethod() const { return _processMethod; }
     inline UpdateMethodPtr getUpdateMethod() const { return _updateMethod; }
 
-    inline void setNeedsTriggerState() { _needsTriggerState = true; }
-    inline bool needsTriggerState() { return _needsTriggerState; }
-
-    void setTriggerState(Hydroponics_TriggerState triggerState);
-
-    inline Hydroponics_TriggerState getTriggerState(bool poll = false) { return updateTriggerIfNeeded(poll); }
+    Hydroponics_TriggerState getTriggerState();
 
     inline shared_ptr<HydroponicsTrigger> getObject() { return HydroponicsAttachment::getObject<HydroponicsTrigger>(); }
     inline HydroponicsTrigger* get() { return HydroponicsAttachment::get<HydroponicsTrigger>(); }
@@ -254,9 +241,6 @@ public:
     template<class U> inline HydroponicsTriggerAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 
 protected:
-    Hydroponics_TriggerState _triggerState;                 // Tracked trigger state
-    bool _needsTriggerState;                                // Stale data tracking flag
-    ProcessMethodPtr _processMethod;                        // Custom process method
     UpdateMethodPtr _updateMethod;                          // Custom update method
 
     void handleTrigger(Hydroponics_TriggerState triggerState);
@@ -281,19 +265,10 @@ public:
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    Hydroponics_BalancerState updateBalancerIfNeeded(bool poll = false);
-
-    template<class T> inline void setProcessMethod(void (T::*processMethod)(Hydroponics_BalancerState)) { _processMethod = (ProcessMethodPtr)processMethod; setNeedsBalancerState(); }
     template<class T> inline void setUpdateMethod(void (T::*updateMethod)(Hydroponics_BalancerState))  { _updateMethod = (UpdateMethodPtr)updateMethod; }
-    inline ProcessMethodPtr getProcessMethod() const { return _processMethod; }
     inline UpdateMethodPtr getUpdateMethod() const { return _updateMethod; }
 
-    inline void setNeedsBalancerState() { _needsBalancerState = true; }
-    inline bool needsBalancerState() { return _needsBalancerState; }
-
-    void setBalancerState(Hydroponics_BalancerState balancerState);
-
-    inline Hydroponics_BalancerState getBalancerState(bool poll = false) { return updateBalancerIfNeeded(poll); }
+    Hydroponics_BalancerState getBalancerState();
 
     inline shared_ptr<HydroponicsBalancer> getObject() { return HydroponicsAttachment::getObject<HydroponicsBalancer>(); }
     inline HydroponicsBalancer* get() { return HydroponicsAttachment::get<HydroponicsBalancer>(); }
@@ -307,9 +282,6 @@ public:
     template<class U> inline HydroponicsBalancerAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 
 protected:
-    Hydroponics_BalancerState _balancerState;               // Tracked balancer state
-    bool _needsBalancerState;                               // Stale date tracking flag
-    ProcessMethodPtr _processMethod;                        // Custom process method
     UpdateMethodPtr _updateMethod;                          // Custom update method
 
     void handleBalancer(Hydroponics_BalancerState balancerState);

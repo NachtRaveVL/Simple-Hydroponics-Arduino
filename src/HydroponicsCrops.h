@@ -144,7 +144,7 @@ public:
     virtual HydroponicsSensorAttachment &getSoilMoisture(bool poll = false) override;
 
     inline void setFeedingTrigger(shared_ptr<HydroponicsTrigger> feedingTrigger) { _feedingTrigger = feedingTrigger; }
-    inline shared_ptr<HydroponicsTrigger> getFeedingTrigger(bool force = false) { _feedingTrigger.updateTriggerIfNeeded(force); return _feedingTrigger.getObject(); }
+    inline shared_ptr<HydroponicsTrigger> getFeedingTrigger() { return _feedingTrigger.getObject(); }
 
 protected:
     Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred

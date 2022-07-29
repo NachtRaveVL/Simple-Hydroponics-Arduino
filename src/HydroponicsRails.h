@@ -120,7 +120,7 @@ public:
     const HydroponicsTrigger *getLimitTrigger() const;
 
     inline void setLimitTrigger(shared_ptr<HydroponicsTrigger> limitTrigger) { _limitTrigger = limitTrigger; }
-    inline shared_ptr<HydroponicsTrigger> getLimitTrigger(bool force = false) { _limitTrigger.updateTriggerIfNeeded(force); return _limitTrigger.getObject(); }
+    inline shared_ptr<HydroponicsTrigger> getLimitTrigger() { return _limitTrigger.getObject(); }
 
     inline float getMaxPower() const { return _maxPower; }
 
