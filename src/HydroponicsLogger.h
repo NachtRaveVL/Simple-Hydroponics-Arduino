@@ -48,6 +48,7 @@ public:
 
     void setLogLevel(Hydroponics_LogLevel logLevel);
     Hydroponics_LogLevel getLogLevel() const;
+
     bool isLoggingEnabled() const;
     time_t getSystemUptime() const;
 

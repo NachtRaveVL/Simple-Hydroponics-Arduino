@@ -87,6 +87,19 @@ bool HydroponicsPublisher::isPublishingEnabled()
     return _publisherData && (_publisherData->publishToSDCard);
 }
 
+Hydroponics_PositionIndex HydroponicsPublisher::getColumnIndexStart(Hydroponics_KeyType sensorKey)
+{
+    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
+    if (_dataColumns && _columnCount) {
+        for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+            if (_dataColumns[columnIndex].sensorKey == sensorKey) {
+                return (Hydroponics_PositionIndex)columnIndex;
+            }
+        }
+    }
+    return (Hydroponics_PositionIndex)-1;
+}
+
 void HydroponicsPublisher::notifyDayChanged()
 {
     if (isPublishingEnabled()) {
