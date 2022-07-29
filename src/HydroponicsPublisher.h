@@ -31,8 +31,8 @@ public:
     inline void setNeedsTabulation() { _needsTabulation = (bool)_publisherData; }
     inline bool needsTabulation() { return _needsTabulation; }
 
-    Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
     bool isPublishingEnabled();
+    Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
 
     void notifyDayChanged();
 

@@ -51,9 +51,9 @@ HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
     }
 }
 
-void HydroponicsCropsLibrary::beginCropsLibraryFromSDCard(String libraryCropPrefix, bool jsonFormat)
+void HydroponicsCropsLibrary::beginCropsLibraryFromSDCard(String dataFilePrefix, bool jsonFormat)
 {
-    _libSDCropPrefix = libraryCropPrefix;
+    _libSDCropPrefix = dataFilePrefix;
     _libSDJSONFormat = jsonFormat;
 }
 
@@ -231,7 +231,7 @@ HydroponicsCropsLibraryBook * HydroponicsCropsLibrary::newBookFromType(Hydroponi
         if (retVal) { return retVal; }
     }
 
-    #ifndef HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY
+    #ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
         switch (cropType) {
              case Hydroponics_CropType_AloeVera:
                  return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"AloeVera\",\"cropName\":\"Aloe Vera\",\"phRange\":\"7,8.5\",\"tdsRange\":\"1.8,2.5\",\"flags\":\"invasive,perennial,toxic\"}")));
@@ -389,6 +389,6 @@ HydroponicsCropsLibraryBook * HydroponicsCropsLibrary::newBookFromType(Hydroponi
                  return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Zucchini\",\"cropName\":\"Zucchini\",\"flags\":\"large\"}")));
             default: break;
         }
-    #endif // /ifndef HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY
+    #endif // /ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
     return nullptr;
 }

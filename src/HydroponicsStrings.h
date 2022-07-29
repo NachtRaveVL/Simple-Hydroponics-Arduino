@@ -6,185 +6,197 @@
 #ifndef HydroponicsStrings_H
 #define HydroponicsStrings_H
 
-extern const PROGMEM char HS_ColonSpace[];
-extern const PROGMEM char HS_Count[];
-extern const PROGMEM char HS_DoubleSpace[];
-extern const PROGMEM char HS_csv[];
-extern const PROGMEM char HS_dat[];
-extern const PROGMEM char HS_Disabled[];
-extern const PROGMEM char HS_txt[];
-extern const PROGMEM char HS_Undefined[];
-extern const PROGMEM char HS_null[];
+// Strings Enumeration Table
+enum Hydroponics_String {
+    HS_ColonSpace,
+    HS_Count,
+    HS_DoubleSpace,
+    HS_csv,
+    HS_dat,
+    HS_Disabled,
+    HS_txt,
+    HS_Undefined,
+    HS_null,
 
-extern const PROGMEM char HS_Err_AllocationFailure[];
-extern const PROGMEM char HS_Err_AlreadyInitialized[];
-extern const PROGMEM char HS_Err_AssertionFailure[];
-extern const PROGMEM char HS_Err_ExportFailure[];
-extern const PROGMEM char HS_Err_ImportFailure[];
-extern const PROGMEM char HS_Err_InitializationFailure[];
-extern const PROGMEM char HS_Err_InvalidParameter[];
-extern const PROGMEM char HS_Err_InvalidPinOrType[];
-extern const PROGMEM char HS_Err_MeasurementFailure[];
-extern const PROGMEM char HS_Err_MissingLinkage[];
-extern const PROGMEM char HS_Err_NoPositionsAvailable[];
-extern const PROGMEM char HS_Err_NotYetInitialized[];
-extern const PROGMEM char HS_Err_OperationFailure[];
-extern const PROGMEM char HS_Err_UnsupportedOperation[];
+    HS_Err_AllocationFailure,
+    HS_Err_AlreadyInitialized,
+    HS_Err_AssertionFailure,
+    HS_Err_ExportFailure,
+    HS_Err_ImportFailure,
+    HS_Err_InitializationFailure,
+    HS_Err_InvalidParameter,
+    HS_Err_InvalidPinOrType,
+    HS_Err_MeasurementFailure,
+    HS_Err_MissingLinkage,
+    HS_Err_NoPositionsAvailable,
+    HS_Err_NotYetInitialized,
+    HS_Err_OperationFailure,
+    HS_Err_UnsupportedOperation,
 
-extern const PROGMEM char HS_Log_AirReport[];
-extern const PROGMEM char HS_Log_CalculatedPumping[];
-extern const PROGMEM char HS_Log_FeedingSequence[];
-extern const PROGMEM char HS_Log_HasBegan[];
-extern const PROGMEM char HS_Log_HasDisabled[];
-extern const PROGMEM char HS_Log_HasEnabled[];
-extern const PROGMEM char HS_Log_HasEnded[];
-extern const PROGMEM char HS_Log_LightingSequence[];
-extern const PROGMEM char HS_Log_MeasuredPumping[];
-extern const PROGMEM char HS_Log_PreFeedBalancing[];
-extern const PROGMEM char HS_Log_PreFeedTopOff[];
-extern const PROGMEM char HS_Log_PreLightSpraying[];
-extern const PROGMEM char HS_Log_SystemDataSaved[];
-extern const PROGMEM char HS_Log_SystemUptime[];
+    HS_Log_AirReport,
+    HS_Log_CalculatedPumping,
+    HS_Log_FeedingSequence,
+    HS_Log_HasBegan,
+    HS_Log_HasDisabled,
+    HS_Log_HasEnabled,
+    HS_Log_HasEnded,
+    HS_Log_LightingSequence,
+    HS_Log_MeasuredPumping,
+    HS_Log_PreFeedBalancing,
+    HS_Log_PreFeedTopOff,
+    HS_Log_PreLightSpraying,
+    HS_Log_SystemDataSaved,
+    HS_Log_SystemUptime,
 
-extern const PROGMEM char HS_Log_Field_pH_Setpoint[];
-extern const PROGMEM char HS_Log_Field_TDS_Setpoint[];
-extern const PROGMEM char HS_Log_Field_Temp_Setpoint[];
-extern const PROGMEM char HS_Log_Field_CO2_Setpoint[];
-extern const PROGMEM char HS_Log_Field_Time_Calculated[];
-extern const PROGMEM char HS_Log_Field_Vol_Calculated[];
-extern const PROGMEM char HS_Log_Field_pH_Measured[];
-extern const PROGMEM char HS_Log_Field_TDS_Measured[];
-extern const PROGMEM char HS_Log_Field_Temp_Measured[];
-extern const PROGMEM char HS_Log_Field_CO2_Measured[];
-extern const PROGMEM char HS_Log_Field_Time_Measured[];
-extern const PROGMEM char HS_Log_Field_Vol_Measured[];
-extern const PROGMEM char HS_Log_Field_Time_Start[];
-extern const PROGMEM char HS_Log_Field_Time_Finish[];
+    HS_Log_Field_pH_Setpoint,
+    HS_Log_Field_TDS_Setpoint,
+    HS_Log_Field_Temp_Setpoint,
+    HS_Log_Field_CO2_Setpoint,
+    HS_Log_Field_Time_Calculated,
+    HS_Log_Field_Vol_Calculated,
+    HS_Log_Field_pH_Measured,
+    HS_Log_Field_TDS_Measured,
+    HS_Log_Field_Temp_Measured,
+    HS_Log_Field_CO2_Measured,
+    HS_Log_Field_Time_Measured,
+    HS_Log_Field_Vol_Measured,
+    HS_Log_Field_Time_Start,
+    HS_Log_Field_Time_Finish,
 
-extern const PROGMEM char HS_Key_ActiveLow[];
-extern const PROGMEM char HS_Key_AdditiveName[];
-extern const PROGMEM char HS_Key_AirReportInterval[];
-extern const PROGMEM char HS_Key_AirTempRange[];
-extern const PROGMEM char HS_Key_AirTemperatureSensor[];
-extern const PROGMEM char HS_Key_AlwaysFilled[];
-extern const PROGMEM char HS_Key_AutosaveEnabled[];
-extern const PROGMEM char HS_Key_AutosaveInterval[];
-extern const PROGMEM char HS_Key_BaseFeedMultiplier[];
-extern const PROGMEM char HS_Key_CO2Levels[];
-extern const PROGMEM char HS_Key_CO2Sensor[];
-extern const PROGMEM char HS_Key_CalibUnits[];
-extern const PROGMEM char HS_Key_ComputeHeatIndex[];
-extern const PROGMEM char HS_Key_ContFlowRate[];
-extern const PROGMEM char HS_Key_ContPowerUsage[];
-extern const PROGMEM char HS_Key_CropName[];
-extern const PROGMEM char HS_Key_CropType[];
-extern const PROGMEM char HS_Key_CtrlInMode[];
-extern const PROGMEM char HS_Key_DHTType[];
-extern const PROGMEM char HS_Key_DailyLightHours[];
-extern const PROGMEM char HS_Key_DataFilePrefix[];
-extern const PROGMEM char HS_Key_DetriggerTol[];
-extern const PROGMEM char HS_Key_DispOutMode[];
-extern const PROGMEM char HS_Key_EmptyTrigger[];
-extern const PROGMEM char HS_Key_FeedReservoir[];
-extern const PROGMEM char HS_Key_FeedTimingMins[];
-extern const PROGMEM char HS_Key_FeedingTrigger[];
-extern const PROGMEM char HS_Key_FeedingWeight[];
-extern const PROGMEM char HS_Key_FilledTrigger[];
-extern const PROGMEM char HS_Key_Flags[];
-extern const PROGMEM char HS_Key_FlowRateSensor[];
-extern const PROGMEM char HS_Key_FlowRateUnits[];
-extern const PROGMEM char HS_Key_Id[];
-extern const PROGMEM char HS_Key_InputBitRes[];
-extern const PROGMEM char HS_Key_InputInversion[];
-extern const PROGMEM char HS_Key_InputPin[];
-extern const PROGMEM char HS_Key_Invasive[];
-extern const PROGMEM char HS_Key_Large[];
-extern const PROGMEM char HS_Key_LastChangeDate[];
-extern const PROGMEM char HS_Key_LastFeedingDate[];
-extern const PROGMEM char HS_Key_LastPruningDate[];
-extern const PROGMEM char HS_Key_LifeCycleWeeks[];
-extern const PROGMEM char HS_Key_LimitTrigger[];
-extern const PROGMEM char HS_Key_LogFilePrefix[];
-extern const PROGMEM char HS_Key_LogLevel[];
-extern const PROGMEM char HS_Key_LogToSDCard[];
-extern const PROGMEM char HS_Key_Logger[];
-extern const PROGMEM char HS_Key_MaxActiveAtOnce[];
-extern const PROGMEM char HS_Key_MaxPower[];
-extern const PROGMEM char HS_Key_MaxVolume[];
-extern const PROGMEM char HS_Key_Max[];
-extern const PROGMEM char HS_Key_MeasureMode[];
-extern const PROGMEM char HS_Key_MeasurementRow[];
-extern const PROGMEM char HS_Key_MeasurementUnits[];
-extern const PROGMEM char HS_Key_Min[];
-extern const PROGMEM char HS_Key_MoistureSensor[];
-extern const PROGMEM char HS_Key_MoistureUnits[];
-extern const PROGMEM char HS_Key_Multiplier[];
-extern const PROGMEM char HS_Key_NightlyFeedRate[];
-extern const PROGMEM char HS_Key_NumFeedingsToday[];
-extern const PROGMEM char HS_Key_Offset[];
-extern const PROGMEM char HS_Key_OutputBitRes[];
-extern const PROGMEM char HS_Key_OutputPin[];
-extern const PROGMEM char HS_Key_OutputReservoir[];
-extern const PROGMEM char HS_Key_PHRange[];
-extern const PROGMEM char HS_Key_PHSensor[];
-extern const PROGMEM char HS_Key_Perennial[];
-extern const PROGMEM char HS_Key_PhaseDurationWeeks[];
-extern const PROGMEM char HS_Key_PollingInterval[];
-extern const PROGMEM char HS_Key_PowerSensor[];
-extern const PROGMEM char HS_Key_PowerUnits[];
-extern const PROGMEM char HS_Key_PreFeedAeratorMins[];
-extern const PROGMEM char HS_Key_PreLightSprayMins[];
-extern const PROGMEM char HS_Key_Pruning[];
-extern const PROGMEM char HS_Key_PublishToSDCard[];
-extern const PROGMEM char HS_Key_Publisher[];
-extern const PROGMEM char HS_Key_PullupPin[];
-extern const PROGMEM char HS_Key_RailName[];
-extern const PROGMEM char HS_Key_ReservoirName[];
-extern const PROGMEM char HS_Key_ReservoirType[];
-extern const PROGMEM char HS_Key_Revision[];
-extern const PROGMEM char HS_Key_Scheduler[];
-extern const PROGMEM char HS_Key_SensorName[];
-extern const PROGMEM char HS_Key_SowDate[];
-extern const PROGMEM char HS_Key_Spraying[];
-extern const PROGMEM char HS_Key_State[];
-extern const PROGMEM char HS_Key_StdDosingRates[];
-extern const PROGMEM char HS_Key_SubstrateType[];
-extern const PROGMEM char HS_Key_SystemMode[];
-extern const PROGMEM char HS_Key_SystemName[];
-extern const PROGMEM char HS_Key_TDSRange[];
-extern const PROGMEM char HS_Key_TDSSensor[];
-extern const PROGMEM char HS_Key_TDSUnits[];
-extern const PROGMEM char HS_Key_TemperatureSensor[];
-extern const PROGMEM char HS_Key_TempUnits[];
-extern const PROGMEM char HS_Key_TimeZoneOffset[];
-extern const PROGMEM char HS_Key_Timestamp[];
-extern const PROGMEM char HS_Key_ToleranceHigh[];
-extern const PROGMEM char HS_Key_ToleranceLow[];
-extern const PROGMEM char HS_Key_ToleranceUnits[];
-extern const PROGMEM char HS_Key_Tolerance[];
-extern const PROGMEM char HS_Key_TotalFeedingsDay[];
-extern const PROGMEM char HS_Key_TotalGrowWeeks[];
-extern const PROGMEM char HS_Key_Toxic[];
-extern const PROGMEM char HS_Key_TriggerBelow[];
-extern const PROGMEM char HS_Key_TriggerOutside[];
-extern const PROGMEM char HS_Key_Type[];
-extern const PROGMEM char HS_Key_Units[];
-extern const PROGMEM char HS_Key_UsingISR[];
-extern const PROGMEM char HS_Key_Value[];
-extern const PROGMEM char HS_Key_Version[];
-extern const PROGMEM char HS_Key_Viner[];
-extern const PROGMEM char HS_Key_VolumeSensor[];
-extern const PROGMEM char HS_Key_VolumeUnits[];
-extern const PROGMEM char HS_Key_WaterTemperatureRange[];
-extern const PROGMEM char HS_Key_WaterTemperatureSensor[];
-extern const PROGMEM char HS_Key_WeeklyDosingRates[];
-extern const PROGMEM char HS_Key_WiFiPasswordSeed[];
-extern const PROGMEM char HS_Key_WiFiPassword[];
-extern const PROGMEM char HS_Key_WiFiSSID[];
-extern const PROGMEM char HS_Key_WireDevAddress[];
-extern const PROGMEM char HS_Key_WirePosIndex[];
+    HS_Key_ActiveLow,
+    HS_Key_AdditiveName,
+    HS_Key_AirReportInterval,
+    HS_Key_AirTempRange,
+    HS_Key_AirTemperatureSensor,
+    HS_Key_AlwaysFilled,
+    HS_Key_AutosaveEnabled,
+    HS_Key_AutosaveInterval,
+    HS_Key_BaseFeedMultiplier,
+    HS_Key_CO2Levels,
+    HS_Key_CO2Sensor,
+    HS_Key_CalibUnits,
+    HS_Key_ComputeHeatIndex,
+    HS_Key_ContFlowRate,
+    HS_Key_ContPowerUsage,
+    HS_Key_CropName,
+    HS_Key_CropType,
+    HS_Key_CtrlInMode,
+    HS_Key_DHTType,
+    HS_Key_DailyLightHours,
+    HS_Key_DataFilePrefix,
+    HS_Key_DetriggerTol,
+    HS_Key_DispOutMode,
+    HS_Key_EmptyTrigger,
+    HS_Key_FeedReservoir,
+    HS_Key_FeedTimingMins,
+    HS_Key_FeedingTrigger,
+    HS_Key_FeedingWeight,
+    HS_Key_FilledTrigger,
+    HS_Key_Flags,
+    HS_Key_FlowRateSensor,
+    HS_Key_FlowRateUnits,
+    HS_Key_Id,
+    HS_Key_InputBitRes,
+    HS_Key_InputInversion,
+    HS_Key_InputPin,
+    HS_Key_Invasive,
+    HS_Key_Large,
+    HS_Key_LastChangeDate,
+    HS_Key_LastFeedingDate,
+    HS_Key_LastPruningDate,
+    HS_Key_LifeCycleWeeks,
+    HS_Key_LimitTrigger,
+    HS_Key_LogFilePrefix,
+    HS_Key_LogLevel,
+    HS_Key_LogToSDCard,
+    HS_Key_Logger,
+    HS_Key_MaxActiveAtOnce,
+    HS_Key_MaxPower,
+    HS_Key_MaxVolume,
+    HS_Key_Max,
+    HS_Key_MeasureMode,
+    HS_Key_MeasurementRow,
+    HS_Key_MeasurementUnits,
+    HS_Key_Min,
+    HS_Key_MoistureSensor,
+    HS_Key_MoistureUnits,
+    HS_Key_Multiplier,
+    HS_Key_NightlyFeedRate,
+    HS_Key_NumFeedingsToday,
+    HS_Key_Offset,
+    HS_Key_OutputBitRes,
+    HS_Key_OutputPin,
+    HS_Key_OutputReservoir,
+    HS_Key_PHRange,
+    HS_Key_PHSensor,
+    HS_Key_Perennial,
+    HS_Key_PhaseDurationWeeks,
+    HS_Key_PollingInterval,
+    HS_Key_PowerSensor,
+    HS_Key_PowerUnits,
+    HS_Key_PreFeedAeratorMins,
+    HS_Key_PreLightSprayMins,
+    HS_Key_Pruning,
+    HS_Key_PublishToSDCard,
+    HS_Key_Publisher,
+    HS_Key_PullupPin,
+    HS_Key_RailName,
+    HS_Key_ReservoirName,
+    HS_Key_ReservoirType,
+    HS_Key_Revision,
+    HS_Key_Scheduler,
+    HS_Key_SensorName,
+    HS_Key_SowDate,
+    HS_Key_Spraying,
+    HS_Key_State,
+    HS_Key_StdDosingRates,
+    HS_Key_SubstrateType,
+    HS_Key_SystemMode,
+    HS_Key_SystemName,
+    HS_Key_TDSRange,
+    HS_Key_TDSSensor,
+    HS_Key_TDSUnits,
+    HS_Key_TemperatureSensor,
+    HS_Key_TempUnits,
+    HS_Key_TimeZoneOffset,
+    HS_Key_Timestamp,
+    HS_Key_ToleranceHigh,
+    HS_Key_ToleranceLow,
+    HS_Key_ToleranceUnits,
+    HS_Key_Tolerance,
+    HS_Key_TotalFeedingsDay,
+    HS_Key_TotalGrowWeeks,
+    HS_Key_Toxic,
+    HS_Key_TriggerBelow,
+    HS_Key_TriggerOutside,
+    HS_Key_Type,
+    HS_Key_Units,
+    HS_Key_UsingISR,
+    HS_Key_Value,
+    HS_Key_Version,
+    HS_Key_Viner,
+    HS_Key_VolumeSensor,
+    HS_Key_VolumeUnits,
+    HS_Key_WaterTemperatureRange,
+    HS_Key_WaterTemperatureSensor,
+    HS_Key_WeeklyDosingRates,
+    HS_Key_WiFiPasswordSeed,
+    HS_Key_WiFiPassword,
+    HS_Key_WiFiSSID,
+    HS_Key_WireDevAddress,
+    HS_Key_WirePosIndex,
 
-extern String stringFromPGM(const char *str);
-#define SFP(HStr) stringFromPGM((HStr))
+    Hydroponics_Strings_Count
+};
+
+// Returns memory resident string from PROGMEM (Flash) string enumeration.
+extern String stringFromPGM(Hydroponics_String strNum);
+#define SFP(strNum) stringFromPGM((strNum))
+
+// Makes Strings lookup go through EEPROM, with specified data begin address.
+extern void beginStringsFromEEPROM(uint16_t dataAddress);
+
+// Makes Strings lookup go through SD Card strings file at file prefix.
+extern void beginStringsFromSDCard(String dataFilePrefix);
 
 #endif // /ifndef HydroponicsStrings_H

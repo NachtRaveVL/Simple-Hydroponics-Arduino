@@ -137,8 +137,8 @@ enum HydroponicsCropsLibData_Flag {
     HydroponicsCropsLibData_Flag_Spraying =  0x40               // Flag indicating plant benefits from spraying in the morning (default: false)
 };
 
-// Crop Library Data
-// id: HCLD. Hydroponic crop library data.
+// Crops Library Data
+// id: HCLD. Hydroponic crops library data.
 struct HydroponicsCropsLibData : public HydroponicsData {
     Hydroponics_CropType cropType;                              // Crop type
     char cropName[HYDRUINO_NAME_MAXSIZE];                       // Name of crop
@@ -155,7 +155,7 @@ struct HydroponicsCropsLibData : public HydroponicsData {
     uint16_t flags;                                             // Plant flags
 
     HydroponicsCropsLibData();
-    HydroponicsCropsLibData(Hydroponics_CropType cropType);     // Convenience constructor, checks out data from Crop Library then returns, good for temporary objects.
+    HydroponicsCropsLibData(Hydroponics_CropType cropType);     // Convenience constructor, checks out data from Crops Library then returns, good for temporary objects.
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 

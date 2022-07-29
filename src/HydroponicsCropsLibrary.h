@@ -18,18 +18,18 @@ struct HydroponicsCropsLibraryBook;
 // which ones can unload. It is recommended to use the HydroponicsCropsLubData class if
 // using a temporary, otherwise this checkout/return system. The returned crop lib data
 // instance is guaranteed to stay unique for as long as it is allocated.
-// Unless the HYDRUINO_DISABLE_BUILT_IN_CROPS_LIBRARY define is defined, all crop data is
-// internally stored as JSON strings in the Flash PROGMEM memory space. See the Crop Library
-// Upload example on how to program an EEPROM or SD Card with such data.
+// Unless the HYDRUINO_ENABLE_EXTERNAL_DATA define is defined, all crop data is
+// internally stored as JSON strings in the Flash PROGMEM memory space. See the Data
+// Writer Example sketch on how to program an EEPROM or SD Card with such data.
 class HydroponicsCropsLibrary {
 public:
     // Returns the singleton instance of the library
     static HydroponicsCropsLibrary *getInstance();
 
-    // Begins crops library from external SD card library, with specified prefix and data format.
-    void beginCropsLibraryFromSDCard(String libraryCropPrefix, bool jsonFormat = true);
+    // Begins crops library from external SD card library, with specified file prefix and data format.
+    void beginCropsLibraryFromSDCard(String dataFilePrefix, bool jsonFormat = true);
 
-    // Begins crops library from external EEPROM, with specified begin address and data format.
+    // Begins crops library from external EEPROM, with specified data begin address and data format.
     void beginCropsLibraryFromEEPROM(size_t dataAddress = 0, bool jsonFormat = false);
 
     // Checks out the crop data for this crop from the library, created via the JSON from
@@ -53,7 +53,7 @@ public:
     Signal<Hydroponics_CropType> &getCustomCropSignal();
 
 protected:
-    Map<Hydroponics_CropType, HydroponicsCropsLibraryBook *>::type _cropsData; // Loaded crop library data
+    Map<Hydroponics_CropType, HydroponicsCropsLibraryBook *>::type _cropsData; // Loaded crops library data
     bool _hasCustomCrops = false;                           // Has custom crops flag
 
     String _libSDCropPrefix;                                // Library data files prefix for SD Card, else "" if unused
