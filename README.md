@@ -249,7 +249,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SAVES_SD_CARD_ENABLE      true            // If saving/loading from SD card is enable
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2588          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x0000          // System data memory offset for EEPROM saves (from Data Writer output)
 
 // WiFi Settings
 #define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
@@ -266,8 +266,8 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM
-#define SETUP_EXTDATA_EEPROM_CROP_ADDR  0               // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EXTDATA_EEPROM_STR_ADDR   0               // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x0000          // Start address for Strings data (from Data Writer output)
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
@@ -340,17 +340,16 @@ Inside of the Data Writer's `setup()` function:
 
 In particular, after setting up the settings defines similarly to that of the Vertical NFT or Full System sketch, running the Data Writer sketch will produce the EEPROM configuration setup defines to use for that particular run. You typically won't need to copy these over unless you are planning to utilize an external EEPROM and have made any custom data modifications, as these defines are updated by the dev team prior to release. If however you do have custom data modifications and using an external EEPROM, do copy these values over into your Main System sketch.
 
-In serial monitor:
+In serial monitor (near end):
 ```
-<tail end>
-2022-07-29T18:29:13 [INFO] Writing String: #172 "wirePosIndex"
-2022-07-29T18:29:13 [INFO] ... to offset: 9595
-2022-07-29T18:29:13 [INFO] Successfully wrote: 2584 bytes
-2022-07-29T18:29:13 [INFO] Total EEPROM usage: 9608 bytes
-2022-07-29T18:29:13 [INFO] EEPROM capacity used: 29.32% of 32768 bytes
-2022-07-29T18:29:13 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EXTDATA_EEPROM_CROP_ADDR  0x0
-#define SETUP_EXTDATA_EEPROM_STR_ADDR   0x1b70
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2588
-2022-07-29T18:29:13 [INFO] Done!
+2022-07-29T21:03:30 [INFO] Writing String: #172 "wirePosIndex"
+2022-07-29T21:03:30 [INFO] ... to location: 10308
+2022-07-29T21:03:30 [INFO] Successfully wrote: 2584 bytes
+2022-07-29T21:03:30 [INFO] Total EEPROM usage: 10321 bytes
+2022-07-29T21:03:30 [INFO] EEPROM capacity used: 31.50% of 32768 bytes
+2022-07-29T21:03:30 [INFO] Use the following EEPROM setup defines in your sketch:
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2851
+#define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
+#define SETUP_EEPROM_STRINGS_ADDR       0x1e39
+2022-07-29T21:03:30 [INFO] Done!
 ```

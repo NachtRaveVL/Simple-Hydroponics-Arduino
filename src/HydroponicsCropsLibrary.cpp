@@ -60,12 +60,12 @@ void HydroponicsCropsLibrary::beginCropsLibraryFromSDCard(String dataFilePrefix,
 void HydroponicsCropsLibrary::beginCropsLibraryFromEEPROM(size_t dataAddress, bool jsonFormat)
 {
     _libEEPROMDataAddress = dataAddress;
-    _libEEPROMJSONFormat = dataAddress;
+    _libEEPROMJSONFormat = jsonFormat;
 }
 
 const HydroponicsCropsLibData *HydroponicsCropsLibrary::checkoutCropsData(Hydroponics_CropType cropType)
 {
-    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType < Hydroponics_CropType_CustomCropCount, SFP(HStr_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT((int)cropType >= 0 && cropType < Hydroponics_CropType_Count, SFP(HStr_Err_InvalidParameter));
 
     HydroponicsCropsLibraryBook *book = nullptr;
     auto iter = _cropsData.find(cropType);
@@ -222,9 +222,10 @@ HydroponicsCropsLibraryBook * HydroponicsCropsLibrary::newBookFromType(Hydroponi
 
         if (eeprom) {
             uint16_t lookupOffset = 0;
-            eeprom->readBlock(_libEEPROMDataAddress + (sizeof(uint16_t) * ((int)cropType + 1)), // +1 for initial total size word
+            eeprom->readBlock(_libEEPROMDataAddress + (((int)cropType + 1) * sizeof(uint16_t)), // +1 for initial total size word
                               (byte *)&lookupOffset, sizeof(lookupOffset));
-            auto eepromStream = HydroponicsEEPROMStream(_libEEPROMDataAddress + lookupOffset, sizeof(HydroponicsCropsLibData));
+
+            auto eepromStream = HydroponicsEEPROMStream(lookupOffset, sizeof(HydroponicsCropsLibData));
             retVal = new HydroponicsCropsLibraryBook(eepromStream, _libEEPROMJSONFormat);
         }
 

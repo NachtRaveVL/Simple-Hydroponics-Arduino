@@ -34,7 +34,7 @@
 #define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2588          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2851          // System data memory offset for EEPROM saves (from Data Writer output)
 
 // WiFi Settings
 #define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
@@ -51,8 +51,8 @@
 #define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM
-#define SETUP_EXTDATA_EEPROM_CROP_ADDR  0x0             // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EXTDATA_EEPROM_STR_ADDR   0x1b70          // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1e39          // Start address for Strings data (from Data Writer output)
 
 
 byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -102,8 +102,8 @@ void setup() {
         beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
     #endif
     #if SETUP_EXTDATA_EEPROM_ENABLE
-        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EXTDATA_EEPROM_CROP_ADDR);
-        beginStringsFromEEPROM(SETUP_EXTDATA_EEPROM_STR_ADDR);
+        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
+        beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
     #endif
 
     // Initializes controller with first initialization method that successfully returns.

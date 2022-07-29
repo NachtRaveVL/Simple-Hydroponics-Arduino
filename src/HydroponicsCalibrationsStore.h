@@ -33,7 +33,7 @@ public:
     Signal<Hydroponics_KeyType> &getUserCalibrationSignal();
 
 protected:
-    Map<Hydroponics_KeyType, HydroponicsCalibrationData *>::type _calibrationData; // Loaded user calibration data
+    Map<Hydroponics_KeyType, HydroponicsCalibrationData *, HYDRUINO_CALSTORE_CALIBS_MAXSIZE>::type _calibrationData; // Loaded user calibration data
     Signal<Hydroponics_KeyType> _calibrationSignal;             // User calibration data updated signal    
 
 private:

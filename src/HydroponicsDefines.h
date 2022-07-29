@@ -48,6 +48,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_BALANCER_STATE_SLOTS       4                       // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
 // The following max sizes only matter for architectures that do not have STL support
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        16                      // Maximum array size for system objects (max # of objects in system)
+#define HYDRUINO_CROPSLIB_CROPS_MAXSIZE     8                       // Maximum array size for crops library objects (max # of different kinds of crops)
+#define HYDRUINO_CALSTORE_CALIBS_MAXSIZE    8                       // Maximum array size for calibration store objects (max # of different custom calibrations)
 #define HYDRUINO_OBJ_LINKS_MAXSIZE          8                       // Maximum array size for object linkage list, per obj (max # of linked objects)
 #define HYDRUINO_OBJ_LINKSFILTER_DEFSIZE    8                       // Default array size for object linkage filtering
 #define HYDRUINO_BAL_INCACTUATORS_MAXSIZE   8                       // Maximum array size for balancer increment actuators list (max # of increment autodosers/actuators used during balancing)

@@ -10,8 +10,8 @@
 // is also not a concern this way since the same device does both writing & reading.
 //
 // For EEPROM device writing, keep track of the produced output that defines the various
-// data offsets written to the EEPROM chip, as these will be needed to correctly set
-// the various data address offsets (e.g. CROP_ADDR, STR_ADDR, etc.).
+// data locations written to the EEPROM chip, as these will be needed to correctly set
+// the various data address locations (e.g. CROP_ADDR, STR_ADDR, etc.).
 //
 // Make sure that any EEPROM Write-Protect jumpers are disabled, and that you have not
 // defined HYDRUINO_ENABLE_EXTERNAL_DATA so that the full data is built into the onboard
@@ -123,13 +123,13 @@ void setup() {
 
                 uint16_t lookupTable[Hydroponics_Strings_Count];
 
-                // Initializes lookup table with proper offsets
-                {   uint16_t writeOffset = sizeof(lookupTable);
+                // Initializes lookup table with proper locations
+                {   uint16_t writeAddr = sizeof(lookupTable);
 
                     for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {
                         String string = SFP((Hydroponics_String)stringNum);
-                        lookupTable[stringNum] = writeOffset;
-                        writeOffset += string.length() + 1;
+                        lookupTable[stringNum] = writeAddr;
+                        writeAddr += string.length() + 1;
                     }
                 }
 
@@ -185,28 +185,28 @@ void setup() {
                 // A lookup table similar to uint16_t lookupTable[Hydroponics_Strings_Count] is created
                 // manually here, which is used for crop data lookup. The first uint16_t value will be
                 // reserved for the total chunk size (hence the +1).
-                uint16_t writeOffset = cropsLibBegAddr + (sizeof(uint16_t) * Hydroponics_CropType_Count + 1);
+                uint16_t writeAddr = cropsLibBegAddr + ((Hydroponics_CropType_Count + 1) * sizeof(uint16_t));
 
                 for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
                     auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
 
                     if (cropData) {
                         getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
-                        getLoggerInstance()->logMessage(F("... to offset: "), String(writeOffset));
+                        getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr));
 
-                        auto eepromStream = HydroponicsEEPROMStream(writeOffset, sizeof(HydroponicsCropsLibData));
+                        auto eepromStream = HydroponicsEEPROMStream(writeAddr, sizeof(HydroponicsCropsLibData));
                         size_t bytesWritten = serializeDataToBinaryStream(cropData, &eepromStream); // Could also write out in JSON, but is space inefficient
 
-                        // After writing data out, write offset out to lookup table
-                        if (bytesWritten && eeprom->updateBlockVerify(cropsLibBegAddr + (sizeof(uint16_t) * (cropType + 1)),
-                                                                      (const byte *)&writeOffset, sizeof(uint16_t))) {
-                            writeOffset += bytesWritten;
+                        // After writing data out, write location out to lookup table
+                        if (bytesWritten && eeprom->updateBlockVerify(cropsLibBegAddr + ((cropType + 1) * sizeof(uint16_t)),
+                                                                      (const byte *)&writeAddr, sizeof(uint16_t))) {
+                            writeAddr += bytesWritten;
                         } else {
                             getLoggerInstance()->logError(F("Failure writing crops lib data to EEPROM!"));
                         }
 
                         getCropsLibraryInstance()->returnCropsData(cropData);
-                    } else if (!eeprom->setBlockVerify(cropsLibBegAddr + (sizeof(uint16_t) * (cropType + 1)), 0, sizeof(uint16_t))) {
+                    } else if (!eeprom->setBlockVerify(cropsLibBegAddr + ((cropType + 1) * sizeof(uint16_t)), 0, sizeof(uint16_t))) {
                         getLoggerInstance()->logError(F("Failure writing crops lib table data to EEPROM!"));
                     }
 
@@ -215,11 +215,11 @@ void setup() {
 
                 // Write out total crops lib size to first position, as long as something was at least written out
                 stringsBegAddr = cropsLibBegAddr;
-                if (writeOffset > cropsLibBegAddr + (sizeof(uint16_t) * Hydroponics_CropType_Count + 1)) {
-                    uint16_t totalBytesWritten = writeOffset - cropsLibBegAddr;
+                if (writeAddr > cropsLibBegAddr + ((Hydroponics_CropType_Count + 1) * sizeof(uint16_t))) {
+                    uint16_t totalBytesWritten = writeAddr - cropsLibBegAddr;
 
                     if (eeprom->updateBlockVerify(cropsLibBegAddr, (const byte *)&totalBytesWritten, sizeof(uint16_t))) {
-                        stringsBegAddr = writeOffset;
+                        stringsBegAddr = writeAddr;
                         getLoggerInstance()->logMessage(F("Successfully wrote: "), String(totalBytesWritten), F(" bytes"));
                     } else {
                         getLoggerInstance()->logError(F("Failure writing total crops lib data size to EEPROM!"));
@@ -230,18 +230,18 @@ void setup() {
             {   getLoggerInstance()->logMessage(F("=== Writing String data to EEPROM ==="));
 
                 // Similar to above, same deal with a lookup table.
-                uint16_t writeOffset = stringsBegAddr + (sizeof(uint16_t) * (Hydroponics_Strings_Count + 1));
+                uint16_t writeAddr = stringsBegAddr + ((Hydroponics_Strings_Count + 1) * sizeof(uint16_t));
 
                 for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {
                     String string = SFP((Hydroponics_String)stringNum);
 
                     getLoggerInstance()->logMessage(F("Writing String: #"), String(stringNum) + String(F(" \"")), string + String(F("\"")));
-                    getLoggerInstance()->logMessage(F("... to offset: "), String(writeOffset));
+                    getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr));
 
-                    if(eeprom->updateBlockVerify(writeOffset, (const byte *)string.c_str(), string.length() + 1) &&
-                       eeprom->updateBlockVerify(stringsBegAddr + (sizeof(uint16_t) * (stringNum + 1)),
-                                                 (const byte *)&writeOffset, sizeof(uint16_t))) {
-                        writeOffset += string.length() + 1;
+                    if(eeprom->updateBlockVerify(writeAddr, (const byte *)string.c_str(), string.length() + 1) &&
+                       eeprom->updateBlockVerify(stringsBegAddr + ((stringNum + 1) * sizeof(uint16_t)),
+                                                 (const byte *)&writeAddr, sizeof(uint16_t))) {
+                        writeAddr += string.length() + 1;
                     } else {
                         getLoggerInstance()->logError(F("Failure writing strings data to EEPROM!"));
                     }
@@ -250,12 +250,12 @@ void setup() {
                 }
 
                 sysDataBegAddr = stringsBegAddr;
-                if (writeOffset > stringsBegAddr + (sizeof(uint16_t) * (Hydroponics_Strings_Count + 1))) {
-                    uint16_t totalBytesWritten = writeOffset - stringsBegAddr;
+                if (writeAddr > stringsBegAddr + ((Hydroponics_Strings_Count + 1) * sizeof(uint16_t))) {
+                    uint16_t totalBytesWritten = writeAddr - stringsBegAddr;
 
                     if (eeprom->updateBlockVerify(stringsBegAddr, (const byte *)&totalBytesWritten, sizeof(uint16_t))) {
                         getLoggerInstance()->logMessage(F("Successfully wrote: "), String(totalBytesWritten), F(" bytes"));
-                        sysDataBegAddr = writeOffset;
+                        sysDataBegAddr = writeAddr;
                     } else {
                         getLoggerInstance()->logError(F("Failure writing total strings data size to EEPROM!"));
                     }
@@ -265,13 +265,15 @@ void setup() {
             getLoggerInstance()->logMessage(F("Total EEPROM usage: "), String(sysDataBegAddr), F(" bytes"));
             getLoggerInstance()->logMessage(F("EEPROM capacity used: "), String(((float)sysDataBegAddr / eeprom->getDeviceSize()) * 100.0f) + String(F("% of ")), String(eeprom->getDeviceSize()) + String(F(" bytes")));
             getLoggerInstance()->logMessage(F("Use the following EEPROM setup defines in your sketch:"));
-            Serial.print(F("#define SETUP_EXTDATA_EEPROM_CROP_ADDR  0x"));
-            Serial.println(String(cropsLibBegAddr != (uint16_t)-1 ? cropsLibBegAddr : 0, 16));
-            Serial.print(F("#define SETUP_EXTDATA_EEPROM_STR_ADDR   0x"));
-            Serial.println(String(stringsBegAddr != (uint16_t)-1 && stringsBegAddr != cropsLibBegAddr ? stringsBegAddr : 0, 16));
             Serial.print(F("#define SETUP_EEPROM_SYSDATA_ADDR       0x"));
+            if (sysDataBegAddr < 0x1000) { Serial.print('0'); } if (sysDataBegAddr < 0x100) { Serial.print('0'); } if (sysDataBegAddr < 0x10) { Serial.print('0'); }
             Serial.println(String(sysDataBegAddr != (uint16_t)-1 && sysDataBegAddr != stringsBegAddr ? sysDataBegAddr : 0, 16));
-
+            Serial.print(F("#define SETUP_EEPROM_CROPSLIB_ADDR      0x"));
+            if (cropsLibBegAddr < 0x1000) { Serial.print('0'); } if (cropsLibBegAddr < 0x100) { Serial.print('0'); } if (cropsLibBegAddr < 0x10) { Serial.print('0'); }
+            Serial.println(String(cropsLibBegAddr != (uint16_t)-1 ? cropsLibBegAddr : 0, 16));
+            Serial.print(F("#define SETUP_EEPROM_STRINGS_ADDR       0x"));
+            if (stringsBegAddr < 0x1000) { Serial.print('0'); } if (stringsBegAddr < 0x100) { Serial.print('0'); } if (stringsBegAddr < 0x10) { Serial.print('0'); }
+            Serial.println(String(stringsBegAddr != (uint16_t)-1 && stringsBegAddr != cropsLibBegAddr ? stringsBegAddr : 0, 16));
         } else {
             getLoggerInstance()->logWarning(F("Could not find EEPROM device. Check that you have it set up properly."));
         }
