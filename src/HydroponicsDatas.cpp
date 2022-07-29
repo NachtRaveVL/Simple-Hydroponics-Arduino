@@ -370,41 +370,27 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
     {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, SFP(HStr_Err_ImportFailure));
         JsonVariantConst dailyLightHoursVar = objectIn[SFP(HStr_Key_DailyLightHours)];
         commaStringToArray(dailyLightHoursVar, dailyLightHours, 3);
-        dailyLightHours[0] = dailyLightHoursVar[0] | dailyLightHours[0];
-        dailyLightHours[1] = dailyLightHoursVar[1] | dailyLightHours[1];
-        dailyLightHours[2] = dailyLightHoursVar[2] | dailyLightHours[2];
     }
 
     {   HYDRUINO_SOFT_ASSERT(Hydroponics_CropPhase_MainCount == 3, SFP(HStr_Err_ImportFailure));
         JsonVariantConst phaseDurationWeeksVar = objectIn[SFP(HStr_Key_PhaseDurationWeeks)];
         commaStringToArray(phaseDurationWeeksVar, phaseDurationWeeks, 3);
-        phaseDurationWeeks[0] = phaseDurationWeeksVar[0] | phaseDurationWeeks[0];
-        phaseDurationWeeks[1] = phaseDurationWeeksVar[1] | phaseDurationWeeks[1];
-        phaseDurationWeeks[2] = phaseDurationWeeksVar[2] | phaseDurationWeeks[2];
     }
 
     {   JsonVariantConst phRangeVar = objectIn[SFP(HStr_Key_PHRange)];
         commaStringToArray(phRangeVar, phRange, 2);
-        phRange[0] = phRangeVar[SFP(HStr_Key_Min)] | phRangeVar[0] | phRange[0];
-        phRange[1] = phRangeVar[SFP(HStr_Key_Max)] | phRangeVar[1] | phRange[1];
     }
     {   JsonVariantConst tdsRangeVar = objectIn[SFP(HStr_Key_TDSRange)];
         commaStringToArray(tdsRangeVar, tdsRange, 2);
-        tdsRange[0] = tdsRangeVar[SFP(HStr_Key_Min)] | tdsRangeVar[0];
-        tdsRange[1] = tdsRangeVar[SFP(HStr_Key_Max)] | tdsRangeVar[1];
     }
 
     nightlyFeedRate = objectIn[SFP(HStr_Key_NightlyFeedRate)] | nightlyFeedRate;
 
     {   JsonVariantConst waterTempRangeVar = objectIn[SFP(HStr_Key_WaterTemperatureRange)];
         commaStringToArray(waterTempRangeVar, waterTempRange, 2);
-        waterTempRange[0] = waterTempRangeVar[SFP(HStr_Key_Min)] | waterTempRangeVar[0] | waterTempRange[0];
-        waterTempRange[1] = waterTempRangeVar[SFP(HStr_Key_Max)] | waterTempRangeVar[1] | waterTempRange[1];
     }
     {   JsonVariantConst airTempRangeVar = objectIn[SFP(HStr_Key_AirTempRange)];
         commaStringToArray(airTempRangeVar, airTempRange, 2);
-        airTempRange[0] = airTempRangeVar[SFP(HStr_Key_Min)] | airTempRangeVar[0] | airTempRange[0];
-        airTempRange[1] = airTempRangeVar[SFP(HStr_Key_Max)] | airTempRangeVar[1] | airTempRange[1];
     }
 
     {   JsonVariantConst flagsVar = objectIn[SFP(HStr_Key_Flags)];
@@ -470,7 +456,4 @@ void HydroponicsCustomAdditiveData::fromJSONObject(JsonObjectConst &objectIn)
     if (additiveStr && additiveStr[0]) { strncpy(additiveName, additiveStr, HYDRUINO_NAME_MAXSIZE); }
     JsonVariantConst weeklyDosingRatesVar = objectIn[SFP(HStr_Key_WeeklyDosingRates)];
     commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX);
-    for (int weekIndex = 0; weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX; ++weekIndex) { 
-        weeklyDosingRates[weekIndex] = weeklyDosingRatesVar[weekIndex] | weeklyDosingRates[weekIndex];
-    }
 }

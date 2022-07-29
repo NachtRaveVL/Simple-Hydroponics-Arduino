@@ -75,33 +75,29 @@ HydroponicsPROGMEMStream::HydroponicsPROGMEMStream()
     : Stream(), _readAddress(0), _writeAddress(0), _end(UINT16_MAX)
 { ; }
 
-HydroponicsPROGMEMStream::HydroponicsPROGMEMStream(uint16_t dataAddress)
+HydroponicsPROGMEMStream::HydroponicsPROGMEMStream(uintptr_t dataAddress)
     : Stream(), _readAddress(dataAddress), _writeAddress(dataAddress), _end(dataAddress + strlen_P((const char *)dataAddress))
 { ; }
 
-HydroponicsPROGMEMStream::HydroponicsPROGMEMStream(uint16_t dataAddress, size_t dataSize)
+HydroponicsPROGMEMStream::HydroponicsPROGMEMStream(uintptr_t dataAddress, size_t dataSize)
     : Stream(), _readAddress(dataAddress), _writeAddress(dataAddress), _end(dataAddress + dataSize)
 { ; }
 
 int HydroponicsPROGMEMStream::available()
 {
-    return (int)_end - _readAddress;
+    return _end - _readAddress;
 }
 
 int HydroponicsPROGMEMStream::read()
 {
     if (_readAddress >= _end) { return -1; }
-    byte value = (byte)-1;
-    memcpy_P(&value, (const void *)_readAddress++, sizeof(value));
-    return value;
+    return pgm_read_byte(_readAddress++);
 }
 
 int HydroponicsPROGMEMStream::peek()
 {
     if (_readAddress >= _end) { return -1; }
-    byte value = (byte)-1;
-    memcpy_P(&value, (const void *)_readAddress, sizeof(value));
-    return value;
+    return pgm_read_byte(_readAddress);
 }
 
 void HydroponicsPROGMEMStream::flush()

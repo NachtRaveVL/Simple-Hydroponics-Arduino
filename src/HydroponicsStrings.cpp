@@ -516,10 +516,6 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Key_MaxVolume[] PROGMEM = {"maxVolume"};
             return flashStr_Key_MaxVolume;
         } break;
-        case HStr_Key_Max: {
-            static const char flashStr_Key_Max[] PROGMEM = {"max"};
-            return flashStr_Key_Max;
-        } break;
         case HStr_Key_MeasureMode: {
             static const char flashStr_Key_MeasureMode[] PROGMEM = {"measureMode"};
             return flashStr_Key_MeasureMode;
@@ -531,10 +527,6 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         case HStr_Key_MeasurementUnits: {
             static const char flashStr_Key_MeasurementUnits[] PROGMEM = {"measurementUnits"};
             return flashStr_Key_MeasurementUnits;
-        } break;
-        case HStr_Key_Min: {
-            static const char flashStr_Key_Min[] PROGMEM = {"min"};
-            return flashStr_Key_Min;
         } break;
         case HStr_Key_MoistureSensor: {
             static const char flashStr_Key_MoistureSensor[] PROGMEM = {"moistureSensor"};

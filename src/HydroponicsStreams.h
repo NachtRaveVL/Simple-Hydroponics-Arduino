@@ -37,8 +37,8 @@ private:
 class HydroponicsPROGMEMStream : public Stream {
 public:
     HydroponicsPROGMEMStream();
-    HydroponicsPROGMEMStream(uint16_t dataAddress);
-    HydroponicsPROGMEMStream(uint16_t dataAddress, size_t dataSize);
+    HydroponicsPROGMEMStream(uintptr_t dataAddress);
+    HydroponicsPROGMEMStream(uintptr_t dataAddress, size_t dataSize);
 
     virtual int available() override;
     virtual int read() override;
@@ -48,7 +48,7 @@ public:
     virtual size_t write(uint8_t data) override;
 
 private:
-    uint16_t _readAddress, _writeAddress, _end;
+    uintptr_t _readAddress, _writeAddress, _end;
 };
 
 #endif // /ifndef HydroponicsStreams_H

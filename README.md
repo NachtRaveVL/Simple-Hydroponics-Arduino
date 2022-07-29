@@ -342,14 +342,14 @@ In particular, after setting up the settings defines similarly to that of the Ve
 
 In serial monitor (near end):
 ```
-2022-07-29T21:03:30 [INFO] Writing String: #172 "wirePosIndex"
-2022-07-29T21:03:30 [INFO] ... to location: 10308
-2022-07-29T21:03:30 [INFO] Successfully wrote: 2584 bytes
-2022-07-29T21:03:30 [INFO] Total EEPROM usage: 10321 bytes
-2022-07-29T21:03:30 [INFO] EEPROM capacity used: 31.50% of 32768 bytes
-2022-07-29T21:03:30 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2851
+2022-07-29T22:24:52 [INFO] Writing String: #170 "wirePosIndex"
+2022-07-29T22:24:52 [INFO] ... to location: 10296 (0x2838)
+2022-07-29T22:24:52 [INFO] Successfully wrote: 2572 bytes
+2022-07-29T22:24:52 [INFO] Total EEPROM usage: 10309 bytes
+2022-07-29T22:24:52 [INFO] EEPROM capacity used: 31.46% of 32768 bytes
+2022-07-29T22:24:52 [INFO] Use the following EEPROM setup defines in your sketch:
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2845
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
 #define SETUP_EEPROM_STRINGS_ADDR       0x1e39
-2022-07-29T21:03:30 [INFO] Done!
+2022-07-29T22:24:52 [INFO] Done!
 ```

@@ -65,6 +65,25 @@ Hydroponics hydroController(-1,
                             SETUP_I2C_SPEED,
                             SETUP_SD_CARD_SPI_SPEED);
 
+String stringFor16bAddr(uint16_t addr) {
+    String retVal;
+    retVal.concat('0'); retVal.concat('x');
+    if (addr == (uint16_t)-1) { addr = 0; }
+    if (addr < 0x1000) { retVal.concat('0'); }
+    if (addr < 0x100) { retVal.concat('0'); }
+    if (addr < 0x10) { retVal.concat('0'); }
+    retVal.concat(String(addr, 16));
+    return retVal;
+}
+
+String stringAltFor16bAddr(uint16_t addr) {
+    String retVal;
+    retVal.concat(' '); retVal.concat('('); 
+    retVal.concat(stringFor16bAddr(addr));
+    retVal.concat(')');
+    return retVal;
+}
+
 void setup() {
     Serial.begin(115200);               // Begin USB Serial interface
     while(!Serial) { ; }                // Wait for USB Serial to connect
@@ -192,7 +211,7 @@ void setup() {
 
                     if (cropData) {
                         getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
-                        getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr));
+                        getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr), stringAltFor16bAddr(writeAddr));
 
                         auto eepromStream = HydroponicsEEPROMStream(writeAddr, sizeof(HydroponicsCropsLibData));
                         size_t bytesWritten = serializeDataToBinaryStream(cropData, &eepromStream); // Could also write out in JSON, but is space inefficient
@@ -236,7 +255,7 @@ void setup() {
                     String string = SFP((Hydroponics_String)stringNum);
 
                     getLoggerInstance()->logMessage(F("Writing String: #"), String(stringNum) + String(F(" \"")), string + String(F("\"")));
-                    getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr));
+                    getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr), stringAltFor16bAddr(writeAddr));
 
                     if(eeprom->updateBlockVerify(writeAddr, (const byte *)string.c_str(), string.length() + 1) &&
                        eeprom->updateBlockVerify(stringsBegAddr + ((stringNum + 1) * sizeof(uint16_t)),
@@ -265,15 +284,12 @@ void setup() {
             getLoggerInstance()->logMessage(F("Total EEPROM usage: "), String(sysDataBegAddr), F(" bytes"));
             getLoggerInstance()->logMessage(F("EEPROM capacity used: "), String(((float)sysDataBegAddr / eeprom->getDeviceSize()) * 100.0f) + String(F("% of ")), String(eeprom->getDeviceSize()) + String(F(" bytes")));
             getLoggerInstance()->logMessage(F("Use the following EEPROM setup defines in your sketch:"));
-            Serial.print(F("#define SETUP_EEPROM_SYSDATA_ADDR       0x"));
-            if (sysDataBegAddr < 0x1000) { Serial.print('0'); } if (sysDataBegAddr < 0x100) { Serial.print('0'); } if (sysDataBegAddr < 0x10) { Serial.print('0'); }
-            Serial.println(String(sysDataBegAddr != (uint16_t)-1 && sysDataBegAddr != stringsBegAddr ? sysDataBegAddr : 0, 16));
-            Serial.print(F("#define SETUP_EEPROM_CROPSLIB_ADDR      0x"));
-            if (cropsLibBegAddr < 0x1000) { Serial.print('0'); } if (cropsLibBegAddr < 0x100) { Serial.print('0'); } if (cropsLibBegAddr < 0x10) { Serial.print('0'); }
-            Serial.println(String(cropsLibBegAddr != (uint16_t)-1 ? cropsLibBegAddr : 0, 16));
-            Serial.print(F("#define SETUP_EEPROM_STRINGS_ADDR       0x"));
-            if (stringsBegAddr < 0x1000) { Serial.print('0'); } if (stringsBegAddr < 0x100) { Serial.print('0'); } if (stringsBegAddr < 0x10) { Serial.print('0'); }
-            Serial.println(String(stringsBegAddr != (uint16_t)-1 && stringsBegAddr != cropsLibBegAddr ? stringsBegAddr : 0, 16));
+            Serial.print(F("#define SETUP_EEPROM_SYSDATA_ADDR       "));
+            Serial.println(stringFor16bAddr(sysDataBegAddr != (uint16_t)-1 && sysDataBegAddr != stringsBegAddr ? sysDataBegAddr : 0));
+            Serial.print(F("#define SETUP_EEPROM_CROPSLIB_ADDR      "));
+            Serial.println(stringFor16bAddr(cropsLibBegAddr != (uint16_t)-1 ? cropsLibBegAddr : 0));
+            Serial.print(F("#define SETUP_EEPROM_STRINGS_ADDR       "));
+            Serial.println(stringFor16bAddr(stringsBegAddr != (uint16_t)-1 && stringsBegAddr != cropsLibBegAddr ? stringsBegAddr : 0));
         } else {
             getLoggerInstance()->logWarning(F("Could not find EEPROM device. Check that you have it set up properly."));
         }

@@ -645,7 +645,7 @@ void HydroponicsFeeding::recalcFeeding()
     }
 
     tdsSetpoint = totalSetpoints[0] / totalWeights;
-    phSetpoint = tdsSetpoint > FLT_EPSILON ? totalSetpoints[1] / totalWeights : 7; // handle flushing
+    phSetpoint = tdsSetpoint > FLT_EPSILON ? (totalSetpoints[1] / totalWeights) : 7.0f; // handle flushing
     waterTempSetpoint = totalSetpoints[2] / totalWeights;
     airTempSetpoint = totalSetpoints[3] / totalWeights;
     co2Setpoint = totalSetpoints[4] / totalWeights;
@@ -1202,14 +1202,8 @@ void HydroponicsSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
     baseFeedMultiplier = objectIn[SFP(HStr_Key_BaseFeedMultiplier)] | baseFeedMultiplier;
     JsonVariantConst weeklyDosingRatesVar = objectIn[SFP(HStr_Key_WeeklyDosingRates)];
     commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRUINO_CROP_GROWWEEKS_MAX);
-    for (int weekIndex = 0; weekIndex < HYDRUINO_CROP_GROWWEEKS_MAX; ++weekIndex) { 
-        weeklyDosingRates[weekIndex] = weeklyDosingRatesVar[weekIndex] | weeklyDosingRates[weekIndex];
-    }
     JsonVariantConst stdDosingRatesVar = objectIn[SFP(HStr_Key_StdDosingRates)];
     commaStringToArray(stdDosingRatesVar, stdDosingRates, 3);
-    for (int resIndex = 0; resIndex < 3; ++resIndex) { 
-        stdDosingRates[resIndex] = stdDosingRatesVar[resIndex] | stdDosingRates[resIndex];
-    }
     totalFeedingsDay = objectIn[SFP(HStr_Key_TotalFeedingsDay)] | totalFeedingsDay;
     preFeedAeratorMins = objectIn[SFP(HStr_Key_PreFeedAeratorMins)] | preFeedAeratorMins;
     preLightSprayMins = objectIn[SFP(HStr_Key_PreLightSprayMins)] | preLightSprayMins;

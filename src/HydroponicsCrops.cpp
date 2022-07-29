@@ -364,8 +364,6 @@ void HydroponicsTimedCropData::fromJSONObject(JsonObjectConst &objectIn)
     lastFeedingDate = objectIn[SFP(HStr_Key_LastFeedingDate)] | lastFeedingDate;
     JsonVariantConst feedTimingMinsVar = objectIn[SFP(HStr_Key_FeedTimingMins)];
     commaStringToArray(feedTimingMinsVar, feedTimingMins, 2);
-    feedTimingMins[0] = feedTimingMinsVar[F("on")] | feedTimingMinsVar[0] | feedTimingMins[0];
-    feedTimingMins[1] = feedTimingMinsVar[F("off")] | feedTimingMinsVar[1] | feedTimingMins[1];
 }
 
 HydroponicsAdaptiveCropData::HydroponicsAdaptiveCropData()

@@ -33,7 +33,7 @@
 #define SETUP_SAVES_SD_CARD_ENABLE      true            // If saving/loading from SD card is enable
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2851          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2845          // System data memory offset for EEPROM saves (from Data Writer output)
 
 // WiFi Settings
 #define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
