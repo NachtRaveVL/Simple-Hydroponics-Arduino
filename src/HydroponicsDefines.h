@@ -39,13 +39,14 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_NAME_MAXSIZE               24                      // Naming character maximum size (system name, crop name, etc.)
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
 #define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Maximum array size for control input pinmap (max # of ribbon pins)
-#define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk size for reading in main system data (serialization buffer size)
-#define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk size (serialization buffer size)
-// The following maxsizes apply to all architectures
+#define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk data bytes for reading in main system data (serialization buffer size)
+#define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk data bytes (serialization buffer size)
+#define HYDRUINO_STRING_BUFFER_SIZE         32                      // Size in bytes of string serialization buffers
+// The following slot sizes apply to all architectures
 #define HYDRUINO_SENSOR_MEASUREMENT_SLOTS   4                       // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
 #define HYDRUINO_TRIGGER_STATE_SLOTS        4                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
 #define HYDRUINO_BALANCER_STATE_SLOTS       4                       // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
-// The following maxsizes only matter for architectures that do not have STL support
+// The following max sizes only matter for architectures that do not have STL support
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        16                      // Maximum array size for system objects (max # of objects in system)
 #define HYDRUINO_OBJ_LINKS_MAXSIZE          8                       // Maximum array size for object linkage list, per obj (max # of linked objects)
 #define HYDRUINO_OBJ_LINKSFILTER_DEFSIZE    8                       // Default array size for object linkage filtering

@@ -222,7 +222,7 @@ HydroponicsCropsLibraryBook * HydroponicsCropsLibrary::newBookFromType(Hydroponi
 
         if (eeprom) {
             uint16_t lookupOffset = 0;
-            eeprom->readBlock(_libEEPROMDataAddress + (sizeof(uint16_t) * (int)(cropType + 1)), // +1 for initial total size word
+            eeprom->readBlock(_libEEPROMDataAddress + (sizeof(uint16_t) * ((int)cropType + 1)), // +1 for initial total size word
                               (byte *)&lookupOffset, sizeof(lookupOffset));
             auto eepromStream = HydroponicsEEPROMStream(_libEEPROMDataAddress + lookupOffset, sizeof(HydroponicsCropsLibData));
             retVal = new HydroponicsCropsLibraryBook(eepromStream, _libEEPROMJSONFormat);
@@ -232,163 +232,320 @@ HydroponicsCropsLibraryBook * HydroponicsCropsLibrary::newBookFromType(Hydroponi
     }
 
     #ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
+    {   HydroponicsPROGMEMStream progmemStream;
         switch (cropType) {
-             case Hydroponics_CropType_AloeVera:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"AloeVera\",\"cropName\":\"Aloe Vera\",\"phRange\":\"7,8.5\",\"tdsRange\":\"1.8,2.5\",\"flags\":\"invasive,perennial,toxic\"}")));
-             case Hydroponics_CropType_Anise:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Anise\",\"cropName\":\"Anise\",\"phRange\":\"5.8,6.4\",\"tdsRange\":\"0.9,1.4\"}")));
-             case Hydroponics_CropType_Artichoke:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Artichoke\",\"cropName\":\"Artichoke\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"0.8,1.8\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Arugula:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Arugula\",\"cropName\":\"Arugula\",\"phRange\":\"6,7.5\",\"tdsRange\":\"0.8,1.8\"}")));
-             case Hydroponics_CropType_Asparagus:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Asparagus\",\"cropName\":\"Asparagus\",\"phRange\":\"6,6.8\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"perennial,pruning\"}")));
-             case Hydroponics_CropType_Basil:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Basil\",\"cropName\":\"Basil\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"pruning\"}")));
-             case Hydroponics_CropType_Bean:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Bean\",\"cropName\":\"Bean (common)\",\"flags\":\"pruning\"}")));
-             case Hydroponics_CropType_BeanBroad:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"BeanBroad\",\"cropName\":\"Bean (broad)\",\"phRange\":\"6,6.5\",\"flags\":\"pruning\"}")));
-             case Hydroponics_CropType_Beetroot:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Beetroot\",\"cropName\":\"Beetroot\",\"phRange\":\"6,6.5\",\"tdsRange\":\"0.8,5\"}")));
-             case Hydroponics_CropType_BlackCurrant:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"BlackCurrant\",\"cropName\":\"Black Currant\",\"tdsRange\":\"1.4,1.8\"}")));
-             case Hydroponics_CropType_Blueberry:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Blueberry\",\"cropName\":\"Blueberry\",\"phRange\":\"4,5\",\"tdsRange\":\"1.8,2\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_BokChoi:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"BokChoi\",\"cropName\":\"Bok-choi\",\"phRange\":\"6,7\",\"tdsRange\":\"1.5,2.5\"}")));
-             case Hydroponics_CropType_Broccoli:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Broccoli\",\"cropName\":\"Broccoli\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2.8,3.5\"}")));
-             case Hydroponics_CropType_BrusselsSprout:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"BrusselsSprout\",\"cropName\":\"Brussell Sprouts\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"2.5,3\"}")));
-             case Hydroponics_CropType_Cabbage:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Cabbage\",\"cropName\":\"Cabbage\",\"phRange\":\"6.5,7\",\"tdsRange\":\"2.5,3\"}")));
-             case Hydroponics_CropType_Cannabis:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Cannabis\",\"cropName\":\"Cannabis (generic)\",\"phRange\":\"5.5,6.1\",\"tdsRange\":\"1,2.5\",\"flags\":\"large\"}")));
-             case Hydroponics_CropType_Capsicum:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Capsicum\",\"cropName\":\"Capsicum\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.2\"}")));
-             case Hydroponics_CropType_Carrots:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Carrots\",\"cropName\":\"Carrots\",\"phRange\":6.3,\"tdsRange\":\"1.6,2\"}")));
-             case Hydroponics_CropType_Catnip:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Catnip\",\"cropName\":\"Catnip\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\"}")));
-             case Hydroponics_CropType_Cauliflower:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Cauliflower\",\"cropName\":\"Cauliflower\",\"phRange\":\"6,7\",\"tdsRange\":\"0.5,2\"}")));
-             case Hydroponics_CropType_Celery:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Celery\",\"cropName\":\"Celery\",\"phRange\":\"6.3,6.7\"}")));
-             case Hydroponics_CropType_Chamomile:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Chamomile\",\"cropName\":\"Chamomile\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"toxic\"}")));
-             case Hydroponics_CropType_Chicory:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Chicory\",\"cropName\":\"Chicory\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.4\"}")));
-             case Hydroponics_CropType_Chives:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Chives\",\"cropName\":\"Chives\",\"phRange\":\"6,6.5\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_Cilantro:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Cilantro\",\"cropName\":\"Cilantro\",\"phRange\":\"6.5,6.7\",\"tdsRange\":\"1.3,1.8\"}")));
-             case Hydroponics_CropType_Coriander:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Coriander\",\"cropName\":\"Coriander\",\"phRange\":\"5.8,6.4\",\"tdsRange\":\"1.2,1.8\"}")));
-             case Hydroponics_CropType_CornSweet:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"CornSweet\",\"cropName\":\"Corn (sweet)\",\"tdsRange\":\"1.6,2.4\",\"flags\":\"large,toxic\"}")));
-             case Hydroponics_CropType_Cucumber:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Cucumber\",\"cropName\":\"Cucumber\",\"phRange\":\"5.8,6\",\"tdsRange\":\"1.7,2.5\",\"flags\":\"pruning\"}")));
-             case Hydroponics_CropType_Dill:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Dill\",\"cropName\":\"Dill\",\"phRange\":\"5.5,6.4\",\"tdsRange\":\"1,1.6\"}")));
-             case Hydroponics_CropType_Eggplant:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Eggplant\",\"cropName\":\"Eggplant\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"2.5,3.5\",\"flags\":\"pruning\"}")));
-             case Hydroponics_CropType_Endive:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Endive\",\"cropName\":\"Endive\",\"phRange\":5.5,\"tdsRange\":\"2,2.4\"}")));
-             case Hydroponics_CropType_Fennel:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Fennel\",\"cropName\":\"Fennel\",\"phRange\":\"6.4,6.8\",\"tdsRange\":\"1,1.4\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Fodder:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Fodder\",\"cropName\":\"Fodder\",\"tdsRange\":\"1.8,2\"}")));
-             case Hydroponics_CropType_Flowers:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Flowers\",\"cropName\":\"Flowers (generic)\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.5,2.5\",\"flags\":\"toxic,pruning\"}")));
-             case Hydroponics_CropType_Garlic:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Garlic\",\"cropName\":\"Garlic\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_Ginger:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Ginger\",\"cropName\":\"Ginger\",\"phRange\":\"5.8,6\",\"tdsRange\":\"2,2.5\"}")));
-             case Hydroponics_CropType_Kale:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Kale\",\"cropName\":\"Kale\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.25,1.5\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Lavender:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Lavender\",\"cropName\":\"Lavender\",\"phRange\":\"6.4,6.8\",\"tdsRange\":\"1,1.4\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_Leek:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Leek\",\"cropName\":\"Leek\",\"phRange\":\"6.5,7\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"toxic\"}")));
-             case Hydroponics_CropType_LemonBalm:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"LemonBalm\",\"cropName\":\"Lemon Balm\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Lettuce:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Lettuce\",\"cropName\":\"Lettuce\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"0.8,1.2\"}")));
-             case Hydroponics_CropType_Marrow:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Marrow\",\"cropName\":\"Marrow\"}")));
-             case Hydroponics_CropType_Melon:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Melon\",\"cropName\":\"Melon\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.5\",\"flags\":\"large\"}")));
-             case Hydroponics_CropType_Mint:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Mint\",\"cropName\":\"Mint\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.4\",\"flags\":\"invasive,perennial,toxic\"}")));
-             case Hydroponics_CropType_MustardCress:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"MustardCress\",\"cropName\":\"Mustard Cress\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.2,2.4\"}")));
-             case Hydroponics_CropType_Okra:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Okra\",\"cropName\":\"Okra\",\"phRange\":6.5,\"tdsRange\":\"2,2.4\"}")));
-             case Hydroponics_CropType_Onions:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Onions\",\"cropName\":\"Onions\",\"phRange\":\"6,6.7\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_Oregano:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Oregano\",\"cropName\":\"Oregano\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_PakChoi:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"PakChoi\",\"cropName\":\"Pak-choi\",\"phRange\":7,\"tdsRange\":\"1.5,2\"}")));
-             case Hydroponics_CropType_Parsley:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Parsley\",\"cropName\":\"Parsley\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_Parsnip:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Parsnip\",\"cropName\":\"Parsnip\",\"tdsRange\":\"1.4,1.8\"}")));
-             case Hydroponics_CropType_Pea:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Pea\",\"cropName\":\"Pea (common)\",\"phRange\":\"6,7\",\"tdsRange\":\"0.8,1.8\"}")));
-             case Hydroponics_CropType_PeaSugar:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"PeaSugar\",\"cropName\":\"Pea (sugar)\",\"phRange\":\"6,6.8\",\"tdsRange\":\"0.8,1.9\",\"flags\":\"toxic\"}")));
-             case Hydroponics_CropType_Pepino:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Pepino\",\"cropName\":\"Pepino\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,5\"}")));
-             case Hydroponics_CropType_PeppersBell:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"PeppersBell\",\"cropName\":\"Peppers (bell)\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,2.5\",\"flags\":\"pruning\"}")));
-             case Hydroponics_CropType_PeppersHot:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"PeppersHot\",\"cropName\":\"Peppers (hot)\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,3.5\",\"flags\":\"pruning\"}")));
-             case Hydroponics_CropType_Potato:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Potato\",\"cropName\":\"Potato (common)\",\"phRange\":\"5,6\",\"tdsRange\":\"2,2.5\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_PotatoSweet:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"PotatoSweet\",\"cropName\":\"Potato (sweet)\",\"phRange\":\"5,6\",\"tdsRange\":\"2,2.5\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Pumpkin:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Pumpkin\",\"cropName\":\"Pumpkin\",\"phRange\":\"5.5,7.5\",\"flags\":\"large,pruning\"}")));
-             case Hydroponics_CropType_Radish:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Radish\",\"cropName\":\"Radish\",\"phRange\":\"6,7\",\"tdsRange\":\"1.6,2.2\"}")));
-             case Hydroponics_CropType_Rhubarb:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Rhubarb\",\"cropName\":\"Rhubarb\",\"phRange\":\"5,6\",\"tdsRange\":\"1.6,2\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_Rosemary:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Rosemary\",\"cropName\":\"Rosemary\",\"phRange\":\"5.5,6\",\"tdsRange\":\"1,1.6\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Sage:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Sage\",\"cropName\":\"Sage\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Silverbeet:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Silverbeet\",\"cropName\":\"Silverbeet\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\"}")));
-             case Hydroponics_CropType_Spinach:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Spinach\",\"cropName\":\"Spinach\",\"phRange\":\"5.5,6.6\",\"tdsRange\":\"1.8,2.3\"}")));
-             case Hydroponics_CropType_Squash:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Squash\",\"cropName\":\"Squash\",\"phRange\":\"5,6.5\",\"flags\":\"large,pruning\"}")));
-             case Hydroponics_CropType_Sunflower:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Sunflower\",\"cropName\":\"Sunflower\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.2,1.8\"}")));
-             case Hydroponics_CropType_Strawberries:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Strawberries\",\"cropName\":\"Strawberries\",\"phRange\":\"5,5.5\",\"tdsRange\":\"1,1.4\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_SwissChard:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"SwissChard\",\"cropName\":\"Swiss Chard\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.3\"}")));
-             case Hydroponics_CropType_Taro:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Taro\",\"cropName\":\"Taro\",\"phRange\":\"5,5.5\",\"tdsRange\":\"2.5,3\",\"flags\":\"toxic\"}")));
-             case Hydroponics_CropType_Tarragon:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Tarragon\",\"cropName\":\"Tarragon\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.8\",\"flags\":\"toxic\"}")));
-             case Hydroponics_CropType_Thyme:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Thyme\",\"cropName\":\"Thyme\",\"phRange\":\"5,7\",\"tdsRange\":\"0.8,1.6\",\"flags\":\"perennial\"}")));
-             case Hydroponics_CropType_Tomato:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Tomato\",\"cropName\":\"Tomato\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"2,5\",\"flags\":\"toxic,pruning\"}")));
-             case Hydroponics_CropType_Turnip:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Turnip\",\"cropName\":\"Turnip\",\"phRange\":\"6,6.5\"}")));
-             case Hydroponics_CropType_Watercress:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Watercress\",\"cropName\":\"Watercress\",\"phRange\":\"6.5,6.8\",\"tdsRange\":\"0.4,1.8\",\"flags\":\"perennial,toxic\"}")));
-             case Hydroponics_CropType_Watermelon:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Watermelon\",\"cropName\":\"Watermelon\",\"phRange\":5.8,\"tdsRange\":\"1.5,2.4\",\"flags\":\"large\"}")));
-             case Hydroponics_CropType_Zucchini:
-                 return new HydroponicsCropsLibraryBook(String(F("{\"type\":\"HCLD\",\"id\":\"Zucchini\",\"cropName\":\"Zucchini\",\"flags\":\"large\"}")));
+            case Hydroponics_CropType_AloeVera: {
+                static const char flashStr_AloeVera[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"AloeVera\",\"cropName\":\"Aloe Vera\",\"phRange\":\"7,8.5\",\"tdsRange\":\"1.8,2.5\",\"flags\":\"invasive,perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_AloeVera);
+            } break;
+            case Hydroponics_CropType_Anise: {
+                static const char flashStr_Anise[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Anise\",\"cropName\":\"Anise\",\"phRange\":\"5.8,6.4\",\"tdsRange\":\"0.9,1.4\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Anise);
+            } break;
+            case Hydroponics_CropType_Artichoke: {
+                static const char flashStr_Artichoke[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Artichoke\",\"cropName\":\"Artichoke\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"0.8,1.8\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Artichoke);
+            } break;
+            case Hydroponics_CropType_Arugula: {
+                static const char flashStr_Arugula[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Arugula\",\"cropName\":\"Arugula\",\"phRange\":\"6,7.5\",\"tdsRange\":\"0.8,1.8\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Arugula);
+            } break;
+            case Hydroponics_CropType_Asparagus: {
+                static const char flashStr_Asparagus[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Asparagus\",\"cropName\":\"Asparagus\",\"phRange\":\"6,6.8\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"perennial,pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Asparagus);
+            } break;
+            case Hydroponics_CropType_Basil: {
+                static const char flashStr_Basil[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Basil\",\"cropName\":\"Basil\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Basil);
+            } break;
+            case Hydroponics_CropType_Bean: {
+                static const char flashStr_Bean[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Bean\",\"cropName\":\"Bean (common)\",\"flags\":\"pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Bean);
+            } break;
+            case Hydroponics_CropType_BeanBroad: {
+                static const char flashStr_BeanBroad[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BeanBroad\",\"cropName\":\"Bean (broad)\",\"phRange\":\"6,6.5\",\"flags\":\"pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_BeanBroad);
+            } break;
+            case Hydroponics_CropType_Beetroot: {
+                static const char flashStr_Beetroot[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Beetroot\",\"cropName\":\"Beetroot\",\"phRange\":\"6,6.5\",\"tdsRange\":\"0.8,5\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Beetroot);
+            } break;
+            case Hydroponics_CropType_BlackCurrant: {
+                static const char flashStr_BlackCurrant[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BlackCurrant\",\"cropName\":\"Black Currant\",\"tdsRange\":\"1.4,1.8\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_BlackCurrant);
+            } break;
+            case Hydroponics_CropType_Blueberry: {
+                static const char flashStr_Blueberry[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Blueberry\",\"cropName\":\"Blueberry\",\"phRange\":\"4,5\",\"tdsRange\":\"1.8,2\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Blueberry);
+            } break;
+            case Hydroponics_CropType_BokChoi: {
+                static const char flashStr_BokChoi[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BokChoi\",\"cropName\":\"Bok-choi\",\"phRange\":\"6,7\",\"tdsRange\":\"1.5,2.5\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_BokChoi);
+            } break;
+            case Hydroponics_CropType_Broccoli: {
+                static const char flashStr_Broccoli[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Broccoli\",\"cropName\":\"Broccoli\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2.8,3.5\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Broccoli);
+            } break;
+            case Hydroponics_CropType_BrusselsSprout: {
+                static const char flashStr_BrusselsSprout[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BrusselsSprout\",\"cropName\":\"Brussell Sprouts\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"2.5,3\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_BrusselsSprout);
+            } break;
+            case Hydroponics_CropType_Cabbage: {
+                static const char flashStr_Cabbage[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cabbage\",\"cropName\":\"Cabbage\",\"phRange\":\"6.5,7\",\"tdsRange\":\"2.5,3\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Cabbage);
+            } break;
+            case Hydroponics_CropType_Cannabis: {
+                static const char flashStr_Cannabis[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cannabis\",\"cropName\":\"Cannabis (generic)\",\"phRange\":\"5.5,6.1\",\"tdsRange\":\"1,2.5\",\"flags\":\"large\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Cannabis);
+            } break;
+            case Hydroponics_CropType_Capsicum: {
+                static const char flashStr_Capsicum[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Capsicum\",\"cropName\":\"Capsicum\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.2\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Capsicum);
+            } break;
+            case Hydroponics_CropType_Carrots: {
+                static const char flashStr_Carrots[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Carrots\",\"cropName\":\"Carrots\",\"phRange\":6.3,\"tdsRange\":\"1.6,2\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Carrots);
+            } break;
+            case Hydroponics_CropType_Catnip: {
+                static const char flashStr_Catnip[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Catnip\",\"cropName\":\"Catnip\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Catnip);
+            } break;
+            case Hydroponics_CropType_Cauliflower: {
+                static const char flashStr_Cauliflower[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cauliflower\",\"cropName\":\"Cauliflower\",\"phRange\":\"6,7\",\"tdsRange\":\"0.5,2\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Cauliflower);
+            } break;
+            case Hydroponics_CropType_Celery: {
+                static const char flashStr_Celery[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Celery\",\"cropName\":\"Celery\",\"phRange\":\"6.3,6.7\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Celery);
+            } break;
+            case Hydroponics_CropType_Chamomile: {
+                static const char flashStr_Chamomile[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Chamomile\",\"cropName\":\"Chamomile\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Chamomile);
+            } break;
+            case Hydroponics_CropType_Chicory: {
+                static const char flashStr_Chicory[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Chicory\",\"cropName\":\"Chicory\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.4\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Chicory);
+            } break;
+            case Hydroponics_CropType_Chives: {
+                static const char flashStr_Chives[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Chives\",\"cropName\":\"Chives\",\"phRange\":\"6,6.5\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Chives);
+            } break;
+            case Hydroponics_CropType_Cilantro: {
+                static const char flashStr_Cilantro[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cilantro\",\"cropName\":\"Cilantro\",\"phRange\":\"6.5,6.7\",\"tdsRange\":\"1.3,1.8\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Cilantro);
+            } break;
+            case Hydroponics_CropType_Coriander: {
+                static const char flashStr_Coriander[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Coriander\",\"cropName\":\"Coriander\",\"phRange\":\"5.8,6.4\",\"tdsRange\":\"1.2,1.8\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Coriander);
+            } break;
+            case Hydroponics_CropType_CornSweet: {
+                static const char flashStr_CornSweet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"CornSweet\",\"cropName\":\"Corn (sweet)\",\"tdsRange\":\"1.6,2.4\",\"flags\":\"large,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_CornSweet);
+            } break;
+            case Hydroponics_CropType_Cucumber: {
+                static const char flashStr_Cucumber[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cucumber\",\"cropName\":\"Cucumber\",\"phRange\":\"5.8,6\",\"tdsRange\":\"1.7,2.5\",\"flags\":\"pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Cucumber);
+            } break;
+            case Hydroponics_CropType_Dill: {
+                static const char flashStr_Dill[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Dill\",\"cropName\":\"Dill\",\"phRange\":\"5.5,6.4\",\"tdsRange\":\"1,1.6\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Dill);
+            } break;
+            case Hydroponics_CropType_Eggplant: {
+                static const char flashStr_Eggplant[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Eggplant\",\"cropName\":\"Eggplant\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"2.5,3.5\",\"flags\":\"pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Eggplant);
+            } break;
+            case Hydroponics_CropType_Endive: {
+                static const char flashStr_Endive[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Endive\",\"cropName\":\"Endive\",\"phRange\":5.5,\"tdsRange\":\"2,2.4\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Endive);
+            } break;
+            case Hydroponics_CropType_Fennel: {
+                static const char flashStr_Fennel[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Fennel\",\"cropName\":\"Fennel\",\"phRange\":\"6.4,6.8\",\"tdsRange\":\"1,1.4\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Fennel);
+            } break;
+            case Hydroponics_CropType_Fodder: {
+                static const char flashStr_Fodder[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Fodder\",\"cropName\":\"Fodder\",\"tdsRange\":\"1.8,2\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Fodder);
+            } break;
+            case Hydroponics_CropType_Flowers: {
+                static const char flashStr_Flowers[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Flowers\",\"cropName\":\"Flowers (generic)\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.5,2.5\",\"flags\":\"toxic,pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Flowers);
+            } break;
+            case Hydroponics_CropType_Garlic: {
+                static const char flashStr_Garlic[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Garlic\",\"cropName\":\"Garlic\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Garlic);
+            } break;
+            case Hydroponics_CropType_Ginger: {
+                static const char flashStr_Ginger[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Ginger\",\"cropName\":\"Ginger\",\"phRange\":\"5.8,6\",\"tdsRange\":\"2,2.5\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Ginger);
+            } break;
+            case Hydroponics_CropType_Kale: {
+                static const char flashStr_Kale[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Kale\",\"cropName\":\"Kale\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.25,1.5\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Kale);
+            } break;
+            case Hydroponics_CropType_Lavender: {
+                static const char flashStr_Lavender[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Lavender\",\"cropName\":\"Lavender\",\"phRange\":\"6.4,6.8\",\"tdsRange\":\"1,1.4\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Lavender);
+            } break;
+            case Hydroponics_CropType_Leek: {
+                static const char flashStr_Leek[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Leek\",\"cropName\":\"Leek\",\"phRange\":\"6.5,7\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Leek);
+            } break;
+            case Hydroponics_CropType_LemonBalm: {
+                static const char flashStr_LemonBalm[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"LemonBalm\",\"cropName\":\"Lemon Balm\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_LemonBalm);
+            } break;
+            case Hydroponics_CropType_Lettuce: {
+                static const char flashStr_Lettuce[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Lettuce\",\"cropName\":\"Lettuce\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"0.8,1.2\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Lettuce);
+            } break;
+            case Hydroponics_CropType_Marrow: {
+                static const char flashStr_Marrow[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Marrow\",\"cropName\":\"Marrow\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Marrow);
+            } break;
+            case Hydroponics_CropType_Melon: {
+                static const char flashStr_Melon[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Melon\",\"cropName\":\"Melon\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.5\",\"flags\":\"large\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Melon);
+            } break;
+            case Hydroponics_CropType_Mint: {
+                static const char flashStr_Mint[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Mint\",\"cropName\":\"Mint\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.4\",\"flags\":\"invasive,perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Mint);
+            } break;
+            case Hydroponics_CropType_MustardCress: {
+                static const char flashStr_MustardCress[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"MustardCress\",\"cropName\":\"Mustard Cress\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.2,2.4\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_MustardCress);
+            } break;
+            case Hydroponics_CropType_Okra: {
+                static const char flashStr_Okra[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Okra\",\"cropName\":\"Okra\",\"phRange\":6.5,\"tdsRange\":\"2,2.4\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Okra);
+            } break;
+            case Hydroponics_CropType_Onions: {
+                static const char flashStr_Onions[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Onions\",\"cropName\":\"Onions\",\"phRange\":\"6,6.7\",\"tdsRange\":\"1.4,1.8\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Onions);
+            } break;
+            case Hydroponics_CropType_Oregano: {
+                static const char flashStr_Oregano[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Oregano\",\"cropName\":\"Oregano\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Oregano);
+            } break;
+            case Hydroponics_CropType_PakChoi: {
+                static const char flashStr_PakChoi[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PakChoi\",\"cropName\":\"Pak-choi\",\"phRange\":7,\"tdsRange\":\"1.5,2\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_PakChoi);
+            } break;
+            case Hydroponics_CropType_Parsley: {
+                static const char flashStr_Parsley[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Parsley\",\"cropName\":\"Parsley\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Parsley);
+            } break;
+            case Hydroponics_CropType_Parsnip: {
+                static const char flashStr_Parsnip[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Parsnip\",\"cropName\":\"Parsnip\",\"tdsRange\":\"1.4,1.8\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Parsnip);
+            } break;
+            case Hydroponics_CropType_Pea: {
+                static const char flashStr_Pea[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Pea\",\"cropName\":\"Pea (common)\",\"phRange\":\"6,7\",\"tdsRange\":\"0.8,1.8\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Pea);
+            } break;
+            case Hydroponics_CropType_PeaSugar: {
+                static const char flashStr_PeaSugar[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeaSugar\",\"cropName\":\"Pea (sugar)\",\"phRange\":\"6,6.8\",\"tdsRange\":\"0.8,1.9\",\"flags\":\"toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_PeaSugar);
+            } break;
+            case Hydroponics_CropType_Pepino: {
+                static const char flashStr_Pepino[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Pepino\",\"cropName\":\"Pepino\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,5\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Pepino);
+            } break;
+            case Hydroponics_CropType_PeppersBell: {
+                static const char flashStr_PeppersBell[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeppersBell\",\"cropName\":\"Peppers (bell)\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,2.5\",\"flags\":\"pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_PeppersBell);
+            } break;
+            case Hydroponics_CropType_PeppersHot: {
+                static const char flashStr_PeppersHot[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeppersHot\",\"cropName\":\"Peppers (hot)\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,3.5\",\"flags\":\"pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_PeppersHot);
+            } break;
+            case Hydroponics_CropType_Potato: {
+                static const char flashStr_Potato[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Potato\",\"cropName\":\"Potato (common)\",\"phRange\":\"5,6\",\"tdsRange\":\"2,2.5\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Potato);
+            } break;
+            case Hydroponics_CropType_PotatoSweet: {
+                static const char flashStr_PotatoSweet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PotatoSweet\",\"cropName\":\"Potato (sweet)\",\"phRange\":\"5,6\",\"tdsRange\":\"2,2.5\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_PotatoSweet);
+            } break;
+            case Hydroponics_CropType_Pumpkin: {
+                static const char flashStr_Pumpkin[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Pumpkin\",\"cropName\":\"Pumpkin\",\"phRange\":\"5.5,7.5\",\"flags\":\"large,pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Pumpkin);
+            } break;
+            case Hydroponics_CropType_Radish: {
+                static const char flashStr_Radish[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Radish\",\"cropName\":\"Radish\",\"phRange\":\"6,7\",\"tdsRange\":\"1.6,2.2\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Radish);
+            } break;
+            case Hydroponics_CropType_Rhubarb: {
+                static const char flashStr_Rhubarb[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Rhubarb\",\"cropName\":\"Rhubarb\",\"phRange\":\"5,6\",\"tdsRange\":\"1.6,2\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Rhubarb);
+            } break;
+            case Hydroponics_CropType_Rosemary: {
+                static const char flashStr_Rosemary[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Rosemary\",\"cropName\":\"Rosemary\",\"phRange\":\"5.5,6\",\"tdsRange\":\"1,1.6\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Rosemary);
+            } break;
+            case Hydroponics_CropType_Sage: {
+                static const char flashStr_Sage[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Sage\",\"cropName\":\"Sage\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.6\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Sage);
+            } break;
+            case Hydroponics_CropType_Silverbeet: {
+                static const char flashStr_Silverbeet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Silverbeet\",\"cropName\":\"Silverbeet\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Silverbeet);
+            } break;
+            case Hydroponics_CropType_Spinach: {
+                static const char flashStr_Spinach[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Spinach\",\"cropName\":\"Spinach\",\"phRange\":\"5.5,6.6\",\"tdsRange\":\"1.8,2.3\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Spinach);
+            } break;
+            case Hydroponics_CropType_Squash: {
+                static const char flashStr_Squash[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Squash\",\"cropName\":\"Squash\",\"phRange\":\"5,6.5\",\"flags\":\"large,pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Squash);
+            } break;
+            case Hydroponics_CropType_Sunflower: {
+                static const char flashStr_Sunflower[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Sunflower\",\"cropName\":\"Sunflower\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.2,1.8\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Sunflower);
+            } break;
+            case Hydroponics_CropType_Strawberries: {
+                static const char flashStr_Strawberries[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Strawberries\",\"cropName\":\"Strawberries\",\"phRange\":\"5,5.5\",\"tdsRange\":\"1,1.4\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Strawberries);
+            } break;
+            case Hydroponics_CropType_SwissChard: {
+                static const char flashStr_SwissChard[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"SwissChard\",\"cropName\":\"Swiss Chard\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.3\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_SwissChard);
+            } break;
+            case Hydroponics_CropType_Taro: {
+                static const char flashStr_Taro[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Taro\",\"cropName\":\"Taro\",\"phRange\":\"5,5.5\",\"tdsRange\":\"2.5,3\",\"flags\":\"toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Taro);
+            } break;
+            case Hydroponics_CropType_Tarragon: {
+                static const char flashStr_Tarragon[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Tarragon\",\"cropName\":\"Tarragon\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1,1.8\",\"flags\":\"toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Tarragon);
+            } break;
+            case Hydroponics_CropType_Thyme: {
+                static const char flashStr_Thyme[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Thyme\",\"cropName\":\"Thyme\",\"phRange\":\"5,7\",\"tdsRange\":\"0.8,1.6\",\"flags\":\"perennial\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Thyme);
+            } break;
+            case Hydroponics_CropType_Tomato: {
+                static const char flashStr_Tomato[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Tomato\",\"cropName\":\"Tomato\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"2,5\",\"flags\":\"toxic,pruning\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Tomato);
+            } break;
+            case Hydroponics_CropType_Turnip: {
+                static const char flashStr_Turnip[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Turnip\",\"cropName\":\"Turnip\",\"phRange\":\"6,6.5\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Turnip);
+            } break;
+            case Hydroponics_CropType_Watercress: {
+                static const char flashStr_Watercress[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Watercress\",\"cropName\":\"Watercress\",\"phRange\":\"6.5,6.8\",\"tdsRange\":\"0.4,1.8\",\"flags\":\"perennial,toxic\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Watercress);
+            } break;
+            case Hydroponics_CropType_Watermelon: {
+                static const char flashStr_Watermelon[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Watermelon\",\"cropName\":\"Watermelon\",\"phRange\":5.8,\"tdsRange\":\"1.5,2.4\",\"flags\":\"large\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Watermelon);
+            } break;
+            case Hydroponics_CropType_Zucchini: {
+                static const char flashStr_Zucchini[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Zucchini\",\"cropName\":\"Zucchini\",\"flags\":\"large\"}"};
+                progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_Zucchini);
+            } break;
             default: break;
         }
+        if (progmemStream.available()) { return new HydroponicsCropsLibraryBook(progmemStream, true); }
+    }
     #endif // /ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
     return nullptr;
 }

@@ -141,7 +141,7 @@ void setup() {
                 if (file.availableForWrite()) { // Strings data goes into a single file as binary
                     uint16_t bytesWritten = 0;
 
-                    // Lookup table had to be constructed first since streams are not random access
+                    // Lookup table constructed first to avoid random seeking
                     bytesWritten += file.write((const byte *)lookupTable, sizeof(lookupTable));
 
                     for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {

@@ -10,14 +10,6 @@ String stringFromPGMAddr(const char *flashStr);
 const char *pgmAddrForStr(Hydroponics_String strNum);
 #endif
 
-String stringFromPGM(Hydroponics_String strNum) {
-    #ifdef HYDRUINO_ENABLE_EXTERNAL_DATA
-        
-    #else
-        return stringFromPGMAddr(pgmAddrForStr(strNum));
-    #endif
-}
-
 static uint16_t _strDataAddress((uint16_t)-1);
 void beginStringsFromEEPROM(uint16_t dataAddress)
 {
@@ -30,13 +22,85 @@ void beginStringsFromSDCard(String dataFilePrefix)
     _strDataFilePrefix = dataFilePrefix;
 }
 
+String stringFromPGM(Hydroponics_String strNum) {
+    if (_strDataAddress != (size_t)-1) {
+        auto eeprom = getHydroponicsInstance()->getEEPROM();
+
+        if (eeprom) {
+            uint16_t lookupOffset = 0;
+            eeprom->readBlock(_strDataAddress + (sizeof(uint16_t) * ((int)strNum + 1)), // +1 for initial total size word
+                              (byte *)&lookupOffset, sizeof(lookupOffset));
+
+            {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+                eeprom->readBlock(lookupOffset, (byte *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
+                return charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+
+                // The following will be needed in case we go over 32 bytes in a single string data
+                // while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
+                //     lookupOffset += HYDRUINO_STRING_BUFFER_SIZE;
+                //     eeprom->readBlock(lookupOffset, (byte *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
+                //     retVal += charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                // }
+            }
+        }
+    }
+
+    #ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
+        return stringFromPGMAddr(pgmAddrForStr(strNum));
+    #endif
+
+    if (_strDataFilePrefix.length()) {
+        auto sd = getHydroponicsInstance()->getSDCard();
+
+        if (sd) {
+            String retVal;
+            String filename = String(_strDataFilePrefix + String(F("strings.")) + SFP(HS_dat));
+
+            auto file = sd->open(filename, FILE_READ);
+            if (file) {
+                uint16_t lookupOffset = 0;
+                file.seek(sizeof(uint16_t) * (int)strNum);
+                file.readBytes((byte *)&lookupOffset, sizeof(lookupOffset));
+
+                {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+                    file.seek(lookupOffset);
+                    file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                    retVal = charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+
+                    // The following will be needed in case we go over 32 bytes in a single string data
+                    // while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
+                    //     file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                    //     retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
+                    // }
+                }
+
+                file.close();
+            }
+
+            getHydroponicsInstance()->endSDCard(sd);
+            if (retVal.length()) { return retVal; }
+        }
+    }
+
+    return String();
+}
+
 #ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
 
 String stringFromPGMAddr(const char *flashStr) {
     if (flashStr) {
-        char buffer[32] = {0};
-        strncpy_P(buffer, flashStr, 32);
-        return String(buffer);
+        char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+        strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
+        String retVal = charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+
+        // The following will be needed in case we go over 32 bytes in a single string data
+        // while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
+        //     flashStr += HYDRUINO_STRING_BUFFER_SIZE;
+        //     strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
+        //     retVal += charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+        // }
+        
+        return retVal;
     }
     return String();
 }

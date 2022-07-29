@@ -14,7 +14,7 @@ HydroponicsEEPROMStream::HydroponicsEEPROMStream()
     HYDRUINO_HARD_ASSERT(_eeprom, SFP(HS_Err_UnsupportedOperation));
 }
 
-HydroponicsEEPROMStream::HydroponicsEEPROMStream(size_t dataAddress, size_t dataSize)
+HydroponicsEEPROMStream::HydroponicsEEPROMStream(uint16_t dataAddress, size_t dataSize)
       : Stream(), _eeprom(nullptr), _readAddress(dataAddress), _writeAddress(dataAddress), _end(dataAddress + dataSize)
 {
     if (getHydroponicsInstance()) {
@@ -25,7 +25,7 @@ HydroponicsEEPROMStream::HydroponicsEEPROMStream(size_t dataAddress, size_t data
 
 int HydroponicsEEPROMStream::available()
 {
-    return _eeprom ? (int)(_end - _readAddress) : 0;
+    return _eeprom ? ((int)_end - _readAddress) : 0;
 }
 
 int HydroponicsEEPROMStream::read()
@@ -68,4 +68,52 @@ size_t HydroponicsEEPROMStream::write(uint8_t data) {
         HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
         return 0;
     }
+}
+
+
+HydroponicsPROGMEMStream::HydroponicsPROGMEMStream()
+    : Stream(), _readAddress(0), _writeAddress(0), _end(UINT16_MAX)
+{ ; }
+
+HydroponicsPROGMEMStream::HydroponicsPROGMEMStream(uint16_t dataAddress)
+    : Stream(), _readAddress(dataAddress), _writeAddress(dataAddress), _end(dataAddress + strlen_P((const char *)dataAddress))
+{ ; }
+
+HydroponicsPROGMEMStream::HydroponicsPROGMEMStream(uint16_t dataAddress, size_t dataSize)
+    : Stream(), _readAddress(dataAddress), _writeAddress(dataAddress), _end(dataAddress + dataSize)
+{ ; }
+
+int HydroponicsPROGMEMStream::available()
+{
+    return (int)_end - _readAddress;
+}
+
+int HydroponicsPROGMEMStream::read()
+{
+    if (_readAddress >= _end) { return -1; }
+    byte value = (byte)-1;
+    memcpy_P(&value, (const void *)_readAddress++, sizeof(value));
+    return value;
+}
+
+int HydroponicsPROGMEMStream::peek()
+{
+    if (_readAddress >= _end) { return -1; }
+    byte value = (byte)-1;
+    memcpy_P(&value, (const void *)_readAddress, sizeof(value));
+    return value;
+}
+
+void HydroponicsPROGMEMStream::flush()
+{ ; }
+
+size_t HydroponicsPROGMEMStream::write(const uint8_t *buffer, size_t size)
+{
+    HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
+    return 0;
+}
+
+size_t HydroponicsPROGMEMStream::write(uint8_t data) {
+    HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
+    return 0;
 }
