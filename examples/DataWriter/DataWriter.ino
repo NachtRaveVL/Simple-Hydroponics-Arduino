@@ -21,8 +21,8 @@
 //
 // In Hydroponics.h:
 // 
-// // Uncomment or -D this define to enable external data storage (Crops, Strings, etc.) to save on sketch size. Required for constrained devices.
-// // #define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, must use external device (such as SD Card or EEPROM) for data fetches.
+// // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
+// // #define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, disables built-in Crops Lib and String data, instead relying solely on external device.
 // 
 // // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 // #define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -86,7 +86,7 @@ void setup() {
     {   auto sd = getHydroponicsInstance()->getSDCard();
 
         if (sd) {
-            getLoggerInstance()->logMessage(F("... Writing Crops Library data to SD Card..."));
+            getLoggerInstance()->logMessage(F("=== Writing Crops Library data to SD Card ==="));
 
             for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
                 auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
@@ -119,7 +119,7 @@ void setup() {
                 yield();
             }
 
-            {   getLoggerInstance()->logMessage(F("... Writing String data to SD Card..."));
+            {   getLoggerInstance()->logMessage(F("=== Writing String data to SD Card ==="));
 
                 uint16_t lookupTable[Hydroponics_Strings_Count];
 
@@ -180,7 +180,7 @@ void setup() {
             uint16_t stringsBegAddr = (uint16_t)-1;
             uint16_t sysDataBegAddr = (uint16_t)-1;
 
-            {   getLoggerInstance()->logMessage(F("... Writing Crops Library data to EEPROM..."));
+            {   getLoggerInstance()->logMessage(F("=== Writing Crops Library data to EEPROM ==="));
 
                 // A lookup table similar to uint16_t lookupTable[Hydroponics_Strings_Count] is created
                 // manually here, which is used for crop data lookup. The first uint16_t value will be
@@ -227,7 +227,7 @@ void setup() {
                 }
             }
 
-            {   getLoggerInstance()->logMessage(F("... Writing String data to EEPROM..."));
+            {   getLoggerInstance()->logMessage(F("=== Writing String data to EEPROM ==="));
 
                 // Similar to above, same deal with a lookup table.
                 uint16_t writeOffset = stringsBegAddr + (sizeof(uint16_t) * (Hydroponics_Strings_Count + 1));
@@ -262,6 +262,8 @@ void setup() {
                 }
             }
 
+            getLoggerInstance()->logMessage(F("Total EEPROM usage: "), String(sysDataBegAddr), F(" bytes"));
+            getLoggerInstance()->logMessage(F("EEPROM capacity used: "), String(((float)sysDataBegAddr / eeprom->getDeviceSize()) * 100.0f) + String(F("% of ")), String(eeprom->getDeviceSize()) + String(F(" bytes")));
             getLoggerInstance()->logMessage(F("Use the following EEPROM setup defines in your sketch:"));
             Serial.print(F("#define SETUP_EXTDATA_EEPROM_CROP_ADDR  0x"));
             Serial.println(String(cropsLibBegAddr != (uint16_t)-1 ? cropsLibBegAddr : 0, 16));

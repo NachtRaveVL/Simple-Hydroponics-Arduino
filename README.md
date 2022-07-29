@@ -50,8 +50,8 @@ From Hydroponics.h:
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
-// Uncomment or -D this define to enable external data storage (Crops, Strings, etc.) to save on sketch size. Required for constrained devices.
-//#define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, must use external device (such as SD Card or EEPROM) for data fetches.
+// Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
+//#define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, disables built-in Crops Lib and String data, instead relying solely on external device.
 
 // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -342,8 +342,15 @@ In particular, after setting up the settings defines similarly to that of the Ve
 
 In serial monitor:
 ```
-2022-07-29T14:43:33 [INFO] Use the following EEPROM configuration defines in your sketch:
+<tail end>
+2022-07-29T18:29:13 [INFO] Writing String: #172 "wirePosIndex"
+2022-07-29T18:29:13 [INFO] ... to offset: 9595
+2022-07-29T18:29:13 [INFO] Successfully wrote: 2584 bytes
+2022-07-29T18:29:13 [INFO] Total EEPROM usage: 9608 bytes
+2022-07-29T18:29:13 [INFO] EEPROM capacity used: 29.32% of 32768 bytes
+2022-07-29T18:29:13 [INFO] Use the following EEPROM setup defines in your sketch:
 #define SETUP_EXTDATA_EEPROM_CROP_ADDR  0x0
 #define SETUP_EXTDATA_EEPROM_STR_ADDR   0x1b70
 #define SETUP_EEPROM_SYSDATA_ADDR       0x2588
+2022-07-29T18:29:13 [INFO] Done!
 ```
