@@ -8,7 +8,7 @@
 HydroponicsReservoir *newReservoirObjectFromData(const HydroponicsReservoirData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectectData()) {
         switch (dataIn->id.object.classType) {
@@ -147,11 +147,11 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReser
 
     _filledTrigger.setUpdateMethod(&HydroponicsReservoir::handleFilledState);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
-    HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HStr_Err_AllocationFailure));
 
     _emptyTrigger.setUpdateMethod(&HydroponicsReservoir::handleEmptyState);
     _emptyTrigger = newTriggerObjectFromSubData(&(dataIn->emptyTrigger));
-    HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HStr_Err_AllocationFailure));
 }
 
 void HydroponicsFluidReservoir::update()
@@ -360,7 +360,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterPHBalancer(flo
     if (!_waterPHBalancer && getWaterPHSensor()) {
         auto sensor = _waterPH.getObject();
         _waterPHBalancer = make_shared<HydroponicsTimedDosingBalancer>(sensor, phSetpoint, HYDRUINO_RANGE_PH_HALF, _maxVolume, _volumeUnits);
-        HYDRUINO_SOFT_ASSERT(_waterPHBalancer, SFP(HS_Err_AllocationFailure));
+        HYDRUINO_SOFT_ASSERT(_waterPHBalancer, SFP(HStr_Err_AllocationFailure));
     }
     if (_waterPHBalancer) {
         _waterPHBalancer->setTargetSetpoint(phSetpoint);
@@ -373,7 +373,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterTDSBalancer(fl
 {
     if (!_waterTDSBalancer && getWaterTDSSensor()) {
         _waterTDSBalancer = make_shared<HydroponicsTimedDosingBalancer>(_waterTDS.getObject(), tdsSetpoint, HYDRUINO_RANGE_EC_HALF, _maxVolume, _volumeUnits);
-        HYDRUINO_SOFT_ASSERT(_waterTDSBalancer, SFP(HS_Err_AllocationFailure));
+        HYDRUINO_SOFT_ASSERT(_waterTDSBalancer, SFP(HStr_Err_AllocationFailure));
     }
     if (_waterTDSBalancer) {
         _waterTDSBalancer->setTargetSetpoint(tdsSetpoint);
@@ -387,7 +387,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterTemperatureBal
     if (!_waterTempBalancer && getWaterTemperatureSensor()) {
         auto tempRangeQuad = HYDRUINO_RANGE_TEMP_HALF * 0.5f;
         _waterTempBalancer = make_shared<HydroponicsLinearEdgeBalancer>(_waterTemp.getObject(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
-        HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
+        HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HStr_Err_AllocationFailure));
     }
     if (_waterTempBalancer) {
         _waterTempBalancer->setTargetSetpoint(tempSetpoint);
@@ -401,7 +401,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setAirTemperatureBalan
     if (!_airTempBalancer && getAirTemperatureSensor()) {
         auto tempRangeQuad = HYDRUINO_RANGE_TEMP_HALF * 0.5f;
         _airTempBalancer = make_shared<HydroponicsLinearEdgeBalancer>(_airTemp.getObject(), tempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -tempRangeQuad * 0.5f, tempRangeQuad);
-        HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
+        HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HStr_Err_AllocationFailure));
     }
     if (_airTempBalancer) {
         _airTempBalancer->setTargetSetpoint(tempSetpoint);
@@ -415,7 +415,7 @@ shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setAirCO2Balancer(floa
     if (!_airCO2Balancer && getAirCO2Sensor()) {
         auto co2RangeQuad = HYDRUINO_RANGE_CO2_HALF * 0.5f;
         _airCO2Balancer = make_shared<HydroponicsLinearEdgeBalancer>(_airCO2.getObject(), co2Setpoint, HYDRUINO_RANGE_CO2_HALF, -co2RangeQuad * 0.5f, co2RangeQuad);
-        HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HS_Err_AllocationFailure));
+        HYDRUINO_SOFT_ASSERT(_waterTempBalancer, SFP(HStr_Err_AllocationFailure));
     }
     if (_airCO2Balancer) {
         _airCO2Balancer->setTargetSetpoint(co2Setpoint);
@@ -502,14 +502,14 @@ void HydroponicsReservoirData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsObjectData::toJSONObject(objectOut);
 
-    if (volumeUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_VolumeUnits)] = unitsTypeToSymbol(volumeUnits); }
+    if (volumeUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HStr_Key_VolumeUnits)] = unitsTypeToSymbol(volumeUnits); }
 }
 
 void HydroponicsReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsObjectData::fromJSONObject(objectIn);
 
-    volumeUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_VolumeUnits)]);
+    volumeUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_VolumeUnits)]);
 }
 
 HydroponicsFluidReservoirData::HydroponicsFluidReservoirData()
@@ -522,14 +522,14 @@ void HydroponicsFluidReservoirData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsReservoirData::toJSONObject(objectOut);
 
-    objectOut[SFP(HS_Key_MaxVolume)] = maxVolume;
-    if (volumeSensor[0]) { objectOut[SFP(HS_Key_VolumeSensor)] = charsToString(volumeSensor, HYDRUINO_NAME_MAXSIZE); }
+    objectOut[SFP(HStr_Key_MaxVolume)] = maxVolume;
+    if (volumeSensor[0]) { objectOut[SFP(HStr_Key_VolumeSensor)] = charsToString(volumeSensor, HYDRUINO_NAME_MAXSIZE); }
     if (filledTrigger.type != -1) {
-        JsonObject filledTriggerObj = objectOut.createNestedObject(SFP(HS_Key_FilledTrigger));
+        JsonObject filledTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_FilledTrigger));
         filledTrigger.toJSONObject(filledTriggerObj);
     }
     if (emptyTrigger.type != -1) {
-        JsonObject emptyTriggerObj = objectOut.createNestedObject(SFP(HS_Key_EmptyTrigger));
+        JsonObject emptyTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_EmptyTrigger));
         emptyTrigger.toJSONObject(emptyTriggerObj);
     }
 }
@@ -538,12 +538,12 @@ void HydroponicsFluidReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsReservoirData::fromJSONObject(objectIn);
 
-    maxVolume = objectIn[SFP(HS_Key_MaxVolume)] | maxVolume;
-    const char *volumeSensorStr = objectIn[SFP(HS_Key_VolumeSensor)];
+    maxVolume = objectIn[SFP(HStr_Key_MaxVolume)] | maxVolume;
+    const char *volumeSensorStr = objectIn[SFP(HStr_Key_VolumeSensor)];
     if (volumeSensorStr && volumeSensorStr[0]) { strncpy(volumeSensor, volumeSensorStr, HYDRUINO_NAME_MAXSIZE); }
-    JsonObjectConst filledTriggerObj = objectIn[SFP(HS_Key_FilledTrigger)];
+    JsonObjectConst filledTriggerObj = objectIn[SFP(HStr_Key_FilledTrigger)];
     if (!filledTriggerObj.isNull()) { filledTrigger.fromJSONObject(filledTriggerObj); }
-    JsonObjectConst emptyTriggerObj = objectIn[SFP(HS_Key_EmptyTrigger)];
+    JsonObjectConst emptyTriggerObj = objectIn[SFP(HStr_Key_EmptyTrigger)];
     if (!emptyTriggerObj.isNull()) { emptyTrigger.fromJSONObject(emptyTriggerObj); }
 }
 
@@ -559,40 +559,40 @@ void HydroponicsFeedReservoirData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsFluidReservoirData::toJSONObject(objectOut);
 
-    if (lastChangeDate) { objectOut[SFP(HS_Key_LastChangeDate)] = lastChangeDate; }
-    if (lastPruningDate) { objectOut[SFP(HS_Key_LastPruningDate)] = lastPruningDate; }
-    if (lastFeedingDate) { objectOut[SFP(HS_Key_LastFeedingDate)] = lastFeedingDate; }
-    if (numFeedingsToday > 0) { objectOut[SFP(HS_Key_NumFeedingsToday)] = numFeedingsToday; }
-    if (tdsUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_TDSUnits)] = unitsTypeToSymbol(tdsUnits); }
-    if (tempUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_TempUnits)] = unitsTypeToSymbol(tempUnits); }
-    if (waterPHSensor[0]) { objectOut[SFP(HS_Key_PHSensor)] = charsToString(waterPHSensor, HYDRUINO_NAME_MAXSIZE); }
-    if (waterTDSSensor[0]) { objectOut[SFP(HS_Key_TDSSensor)] = charsToString(waterTDSSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (lastChangeDate) { objectOut[SFP(HStr_Key_LastChangeDate)] = lastChangeDate; }
+    if (lastPruningDate) { objectOut[SFP(HStr_Key_LastPruningDate)] = lastPruningDate; }
+    if (lastFeedingDate) { objectOut[SFP(HStr_Key_LastFeedingDate)] = lastFeedingDate; }
+    if (numFeedingsToday > 0) { objectOut[SFP(HStr_Key_NumFeedingsToday)] = numFeedingsToday; }
+    if (tdsUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HStr_Key_TDSUnits)] = unitsTypeToSymbol(tdsUnits); }
+    if (tempUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HStr_Key_TempUnits)] = unitsTypeToSymbol(tempUnits); }
+    if (waterPHSensor[0]) { objectOut[SFP(HStr_Key_PHSensor)] = charsToString(waterPHSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (waterTDSSensor[0]) { objectOut[SFP(HStr_Key_TDSSensor)] = charsToString(waterTDSSensor, HYDRUINO_NAME_MAXSIZE); }
     if (waterTempSensor[0]) {
-        objectOut[(airTempSensor[0] ? SFP(HS_Key_WaterTemperatureSensor) : SFP(HS_Key_TemperatureSensor))] = charsToString(waterTempSensor, HYDRUINO_NAME_MAXSIZE);
+        objectOut[(airTempSensor[0] ? SFP(HStr_Key_WaterTemperatureSensor) : SFP(HStr_Key_TemperatureSensor))] = charsToString(waterTempSensor, HYDRUINO_NAME_MAXSIZE);
     }
-    if (airTempSensor[0]) { objectOut[SFP(HS_Key_AirTemperatureSensor)] = charsToString(airTempSensor, HYDRUINO_NAME_MAXSIZE); }
-    if (airCO2Sensor[0]) { objectOut[SFP(HS_Key_CO2Sensor)] = charsToString(airCO2Sensor, HYDRUINO_NAME_MAXSIZE); }
+    if (airTempSensor[0]) { objectOut[SFP(HStr_Key_AirTemperatureSensor)] = charsToString(airTempSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (airCO2Sensor[0]) { objectOut[SFP(HStr_Key_CO2Sensor)] = charsToString(airCO2Sensor, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsFluidReservoirData::fromJSONObject(objectIn);
 
-    lastChangeDate = objectIn[SFP(HS_Key_LastChangeDate)] | lastChangeDate;
-    lastPruningDate = objectIn[SFP(HS_Key_LastPruningDate)] | lastPruningDate;
-    lastFeedingDate = objectIn[SFP(HS_Key_LastFeedingDate)] | lastFeedingDate;
-    numFeedingsToday = objectIn[SFP(HS_Key_NumFeedingsToday)] | numFeedingsToday;
-    tdsUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_TDSUnits)]);
-    tempUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_TempUnits)]);
-    const char *waterPHSensorStr = objectIn[SFP(HS_Key_PHSensor)];
+    lastChangeDate = objectIn[SFP(HStr_Key_LastChangeDate)] | lastChangeDate;
+    lastPruningDate = objectIn[SFP(HStr_Key_LastPruningDate)] | lastPruningDate;
+    lastFeedingDate = objectIn[SFP(HStr_Key_LastFeedingDate)] | lastFeedingDate;
+    numFeedingsToday = objectIn[SFP(HStr_Key_NumFeedingsToday)] | numFeedingsToday;
+    tdsUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_TDSUnits)]);
+    tempUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_TempUnits)]);
+    const char *waterPHSensorStr = objectIn[SFP(HStr_Key_PHSensor)];
     if (waterPHSensorStr && waterPHSensorStr[0]) { strncpy(waterPHSensor, waterPHSensorStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *waterTDSSensorStr = objectIn[SFP(HS_Key_TDSSensor)];
+    const char *waterTDSSensorStr = objectIn[SFP(HStr_Key_TDSSensor)];
     if (waterTDSSensorStr && waterTDSSensorStr[0]) { strncpy(waterTDSSensor, waterTDSSensorStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *waterTempSensorStr = objectIn[SFP(HS_Key_WaterTemperatureSensor)] | objectIn[SFP(HS_Key_TemperatureSensor)];
+    const char *waterTempSensorStr = objectIn[SFP(HStr_Key_WaterTemperatureSensor)] | objectIn[SFP(HStr_Key_TemperatureSensor)];
     if (waterTempSensorStr && waterTempSensorStr[0]) { strncpy(waterTempSensor, waterTempSensorStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *airTempSensorStr = objectIn[SFP(HS_Key_AirTemperatureSensor)];
+    const char *airTempSensorStr = objectIn[SFP(HStr_Key_AirTemperatureSensor)];
     if (airTempSensorStr && airTempSensorStr[0]) { strncpy(airTempSensor, airTempSensorStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *airCO2SensorStr = objectIn[SFP(HS_Key_CO2Sensor)];
+    const char *airCO2SensorStr = objectIn[SFP(HStr_Key_CO2Sensor)];
     if (airCO2SensorStr && airCO2SensorStr[0]) { strncpy(airCO2Sensor, airCO2SensorStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
@@ -606,12 +606,12 @@ void HydroponicsInfiniteReservoirData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsReservoirData::toJSONObject(objectOut);
 
-    objectOut[SFP(HS_Key_AlwaysFilled)] = alwaysFilled;
+    objectOut[SFP(HStr_Key_AlwaysFilled)] = alwaysFilled;
 }
 
 void HydroponicsInfiniteReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsReservoirData::fromJSONObject(objectIn);
 
-    alwaysFilled = objectIn[SFP(HS_Key_AlwaysFilled)] | alwaysFilled;
+    alwaysFilled = objectIn[SFP(HStr_Key_AlwaysFilled)] | alwaysFilled;
 }

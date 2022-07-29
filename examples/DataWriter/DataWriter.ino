@@ -93,7 +93,7 @@ void setup() {
 
                 if (cropData) {
                     getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
-                    String filename = getNNFilename(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")), cropType, SFP(HS_dat));
+                    String filename = getNNFilename(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")), cropType, SFP(HStr_dat));
                     getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                     auto file = sd->open(filename, O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
@@ -134,7 +134,7 @@ void setup() {
                 }
 
                 getLoggerInstance()->logMessage(F("Writing Strings"));
-                String filename = String(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings.")) + SFP(HS_dat));
+                String filename = String(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings.")) + SFP(HStr_dat));
                 getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                 auto file = sd->open(filename, O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing

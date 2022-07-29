@@ -14,7 +14,7 @@ template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {
     SignalFireTask<ParameterType,Slots> *fireTask = object ? new SignalFireTask<ParameterType,Slots>(object, signal, fireParam) : nullptr;
-    HYDRUINO_SOFT_ASSERT(!object || fireTask, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(!object || fireTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (fireTask ? (fireTask->taskId = retVal) : retVal);
 }
@@ -23,7 +23,7 @@ template<typename ParameterType, int Slots>
 taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {
     SignalFireTask<ParameterType,Slots> *fireTask = new SignalFireTask<ParameterType,Slots>(nullptr, signal, fireParam);
-    HYDRUINO_SOFT_ASSERT(fireTask, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(fireTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = fireTask ? taskManager.scheduleOnce(0, fireTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (fireTask ? (fireTask->taskId = retVal) : retVal);
 }
@@ -32,7 +32,7 @@ template<class ObjectType, typename ParameterType>
 taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam)
 {
     MethodSlotCallTask<ObjectType,ParameterType> *callTask = object ? new MethodSlotCallTask<ObjectType,ParameterType>(object, method, callParam) : nullptr;
-    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (callTask ? (callTask->taskId = retVal) : retVal);
 }
@@ -41,7 +41,7 @@ template<class ObjectType, typename ParameterType>
 taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*method)(ParameterType), ParameterType callParam)
 {
     MethodSlotCallTask<ObjectType,ParameterType> *callTask = object ? new MethodSlotCallTask<ObjectType,ParameterType>(object, method, callParam) : nullptr;
-    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (callTask ? (callTask->taskId = retVal) : retVal);
 }
@@ -50,7 +50,7 @@ template<class ObjectType>
 taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t))
 {
     MethodSlotCallTask<ObjectType,taskid_t> *callTask = object ? new MethodSlotCallTask<ObjectType,taskid_t>(object, method, (taskid_t)0) : nullptr;
-    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (callTask ? (callTask->taskId = (callTask->_callParam = retVal)) : retVal);
 }
@@ -59,7 +59,7 @@ template<class ObjectType>
 taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (ObjectType::*method)(taskid_t))
 {
     MethodSlotCallTask<ObjectType,taskid_t> *callTask = object ? new MethodSlotCallTask<ObjectType,taskid_t>(object, method, (taskid_t)0) : nullptr;
-    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = callTask ? taskManager.scheduleOnce(0, callTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (callTask ? (callTask->taskId = (callTask->_callParam = retVal)) : retVal);
 }
@@ -70,19 +70,19 @@ taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (Object
 template<typename T>
 String commaStringFromArray(const T *arrayIn, size_t length)
 {
-    if (!arrayIn || !length) { return String(SFP(HS_null)); }
+    if (!arrayIn || !length) { return String(SFP(HStr_null)); }
     String retVal; retVal.reserve(length << 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
         retVal += String(arrayIn[index]);
     }
-    return retVal.length() ? retVal : String(SFP(HS_null));
+    return retVal.length() ? retVal : String(SFP(HStr_null));
 }
 
 template<typename T>
 void commaStringToArray(String stringIn, T *arrayOut, size_t length)
 {
-    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HS_null))) { return; }
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HStr_null))) { return; }
     int lastSepPos = -1;
     for (size_t index = 0; index < length; ++index) {
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
@@ -240,7 +240,7 @@ void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
-        HYDRUINO_HARD_ASSERT(actuator, SFP(HS_Err_OperationFailure));
+        HYDRUINO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
             actuatorsOut.push_back(actuator);
         }
@@ -252,7 +252,7 @@ void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
-        HYDRUINO_HARD_ASSERT(actuator, SFP(HS_Err_OperationFailure));
+        HYDRUINO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
             actuatorsOut.push_back(make_pair(actuator, rateValue));
         }

@@ -36,13 +36,13 @@ void HydroponicsPublisher::handleLowMemory()
 
 bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 {
-    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HStr_Err_NotYetInitialized));
 
     if (_publisherData) {
         auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
-            String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HS_csv));
+            String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HStr_csv));
             auto dataFile = sd->open(dataFileName, FILE_WRITE);
 
             if (dataFile && dataFile.availableForWrite()) {
@@ -69,7 +69,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 
 bool HydroponicsPublisher::isPublishingToSDCard()
 {
-    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HStr_Err_NotYetInitialized));
     return _publisherData && _publisherData->publishToSDCard;
 }
 
@@ -83,13 +83,13 @@ void HydroponicsPublisher::publishData(Hydroponics_PositionIndex columnIndex, Hy
 
 bool HydroponicsPublisher::isPublishingEnabled()
 {
-    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HStr_Err_NotYetInitialized));
     return _publisherData && (_publisherData->publishToSDCard);
 }
 
 Hydroponics_PositionIndex HydroponicsPublisher::getColumnIndexStart(Hydroponics_KeyType sensorKey)
 {
-    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HS_Err_NotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(_publisherData, SFP(HStr_Err_NotYetInitialized));
     if (_dataColumns && _columnCount) {
         for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
             if (_dataColumns[columnIndex].sensorKey == sensorKey) {
@@ -103,7 +103,7 @@ Hydroponics_PositionIndex HydroponicsPublisher::getColumnIndexStart(Hydroponics_
 void HydroponicsPublisher::notifyDayChanged()
 {
     if (isPublishingEnabled()) {
-        _dataFileName = getYYMMDDFilename(charsToString(_publisherData->dataFilePrefix, 16), SFP(HS_csv));
+        _dataFileName = getYYMMDDFilename(charsToString(_publisherData->dataFilePrefix, 16), SFP(HStr_csv));
         cleanupOldestData();
     }
 }
@@ -214,7 +214,7 @@ void HydroponicsPublisher::performTabulation()
             if (_columnCount) {
                 if (!_dataColumns) {
                     _dataColumns = new HydroponicsDataColumn[_columnCount];
-                    HYDRUINO_SOFT_ASSERT(_dataColumns, SFP(HS_Err_AllocationFailure));
+                    HYDRUINO_SOFT_ASSERT(_dataColumns, SFP(HStr_Err_AllocationFailure));
                 }
 
                 if (_dataColumns) {
@@ -229,7 +229,7 @@ void HydroponicsPublisher::performTabulation()
                                 auto rowCount = getMeasurementRowCount(measurement);
 
                                 for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-                                    HYDRUINO_HARD_ASSERT(columnIndex < _columnCount, SFP(HS_Err_OperationFailure));
+                                    HYDRUINO_HARD_ASSERT(columnIndex < _columnCount, SFP(HStr_Err_OperationFailure));
                                     _dataColumns[columnIndex].measurement = getAsSingleMeasurement(measurement, rowIndex);
                                     _dataColumns[columnIndex].sensorKey = sensor->getKey();
                                     columnIndex++;
@@ -262,7 +262,7 @@ void HydroponicsPublisher::resetDataFile()
                 HydroponicsSensor *lastSensor = nullptr;
                 Hydroponics_PositionIndex measurementRow = 0;
 
-                dataFile.print(SFP(HS_Key_Timestamp));
+                dataFile.print(SFP(HStr_Key_Timestamp));
 
                 for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
                     dataFile.print(',');
@@ -278,8 +278,8 @@ void HydroponicsPublisher::resetDataFile()
                         dataFile.print('_');
                         dataFile.print(unitsTypeToSymbol(getMeasurementUnits(sensor->getLatestMeasurement(), measurementRow)));
                     } else {
-                        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_OperationFailure));
-                        dataFile.print(SFP(HS_Undefined));
+                        HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
+                        dataFile.print(SFP(HStr_Undefined));
                     }
                 }
 
@@ -309,15 +309,15 @@ void HydroponicsPublisherSubData::toJSONObject(JsonObject &objectOut) const
 {
     //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
-    if (dataFilePrefix[0]) { objectOut[SFP(HS_Key_DataFilePrefix)] = charsToString(dataFilePrefix, 16); }
-    if (publishToSDCard != false) { objectOut[SFP(HS_Key_PublishToSDCard)] = publishToSDCard; }
+    if (dataFilePrefix[0]) { objectOut[SFP(HStr_Key_DataFilePrefix)] = charsToString(dataFilePrefix, 16); }
+    if (publishToSDCard != false) { objectOut[SFP(HStr_Key_PublishToSDCard)] = publishToSDCard; }
 }
 
 void HydroponicsPublisherSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
     //HydroponicsSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
 
-    const char *dataFilePrefixStr = objectIn[SFP(HS_Key_DataFilePrefix)];
+    const char *dataFilePrefixStr = objectIn[SFP(HStr_Key_DataFilePrefix)];
     if (dataFilePrefixStr && dataFilePrefixStr[0]) { strncpy(dataFilePrefix, dataFilePrefixStr, 16); }
-    publishToSDCard = objectIn[SFP(HS_Key_PublishToSDCard)] | publishToSDCard;
+    publishToSDCard = objectIn[SFP(HStr_Key_PublishToSDCard)] | publishToSDCard;
 }

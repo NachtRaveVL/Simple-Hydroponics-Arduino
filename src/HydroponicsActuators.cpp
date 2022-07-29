@@ -8,7 +8,7 @@
 HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectectData()) {
         switch (dataIn->id.object.classType) {
@@ -33,7 +33,7 @@ HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
     : HydroponicsObject(HydroponicsIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
       _outputPin(outputPin), _enabled(false), _rail(this), _reservoir(this)
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HS_Err_InvalidPinOrType));
+    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_outputPin)) {
         pinMode(_outputPin, OUTPUT);
     }
@@ -45,7 +45,7 @@ HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
       _contPowerUsage(&(dataIn->contPowerUsage)),
       _rail(this), _reservoir(this)
 {
-    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HS_Err_InvalidPinOrType));
+    HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_outputPin)) {
         pinMode(_outputPin, OUTPUT);
     }
@@ -301,9 +301,9 @@ void HydroponicsPumpRelayActuator::disableActuator()
         _pumpTimeAccMillis = 0;
         pumpMillis = timeMillis - _pumpTimeBegMillis;
 
-        getLoggerInstance()->logPumping(this, SFP(HS_Log_MeasuredPumping));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), 1));
-        getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Measured), roundToString(timeMillis / 1000.0f, 1), String('s'));
+        getLoggerInstance()->logPumping(this, SFP(HStr_Log_MeasuredPumping));
+        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), 1));
+        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(timeMillis / 1000.0f, 1), String('s'));
     }
 }
 
@@ -343,19 +343,19 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
     if (reservoir) {
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
-                getLoggerInstance()->logPumping(this, SFP(HS_Log_CalculatedPumping));
+                getLoggerInstance()->logPumping(this, SFP(HStr_Log_CalculatedPumping));
                 if (_contFlowRate.value > FLT_EPSILON) {
-                    getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
+                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
                 }
-                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
+                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
                 return true;
             }
         #else
-            getLoggerInstance()->logPumping(this, SFP(HS_Log_CalculatedPumping));
+            getLoggerInstance()->logPumping(this, SFP(HStr_Log_CalculatedPumping));
             if (_contFlowRate.value > FLT_EPSILON) {
-                getLoggerInstance()->logMessage(SFP(HS_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
+                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
             }
-            getLoggerInstance()->logMessage(SFP(HS_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
+            getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
             enableActuator();
             delayFine(timeMillis);
             disableActuator();
@@ -627,25 +627,25 @@ void HydroponicsActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsObjectData::toJSONObject(objectOut);
 
-    if (isValidPin(outputPin)) { objectOut[SFP(HS_Key_OutputPin)] = outputPin; }
+    if (isValidPin(outputPin)) { objectOut[SFP(HStr_Key_OutputPin)] = outputPin; }
     if (contPowerUsage.value > FLT_EPSILON) {
-        JsonObject contPowerUsageObj = objectOut.createNestedObject(SFP(HS_Key_ContPowerUsage));
+        JsonObject contPowerUsageObj = objectOut.createNestedObject(SFP(HStr_Key_ContPowerUsage));
         contPowerUsage.toJSONObject(contPowerUsageObj);
     }
-    if (railName[0]) { objectOut[SFP(HS_Key_RailName)] = charsToString(railName, HYDRUINO_NAME_MAXSIZE); }
-    if (reservoirName[0]) { objectOut[SFP(HS_Key_ReservoirName)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
+    if (railName[0]) { objectOut[SFP(HStr_Key_RailName)] = charsToString(railName, HYDRUINO_NAME_MAXSIZE); }
+    if (reservoirName[0]) { objectOut[SFP(HStr_Key_ReservoirName)] = charsToString(reservoirName, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsObjectData::fromJSONObject(objectIn);
 
-    outputPin = objectIn[SFP(HS_Key_OutputPin)] | outputPin;
-    JsonVariantConst contPowerUsageVar = objectIn[SFP(HS_Key_ContPowerUsage)];
+    outputPin = objectIn[SFP(HStr_Key_OutputPin)] | outputPin;
+    JsonVariantConst contPowerUsageVar = objectIn[SFP(HStr_Key_ContPowerUsage)];
     if (!contPowerUsageVar.isNull()) { contPowerUsage.fromJSONVariant(contPowerUsageVar); }
-    const char *railNameStr = objectIn[SFP(HS_Key_RailName)];
+    const char *railNameStr = objectIn[SFP(HStr_Key_RailName)];
     if (railNameStr && railNameStr[0]) { strncpy(railName, railNameStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *reservoirNameStr = objectIn[SFP(HS_Key_ReservoirName)];
+    const char *reservoirNameStr = objectIn[SFP(HStr_Key_ReservoirName)];
     if (reservoirNameStr && reservoirNameStr[0]) { strncpy(reservoirName, reservoirNameStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
@@ -659,14 +659,14 @@ void HydroponicsRelayActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsActuatorData::toJSONObject(objectOut);
 
-    objectOut[SFP(HS_Key_ActiveLow)] = activeLow;
+    objectOut[SFP(HStr_Key_ActiveLow)] = activeLow;
 }
 
 void HydroponicsRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsActuatorData::fromJSONObject(objectIn);
 
-    activeLow = objectIn[SFP(HS_Key_ActiveLow)] | activeLow;
+    activeLow = objectIn[SFP(HStr_Key_ActiveLow)] | activeLow;
 }
 
 HydroponicsPumpRelayActuatorData::HydroponicsPumpRelayActuatorData()
@@ -679,25 +679,25 @@ void HydroponicsPumpRelayActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsRelayActuatorData::toJSONObject(objectOut);
 
-    if (flowRateUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_FlowRateUnits)] = unitsTypeToSymbol(flowRateUnits); }
+    if (flowRateUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HStr_Key_FlowRateUnits)] = unitsTypeToSymbol(flowRateUnits); }
     if (contFlowRate.value > FLT_EPSILON) {
-        JsonObject contFlowRateObj = objectOut.createNestedObject(SFP(HS_Key_ContFlowRate));
+        JsonObject contFlowRateObj = objectOut.createNestedObject(SFP(HStr_Key_ContFlowRate));
         contFlowRate.toJSONObject(contFlowRateObj);
     }
-    if (destReservoir[0]) { objectOut[SFP(HS_Key_OutputReservoir)] = charsToString(destReservoir, HYDRUINO_NAME_MAXSIZE); }
-    if (flowRateSensor[0]) { objectOut[SFP(HS_Key_FlowRateSensor)] = charsToString(flowRateSensor, HYDRUINO_NAME_MAXSIZE); }
+    if (destReservoir[0]) { objectOut[SFP(HStr_Key_OutputReservoir)] = charsToString(destReservoir, HYDRUINO_NAME_MAXSIZE); }
+    if (flowRateSensor[0]) { objectOut[SFP(HStr_Key_FlowRateSensor)] = charsToString(flowRateSensor, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsRelayActuatorData::fromJSONObject(objectIn);
 
-    flowRateUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_FlowRateUnits)]);
-    JsonVariantConst contFlowRateVar = objectIn[SFP(HS_Key_ContFlowRate)];
+    flowRateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_FlowRateUnits)]);
+    JsonVariantConst contFlowRateVar = objectIn[SFP(HStr_Key_ContFlowRate)];
     if (!contFlowRateVar.isNull()) { contFlowRate.fromJSONVariant(contFlowRateVar); }
-    const char *destReservoirStr = objectIn[SFP(HS_Key_OutputReservoir)];
+    const char *destReservoirStr = objectIn[SFP(HStr_Key_OutputReservoir)];
     if (destReservoirStr && destReservoirStr[0]) { strncpy(destReservoir, destReservoirStr, HYDRUINO_NAME_MAXSIZE); }
-    const char *flowRateSensorStr = objectIn[SFP(HS_Key_FlowRateSensor)];
+    const char *flowRateSensorStr = objectIn[SFP(HStr_Key_FlowRateSensor)];
     if (flowRateSensorStr && flowRateSensorStr[0]) { strncpy(flowRateSensor, flowRateSensorStr, HYDRUINO_NAME_MAXSIZE); }
 }
 
@@ -711,12 +711,12 @@ void HydroponicsPWMActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsActuatorData::toJSONObject(objectOut);
 
-    if (outputBitResolution != 10) { objectOut[SFP(HS_Key_OutputBitRes)] = outputBitResolution; }
+    if (outputBitResolution != 10) { objectOut[SFP(HStr_Key_OutputBitRes)] = outputBitResolution; }
 }
 
 void HydroponicsPWMActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsActuatorData::fromJSONObject(objectIn);
 
-    outputBitResolution = objectIn[SFP(HS_Key_OutputBitRes)] | outputBitResolution;
+    outputBitResolution = objectIn[SFP(HStr_Key_OutputBitRes)] | outputBitResolution;
 }

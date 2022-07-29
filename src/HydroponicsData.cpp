@@ -19,15 +19,15 @@ HydroponicsData *newDataFromBinaryStream(Stream *streamIn)
 {
     HydroponicsData baseDecode;
     size_t readBytes = deserializeDataFromBinaryStream(&baseDecode, streamIn, sizeof(void*));
-    HYDRUINO_SOFT_ASSERT(readBytes == baseDecode._size - sizeof(void*), SFP(HS_Err_ImportFailure));
+    HYDRUINO_SOFT_ASSERT(readBytes == baseDecode._size - sizeof(void*), SFP(HStr_Err_ImportFailure));
 
     if (readBytes) {
         HydroponicsData *data = _allocateDataFromBaseDecode(baseDecode);
-        HYDRUINO_SOFT_ASSERT(data, SFP(HS_Err_AllocationFailure));
+        HYDRUINO_SOFT_ASSERT(data, SFP(HStr_Err_AllocationFailure));
 
         if (data) {
             readBytes += deserializeDataFromBinaryStream(data, streamIn, readBytes + sizeof(void*));
-            HYDRUINO_SOFT_ASSERT(readBytes == data->_size - sizeof(void*), SFP(HS_Err_ImportFailure));
+            HYDRUINO_SOFT_ASSERT(readBytes == data->_size - sizeof(void*), SFP(HStr_Err_ImportFailure));
 
             return data;
         }
@@ -42,7 +42,7 @@ HydroponicsData *newDataFromJSONObject(JsonObjectConst &objectIn)
     baseDecode.fromJSONObject(objectIn);
 
     HydroponicsData *data = _allocateDataFromBaseDecode(baseDecode);
-    HYDRUINO_SOFT_ASSERT(data, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(data, SFP(HStr_Err_AllocationFailure));
 
     if (data) {
         data->fromJSONObject(objectIn);
@@ -63,7 +63,7 @@ HydroponicsData::HydroponicsData(const char *idIn, uint8_t version, uint8_t revi
     : id{.chars={'\0','\0','\0','\0'}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
-    HYDRUINO_HARD_ASSERT(idIn, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(idIn, SFP(HStr_Err_InvalidParameter));
     strncpy(id.chars, idIn, sizeof(id.chars));
 }
 
@@ -82,18 +82,18 @@ HydroponicsData::HydroponicsData(const HydroponicsIdentity &id)
 void HydroponicsData::toJSONObject(JsonObject &objectOut) const
 {
     if (this->isStandardData()) {
-        objectOut[SFP(HS_Key_Type)] = charsToString(id.chars, sizeof(id.chars));
+        objectOut[SFP(HStr_Key_Type)] = charsToString(id.chars, sizeof(id.chars));
     } else {
         int8_t typeVals[4] = {id.object.idType, id.object.objType, id.object.posIndex, id.object.classType};
-        objectOut[SFP(HS_Key_Type)] = commaStringFromArray(typeVals, 4);
+        objectOut[SFP(HStr_Key_Type)] = commaStringFromArray(typeVals, 4);
     }
-    if (_version > 1) { objectOut[SFP(HS_Key_Version)] = _version; }
-    if (_revision > 1) { objectOut[SFP(HS_Key_Revision)] = _revision; }
+    if (_version > 1) { objectOut[SFP(HStr_Key_Version)] = _version; }
+    if (_revision > 1) { objectOut[SFP(HStr_Key_Revision)] = _revision; }
 }
 
 void HydroponicsData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    JsonVariantConst idVar = objectIn[SFP(HS_Key_Type)];
+    JsonVariantConst idVar = objectIn[SFP(HStr_Key_Type)];
     const char *idStr = idVar.as<const char *>();
     if (idStr && idStr[0] == 'H') {
         strncpy(id.chars, idStr, sizeof(id.chars));
@@ -105,8 +105,8 @@ void HydroponicsData::fromJSONObject(JsonObjectConst &objectIn)
         id.object.posIndex = typeVals[2];
         id.object.classType = typeVals[3];
     }
-    _version = objectIn[SFP(HS_Key_Version)] | _version;
-    _revision = objectIn[SFP(HS_Key_Revision)] | _revision;
+    _version = objectIn[SFP(HStr_Key_Version)] | _version;
+    _revision = objectIn[SFP(HStr_Key_Revision)] | _revision;
 }
 
 
@@ -116,10 +116,10 @@ HydroponicsSubData::HydroponicsSubData()
 
 void HydroponicsSubData::toJSONObject(JsonObject &objectOut) const
 {
-    if (type != -1) { objectOut[SFP(HS_Key_Type)] = type; }
+    if (type != -1) { objectOut[SFP(HStr_Key_Type)] = type; }
 }
 
 void HydroponicsSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
-    type = objectIn[SFP(HS_Key_Type)] | type;
+    type = objectIn[SFP(HStr_Key_Type)] | type;
 }

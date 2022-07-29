@@ -142,7 +142,7 @@ class HydroponicsSubObject : public HydroponicsObjInterface {
 public:
     virtual HydroponicsIdentity getId() const override;
     virtual Hydroponics_KeyType getKey() const override;
-    inline const String &getKeyString() const { return SFP(HS_null); }
+    inline const String &getKeyString() const { return SFP(HStr_null); }
     virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const override;
 
     virtual bool addLinkage(HydroponicsObject *obj) override;

@@ -21,7 +21,7 @@ HydroponicsDLinkObject::HydroponicsDLinkObject(const char *idKeyStr)
 HydroponicsAttachment::HydroponicsAttachment(HydroponicsObjInterface *parent)
     : _parent(parent), _obj()
 {
-    HYDRUINO_HARD_ASSERT(_parent, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_parent, SFP(HStr_Err_InvalidParameter));
 }
 
 HydroponicsAttachment::~HydroponicsAttachment()

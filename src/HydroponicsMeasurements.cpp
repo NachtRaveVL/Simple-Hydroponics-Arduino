@@ -8,7 +8,7 @@
 HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasurementData *dataIn)
 {
     if (dataIn && dataIn->type == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, SFP(HStr_Err_InvalidParameter));
 
     if (dataIn) {
         switch (dataIn->type) {
@@ -259,20 +259,20 @@ void HydroponicsMeasurementData::toJSONObject(JsonObject &objectOut) const
 {
     //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
-    objectOut[SFP(HS_Key_MeasurementRow)] = measurementRow;
-    objectOut[SFP(HS_Key_Value)] = value;
-    objectOut[SFP(HS_Key_Units)] = unitsTypeToSymbol(units);
-    objectOut[SFP(HS_Key_Timestamp)] = timestamp;
+    objectOut[SFP(HStr_Key_MeasurementRow)] = measurementRow;
+    objectOut[SFP(HStr_Key_Value)] = value;
+    objectOut[SFP(HStr_Key_Units)] = unitsTypeToSymbol(units);
+    objectOut[SFP(HStr_Key_Timestamp)] = timestamp;
 }
 
 void HydroponicsMeasurementData::fromJSONObject(JsonObjectConst &objectIn)
 {
     //HydroponicsSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
 
-    measurementRow = objectIn[SFP(HS_Key_MeasurementRow)] | measurementRow;
-    value = objectIn[SFP(HS_Key_Value)] | value;
-    units = unitsTypeFromSymbol(objectIn[SFP(HS_Key_Units)]);
-    timestamp = objectIn[SFP(HS_Key_Timestamp)] | timestamp;
+    measurementRow = objectIn[SFP(HStr_Key_MeasurementRow)] | measurementRow;
+    value = objectIn[SFP(HStr_Key_Value)] | value;
+    units = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_Units)]);
+    timestamp = objectIn[SFP(HStr_Key_Timestamp)] | timestamp;
 }
 
 void HydroponicsMeasurementData::fromJSONVariant(JsonVariantConst &variantIn)
@@ -283,6 +283,6 @@ void HydroponicsMeasurementData::fromJSONVariant(JsonVariantConst &variantIn)
     } else if (variantIn.is<float>() || variantIn.is<int>()) {
         value = variantIn.as<float>();
     } else {
-        HYDRUINO_SOFT_ASSERT(false, SFP(HS_Err_UnsupportedOperation));
+        HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
     }
 }

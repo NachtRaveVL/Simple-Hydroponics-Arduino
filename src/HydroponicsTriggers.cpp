@@ -9,7 +9,7 @@
 HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData *dataIn)
 {
     if (dataIn && dataIn->type == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->type >= 0, SFP(HStr_Err_InvalidParameter));
 
     if (dataIn) {
         switch (dataIn->type) {
@@ -31,7 +31,7 @@ HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, byte measur
 {
     _sensor.setObject(sensorId);
 
-    HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HS_Err_OperationFailure);
+    HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HStr_Err_OperationFailure);
     if (isMeasureValueType()) {
         _sensor.setProcessMethod(&HydroponicsMeasurementValueTrigger::handleMeasurement);
     } else if (isMeasureRangeType()) {
@@ -45,7 +45,7 @@ HydroponicsTrigger::HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, byt
 {
     _sensor.setObject(sensor);
 
-    HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HS_Err_OperationFailure);
+    HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HStr_Err_OperationFailure);
     if (isMeasureValueType()) {
         _sensor.setProcessMethod(&HydroponicsMeasurementValueTrigger::handleMeasurement);
     } else if (isMeasureRangeType()) {
@@ -60,7 +60,7 @@ HydroponicsTrigger::HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn)
     _sensor.setObject(dataIn->sensorName);
     setToleranceUnits(dataIn->toleranceUnits);
 
-    HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HS_Err_OperationFailure);
+    HYDRUINO_HARD_ASSERT(isMeasureValueType() || isMeasureRangeType(), HStr_Err_OperationFailure);
     if (isMeasureValueType()) {
         _sensor.setProcessMethod(&HydroponicsMeasurementValueTrigger::handleMeasurement);
     } else if (isMeasureRangeType()) {
@@ -293,43 +293,43 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsSubData::toJSONObject(objectOut);
 
-    if (sensorName[0]) { objectOut[SFP(HS_Key_SensorName)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
-    if (measurementRow > 0) { objectOut[SFP(HS_Key_MeasurementRow)] = measurementRow; }
+    if (sensorName[0]) { objectOut[SFP(HStr_Key_SensorName)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
+    if (measurementRow > 0) { objectOut[SFP(HStr_Key_MeasurementRow)] = measurementRow; }
     switch (type) {
         case 0: // MeasureValue
-            objectOut[SFP(HS_Key_Tolerance)] = dataAs.measureValue.tolerance;
-            objectOut[SFP(HS_Key_TriggerBelow)] = dataAs.measureValue.triggerBelow;
+            objectOut[SFP(HStr_Key_Tolerance)] = dataAs.measureValue.tolerance;
+            objectOut[SFP(HStr_Key_TriggerBelow)] = dataAs.measureValue.triggerBelow;
             break;
         case 1: // MeasureRange
-            objectOut[SFP(HS_Key_ToleranceLow)] = dataAs.measureRange.toleranceLow;
-            objectOut[SFP(HS_Key_ToleranceHigh)] = dataAs.measureRange.toleranceHigh;
-            objectOut[SFP(HS_Key_TriggerOutside)] = dataAs.measureRange.triggerOutside;
+            objectOut[SFP(HStr_Key_ToleranceLow)] = dataAs.measureRange.toleranceLow;
+            objectOut[SFP(HStr_Key_ToleranceHigh)] = dataAs.measureRange.toleranceHigh;
+            objectOut[SFP(HStr_Key_TriggerOutside)] = dataAs.measureRange.triggerOutside;
             break;
         default: break;
     }
-    if (detriggerTol > 0) { objectOut[SFP(HS_Key_DetriggerTol)] = detriggerTol; }
-    if (toleranceUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HS_Key_ToleranceUnits)] = unitsTypeToSymbol(toleranceUnits); }
+    if (detriggerTol > 0) { objectOut[SFP(HStr_Key_DetriggerTol)] = detriggerTol; }
+    if (toleranceUnits != Hydroponics_UnitsType_Undefined) { objectOut[SFP(HStr_Key_ToleranceUnits)] = unitsTypeToSymbol(toleranceUnits); }
 }
 
 void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsSubData::fromJSONObject(objectIn);
 
-    const char *sensorNameStr = objectIn[SFP(HS_Key_SensorName)];
+    const char *sensorNameStr = objectIn[SFP(HStr_Key_SensorName)];
     if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
-    measurementRow = objectIn[SFP(HS_Key_MeasurementRow)] | measurementRow;
+    measurementRow = objectIn[SFP(HStr_Key_MeasurementRow)] | measurementRow;
     switch (type) {
         case 0: // MeasureValue
-            dataAs.measureValue.tolerance = objectIn[SFP(HS_Key_Tolerance)] | dataAs.measureValue.tolerance;
-            dataAs.measureValue.triggerBelow = objectIn[SFP(HS_Key_TriggerBelow)] | dataAs.measureValue.triggerBelow;
+            dataAs.measureValue.tolerance = objectIn[SFP(HStr_Key_Tolerance)] | dataAs.measureValue.tolerance;
+            dataAs.measureValue.triggerBelow = objectIn[SFP(HStr_Key_TriggerBelow)] | dataAs.measureValue.triggerBelow;
             break;
         case 1: // MeasureRange
-            dataAs.measureRange.toleranceLow = objectIn[SFP(HS_Key_ToleranceLow)] | dataAs.measureRange.toleranceLow;
-            dataAs.measureRange.toleranceHigh = objectIn[SFP(HS_Key_ToleranceHigh)] | dataAs.measureRange.toleranceHigh;
-            dataAs.measureRange.triggerOutside = objectIn[SFP(HS_Key_TriggerOutside)] | dataAs.measureRange.triggerOutside;
+            dataAs.measureRange.toleranceLow = objectIn[SFP(HStr_Key_ToleranceLow)] | dataAs.measureRange.toleranceLow;
+            dataAs.measureRange.toleranceHigh = objectIn[SFP(HStr_Key_ToleranceHigh)] | dataAs.measureRange.toleranceHigh;
+            dataAs.measureRange.triggerOutside = objectIn[SFP(HStr_Key_TriggerOutside)] | dataAs.measureRange.triggerOutside;
             break;
         default: break;
     }
-    detriggerTol = objectIn[SFP(HS_Key_DetriggerTol)] | detriggerTol;
-    toleranceUnits = unitsTypeFromSymbol(objectIn[SFP(HS_Key_ToleranceUnits)]);
+    detriggerTol = objectIn[SFP(HStr_Key_DetriggerTol)] | detriggerTol;
+    toleranceUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_ToleranceUnits)]);
 }

@@ -13,7 +13,7 @@ HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, f
     float halfTargetRange = targetRange * 0.5f;
 
     _rangeTrigger = make_shared<HydroponicsMeasurementRangeTrigger>(sensor, targetSetpoint - halfTargetRange, targetSetpoint + halfTargetRange, true, halfTargetRange, measurementRow);
-    HYDRUINO_HARD_ASSERT(_rangeTrigger, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_HARD_ASSERT(_rangeTrigger, SFP(HStr_Err_AllocationFailure));
     _rangeTrigger.setUpdateMethod(&HydroponicsBalancer::handleTrigger);
 }
 

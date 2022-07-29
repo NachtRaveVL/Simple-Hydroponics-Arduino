@@ -40,7 +40,7 @@ template<class ParameterType, int Slots> template<class T, class U>
 HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void), MethodSlot<U,ParameterType> handleMethod)
     : HydroponicsAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleMethod(handleMethod)
 {
-    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HS_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HStr_Err_InvalidParameter));
 }
 
 template<class ParameterType, int Slots>

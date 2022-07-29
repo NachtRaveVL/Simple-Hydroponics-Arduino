@@ -8,7 +8,7 @@
 HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HS_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectectData()) {
         switch (dataIn->id.object.idType) {
@@ -147,7 +147,7 @@ void HydroponicsObject::handleLowMemory()
 HydroponicsData *HydroponicsObject::newSaveData()
 {
     auto data = allocateData();
-    HYDRUINO_SOFT_ASSERT(data, SFP(HS_Err_AllocationFailure));
+    HYDRUINO_SOFT_ASSERT(data, SFP(HStr_Err_AllocationFailure));
     if (data) { saveToData(data); }
     return data;
 }
@@ -198,7 +198,7 @@ shared_ptr<HydroponicsObjInterface> HydroponicsObject::getSharedPtr() const
 
 HydroponicsData *HydroponicsObject::allocateData() const
 {
-    HYDRUINO_HARD_ASSERT(false, SFP(HS_Err_UnsupportedOperation));
+    HYDRUINO_HARD_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
     return new HydroponicsData();
 }
 
@@ -249,13 +249,13 @@ void HydroponicsObjectData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsData::toJSONObject(objectOut);
 
-    if (name[0]) { objectOut[SFP(HS_Key_Id)] = charsToString(name, HYDRUINO_NAME_MAXSIZE); }
+    if (name[0]) { objectOut[SFP(HStr_Key_Id)] = charsToString(name, HYDRUINO_NAME_MAXSIZE); }
 }
 
 void HydroponicsObjectData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsData::fromJSONObject(objectIn);
 
-    const char *nameStr = objectIn[SFP(HS_Key_Id)];
+    const char *nameStr = objectIn[SFP(HStr_Key_Id)];
     if (nameStr && nameStr[0]) { strncpy(name, nameStr, HYDRUINO_NAME_MAXSIZE); }
 }
