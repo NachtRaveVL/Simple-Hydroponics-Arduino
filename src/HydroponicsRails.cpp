@@ -49,11 +49,6 @@ void HydroponicsRail::update()
     handleLimit(triggerStateFromBool(getCapacity() >= 1.0f - FLT_EPSILON));
 }
 
-void HydroponicsRail::handleLowMemory()
-{
-    HydroponicsObject::handleLowMemory();
-}
-
 bool HydroponicsRail::addLinkage(HydroponicsObject *object)
 {
     if (HydroponicsObject::addLinkage(object)) {
@@ -199,7 +194,7 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType
     : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
+    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePower);
 
     _limitTrigger.setHandleMethod(&HydroponicsRail::handleLimit);
 }
@@ -210,7 +205,7 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
       _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
+    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePower);
     _powerUsage = dataIn->powerSensor;
 
     _limitTrigger.setHandleMethod(&HydroponicsRail::handleLimit);
@@ -246,7 +241,7 @@ bool HydroponicsRegulatedRail::canActivate(HydroponicsActuator *actuator)
 
 float HydroponicsRegulatedRail::getCapacity()
 {
-    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState())) { return 1.0f; }
+    if (getLimitTrigger() && triggerStateToBool(_limitTrigger.getTriggerState())) { return 1.0f; }
     float retVal = _powerUsage.getMeasurementValue() / _maxPower;
     return constrain(retVal, 0.0f, 1.0f);
 }
@@ -306,7 +301,7 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
     }
 }
 
-void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *measurement)
+void HydroponicsRegulatedRail::handlePower(const HydroponicsMeasurement *measurement)
 {
     if (measurement && measurement->frame && _powerUsage.resolve()) {
         float capacityBefore = getCapacity();

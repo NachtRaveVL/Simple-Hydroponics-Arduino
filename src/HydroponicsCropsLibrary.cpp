@@ -102,7 +102,7 @@ void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cro
 
             if (book->count <= 0 && // delete on 0 count
                (book->data.cropType < Hydroponics_CropType_CustomCrop1 || !book->userSet)) { // don't delete custom unless not user set
-                if (iter->second) { delete iter->second; }
+                delete iter->second;
                 _cropsData.erase(iter);
             }
         }

@@ -37,7 +37,6 @@ public:
     virtual ~HydroponicsRail();
 
     virtual void update() override;
-    virtual void handleLowMemory() override;
 
     virtual bool addLinkage(HydroponicsObject *obj) override;
     virtual bool removeLinkage(HydroponicsObject *obj) override;
@@ -134,7 +133,7 @@ protected:
     void handleActivation(HydroponicsActuator *actuator);
     friend class HydroponicsRail;
 
-    void handlePowerMeasure(const HydroponicsMeasurement *measurement);
+    void handlePower(const HydroponicsMeasurement *measurement);
 };
 
 

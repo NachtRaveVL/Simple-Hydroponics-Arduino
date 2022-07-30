@@ -68,9 +68,6 @@ void HydroponicsActuator::update()
     }
 }
 
-void HydroponicsActuator::handleLowMemory()
-{ ; }
-
 bool HydroponicsActuator::getCanEnable()
 {
     if (getRail() && !getRail()->canActivate(this)) { return false; }

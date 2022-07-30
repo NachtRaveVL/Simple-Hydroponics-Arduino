@@ -70,8 +70,8 @@ protected:
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    virtual void handleFilledState(Hydroponics_TriggerState filledState);
-    virtual void handleEmptyState(Hydroponics_TriggerState emptyState);
+    virtual void handleFilled(Hydroponics_TriggerState filledState);
+    virtual void handleEmpty(Hydroponics_TriggerState emptyState);
     friend class HydroponicsFluidReservoir;
 };
 
@@ -113,8 +113,8 @@ protected:
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    virtual void handleFilledState(Hydroponics_TriggerState filledState) override;
-    virtual void handleEmptyState(Hydroponics_TriggerState filledState) override;
+    virtual void handleFilled(Hydroponics_TriggerState filledState) override;
+    virtual void handleEmpty(Hydroponics_TriggerState filledState) override;
 };
 
 

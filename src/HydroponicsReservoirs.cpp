@@ -42,9 +42,9 @@ void HydroponicsReservoir::update()
 {
     HydroponicsObject::update();
 
-    handleFilledState(triggerStateFromBool(isFilled()));
+    handleFilled(triggerStateFromBool(isFilled()));
 
-    handleEmptyState(triggerStateFromBool(isEmpty()));
+    handleEmpty(triggerStateFromBool(isEmpty()));
 }
 
 bool HydroponicsReservoir::canActivate(HydroponicsActuator *actuator)
@@ -96,7 +96,7 @@ void HydroponicsReservoir::saveToData(HydroponicsData *dataOut)
     ((HydroponicsReservoirData *)dataOut)->volumeUnits = _volumeUnits;
 }
 
-void HydroponicsReservoir::handleFilledState(Hydroponics_TriggerState filledState)
+void HydroponicsReservoir::handleFilled(Hydroponics_TriggerState filledState)
 {
     if (filledState == Hydroponics_TriggerState_Disabled || filledState == Hydroponics_TriggerState_Undefined) { return; }
 
@@ -113,7 +113,7 @@ void HydroponicsReservoir::handleFilledState(Hydroponics_TriggerState filledStat
     }
 }
 
-void HydroponicsReservoir::handleEmptyState(Hydroponics_TriggerState emptyState)
+void HydroponicsReservoir::handleEmpty(Hydroponics_TriggerState emptyState)
 {
     if (emptyState == Hydroponics_TriggerState_Disabled || emptyState == Hydroponics_TriggerState_Undefined) { return; }
 
@@ -145,13 +145,13 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReser
 {
     _waterVolume = dataIn->volumeSensor;
 
+    _filledTrigger.setHandleMethod(&HydroponicsReservoir::handleFilled);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
     HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HStr_Err_AllocationFailure));
-    _filledTrigger.setHandleMethod(&HydroponicsReservoir::handleFilledState);
 
+    _emptyTrigger.setHandleMethod(&HydroponicsReservoir::handleEmpty);
     _emptyTrigger = newTriggerObjectFromSubData(&(dataIn->emptyTrigger));
     HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HStr_Err_AllocationFailure));
-    _emptyTrigger.setHandleMethod(&HydroponicsReservoir::handleEmptyState);
 }
 
 void HydroponicsFluidReservoir::update()
@@ -217,9 +217,9 @@ void HydroponicsFluidReservoir::saveToData(HydroponicsData *dataOut)
     }
 }
 
-void HydroponicsFluidReservoir::handleFilledState(Hydroponics_TriggerState filledState)
+void HydroponicsFluidReservoir::handleFilled(Hydroponics_TriggerState filledState)
 {
-    HydroponicsReservoir::handleFilledState(filledState);
+    HydroponicsReservoir::handleFilled(filledState);
 
     if (_filledState == Hydroponics_TriggerState_Triggered && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
@@ -227,9 +227,9 @@ void HydroponicsFluidReservoir::handleFilledState(Hydroponics_TriggerState fille
     }
 }
 
-void HydroponicsFluidReservoir::handleEmptyState(Hydroponics_TriggerState emptyState)
+void HydroponicsFluidReservoir::handleEmpty(Hydroponics_TriggerState emptyState)
 {
-    HydroponicsReservoir::handleEmptyState(emptyState);
+    HydroponicsReservoir::handleEmpty(emptyState);
 
     if (_emptyState == Hydroponics_TriggerState_Triggered && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
@@ -270,6 +270,7 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
             _numFeedingsToday = 0;
         }
     } else { _numFeedingsToday = 0; }
+
     _waterPH = dataIn->waterPHSensor;
     _waterTDS = dataIn->waterTDSSensor;
     _waterTemp = dataIn->waterTempSensor;
@@ -357,8 +358,7 @@ HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirCO2(bool poll)
 shared_ptr<HydroponicsBalancer> HydroponicsFeedReservoir::setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits)
 {
     if (!_waterPHBalancer && getWaterPHSensor()) {
-        auto sensor = _waterPH.getObject();
-        _waterPHBalancer = make_shared<HydroponicsTimedDosingBalancer>(sensor, phSetpoint, HYDRUINO_RANGE_PH_HALF, _maxVolume, _volumeUnits);
+        _waterPHBalancer = make_shared<HydroponicsTimedDosingBalancer>(_waterPH.getObject(), phSetpoint, HYDRUINO_RANGE_PH_HALF, _maxVolume, _volumeUnits);
         HYDRUINO_SOFT_ASSERT(_waterPHBalancer, SFP(HStr_Err_AllocationFailure));
     }
     if (_waterPHBalancer) {

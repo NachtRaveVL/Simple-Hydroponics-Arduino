@@ -255,7 +255,7 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
     : HydroponicsCrop(dataIn), _soilMoisture(this), _feedingTrigger(this),
       _moistureUnits(definedUnitsElse(dataIn->moistureUnits, Hydroponics_UnitsType_Concentration_EC))
 {
-    _soilMoisture.setMeasurementUnits(getMoistureUnits());
+    _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->moistureUnits, getMoistureUnits()));
     _soilMoisture = dataIn->moistureSensor;
 
     _feedingTrigger.setHandleMethod(&HydroponicsCrop::handleFeeding);

@@ -25,7 +25,6 @@ HydroponicsDLinkObject::~HydroponicsDLinkObject()
 
 void HydroponicsDLinkObject::detachObject()
 {
-
     if (_obj && !_keyStr) {
         auto id = getId();
         auto len = id.keyString.length();
@@ -124,7 +123,6 @@ void HydroponicsSensorAttachment::detachObject()
 void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
 {
     if (resolve() && (_needsMeasurement || poll)) {
-        
         if (_handleMethod) { _handleMethod(get()->getLatestMeasurement()); }
         else { handleMeasurement(get()->getLatestMeasurement()); }
 

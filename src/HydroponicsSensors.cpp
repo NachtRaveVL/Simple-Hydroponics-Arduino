@@ -115,7 +115,8 @@ HydroponicsSensor::~HydroponicsSensor()
     _isTakingMeasure = false;
 }
 
-void HydroponicsSensor::update() {
+void HydroponicsSensor::update()
+{
     HydroponicsObject::update();
 
     _crop.resolve();

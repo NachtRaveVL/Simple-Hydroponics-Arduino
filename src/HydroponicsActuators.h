@@ -41,7 +41,6 @@ public:
     HydroponicsActuator(const HydroponicsActuatorData *dataIn);
 
     virtual void update() override;
-    virtual void handleLowMemory() override;
 
     virtual bool enableActuator(float intensity = 1.0f, bool force = false) = 0;
     virtual bool getCanEnable() override;
