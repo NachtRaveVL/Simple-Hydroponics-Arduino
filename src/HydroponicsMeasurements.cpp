@@ -75,7 +75,7 @@ HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement
             case 0: // Binary
                 return ((HydroponicsBinaryMeasurement *)measurement)->getAsSingleMeasurement(binTrue, binUnits);
             case 1: // Single
-                return HydroponicsSingleMeasurement(*((HydroponicsSingleMeasurement *)measurement));
+                return *((const HydroponicsSingleMeasurement *)measurement);
             case 2: // Double
                 return ((HydroponicsDoubleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow);
             case 3: // Triple

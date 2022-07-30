@@ -117,7 +117,7 @@ void HydroponicsMeasurementValueTrigger::setTriggerTolerance(float tolerance)
 
 void HydroponicsMeasurementValueTrigger::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && _sensor.resolve()) {
+    if (measurement && measurement->frame && _sensor) {
         bool nextState = triggerStateToBool(_triggerState);
 
         if (measurement->isBinaryType()) {
@@ -197,7 +197,7 @@ void HydroponicsMeasurementRangeTrigger::updateTriggerMidpoint(float toleranceMi
 
 void HydroponicsMeasurementRangeTrigger::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && _sensor.resolve()) {
+    if (measurement && measurement->frame && _sensor) {
         bool nextState = triggerStateToBool(_triggerState);
 
         auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());

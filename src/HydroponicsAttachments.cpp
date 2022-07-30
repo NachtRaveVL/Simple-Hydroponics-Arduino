@@ -87,12 +87,16 @@ HydroponicsAttachment::~HydroponicsAttachment()
 
 void HydroponicsAttachment::attachObject()
 {
-    _obj->addLinkage((HydroponicsObject *)_parent);
+    if (isResolved()) {
+        _obj->addLinkage((HydroponicsObject *)_parent);
+    }
 }
 
 void HydroponicsAttachment::detachObject()
 {
-    _obj->removeLinkage((HydroponicsObject *)_parent);
+    if (isResolved()) {
+        _obj->removeLinkage((HydroponicsObject *)_parent);
+    }
 }
 
 HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow)
@@ -171,7 +175,7 @@ void HydroponicsSensorAttachment::setMeasurementUnits(Hydroponics_UnitsType unit
 
 void HydroponicsSensorAttachment::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && resolve()) {
+    if (measurement && measurement->frame && isResolved()) {
         setMeasurement(getAsSingleMeasurement(measurement, _measurementRow));
     }
 }

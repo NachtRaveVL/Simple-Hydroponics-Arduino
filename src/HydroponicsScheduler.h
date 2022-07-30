@@ -16,14 +16,14 @@ struct HydroponicsLighting;
 #include "HydroponicsCrops.h"
 
 // Hydroponics Scheduler
-class HydroponicsScheduler : public HydroponicsSubObject {
+class HydroponicsScheduler {
 public:
     HydroponicsScheduler();
-    virtual ~HydroponicsScheduler();
+    ~HydroponicsScheduler();
     void initFromData(HydroponicsSchedulerSubData *dataIn);
 
-    virtual void update() override;
-    virtual void handleLowMemory() override;
+    void update();
+    void handleLowMemory();
 
     void setupWaterPHBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterPHBalancer);
     void setupWaterTDSBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterTDSBalancer);

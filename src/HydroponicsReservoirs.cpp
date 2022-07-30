@@ -299,11 +299,11 @@ void HydroponicsFeedReservoir::handleLowMemory()
 {
     HydroponicsFluidReservoir::handleLowMemory();
 
-    if (_waterPHBalancer) { _waterPHBalancer->handleLowMemory(); }
-    if (_waterTDSBalancer) { _waterTDSBalancer->handleLowMemory(); }
-    if (_waterTempBalancer) { _waterTempBalancer->handleLowMemory(); }
-    if (_airTempBalancer) { _airTempBalancer->handleLowMemory(); }
-    if (_airCO2Balancer) { _airCO2Balancer->handleLowMemory(); }
+    // if (_waterPHBalancer) { _waterPHBalancer->handleLowMemory(); }
+    // if (_waterTDSBalancer) { _waterTDSBalancer->handleLowMemory(); }
+    // if (_waterTempBalancer) { _waterTempBalancer->handleLowMemory(); }
+    // if (_airTempBalancer) { _airTempBalancer->handleLowMemory(); }
+    // if (_airCO2Balancer) { _airCO2Balancer->handleLowMemory(); }
 }
 
 void HydroponicsFeedReservoir::setTDSUnits(Hydroponics_UnitsType tdsUnits)

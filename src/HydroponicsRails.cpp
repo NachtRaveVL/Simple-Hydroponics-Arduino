@@ -303,7 +303,7 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
 
 void HydroponicsRegulatedRail::handlePower(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && _powerUsage.resolve()) {
+    if (measurement && measurement->frame && _powerUsage) {
         float capacityBefore = getCapacity();
 
         getPowerUsage().setMeasurement(getAsSingleMeasurement(measurement, _powerUsage.getMeasurementRow(), _maxPower, _powerUnits));

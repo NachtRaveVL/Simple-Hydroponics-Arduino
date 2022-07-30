@@ -14,14 +14,14 @@ struct HydroponicsDataColumn;
 #include "Hydroponics.h"
 
 // Hydroponics Publisher
-class HydroponicsPublisher : public HydroponicsSubObject {
+class HydroponicsPublisher {
 public:
     HydroponicsPublisher();
-    virtual ~HydroponicsPublisher();
+    ~HydroponicsPublisher();
     void initFromData(HydroponicsPublisherSubData *dataIn);
 
-    virtual void update() override;
-    virtual void handleLowMemory() override;
+    void update();
+    void handleLowMemory();
  
     bool beginPublishingToSDCard(String dataFilePrefix);
     bool isPublishingToSDCard();

@@ -25,9 +25,6 @@ void HydroponicsBalancer::update()
     _sensor.updateIfNeeded();
 }
 
-void HydroponicsBalancer::handleLowMemory()
-{ ; }
-
 void HydroponicsBalancer::setTargetSetpoint(float targetSetpoint)
 {
     if (!isFPEqual(_targetSetpoint, targetSetpoint)) {
@@ -111,7 +108,7 @@ void HydroponicsBalancer::disableAllActuators()
 
 void HydroponicsBalancer::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (_enabled && measurement && measurement->frame && _sensor.resolve()) {
+    if (_enabled && measurement && measurement->frame && _sensor) {
         auto balancerStateBefore = _balancerState;
 
         auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());

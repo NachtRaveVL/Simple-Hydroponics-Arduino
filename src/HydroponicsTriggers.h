@@ -40,8 +40,8 @@ public:
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const;
 
-    virtual void update() override;
-    virtual void handleLowMemory() override;
+    virtual void update();
+    virtual void handleLowMemory();
 
     virtual Hydroponics_TriggerState getTriggerState() const override;
 

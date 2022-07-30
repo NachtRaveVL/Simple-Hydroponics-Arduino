@@ -19,14 +19,14 @@ enum Hydroponics_LogLevel {
 };
 
 // Hydroponics Logger
-class HydroponicsLogger : public HydroponicsSubObject {
+class HydroponicsLogger {
 public:
     HydroponicsLogger();
-    virtual ~HydroponicsLogger();
+    ~HydroponicsLogger();
     void initFromData(HydroponicsLoggerSubData *dataIn);
 
-    virtual void update() override;
-    virtual void handleLowMemory() override;
+    void update();
+    void handleLowMemory();
 
     bool beginLoggingToSDCard(String logFilePrefix);
     bool isLoggingToSDCard() const;

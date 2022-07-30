@@ -87,9 +87,8 @@ public:
                    Signal<ParameterType,Slots> &signal,
                    ParameterType &param)
         : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
-    virtual ~SignalFireTask() { ; }
 
-    void exec() override { if (_signal) { _signal->fire(_param); } }
+    virtual void exec() override { _signal->fire(_param); }
 private:
     shared_ptr<HydroponicsObject> _object;
     Signal<ParameterType, Slots> *_signal;
@@ -107,9 +106,8 @@ public:
 
     MethodSlotCallTask(shared_ptr<ObjectType> object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
     MethodSlotCallTask(ObjectType *object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(nullptr), _methodSlot(object, method), _callParam(callParam) { ; }
-    virtual ~MethodSlotCallTask() { ; }
 
-    void exec() override { if (_methodSlot) { _methodSlot(_callParam); } }
+    virtual void exec() override { _methodSlot(_callParam); }
 private:
     shared_ptr<ObjectType> _object;
     MethodSlot<ObjectType,ParameterType> _methodSlot;
@@ -127,9 +125,8 @@ class ActuatorTimedEnableTask : public Executable {
     ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator,
                             float enableIntensity,
                             time_t enableTimeMillis);
-    virtual ~ActuatorTimedEnableTask();
 
-    void exec() override;
+    virtual void exec() override;
 private:
     shared_ptr<HydroponicsActuator> _actuator;
     float _enableIntensity;

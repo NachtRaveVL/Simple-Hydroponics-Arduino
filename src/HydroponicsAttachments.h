@@ -73,7 +73,6 @@ protected:
 };
 
 // Simple Attachment Point Base
-
 // This attachment registers the parent object with the linked object's linkages upon
 // dereference, and unregisters the parent object at time of destruction or reassignment.
 class HydroponicsAttachment {
@@ -103,7 +102,7 @@ public:
     inline HydroponicsObjInterface* operator*() { return get<HydroponicsObjInterface>(); }
 
     inline HydroponicsAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
-    inline HydroponicsAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
+    inline HydroponicsAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsAttachment &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 
@@ -160,7 +159,7 @@ protected:
 // Custom handle method will require a call into setMeasurement.
 class HydroponicsSensorAttachment : public HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> {
 public:
-    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(const HydroponicsSingleMeasurement &measurement);
+    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(const HydroponicsSingleMeasurement &);
 
     HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow = 0);
 
@@ -192,7 +191,7 @@ public:
     inline HydroponicsSensor* operator*() { return HydroponicsAttachment::getObject<HydroponicsSensor>().get(); }
 
     inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
-    inline HydroponicsSensorAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
+    inline HydroponicsSensorAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsSensorAttachment &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 
@@ -212,11 +211,11 @@ protected:
 // destruction or reassignment.
 class HydroponicsTriggerAttachment  : public HydroponicsSignalAttachment<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> {
 public:
-    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(Hydroponics_TriggerState triggerState);
+    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(Hydroponics_TriggerState);
 
     HydroponicsTriggerAttachment(HydroponicsObjInterface *parent);
 
-    inline void updateIfNeeded() { if (resolve()) { _obj->update(); } }
+    inline void updateIfNeeded();
 
     inline Hydroponics_TriggerState getTriggerState();
 
@@ -227,7 +226,7 @@ public:
     inline HydroponicsTrigger* operator*() { return HydroponicsAttachment::getObject<HydroponicsTrigger>().get(); }
 
     inline HydroponicsTriggerAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
-    inline HydroponicsTriggerAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
+    inline HydroponicsTriggerAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsTriggerAttachment &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsTriggerAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 };
@@ -239,11 +238,11 @@ public:
 // destruction or reassignment.
 class HydroponicsBalancerAttachment : public HydroponicsSignalAttachment<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> {
 public:
-    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(Hydroponics_BalancerState balancerState);
+    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(Hydroponics_BalancerState);
 
     HydroponicsBalancerAttachment(HydroponicsObjInterface *parent);
 
-    inline void updateIfNeeded() { if (resolve()) { _obj->update(); } }
+    inline void updateIfNeeded();
 
     inline Hydroponics_BalancerState getBalancerState();
 
@@ -254,7 +253,7 @@ public:
     inline HydroponicsBalancer* operator*() { return HydroponicsAttachment::getObject<HydroponicsBalancer>().get(); }
 
     inline HydroponicsBalancerAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
-    inline HydroponicsBalancerAttachment &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
+    inline HydroponicsBalancerAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsBalancerAttachment &operator=(shared_ptr<U> rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroponicsBalancerAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 };

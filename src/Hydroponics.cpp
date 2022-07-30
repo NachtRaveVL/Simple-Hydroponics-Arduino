@@ -681,11 +681,12 @@ void controlLoop()
         Hydroponics::_activeInstance->_scheduler.update();
 
         #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
-            static time_t _lastImAlive = unixNow();
+        {   static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(F("controlLoopAlive"));
+                Hydroponics::_activeInstance->_logger.logMessage(String(F("controlLoopAlive")));
             }
+        }
         #endif
     }
 
@@ -698,11 +699,12 @@ void dataLoop()
         Hydroponics::_activeInstance->updateObjects(1);
 
         #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
-            static time_t _lastImAlive = unixNow();
+        {   static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(F("dataLoopAlive"));
+                Hydroponics::_activeInstance->_logger.logMessage(String(F("dataLoopAlive")));
             }
+        }
         #endif
     }
 
@@ -719,18 +721,20 @@ void miscLoop()
         Hydroponics::_activeInstance->_publisher.update();
 
         #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
-            static time_t _lastImAlive = unixNow();
+        {   static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(F("miscLoopAlive"));
+                Hydroponics::_activeInstance->_logger.logMessage(String(F("miscLoopAlive")));
             }
+        }
         #endif
         #if HYDRUINO_SYS_MEM_LOGGING_ENABLE
-            static time_t _lastMemLog = unixNow();
+        {   static time_t _lastMemLog = unixNow();
             if (unixNow() >= _lastMemLog + 15) {
                 _lastMemLog = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(F("Free memory: "), String(freeMemory()));
+                Hydroponics::_activeInstance->_logger.logMessage(String(F("Free memory: ")), String(freeMemory()));
             }
+        }
         #endif
     }
 
@@ -748,20 +752,17 @@ void Hydroponics::launch()
         if (_controlTaskId == TASKMGR_INVALIDID) {
             _controlTaskId = taskManager.scheduleFixedRate(HYDRUINO_CONTROL_LOOP_INTERVAL, controlLoop);
         } else {
-            auto controlTask = taskManager.getTask(_controlTaskId);
-            if (controlTask) { controlTask->setEnabled(true); }
+            taskManager.setTaskEnabled(_controlTaskId, true);
         }
         if (_dataTaskId == TASKMGR_INVALIDID) {
             _dataTaskId = taskManager.scheduleFixedRate(getPollingInterval(), dataLoop);
         } else {
-            auto dataTask = taskManager.getTask(_dataTaskId);
-            if (dataTask) { dataTask->setEnabled(true); }
+            taskManager.setTaskEnabled(_dataTaskId, true);
         }
         if (_miscTaskId == TASKMGR_INVALIDID) {
             _miscTaskId = taskManager.scheduleFixedRate(HYDRUINO_MISC_LOOP_INTERVAL, miscLoop);
         } else {
-            auto miscTask = taskManager.getTask(_miscTaskId);
-            if (miscTask) { miscTask->setEnabled(true); }
+            taskManager.setTaskEnabled(_miscTaskId, true);
         }
     #endif
 }
@@ -771,16 +772,13 @@ void Hydroponics::suspend()
     _suspend = true;
     #ifndef HYDRUINO_DISABLE_MULTITASKING
         if (_controlTaskId != TASKMGR_INVALIDID) {
-            auto controlTask = taskManager.getTask(_controlTaskId);
-            if (controlTask) { controlTask->setEnabled(false); }
+            taskManager.setTaskEnabled(_controlTaskId, false);
         }
         if (_dataTaskId != TASKMGR_INVALIDID) {
-            auto dataTask = taskManager.getTask(_dataTaskId);
-            if (dataTask) { dataTask->setEnabled(false); }
+            taskManager.setTaskEnabled(_dataTaskId, false);
         }
         if (_miscTaskId != TASKMGR_INVALIDID) {
-            auto miscTask = taskManager.getTask(_miscTaskId);
-            if (miscTask) { miscTask->setEnabled(false); }
+            taskManager.setTaskEnabled(_miscTaskId, false);
         }
     #endif
 }

@@ -33,8 +33,7 @@ public:
                         int type = Unknown);
     virtual ~HydroponicsBalancer();
 
-    virtual void update() override;
-    virtual void handleLowMemory() override;
+    virtual void update();
 
     virtual void setTargetSetpoint(float targetSetpoint) override;
     virtual Hydroponics_BalancerState getBalancerState() const override;

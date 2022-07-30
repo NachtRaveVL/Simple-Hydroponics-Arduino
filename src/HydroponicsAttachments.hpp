@@ -78,11 +78,16 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlo
 {
     if (!(_handleMethod == handleMethod)) {
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(_handleMethod); }
-        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>((HydroponicsObjInterface *)handleMethod.getObject(), (HandleMethodPtr)handleMethod.getFunct());
+        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>(handleMethod.getObject(), handleMethod.getFunct());
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(_handleMethod); }
     }
 }
 
+
 inline Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState() { return isResolved() ? get()->getTriggerState() : Hydroponics_TriggerState_Undefined; }
 
+inline void HydroponicsTriggerAttachment::updateIfNeeded() { if (resolve()) { get()->update(); } }
+
 inline Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState() { return isResolved() ? get()->getBalancerState() : Hydroponics_BalancerState_Undefined; }
+
+inline void HydroponicsBalancerAttachment::updateIfNeeded() { if (resolve()) { get()->update(); } }

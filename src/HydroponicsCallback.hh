@@ -3,6 +3,8 @@
 #ifndef CALLBACK_H
 #define CALLBACK_H
 
+#include "Hydroponics.h"
+
 enum SlotType { Function, Method };
 
 // The Slot base class, its template parameter indicates the datatype of the parameters it expects to receive. Slots can only

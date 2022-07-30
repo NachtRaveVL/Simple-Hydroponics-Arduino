@@ -19,9 +19,6 @@ ActuatorTimedEnableTask::ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator>
     : taskId(TASKMGR_INVALIDID), _actuator(actuator), _enableIntensity(enableIntensity), _enableTimeMillis(enableTimeMillis)
 { ; }
 
-ActuatorTimedEnableTask::~ActuatorTimedEnableTask()
-{ ; }
-
 void ActuatorTimedEnableTask::exec()
 {
     while (!_actuator->enableActuator(_enableIntensity)) { yield(); }
