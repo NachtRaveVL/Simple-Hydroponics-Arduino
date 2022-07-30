@@ -1176,7 +1176,7 @@ void HydroponicsLighting::update()
 
 
 HydroponicsSchedulerSubData::HydroponicsSchedulerSubData()
-    : HydroponicsSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, stdDosingRates{1.0f,0.5f,0.5f},
+    : HydroponicsSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, stdDosingRates{1,0.5,0.5},
       totalFeedingsDay(0), preFeedAeratorMins(30), preLightSprayMins(60), airReportInterval(8 * SECS_PER_HOUR)
 {
     type = 0; // no type differentiation

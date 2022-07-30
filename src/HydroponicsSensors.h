@@ -27,9 +27,9 @@ struct HydroponicsDSTemperatureSensorData;
 extern HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn);
 
 // Returns default measurement units to use based on sensorType, optional row index, and measureMode (if undefined then uses active Hydroponics instance's measurement mode, else default mode).
-extern Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow = 0, Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
+extern Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, byte measurementRow = 0, Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Undefined);
 // Returns default measurement category to use based on sensorType and optional row index (note: this may not accurately produce the correct category, e.g. an ultrasonic distance sensor being used for distance and not volume).
-extern Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow = 0);
+extern Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics_SensorType sensorType, byte measurementRow = 0);
 
 
 // Hydroponics Sensor Base

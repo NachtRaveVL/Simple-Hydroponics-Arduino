@@ -193,9 +193,9 @@ void HydroponicsSimpleRail::handleActivation(HydroponicsActuator *actuator)
 
 
 HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType,
-                             Hydroponics_PositionIndex railIndex,
-                             float maxPower,
-                             int classType = Regulated)
+                                                   Hydroponics_PositionIndex railIndex,
+                                                   float maxPower,
+                                                   int classType = Regulated)
     : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
@@ -222,9 +222,9 @@ void HydroponicsRegulatedRail::update()
 {
     HydroponicsRail::update();
 
-    if (_limitTrigger.resolve()) { _limitTrigger->update(); }
-
     _powerUsage.updateIfNeeded();
+
+    _limitTrigger.updateIfNeeded();
 }
 
 void HydroponicsRegulatedRail::handleLowMemory()
@@ -236,7 +236,7 @@ void HydroponicsRegulatedRail::handleLowMemory()
 
 bool HydroponicsRegulatedRail::canActivate(HydroponicsActuator *actuator)
 {
-    if (_limitTrigger && triggerStateToBool(_limitTrigger.getTriggerState())) { return false; }
+    if (getLimitTrigger() && triggerStateToBool(_limitTrigger.getTriggerState())) { return false; }
 
     HydroponicsSingleMeasurement powerReq = actuator->getContinuousPowerUsage();
     convertUnits(&powerReq, getPowerUnits(), getRailVoltage());
@@ -308,7 +308,7 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
 
 void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame) {
+    if (measurement && measurement->frame && _powerUsage.resolve()) {
         float capacityBefore = getCapacity();
 
         getPowerUsage().setMeasurement(getAsSingleMeasurement(measurement, _powerUsage.getMeasurementRow(), _maxPower, _powerUnits));

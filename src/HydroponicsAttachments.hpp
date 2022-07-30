@@ -58,7 +58,7 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::attachObject()
 {
     HydroponicsAttachment::attachObject();
 
-    if (_handleMethod) {
+    if (isResolved() && _handleMethod) {
         (get()->*_signalGetter)().attach(_handleMethod);
     }
 }
@@ -77,20 +77,9 @@ template<class ParameterType, int Slots> template<class U>
 void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlot<U,ParameterType> handleMethod)
 {
     if (!(_handleMethod == handleMethod)) {
-        if (isResolved()) { detachObject(); }
+        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(_handleMethod); }
         _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>((HydroponicsObjInterface *)handleMethod.getObject(), (HandleMethodPtr)handleMethod.getFunct());
-        if (isResolved()) { attachObject(); }
-    }
-}
-
-template<class ParameterType, int Slots> template<class U>
-void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(void (U::*handleMethodPtr)(ParameterType))
-{
-    if ((!_handleMethod.getObject() || (void*)_handleMethod.getObject() != (void*)_parent) ||
-        (!_handleMethod.getFunct() || (void*)_handleMethod.getFunct() != (void*)handleMethodPtr)) {
-        if (isResolved()) { detachObject(); }
-        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>(_parent, (HandleMethodPtr)handleMethodPtr);
-        if (isResolved()) { attachObject(); }
+        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(_handleMethod); }
     }
 }
 

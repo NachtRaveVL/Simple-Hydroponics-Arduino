@@ -23,6 +23,20 @@ HydroponicsDLinkObject::~HydroponicsDLinkObject()
     if (_keyStr) { free((void *)_keyStr); }
 }
 
+void HydroponicsDLinkObject::detachObject()
+{
+
+    if (_obj && !_keyStr) {
+        auto id = getId();
+        auto len = id.keyString.length();
+        if (len) {
+            _keyStr = (const char *)malloc(len + 1);
+            strncpy((char *)_keyStr, id.keyString.c_str(), len + 1);
+        }
+    }
+    _obj = nullptr;
+}
+
 HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const HydroponicsDLinkObject &rhs)
 {
     _key = rhs._key;
@@ -80,11 +94,11 @@ void HydroponicsAttachment::attachObject()
 void HydroponicsAttachment::detachObject()
 {
     _obj->removeLinkage((HydroponicsObject *)_parent);
-    _obj = (HydroponicsObjInterface *)nullptr;
+
+    _obj.detachObject();
 }
 
-
-HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, Hydroponics_PositionIndex measurementRow)
+HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow)
     : HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
           parent, &HydroponicsSensor::getMeasurementSignal),
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
@@ -110,6 +124,7 @@ void HydroponicsSensorAttachment::detachObject()
 void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
 {
     if (resolve() && (_needsMeasurement || poll)) {
+        
         if (_handleMethod) { _handleMethod(get()->getLatestMeasurement()); }
         else { handleMeasurement(get()->getLatestMeasurement()); }
 
@@ -139,7 +154,7 @@ void HydroponicsSensorAttachment::setMeasurement(HydroponicsSingleMeasurement me
     _needsMeasurement = false;
 }
 
-void HydroponicsSensorAttachment::setMeasurementRow(Hydroponics_PositionIndex measurementRow)
+void HydroponicsSensorAttachment::setMeasurementRow(byte measurementRow)
 {
     if (_measurementRow != measurementRow) {
         _measurementRow = measurementRow;
@@ -160,7 +175,7 @@ void HydroponicsSensorAttachment::setMeasurementUnits(Hydroponics_UnitsType unit
 
 void HydroponicsSensorAttachment::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame) {
+    if (measurement && measurement->frame && resolve()) {
         setMeasurement(getAsSingleMeasurement(measurement, _measurementRow));
     }
 }

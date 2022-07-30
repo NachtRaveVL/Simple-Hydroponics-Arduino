@@ -9,9 +9,9 @@ HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, f
     : type((typeof(type))typeIn), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false),
       _sensor(this), _balancerState(Hydroponics_BalancerState_Undefined)
 {
-    _sensor.setObject(sensor);
     _sensor.setMeasurementRow(measurementRow);
     _sensor.setHandleMethod(&HydroponicsBalancer::handleMeasurement);
+    _sensor = sensor;
 }
 
 HydroponicsBalancer::~HydroponicsBalancer()
@@ -111,9 +111,12 @@ void HydroponicsBalancer::disableAllActuators()
 
 void HydroponicsBalancer::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (_enabled && _sensor && measurement && measurement->frame) {
+    if (_enabled && measurement && measurement->frame && _sensor.resolve()) {
         auto balancerStateBefore = _balancerState;
-        auto measure = _sensor.getMeasurement();
+
+        auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());
+        convertUnits(&measure, getTargetUnits(), _sensor.getMeasurementConvertParam());
+        _sensor.setMeasurement(measure);
 
         float halfTargetRange = _targetRange * 0.5f;
         if (measure.value > _targetSetpoint - halfTargetRange + FLT_EPSILON &&

@@ -267,9 +267,9 @@ void HydroponicsAdaptiveCrop::update()
 {
     HydroponicsCrop::update();
 
-    if (_feedingTrigger.resolve()) { _feedingTrigger->update(); }
-
     _soilMoisture.updateIfNeeded();
+
+    _feedingTrigger.updateIfNeeded();
 }
 
 void HydroponicsAdaptiveCrop::handleLowMemory()

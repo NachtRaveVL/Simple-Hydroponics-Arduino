@@ -158,11 +158,10 @@ void HydroponicsFluidReservoir::update()
 {
     HydroponicsReservoir::update();
 
-    if (_filledTrigger.resolve()) { _filledTrigger->update(); }
-
-    if (_emptyTrigger.resolve()) { _emptyTrigger->update(); }
-
     _waterVolume.updateIfNeeded();
+
+    _filledTrigger.updateIfNeeded();
+    _emptyTrigger.updateIfNeeded();
 }
 
 void HydroponicsFluidReservoir::handleLowMemory()
@@ -288,11 +287,11 @@ void HydroponicsFeedReservoir::update()
     _airTemp.updateIfNeeded();
     _airCO2.updateIfNeeded();
 
-    if (_waterPHBalancer) { _waterPHBalancer->update(); }
-    if (_waterTDSBalancer) { _waterTDSBalancer->update(); }
-    if (_waterTempBalancer) { _waterTempBalancer->update(); }
-    if (_airTempBalancer) { _airTempBalancer->update(); }
-    if (_airCO2Balancer) { _airCO2Balancer->update(); }
+    _waterPHBalancer.updateIfNeeded();
+    _waterTDSBalancer.updateIfNeeded();
+    _waterTempBalancer.updateIfNeeded();
+    _airTempBalancer.updateIfNeeded();
+    _airCO2Balancer.updateIfNeeded();
 }
 
 void HydroponicsFeedReservoir::handleLowMemory()

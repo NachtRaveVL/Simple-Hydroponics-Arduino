@@ -117,18 +117,15 @@ void HydroponicsMeasurementValueTrigger::setTriggerTolerance(float tolerance)
 
 void HydroponicsMeasurementValueTrigger::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame) {
+    if (measurement && measurement->frame && _sensor.resolve()) {
         bool nextState = triggerStateToBool(_triggerState);
 
         if (measurement->isBinaryType()) {
             nextState = ((HydroponicsBinaryMeasurement *)measurement)->state != _triggerBelow;
-
             _sensor.setMeasurement(getAsSingleMeasurement(measurement, _sensor.getMeasurementRow()));
         } else {
             auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());
-
             convertUnits(&measure, getToleranceUnits(), _sensor.getMeasurementConvertParam());
-
             _sensor.setMeasurement(measure);
 
             float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTol : 0);
@@ -154,13 +151,17 @@ HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(Hydroponi
     : HydroponicsTrigger(sensorId, measurementRow, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)
-{ ; }
+{
+    _sensor.setHandleMethod(&HydroponicsMeasurementRangeTrigger::handleMeasurement);
+}
 
 HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, byte measurementRow)
     : HydroponicsTrigger(sensor, measurementRow, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)
-{ ; }
+{
+    _sensor.setHandleMethod(&HydroponicsMeasurementRangeTrigger::handleMeasurement);
+}
 
 HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn)
     : HydroponicsTrigger(dataIn),
@@ -168,7 +169,9 @@ HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(const Hyd
       _triggerTolHigh(dataIn->dataAs.measureRange.toleranceHigh),
       _detriggerTol(dataIn->detriggerTol),
       _triggerOutside(dataIn->dataAs.measureRange.triggerOutside)
-{ ; }
+{
+    _sensor.setHandleMethod(&HydroponicsMeasurementRangeTrigger::handleMeasurement);
+}
 
 void HydroponicsMeasurementRangeTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
 {
@@ -194,12 +197,11 @@ void HydroponicsMeasurementRangeTrigger::updateTriggerMidpoint(float toleranceMi
 
 void HydroponicsMeasurementRangeTrigger::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame) {
+    if (measurement && measurement->frame && _sensor.resolve()) {
         bool nextState = triggerStateToBool(_triggerState);
+
         auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());
-
         convertUnits(&measure, getToleranceUnits(), _sensor.getMeasurementConvertParam());
-
         _sensor.setMeasurement(measure);
 
         float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTol : 0);

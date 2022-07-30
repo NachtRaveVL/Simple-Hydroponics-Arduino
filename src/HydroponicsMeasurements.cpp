@@ -27,7 +27,7 @@ HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasure
     return nullptr;
 }
 
-float getMeasurementValue(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow, float binTrue)
+float getMeasurementValue(const HydroponicsMeasurement *measurement, byte measurementRow, float binTrue)
 {
     if (measurement) {
         switch (measurement->type) {
@@ -45,7 +45,7 @@ float getMeasurementValue(const HydroponicsMeasurement *measurement, Hydroponics
     return 0.0f;
 }
 
-Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow, Hydroponics_UnitsType binUnits)
+Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurement, byte measurementRow, Hydroponics_UnitsType binUnits)
 {
     if (measurement) {
         switch (measurement->type) {
@@ -63,12 +63,12 @@ Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurem
     return Hydroponics_UnitsType_Undefined;
 }
 
-Hydroponics_PositionIndex getMeasurementRowCount(const HydroponicsMeasurement *measurement)
+byte getMeasurementRowCount(const HydroponicsMeasurement *measurement)
 {
     return measurement ? max(1, (int)(measurement->type)) : 0;
 }
 
-HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement *measurement, Hydroponics_PositionIndex measurementRow, float binTrue, Hydroponics_UnitsType binUnits)
+HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement *measurement, byte measurementRow, float binTrue, Hydroponics_UnitsType binUnits)
 {
     if (measurement) {
         switch (measurement->type) {
@@ -108,7 +108,7 @@ HydroponicsMeasurement::HydroponicsMeasurement(const HydroponicsMeasurementData 
     : type((typeof(type))(dataIn->type)), timestamp(dataIn->timestamp), frame(1)
 { ; }
 
-void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
+void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow, unsigned int additionalDecPlaces) const
 {
     dataOut->type = (int8_t)type;
     dataOut->measurementRow = measurementRow;
@@ -139,7 +139,7 @@ HydroponicsBinaryMeasurement::HydroponicsBinaryMeasurement(const HydroponicsMeas
       state(dataIn->measurementRow == 0 && dataIn->value >= 0.5f - FLT_EPSILON)
 { ; }
 
-void HydroponicsBinaryMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
+void HydroponicsBinaryMeasurement::saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow, unsigned int additionalDecPlaces) const
 {
     HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
@@ -166,7 +166,7 @@ HydroponicsSingleMeasurement::HydroponicsSingleMeasurement(const HydroponicsMeas
       units(dataIn->measurementRow == 0 ? dataIn->units : Hydroponics_UnitsType_Undefined)
 { ; }
 
-void HydroponicsSingleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
+void HydroponicsSingleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow, unsigned int additionalDecPlaces) const
 {
     HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
@@ -201,7 +201,7 @@ HydroponicsDoubleMeasurement::HydroponicsDoubleMeasurement(const HydroponicsMeas
       }
 { ; }
 
-void HydroponicsDoubleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
+void HydroponicsDoubleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow, unsigned int additionalDecPlaces) const
 {
     HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
@@ -240,7 +240,7 @@ HydroponicsTripleMeasurement::HydroponicsTripleMeasurement(const HydroponicsMeas
       }
 { ; }
 
-void HydroponicsTripleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, Hydroponics_PositionIndex measurementRow, unsigned int additionalDecPlaces) const
+void HydroponicsTripleMeasurement::saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow, unsigned int additionalDecPlaces) const
 {
     HydroponicsMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 

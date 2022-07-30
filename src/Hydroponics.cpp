@@ -579,6 +579,10 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
 
 void Hydroponics::commonPreInit()
 {
+    if (isValidPin(_piezoBuzzerPin)) {
+        pinMode(_piezoBuzzerPin, OUTPUT);
+        noTone(_piezoBuzzerPin);
+    }
     if (_i2cWire) {
         _i2cWire->setClock(_i2cSpeed);
     }
@@ -679,7 +683,7 @@ void controlLoop()
         Hydroponics::_activeInstance->updateObjects(0);
         Hydroponics::_activeInstance->_scheduler.update();
 
-        #if HYDRUINO_SYS_ENABLE_ALIVE_LOGGING
+        #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
             static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
@@ -696,7 +700,7 @@ void dataLoop()
     if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
         Hydroponics::_activeInstance->updateObjects(1);
 
-        #if HYDRUINO_SYS_ENABLE_ALIVE_LOGGING
+        #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
             static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
@@ -717,11 +721,18 @@ void miscLoop()
         Hydroponics::_activeInstance->_logger.update();
         Hydroponics::_activeInstance->_publisher.update();
 
-        #if HYDRUINO_SYS_ENABLE_ALIVE_LOGGING
+        #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
             static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
                 Hydroponics::_activeInstance->_logger.logMessage(F("miscLoopAlive"));
+            }
+        #endif
+        #if HYDRUINO_SYS_MEM_LOGGING_ENABLE
+            static time_t _lastMemLog = unixNow();
+            if (unixNow() >= _lastMemLog + 15) {
+                _lastMemLog = unixNow();
+                Hydroponics::_activeInstance->_logger.logMessage(F("Free memory: "), String(freeMemory()));
             }
         #endif
     }

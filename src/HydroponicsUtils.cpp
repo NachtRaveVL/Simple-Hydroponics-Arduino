@@ -165,7 +165,7 @@ void publishData(HydroponicsSensor *sensor)
             Hydroponics_PositionIndex columnIndexStart = publisher->getColumnIndexStart(sensor->getKey());
 
             if (columnIndexStart >= 0) {
-                for (Hydroponics_PositionIndex measurementRow = 0; measurementRow < rows; ++measurementRow) {
+                for (byte measurementRow = 0; measurementRow < rows; ++measurementRow) {
                     publisher->publishData(columnIndexStart + measurementRow, getAsSingleMeasurement(measurement, measurementRow));
                 }
             }

@@ -37,6 +37,7 @@ public:
 
     template<class U> inline void setObject(U obj) { *this = obj; }
     template<class U = HydroponicsObjInterface> shared_ptr<U> getObject();
+    void detachObject();
 
     template<class U = HydroponicsObjInterface> inline U* get() { return getObject<U>().get(); }
     inline HydroponicsIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroponicsIdentity(_keyStr) : HydroponicsIdentity(_key)); }
@@ -139,7 +140,7 @@ public:
     virtual void detachObject() override;
 
     template<class U> void setHandleMethod(MethodSlot<U,ParameterType> handleMethod);
-    template<class U> void setHandleMethod(void (U::*handleMethodPtr)(ParameterType));
+    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType)) { setHandleMethod(MethodSlot<HydroponicsObjInterface,ParameterType>(_parent, (HandleMethodPtr)handleMethodPtr)); }
 
     inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }
@@ -161,7 +162,7 @@ class HydroponicsSensorAttachment : public HydroponicsSignalAttachment<const Hyd
 public:
     typedef void (HydroponicsObjInterface::*HandleMethodPtr)(const HydroponicsSingleMeasurement &measurement);
 
-    HydroponicsSensorAttachment(HydroponicsObjInterface *parent, Hydroponics_PositionIndex measurementRow = 0);
+    HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow = 0);
 
     virtual void attachObject() override;
     virtual void detachObject() override;
@@ -170,7 +171,7 @@ public:
 
     void setMeasurement(float value, Hydroponics_UnitsType units = Hydroponics_UnitsType_Undefined);
     void setMeasurement(HydroponicsSingleMeasurement measurement);
-    void setMeasurementRow(Hydroponics_PositionIndex measurementRow);
+    void setMeasurementRow(byte measurementRow);
     void setMeasurementUnits(Hydroponics_UnitsType units, float convertParam = FLT_UNDEF);
 
     inline void setNeedsMeasurement() { _needsMeasurement = true; }
@@ -215,6 +216,8 @@ public:
 
     HydroponicsTriggerAttachment(HydroponicsObjInterface *parent);
 
+    inline void updateIfNeeded() { if (resolve()) { _obj->update(); } }
+
     inline Hydroponics_TriggerState getTriggerState();
 
     inline shared_ptr<HydroponicsTrigger> getObject() { return HydroponicsAttachment::getObject<HydroponicsTrigger>(); }
@@ -239,6 +242,8 @@ public:
     typedef void (HydroponicsObjInterface::*HandleMethodPtr)(Hydroponics_BalancerState balancerState);
 
     HydroponicsBalancerAttachment(HydroponicsObjInterface *parent);
+
+    inline void updateIfNeeded() { if (resolve()) { _obj->update(); } }
 
     inline Hydroponics_BalancerState getBalancerState();
 

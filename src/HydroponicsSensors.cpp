@@ -28,7 +28,7 @@ HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn)
     return nullptr;
 }
 
-Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow, Hydroponics_MeasurementMode measureMode)
+Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, byte measurementRow, Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
         auto hydroponics = getHydroponicsInstance();
@@ -58,7 +58,7 @@ Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType se
     }
 }
 
-Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics_SensorType sensorType, Hydroponics_PositionIndex measurementRow)
+Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics_SensorType sensorType, byte measurementRow)
 {
     switch (sensorType) {
         case Hydroponics_SensorType_PotentialHydrogen:

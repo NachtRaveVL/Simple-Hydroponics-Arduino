@@ -174,7 +174,7 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool force)
 
         if (!_enabled && (force || getCanEnable())) {
             _enabled = true;
-            #if !HYDRUINO_SYS_ENABLE_DRY_RUN
+            #if !HYDRUINO_SYS_DRY_RUN_ENABLE
                 digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
             #endif
         }
@@ -200,7 +200,7 @@ void HydroponicsRelayActuator::disableActuator()
 
         if (_enabled) {
             _enabled = false;
-            #if !HYDRUINO_SYS_ENABLE_DRY_RUN
+            #if !HYDRUINO_SYS_DRY_RUN_ENABLE
                 digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
             #endif
         }
@@ -610,7 +610,7 @@ void HydroponicsPWMActuator::applyPWM()
         #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
             analogWriteResolution(_pwmResolution.bitRes);
         #endif
-        #if !HYDRUINO_SYS_ENABLE_DRY_RUN
+        #if !HYDRUINO_SYS_DRY_RUN_ENABLE
             analogWrite(_outputPin, _enabled ? getPWMAmount(0) : 0);
         #endif
     }
