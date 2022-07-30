@@ -83,6 +83,6 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlo
     }
 }
 
-inline Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState() { return get()->getTriggerState(); }
+inline Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState() { return isResolved() ? get()->getTriggerState() : Hydroponics_TriggerState_Undefined; }
 
-inline Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState() { return get()->getBalancerState(); }
+inline Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState() { return isResolved() ? get()->getBalancerState() : Hydroponics_BalancerState_Undefined; }

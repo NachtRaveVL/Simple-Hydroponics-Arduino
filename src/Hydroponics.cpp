@@ -74,9 +74,6 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sd
       _sysConfigFile(F("hydruino.cfg")), _sysDataAddress(-1)
 {
     _activeInstance = this;
-    if (isValidPin(_piezoBuzzerPin)) {
-        EasyBuzzer.setPin(_piezoBuzzerPin);
-    }
     if (isValidPin(_ctrlInputPin1)) {
         for (byte pinIndex = 0; pinIndex < HYDRUINO_CTRLINPINMAP_MAXSIZE; ++pinIndex) {
             _ctrlInputPinMap[pinIndex] = _ctrlInputPin1 + pinIndex;
@@ -790,8 +787,6 @@ void Hydroponics::suspend()
 
 void Hydroponics::update()
 {
-    EasyBuzzer.update(); // EasyBuzzer does its own state updates efficiently
-
     #ifndef HYDRUINO_DISABLE_MULTITASKING
         taskManager.runLoop(); // tcMenu also uses this system to run its UI
     #else
@@ -808,10 +803,10 @@ void Hydroponics::updateObjects(int pass)
             _publisher.advancePollingFrame();
 
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                if (iter->second && iter->second->isSensorType()) {
-                    auto sensorObj = static_pointer_cast<HydroponicsSensor>(iter->second);
-                    if (sensorObj && sensorObj->needsPolling()) {
-                        sensorObj->takeMeasurement(); // no force if already current for this frame #
+                if (iter->second->isSensorType()) {
+                    auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+                    if (sensor->needsPolling()) {
+                        sensor->takeMeasurement(); // no force if already current for this frame #
                     }
                 }
             }
@@ -820,9 +815,7 @@ void Hydroponics::updateObjects(int pass)
         case 0:
         default: {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                if (iter->second) {
-                    iter->second->update();
-                }
+                iter->second->update();
             } 
         } break;
     }
@@ -1411,7 +1404,7 @@ void Hydroponics::handleInterrupt(byte pin)
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         if (iter->second && iter->second->isSensorType()) {
             auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
-            if (sensor && sensor->getInputPin() == pin && sensor->isBinaryClass()) {
+            if (sensor->getInputPin() == pin && sensor->isBinaryClass()) {
                 auto binarySensor = static_pointer_cast<HydroponicsBinarySensor>(sensor);
                 if (binarySensor) { binarySensor->notifyISRTriggered(); }
             }

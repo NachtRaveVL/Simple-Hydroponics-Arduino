@@ -99,7 +99,6 @@ extern void __int_restore_irq(int *primask);
 #include "ArxSmartPtr.h"                // Shared pointer library
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
-#include "EasyBuzzer.h"                 // Async piezo buzzer library
 #include "I2C_eeprom.h"                 // i2c EEPROM library
 #ifndef __STM32__
 #include "OneWire.h"                    // OneWire library
@@ -307,8 +306,6 @@ public:
     // Control input pin mapped to ribbon pin index, or -1 (255) if not used
     byte getControlInputPin(int ribbonPinIndex) const;
 
-    // Piezo buzzer instance
-    inline EasyBuzzerClass *getPiezoBuzzer() const { return &EasyBuzzer; };
     // EEPROM instance (lazily instantiated, nullptr return = failure/no device)
     I2C_eeprom *getEEPROM(bool begin = true);
     // Real time clock instance (lazily instantiated, nullptr return = failure/no device)

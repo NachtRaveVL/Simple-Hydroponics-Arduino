@@ -24,18 +24,12 @@ ActuatorTimedEnableTask::~ActuatorTimedEnableTask()
 
 void ActuatorTimedEnableTask::exec()
 {
-    if (_actuator->enableActuator(_enableIntensity)) {
-        delayFine(_enableTimeMillis);
+    while (!_actuator->enableActuator(_enableIntensity)) { yield(); }
 
-        HYDRUINO_SOFT_ASSERT(_actuator->isEnabled(), SFP(HStr_Err_OperationFailure));
-        if (_actuator->isEnabled()) {
-            _actuator->disableActuator();
-        }
+    delayFine(_enableTimeMillis);
 
-        tryDisableRepeatingTask(taskId);
-    } else {
-        tryEnableRepeatingTask(taskId);
-    }
+    HYDRUINO_SOFT_ASSERT(_actuator->isEnabled(), SFP(HStr_Err_OperationFailure));
+    _actuator->disableActuator();
 }
 
 taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
@@ -52,32 +46,6 @@ taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuato
     HYDRUINO_SOFT_ASSERT(!actuator || enableTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (enableTask ? (enableTask->taskId = retVal) : retVal);
-}
-
-bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis)
-{
-    auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
-    if (task && !task->isRepeating()) {
-        bool enabled = task->isEnabled();
-        auto next = task->getNext();
-        task->handleScheduling(intervalMillis, TIME_MILLIS, true);
-        task->setNext(next);
-        task->setEnabled(enabled);
-    }
-    return task && task->isRepeating();
-}
-
-bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis)
-{
-    auto task = taskId != TASKMGR_INVALIDID ? taskManager.getTask(taskId) : nullptr;
-    if (task && task->isRepeating()) {
-        bool enabled = task->isEnabled();
-        auto next = task->getNext();
-        task->handleScheduling(intervalMillis, TIME_MILLIS, false);
-        task->setNext(next);
-        task->setEnabled(enabled);
-    }
-    return task && !task->isRepeating();
 }
 
 #endif // /ifndef HYDRUINO_DISABLE_MULTITASKING

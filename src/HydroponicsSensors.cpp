@@ -370,29 +370,17 @@ void HydroponicsAnalogSensor::_takeMeasurement(unsigned int taskId)
             convertUnits(&newMeasurement, outUnits);
 
             _lastMeasurement = newMeasurement;
+            getHydroponicsInstance()->returnPinLock(_inputPin);
+            _isTakingMeasure = false;
 
             #ifndef HYDRUINO_DISABLE_MULTITASKING
                 scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
             #else
                 _measureSignal.fire(&_lastMeasurement);
             #endif
-
-            getHydroponicsInstance()->returnPinLock(_inputPin);
-            _isTakingMeasure = false;
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                tryDisableRepeatingTask(taskId);
-            #endif
         } else {
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                if (!tryEnableRepeatingTask(taskId)) { _isTakingMeasure = false; }
-            #else
-                _isTakingMeasure = false;
-            #endif
+            _isTakingMeasure = false;
         }
-    } else {
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            tryDisableRepeatingTask(taskId);
-        #endif
     }
 }
 
@@ -632,29 +620,17 @@ void HydroponicsDHTTempHumiditySensor::_takeMeasurement(unsigned int taskId)
             }
 
             _lastMeasurement = newMeasurement;
+            getHydroponicsInstance()->returnPinLock(_inputPin);
+            _isTakingMeasure = false;
 
             #ifndef HYDRUINO_DISABLE_MULTITASKING
                 scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
             #else
                 _measureSignal.fire(&_lastMeasurement);
             #endif
-
-            getHydroponicsInstance()->returnPinLock(_inputPin);
-            _isTakingMeasure = false;
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                tryDisableRepeatingTask(taskId);
-            #endif
         } else {
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                if (!tryEnableRepeatingTask(taskId)) { _isTakingMeasure = false; }
-            #else
-                _isTakingMeasure = false;
-            #endif
+            _isTakingMeasure = false;
         }
-    } else {
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            tryDisableRepeatingTask(taskId);
-        #endif
     }
 }
 
@@ -821,20 +797,9 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
 
             getHydroponicsInstance()->returnPinLock(_inputPin);
             _isTakingMeasure = false;
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                tryDisableRepeatingTask(taskId);
-            #endif
         } else {
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                if (!tryEnableRepeatingTask(taskId)) { _isTakingMeasure = false; }
-            #else
-                _isTakingMeasure = false;
-            #endif
+            _isTakingMeasure = false;
         }
-    } else {
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            tryDisableRepeatingTask(taskId);
-        #endif
     }
 }
 

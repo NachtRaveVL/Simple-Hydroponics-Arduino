@@ -281,7 +281,7 @@ void HydroponicsAdaptiveCrop::handleLowMemory()
 
 bool HydroponicsAdaptiveCrop::needsFeeding()
 {
-    return triggerStateToBool(_feedingTrigger.getTriggerState());
+    return _feedingTrigger.resolve() && triggerStateToBool(_feedingTrigger.getTriggerState());
 }
 
 void HydroponicsAdaptiveCrop::setMoistureUnits(Hydroponics_UnitsType moistureUnits)

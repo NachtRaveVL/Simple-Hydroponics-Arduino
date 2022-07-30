@@ -89,7 +89,7 @@ public:
         : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
     virtual ~SignalFireTask() { ; }
 
-    void exec() override { _signal->fire(_param); }
+    void exec() override { if (_signal) { _signal->fire(_param); } }
 private:
     shared_ptr<HydroponicsObject> _object;
     Signal<ParameterType, Slots> *_signal;
@@ -109,7 +109,7 @@ public:
     MethodSlotCallTask(ObjectType *object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(nullptr), _methodSlot(object, method), _callParam(callParam) { ; }
     virtual ~MethodSlotCallTask() { ; }
 
-    void exec() override { _methodSlot(_callParam); }
+    void exec() override { if (_methodSlot) { _methodSlot(_callParam); } }
 private:
     shared_ptr<ObjectType> _object;
     MethodSlot<ObjectType,ParameterType> _methodSlot;
@@ -136,11 +136,6 @@ private:
     time_t _enableTimeMillis;
 };
 
-
-// Given a valid task id, tries making the task repeating. Returns true if valid task and task is repeating, false otherwise.
-bool tryEnableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
-// Given a valid task id, tries making the task non-repeating. Returns true if valid task and task is non-repeating, false otherwise.
-bool tryDisableRepeatingTask(taskid_t taskId, time_t intervalMillis = 0);
 
 #endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
 

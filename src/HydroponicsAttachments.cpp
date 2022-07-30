@@ -93,8 +93,6 @@ void HydroponicsAttachment::attachObject()
 void HydroponicsAttachment::detachObject()
 {
     _obj->removeLinkage((HydroponicsObject *)_parent);
-
-    _obj.detachObject();
 }
 
 HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow)
