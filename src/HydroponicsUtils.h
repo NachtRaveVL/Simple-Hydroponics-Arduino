@@ -226,7 +226,7 @@ int occurrencesInStringIgnoreCase(String string, String subString);
 template<typename T> bool arrayElementsEqual(const T *arrayIn, size_t length, T value);
 
 // Similar to the standard map function, but does it on any type.
-template<typename T> inline T mapValue(T value, T inMin, T inMax, T outMin, T outMax) { return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin; }
+template<typename T> inline T mapValue(T value, T inMin, T inMax, T outMin, T outMax) { return ((value - inMin) * ((outMax - outMin) / (inMax - inMin))) + outMin; }
 
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
 extern int freeMemory();

@@ -199,9 +199,9 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType
     : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setProcessMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
+    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
 
-    _limitTrigger.setUpdateMethod(&HydroponicsRail::handleLimit);
+    _limitTrigger.setHandleMethod(&HydroponicsRail::handleLimit);
 }
 
 HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRailData *dataIn)
@@ -210,10 +210,10 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
       _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setProcessMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
+    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePowerMeasure);
     _powerUsage = dataIn->powerSensor;
 
-    _limitTrigger.setUpdateMethod(&HydroponicsRail::handleLimit);
+    _limitTrigger.setHandleMethod(&HydroponicsRail::handleLimit);
     _limitTrigger = newTriggerObjectFromSubData(&(dataIn->limitTrigger));
     HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HStr_Err_AllocationFailure));
 }
@@ -224,7 +224,7 @@ void HydroponicsRegulatedRail::update()
 
     if (_limitTrigger.resolve()) { _limitTrigger->update(); }
 
-    _powerUsage.updateMeasurementIfNeeded();
+    _powerUsage.updateIfNeeded();
 }
 
 void HydroponicsRegulatedRail::handleLowMemory()
@@ -262,7 +262,7 @@ void HydroponicsRegulatedRail::setPowerUnits(Hydroponics_UnitsType powerUnits)
 
 HydroponicsSensorAttachment &HydroponicsRegulatedRail::getPowerUsage(bool poll)
 {
-    _powerUsage.updateMeasurementIfNeeded(poll);
+    _powerUsage.updateIfNeeded(poll);
     return _powerUsage;
 }
 
@@ -308,16 +308,18 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
 
 void HydroponicsRegulatedRail::handlePowerMeasure(const HydroponicsMeasurement *measurement)
 {
-    float capacityBefore = getCapacity();
+    if (measurement && measurement->frame) {
+        float capacityBefore = getCapacity();
 
-    getPowerUsage().setMeasurement(getAsSingleMeasurement(measurement, _powerUsage.getMeasurementRow(), _maxPower, _powerUnits));
+        getPowerUsage().setMeasurement(getAsSingleMeasurement(measurement, _powerUsage.getMeasurementRow(), _maxPower, _powerUnits));
 
-    if (getCapacity() < capacityBefore - FLT_EPSILON) {
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
-        #else
-            _capacitySignal.fire(this);
-        #endif
+        if (getCapacity() < capacityBefore - FLT_EPSILON) {
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                scheduleSignalFireOnce<HydroponicsRail *>(getSharedPtr(), _capacitySignal, this);
+            #else
+                _capacitySignal.fire(this);
+            #endif
+        }
     }
 }
 

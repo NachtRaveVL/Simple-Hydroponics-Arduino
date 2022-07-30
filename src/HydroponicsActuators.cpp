@@ -257,7 +257,7 @@ void HydroponicsPumpRelayActuator::update()
 
     _destReservoir.resolve();
 
-    _flowRate.updateMeasurementIfNeeded();
+    _flowRate.updateIfNeeded();
 
     if (_pumpTimeAccMillis) {
         time_t timeMillis = millis();
@@ -417,7 +417,7 @@ const HydroponicsSingleMeasurement &HydroponicsPumpRelayActuator::getContinuousF
 
 HydroponicsSensorAttachment &HydroponicsPumpRelayActuator::getFlowRate(bool poll)
 {
-    _flowRate.updateMeasurementIfNeeded(poll);
+    _flowRate.updateIfNeeded(poll);
     return _flowRate;
 }
 

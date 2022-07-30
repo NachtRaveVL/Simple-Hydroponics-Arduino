@@ -33,15 +33,14 @@ public:
                         int type = Unknown);
     virtual ~HydroponicsBalancer();
 
-    virtual void setTargetSetpoint(float targetSetpoint) override;
-    virtual Hydroponics_BalancerState getBalancerState() const override;
-    inline bool isBalanced() const { return getBalancerState() == Hydroponics_BalancerState_Balanced; }
-
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    void setTargetUnits(Hydroponics_UnitsType targetUnits);
-    inline Hydroponics_UnitsType getTargetUnits() const { return _targetUnits; }
+    virtual void setTargetSetpoint(float targetSetpoint) override;
+    virtual Hydroponics_BalancerState getBalancerState() const override;
+
+    void setTargetUnits(Hydroponics_UnitsType targetUnits) { _sensor.setMeasurementUnits(targetUnits); }
+    inline Hydroponics_UnitsType getTargetUnits() const { return _sensor.getMeasurementUnits(); }
 
     void setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators);
     void setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators);
@@ -53,19 +52,18 @@ public:
 
     inline float getTargetSetpoint() const { return _targetSetpoint; }
     inline float getTargetRange() const { return _targetRange; }
-    inline shared_ptr<HydroponicsTrigger> getRangeTrigger() { return _rangeTrigger.getObject(); }
+
+    inline shared_ptr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
+    inline byte getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
     Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> &getBalancerSignal();
 
 protected:
+    HydroponicsSensorAttachment _sensor;                    // Sensor attachment
+    Hydroponics_BalancerState _balancerState;               // Current balancer state
     float _targetSetpoint;                                  // Target setpoint value
     float _targetRange;                                     // Target range value
     bool _enabled;                                          // Enabled flag
-
-    Hydroponics_UnitsType _targetUnits;                     // Target units
-    Hydroponics_BalancerState _balancerState;               // Current balancer state
-
-    HydroponicsTriggerAttachment _rangeTrigger;             // Target range trigger
 
     Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> _balancerSignal; // Balancer signal
 
@@ -74,7 +72,7 @@ protected:
 
     void disableAllActuators();
 
-    void handleTrigger(Hydroponics_TriggerState triggerState);
+    void handleMeasurement(const HydroponicsMeasurement *measurement);
 };
 
 
@@ -115,7 +113,7 @@ public:
                                    float targetSetpoint,
                                    float targetRange,
                                    time_t baseDosingMillis,
-                                   unsigned int mixTimeMins,
+                                   time_t mixTime,
                                    byte measurementRow = 0);
     HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor,
                                    float targetSetpoint,
@@ -127,10 +125,10 @@ public:
     virtual void update() override;
 
     inline time_t getBaseDosingMillis() const { return _baseDosingMillis; }
-    inline unsigned int getMixTimeMins() const { return _mixTimeMins; }
+    inline unsigned int getMixTime() const { return _mixTime; }
 
 protected:
-    uint8_t _mixTimeMins;                                   // Time allowance for mixing, in minutes
+    time_t _mixTime;                                        // Time allowance for mixing, in seconds
     time_t _baseDosingMillis;                               // Base dosing time, in milliseconds
 
     time_t _lastDosingTime;                                 // Date dosing was last performed (UTC)

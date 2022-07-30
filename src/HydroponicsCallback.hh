@@ -87,6 +87,7 @@ template <class ParameterType> class FunctionSlot : public Slot<ParameterType> {
     FunctPtr _funct;
 
 public:
+    FunctionSlot() : Slot<ParameterType>(Function), _funct(nullptr) { }
     FunctionSlot(FunctPtr funct) : Slot<ParameterType>(Function), _funct(funct) { }
 
     // Copy the slot
@@ -128,6 +129,7 @@ template <class ObjectType, class ParameterType> class MethodSlot : public Slot<
     FunctPtr _funct;
 
 public:
+    MethodSlot() : Slot<ParameterType>(Method), _obj(nullptr), _funct(nullptr) { }
     MethodSlot(ObjectType *obj, FunctPtr funct) : Slot<ParameterType>(Method), _obj(obj), _funct(funct) { }
     template <class T> MethodSlot(const MethodSlot<T, ParameterType> &slot)
         : Slot<ParameterType>(Method), _obj(reinterpret_cast<ObjectType *>(slot.getObject())), _funct(reinterpret_cast<FunctPtr>(slot.getFunct())) { }

@@ -19,20 +19,19 @@ struct HydroponicsObjectData;
 extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
 
 // Shortcut to get shared pointer for object with static pointer cast built-in.
-template<class T> inline shared_ptr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? static_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
+template<class T = HydroponicsObjInterface> inline shared_ptr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? static_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
 
 
 // Simple class for referencing an object in the Hydroponics system.
 // This class is mainly used to simplify object key generation, which is used when we
 // want to uniquely refer to objects in the Hydroponics system.
 struct HydroponicsIdentity {
-    enum { Actuator, Sensor, Crop, Reservoir, Rail, SubObject, Unknown = -1 } type; // Object type (custom RTTI)
+    enum { Actuator, Sensor, Crop, Reservoir, Rail, Unknown = -1 } type; // Object type (custom RTTI)
     inline bool isActuatorType() const { return type == Actuator; }
     inline bool isSensorType() const { return type == Sensor; }
     inline bool isCropType() const { return type == Crop; }
     inline bool isReservoirType() const { return type == Reservoir; }
     inline bool isRailType() const { return type == Rail; }
-    inline bool isSubObject() const { return type == SubObject; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
     union {
@@ -46,8 +45,16 @@ struct HydroponicsIdentity {
     String keyString;                                       // String key
     Hydroponics_KeyType key;                                // UInt Key
 
-    // Default constructor (no id)
+    // Default constructor (incomplete id)
     HydroponicsIdentity();
+
+    // Copy key (incomplete id)
+    HydroponicsIdentity(Hydroponics_KeyType key);
+
+    // Copy into keyStr (incomplete id)
+    HydroponicsIdentity(const char *idKeyStr);
+    // Copy into keyStr (incomplete id)
+    HydroponicsIdentity(String idKey);
 
     // Copy id with new position index
     HydroponicsIdentity(const HydroponicsIdentity &id,
@@ -69,21 +76,13 @@ struct HydroponicsIdentity {
     HydroponicsIdentity(Hydroponics_RailType railType,
                         Hydroponics_PositionIndex positionIndex = HYDRUINO_POS_SEARCH_FROMBEG);
 
-    // Sub-object null-id constructor
-    HydroponicsIdentity(const HydroponicsSubObject *obj);
-
     // Data constructor
     HydroponicsIdentity(const HydroponicsData *dataIn);
-
-    // String constructor
-    HydroponicsIdentity(const char *idKeyStr);
-    // String constructor
-    HydroponicsIdentity(const String &idKeyString);
 
     // Used to update key value after modification, returning new key by convenience
     Hydroponics_KeyType regenKey();
 
-    inline operator bool() const { return key != (Hydroponics_KeyType)-1 && keyString.length(); }
+    inline operator bool() const { return key != (Hydroponics_KeyType)-1; }
     inline bool operator==(const HydroponicsIdentity &otherId) const { return key == otherId.key; }
     inline bool operator!=(const HydroponicsIdentity &otherId) const { return key != otherId.key; }
 };
@@ -98,7 +97,6 @@ public:
     inline bool isCropType() const { return _id.isCropType(); }
     inline bool isReservoirType() const { return _id.isReservoirType(); }
     inline bool isRailType() const { return _id.isRailType(); }
-    inline bool isSubObject() const { return _id.isSubObject(); }
     inline bool isUnknownType() const { return _id.isUnknownType(); }
 
     HydroponicsObject(HydroponicsIdentity id);              // Standard constructor

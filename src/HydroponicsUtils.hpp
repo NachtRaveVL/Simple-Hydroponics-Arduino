@@ -120,7 +120,8 @@ typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typenam
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second.first && iter->second.first->isActuatorType()) {
-            retVal.push_back(iter->second.first);
+            auto actuator = iter->second.first;
+            retVal.push_back(actuator);
         }
     }
 
@@ -134,7 +135,8 @@ typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Ma
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second.first && iter->second.first->isCropType()) {
-            retVal.push_back(iter->second.first);
+            auto crop = iter->second.first;
+            retVal.push_back(crop);
         }
     }
 
@@ -151,7 +153,8 @@ typename Vector<HydroponicsObject *, N>::type linksFilterActuatorsByReservoirAnd
             auto actuator = (HydroponicsActuator *)(iter->second.first);
 
             if (actuator->getActuatorType() == actuatorType && actuator->getReservoir().get() == srcReservoir) {
-                retVal.push_back(iter->second.first);
+                auto actuator = iter->second.first;
+                retVal.push_back(actuator);
             }
         }
     }
@@ -172,7 +175,8 @@ typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputRes
                 auto outputReservoir = ((HydroponicsPumpObjectInterface *)actuator)->getOutputReservoir().get();
 
                 if (outputReservoir && outputReservoir->getReservoirType() == destReservoirType) {
-                    retVal.push_back(iter->second.first);
+                    auto pump = iter->second.first;
+                    retVal.push_back(pump);
                 }
             }
         }
@@ -194,7 +198,8 @@ typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputRe
                 auto inputReservoir = ((HydroponicsPumpObjectInterface *)actuator)->getInputReservoir().get();
 
                 if (inputReservoir && inputReservoir->getReservoirType() == srcReservoirType) {
-                    retVal.push_back(iter->second.first);
+                    auto pump = iter->second.first;
+                    retVal.push_back(pump);
                 }
             }
         }
@@ -254,7 +259,8 @@ void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>
         auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
         HYDRUINO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
-            actuatorsOut.push_back(make_pair(actuator, rateValue));
+            auto pair = make_pair(actuator, rateValue);
+            actuatorsOut.push_back(pair);
         }
     }
 }

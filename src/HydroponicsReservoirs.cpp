@@ -145,13 +145,13 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReser
 {
     _waterVolume = dataIn->volumeSensor;
 
-    _filledTrigger.setUpdateMethod(&HydroponicsReservoir::handleFilledState);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
     HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HStr_Err_AllocationFailure));
+    _filledTrigger.setHandleMethod(&HydroponicsReservoir::handleFilledState);
 
-    _emptyTrigger.setUpdateMethod(&HydroponicsReservoir::handleEmptyState);
     _emptyTrigger = newTriggerObjectFromSubData(&(dataIn->emptyTrigger));
     HYDRUINO_SOFT_ASSERT(_emptyTrigger, SFP(HStr_Err_AllocationFailure));
+    _emptyTrigger.setHandleMethod(&HydroponicsReservoir::handleEmptyState);
 }
 
 void HydroponicsFluidReservoir::update()
@@ -162,7 +162,7 @@ void HydroponicsFluidReservoir::update()
 
     if (_emptyTrigger.resolve()) { _emptyTrigger->update(); }
 
-    _waterVolume.updateMeasurementIfNeeded();
+    _waterVolume.updateIfNeeded();
 }
 
 void HydroponicsFluidReservoir::handleLowMemory()
@@ -198,7 +198,7 @@ void HydroponicsFluidReservoir::setVolumeUnits(Hydroponics_UnitsType volumeUnits
 
 HydroponicsSensorAttachment &HydroponicsFluidReservoir::getWaterVolume(bool poll)
 {
-    _waterVolume.updateMeasurementIfNeeded(poll);
+    _waterVolume.updateIfNeeded(poll);
     return _waterVolume;
 }
 
@@ -282,28 +282,28 @@ void HydroponicsFeedReservoir::update()
 {
     HydroponicsFluidReservoir::update();
 
+    _waterPH.updateIfNeeded();
+    _waterTDS.updateIfNeeded();
+    _waterTemp.updateIfNeeded();
+    _airTemp.updateIfNeeded();
+    _airCO2.updateIfNeeded();
+
     if (_waterPHBalancer) { _waterPHBalancer->update(); }
     if (_waterTDSBalancer) { _waterTDSBalancer->update(); }
     if (_waterTempBalancer) { _waterTempBalancer->update(); }
     if (_airTempBalancer) { _airTempBalancer->update(); }
     if (_airCO2Balancer) { _airCO2Balancer->update(); }
-
-    _waterPH.updateMeasurementIfNeeded();
-    _waterTDS.updateMeasurementIfNeeded();
-    _waterTemp.updateMeasurementIfNeeded();
-    _airTemp.updateMeasurementIfNeeded();
-    _airCO2.updateMeasurementIfNeeded();
 }
 
 void HydroponicsFeedReservoir::handleLowMemory()
 {
     HydroponicsFluidReservoir::handleLowMemory();
 
-    if (_waterPHBalancer && !_waterPHBalancer->isEnabled()) { setWaterPHBalancer(nullptr); }
-    if (_waterTDSBalancer && !_waterTDSBalancer->isEnabled()) { setWaterTDSBalancer(nullptr); }
-    if (_waterTempBalancer && !_waterTempBalancer->isEnabled()) { setWaterTemperatureBalancer(nullptr); }
-    if (_airTempBalancer && !_airTempBalancer->isEnabled()) { setAirTemperatureBalancer(nullptr); }
-    if (_airCO2Balancer && !_airCO2Balancer->isEnabled()) { setAirCO2Balancer(nullptr); }
+    if (_waterPHBalancer) { _waterPHBalancer->handleLowMemory(); }
+    if (_waterTDSBalancer) { _waterTDSBalancer->handleLowMemory(); }
+    if (_waterTempBalancer) { _waterTempBalancer->handleLowMemory(); }
+    if (_airTempBalancer) { _airTempBalancer->handleLowMemory(); }
+    if (_airCO2Balancer) { _airCO2Balancer->handleLowMemory(); }
 }
 
 void HydroponicsFeedReservoir::setTDSUnits(Hydroponics_UnitsType tdsUnits)
@@ -327,31 +327,31 @@ void HydroponicsFeedReservoir::setTemperatureUnits(Hydroponics_UnitsType tempUni
 
 HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterPH(bool poll)
 {
-    _waterPH.updateMeasurementIfNeeded(poll);
+    _waterPH.updateIfNeeded(poll);
     return _waterPH;
 }
 
 HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterTDS(bool poll)
 {
-    _waterTDS.updateMeasurementIfNeeded(poll);
+    _waterTDS.updateIfNeeded(poll);
     return _waterTDS;
 }
 
 HydroponicsSensorAttachment &HydroponicsFeedReservoir::getWaterTemperature(bool poll)
 {
-    _waterTemp.updateMeasurementIfNeeded(poll);
+    _waterTemp.updateIfNeeded(poll);
     return _waterTemp;
 }
 
 HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirTemperature(bool poll)
 {
-    _airTemp.updateMeasurementIfNeeded(poll);
+    _airTemp.updateIfNeeded(poll);
     return _airTemp;
 }
 
 HydroponicsSensorAttachment &HydroponicsFeedReservoir::getAirCO2(bool poll)
 {
-    _airCO2.updateMeasurementIfNeeded(poll);
+    _airCO2.updateIfNeeded(poll);
     return _airCO2;
 }
 

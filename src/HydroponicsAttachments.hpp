@@ -9,8 +9,10 @@ template<class U>
 shared_ptr<U> HydroponicsDLinkObject::getObject()
 {
     if (needsResolved() && Hydroponics::_activeInstance) {
-        _obj = static_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->objectById(_id));
-        if ((bool)_obj) { _id = _obj->getId(); } // ensures complete id
+        _obj = static_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
+    }
+    if (isResolved() && _keyStr) {
+        free((void *)_keyStr); _keyStr = nullptr;
     }
     return static_pointer_cast<U>(_obj);
 }
@@ -36,17 +38,17 @@ shared_ptr<U> HydroponicsAttachment::getObject()
 }
 
 
-template<class ParameterType, int Slots> template<class T, class U>
-HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void), MethodSlot<U,ParameterType> handleMethod)
-    : HydroponicsAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleMethod(handleMethod)
+template<class ParameterType, int Slots> template<class T>
+HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void))
+    : HydroponicsAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter)
 {
-    HYDRUINO_HARD_ASSERT(_signalGetter && _handleMethod, SFP(HStr_Err_InvalidParameter));
+    HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HStr_Err_InvalidParameter));
 }
 
 template<class ParameterType, int Slots>
 HydroponicsSignalAttachment<ParameterType,Slots>::~HydroponicsSignalAttachment()
 {
-    if (isResolved()) {
+    if (isResolved() && _handleMethod) {
         (get()->*_signalGetter)().detach(_handleMethod);
     }
 }
@@ -56,15 +58,42 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::attachObject()
 {
     HydroponicsAttachment::attachObject();
 
-    (get()->*_signalGetter)().attach(_handleMethod);
+    if (_handleMethod) {
+        (get()->*_signalGetter)().attach(_handleMethod);
+    }
 }
 
 template<class ParameterType, int Slots>
 void HydroponicsSignalAttachment<ParameterType,Slots>::detachObject()
 {
-    if (isResolved()) {
+    if (isResolved() && _handleMethod) {
         (get()->*_signalGetter)().detach(_handleMethod);
     }
 
     HydroponicsAttachment::detachObject();
 }
+
+template<class ParameterType, int Slots> template<class U>
+void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlot<U,ParameterType> handleMethod)
+{
+    if (!(_handleMethod == handleMethod)) {
+        if (isResolved()) { detachObject(); }
+        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>((HydroponicsObjInterface *)handleMethod.getObject(), (HandleMethodPtr)handleMethod.getFunct());
+        if (isResolved()) { attachObject(); }
+    }
+}
+
+template<class ParameterType, int Slots> template<class U>
+void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(void (U::*handleMethodPtr)(ParameterType))
+{
+    if ((!_handleMethod.getObject() || (void*)_handleMethod.getObject() != (void*)_parent) ||
+        (!_handleMethod.getFunct() || (void*)_handleMethod.getFunct() != (void*)handleMethodPtr)) {
+        if (isResolved()) { detachObject(); }
+        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>(_parent, (HandleMethodPtr)handleMethodPtr);
+        if (isResolved()) { attachObject(); }
+    }
+}
+
+inline Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState() { return get()->getTriggerState(); }
+
+inline Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState() { return get()->getBalancerState(); }

@@ -190,19 +190,16 @@ void HydroponicsPublisher::performTabulation()
         int columnCount = 0;
 
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
-            if (iter->second && iter->second->isSensorType()) {
+            if (iter->second->isSensorType()) {
                 auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+                auto rowCount = getMeasurementRowCount(sensor->getLatestMeasurement());
 
-                if (sensor) {
-                    auto rowCount = getMeasurementRowCount(sensor->getLatestMeasurement());
-
-                    for (int rowIndex = 0; sameOrder && rowIndex < rowCount; ++rowIndex) {
-                        sameOrder = sameOrder && (columnCount + rowIndex + 1 <= _columnCount) &&
-                                    (_dataColumns[columnCount + rowIndex].sensorKey == sensor->getKey());
-                    }
-
-                    columnCount += rowCount;
+                for (int rowIndex = 0; sameOrder && rowIndex < rowCount; ++rowIndex) {
+                    sameOrder = sameOrder && (columnCount + rowIndex + 1 <= _columnCount) &&
+                                (_dataColumns[columnCount + rowIndex].sensorKey == sensor->getKey());
                 }
+
+                columnCount += rowCount;
             }
         }
         sameOrder = sameOrder && (columnCount == _columnCount);
@@ -221,19 +218,16 @@ void HydroponicsPublisher::performTabulation()
                     int columnIndex = 0;
 
                     for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
-                        if (iter->second && iter->second->isSensorType()) {
+                        if (iter->second->isSensorType()) {
                             auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+                            auto measurement = sensor->getLatestMeasurement();
+                            auto rowCount = getMeasurementRowCount(measurement);
 
-                            if (sensor) {
-                                auto measurement = sensor->getLatestMeasurement();
-                                auto rowCount = getMeasurementRowCount(measurement);
-
-                                for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-                                    HYDRUINO_HARD_ASSERT(columnIndex < _columnCount, SFP(HStr_Err_OperationFailure));
-                                    _dataColumns[columnIndex].measurement = getAsSingleMeasurement(measurement, rowIndex);
-                                    _dataColumns[columnIndex].sensorKey = sensor->getKey();
-                                    columnIndex++;
-                                }
+                            for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
+                                HYDRUINO_HARD_ASSERT(columnIndex < _columnCount, SFP(HStr_Err_OperationFailure));
+                                _dataColumns[columnIndex].measurement = getAsSingleMeasurement(measurement, rowIndex);
+                                _dataColumns[columnIndex].sensorKey = sensor->getKey();
+                                columnIndex++;
                             }
                         }
                     }

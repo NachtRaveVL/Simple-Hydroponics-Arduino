@@ -167,13 +167,12 @@ class HydroponicsBalancerObjectInterface {
 public:
     virtual void setTargetSetpoint(float targetSetpoint) = 0;
     virtual Hydroponics_BalancerState getBalancerState() const = 0;
+    inline bool isBalanced() const { return getBalancerState() == Hydroponics_BalancerState_Balanced; }
 };
 
 // Trigger Object Interface
 class HydroponicsTriggerObjectInterface {
 public:
-    virtual void attachTrigger() = 0;
-    virtual void detachTrigger() = 0;
     virtual Hydroponics_TriggerState getTriggerState() const = 0;
 };
 

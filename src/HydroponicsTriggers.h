@@ -43,22 +43,18 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual void attachTrigger() = 0;
-    virtual void detachTrigger() = 0;
     virtual Hydroponics_TriggerState getTriggerState() const override;
 
-    void setToleranceUnits(Hydroponics_UnitsType toleranceUnits);
-    inline Hydroponics_UnitsType getToleranceUnits() { return definedUnitsElse(_toleranceUnits, _sensor ? _sensor->getMeasurementUnits(_sensor.getMeasurementRow()) : Hydroponics_UnitsType_Undefined); }
+    inline void setToleranceUnits(Hydroponics_UnitsType toleranceUnits) { _sensor.setMeasurementUnits(toleranceUnits); }
+    inline Hydroponics_UnitsType getToleranceUnits() const { return _sensor.getMeasurementUnits(); }
 
-    inline shared_ptr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateMeasurementIfNeeded(poll); return _sensor.getObject(); }
+    inline shared_ptr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
     inline byte getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
     Signal<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> &getTriggerSignal();
 
 protected:
     HydroponicsSensorAttachment _sensor;                    // Sensor attachment
-    bool _attached;                                         // Attached flag
-    Hydroponics_UnitsType _toleranceUnits;                  // Tolerance units (if set, else undef)
     Hydroponics_TriggerState _triggerState;                 // Current trigger state
     Signal<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> _triggerSignal; // Trigger signal
 
@@ -87,9 +83,6 @@ public:
     HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
-
-    virtual void attachTrigger() override;
-    virtual void detachTrigger() override;
 
     void setTriggerTolerance(float tolerance);
 
@@ -131,9 +124,6 @@ public:
     HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
-
-    virtual void attachTrigger() override;
-    virtual void detachTrigger() override;
 
     void updateTriggerMidpoint(float toleranceMid);
 

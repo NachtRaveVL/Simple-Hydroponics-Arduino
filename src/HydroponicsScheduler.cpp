@@ -581,10 +581,12 @@ void HydroponicsProcess::setActuatorReqs(const Vector<shared_ptr<HydroponicsActu
         }
     }
 
-    actuatorReqs.clear();
-    for (auto actuatorInIter = actuatorReqsIn.begin(); actuatorInIter != actuatorReqsIn.end(); ++actuatorInIter) {
-        actuatorReqs.push_back((*actuatorInIter));
-    }
+    {   actuatorReqs.clear();
+        for (auto actuatorInIter = actuatorReqsIn.begin(); actuatorInIter != actuatorReqsIn.end(); ++actuatorInIter) {
+            auto actuator = (*actuatorInIter);
+            actuatorReqs.push_back(actuator);
+        }
+    }  
 }
 
 

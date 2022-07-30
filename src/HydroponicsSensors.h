@@ -21,6 +21,7 @@ struct HydroponicsDHTTempHumiditySensorData;
 struct HydroponicsDSTemperatureSensorData;
 
 #include "Hydroponics.h"
+#include "HydroponicsDatas.h"
 
 // Creates sensor object from passed sensor data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn);
