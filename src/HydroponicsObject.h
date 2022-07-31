@@ -19,7 +19,7 @@ struct HydroponicsObjectData;
 extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
 
 // Shortcut to get shared pointer for object with static pointer cast built-in.
-template<class T = HydroponicsObjInterface> inline shared_ptr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? static_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
+template<class T = HydroponicsObjInterface> inline shared_ptr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? reinterpret_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
 
 
 // Simple class for referencing an object in the Hydroponics system.

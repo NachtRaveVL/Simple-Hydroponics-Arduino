@@ -23,7 +23,7 @@ HydroponicsDLinkObject::~HydroponicsDLinkObject()
     if (_keyStr) { free((void *)_keyStr); }
 }
 
-void HydroponicsDLinkObject::detach()
+void HydroponicsDLinkObject::unresolve()
 {
     if (_obj && !_keyStr) {
         auto id = getId();
@@ -36,7 +36,7 @@ void HydroponicsDLinkObject::detach()
     _obj = nullptr;
 }
 
-HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(HydroponicsIdentity rhs)
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(HydroponicsIdentity rhs)
 {
     _key = rhs.key;
     _obj = nullptr;
@@ -48,7 +48,7 @@ HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(HydroponicsIdentity rh
     return *this;
 }
 
-HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const char *rhs)
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const char *rhs)
 {
     _key = stringHash(rhs);
     _obj = nullptr;
@@ -58,6 +58,13 @@ HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const char *rhs)
         strncpy((char *)_keyStr, rhs, len + 1);
     }
     return *this;
+}
+
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const HydroponicsObjInterface *rhs)
+{
+    _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1);
+    _obj = getSharedPtr<HydroponicsObjInterface>(rhs);
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this;
 }
 
 

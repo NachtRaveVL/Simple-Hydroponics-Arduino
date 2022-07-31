@@ -29,29 +29,28 @@ public:
     HydroponicsDLinkObject(const HydroponicsDLinkObject &obj);
     virtual ~HydroponicsDLinkObject();
 
-    inline bool isId() const { return !_obj; }
-    inline bool isObject() const { return (bool)_obj; }
-    inline bool isResolved() const { return isObject(); }
-    inline bool needsResolved() const { return isId() && _key != (Hydroponics_KeyType)-1; }
-    inline bool resolve() { return (bool)getObject<HydroponicsObjInterface>(); }
+    inline bool isUnresolved() const { return !_obj; }
+    inline bool isResolved() const { return (bool)_obj; }
+    inline bool needsResolved() const { return isUnresolved() && _key != (Hydroponics_KeyType)-1; }
+    inline bool resolve() { return isResolved() || (bool)getObject(); }
+    void unresolve();
 
     template<class U> inline void setObject(U obj) { *this = obj; }
     template<class U = HydroponicsObjInterface> shared_ptr<U> getObject();
-    void detach();
 
     template<class U = HydroponicsObjInterface> inline U* get() { return getObject<U>().get(); }
     inline HydroponicsIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroponicsIdentity(_keyStr) : HydroponicsIdentity(_key)); }
     inline Hydroponics_KeyType getKey() const { return _key; }
-    inline String getKeyString() const { return _keyStr ? String(_keyStr) : getId().keyString; }
+    inline String getKeyString() const { return _keyStr ? String(_keyStr) : (_obj ? _obj->getKeyString() : String((uintptr_t)_obj.get())); }
 
     inline operator bool() const { isResolved(); }
-    inline HydroponicsObjInterface* operator->() { return get<HydroponicsObjInterface>(); }
-    inline HydroponicsObjInterface* operator*() { return get<HydroponicsObjInterface>(); }
+    inline HydroponicsObjInterface* operator->() { return get(); }
+    inline HydroponicsObjInterface* operator*() { return get(); }
 
-    HydroponicsDLinkObject &operator=(HydroponicsIdentity rhs);
-    HydroponicsDLinkObject &operator=(const char *rhs);
-    inline HydroponicsDLinkObject &operator=(const HydroponicsObjInterface *rhs) { _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); _obj = getSharedPtr(rhs); if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this; }
-    template<class U> HydroponicsDLinkObject &operator=(shared_ptr<U> &rhs);
+    inline HydroponicsDLinkObject &operator=(HydroponicsIdentity rhs);
+    inline HydroponicsDLinkObject &operator=(const char *rhs);
+    template<class U> inline HydroponicsDLinkObject &operator=(shared_ptr<U> &rhs);
+    inline HydroponicsDLinkObject &operator=(const HydroponicsObjInterface *rhs);
 
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _key == rhs.key; }
     inline bool operator==(const char *rhs) const { return _key == stringHash(rhs); }
@@ -80,11 +79,10 @@ public:
     virtual void attachObject();
     virtual void detachObject();
 
-    inline bool isId() const { return _obj.isId(); }
-    inline bool isObject() const { return _obj.isObject(); }
-    inline bool isResolved() const { return _obj.isResolved(); }
-    inline bool needsResolved() const { return _obj.needsResolved(); }
-    inline bool resolve() { return (bool)getObject<HydroponicsObjInterface>(); }
+    inline bool isUnresolved() const { return !_obj; }
+    inline bool isResolved() const { return (bool)_obj; }
+    inline bool needsResolved() const { return isUnresolved() && _obj.needsResolved(); }
+    inline bool resolve() { return isResolved() || (bool)getObject(); }
 
     template<class U> void setObject(U obj);
     template<class U = HydroponicsObjInterface> shared_ptr<U> getObject();
