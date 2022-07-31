@@ -248,7 +248,7 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(Hydroponics_CropType cropType,
 {
     _soilMoisture.setMeasurementUnits(getMoistureUnits());
 
-    _feedingTrigger.setHandleMethod(&HydroponicsCrop::handleFeeding);
+    _feedingTrigger.setHandleMethod(&handleFeeding);
 }
 
 HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropData *dataIn)
@@ -258,7 +258,7 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
     _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->moistureUnits, getMoistureUnits()));
     _soilMoisture.setObject(dataIn->moistureSensor);
 
-    _feedingTrigger.setHandleMethod(&HydroponicsCrop::handleFeeding);
+    _feedingTrigger.setHandleMethod(&handleFeeding);
     _feedingTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->feedingTrigger)));
     HYDRUINO_SOFT_ASSERT(_feedingTrigger, SFP(HStr_Err_AllocationFailure));
 }

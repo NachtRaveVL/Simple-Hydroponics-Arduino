@@ -124,8 +124,10 @@ class HydroponicsSignalAttachment : public HydroponicsAttachment {
 public:
     typedef Signal<ParameterType,Slots> &(HydroponicsObjInterface::*SignalGetterPtr)(void);
     typedef void (HydroponicsObjInterface::*HandleMethodPtr)(ParameterType);
+    typedef MethodSlot<HydroponicsObjInterface,ParameterType> *HandleMethodSlotPtr;
 
-    template<class T> HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void));
+    template<class U> HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(U::*signalGetter)(void));
+    HydroponicsSignalAttachment(const HydroponicsSignalAttachment<ParameterType,Slots> &attachment);
     virtual ~HydroponicsSignalAttachment();
 
     virtual void attachObject() override;
@@ -140,8 +142,8 @@ public:
     template<class U> inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const U *rhs) { setObject(rhs); return *this; }
 
 protected:
-    SignalGetterPtr _signalGetter;                          // Signal getter method ptr
-    MethodSlot<HydroponicsObjInterface,ParameterType> _handleMethod; // Handler method slot
+    SignalGetterPtr _signalGetter;                          // Signal getter method ptr (weak)
+    HandleMethodSlotPtr _handleMethod;                      // Handler method slot (owned)
 };
 
 

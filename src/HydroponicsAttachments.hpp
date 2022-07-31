@@ -72,9 +72,16 @@ shared_ptr<U> HydroponicsAttachment::getObject()
 }
 
 
-template<class ParameterType, int Slots> template<class T>
-HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(T::*signalGetter)(void))
-    : HydroponicsAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter)
+template<class ParameterType, int Slots> template<class U>
+HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(HydroponicsObjInterface *parent, Signal<ParameterType,Slots> &(U::*signalGetter)(void))
+    : HydroponicsAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleMethod(nullptr)
+{
+    HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HStr_Err_InvalidParameter));
+}
+
+template<class ParameterType, int Slots>
+HydroponicsSignalAttachment<ParameterType,Slots>::HydroponicsSignalAttachment(const HydroponicsSignalAttachment<ParameterType,Slots> &attachment)
+    : HydroponicsAttachment(attachment._parent), _signalGetter((SignalGetterPtr)attachment._signalGetter), _handleMethod((HandleMethodSlotPtr)(attachment._handleMethod ? attachment._handleMethod->clone() : nullptr))
 {
     HYDRUINO_HARD_ASSERT(_signalGetter, SFP(HStr_Err_InvalidParameter));
 }
@@ -83,7 +90,7 @@ template<class ParameterType, int Slots>
 HydroponicsSignalAttachment<ParameterType,Slots>::~HydroponicsSignalAttachment()
 {
     if (isResolved() && _handleMethod) {
-        (get()->*_signalGetter)().detach(_handleMethod);
+        (get()->*_signalGetter)().detach(*_handleMethod);
     }
 }
 
@@ -93,7 +100,7 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::attachObject()
     HydroponicsAttachment::attachObject();
 
     if (_handleMethod) {
-        (get()->*_signalGetter)().attach(_handleMethod);
+        (get()->*_signalGetter)().attach(*_handleMethod);
     }
 }
 
@@ -101,7 +108,7 @@ template<class ParameterType, int Slots>
 void HydroponicsSignalAttachment<ParameterType,Slots>::detachObject()
 {
     if (isResolved() && _handleMethod) {
-        (get()->*_signalGetter)().detach(_handleMethod);
+        (get()->*_signalGetter)().detach(*_handleMethod);
     }
 
     HydroponicsAttachment::detachObject();
@@ -110,14 +117,13 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::detachObject()
 template<class ParameterType, int Slots> template<class U>
 void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlot<U,ParameterType> handleMethod)
 {
-    if (!(_handleMethod == handleMethod)) {
-        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(_handleMethod); }
+    if (!(*_handleMethod == handleMethod)) {
+        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(*_handleMethod); }
 
-        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>(
-            reinterpret_cast<HydroponicsObjInterface *>(handleMethod.getObject()),
-            (HandleMethodPtr)handleMethod.getFunct());
+        if (_handleMethod) { delete _handleMethod; _handleMethod = nullptr; }
+        _handleMethod = (HandleMethodSlotPtr)handleMethod.clone();
 
-        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(_handleMethod); }
+        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(*_handleMethod); }
     }
 }
 
@@ -125,7 +131,7 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlo
 inline void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
 {
     if (resolve() && (_needsMeasurement || poll)) {
-        if (_handleMethod) { _handleMethod(get()->getLatestMeasurement()); }
+        if (_handleMethod) { _handleMethod->operator()(get()->getLatestMeasurement()); }
         else { handleMeasurement(get()->getLatestMeasurement()); }
 
         get()->takeMeasurement((_needsMeasurement || poll));

@@ -81,7 +81,7 @@ protected:
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;
 
-    virtual void handleFeeding(Hydroponics_TriggerState feedingState);
+    void handleFeeding(Hydroponics_TriggerState feedingState);
     friend class HydroponicsAdaptiveCrop;
 
     void recalcGrowWeekAndPhase();

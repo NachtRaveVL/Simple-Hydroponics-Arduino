@@ -193,10 +193,10 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType
                                                    int classType = Regulated)
     : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
-    _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePower);
+    _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());
+    _powerUsage.setHandleMethod(&handlePower);
 
-    _limitTrigger.setHandleMethod(&HydroponicsRail::handleLimit);
+    _limitTrigger.setHandleMethod(&handleLimit);
 }
 
 HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRailData *dataIn)
@@ -205,10 +205,10 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
       _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
-    _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePower);
+    _powerUsage.setHandleMethod(&handlePower);
     _powerUsage.setObject(dataIn->powerSensor);
 
-    _limitTrigger.setHandleMethod(&HydroponicsRail::handleLimit);
+    _limitTrigger.setHandleMethod(&handleLimit);
     _limitTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->limitTrigger)));
     HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HStr_Err_AllocationFailure));
 }

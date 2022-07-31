@@ -81,14 +81,14 @@ HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface
           parent, &HydroponicsSensor::getMeasurementSignal),
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
 {
-    setHandleMethod(&HydroponicsSensorAttachment::handleMeasurement);
+    setHandleMethod(&handleMeasurement);
 }
 
 void HydroponicsSensorAttachment::attachObject()
 {
     HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::attachObject();
 
-    if (_handleMethod) { _handleMethod(get()->getLatestMeasurement()); }
+    if (_handleMethod) { _handleMethod->operator()(get()->getLatestMeasurement()); }
     else { handleMeasurement(get()->getLatestMeasurement()); }
 }
 

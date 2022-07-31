@@ -137,7 +137,10 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(Hydroponics_ReservoirType r
                                                      int classType)
     : HydroponicsReservoir(reservoirType, reservoirIndex, classType),
       _maxVolume(maxVolume), _waterVolume(this), _filledTrigger(this), _emptyTrigger(this)
-{ ; }
+{
+    _filledTrigger.setHandleMethod(&HydroponicsFluidReservoir::handleFilled);
+    _emptyTrigger.setHandleMethod(&HydroponicsReservoir::handleEmpty);
+}
 
 HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReservoirData *dataIn)
     : HydroponicsReservoir(dataIn),
@@ -145,7 +148,7 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReser
 {
     _waterVolume.setObject(dataIn->volumeSensor);
 
-    _filledTrigger.setHandleMethod(&HydroponicsReservoir::handleFilled);
+    _filledTrigger.setHandleMethod(&HydroponicsFluidReservoir::handleFilled);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
     HYDRUINO_SOFT_ASSERT(_filledTrigger, SFP(HStr_Err_AllocationFailure));
 
