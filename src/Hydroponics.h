@@ -41,10 +41,13 @@
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, disables built-in Crops Lib and String data, instead relying solely on external device.
 
-// Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
+// Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
-// Uncomment or -D this define to enable debug assertions (note: adds considerable size to sketch).
+// Uncomment or -D this define to enable verbose debug output (note: adds considerable size to compiled sketch).
+//#define HYDRUINO_ENABLE_VERBOSE_DEBUG_OUTPUT
+
+// Uncomment or -D this define to enable debug assertions (note: adds considerable size to compiled sketch).
 //#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
 
 
@@ -84,6 +87,9 @@ extern void __int_restore_irq(int *primask);
 
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
 #undef HYDRUINO_ENABLE_DEBUG_OUTPUT
+#endif
+#if defined(HYDRUINO_ENABLE_DEBUG_OUTPUT) && defined(HYDRUINO_ENABLE_VERBOSE_DEBUG_OUTPUT)
+#define HYDRUINO_USE_VERBOSE_OUTPUT
 #endif
 #if !defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_ASSERTIONS)
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  softAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
@@ -434,8 +440,7 @@ protected:
 
     shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
 
-    template<class T>
-    friend shared_ptr<T> HydroponicsDLinkObject::getObject();
+    friend shared_ptr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject();
 
     void handleInterrupt(byte pin);
     friend void ::handleInterrupt(byte pin);

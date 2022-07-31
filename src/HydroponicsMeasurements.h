@@ -31,7 +31,7 @@ extern HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeas
 
 // Sensor Data Measurement Base
 struct HydroponicsMeasurement {
-    enum { Binary, Single, Double, Triple, Unknown = -1 } type; // Measurement type (custom RTTI)
+    enum : char { Binary, Single, Double, Triple, Unknown = -1 } type; // Measurement type (custom RTTI)
     inline bool isBinaryType() const { return type == Binary; }
     inline bool isSingleType() const { return type == Single; }
     inline bool isDoubleType() const { return type == Double; }

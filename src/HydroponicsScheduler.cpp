@@ -472,42 +472,56 @@ void HydroponicsScheduler::performScheduling()
             if (((HydroponicsReservoir *)(iter->second.get()))->isFeedClass()) {
                 auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
 
-                if (feedReservoir) {
-                    {   auto feedingIter = _feedings.find(feedReservoir->getKey());
+                {   auto feedingIter = _feedings.find(feedReservoir->getKey());
 
-                        if (linksCountCrops(feedReservoir->getLinkages())) {
-                            if (feedingIter != _feedings.end()) {
-                                if (feedingIter->second) {
-                                    feedingIter->second->recalcFeeding();
-                                }
-                            } else {
-                                HydroponicsFeeding *feeding = new HydroponicsFeeding(feedReservoir);
-                                HYDRUINO_SOFT_ASSERT(feeding, SFP(HStr_Err_AllocationFailure));
-                                if (feeding) { _feedings[feedReservoir->getKey()] = feeding; }
+                    if (linksCountCrops(feedReservoir->getLinkages())) {
+                        if (feedingIter != _feedings.end()) {
+                            if (feedingIter->second) {
+                                feedingIter->second->recalcFeeding();
                             }
-                        } else if (feedingIter != _feedings.end()) { // No crops to warrant process -> delete
-                            if (feedingIter->second) { delete feedingIter->second; }
-                            _feedings.erase(feedingIter);
+                        } else {
+                            #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+                                Serial.print(F("Scheduler::performScheduling Crop linkages found for: ")); Serial.print(iter->second->getKeyString());
+                                Serial.print(':'); Serial.print(' '); Serial.println(linksCountCrops(feedReservoir->getLinkages())); flushYield();
+                            #endif
+
+                            HydroponicsFeeding *feeding = new HydroponicsFeeding(feedReservoir);
+                            HYDRUINO_SOFT_ASSERT(feeding, SFP(HStr_Err_AllocationFailure));
+                            if (feeding) { _feedings[feedReservoir->getKey()] = feeding; }
                         }
+                    } else if (feedingIter != _feedings.end()) { // No crops to warrant process -> delete if exists
+                        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+                            Serial.print(F("Scheduler::performScheduling NO more crop linkages found for: ")); Serial.println(iter->second->getKeyString()); flushYield();
+                        #endif
+                        if (feedingIter->second) { delete feedingIter->second; }
+                        _feedings.erase(feedingIter);
                     }
+                }
 
-                    {   auto lightingIter = _lightings.find(feedReservoir->getKey());
+                {   auto lightingIter = _lightings.find(feedReservoir->getKey());
 
-                        if (linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_WaterSprayer) ||
-                            linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_GrowLights)) {
-                            if (lightingIter != _lightings.end()) {
-                                if (lightingIter->second) {
-                                    lightingIter->second->recalcLighting();
-                                }
-                            } else {
-                                HydroponicsLighting *lighting = new HydroponicsLighting(feedReservoir);
-                                HYDRUINO_SOFT_ASSERT(lighting, SFP(HStr_Err_AllocationFailure));
-                                if (lighting) { _lightings[feedReservoir->getKey()] = lighting; }
+                    if (linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_WaterSprayer) ||
+                        linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_GrowLights)) {
+                        if (lightingIter != _lightings.end()) {
+                            if (lightingIter->second) {
+                                lightingIter->second->recalcLighting();
                             }
-                        } else if (lightingIter != _lightings.end()) { // No lights or sprayers to warrant process -> delete
-                            if (lightingIter->second) { delete lightingIter->second; }
-                            _lightings.erase(lightingIter);
+                        } else {
+                            #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+                                Serial.print(F("Scheduler::performScheduling Light linkages found for: ")); Serial.print(iter->second->getKeyString()); Serial.print(':'); Serial.print(' ');
+                                Serial.println(linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_WaterSprayer) + linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydroponics_ActuatorType_GrowLights)); flushYield();
+                            #endif
+
+                            HydroponicsLighting *lighting = new HydroponicsLighting(feedReservoir);
+                            HYDRUINO_SOFT_ASSERT(lighting, SFP(HStr_Err_AllocationFailure));
+                            if (lighting) { _lightings[feedReservoir->getKey()] = lighting; }
                         }
+                    } else if (lightingIter != _lightings.end()) { // No lights or sprayers to warrant process -> delete if exists
+                        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+                            Serial.print(F("Scheduler::performScheduling NO more light linkages found for: ")); Serial.println(iter->second->getKeyString()); flushYield();
+                        #endif
+                        if (lightingIter->second) { delete lightingIter->second; }
+                        _lightings.erase(lightingIter);
                     }
                 }
             }
@@ -652,11 +666,23 @@ void HydroponicsFeeding::recalcFeeding()
     airTempSetpoint = totalSetpoints[3] / totalWeights;
     co2Setpoint = totalSetpoints[4] / totalWeights;
 
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT // only works for singular feed res in system, otherwise output will be erratic
+    {   static float _totalSetpoints[5] = {0,0,0,0,0};
+        if (!isFPEqual(_totalSetpoints[0], totalSetpoints[0]) || !isFPEqual(_totalSetpoints[1], totalSetpoints[1]) || !isFPEqual(_totalSetpoints[2], totalSetpoints[2]) || !isFPEqual(_totalSetpoints[3], totalSetpoints[3]) || !isFPEqual(_totalSetpoints[4], totalSetpoints[4])) {
+            _totalSetpoints[0] = totalSetpoints[0]; _totalSetpoints[1] = totalSetpoints[1]; _totalSetpoints[2] = totalSetpoints[2]; _totalSetpoints[3] = totalSetpoints[3]; _totalSetpoints[4] = totalSetpoints[4];
+            Serial.print(F("Feeding::recalcFeeding setpoints: {tds,pH,wTmp,aTmp,aCO2} = [")); Serial.print(_totalSetpoints[0]); Serial.print(' '); Serial.print(_totalSetpoints[1]); Serial.print(' '); Serial.print(_totalSetpoints[2]); Serial.print(' '); Serial.print(_totalSetpoints[3]); Serial.print(' '); Serial.println(_totalSetpoints[4]); flushYield(); } }
+    #endif
+
     setupStaging();
 }
 
 void HydroponicsFeeding::setupStaging()
 {
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Feeding::setupStaging stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
+
     if (stage == PreFeed) {
         if (feedRes->getWaterPHSensor()) {
             auto phBalancer = feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
@@ -798,10 +824,20 @@ void HydroponicsFeeding::setupStaging()
         default:
             break;
     }
+
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Feeding::~setupStaging stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
 }
 
 void HydroponicsFeeding::update()
 {
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Feeding::update stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
+
     if ((!lastAirReport || unixNow() >= lastAirReport + getSchedulerInstance()->getAirReportInterval().totalseconds()) &&
         (getSchedulerInstance()->getAirReportInterval().totalseconds() > 0) && // 0 disables
         (feedRes->getAirTemperatureSensor() || feedRes->getAirCO2Sensor())) {
@@ -924,6 +960,11 @@ void HydroponicsFeeding::update()
             }
         }
     }
+
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Feeding::~update stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
 }
 
 void HydroponicsFeeding::logFeeding(HydroponicsFeedingLogType logType)
@@ -1066,6 +1107,11 @@ void HydroponicsLighting::recalcLighting()
 
 void HydroponicsLighting::setupStaging()
 {
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Lighting::setupStaging stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
+
     switch (stage) {
         case Init: {
             clearActuatorReqs();
@@ -1096,10 +1142,20 @@ void HydroponicsLighting::setupStaging()
         default:
             break;
     }
+
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Lighting::~setupStaging stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
 }
 
 void HydroponicsLighting::update()
 {
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Lighting::update stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
+
     switch (stage) {
         case Init: {
             time_t currTime = getCurrentTime().unixtime();
@@ -1172,6 +1228,11 @@ void HydroponicsLighting::update()
             }
         }
     }
+
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+    {   static int8_t _stage = (int8_t)stage; if (_stage != (int8_t)stage) {
+        Serial.print(F("Lighting::~update stage: ")); Serial.println((_stage = (int8_t)stage)); flushYield(); } }
+    #endif
 }
 
 

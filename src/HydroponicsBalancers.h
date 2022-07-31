@@ -21,7 +21,7 @@ class HydroponicsTimedDosingBalancer;
 // measured value. Balancers allow for a setpoint to be used to drive such devices.
 class HydroponicsBalancer : public HydroponicsSubObject, public HydroponicsBalancerObjectInterface {
 public:
-    const enum { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
+    const enum : char { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
     inline bool isLinearEdgeType() const { return type == LinearEdge; }
     inline bool isTimedDosingType() const { return type == TimedDosing; }
     inline bool isUnknownType() const { return type <= Unknown; }

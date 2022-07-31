@@ -26,47 +26,29 @@ HydroponicsDLinkObject::~HydroponicsDLinkObject()
 void HydroponicsDLinkObject::unresolve()
 {
     if (_obj && !_keyStr) {
-        auto id = getId();
+        auto id = _obj->getId();
         auto len = id.keyString.length();
         if (len) {
             _keyStr = (const char *)malloc(len + 1);
-            strncpy((char *)_keyStr, id.keyString.c_str(), len + 1);
+            strcpy((char *)_keyStr, id.keyString.c_str());
         }
     }
+    HYDRUINO_HARD_ASSERT(!_obj || _key == _obj->getKey(), SFP(HStr_Err_OperationFailure));
     _obj = nullptr;
 }
 
-inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(HydroponicsIdentity rhs)
+shared_ptr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject()
 {
-    _key = rhs.key;
-    _obj = nullptr;
-    auto len = rhs.keyString.length();
-    if (len) {
-        _keyStr = (const char *)malloc(len + 1);
-        strncpy((char *)_keyStr, rhs.keyString.c_str(), len + 1);
+    if (_obj) { return _obj; }
+    if (_key == (Hydroponics_KeyType)-1) { return nullptr; }
+    if (Hydroponics::_activeInstance) {
+        _obj = reinterpret_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
     }
-    return *this;
-}
-
-inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const char *rhs)
-{
-    _key = stringHash(rhs);
-    _obj = nullptr;
-    auto len = strnlen(rhs, HYDRUINO_NAME_MAXSIZE);
-    if (len) {
-        _keyStr = (const char *)malloc(len + 1);
-        strncpy((char *)_keyStr, rhs, len + 1);
+    if (_obj && _keyStr) {
+        free((void *)_keyStr); _keyStr = nullptr;
     }
-    return *this;
+    return _obj;
 }
-
-inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const HydroponicsObjInterface *rhs)
-{
-    _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1);
-    _obj = getSharedPtr<HydroponicsObjInterface>(rhs);
-    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this;
-}
-
 
 HydroponicsAttachment::HydroponicsAttachment(HydroponicsObjInterface *parent)
     : _parent(parent), _obj()
@@ -83,9 +65,7 @@ HydroponicsAttachment::~HydroponicsAttachment()
 
 void HydroponicsAttachment::attachObject()
 {
-    if (isResolved()) {
-        _obj->addLinkage((HydroponicsObject *)_parent);
-    }
+    _obj->addLinkage((HydroponicsObject *)_parent); // note: operator->() triggers _getObject if not already resolved (read as: do not place inside if resolved block)
 }
 
 void HydroponicsAttachment::detachObject()
@@ -93,6 +73,7 @@ void HydroponicsAttachment::detachObject()
     if (isResolved()) {
         _obj->removeLinkage((HydroponicsObject *)_parent);
     }
+    // note: used to set _obj to nullptr here, but found that it's best not to -> avoids additional operator= calls during typical detach scenarios
 }
 
 HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow)
@@ -116,16 +97,6 @@ void HydroponicsSensorAttachment::detachObject()
     HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>::detachObject();
 
     setNeedsMeasurement();
-}
-
-void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
-{
-    if (resolve() && (_needsMeasurement || poll)) {
-        if (_handleMethod) { _handleMethod(get()->getLatestMeasurement()); }
-        else { handleMeasurement(get()->getLatestMeasurement()); }
-
-        get()->takeMeasurement((_needsMeasurement || poll));
-    }
 }
 
 void HydroponicsSensorAttachment::setMeasurement(float value, Hydroponics_UnitsType units)

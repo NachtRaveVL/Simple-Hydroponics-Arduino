@@ -24,7 +24,7 @@ void testActuators()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto pumpRelay = make_shared<HydroponicsPumpRelayActuator>(Hydroponics_ActuatorType_WaterPump, 0, 7);
@@ -41,7 +41,7 @@ void testActuators()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto pwmFan = make_shared<HydroponicsPWMActuator>(Hydroponics_ActuatorType_FanExhaust, 0, 7);
@@ -58,7 +58,7 @@ void testActuators()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 }
 
@@ -80,7 +80,7 @@ void testSensors()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto analogSensor = make_shared<HydroponicsAnalogSensor>(Hydroponics_SensorType_WaterHeightMeter, 0, 0);
@@ -97,7 +97,7 @@ void testSensors()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto dhtSensor = make_shared<HydroponicsDHTTempHumiditySensor>(0, 0);
@@ -114,7 +114,7 @@ void testSensors()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto dsSensor = make_shared<HydroponicsDSTemperatureSensor>(0, 0);
@@ -131,7 +131,7 @@ void testSensors()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 }
 
@@ -152,7 +152,7 @@ void testCrops()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto adaptiveCrop = make_shared<HydroponicsAdaptiveCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
@@ -169,7 +169,7 @@ void testCrops()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 }
 
@@ -190,7 +190,7 @@ void testReservoirs()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto feedRes = make_shared<HydroponicsFeedReservoir>(0, 5);
@@ -211,7 +211,7 @@ void testReservoirs()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto pipeRes = make_shared<HydroponicsInfiniteReservoir>(Hydroponics_ReservoirType_DrainageWater, 0);
@@ -226,7 +226,7 @@ void testReservoirs()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 }
 
@@ -246,7 +246,7 @@ void testRails()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 
     {   auto regRail = make_shared<HydroponicsRegulatedRail>(Hydroponics_RailType_AC110V, 0, 15);
@@ -262,7 +262,7 @@ void testRails()
         serializeJsonPretty(json, Serial);
 
         if (data) { delete data; }
-        Serial.println(); Serial.flush(); yield();
+        Serial.println(); flushYield();
     }
 }
 

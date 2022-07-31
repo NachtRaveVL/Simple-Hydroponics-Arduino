@@ -26,7 +26,7 @@ extern HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorD
 // where it lives, and what it's attached to.
 class HydroponicsActuator : public HydroponicsObject, public HydroponicsActuatorObjectInterface, public HydroponicsRailAttachmentInterface, public HydroponicsReservoirAttachmentInterface {
 public:
-    const enum { Relay, RelayPump, PWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
+    const enum : char { Relay, RelayPump, PWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
     inline bool isRelayClass() const { return classType == Relay; }
     inline bool isRelayPumpClass() const { return classType == RelayPump; }
     inline bool isPWMClass() const { return classType == PWM; }

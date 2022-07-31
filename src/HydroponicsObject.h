@@ -26,7 +26,7 @@ template<class T = HydroponicsObjInterface> inline shared_ptr<T> getSharedPtr(co
 // This class is mainly used to simplify object key generation, which is used when we
 // want to uniquely refer to objects in the Hydroponics system.
 struct HydroponicsIdentity {
-    enum { Actuator, Sensor, Crop, Reservoir, Rail, Unknown = -1 } type; // Object type (custom RTTI)
+    enum : char { Actuator, Sensor, Crop, Reservoir, Rail, Unknown = -1 } type; // Object type (custom RTTI)
     inline bool isActuatorType() const { return type == Actuator; }
     inline bool isSensorType() const { return type == Sensor; }
     inline bool isCropType() const { return type == Crop; }

@@ -5,7 +5,7 @@
 
 #include "Hydroponics.h"
 
-enum SlotType { Function, Method };
+enum SlotType : char { Function, Method };
 
 // The Slot base class, its template parameter indicates the datatype of the parameters it expects to receive. Slots can only
 // be connected to Signals with identical ParameterTypes.

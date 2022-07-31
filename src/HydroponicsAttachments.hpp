@@ -5,20 +5,35 @@
 
 #include "Hydroponics.h"
 
-template<class U>
-shared_ptr<U> HydroponicsDLinkObject::getObject()
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(HydroponicsIdentity rhs)
 {
-    if (_obj) { return reinterpret_pointer_cast<U>(_obj); }
-    if (_key == (Hydroponics_KeyType)-1) { return nullptr; }
-
-    if (needsResolved() && Hydroponics::_activeInstance) {
-        _obj = static_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
+    _key = rhs.key;
+    _obj = nullptr;
+    auto len = rhs.keyString.length();
+    if (len) {
+        _keyStr = (const char *)malloc(len + 1);
+        strncpy((char *)_keyStr, rhs.keyString.c_str(), len + 1);
     }
-    if (isResolved() && _keyStr) {
-        free((void *)_keyStr); _keyStr = nullptr;
-    }
+    return *this;
+}
 
-    return reinterpret_pointer_cast<U>(_obj);
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const char *rhs)
+{
+    _key = stringHash(rhs);
+    _obj = nullptr;
+    auto len = strnlen(rhs, HYDRUINO_NAME_MAXSIZE);
+    if (len) {
+        _keyStr = (const char *)malloc(len + 1);
+        strncpy((char *)_keyStr, rhs, len + 1);
+    }
+    return *this;
+}
+
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const HydroponicsObjInterface *rhs)
+{
+    _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1);
+    _obj = getSharedPtr<HydroponicsObjInterface>(rhs);
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this;
 }
 
 template<class U>
@@ -43,7 +58,7 @@ void HydroponicsAttachment::setObject(U obj)
 template<class U>
 shared_ptr<U> HydroponicsAttachment::getObject()
 {
-    if (_obj.isResolved()) { return _obj.getObject<U>(); }
+    if (isResolved()) { return _obj.getObject<U>(); }
     if (_obj.getKey() == (Hydroponics_KeyType)-1) { return nullptr; }
 
     if (_obj.needsResolved() && _obj.resolve()) {
@@ -93,16 +108,42 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlo
 {
     if (!(_handleMethod == handleMethod)) {
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(_handleMethod); }
-        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>(handleMethod.getObject(), handleMethod.getFunct());
+        _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>(
+            reinterpret_cast<HydroponicsObjInterface *>(handleMethod.getObject()),
+            reinterpret_cast<HandleMethodPtr>(handleMethod.getFunct()));
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(_handleMethod); }
     }
 }
 
 
-inline Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState() { return isResolved() ? get()->getTriggerState() : Hydroponics_TriggerState_Undefined; }
+void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
+{
+    if (resolve() && (_needsMeasurement || poll)) {
+        if (_handleMethod) { _handleMethod(get()->getLatestMeasurement()); }
+        else { handleMeasurement(get()->getLatestMeasurement()); }
 
-inline void HydroponicsTriggerAttachment::updateIfNeeded() { if (resolve()) { get()->update(); } }
+        get()->takeMeasurement((_needsMeasurement || poll));
+    }
+}
 
-inline Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState() { return isResolved() ? get()->getBalancerState() : Hydroponics_BalancerState_Undefined; }
 
-inline void HydroponicsBalancerAttachment::updateIfNeeded() { if (resolve()) { get()->update(); } }
+inline Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState()
+{
+    return isResolved() ? get()->getTriggerState() : Hydroponics_TriggerState_Undefined;
+}
+
+inline void HydroponicsTriggerAttachment::updateIfNeeded()
+{
+    if (resolve()) { get()->update(); }
+}
+
+
+inline Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState()
+{
+    return isResolved() ? get()->getBalancerState() : Hydroponics_BalancerState_Undefined;
+}
+
+inline void HydroponicsBalancerAttachment::updateIfNeeded()
+{
+    if (resolve()) { get()->update(); }
+}

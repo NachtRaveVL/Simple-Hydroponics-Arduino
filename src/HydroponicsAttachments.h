@@ -35,10 +35,10 @@ public:
     inline bool resolve() { return isResolved() || (bool)getObject(); }
     void unresolve();
 
-    template<class U> inline void setObject(U obj) { *this = obj; }
-    template<class U = HydroponicsObjInterface> shared_ptr<U> getObject();
-
+    template<class U> inline void setObject(U obj) { (*this) = obj; }
+    template<class U = HydroponicsObjInterface> inline shared_ptr<U> getObject() { return reinterpret_pointer_cast<U>(_getObject()); }
     template<class U = HydroponicsObjInterface> inline U* get() { return getObject<U>().get(); }
+
     inline HydroponicsIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroponicsIdentity(_keyStr) : HydroponicsIdentity(_key)); }
     inline Hydroponics_KeyType getKey() const { return _key; }
     inline String getKeyString() const { return _keyStr ? String(_keyStr) : (_obj ? _obj->getKeyString() : String((uintptr_t)_obj.get())); }
@@ -65,7 +65,12 @@ public:
 protected:
     Hydroponics_KeyType _key;                               // Object key
     shared_ptr<HydroponicsObjInterface> _obj;               // Shared pointer to object
-    const char *_keyStr;                                    // Copy of keystring (iff not resolved)
+    const char *_keyStr;                                    // Copy of id.keyString (if not resolved, or unresolved)
+
+private:
+    shared_ptr<HydroponicsObjInterface> _getObject();
+    friend class Hydroponics;
+    friend class HydroponicsAttachment;
 };
 
 // Simple Attachment Point Base
@@ -81,13 +86,13 @@ public:
 
     inline bool isUnresolved() const { return !_obj; }
     inline bool isResolved() const { return (bool)_obj; }
-    inline bool needsResolved() const { return isUnresolved() && _obj.needsResolved(); }
+    inline bool needsResolved() const { return _obj.needsResolved(); }
     inline bool resolve() { return isResolved() || (bool)getObject(); }
 
     template<class U> void setObject(U obj);
     template<class U = HydroponicsObjInterface> shared_ptr<U> getObject();
+    template<class U = HydroponicsObjInterface> inline U* get() { return getObject<U>().get(); }
 
-    template<class U = HydroponicsObjInterface> inline U* get() { return _obj.get<U>(); }
     inline HydroponicsIdentity getId() const { return _obj.getId(); }
     inline Hydroponics_KeyType getKey() const { return _obj.getKey(); }
     inline String getKeyString() const { return _obj.getKeyString(); }
@@ -161,7 +166,7 @@ public:
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    void updateIfNeeded(bool poll = false);
+    inline void updateIfNeeded(bool poll = false);
 
     void setMeasurement(float value, Hydroponics_UnitsType units = Hydroponics_UnitsType_Undefined);
     void setMeasurement(HydroponicsSingleMeasurement measurement);

@@ -90,7 +90,7 @@ struct HydroponicsProcess {
 };
 
 // Hydroponics Scheduler Feeding Process Log Type
-enum HydroponicsFeedingLogType {
+enum HydroponicsFeedingLogType : char {
     HydroponicsFeedingLogType_WaterSetpoints,               // Water setpoints
     HydroponicsFeedingLogType_WaterMeasures,                // Water measurements
     HydroponicsFeedingLogType_AirSetpoints,                 // Air setpoints
@@ -98,14 +98,14 @@ enum HydroponicsFeedingLogType {
 };
 
 // Hydroponics Scheduler Feeding Process Broadcast Type
-enum HydroponicsFeedingBroadcastType {
+enum HydroponicsFeedingBroadcastType : char {
     HydroponicsFeedingBroadcastType_Began,                  // Began main process
     HydroponicsFeedingBroadcastType_Ended                   // Ended main process
 };
 
 // Hydroponics Scheduler Feeding Process
 struct HydroponicsFeeding : public HydroponicsProcess {
-    enum {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
+    enum : char {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
 
     time_t canFeedAfter;                                    // Time next feeding can occur (UTC)
     time_t lastAirReport;                                   // Last time an air report was generated (UTC)
@@ -131,7 +131,7 @@ private:
 
 // Hydroponics Scheduler Lighting Process
 struct HydroponicsLighting : public HydroponicsProcess {
-    enum {Init,Spray,Light,Done,Unknown = -1} stage;        // Current lighting stage
+    enum : char {Init,Spray,Light,Done,Unknown = -1} stage; // Current lighting stage
 
     time_t sprayStart;                                      // Time when spraying should start (TZ)
     time_t lightStart;                                      // Time when lighting should start / spraying should end (TZ, same as sprayStart when no spraying needed)

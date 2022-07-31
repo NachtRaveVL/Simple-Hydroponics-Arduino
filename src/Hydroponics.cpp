@@ -610,39 +610,41 @@ void Hydroponics::commonPostInit()
         // TODO: tcMenu setup
     #endif
 
-    #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
-        Serial.print(F("Hydroponics::commonPostInit piezoBuzzerPin: "));
-        if (isValidPin(_piezoBuzzerPin)) { Serial.print(_piezoBuzzerPin); }
-        else { Serial.print(SFP(HStr_Disabled)); }
-        Serial.print(F(", eepromDeviceSize: "));
-        if (_eepromDeviceSize) { Serial.print(_eepromDeviceSize); }
-        else { Serial.print(SFP(HStr_Disabled)); }
-        Serial.print(F(", sdCardCSPin: "));
-        if (isValidPin(_sdCardCSPin)) { Serial.print(_sdCardCSPin); }
-        else { Serial.print(SFP(HStr_Disabled)); }
-        Serial.print(F(", controlInputPin1: "));
-        if (isValidPin(_ctrlInputPin1)) { Serial.print(_ctrlInputPin1); }
-        else { Serial.print(SFP(HStr_Disabled)); }
-        Serial.print(F(", EEPROMi2cAddress: 0x"));
-        Serial.print(_eepromI2CAddr & ~HYDRUINO_SYS_I2CEEPROM_BASEADDR, HEX);
-        Serial.print(F(", RTCi2cAddress: 0x"));
-        Serial.print(_rtcI2CAddr, HEX);
-        Serial.print(F(", LCDi2cAddress: 0x"));
-        Serial.print(_lcdI2CAddr, HEX);
-        Serial.print(F(", i2cSpeed: "));
-        Serial.print(roundf(getI2CSpeed() / 1000.0f)); Serial.print(F("kHz"));
-        Serial.print(F(", sdCardSpeed: "));
-        Serial.print(roundf(getSDCardSpeed() / 1000000.0f)); Serial.print(F("MHz"));
-        Serial.print(F(", systemMode: "));
-        Serial.print(systemModeToString(getSystemMode()));
-        Serial.print(F(", measureMode: "));
-        Serial.print(measurementModeToString(getMeasurementMode()));
-        Serial.print(F(", dispOutMode: "));
-        Serial.print(displayOutputModeToString(getDisplayOutputMode()));
-        Serial.print(F(", ctrlInMode: "));
-        Serial.print(controlInputModeToString(getControlInputMode()));
-        Serial.println();
-    #endif // /ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+        #if 1 // set to 0 if you just want this gone
+            Serial.print(F("Hydroponics::commonPostInit piezoBuzzerPin: "));
+            if (isValidPin(_piezoBuzzerPin)) { Serial.print(_piezoBuzzerPin); }
+            else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", eepromDeviceSize: "));
+            if (_eepromDeviceSize) { Serial.print(_eepromDeviceSize); }
+            else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", sdCardCSPin: "));
+            if (isValidPin(_sdCardCSPin)) { Serial.print(_sdCardCSPin); }
+            else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", controlInputPin1: "));
+            if (isValidPin(_ctrlInputPin1)) { Serial.print(_ctrlInputPin1); }
+            else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", EEPROMi2cAddress: 0x"));
+            Serial.print(_eepromI2CAddr & ~HYDRUINO_SYS_I2CEEPROM_BASEADDR, HEX);
+            Serial.print(F(", RTCi2cAddress: 0x"));
+            Serial.print(_rtcI2CAddr, HEX);
+            Serial.print(F(", LCDi2cAddress: 0x"));
+            Serial.print(_lcdI2CAddr, HEX);
+            Serial.print(F(", i2cSpeed: "));
+            Serial.print(roundf(getI2CSpeed() / 1000.0f)); Serial.print(F("kHz"));
+            Serial.print(F(", sdCardSpeed: "));
+            Serial.print(roundf(getSDCardSpeed() / 1000000.0f)); Serial.print(F("MHz"));
+            Serial.print(F(", systemMode: "));
+            Serial.print(systemModeToString(getSystemMode()));
+            Serial.print(F(", measureMode: "));
+            Serial.print(measurementModeToString(getMeasurementMode()));
+            Serial.print(F(", dispOutMode: "));
+            Serial.print(displayOutputModeToString(getDisplayOutputMode()));
+            Serial.print(F(", ctrlInMode: "));
+            Serial.print(controlInputModeToString(getControlInputMode()));
+            Serial.println(); flushYield();
+        #endif
+    #endif // /ifdef HYDRUINO_USE_VERBOSE_OUTPUT
 }
 
 void Hydroponics::commonPostSave()
@@ -804,7 +806,7 @@ void Hydroponics::updateObjects(int pass)
                 if (iter->second->isSensorType()) {
                     auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
                     if (sensor->needsPolling()) {
-                        sensor->takeMeasurement(); // no force if already current for this frame #
+                        sensor->takeMeasurement(); // no force if already current for this frame #, we're just ensuring data for publisher
                     }
                 }
             }

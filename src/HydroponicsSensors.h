@@ -37,7 +37,7 @@ extern Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics
 // where it lives, and what it's attached to.
 class HydroponicsSensor : public HydroponicsObject, public HydroponicsSensorObjectInterface, public HydroponicsCropAttachmentInterface, public HydroponicsReservoirAttachmentInterface {
 public:
-    const enum { Binary, Analog, Digital, DHT1W, DS1W, Unknown = -1 } classType; // Sensor class type (custom RTTI)
+    const enum : char { Binary, Analog, Digital, DHT1W, DS1W, Unknown = -1 } classType; // Sensor class type (custom RTTI)
     inline bool isBinaryClass() const { return classType == Binary; }
     inline bool isAnalogClass() const { return classType == Analog; }
     inline bool isDigitalClass() const { return classType == Digital; }

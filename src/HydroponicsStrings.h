@@ -7,7 +7,7 @@
 #define HydroponicsStrings_H
 
 // Strings Enumeration Table
-enum Hydroponics_String {
+enum Hydroponics_String : unsigned char {
     HStr_ColonSpace,
     HStr_Count,
     HStr_DoubleSpace,

@@ -27,7 +27,7 @@ extern HydroponicsCrop *newCropObjectFromData(const HydroponicsCropData *dataIn)
 // feeds it, etc.
 class HydroponicsCrop : public HydroponicsObject, public HydroponicsCropObjectInterface, public HydroponicsFeedReservoirAttachmentInterface {
 public:
-    const enum { Timed, Adaptive, Unknown = -1 } classType; // Crop class type (custom RTTI)
+    const enum : char { Timed, Adaptive, Unknown = -1 } classType; // Crop class type (custom RTTI)
     inline bool isTimedClass() const { return classType == Timed; }
     inline bool isAdaptiveClass() const { return classType == Adaptive; }
     inline bool isUnknownClass() const { return classType <= Unknown; }

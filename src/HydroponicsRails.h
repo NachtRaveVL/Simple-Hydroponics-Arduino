@@ -25,7 +25,7 @@ extern HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 // where it lives, what's attached to it, and who can activate under it.
 class HydroponicsRail : public HydroponicsObject, public HydroponicsRailObjectInterface {
 public:
-    const enum { Simple, Regulated, Unknown = -1 } classType; // Power rail class (custom RTTI)
+    const enum : char { Simple, Regulated, Unknown = -1 } classType; // Power rail class (custom RTTI)
     inline bool isSimpleClass() const { return classType == Simple; }
     inline bool isRegulatedClass() const { return classType == Regulated; }
     inline bool isUnknownClass() const { return classType <= Unknown; }

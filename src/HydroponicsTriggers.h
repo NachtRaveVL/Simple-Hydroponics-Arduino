@@ -25,7 +25,7 @@ extern HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerS
 // to some change in a tracked property.
 class HydroponicsTrigger : public HydroponicsSubObject, public HydroponicsTriggerObjectInterface {
 public:
-    const enum { MeasureValue, MeasureRange, Unknown = -1 } type; // Trigger type (custom RTTI)
+    const enum : char { MeasureValue, MeasureRange, Unknown = -1 } type; // Trigger type (custom RTTI)
     inline bool isMeasureValueType() const { return type == MeasureValue; }
     inline bool isMeasureRangeType() const { return type == MeasureRange; }
     inline bool isUnknownType() const { return type <= Unknown; }

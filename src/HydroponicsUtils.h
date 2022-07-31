@@ -235,6 +235,15 @@ inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; 
 // This will handle interrupts for task manager.
 extern void handleInterrupt(byte pin);
 
+// This is used to force debug statements through to serial monitor.
+inline void flushYield() {
+    #if defined(HYDRUINO_ENABLE_DEBUG_OUTPUT) && HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD
+        Serial.flush(); yield();
+    #else
+        return;
+    #endif
+}
+
 // Units & Conversion
 
 // Tries to convert value from one unit to another (if supported), returning conversion success boolean.

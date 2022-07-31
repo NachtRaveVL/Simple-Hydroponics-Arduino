@@ -101,9 +101,10 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
 #define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
+#define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   false                   // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
 #define HYDRUINO_SYS_MEM_LOGGING_ENABLE     false                   // If system will periodically log memory remaining messages (mainly used for debugging)
 #define HYDRUINO_SYS_ALIVE_LOGGING_ENABLE   false                   // If system will periodically log alive messages for all active runloops (mainly used for debugging)
-#define HYDRUINO_SYS_DRY_RUN_ENABLE         false                   // Disables actuators from actually enabling in order to simulate (mainly used for debugging)
+#define HYDRUINO_SYS_DRY_RUN_ENABLE         false                   // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
@@ -114,7 +115,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 // Crop Type
 // Common crop types. Controls what pH, EC, etc. that a plant prefers.
-enum Hydroponics_CropType {
+enum Hydroponics_CropType : char {
     Hydroponics_CropType_AloeVera,                          // Aloe Vera crop
     Hydroponics_CropType_Anise,                             // Anise crop
     Hydroponics_CropType_Artichoke,                         // Artichoke crop
@@ -211,7 +212,7 @@ enum Hydroponics_CropType {
 
 // Substrate Type
 // Common substrate types. Influences feeding scheduling and environment control (TODO).
-enum Hydroponics_SubstrateType {
+enum Hydroponics_SubstrateType : char {
     Hydroponics_SubstrateType_ClayPebbles,                  // Expanded clay pebbles substrate
     Hydroponics_SubstrateType_CoconutCoir,                  // Coconut coir (aka coco peat) substrate
     Hydroponics_SubstrateType_Rockwool,                     // Rockwool substrate
@@ -222,7 +223,7 @@ enum Hydroponics_SubstrateType {
 
 // Crop Phase
 // Common phases of crops. Influences feeding scheduling and environment control.
-enum Hydroponics_CropPhase {
+enum Hydroponics_CropPhase : char {
     Hydroponics_CropPhase_Seedling,                         // Initial seedling stage
     Hydroponics_CropPhase_Vegetative,                       // Vegetative stage
     Hydroponics_CropPhase_Blooming,                         // Flowering stage
@@ -235,9 +236,9 @@ enum Hydroponics_CropPhase {
 
 // System Run Mode
 // Specifies the general tank setup, fluid levels, and waste connection defaults.
-enum Hydroponics_SystemMode {
+enum Hydroponics_SystemMode : char {
     Hydroponics_SystemMode_Recycling,                       // System consistently recycles water in main feed water reservoir. Default setting, applicable to a wide range of NFT and DWC setups.
-    Hydroponics_SystemMode_DrainToWaste,                    // System refills feed reservoir every time before feeding (with pH/feed premix topoff), and requires a drainage pipe (as feed pump output) or drainage pump (from feed reservoir to drainage pipe).
+    Hydroponics_SystemMode_DrainToWaste,                    // System refills feed reservoir every time before feeding (with pH/feed premix top off), and requires a drainage pipe (as feed pump output) or drainage pump (from feed reservoir to drainage pipe).
 
     Hydroponics_SystemMode_Count,                           // Internal use only
     Hydroponics_SystemMode_Undefined = -1                   // Internal use only
@@ -245,7 +246,7 @@ enum Hydroponics_SystemMode {
 
 // Measurement Units Mode
 // Specifies the standard of measurement style that units will use.
-enum Hydroponics_MeasurementMode {
+enum Hydroponics_MeasurementMode : char {
     Hydroponics_MeasurementMode_Imperial,                   // Imperial measurement mode (default setting, °F Ft Gal Lbs M-D-Y Val.X etc)
     Hydroponics_MeasurementMode_Metric,                     // Metric measurement mode (°C M L Kg Y-M-D Val.X etc)
     Hydroponics_MeasurementMode_Scientific,                 // Scientific measurement mode (°K M L Kg Y-M-D Val.XX etc)
@@ -258,7 +259,7 @@ enum Hydroponics_MeasurementMode {
 // LCD/Display Output Mode
 // Specifies what kind of visual output device is to be used.
 // Currently, all ouput devices must ultimately be supported by tcMenu.
-enum Hydroponics_DisplayOutputMode {
+enum Hydroponics_DisplayOutputMode : char {
     Hydroponics_DisplayOutputMode_Disabled,                 // No display output
     Hydroponics_DisplayOutputMode_20x4LCD,                  // 20x4 i2c LCD (with layout: EN, RW, RS, BL, Data)
     Hydroponics_DisplayOutputMode_20x4LCD_Swapped,          // 20x4 i2c LCD (with EN<->RS swapped, layout: RS, RW, EN, BL, Data)
@@ -272,7 +273,7 @@ enum Hydroponics_DisplayOutputMode {
 // Control Input Mode
 // Specifies what kind of control input mode is to be used.
 // Currently, all input devices must ultimately be supported by tcMenu.
-enum Hydroponics_ControlInputMode {
+enum Hydroponics_ControlInputMode : char {
     Hydroponics_ControlInputMode_Disabled,                  // No control input
     Hydroponics_ControlInputMode_2x2Matrix,                 // 2x2 directional keyboard matrix button array, ribbon: {L1,L2,R1,R2} (L1 = pin 1)
     Hydroponics_ControlInputMode_4xButton,                  // 4x standard momentary buttons, ribbon: {U,D,L,R} (U = pin 1)
@@ -285,7 +286,7 @@ enum Hydroponics_ControlInputMode {
 
 // Actuator Type
 // Control actuator type. Specifies the various controllable equipment and their usage.
-enum Hydroponics_ActuatorType {
+enum Hydroponics_ActuatorType : char {
     Hydroponics_ActuatorType_GrowLights,                    // Grow lights actuator
     Hydroponics_ActuatorType_WaterPump,                     // Water pump actuator (feed or drainage/main-water pipe reservoirs only)
     Hydroponics_ActuatorType_PeristalticPump,               // Peristaltic pump actuator (pH-up/down, nutrient, fresh water, or custom additive reservoirs only)
@@ -300,7 +301,7 @@ enum Hydroponics_ActuatorType {
 
 // Sensor Type
 // Sensor device type. Specifies the various sensors and the kinds of things they measure.
-enum Hydroponics_SensorType {
+enum Hydroponics_SensorType : char {
     Hydroponics_SensorType_PotentialHydrogen,               // pH sensor (analog/digital, feed reservoir only)
     Hydroponics_SensorType_TotalDissolvedSolids,            // TDS salts electrode sensor (analog/digital, feed reservoir only)
     Hydroponics_SensorType_SoilMoisture,                    // Soil moisture sensor (analog/digital)
@@ -318,7 +319,7 @@ enum Hydroponics_SensorType {
 
 // Reservoir Type
 // Common fluid containers. Specifies the various operational containers.
-enum Hydroponics_ReservoirType {
+enum Hydroponics_ReservoirType : char {
     Hydroponics_ReservoirType_FeedWater,                    // Feed water
     Hydroponics_ReservoirType_DrainageWater,                // Drainage water
     Hydroponics_ReservoirType_NutrientPremix,               // Base nutrient premix (A or B iff mixed 1:1)
@@ -352,7 +353,7 @@ enum Hydroponics_ReservoirType {
 
 // Power Rail
 // Common power rails. Specifies an isolated operational power rail unit.
-enum Hydroponics_RailType {
+enum Hydroponics_RailType : char {
     Hydroponics_RailType_AC110V,                            // 110~120V AC-based power rail, for pumps, lights, heaters, etc.
     Hydroponics_RailType_AC220V,                            // 110~120V AC-based power rail, for pumps, lights, heaters, etc.
     Hydroponics_RailType_DC5V,                              // 5v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
@@ -364,7 +365,7 @@ enum Hydroponics_RailType {
 
 // Trigger Status
 // Common trigger statuses. Specifies enablement and tripped state.
-enum Hydroponics_TriggerState {
+enum Hydroponics_TriggerState : char {
     Hydroponics_TriggerState_Disabled,                      // Triggers disabled (not hooked up)
     Hydroponics_TriggerState_NotTriggered,                  // Not triggered
     Hydroponics_TriggerState_Triggered,                     // Triggered
@@ -375,7 +376,7 @@ enum Hydroponics_TriggerState {
 
 // Balancing State
 // Common balancing states. Specifies balance or which direction of imbalance.
-enum Hydroponics_BalancerState {
+enum Hydroponics_BalancerState : char {
     Hydroponics_BalancerState_TooLow,                       // Too low / needs incremented state
     Hydroponics_BalancerState_Balanced,                     // Balanced state
     Hydroponics_BalancerState_TooHigh,                      // Too high / needs decremented state
@@ -386,7 +387,7 @@ enum Hydroponics_BalancerState {
 
 // Units Category
 // Unit of measurement category. Specifies the kind of unit.
-enum Hydroponics_UnitsCategory {
+enum Hydroponics_UnitsCategory : char {
     Hydroponics_UnitsCategory_Alkalinity,                   // Alkalinity based unit
     Hydroponics_UnitsCategory_DissolvedSolids,              // Dissolved solids based unit
     Hydroponics_UnitsCategory_SoilMoisture,                 // Soil moisture based unit
@@ -408,7 +409,7 @@ enum Hydroponics_UnitsCategory {
 
 // Units Type
 // Unit of measurement type. Specifies the unit type associated with a measured value.
-enum Hydroponics_UnitsType {
+enum Hydroponics_UnitsType : char {
     Hydroponics_UnitsType_Raw_0_1,                          // Raw value [0.0,1.0] mode
     Hydroponics_UnitsType_Percentile_0_100,                 // Percentile [0.0,100.0] mode
     Hydroponics_UnitsType_Alkalinity_pH_0_14,               // pH value [0.0,14.0] alkalinity mode

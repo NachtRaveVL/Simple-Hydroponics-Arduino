@@ -29,7 +29,7 @@ extern HydroponicsReservoir *newReservoirObjectFromData(const HydroponicsReservo
 // who can activate under it.
 class HydroponicsReservoir : public HydroponicsObject, public HydroponicsReservoirObjectInterface {
 public:
-    const enum { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
+    const enum : char { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
     inline bool isFluidClass() const { return classType == Fluid; }
     inline bool isFeedClass() const { return classType == Feed; }
     inline bool isPipeClass() const { return classType == Pipe; }

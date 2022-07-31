@@ -18,7 +18,7 @@ struct HydroponicsCustomAdditiveData;
 #include "HydroponicsLogger.h"
 
 // Autosave Enumeration
-enum Hydroponics_Autosave {
+enum Hydroponics_Autosave : char {
     Hydroponics_Autosave_EnabledToSDCardJson,                   // Autosave to SD Card in Json
     Hydroponics_Autosave_EnabledToSDCardRaw,                    // Autosave to SD Card in binary
     Hydroponics_Autosave_EnabledToEEPROMJson,                   // Autosave to EEPROM in Json
@@ -127,7 +127,7 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     inline void setFromScale(float scale) { setFromRange(0.0, scale); }
 };
 
-enum HydroponicsCropsLibData_Flag {
+enum HydroponicsCropsLibData_Flag : unsigned short {
     HydroponicsCropsLibData_Flag_Invasive =  0x01,              // Flag indicating plant is invasive and will take over other plants (default: false)
     HydroponicsCropsLibData_Flag_Viner =     0x02,              // Flag indicating plant is a viner and will require a stick for support (default: false)
     HydroponicsCropsLibData_Flag_Large =     0x04,              // Flag indicating plant grows large and will require proper support (default: false)

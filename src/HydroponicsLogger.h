@@ -11,7 +11,7 @@ struct HydroponicsLoggerSubData;
 
 #include "Hydroponics.h"
 
-enum Hydroponics_LogLevel {
+enum Hydroponics_LogLevel : char {
     Hydroponics_LogLevel_All,
     Hydroponics_LogLevel_Warnings,
     Hydroponics_LogLevel_Errors,
