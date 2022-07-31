@@ -206,10 +206,10 @@ HydroponicsRegulatedRail::HydroponicsRegulatedRail(const HydroponicsRegulatedRai
 {
     _powerUsage.setMeasurementUnits(HydroponicsRail::getPowerUnits(), getRailVoltage());
     _powerUsage.setHandleMethod(&HydroponicsRegulatedRail::handlePower);
-    _powerUsage = dataIn->powerSensor;
+    _powerUsage.setObject(dataIn->powerSensor);
 
     _limitTrigger.setHandleMethod(&HydroponicsRail::handleLimit);
-    _limitTrigger = newTriggerObjectFromSubData(&(dataIn->limitTrigger));
+    _limitTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->limitTrigger)));
     HYDRUINO_SOFT_ASSERT(_limitTrigger, SFP(HStr_Err_AllocationFailure));
 }
 
@@ -217,7 +217,7 @@ void HydroponicsRegulatedRail::update()
 {
     HydroponicsRail::update();
 
-    _powerUsage.updateIfNeeded();
+    _powerUsage.updateIfNeeded(true);
 
     _limitTrigger.updateIfNeeded();
 }
@@ -303,7 +303,7 @@ void HydroponicsRegulatedRail::handleActivation(HydroponicsActuator *actuator)
 
 void HydroponicsRegulatedRail::handlePower(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && _powerUsage) {
+    if (measurement && measurement->frame) {
         float capacityBefore = getCapacity();
 
         getPowerUsage().setMeasurement(getAsSingleMeasurement(measurement, _powerUsage.getMeasurementRow(), _maxPower, _powerUnits));

@@ -13,7 +13,6 @@ struct HydroponicsFeeding;
 struct HydroponicsLighting;
 
 #include "Hydroponics.h"
-#include "HydroponicsCrops.h"
 
 // Hydroponics Scheduler
 // The Scheduler acts as the system's main scheduling attendant, who looks through all
@@ -40,7 +39,7 @@ public:
     void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
     void setStandardDosingRate(float dosingRate, Hydroponics_ReservoirType reservoirType);
     void setLastWeekAsFlush(Hydroponics_CropType cropType);
-    inline void setLastWeekAsFlush(HydroponicsCrop *crop) { if (crop) { setFlushWeek(crop->getTotalGrowWeeks() - 1); } }
+    inline void setLastWeekAsFlush(HydroponicsCrop *crop);
     void setFlushWeek(int weekIndex);
     void setTotalFeedingsDay(unsigned int feedingsDay);
     void setPreFeedAeratorMins(unsigned int aeratorMins);
@@ -116,11 +115,11 @@ struct HydroponicsFeeding : public HydroponicsProcess {
     time_t canFeedAfter;                                    // Time next feeding can occur (UTC)
     time_t lastAirReport;                                   // Last time an air report was generated (UTC)
 
-    float phSetpoint;                                       // Calculated pH setpoint for detected crops
-    float tdsSetpoint;                                      // Calculated TDS setpoint for detected crops
-    float waterTempSetpoint;                                // Calculated water temp setpoint for detected crops
-    float airTempSetpoint;                                  // Calculated air temp setpoint for detected crops
-    float co2Setpoint;                                      // Calculated co2 level setpoint for detected crops
+    float phSetpoint;                                       // Calculated pH setpoint for attached crops
+    float tdsSetpoint;                                      // Calculated TDS setpoint for attached crops
+    float waterTempSetpoint;                                // Calculated water temp setpoint for attached crops
+    float airTempSetpoint;                                  // Calculated air temp setpoint for attached crops
+    float co2Setpoint;                                      // Calculated co2 level setpoint for attached crops
 
     HydroponicsFeeding(shared_ptr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsFeeding();
@@ -143,7 +142,7 @@ struct HydroponicsLighting : public HydroponicsProcess {
     time_t lightStart;                                      // Time when lighting should start / spraying should end (TZ, same as sprayStart when no spraying needed)
     time_t lightEnd;                                        // Time when lighting should finish (TZ)
 
-    float lightHours;                                       // Calculated light hours for detected crops
+    float lightHours;                                       // Calculated light hours for attached crops
 
     HydroponicsLighting(shared_ptr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsLighting();

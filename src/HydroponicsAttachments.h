@@ -17,8 +17,9 @@ class HydroponicsBalancerAttachment;
 #include "HydroponicsObject.h"
 #include "HydroponicsMeasurements.h"
 
-extern Hydroponics_KeyType stringHash(String string); // forward decl
-
+// forward decls
+extern Hydroponics_KeyType stringHash(String);
+extern String addressToString(uintptr_t);
 
 // Delay/Dynamic Loaded/Linked Object Reference
 // Simple class for delay loading objects that get references to others during system
@@ -41,7 +42,7 @@ public:
 
     inline HydroponicsIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroponicsIdentity(_keyStr) : HydroponicsIdentity(_key)); }
     inline Hydroponics_KeyType getKey() const { return _key; }
-    inline String getKeyString() const { return _keyStr ? String(_keyStr) : (_obj ? _obj->getKeyString() : String((uintptr_t)_obj.get())); }
+    inline String getKeyString() const { return _keyStr ? String(_keyStr) : (_obj ? _obj->getKeyString() : addressToString((uintptr_t)_key)); }
 
     inline operator bool() const { isResolved(); }
     inline HydroponicsObjInterface* operator->() { return get(); }
@@ -51,16 +52,13 @@ public:
     inline HydroponicsDLinkObject &operator=(const char *rhs);
     template<class U> inline HydroponicsDLinkObject &operator=(shared_ptr<U> &rhs);
     inline HydroponicsDLinkObject &operator=(const HydroponicsObjInterface *rhs);
+    inline HydroponicsDLinkObject &operator=(nullptr_t) { return this->operator=((HydroponicsObjInterface *)nullptr); }
 
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _key == rhs.key; }
     inline bool operator==(const char *rhs) const { return _key == stringHash(rhs); }
     template<class U> inline bool operator==(const shared_ptr<U> &rhs) const { return _key == (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
     inline bool operator==(const HydroponicsObjInterface *rhs) const { return _key == (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
-
-    inline bool operator!=(const HydroponicsIdentity &rhs) const { return _key != rhs.key; }
-    inline bool operator!=(const char *rhs) const { return _key != stringHash(rhs); }
-    template<class U> inline bool operator!=(const shared_ptr<U> &rhs) const { return _key != (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
-    inline bool operator!=(const HydroponicsObjInterface *rhs) const { return _key != (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
+    inline bool operator==(nullptr_t) const { return _key == (Hydroponics_KeyType)-1; }
 
 protected:
     Hydroponics_KeyType _key;                               // Object key
@@ -76,7 +74,7 @@ private:
 // Simple Attachment Point Base
 // This attachment registers the parent object with the linked object's linkages upon
 // dereference, and unregisters the parent object at time of destruction or reassignment.
-class HydroponicsAttachment {
+class HydroponicsAttachment : public HydroponicsSubObject {
 public:
     HydroponicsAttachment(HydroponicsObjInterface *parent);
     virtual ~HydroponicsAttachment();
@@ -111,14 +109,9 @@ public:
     template<class U> inline bool operator==(const shared_ptr<U> &rhs) const { return _obj == rhs; }
     template<class U> inline bool operator==(const U *rhs) const { return _obj == rhs; }
 
-    inline bool operator!=(const HydroponicsIdentity &rhs) const { return _obj != rhs; }
-    inline bool operator!=(const char *rhs) { return *this != HydroponicsIdentity(rhs); }
-    template<class U> inline bool operator!=(const shared_ptr<U> &rhs) const { return _obj != rhs; }
-    template<class U> inline bool operator!=(const U *rhs) const { return _obj != rhs; }
-
 protected:
     HydroponicsDLinkObject _obj;                            // Dynamic link object
-    HydroponicsObjInterface *_parent;                       // Parent object pointer (strong due to reverse ownership)
+    HydroponicsObjInterface *_parent;                     // Parent object pointer (strong due to reverse ownership)
 };
 
 
@@ -159,7 +152,7 @@ protected:
 // Custom handle method will require a call into setMeasurement.
 class HydroponicsSensorAttachment : public HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> {
 public:
-    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(const HydroponicsSingleMeasurement &);
+    typedef void (HydroponicsObjInterface::*HandleMethodPtr)(const HydroponicsMeasurement *);
 
     HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow = 0);
 
@@ -196,7 +189,7 @@ public:
     template<class U> inline HydroponicsSensorAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
 
 protected:
-    HydroponicsSingleMeasurement _measurement;              // Local measurement
+    HydroponicsSingleMeasurement _measurement;              // Local measurement (converted to measure units)
     byte _measurementRow;                                   // Measurement row
     float _convertParam;                                    // Convert param (default: FLT_UNDEF)
     bool _needsMeasurement;                                 // Stale measurement tracking flag

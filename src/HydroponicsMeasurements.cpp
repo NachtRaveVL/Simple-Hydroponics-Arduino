@@ -105,8 +105,10 @@ HydroponicsMeasurement::HydroponicsMeasurement(int typeIn, time_t timestampIn, u
 { ; }
 
 HydroponicsMeasurement::HydroponicsMeasurement(const HydroponicsMeasurementData *dataIn)
-    : type((typeof(type))(dataIn->type)), timestamp(dataIn->timestamp), frame(1)
-{ ; }
+    : type((typeof(type))(dataIn->type)), timestamp(dataIn->timestamp)
+{
+    updateFrame(1);
+}
 
 void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow, unsigned int additionalDecPlaces) const
 {
@@ -115,7 +117,7 @@ void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, byt
     dataOut->timestamp = timestamp;
 }
 
-void HydroponicsMeasurement::updateFrame(int minFrame)
+void HydroponicsMeasurement::updateFrame(unsigned int minFrame)
 {
     auto hydroponics = getHydroponicsInstance();
     frame = max(minFrame, hydroponics ? hydroponics->getPollingFrame() : 0);

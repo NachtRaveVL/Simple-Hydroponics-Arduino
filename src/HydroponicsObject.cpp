@@ -229,7 +229,7 @@ Hydroponics_KeyType HydroponicsSubObject::getKey() const
 
 String HydroponicsSubObject::getKeyString() const
 {
-    return SFP(HStr_null);
+    return addressToString((uintptr_t)this);
 }
 
 shared_ptr<HydroponicsObjInterface> HydroponicsSubObject::getSharedPtr() const

@@ -49,8 +49,8 @@ HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
     if (isValidPin(_outputPin)) {
         pinMode(_outputPin, OUTPUT);
     }
-    _rail = dataIn->railName;
-    _reservoir = dataIn->reservoirName;
+    _rail.setObject(dataIn->railName);
+    _reservoir.setObject(dataIn->reservoirName);
 }
 
 void HydroponicsActuator::update()
@@ -244,8 +244,8 @@ HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(const HydroponicsPump
       _flowRate(this), _destReservoir(this)
 {
     _flowRate.setMeasurementUnits(getFlowRateUnits());
-    _destReservoir = dataIn->destReservoir;
-    _flowRate = dataIn->flowRateSensor;
+    _destReservoir.setObject(dataIn->destReservoir);
+    _flowRate.setObject(dataIn->flowRateSensor);
 }
 
 void HydroponicsPumpRelayActuator::update()
@@ -254,7 +254,7 @@ void HydroponicsPumpRelayActuator::update()
 
     _destReservoir.resolve();
 
-    _flowRate.updateIfNeeded();
+    _flowRate.updateIfNeeded(true);
 
     if (_pumpTimeAccMillis) {
         time_t timeMillis = millis();

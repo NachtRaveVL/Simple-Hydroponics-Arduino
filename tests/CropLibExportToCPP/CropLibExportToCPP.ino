@@ -30,7 +30,7 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
 
 void setup() {
     Serial.begin(115200);
-    while(!Serial) { ; }
+    while (!Serial) { ; }
     #if defined(ESP32) || defined(ESP8266)
         SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL);
     #endif

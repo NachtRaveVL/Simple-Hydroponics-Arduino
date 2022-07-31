@@ -33,7 +33,7 @@ public:
     ~HydroponicsLogger();
 
     bool beginLoggingToSDCard(String logFilePrefix);
-    bool isLoggingToSDCard() const;
+    inline bool isLoggingToSDCard() const;
 
     void logActivation(const HydroponicsActuator *actuator);
     void logDeactivation(const HydroponicsActuator *actuator);
@@ -51,10 +51,10 @@ public:
     void flush();
 
     void setLogLevel(Hydroponics_LogLevel logLevel);
-    Hydroponics_LogLevel getLogLevel() const;
+    inline Hydroponics_LogLevel getLogLevel() const;
 
-    bool isLoggingEnabled() const;
-    time_t getSystemUptime() const;
+    inline bool isLoggingEnabled() const;
+    inline time_t getSystemUptime() const { unixNow() - (_initDate ?: SECONDS_FROM_1970_TO_2000); }
 
     void notifyDayChanged();
 

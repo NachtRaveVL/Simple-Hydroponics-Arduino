@@ -53,7 +53,7 @@ taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuato
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter.
 // Object is captured, if not nullptr. Returns taskId or TASKMGR_INVALIDID on error.
-template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam);
+template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObjInterface> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam);
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter, w/o capturing object.
 // Returns taskId or TASKMGR_INVALIDID on error.
@@ -83,14 +83,14 @@ template<typename ParameterType, int Slots>
 class SignalFireTask : public Executable {
 public:
     taskid_t taskId;
-    SignalFireTask(shared_ptr<HydroponicsObject> object,
+    SignalFireTask(shared_ptr<HydroponicsObjInterface> object,
                    Signal<ParameterType,Slots> &signal,
                    ParameterType &param)
         : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
 
     virtual void exec() override { _signal->fire(_param); }
 private:
-    shared_ptr<HydroponicsObject> _object;
+    shared_ptr<HydroponicsObjInterface> _object;
     Signal<ParameterType, Slots> *_signal;
     ParameterType _param;
 };
@@ -177,6 +177,9 @@ extern String getNNFilename(String prefix, unsigned int value, String ext);
 
 // Computes a hash for a string using a fast and efficient (read as: good enough for our use) hashing algorithm.
 extern Hydroponics_KeyType stringHash(String string);
+
+// Returns properly formatted address "0xADDR" (size depending on void* size)
+extern String addressToString(uintptr_t addr);
 
 // Returns a string from char array with an exact max length.
 // Null array or invalid length will abort function before encoding occurs, returning "null".

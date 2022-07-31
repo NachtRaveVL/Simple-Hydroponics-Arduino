@@ -268,7 +268,7 @@ void testRails()
 
 void setup() {
     Serial.begin(115200);
-    while(!Serial) { ; }
+    while (!Serial) { ; }
     Wire.setClock(hydroController.getI2CSpeed());
 
     hydroController.init();

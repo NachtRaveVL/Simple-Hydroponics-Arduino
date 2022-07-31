@@ -65,7 +65,6 @@ public:
     virtual Hydroponics_UnitsType getMeasurementUnits(byte measurementRow = 0) const = 0;
 
     virtual HydroponicsAttachment &getParentCrop(bool resolve = true) override;
-
     virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) override;
 
     void setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData);

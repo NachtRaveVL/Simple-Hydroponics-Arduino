@@ -11,7 +11,7 @@
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 
 template<typename ParameterType, int Slots>
-taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObject> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
+taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObjInterface> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {
     SignalFireTask<ParameterType,Slots> *fireTask = object ? new SignalFireTask<ParameterType,Slots>(object, signal, fireParam) : nullptr;
     HYDRUINO_SOFT_ASSERT(!object || fireTask, SFP(HStr_Err_AllocationFailure));

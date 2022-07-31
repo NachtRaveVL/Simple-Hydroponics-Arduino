@@ -56,29 +56,18 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
     return false;
 }
 
-bool HydroponicsPublisher::isPublishingToSDCard()
-{
-    HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
-    return hasPublisherData() && publisherData()->publishToSDCard;
-}
-
 void HydroponicsPublisher::publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement)
 {
+    HYDRUINO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnCount, SFP(HStr_Err_NotYetInitialized));
     if (_dataColumns && _columnCount && columnIndex >= 0 && columnIndex < _columnCount) {
         _dataColumns[columnIndex].measurement = measurement;
         checkCanPublish();
     }
 }
 
-bool HydroponicsPublisher::isPublishingEnabled()
-{
-    HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
-    return hasPublisherData() && (publisherData()->publishToSDCard);
-}
-
 Hydroponics_PositionIndex HydroponicsPublisher::getColumnIndexStart(Hydroponics_KeyType sensorKey)
 {
-    HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
+    HYDRUINO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnCount, SFP(HStr_Err_NotYetInitialized));
     if (_dataColumns && _columnCount) {
         for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
             if (_dataColumns[columnIndex].sensorKey == sensorKey) {
@@ -99,6 +88,8 @@ void HydroponicsPublisher::notifyDayChanged()
 
 void HydroponicsPublisher::advancePollingFrame()
 {
+    HYDRUINO_HARD_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
+
     auto pollingFrame = Hydroponics::_activeInstance->getPollingFrame();
 
     if (pollingFrame && _pollingFrame != pollingFrame) {

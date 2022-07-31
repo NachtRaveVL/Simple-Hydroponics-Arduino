@@ -119,17 +119,16 @@ HydroponicsPublisher *getPublisherInstance()
 
 void publishData(HydroponicsSensor *sensor)
 {
-    if (sensor) {
-        auto publisher = getPublisherInstance();
-        if (publisher) {
-            auto measurement = sensor->getLatestMeasurement();
-            Hydroponics_PositionIndex rows = getMeasurementRowCount(measurement);
-            Hydroponics_PositionIndex columnIndexStart = publisher->getColumnIndexStart(sensor->getKey());
+    HYDRUINO_HARD_ASSERT(sensor, SFP(HStr_Err_InvalidParameter));
 
-            if (columnIndexStart >= 0) {
-                for (byte measurementRow = 0; measurementRow < rows; ++measurementRow) {
-                    publisher->publishData(columnIndexStart + measurementRow, getAsSingleMeasurement(measurement, measurementRow));
-                }
+    if (getPublisherInstance()) {
+        auto measurement = sensor->getLatestMeasurement();
+        Hydroponics_PositionIndex rows = getMeasurementRowCount(measurement);
+        Hydroponics_PositionIndex columnIndexStart = getPublisherInstance()->getColumnIndexStart(sensor->getKey());
+
+        if (columnIndexStart >= 0) {
+            for (byte measurementRow = 0; measurementRow < rows; ++measurementRow) {
+                getPublisherInstance()->publishData(columnIndexStart + measurementRow, getAsSingleMeasurement(measurement, measurementRow));
             }
         }
     }
@@ -187,6 +186,31 @@ Hydroponics_KeyType stringHash(String string)
         hash = ((hash << 5) + hash) + (Hydroponics_KeyType)string[index]; // Good 'ol DJB2
     }
     return hash != (Hydroponics_KeyType)-1 ? hash : 5381;
+}
+
+String addressToString(uintptr_t addr)
+{
+    String retVal; retVal.reserve((2 * sizeof(void*)) + 3);
+    if (addr == (uintptr_t)-1) { addr = 0; }
+    retVal.concat('0'); retVal.concat('x');
+
+    if (sizeof(void*) >= 4) {
+        if (addr < 0x10000000) { retVal.concat('0'); }
+        if (addr <  0x1000000) { retVal.concat('0'); }
+        if (addr <   0x100000) { retVal.concat('0'); }
+        if (addr <    0x10000) { retVal.concat('0'); }
+    }
+    if (sizeof(void*) >= 2) {
+        if (addr <     0x1000) { retVal.concat('0'); }
+        if (addr <      0x100) { retVal.concat('0'); }
+    }
+    if (sizeof(void*) >= 1) {
+        if (addr <       0x10) { retVal.concat('0'); }
+    }
+
+    retVal.concat(String(addr, 16));
+
+    return retVal;
 }
 
 String charsToString(const char *charsIn, size_t length)
@@ -448,7 +472,7 @@ void delayFine(time_t timeMillis) {
     }
 
     {   time_t timeMillis = millis();
-        while((endMillis >= startMillis && (timeMillis < endMillis)) ||
+        while ((endMillis >= startMillis && (timeMillis < endMillis)) ||
                 (endMillis < startMillis && (timeMillis >= startMillis || timeMillis < endMillis))) {
             timeMillis = millis();
         }

@@ -51,7 +51,7 @@ HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
         getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
     }
-    _feedReservoir = dataIn->feedReservoir;
+    _feedReservoir.setObject(dataIn->feedReservoir);
 
     recalcGrowWeekAndPhase();
 }
@@ -256,10 +256,10 @@ HydroponicsAdaptiveCrop::HydroponicsAdaptiveCrop(const HydroponicsAdaptiveCropDa
       _moistureUnits(definedUnitsElse(dataIn->moistureUnits, Hydroponics_UnitsType_Concentration_EC))
 {
     _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->moistureUnits, getMoistureUnits()));
-    _soilMoisture = dataIn->moistureSensor;
+    _soilMoisture.setObject(dataIn->moistureSensor);
 
     _feedingTrigger.setHandleMethod(&HydroponicsCrop::handleFeeding);
-    _feedingTrigger = newTriggerObjectFromSubData(&(dataIn->feedingTrigger));
+    _feedingTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->feedingTrigger)));
     HYDRUINO_SOFT_ASSERT(_feedingTrigger, SFP(HStr_Err_AllocationFailure));
 }
 
@@ -267,7 +267,7 @@ void HydroponicsAdaptiveCrop::update()
 {
     HydroponicsCrop::update();
 
-    _soilMoisture.updateIfNeeded();
+    _soilMoisture.updateIfNeeded(true);
 
     _feedingTrigger.updateIfNeeded();
 }

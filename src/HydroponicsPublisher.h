@@ -29,14 +29,14 @@ public:
     void update();
  
     bool beginPublishingToSDCard(String dataFilePrefix);
-    bool isPublishingToSDCard();
+    inline bool isPublishingToSDCard() const;
 
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
 
     inline void setNeedsTabulation();
     inline bool needsTabulation() { return _needsTabulation; }
 
-    bool isPublishingEnabled();
+    inline bool isPublishingEnabled() const;
     Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
 
     void notifyDayChanged();

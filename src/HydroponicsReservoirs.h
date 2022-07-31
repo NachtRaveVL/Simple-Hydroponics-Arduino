@@ -140,13 +140,9 @@ public:
     inline Hydroponics_UnitsType getTemperatureUnits() const { return definedUnitsElse(_tempUnits, defaultTemperatureUnits()); }
 
     virtual HydroponicsSensorAttachment &getWaterPH(bool poll = false) override;
-
     virtual HydroponicsSensorAttachment &getWaterTDS(bool poll = false) override;
-
     virtual HydroponicsSensorAttachment &getWaterTemperature(bool poll = false) override;
-
     virtual HydroponicsSensorAttachment &getAirTemperature(bool poll = false) override;
-
     virtual HydroponicsSensorAttachment &getAirCO2(bool poll = false) override;
 
     shared_ptr<HydroponicsBalancer> setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);

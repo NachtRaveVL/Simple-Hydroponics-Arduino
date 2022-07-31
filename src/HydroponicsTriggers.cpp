@@ -28,22 +28,22 @@ HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData 
 HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, byte measurementRow, int typeIn)
     : type((typeof(type))typeIn), _sensor(this), _triggerState(Hydroponics_TriggerState_Disabled)
 {
-    _sensor.setObject(sensorId);
     _sensor.setMeasurementRow(measurementRow);
+    _sensor.setObject(sensorId);
 }
 
 HydroponicsTrigger::HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, byte measurementRow, int typeIn)
     : type((typeof(type))typeIn), _sensor(this), _triggerState(Hydroponics_TriggerState_Disabled)
 {
-    _sensor.setObject(sensor);
     _sensor.setMeasurementRow(measurementRow);
+    _sensor.setObject(sensor);
 }
 
 HydroponicsTrigger::HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn)
     : type((typeof(type))(dataIn->type)), _sensor(this), _triggerState(Hydroponics_TriggerState_Disabled)
 {
-    _sensor.setObject(dataIn->sensorName);
     setToleranceUnits(dataIn->toleranceUnits);
+    _sensor.setObject(dataIn->sensorName);
 }
 
 void HydroponicsTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
@@ -58,7 +58,7 @@ void HydroponicsTrigger::saveToData(HydroponicsTriggerSubData *dataOut) const
 
 void HydroponicsTrigger::update()
 {
-    _sensor.updateIfNeeded();
+    _sensor.updateIfNeeded(true);
 }
 
 void HydroponicsTrigger::handleLowMemory()
@@ -117,7 +117,7 @@ void HydroponicsMeasurementValueTrigger::setTriggerTolerance(float tolerance)
 
 void HydroponicsMeasurementValueTrigger::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && _sensor) {
+    if (measurement && measurement->frame) {
         bool nextState = triggerStateToBool(_triggerState);
 
         if (measurement->isBinaryType()) {
@@ -128,13 +128,13 @@ void HydroponicsMeasurementValueTrigger::handleMeasurement(const HydroponicsMeas
             convertUnits(&measure, getToleranceUnits(), _sensor.getMeasurementConvertParam());
             _sensor.setMeasurement(measure);
 
-            float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTol : 0);
+            float tolAdditive = (nextState ? _detriggerTol : 0);
             nextState = (_triggerBelow ? measure.value <= _triggerTol + tolAdditive + FLT_EPSILON
                                        : measure.value >= _triggerTol - tolAdditive - FLT_EPSILON);
         }
 
-        if ((_triggerState == Hydroponics_TriggerState_Disabled) ||
-            (nextState != (_triggerState == Hydroponics_TriggerState_Triggered))) {
+        if (_triggerState == Hydroponics_TriggerState_Disabled ||
+            nextState != triggerStateToBool(_triggerState)) {
             _triggerState = triggerStateFromBool(nextState);
 
             #ifndef HYDRUINO_DISABLE_MULTITASKING
@@ -197,14 +197,14 @@ void HydroponicsMeasurementRangeTrigger::updateTriggerMidpoint(float toleranceMi
 
 void HydroponicsMeasurementRangeTrigger::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && _sensor) {
+    if (measurement && measurement->frame) {
         bool nextState = triggerStateToBool(_triggerState);
 
         auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());
         convertUnits(&measure, getToleranceUnits(), _sensor.getMeasurementConvertParam());
         _sensor.setMeasurement(measure);
 
-        float tolAdditive = (_triggerState == Hydroponics_TriggerState_Triggered ? _detriggerTol : 0);
+        float tolAdditive = (nextState ? _detriggerTol : 0);
 
         if (!_triggerOutside) {
             nextState = (measure.value >= _triggerTolLow - tolAdditive - FLT_EPSILON &&
@@ -214,8 +214,8 @@ void HydroponicsMeasurementRangeTrigger::handleMeasurement(const HydroponicsMeas
                          measure.value >= _triggerTolHigh - tolAdditive - FLT_EPSILON);
         }
 
-        if ((_triggerState == Hydroponics_TriggerState_Disabled) ||
-            (nextState != (_triggerState == Hydroponics_TriggerState_Triggered))) {
+        if (_triggerState == Hydroponics_TriggerState_Disabled ||
+            nextState != triggerStateToBool(_triggerState)) {
             _triggerState = triggerStateFromBool(nextState);
 
             #ifndef HYDRUINO_DISABLE_MULTITASKING

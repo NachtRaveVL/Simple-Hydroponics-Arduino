@@ -106,8 +106,8 @@ HydroponicsSensor::HydroponicsSensor(const HydroponicsSensorData *dataIn)
       _inputPin(dataIn->inputPin), _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
     _calibrationData = getCalibrationsStoreInstance()->getUserCalibrationData(_id.key);
-    _crop = dataIn->cropName;
-    _reservoir = dataIn->reservoirName;
+    _crop.setObject(dataIn->cropName);
+    _reservoir.setObject(dataIn->reservoirName);
 }
 
 HydroponicsSensor::~HydroponicsSensor()
@@ -222,6 +222,7 @@ bool HydroponicsBinarySensor::takeMeasurement(bool force)
         auto timestamp = unixNow();
 
         _lastMeasurement = HydroponicsBinaryMeasurement(state, timestamp);
+        _isTakingMeasure = false;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
@@ -237,7 +238,6 @@ bool HydroponicsBinarySensor::takeMeasurement(bool force)
             #endif
         }
 
-        _isTakingMeasure = false;
         return true;
     }
     return false;
@@ -785,6 +785,9 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
                     convertUnits(&newMeasurement, outUnits);
 
                     _lastMeasurement = newMeasurement;
+                    getHydroponicsInstance()->returnPinLock(_inputPin);
+                    _isTakingMeasure = false;
+
                     #ifndef HYDRUINO_DISABLE_MULTITASKING
                         scheduleSignalFireOnce<const HydroponicsMeasurement *>(getSharedPtr(), _measureSignal, &_lastMeasurement);
                     #else
@@ -792,11 +795,10 @@ void HydroponicsDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
                     #endif
                 }
             } else {
+                getHydroponicsInstance()->returnPinLock(_inputPin);
+                _isTakingMeasure = false;
                 HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_MeasurementFailure)); // device disconnected or no device by that addr
             }
-
-            getHydroponicsInstance()->returnPinLock(_inputPin);
-            _isTakingMeasure = false;
         } else {
             _isTakingMeasure = false;
         }

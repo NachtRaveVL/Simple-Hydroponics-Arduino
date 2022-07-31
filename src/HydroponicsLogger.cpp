@@ -46,12 +46,6 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
     return false;
 }
 
-bool HydroponicsLogger::isLoggingToSDCard() const
-{
-    HYDRUINO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
-    return hasLoggerData() && loggerData()->logToSDCard;
-}
-
 void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
 {
     if (actuator) {
@@ -165,24 +159,6 @@ void HydroponicsLogger::setLogLevel(Hydroponics_LogLevel logLevel)
         Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
         loggerData()->logLevel = logLevel;
     }
-}
-
-Hydroponics_LogLevel HydroponicsLogger::getLogLevel() const
-{
-    HYDRUINO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
-    return hasLoggerData() ? loggerData()->logLevel : Hydroponics_LogLevel_None;
-}
-
-bool HydroponicsLogger::isLoggingEnabled() const
-{
-    HYDRUINO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
-    return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None &&
-           (loggerData()->logToSDCard);
-}
-
-time_t HydroponicsLogger::getSystemUptime() const
-{
-    return unixNow() - _initDate ?: SECONDS_FROM_1970_TO_2000;
 }
 
 void HydroponicsLogger::notifyDayChanged()

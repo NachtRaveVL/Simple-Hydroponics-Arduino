@@ -10,8 +10,8 @@ HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, f
       _sensor(this), _balancerState(Hydroponics_BalancerState_Undefined)
 {
     _sensor.setMeasurementRow(measurementRow);
-    _sensor.setHandleMethod(&HydroponicsBalancer::handleMeasurement);
-    _sensor = sensor;
+    _sensor.setHandleMethod(&handleMeasurement);
+    _sensor.setObject(sensor);
 }
 
 HydroponicsBalancer::~HydroponicsBalancer()
@@ -22,7 +22,7 @@ HydroponicsBalancer::~HydroponicsBalancer()
 
 void HydroponicsBalancer::update()
 {
-    _sensor.updateIfNeeded();
+    _sensor.updateIfNeeded(true);
 }
 
 void HydroponicsBalancer::setTargetSetpoint(float targetSetpoint)
@@ -108,27 +108,29 @@ void HydroponicsBalancer::disableAllActuators()
 
 void HydroponicsBalancer::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (_enabled && measurement && measurement->frame && _sensor) {
+    if (measurement && measurement->frame) {
         auto balancerStateBefore = _balancerState;
 
         auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());
         convertUnits(&measure, getTargetUnits(), _sensor.getMeasurementConvertParam());
         _sensor.setMeasurement(measure);
 
-        float halfTargetRange = _targetRange * 0.5f;
-        if (measure.value > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
-            measure.value < _targetSetpoint + halfTargetRange - FLT_EPSILON) {
-            _balancerState = Hydroponics_BalancerState_Balanced;
-        } else {
-            _balancerState = measure.value > _targetSetpoint ? Hydroponics_BalancerState_TooHigh : Hydroponics_BalancerState_TooLow;
-        }
+        if (_enabled) {
+            float halfTargetRange = _targetRange * 0.5f;
+            if (measure.value > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
+                measure.value < _targetSetpoint + halfTargetRange - FLT_EPSILON) {
+                _balancerState = Hydroponics_BalancerState_Balanced;
+            } else {
+                _balancerState = measure.value > _targetSetpoint ? Hydroponics_BalancerState_TooHigh : Hydroponics_BalancerState_TooLow;
+            }
 
-        if (_balancerState != balancerStateBefore) {
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                scheduleSignalFireOnce<Hydroponics_BalancerState>(_balancerSignal, _balancerState);
-            #else
-                _balancerSignal.fire(_balancerState);
-            #endif
+            if (_balancerState != balancerStateBefore) {
+                #ifndef HYDRUINO_DISABLE_MULTITASKING
+                    scheduleSignalFireOnce<Hydroponics_BalancerState>(_balancerSignal, _balancerState);
+                #else
+                    _balancerSignal.fire(_balancerState);
+                #endif
+            }
         }
     }
 }

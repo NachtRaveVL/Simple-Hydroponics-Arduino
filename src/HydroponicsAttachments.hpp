@@ -31,17 +31,19 @@ inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const char *rhs
 
 inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const HydroponicsObjInterface *rhs)
 {
-    _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1);
-    _obj = getSharedPtr<HydroponicsObjInterface>(rhs);
-    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this;
+    _key = rhs ? rhs->getKey() : (Hydroponics_KeyType)-1;
+    _obj = rhs ? getSharedPtr<HydroponicsObjInterface>(rhs) : nullptr;
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+    return *this;
 }
 
 template<class U>
 inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(shared_ptr<U> &rhs)
 {
-    _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1);
-    _obj = reinterpret_pointer_cast<HydroponicsObjInterface>(rhs);
-    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this;
+    _key = rhs ? rhs->getKey() : (Hydroponics_KeyType)-1;
+    _obj = rhs ? reinterpret_pointer_cast<HydroponicsObjInterface>(rhs) : nullptr;
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+    return *this;
 }
 
 
@@ -50,7 +52,9 @@ void HydroponicsAttachment::setObject(U obj)
 {
     if (!(_obj == obj)) {
         if (_obj.isResolved()) { detachObject(); }
-        _obj = obj;
+
+        _obj = obj; // will be replaced by templated operator= inline
+
         if (_obj.isResolved()) { attachObject(); }
     }
 }
@@ -58,10 +62,10 @@ void HydroponicsAttachment::setObject(U obj)
 template<class U>
 shared_ptr<U> HydroponicsAttachment::getObject()
 {
-    if (isResolved()) { return _obj.getObject<U>(); }
+    if (_obj) { return _obj.getObject<U>(); }
     if (_obj.getKey() == (Hydroponics_KeyType)-1) { return nullptr; }
 
-    if (_obj.needsResolved() && _obj.resolve()) {
+    if (_obj.needsResolved() && _obj._getObject()) {
         attachObject();
     }
     return _obj.getObject<U>();
@@ -88,7 +92,7 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::attachObject()
 {
     HydroponicsAttachment::attachObject();
 
-    if (isResolved() && _handleMethod) {
+    if (_handleMethod) {
         (get()->*_signalGetter)().attach(_handleMethod);
     }
 }
@@ -108,15 +112,17 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlo
 {
     if (!(_handleMethod == handleMethod)) {
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(_handleMethod); }
+
         _handleMethod = MethodSlot<HydroponicsObjInterface,ParameterType>(
             reinterpret_cast<HydroponicsObjInterface *>(handleMethod.getObject()),
-            reinterpret_cast<HandleMethodPtr>(handleMethod.getFunct()));
+            (HandleMethodPtr)handleMethod.getFunct());
+
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(_handleMethod); }
     }
 }
 
 
-void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
+inline void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
 {
     if (resolve() && (_needsMeasurement || poll)) {
         if (_handleMethod) { _handleMethod(get()->getLatestMeasurement()); }
@@ -129,7 +135,7 @@ void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
 
 inline Hydroponics_TriggerState HydroponicsTriggerAttachment::getTriggerState()
 {
-    return isResolved() ? get()->getTriggerState() : Hydroponics_TriggerState_Undefined;
+    return resolve() ? get()->getTriggerState() : Hydroponics_TriggerState_Undefined;
 }
 
 inline void HydroponicsTriggerAttachment::updateIfNeeded()
@@ -140,7 +146,7 @@ inline void HydroponicsTriggerAttachment::updateIfNeeded()
 
 inline Hydroponics_BalancerState HydroponicsBalancerAttachment::getBalancerState()
 {
-    return isResolved() ? get()->getBalancerState() : Hydroponics_BalancerState_Undefined;
+    return resolve() ? get()->getBalancerState() : Hydroponics_BalancerState_Undefined;
 }
 
 inline void HydroponicsBalancerAttachment::updateIfNeeded()

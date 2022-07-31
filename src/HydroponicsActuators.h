@@ -51,7 +51,6 @@ public:
     virtual const HydroponicsSingleMeasurement &getContinuousPowerUsage() override;
 
     virtual HydroponicsAttachment &getParentRail(bool resolve = true) override;
-
     virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) override;
 
     inline byte getOutputPin() const { return _outputPin; }
@@ -124,7 +123,6 @@ public:
     virtual Hydroponics_UnitsType getFlowRateUnits() const override;
 
     virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) override;
-
     virtual HydroponicsAttachment &getDestinationReservoir(bool resolve = true) override;
 
     virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) override;

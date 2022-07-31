@@ -541,6 +541,7 @@ void HydroponicsScheduler::broadcastDayChange()
             if (getPublisherInstance()) {
                 getPublisherInstance()->notifyDayChanged();
             }
+            yield();
         });
     #else
         if (getHydroponicsInstance()) {
@@ -562,10 +563,9 @@ HydroponicsProcess::HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feed
 
 void HydroponicsProcess::clearActuatorReqs()
 {
-    while(actuatorReqs.size()) {
-        auto actIter = actuatorReqs.begin();
-        (*actIter)->disableActuator();
-        actuatorReqs.erase(actIter);
+    while (actuatorReqs.size()) {
+        actuatorReqs.begin()->get()->disableActuator();
+        actuatorReqs.erase(actuatorReqs.begin());
     }
 }
 
@@ -977,17 +977,25 @@ void HydroponicsFeeding::logFeeding(HydroponicsFeedingLogType logType)
             break;
 
         case HydroponicsFeedingLogType_WaterMeasures:
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                // Yield will allow measurements to complete, ensures first log out doesn't contain invalid values
+                if ((feedRes->getWaterPHSensor() && !feedRes->getWaterPH().getMeasurementFrame()) ||
+                    (feedRes->getWaterTDSSensor() && !feedRes->getWaterTDS().getMeasurementFrame()) ||
+                    (feedRes->getWaterTemperatureSensor() && !feedRes->getWaterTemperature().getMeasurementFrame())) {
+                    yield();
+                }
+            #endif
              if (feedRes->getWaterPHSensor()) {
-                auto ph = feedRes->getWaterPH().getMeasurement();
+                auto ph = feedRes->getWaterPH().getMeasurement(true);
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_pH_Measured), measurementToString(ph));
             }
             if (feedRes->getWaterTDSSensor()) {
-                auto tds = feedRes->getWaterTDS().getMeasurement();
+                auto tds = feedRes->getWaterTDS().getMeasurement(true);
                 convertUnits(&tds, feedRes->getTDSUnits());
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_TDS_Measured), measurementToString(tds, 1));
             }
             if (feedRes->getWaterTemperatureSensor()) {
-                auto temp = feedRes->getWaterTemperature().getMeasurement();
+                auto temp = feedRes->getWaterTemperature().getMeasurement(true);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
@@ -1004,13 +1012,20 @@ void HydroponicsFeeding::logFeeding(HydroponicsFeedingLogType logType)
             break;
 
         case HydroponicsFeedingLogType_AirMeasures:
+            #ifndef HYDRUINO_DISABLE_MULTITASKING
+                // Yield will allow measurements to complete, ensures first log out doesn't contain invalid values
+                if ((feedRes->getAirTemperatureSensor() && !feedRes->getAirTemperature().getMeasurementFrame()) ||
+                    (feedRes->getAirCO2Sensor() && !feedRes->getAirCO2().getMeasurementFrame())) {
+                    yield();
+                }
+            #endif
             if (feedRes->getAirTemperatureSensor()) {
-                auto temp = feedRes->getAirTemperature().getMeasurement();
+                auto temp = feedRes->getAirTemperature().getMeasurement(true);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
             if (feedRes->getAirCO2Sensor()) {
-                auto co2 = feedRes->getAirCO2().getMeasurement();
+                auto co2 = feedRes->getAirCO2().getMeasurement(true);
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_CO2_Measured), measurementToString(co2));
             }
             break;

@@ -143,7 +143,7 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReser
     : HydroponicsReservoir(dataIn),
       _maxVolume(dataIn->maxVolume), _waterVolume(this), _filledTrigger(this), _emptyTrigger(this)
 {
-    _waterVolume = dataIn->volumeSensor;
+    _waterVolume.setObject(dataIn->volumeSensor);
 
     _filledTrigger.setHandleMethod(&HydroponicsReservoir::handleFilled);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
@@ -158,7 +158,7 @@ void HydroponicsFluidReservoir::update()
 {
     HydroponicsReservoir::update();
 
-    _waterVolume.updateIfNeeded();
+    _waterVolume.updateIfNeeded(true);
 
     _filledTrigger.updateIfNeeded();
     _emptyTrigger.updateIfNeeded();
@@ -221,7 +221,7 @@ void HydroponicsFluidReservoir::handleFilled(Hydroponics_TriggerState filledStat
 {
     HydroponicsReservoir::handleFilled(filledState);
 
-    if (_filledState == Hydroponics_TriggerState_Triggered && !getWaterVolumeSensor()) {
+    if (triggerStateToBool(_filledState) && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_FILLED
                                                                                                            : _maxVolume, _volumeUnits);
     }
@@ -231,7 +231,7 @@ void HydroponicsFluidReservoir::handleEmpty(Hydroponics_TriggerState emptyState)
 {
     HydroponicsReservoir::handleEmpty(emptyState);
 
-    if (_emptyState == Hydroponics_TriggerState_Triggered && !getWaterVolumeSensor()) {
+    if (triggerStateToBool(_emptyState) && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydroponics_ReservoirType_FeedWater ? _maxVolume * HYDRUINO_FEEDRES_FRACTION_EMPTY
                                                                                                            : 0, _volumeUnits);
     }
@@ -271,22 +271,23 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
         }
     } else { _numFeedingsToday = 0; }
 
-    _waterPH = dataIn->waterPHSensor;
-    _waterTDS = dataIn->waterTDSSensor;
-    _waterTemp = dataIn->waterTempSensor;
-    _airTemp = dataIn->airTempSensor;
-    _airCO2 = dataIn->airCO2Sensor;
+    _waterPH.setObject(dataIn->waterPHSensor);
+    _waterTDS.setObject(dataIn->waterTDSSensor);
+    _waterTemp.setObject(dataIn->waterTempSensor);
+
+    _airTemp.setObject(dataIn->airTempSensor);
+    _airCO2.setObject(dataIn->airCO2Sensor);
 }
 
 void HydroponicsFeedReservoir::update()
 {
     HydroponicsFluidReservoir::update();
 
-    _waterPH.updateIfNeeded();
-    _waterTDS.updateIfNeeded();
-    _waterTemp.updateIfNeeded();
-    _airTemp.updateIfNeeded();
-    _airCO2.updateIfNeeded();
+    _waterPH.updateIfNeeded(true);
+    _waterTDS.updateIfNeeded(true);
+    _waterTemp.updateIfNeeded(true);
+    _airTemp.updateIfNeeded(true);
+    _airCO2.updateIfNeeded(true);
 
     _waterPHBalancer.updateIfNeeded();
     _waterTDSBalancer.updateIfNeeded();
@@ -299,11 +300,12 @@ void HydroponicsFeedReservoir::handleLowMemory()
 {
     HydroponicsFluidReservoir::handleLowMemory();
 
-    // if (_waterPHBalancer) { _waterPHBalancer->handleLowMemory(); }
-    // if (_waterTDSBalancer) { _waterTDSBalancer->handleLowMemory(); }
-    // if (_waterTempBalancer) { _waterTempBalancer->handleLowMemory(); }
-    // if (_airTempBalancer) { _airTempBalancer->handleLowMemory(); }
-    // if (_airCO2Balancer) { _airCO2Balancer->handleLowMemory(); }
+    if (_waterPHBalancer && !_waterPHBalancer->isEnabled()) { _waterPHBalancer.setObject(nullptr); }
+    if (_waterTDSBalancer && !_waterTDSBalancer->isEnabled()) { _waterTDSBalancer.setObject(nullptr); }
+    if (_waterTempBalancer && !_waterTempBalancer->isEnabled()) { _waterTempBalancer.setObject(nullptr); }
+
+    if (_airTempBalancer && !_airTempBalancer->isEnabled()) { _airTempBalancer.setObject(nullptr); }
+    if (_airCO2Balancer && !_airCO2Balancer->isEnabled()) { _airCO2Balancer.setObject(nullptr); }
 }
 
 void HydroponicsFeedReservoir::setTDSUnits(Hydroponics_UnitsType tdsUnits)

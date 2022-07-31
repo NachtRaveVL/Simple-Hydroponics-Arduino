@@ -346,11 +346,11 @@ public:
     // System time zone offset from UTC (default: +0/UTC)
     int8_t getTimeZoneOffset() const;
     // Whenever the system booted up with the RTC battery failure flag set (meaning the time is not set correctly)
-    bool getRTCBatteryFailure() const;
+    inline bool getRTCBatteryFailure() const { return _rtcBattFail; }
     // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRUINO_DATA_LOOP_INTERVAL)
     uint16_t getPollingInterval() const;
     // System polling frame number for sensor frame tracking
-    uint16_t getPollingFrame() const;
+    inline uint16_t getPollingFrame() const { return _pollingFrame; }
     // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
     bool isPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
     // Returns if system autosaves are enabled or not

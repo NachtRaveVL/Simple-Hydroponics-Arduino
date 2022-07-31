@@ -66,32 +66,19 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_I2C_SPEED,
                             SETUP_SD_CARD_SPI_SPEED);
 
-// Support function for getting properly formatted 16-bit address "0xADDR"
-String stringFor16bAddr(uint16_t addr)
-{
-    String retVal;
-    retVal.concat('0'); retVal.concat('x');
-    if (addr == (uint16_t)-1) { addr = 0; }
-    if (addr < 0x1000) { retVal.concat('0'); }
-    if (addr < 0x100) { retVal.concat('0'); }
-    if (addr < 0x10) { retVal.concat('0'); }
-    retVal.concat(String(addr, 16));
-    return retVal;
-}
-
-// Wraps the formatted 16-bit address as appended pseudo alt text " (0xADDR)"
+// Wraps a formatted address as appended pseudo alt text, e.g. " (0xADDR)"
 String stringAltFor16bAddr(uint16_t addr)
 {
     String retVal;
     retVal.concat(' '); retVal.concat('('); 
-    retVal.concat(stringFor16bAddr(addr));
+    retVal.concat(addressToString(addr));
     retVal.concat(')');
     return retVal;
 }
 
 void setup() {
     Serial.begin(115200);               // Begin USB Serial interface
-    while(!Serial) { ; }                // Wait for USB Serial to connect
+    while (!Serial) { ; }                // Wait for USB Serial to connect
     #if defined(ESP32) || defined(ESP8266)
         SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif

@@ -838,7 +838,7 @@ bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
 shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) const
 {
     if (id.posIndex == HYDRUINO_POS_SEARCH_FROMBEG) {
-        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
+        while (++id.posIndex < HYDRUINO_POS_MAXSIZE) {
             auto iter = _objects.find(id.regenKey());
             if (iter != _objects.end()) {
                 if (id.keyString == iter->second->getKeyString()) {
@@ -849,7 +849,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
             }
         }
     } else if (id.posIndex == HYDRUINO_POS_SEARCH_FROMEND) {
-        while(--id.posIndex >= 0) {
+        while (--id.posIndex >= 0) {
             auto iter = _objects.find(id.regenKey());
             if (iter != _objects.end()) {
                 if (id.keyString == iter->second->getKeyString()) {
@@ -890,7 +890,7 @@ Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, boo
 {
     if (id.posIndex != HYDRUINO_POS_SEARCH_FROMEND) {
         id.posIndex = HYDRUINO_POS_SEARCH_FROMBEG;
-        while(++id.posIndex < HYDRUINO_POS_MAXSIZE) {
+        while (++id.posIndex < HYDRUINO_POS_MAXSIZE) {
             auto iter = _objects.find(id.regenKey());
             if (taken == (iter != _objects.end())) {
                 return id.posIndex;
@@ -898,7 +898,7 @@ Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, boo
         }
     } else {
         id.posIndex = HYDRUINO_POS_SEARCH_FROMEND;
-        while(--id.posIndex >= 0) {
+        while (--id.posIndex >= 0) {
             auto iter = _objects.find(id.regenKey());
             if (taken == (iter != _objects.end())) {
                 return id.posIndex;
@@ -1298,20 +1298,10 @@ int8_t Hydroponics::getTimeZoneOffset() const
     return _systemData ? _systemData->timeZoneOffset : 0;
 }
 
-bool Hydroponics::getRTCBatteryFailure() const
-{
-    return _rtcBattFail;
-}
-
 uint16_t Hydroponics::getPollingInterval() const
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     return _systemData ? _systemData->pollingInterval : 0;
-}
-
-uint16_t Hydroponics::getPollingFrame() const
-{
-    return _pollingFrame;
 }
 
 bool Hydroponics::isPollingFrameOld(unsigned int frame, unsigned int allowance) const
@@ -1422,7 +1412,7 @@ void Hydroponics::checkFreeSpace()
         (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (HYDRUINO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
         if (logger.isLoggingToSDCard() || publisher.isPublishingToSDCard()) {
             uint32_t freeKB = getSDCardFreeSpace();
-            while(freeKB < HYDRUINO_SYS_FREESPACE_LOWSPACE) {
+            while (freeKB < HYDRUINO_SYS_FREESPACE_LOWSPACE) {
                 logger.cleanupOldestLogs(true);
                 publisher.cleanupOldestData(true);
                 freeKB = getSDCardFreeSpace();

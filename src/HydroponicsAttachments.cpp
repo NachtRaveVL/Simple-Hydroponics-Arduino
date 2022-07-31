@@ -42,7 +42,7 @@ shared_ptr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject()
     if (_obj) { return _obj; }
     if (_key == (Hydroponics_KeyType)-1) { return nullptr; }
     if (Hydroponics::_activeInstance) {
-        _obj = reinterpret_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
+        _obj = static_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
     }
     if (_obj && _keyStr) {
         free((void *)_keyStr); _keyStr = nullptr;
@@ -65,7 +65,7 @@ HydroponicsAttachment::~HydroponicsAttachment()
 
 void HydroponicsAttachment::attachObject()
 {
-    _obj->addLinkage((HydroponicsObject *)_parent); // note: operator->() triggers _getObject if not already resolved (read as: do not place inside if resolved block)
+    _obj->addLinkage((HydroponicsObject *)_parent);
 }
 
 void HydroponicsAttachment::detachObject()
@@ -142,7 +142,7 @@ void HydroponicsSensorAttachment::setMeasurementUnits(Hydroponics_UnitsType unit
 
 void HydroponicsSensorAttachment::handleMeasurement(const HydroponicsMeasurement *measurement)
 {
-    if (measurement && measurement->frame && isResolved()) {
+    if (measurement && measurement->frame) {
         setMeasurement(getAsSingleMeasurement(measurement, _measurementRow));
     }
 }
