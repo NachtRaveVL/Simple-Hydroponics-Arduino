@@ -23,7 +23,7 @@ HydroponicsDLinkObject::~HydroponicsDLinkObject()
     if (_keyStr) { free((void *)_keyStr); }
 }
 
-void HydroponicsDLinkObject::detachObject()
+void HydroponicsDLinkObject::detach()
 {
     if (_obj && !_keyStr) {
         auto id = getId();
@@ -34,17 +34,6 @@ void HydroponicsDLinkObject::detachObject()
         }
     }
     _obj = nullptr;
-}
-
-HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const HydroponicsDLinkObject &rhs)
-{
-    _key = rhs._key;
-    _obj = rhs._obj;
-    if (rhs._keyStr) {
-        _keyStr = (const char *)malloc(strnlen(rhs._keyStr, HYDRUINO_NAME_MAXSIZE) + 1);
-        strncpy((char *)_keyStr, rhs._keyStr, HYDRUINO_NAME_MAXSIZE);
-    }
-    return *this;
 }
 
 HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(HydroponicsIdentity rhs)

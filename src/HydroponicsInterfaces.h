@@ -53,6 +53,7 @@ class HydroponicsObjInterface {
 public:
     virtual HydroponicsIdentity getId() const = 0;
     virtual Hydroponics_KeyType getKey() const = 0;
+    virtual String getKeyString() const = 0;
     virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const = 0;
 
     virtual bool addLinkage(HydroponicsObject *obj) = 0;
@@ -65,7 +66,7 @@ class HydroponicsActuatorAttachmentInterface {
 public:
     virtual HydroponicsAttachment &getParentActuator(bool resolve = true) = 0;
 
-    template<class U> inline void setActuator(U actuator) { getParentActuator().setObject(actuator); }
+    template<class U> inline void setActuator(U actuator) { getParentActuator(false).setObject(actuator); }
     template<class U = HydroponicsActuator> inline shared_ptr<U> getActuator(bool resolve = true) { return getParentActuator(resolve).template getObject<U>(); }
 };
 
@@ -74,7 +75,7 @@ class HydroponicsSensorAttachmentInterface {
 public:
     virtual HydroponicsAttachment &getParentSensor(bool resolve = true) = 0;
 
-    template<class U> inline void setSensor(U sensor) { getParentSensor().setObject(sensor); }
+    template<class U> inline void setSensor(U sensor) { getParentSensor(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getSensor(bool resolve = true) { return getParentSensor(resolve).template getObject<U>(); }
 };
 
@@ -83,7 +84,7 @@ class HydroponicsCropAttachmentInterface {
 public:
     virtual HydroponicsAttachment &getParentCrop(bool resolve = true) = 0;
 
-    template<class U> inline void setCrop(U crop) { getParentCrop().setObject(crop); }
+    template<class U> inline void setCrop(U crop) { getParentCrop(false).setObject(crop); }
     template<class U = HydroponicsCrop> inline shared_ptr<U> getCrop(bool resolve = true) { return getParentCrop(resolve).template getObject<U>(); }
 };
 
@@ -92,7 +93,7 @@ class HydroponicsReservoirAttachmentInterface {
 public:
     virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) = 0;
 
-    template<class U> inline void setReservoir(U reservoir) { getParentReservoir().setObject(reservoir); }
+    template<class U> inline void setReservoir(U reservoir) { getParentReservoir(false).setObject(reservoir); }
     template<class U = HydroponicsReservoir> inline shared_ptr<U> getReservoir(bool resolve = true) { return getParentReservoir(resolve).template getObject<U>(); }
 };
 
@@ -101,7 +102,7 @@ class HydroponicsRailAttachmentInterface {
 public:
     virtual HydroponicsAttachment &getParentRail(bool resolve = true) = 0;
 
-    template<class U> inline void setRail(U rail) { getParentRail().setObject(rail); }
+    template<class U> inline void setRail(U rail) { getParentRail(false).setObject(rail); }
     template<class U = HydroponicsRail> inline shared_ptr<U> getRail(bool resolve = true) { return getParentRail(resolve).template getObject<U>(); }
 };
 
@@ -185,11 +186,11 @@ public:
     virtual Hydroponics_UnitsType getFlowRateUnits() const = 0;
 
     virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) = 0;
-    template<class U> inline void setInputReservoir(U reservoir) { getParentReservoir().setObject(reservoir); }
+    template<class U> inline void setInputReservoir(U reservoir) { getParentReservoir(false).setObject(reservoir); }
     template<class U = HydroponicsReservoir> inline shared_ptr<U> getInputReservoir(bool resolve = true) { return getParentReservoir(resolve).template getObject<U>(); }
 
     virtual HydroponicsAttachment &getDestinationReservoir(bool resolve = true) = 0;
-    template<class U> inline void setOutputReservoir(U reservoir) { getDestinationReservoir().setObject(reservoir); }
+    template<class U> inline void setOutputReservoir(U reservoir) { getDestinationReservoir(false).setObject(reservoir); }
     template<class U = HydroponicsReservoir> inline shared_ptr<U> getOutputReservoir(bool resolve = true) { return getDestinationReservoir(resolve).template getObject<U>(); }
 
     virtual void setContinuousFlowRate(float contFlowRate, Hydroponics_UnitsType contFlowRateUnits = Hydroponics_UnitsType_Undefined) = 0;
@@ -203,7 +204,7 @@ class HydroponicsFeedReservoirAttachmentInterface {
 public:
     virtual HydroponicsAttachment &getFeedingReservoir(bool resolve = true) = 0;
 
-    template<class U> inline void setFeedReservoir(U reservoir) { getFeedingReservoir().setObject(reservoir); }
+    template<class U> inline void setFeedReservoir(U reservoir) { getFeedingReservoir(false).setObject(reservoir); }
     template<class U = HydroponicsFeedReservoir> inline shared_ptr<U> getFeedReservoir(bool resolve = true) { return getFeedingReservoir(resolve).template getObject<U>(); }
 };
 
@@ -212,7 +213,7 @@ class HydroponicsFlowSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getFlowRate(bool poll = false) = 0;
 
-    template<class U> inline void setFlowRateSensor(U sensor) { getFlowRate().setObject(sensor); }
+    template<class U> inline void setFlowRateSensor(U sensor) { getFlowRate(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getFlowRateSensor(bool poll = false) { return static_pointer_cast<U>(getFlowRate(poll).getObject()); }
 };
 
@@ -221,7 +222,7 @@ class HydroponicsVolumeSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterVolume(bool poll = false) = 0;
 
-    template<class U> inline void setWaterVolumeSensor(U sensor) { getWaterVolume().setObject(sensor); }
+    template<class U> inline void setWaterVolumeSensor(U sensor) { getWaterVolume(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getWaterVolumeSensor(bool poll = false) { return static_pointer_cast<U>(getWaterVolume(poll).getObject()); }
 };
 
@@ -230,7 +231,7 @@ class HydroponicsPowerSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getPowerUsage(bool poll = false) = 0;
 
-    template<class U> inline void setPowerUsageSensor(U sensor) { getPowerUsage().setObject(sensor); }
+    template<class U> inline void setPowerUsageSensor(U sensor) { getPowerUsage(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getPowerUsageSensor(bool poll = false) { return static_pointer_cast<U>(getPowerUsage(poll).getObject()); }
 };
 
@@ -239,7 +240,7 @@ class HydroponicsWaterTemperatureSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterTemperature(bool poll = false) = 0;
 
-    template<class U> inline void setWaterTemperatureSensor(U sensor) { getWaterTemperature().setObject(sensor); }
+    template<class U> inline void setWaterTemperatureSensor(U sensor) { getWaterTemperature(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getWaterTemperatureSensor(bool poll = false) { return static_pointer_cast<U>(getWaterTemperature(poll).getObject()); }
 };
 
@@ -248,7 +249,7 @@ class HydroponicsWaterPHSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterPH(bool poll = false) = 0;
 
-    template<class U> inline void setWaterPHSensor(U sensor) { getWaterPH().setObject(sensor); }
+    template<class U> inline void setWaterPHSensor(U sensor) { getWaterPH(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getWaterPHSensor(bool poll = false) { return static_pointer_cast<U>(getWaterPH(poll).getObject()); }
 };
 
@@ -257,7 +258,7 @@ class HydroponicsWaterTDSSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getWaterTDS(bool poll = false) = 0;
 
-    template<class U> inline void setWaterTDSSensor(U sensor) { getWaterTDS().setObject(sensor); }
+    template<class U> inline void setWaterTDSSensor(U sensor) { getWaterTDS(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getWaterTDSSensor(bool poll = false) { return static_pointer_cast<U>(getWaterTDS(poll).getObject()); }
 };
 
@@ -266,7 +267,7 @@ class HydroponicsSoilMoistureSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getSoilMoisture(bool poll = false) = 0;
 
-    template<class U> inline void setSoilMoistureSensor(U sensor) { getSoilMoisture().setObject(sensor); }
+    template<class U> inline void setSoilMoistureSensor(U sensor) { getSoilMoisture(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getSoilMoistureSensor(bool poll = false) { return static_pointer_cast<U>(getSoilMoisture(poll).getObject()); }
 };
 
@@ -275,7 +276,7 @@ class HydroponicsAirTemperatureSensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getAirTemperature(bool poll = false) = 0;
 
-    template<class U> inline void setAirTemperatureSensor(U sensor) { getAirTemperature().setObject(sensor); }
+    template<class U> inline void setAirTemperatureSensor(U sensor) { getAirTemperature(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getAirTemperatureSensor(bool poll = false) { return static_pointer_cast<U>(getAirTemperature(poll).getObject()); }
 };
 
@@ -284,7 +285,7 @@ class HydroponicsAirHumiditySensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getAirHumidity(bool poll = false) = 0;
 
-    template<class U> inline void setAirHumiditySensor(U sensor) { getAirHumidity().setObject(sensor); }
+    template<class U> inline void setAirHumiditySensor(U sensor) { getAirHumidity(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getAirHumiditySensor(bool poll = false) { return static_pointer_cast<U>(getAirHumidity(poll).getObject()); }
 };
 
@@ -293,7 +294,7 @@ class HydroponicsAirCO2SensorAttachmentInterface {
 public:
     virtual HydroponicsSensorAttachment &getAirCO2(bool poll = false) = 0;
 
-    template<class U> inline void setAirCO2Sensor(U sensor) { getAirCO2().setObject(sensor); }
+    template<class U> inline void setAirCO2Sensor(U sensor) { getAirCO2(false).setObject(sensor); }
     template<class U = HydroponicsSensor> inline shared_ptr<U> getAirCO2Sensor(bool poll = false) { return static_pointer_cast<U>(getAirCO2(poll).getObject()); }
 };
 

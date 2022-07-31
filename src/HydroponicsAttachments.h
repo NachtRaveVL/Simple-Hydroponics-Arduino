@@ -37,7 +37,7 @@ public:
 
     template<class U> inline void setObject(U obj) { *this = obj; }
     template<class U = HydroponicsObjInterface> shared_ptr<U> getObject();
-    void detachObject();
+    void detach();
 
     template<class U = HydroponicsObjInterface> inline U* get() { return getObject<U>().get(); }
     inline HydroponicsIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroponicsIdentity(_keyStr) : HydroponicsIdentity(_key)); }
@@ -48,19 +48,16 @@ public:
     inline HydroponicsObjInterface* operator->() { return get<HydroponicsObjInterface>(); }
     inline HydroponicsObjInterface* operator*() { return get<HydroponicsObjInterface>(); }
 
-    HydroponicsDLinkObject &operator=(const HydroponicsDLinkObject &rhs);
     HydroponicsDLinkObject &operator=(HydroponicsIdentity rhs);
     HydroponicsDLinkObject &operator=(const char *rhs);
-    template<class U> inline HydroponicsDLinkObject &operator=(shared_ptr<U> &rhs) { _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); _obj = static_pointer_cast<HydroponicsObjInterface>(rhs); if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this; }
     inline HydroponicsDLinkObject &operator=(const HydroponicsObjInterface *rhs) { _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); _obj = getSharedPtr(rhs); if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this; }
+    template<class U> HydroponicsDLinkObject &operator=(shared_ptr<U> &rhs);
 
-    inline bool operator==(const HydroponicsDLinkObject &rhs) const { return _key == rhs.getKey(); }
     inline bool operator==(const HydroponicsIdentity &rhs) const { return _key == rhs.key; }
     inline bool operator==(const char *rhs) const { return _key == stringHash(rhs); }
     template<class U> inline bool operator==(const shared_ptr<U> &rhs) const { return _key == (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
     inline bool operator==(const HydroponicsObjInterface *rhs) const { return _key == (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }
 
-    inline bool operator!=(const HydroponicsDLinkObject &rhs) const { return _key != rhs.getKey(); }
     inline bool operator!=(const HydroponicsIdentity &rhs) const { return _key != rhs.key; }
     inline bool operator!=(const char *rhs) const { return _key != stringHash(rhs); }
     template<class U> inline bool operator!=(const shared_ptr<U> &rhs) const { return _key != (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1); }

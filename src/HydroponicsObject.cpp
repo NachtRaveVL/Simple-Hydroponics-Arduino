@@ -177,7 +177,7 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 
 bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
 {
-    return (_links.find(obj->getId()) != _links.end());
+    return (_links.find(obj->getKey()) != _links.end());
 }
 
 HydroponicsIdentity HydroponicsObject::getId() const
@@ -188,6 +188,11 @@ HydroponicsIdentity HydroponicsObject::getId() const
 Hydroponics_KeyType HydroponicsObject::getKey() const
 {
     return _id.key;
+}
+
+String HydroponicsObject::getKeyString() const
+{
+    return _id.keyString;
 }
 
 shared_ptr<HydroponicsObjInterface> HydroponicsObject::getSharedPtr() const
@@ -220,6 +225,11 @@ HydroponicsIdentity HydroponicsSubObject::getId() const
 Hydroponics_KeyType HydroponicsSubObject::getKey() const
 {
     return (Hydroponics_KeyType)(intptr_t)this;
+}
+
+String HydroponicsSubObject::getKeyString() const
+{
+    return SFP(HStr_null);
 }
 
 shared_ptr<HydroponicsObjInterface> HydroponicsSubObject::getSharedPtr() const

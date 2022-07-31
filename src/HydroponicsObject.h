@@ -118,7 +118,7 @@ public:
 
     virtual HydroponicsIdentity getId() const override;     // Returns the unique Identity of the object
     virtual Hydroponics_KeyType getKey() const override;    // Returns the unique key of the object
-    inline const String &getKeyString() const { return _id.keyString; } // Returns the key string of the object
+    virtual String getKeyString() const override;           // Returns the key string of the object
     virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const  override; // Returns the shared_ptr instance of the object
 
 protected:
@@ -140,7 +140,7 @@ class HydroponicsSubObject : public HydroponicsObjInterface {
 public:
     virtual HydroponicsIdentity getId() const override;
     virtual Hydroponics_KeyType getKey() const override;
-    inline const String &getKeyString() const { return SFP(HStr_null); }
+    virtual String getKeyString() const override;
     virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const override;
 
     virtual bool addLinkage(HydroponicsObject *obj) override;

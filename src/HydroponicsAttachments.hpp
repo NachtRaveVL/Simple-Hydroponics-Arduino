@@ -8,29 +8,44 @@
 template<class U>
 shared_ptr<U> HydroponicsDLinkObject::getObject()
 {
+    if (_obj) { return reinterpret_pointer_cast<U>(_obj); }
+    if (_key == (Hydroponics_KeyType)-1) { return nullptr; }
+
     if (needsResolved() && Hydroponics::_activeInstance) {
         _obj = static_pointer_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
     }
     if (isResolved() && _keyStr) {
         free((void *)_keyStr); _keyStr = nullptr;
     }
-    return static_pointer_cast<U>(_obj);
+
+    return reinterpret_pointer_cast<U>(_obj);
+}
+
+template<class U>
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(shared_ptr<U> &rhs)
+{
+    _key = (rhs ? rhs->getKey() : (Hydroponics_KeyType)-1);
+    _obj = reinterpret_pointer_cast<HydroponicsObjInterface>(rhs);
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; } return *this;
 }
 
 
 template<class U>
 void HydroponicsAttachment::setObject(U obj)
 {
-    if (_obj != obj) {
-        if (isResolved()) { detachObject(); }
+    if (!(_obj == obj)) {
+        if (_obj.isResolved()) { detachObject(); }
         _obj = obj;
-        if (isResolved()) { attachObject(); }
+        if (_obj.isResolved()) { attachObject(); }
     }
 }
 
 template<class U>
 shared_ptr<U> HydroponicsAttachment::getObject()
 {
+    if (_obj.isResolved()) { return _obj.getObject<U>(); }
+    if (_obj.getKey() == (Hydroponics_KeyType)-1) { return nullptr; }
+
     if (_obj.needsResolved() && _obj.resolve()) {
         attachObject();
     }
