@@ -119,8 +119,9 @@ private:
 
 
 // Actuator Precise Timed Enable Task
+// This actuator will enable an actuator for a period of time finely, and then deactivate it.
 class ActuatorTimedEnableTask : public Executable {
-    public:
+public:
     taskid_t taskId;
     ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator,
                             float enableIntensity,

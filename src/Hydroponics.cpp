@@ -1,6 +1,6 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
-    Hydroponics Main
+    Hydroponics System
 */
 
 #include "Hydroponics.h"
@@ -13,7 +13,15 @@ time_t rtcNow() {
 void handleInterrupt(byte pin)
 {
     if (Hydroponics::_activeInstance) {
-        Hydroponics::_activeInstance->handleInterrupt(pin);
+        for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
+            if (iter->second->isSensorType()) {
+                auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+                if (sensor->getInputPin() == pin && sensor->isBinaryClass()) {
+                    auto binarySensor = static_pointer_cast<HydroponicsBinarySensor>(sensor);
+                    if (binarySensor) { binarySensor->notifyISRTriggered(); }
+                }
+            }
+        }
     }
 }
 
@@ -183,10 +191,6 @@ void Hydroponics::init(Hydroponics_SystemMode systemMode,
                 _systemData->ctrlInMode = Hydroponics_ControlInputMode_Disabled;
             #endif
 
-            _scheduler.initFromData(&(_systemData->scheduler));
-            _logger.initFromData(&(_systemData->logger));
-            _publisher.initFromData(&(_systemData->publisher));
-
             commonPostInit();
         }
     }  
@@ -289,9 +293,6 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
             HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), SFP(HStr_Err_ImportFailure));
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
-                _scheduler.initFromData(&(_systemData->scheduler));
-                _logger.initFromData(&(_systemData->logger));
-                _publisher.initFromData(&(_systemData->publisher));
             } else if (systemData) {
                 delete systemData;
             }
@@ -450,9 +451,6 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             HYDRUINO_SOFT_ASSERT(systemData && systemData->isSystemData(), SFP(HStr_Err_ImportFailure));
             if (systemData && systemData->isSystemData()) {
                 _systemData = systemData;
-                _scheduler.initFromData(&(_systemData->scheduler));
-                _logger.initFromData(&(_systemData->logger));
-                _publisher.initFromData(&(_systemData->publisher));
             } else if (systemData) {
                 delete systemData;
             }
@@ -597,9 +595,9 @@ void Hydroponics::commonPostInit()
         setSyncProvider(rtcNow);
     }
 
-    _scheduler.updateDayTracking();
-    _logger.updateInitTracking();
-
+    scheduler.updateDayTracking(); // also calls setNeedsScheduling
+    logger.updateInitTracking();
+    publisher.setNeedsTabulation();
     _lastAutosave = isAutosaveEnabled() ? unixNow() : 0;
 
     if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
@@ -649,7 +647,7 @@ void Hydroponics::commonPostInit()
 
 void Hydroponics::commonPostSave()
 {
-    _logger.logSystemSave();
+    logger.logSystemSave();
 
     if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
         auto calibsStore = getCalibrationsStoreInstance();
@@ -679,14 +677,17 @@ void Hydroponics::commonPostSave()
 void controlLoop()
 {
     if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
-        Hydroponics::_activeInstance->updateObjects(0);
-        Hydroponics::_activeInstance->_scheduler.update();
+        for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
+            iter->second->update();
+        }
+
+        Hydroponics::_activeInstance->scheduler.update();
 
         #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
         {   static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(String(F("controlLoopAlive")));
+                Hydroponics::_activeInstance->logger.logMessage(String(F("controlLoopAlive")));
             }
         }
         #endif
@@ -698,13 +699,22 @@ void controlLoop()
 void dataLoop()
 {
     if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
-        Hydroponics::_activeInstance->updateObjects(1);
+        Hydroponics::_activeInstance->publisher.advancePollingFrame();
+
+        for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
+            if (iter->second->isSensorType()) {
+                auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+                if (sensor->needsPolling()) {
+                    sensor->takeMeasurement(); // no force if already current for this frame #, we're just ensuring data for publisher
+                }
+            }
+        }
 
         #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
         {   static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(String(F("dataLoopAlive")));
+                Hydroponics::_activeInstance->logger.logMessage(String(F("dataLoopAlive")));
             }
         }
         #endif
@@ -719,14 +729,14 @@ void miscLoop()
         Hydroponics::_activeInstance->checkFreeMemory();
         Hydroponics::_activeInstance->checkFreeSpace();
         Hydroponics::_activeInstance->checkAutosave();
-        Hydroponics::_activeInstance->_logger.update();
-        Hydroponics::_activeInstance->_publisher.update();
+
+        Hydroponics::_activeInstance->publisher.update();
 
         #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
         {   static time_t _lastImAlive = unixNow();
             if (unixNow() >= _lastImAlive + 30) {
                 _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(String(F("miscLoopAlive")));
+                Hydroponics::_activeInstance->logger.logMessage(String(F("miscLoopAlive")));
             }
         }
         #endif
@@ -734,7 +744,7 @@ void miscLoop()
         {   static time_t _lastMemLog = unixNow();
             if (unixNow() >= _lastMemLog + 15) {
                 _lastMemLog = unixNow();
-                Hydroponics::_activeInstance->_logger.logMessage(String(F("Free memory: ")), String(freeMemory()));
+                Hydroponics::_activeInstance->logger.logMessage(String(F("Free memory: ")), String(freeMemory()));
             }
         }
         #endif
@@ -746,7 +756,7 @@ void miscLoop()
 void Hydroponics::launch()
 {
     // Forces all sensors to get a new measurement
-    _publisher.advancePollingFrame();
+    publisher.advancePollingFrame();
 
     // Create/enable main runloops
     _suspend = false;
@@ -796,31 +806,6 @@ void Hydroponics::update()
     #endif
 }
 
-void Hydroponics::updateObjects(int pass)
-{
-    switch (pass) {
-        case 1: {
-            _publisher.advancePollingFrame();
-
-            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                if (iter->second->isSensorType()) {
-                    auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
-                    if (sensor->needsPolling()) {
-                        sensor->takeMeasurement(); // no force if already current for this frame #, we're just ensuring data for publisher
-                    }
-                }
-            }
-        } break;
-
-        case 0:
-        default: {
-            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-                iter->second->update();
-            } 
-        } break;
-    }
-}
-
 bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
 {
     HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HStr_Err_InvalidParameter));
@@ -828,10 +813,10 @@ bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
         _objects[obj->getKey()] = obj;
 
         if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
-            _scheduler.setNeedsScheduling();
+            scheduler.setNeedsScheduling();
         }
         if (obj->isSensorType()) {
-            _publisher.setNeedsTabulation();
+            publisher.setNeedsTabulation();
         }
 
         return true;
@@ -844,7 +829,7 @@ bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
     auto iter = _objects.find(obj->getKey());
     if (iter != _objects.end()) {
         _objects.erase(iter);
-        _scheduler.setNeedsScheduling();
+        scheduler.setNeedsScheduling();
         return true;
     }
     return false;
@@ -950,7 +935,7 @@ bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *cus
         }
 
         if (retVal) {
-            _scheduler.setNeedsScheduling();
+            scheduler.setNeedsScheduling();
             return true;
         }
     }
@@ -975,7 +960,7 @@ bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *cu
         }
 
         if (retVal) {
-            _scheduler.setNeedsScheduling();
+            scheduler.setNeedsScheduling();
             return true;
         }
     }
@@ -1053,7 +1038,7 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
         // TODO: notify GUI to update
-        _scheduler.setNeedsScheduling();
+        scheduler.setNeedsScheduling();
     }
 }
 
@@ -1190,7 +1175,7 @@ RTC_DS3231 *Hydroponics::getRealTimeClock(bool begin)
             bool rtcBattFailBefore = _rtcBattFail;
             _rtcBattFail = _rtc->lostPower();
             if (_rtcBattFail && !rtcBattFailBefore) {
-                _logger.logWarning(F("RTC battery failure, time needs reset."));
+                logger.logWarning(F("RTC battery failure, time needs reset."));
             }
         } else {
             deallocateRTC();
@@ -1279,11 +1264,6 @@ void Hydroponics::dropOneWireForPin(byte pin)
         }
         _oneWires.erase(wireIter);
     }
-}
-
-bool Hydroponics::inOperationalMode() const
-{
-    return !_suspend;
 }
 
 Hydroponics_SystemMode Hydroponics::getSystemMode() const
@@ -1375,39 +1355,24 @@ void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
     _lastAutosave = isAutosaveEnabled() ? unixNow() : 0;
-    _logger.updateInitTracking();
-    _scheduler.broadcastDayChange();
+    logger.updateInitTracking();
+    scheduler.broadcastDayChange();
 }
 
 void Hydroponics::notifyDayChanged()
 {
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (iter->second) {
-            if (iter->second->isReservoirType()) {
-                auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
+        if (iter->second->isReservoirType()) {
+            auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
 
-                if (reservoir && reservoir->isFeedClass()) {
-                    auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
-                    if (feedReservoir) {feedReservoir->notifyDayChanged(); }
-                }
-            } else if (iter->second->isCropType()) {
-                auto crop = static_pointer_cast<HydroponicsCrop>(iter->second);
-
-                if (crop) { crop->notifyDayChanged(); }
+            if (reservoir && reservoir->isFeedClass()) {
+                auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
+                if (feedReservoir) {feedReservoir->notifyDayChanged(); }
             }
-        }
-    }
-}
+        } else if (iter->second->isCropType()) {
+            auto crop = static_pointer_cast<HydroponicsCrop>(iter->second);
 
-void Hydroponics::handleInterrupt(byte pin)
-{
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (iter->second && iter->second->isSensorType()) {
-            auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
-            if (sensor->getInputPin() == pin && sensor->isBinaryClass()) {
-                auto binarySensor = static_pointer_cast<HydroponicsBinarySensor>(sensor);
-                if (binarySensor) { binarySensor->notifyISRTriggered(); }
-            }
+            if (crop) { crop->notifyDayChanged(); }
         }
     }
 }
@@ -1432,14 +1397,10 @@ void Hydroponics::broadcastLowMemory()
     #endif
 
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (iter->second) {
-            iter->second->handleLowMemory();
-        }
+        iter->second->handleLowMemory();
     }
 
-    _scheduler.handleLowMemory();
-    _logger.handleLowMemory();
-    _publisher.handleLowMemory();
+    scheduler.handleLowMemory();
 }
 
 static uint32_t getSDCardFreeSpace()
@@ -1457,13 +1418,13 @@ static uint32_t getSDCardFreeSpace()
 
 void Hydroponics::checkFreeSpace()
 {
-    if ((_logger.isLoggingEnabled() || _publisher.isPublishingEnabled()) &&
+    if ((logger.isLoggingEnabled() || publisher.isPublishingEnabled()) &&
         (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (HYDRUINO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
-        if (_logger.isLoggingToSDCard() || _publisher.isPublishingToSDCard()) {
+        if (logger.isLoggingToSDCard() || publisher.isPublishingToSDCard()) {
             uint32_t freeKB = getSDCardFreeSpace();
             while(freeKB < HYDRUINO_SYS_FREESPACE_LOWSPACE) {
-                _logger.cleanupOldestLogs(true);
-                _publisher.cleanupOldestData(true);
+                logger.cleanupOldestLogs(true);
+                publisher.cleanupOldestData(true);
                 freeKB = getSDCardFreeSpace();
             }
         }

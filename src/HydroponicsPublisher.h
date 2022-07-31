@@ -14,21 +14,26 @@ struct HydroponicsDataColumn;
 #include "Hydroponics.h"
 
 // Hydroponics Publisher
+// The Publisher allows for data collection and publishing capabilities. The data output
+// is based on a simple table of time and measured value. Each time segment, called a
+// polling frame (and controlled by the polling rate interval), collects data from all
+// sensors into a data row, with the appropriate total number of columns. At time of
+// either all sensors having reported in for their frame #, or the frame # proceeding
+// to advance, the table's row is submitted to the publishing service initially set up.
+// Publishing to SD card .csv data files via SPI card reader is supported.
 class HydroponicsPublisher {
 public:
     HydroponicsPublisher();
     ~HydroponicsPublisher();
-    void initFromData(HydroponicsPublisherSubData *dataIn);
 
     void update();
-    void handleLowMemory();
  
     bool beginPublishingToSDCard(String dataFilePrefix);
     bool isPublishingToSDCard();
 
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
 
-    inline void setNeedsTabulation() { _needsTabulation = (bool)_publisherData; }
+    inline void setNeedsTabulation();
     inline bool needsTabulation() { return _needsTabulation; }
 
     bool isPublishingEnabled();
@@ -37,17 +42,19 @@ public:
     void notifyDayChanged();
 
 protected:
-    HydroponicsPublisherSubData *_publisherData;            // Publisher data (strong, saved to storage via system data)
-
     String _dataFileName;                                   // Resolved data file name (based on day)
-    bool _needsTabulation;                                  // Needs tabulation tracking flag
     uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
-    HydroponicsDataColumn *_dataColumns;                    // Data columns (owned)
+    bool _needsTabulation;                                  // Needs tabulation tracking flag
     byte _columnCount;                                      // Data columns count
+    HydroponicsDataColumn *_dataColumns;                    // Data columns (owned)
 
     friend class Hydroponics;
 
+    inline HydroponicsPublisherSubData *publisherData() const;
+    inline bool hasPublisherData() const;
+
     void advancePollingFrame();
+    friend void ::dataLoop();
 
     void checkCanPublish();
     void publish(time_t timestamp);
@@ -58,18 +65,19 @@ protected:
     void cleanupOldestData(bool force = false);
 };
 
-
+// Publisher Data Column
+// Data column worth of storage. Intended to be array allocated.
 struct HydroponicsDataColumn {
-    Hydroponics_KeyType sensorKey;
-    HydroponicsSingleMeasurement measurement;
+    Hydroponics_KeyType sensorKey;                          // Key to sensor object
+    HydroponicsSingleMeasurement measurement;               // Storage polling frame measurement
 };
 
 
 // Publisher Serialization Sub Data
 // A part of HSYS system data.
 struct HydroponicsPublisherSubData : public HydroponicsSubData {
-    char dataFilePrefix[16];
-    bool publishToSDCard;
+    char dataFilePrefix[16];                                // Base data file name prefix / folder (default: "data/hy")
+    bool publishToSDCard;                                   // If publishing to SD card is enabled (default: false)
 
     HydroponicsPublisherSubData();
     void toJSONObject(JsonObject &objectOut) const;

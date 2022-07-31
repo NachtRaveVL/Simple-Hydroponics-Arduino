@@ -38,6 +38,7 @@
 #endif
 
 // Pins & Class Instances
+#define SETUP_PIEZO_BUZZER_PIN          11              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
 #define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
 #define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
@@ -52,9 +53,9 @@
 #define SETUP_EXTDATA_SD_ENABLE         true            // If data should be written to an external SD Card
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be written to an external EEPROM
-#define SETUP_EXTDATA_EEPROM_BEG_ADDR   0               // Start address for data written to EEPROM
+#define SETUP_EXTDATA_EEPROM_BEG_ADDR   0               // Start data address for data to be written to EEPROM
 
-Hydroponics hydroController(-1,
+Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,
                             -1,
@@ -65,7 +66,9 @@ Hydroponics hydroController(-1,
                             SETUP_I2C_SPEED,
                             SETUP_SD_CARD_SPI_SPEED);
 
-String stringFor16bAddr(uint16_t addr) {
+// Support function for getting properly formatted 16-bit address "0xADDR"
+String stringFor16bAddr(uint16_t addr)
+{
     String retVal;
     retVal.concat('0'); retVal.concat('x');
     if (addr == (uint16_t)-1) { addr = 0; }
@@ -76,7 +79,9 @@ String stringFor16bAddr(uint16_t addr) {
     return retVal;
 }
 
-String stringAltFor16bAddr(uint16_t addr) {
+// Wraps the formatted 16-bit address as appended pseudo alt text " (0xADDR)"
+String stringAltFor16bAddr(uint16_t addr)
+{
     String retVal;
     retVal.concat(' '); retVal.concat('('); 
     retVal.concat(stringFor16bAddr(addr));
@@ -285,11 +290,11 @@ void setup() {
             getLoggerInstance()->logMessage(F("EEPROM capacity used: "), String(((float)sysDataBegAddr / eeprom->getDeviceSize()) * 100.0f) + String(F("% of ")), String(eeprom->getDeviceSize()) + String(F(" bytes")));
             getLoggerInstance()->logMessage(F("Use the following EEPROM setup defines in your sketch:"));
             Serial.print(F("#define SETUP_EEPROM_SYSDATA_ADDR       "));
-            Serial.println(stringFor16bAddr(sysDataBegAddr != (uint16_t)-1 && sysDataBegAddr != stringsBegAddr ? sysDataBegAddr : 0));
+            Serial.println(stringFor16bAddr(sysDataBegAddr));
             Serial.print(F("#define SETUP_EEPROM_CROPSLIB_ADDR      "));
-            Serial.println(stringFor16bAddr(cropsLibBegAddr != (uint16_t)-1 ? cropsLibBegAddr : 0));
+            Serial.println(stringFor16bAddr(cropsLibBegAddr));
             Serial.print(F("#define SETUP_EEPROM_STRINGS_ADDR       "));
-            Serial.println(stringFor16bAddr(stringsBegAddr != (uint16_t)-1 && stringsBegAddr != cropsLibBegAddr ? stringsBegAddr : 0));
+            Serial.println(stringFor16bAddr(stringsBegAddr));
         } else {
             getLoggerInstance()->logWarning(F("Could not find EEPROM device. Check that you have it set up properly."));
         }

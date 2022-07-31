@@ -11,22 +11,26 @@ struct HydroponicsLoggerSubData;
 
 #include "Hydroponics.h"
 
+// Logging Level
+// Log levels that can be filtered upon if desired.
 enum Hydroponics_LogLevel : char {
-    Hydroponics_LogLevel_All,
-    Hydroponics_LogLevel_Warnings,
-    Hydroponics_LogLevel_Errors,
-    Hydroponics_LogLevel_None = -1
+    Hydroponics_LogLevel_All,                               // All (info, warn, err)
+    Hydroponics_LogLevel_Warnings,                          // Warnings & errors (warn, err)
+    Hydroponics_LogLevel_Errors,                            // Just errors (err)
+    Hydroponics_LogLevel_None = -1                          // None / disabled
 };
 
 // Hydroponics Logger
+// The Logger acts as the system's event monitor that collects and reports on the various
+// processes of interest inside of the system. It allows for different log levels to be
+// used that can help filter out unwanted noise, as well as attempts to be more optimized
+// for embedded systems by spreading string data out over multiple call parameters to
+// avoid large string concatenations that can crash constrained devices.
+// Logging to SD card .txt log files via SPI card reader is supported.
 class HydroponicsLogger {
 public:
     HydroponicsLogger();
     ~HydroponicsLogger();
-    void initFromData(HydroponicsLoggerSubData *dataIn);
-
-    void update();
-    void handleLowMemory();
 
     bool beginLoggingToSDCard(String logFilePrefix);
     bool isLoggingToSDCard() const;
@@ -55,15 +59,16 @@ public:
     void notifyDayChanged();
 
 protected:
-    HydroponicsLoggerSubData *_loggerData;                  // Logger data (strong, saved to storage via system data)
-
     String _logFileName;                                    // Resolved log file name (based on day)
     time_t _initDate;                                       // Init date (UTC)
     time_t _lastSpaceCheck;                                 // Last time enough space was checked (UTC)
 
     friend class Hydroponics;
 
-    void updateInitTracking();
+    inline HydroponicsLoggerSubData *loggerData() const;
+    inline bool hasLoggerData() const;
+
+    inline void updateInitTracking() { _initDate = unixNow(); }
     void log(const String &prefix, const String &msg, const String &suffix1, const String &suffix2);
     void cleanupOldestLogs(bool force = false);
 };
@@ -71,9 +76,9 @@ protected:
 // Logger Serialization Sub Data
 // A part of HSYS system data.
 struct HydroponicsLoggerSubData : public HydroponicsSubData {
-    Hydroponics_LogLevel logLevel;
-    char logFilePrefix[16];
-    bool logToSDCard;
+    Hydroponics_LogLevel logLevel;                          // Log level filter (default: All)
+    char logFilePrefix[16];                                 // Base log file name prefix / folder (default: "logs/hy")
+    bool logToSDCard;                                       // If publishing to SD card is enabled (default: false)
 
     HydroponicsLoggerSubData();
     void toJSONObject(JsonObject &objectOut) const;

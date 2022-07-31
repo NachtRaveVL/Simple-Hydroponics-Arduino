@@ -28,13 +28,13 @@
 #define SETUP_CTRL_IN_MODE              Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
+#define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
-// System Saves Settings                                (note: only one save mechanism is enabled at a time)
+// System Saves Settings                                (note: only one save mechanism may be enabled at a time)
 #define SETUP_SYS_AUTOSAVE_ENABLE       false           // If autosaving system out is enabled or not
 #define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2845          // System data memory offset for EEPROM saves (from Data Writer output)
 
 // WiFi Settings
 #define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
@@ -42,17 +42,20 @@
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             true            // If system logging is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            true            // If system data publishing is enabled to SD card
+#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 // External Data Settings
-#define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card
+#define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
-#define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM
+#define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
+
+// External EEPROM Settings
+#define SETUP_EEPROM_SYSDATA_ADDR       0x27f0          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EEPROM_STRINGS_ADDR       0x1e39          // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1de4          // Start address for Strings data (from Data Writer output)
 
 
 byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -126,6 +129,7 @@ void setup() {
         // Set Settings
         hydroController.setSystemName(F(SETUP_SYS_NAME));
         hydroController.setTimeZoneOffset(SETUP_SYS_TIMEZONE);
+        getLoggerInstance()->setLogLevel(JOIN(Hydroponics_LogLevel,SETUP_SYS_LOGLEVEL));
         #if SETUP_LOG_SD_ENABLE
             hydroController.enableSysLoggingToSDCard(F(SETUP_LOG_FILE_PREFIX));
         #endif

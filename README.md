@@ -10,9 +10,9 @@ Created by NachtRaveVL, May 20th, 2022.
 
 **UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or stored externally, along with config and user calibration data, on a SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data logging to MQTT (for IoT integration), .csv data files on an SD card or Network share, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support, or with advanced LCD and input controller support similar in operation to low-cost 3D printers - ([provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some ([custom 3D printed stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied)) along with some other goodies.
+This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to local or remote data files, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers ([provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some ([custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied)) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
 
-Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, Pico, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
+Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, RasPi Pico, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
 
 Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), and Time.
 
@@ -53,10 +53,13 @@ From Hydroponics.h:
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, disables built-in Crops Lib and String data, instead relying solely on external device.
 
-// Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
+// Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
-// Uncomment or -D this define to enable debug assertions (note: adds considerable size to sketch).
+// Uncomment or -D this define to enable verbose debug output (note: adds considerable size to compiled sketch).
+//#define HYDRUINO_ENABLE_VERBOSE_DEBUG
+
+// Uncomment or -D this define to enable debug assertions (note: adds considerable size to compiled sketch).
 //#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
 ```
 
@@ -70,7 +73,7 @@ The controller's class object must first be instantiated, commonly at the top of
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
-    // Library constructor. Typically called during class instantiation, before setup().
+    // Controller constructor. Typically called during class instantiation, before setup().
     Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
                 byte sdCardCSPin = -1,                      // SD card CS pin, else -1
@@ -243,13 +246,13 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_CTRL_IN_MODE              Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
+#define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
-// System Saves Settings                                (note: only one save mechanism is enabled at a time)
+// System Saves Settings                                (note: only one save mechanism may be enabled at a time)
 #define SETUP_SYS_AUTOSAVE_ENABLE       true            // If autosaving system out is enabled or not
 #define SETUP_SAVES_SD_CARD_ENABLE      true            // If saving/loading from SD card is enable
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
-#define SETUP_EEPROM_SYSDATA_ADDR       0x0000          // System data memory offset for EEPROM saves (from Data Writer output)
 
 // WiFi Settings
 #define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
@@ -266,8 +269,11 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM
+
+// External EEPROM Settings
+#define SETUP_EEPROM_SYSDATA_ADDR       0x27f0          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EEPROM_STRINGS_ADDR       0x0000          // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1de4          // Start address for Strings data (from Data Writer output)
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
@@ -348,8 +354,8 @@ In serial monitor (near end):
 2022-07-29T22:24:52 [INFO] Total EEPROM usage: 10309 bytes
 2022-07-29T22:24:52 [INFO] EEPROM capacity used: 31.46% of 32768 bytes
 2022-07-29T22:24:52 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2845
+#define SETUP_EEPROM_SYSDATA_ADDR       0x27f0
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
-#define SETUP_EEPROM_STRINGS_ADDR       0x1e39
+#define SETUP_EEPROM_STRINGS_ADDR       0x1de4
 2022-07-29T22:24:52 [INFO] Done!
 ```

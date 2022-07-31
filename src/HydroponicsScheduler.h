@@ -16,11 +16,16 @@ struct HydroponicsLighting;
 #include "HydroponicsCrops.h"
 
 // Hydroponics Scheduler
+// The Scheduler acts as the system's main scheduling attendant, who looks through all
+// the various equipment and crops you have programmed in, and figures out the best
+// case feeding and lighting sequences that should occur to support them. It is also
+// responsible for setting up and maintaining the system balancers that get assigned to
+// feed reservoirs, which drives the various balancing processes in use, as well as
+// determining when significant time changes have occurred and broadcasting such out.
 class HydroponicsScheduler {
 public:
     HydroponicsScheduler();
     ~HydroponicsScheduler();
-    void initFromData(HydroponicsSchedulerSubData *dataIn);
 
     void update();
     void handleLowMemory();
@@ -42,7 +47,7 @@ public:
     void setPreLightSprayMins(unsigned int sprayMins);
     void setAirReportInterval(TimeSpan interval);
 
-    inline void setNeedsScheduling() { _needsScheduling = _schedulerData; }
+    inline void setNeedsScheduling();
     inline bool needsScheduling() { return _needsScheduling; }
 
     float getCombinedDosingRate(HydroponicsReservoir *reservoir, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
@@ -58,8 +63,6 @@ public:
     TimeSpan getAirReportInterval() const;
 
 protected:
-    HydroponicsSchedulerSubData *_schedulerData;            // Scheduler data (strong, saved to storage via system data)
-
     bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
     int _lastDayNum;                                        // Last day number tracking for daily rescheduling tracking
@@ -68,26 +71,14 @@ protected:
 
     friend class Hydroponics;
 
+    inline HydroponicsSchedulerSubData *schedulerData() const;
+    inline bool hasSchedulerData() const;
+
     void updateDayTracking();
     void performScheduling();
     void broadcastDayChange();
 };
 
-
-// Hydroponics Scheduler Process Base
-// Processes are created and managed by Scheduler to manage the feeding and lighting
-// necessary for crops to grow.
-struct HydroponicsProcess {
-    shared_ptr<HydroponicsFeedReservoir> feedRes;           // Feed reservoir
-    Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs; // Actuators required for this stage (keep-enabled list)
-
-    time_t stageStart;                                      // Stage start time
-
-    HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feedRes);
-
-    void clearActuatorReqs();
-    void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn);
-};
 
 // Hydroponics Scheduler Feeding Process Log Type
 enum HydroponicsFeedingLogType : char {
@@ -101,6 +92,21 @@ enum HydroponicsFeedingLogType : char {
 enum HydroponicsFeedingBroadcastType : char {
     HydroponicsFeedingBroadcastType_Began,                  // Began main process
     HydroponicsFeedingBroadcastType_Ended                   // Ended main process
+};
+
+// Hydroponics Scheduler Process Base
+// Processes are created and managed by Scheduler to manage the feeding and lighting
+// sequences necessary for crops to grow.
+struct HydroponicsProcess {
+    shared_ptr<HydroponicsFeedReservoir> feedRes;           // Feed reservoir
+    Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs; // Actuators required for this stage (keep-enabled list)
+
+    time_t stageStart;                                      // Stage start time
+
+    HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feedRes);
+
+    void clearActuatorReqs();
+    void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn);
 };
 
 // Hydroponics Scheduler Feeding Process

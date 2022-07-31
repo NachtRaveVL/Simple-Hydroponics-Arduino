@@ -6,17 +6,18 @@
 #error The HYDRUINO_ENABLE_EXTERNAL_DATA flag is expected to be disabled in order to run this sketch
 #endif
 
-#define SETUP_EEPROM_DEVICE_SIZE    I2C_DEVICESIZE_24LC256
-#define SETUP_SD_CARD_CS_PIN        SS
-#define SETUP_EEPROM_I2C_ADDR       B000
-#define SETUP_RTC_I2C_ADDR          B000
-#define SETUP_I2C_WIRE_INST         Wire
-#define SETUP_I2C_SPEED             400000U
-#define SETUP_ESP_I2C_SDA           SDA
-#define SETUP_ESP_I2C_SCL           SCL
-#define SETUP_SD_CARD_SPI_SPEED     4000000U
+#define SETUP_PIEZO_BUZZER_PIN          11
+#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256
+#define SETUP_SD_CARD_CS_PIN            SS
+#define SETUP_EEPROM_I2C_ADDR           B000
+#define SETUP_RTC_I2C_ADDR              B000
+#define SETUP_I2C_WIRE_INST             Wire
+#define SETUP_I2C_SPEED                 400000U
+#define SETUP_ESP_I2C_SDA               SDA
+#define SETUP_ESP_I2C_SCL               SCL
+#define SETUP_SD_CARD_SPI_SPEED         4000000U
 
-Hydroponics hydroController(-1,
+Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,
                             -1,

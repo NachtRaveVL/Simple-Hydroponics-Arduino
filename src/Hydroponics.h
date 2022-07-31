@@ -45,7 +45,7 @@
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
 
 // Uncomment or -D this define to enable verbose debug output (note: adds considerable size to compiled sketch).
-//#define HYDRUINO_ENABLE_VERBOSE_DEBUG_OUTPUT
+//#define HYDRUINO_ENABLE_VERBOSE_DEBUG
 
 // Uncomment or -D this define to enable debug assertions (note: adds considerable size to compiled sketch).
 //#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
@@ -88,10 +88,10 @@ extern void __int_restore_irq(int *primask);
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
 #undef HYDRUINO_ENABLE_DEBUG_OUTPUT
 #endif
-#if defined(HYDRUINO_ENABLE_DEBUG_OUTPUT) && defined(HYDRUINO_ENABLE_VERBOSE_DEBUG_OUTPUT)
+#if defined(HYDRUINO_ENABLE_DEBUG_OUTPUT) && defined(HYDRUINO_ENABLE_VERBOSE_DEBUG)
 #define HYDRUINO_USE_VERBOSE_OUTPUT
 #endif
-#if !defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_ASSERTIONS)
+#if defined(HYDRUINO_ENABLE_DEBUG_OUTPUT) && defined(HYDRUINO_ENABLE_DEBUG_ASSERTIONS)
 #define HYDRUINO_SOFT_ASSERT(cond,msg)  softAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
 #define HYDRUINO_HARD_ASSERT(cond,msg)  hardAssert((bool)(cond), String((msg)), __FILE__, __func__, __LINE__)
 #define HYDRUINO_USE_DEBUG_ASSERTIONS
@@ -166,7 +166,11 @@ extern time_t unixNow();
 // Main controller interface of the Hydroponics system.
 class Hydroponics : public HydroponicsFactory {
 public:
-    // Library constructor. Typically called during class instantiation, before setup().
+    HydroponicsScheduler scheduler;                         // Scheduler public instance
+    HydroponicsLogger logger;                               // Logger public instance
+    HydroponicsPublisher publisher;                         // Publisher public instance
+
+    // Controller constructor. Typically called during class instantiation, before setup().
     Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
                 byte sdCardCSPin = -1,                      // SD card CS pin, else -1
@@ -225,14 +229,14 @@ public:
     // System Logging.
 
     // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to the specified prefix. Returns success boolean.
-    inline bool enableSysLoggingToSDCard(String logFilePrefix) { return _logger.beginLoggingToSDCard(logFilePrefix); }
+    inline bool enableSysLoggingToSDCard(String logFilePrefix) { return logger.beginLoggingToSDCard(logFilePrefix); }
     // TODO: Network URL sys logging
     //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix);
 
     // Data Publishing.
 
     // Enables data publishing to the SD card. Log file names will concat YYMMDD.csv to the specified prefix. Returns success boolean.
-    inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return _publisher.beginPublishingToSDCard(dataFilePrefix); }
+    inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return publisher.beginPublishingToSDCard(dataFilePrefix); }
     // TODO: Network URL data pub
     //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix);
     // TODO: MQTT data pub
@@ -328,7 +332,7 @@ public:
     void dropOneWireForPin(byte pin);
 
     // Whenever the system is in operational mode (has been launched), or not
-    bool inOperationalMode() const;
+    inline bool inOperationalMode() const { return !_suspend; }
     // System type mode (default: Recycling)
     Hydroponics_SystemMode getSystemMode() const;
     // System measurement mode (default: Metric)
@@ -369,10 +373,11 @@ public:
     void notifyDayChanged();
 
 protected:
-    static Hydroponics *_activeInstance;                            // Current active instance (set after init)
+    static Hydroponics *_activeInstance;                            // Current active instance (set after init, weak)
+    HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
-    const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: Disabled)
     const uint32_t _eepromDeviceSize;                               // EEPROM device size (default: 0/Disabled)
+    const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: Disabled)
     const byte _sdCardCSPin;                                        // SD card cable select (CS) pin (default: Disabled)
     const byte _ctrlInputPin1;                                      // Control input pin 1 (default: Disabled)
     const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
@@ -391,8 +396,6 @@ protected:
     bool _wifiBegan;                                                // Status of WiFi begin() call
     byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
 
-    HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
-
     #ifndef HYDRUINO_DISABLE_MULTITASKING
     taskid_t _controlTaskId;                                        // Control task Id if created, else TASKMGR_INVALIDID
     taskid_t _dataTaskId;                                           // Data polling task Id if created, else TASKMGR_INVALIDID
@@ -402,25 +405,21 @@ protected:
     uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                         // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                           // Last date autosave was performed, if able (UTC)
-    String _sysConfigFile;                                          // SD Card system config filename used in init and save (default: "hydruino.cfg")
-    uint16_t _sysDataAddress;                                       // EEPROM system data address used in init and save (default: -1/disabled)
+    String _sysConfigFile;                                          // SD Card system config filename used in serialization (default: "hydruino.cfg")
+    uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
     Map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
     Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount>::type _additives; // Custom additives data
     Map<byte, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE>::type _oneWires; // pin->OneWire mapping
     Map<byte, byte, HYDRUINO_SYS_PINLOCKS_MAXSIZE>::type _pinLocks; // Pin locks mapping (existence = locked)
 
-    HydroponicsScheduler _scheduler;                                // Scheduler piggy-back instance
-    HydroponicsLogger _logger;                                      // Logger piggy-back instance
-    HydroponicsPublisher _publisher;                                // Publisher piggy-back instance
-
-    friend class HydroponicsScheduler;
-    friend class HydroponicsLogger;
-    friend class HydroponicsPublisher;
     friend Hydroponics *::getHydroponicsInstance();
     friend HydroponicsScheduler *::getSchedulerInstance();
     friend HydroponicsLogger *::getLoggerInstance();
     friend HydroponicsPublisher *::getPublisherInstance();
+    friend class HydroponicsScheduler;
+    friend class HydroponicsLogger;
+    friend class HydroponicsPublisher;
 
     void allocateEEPROM();
     void deallocateEEPROM();
@@ -433,27 +432,21 @@ protected:
     void commonPostInit();
     void commonPostSave();
 
+    shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
+    friend shared_ptr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject();
     friend void ::controlLoop();
     friend void ::dataLoop();
     friend void ::miscLoop();
-    void updateObjects(int pass);
-
-    shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
-
-    friend shared_ptr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject();
-
-    void handleInterrupt(byte pin);
     friend void ::handleInterrupt(byte pin);
 
     void checkFreeMemory();
     void broadcastLowMemory();
-
     void checkFreeSpace();
-
     void checkAutosave();
 };
 
 // Template implementations
+#include "Hydroponics.hpp"
 #include "HydroponicsAttachments.hpp"
 #include "HydroponicsUtils.hpp"
 

@@ -104,20 +104,17 @@ Hydroponics *getHydroponicsInstance()
 
 HydroponicsScheduler *getSchedulerInstance()
 {
-    auto hydroponics = Hydroponics::getActiveInstance();
-    return hydroponics ? &(hydroponics->_scheduler) : nullptr;
+    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->scheduler : nullptr;
 }
 
 HydroponicsLogger *getLoggerInstance()
 {
-    auto hydroponics = Hydroponics::getActiveInstance();
-    return hydroponics ? &(hydroponics->_logger) : nullptr;
+    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->logger : nullptr;
 }
 
 HydroponicsPublisher *getPublisherInstance()
 {
-    auto hydroponics = Hydroponics::getActiveInstance();
-    return hydroponics ? &(hydroponics->_publisher) : nullptr;
+    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->publisher : nullptr;
 }
 
 void publishData(HydroponicsSensor *sensor)
