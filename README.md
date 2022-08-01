@@ -294,7 +294,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_PIEZO_BUZZER_PIN          11              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
 #define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
-#define SETUP_CTRL_INPUT_PINS           {31.33,30,32}   // Control input pin ribbon, else {-1}
+#define SETUP_CTRL_INPUT_PINS           {31,33,30,32}   // Control input pin ribbon, else {-1}
 #define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
 #define SETUP_LCD_I2C_ADDR              B000            // LCD i2c address
