@@ -973,7 +973,7 @@ void HydroponicsFeeding::logFeeding(HydroponicsFeedingLogType logType)
 
         case HydroponicsFeedingLogType_WaterMeasures:
             #ifndef HYDRUINO_DISABLE_MULTITASKING
-                // Yield will allow measurements to complete, ensures first log out doesn't contain invalid values
+                // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
                 if ((feedRes->getWaterPHSensor() && !feedRes->getWaterPH().getMeasurementFrame()) ||
                     (feedRes->getWaterTDSSensor() && !feedRes->getWaterTDS().getMeasurementFrame()) ||
                     (feedRes->getWaterTemperatureSensor() && !feedRes->getWaterTemperature().getMeasurementFrame())) {
@@ -1008,7 +1008,7 @@ void HydroponicsFeeding::logFeeding(HydroponicsFeedingLogType logType)
 
         case HydroponicsFeedingLogType_AirMeasures:
             #ifndef HYDRUINO_DISABLE_MULTITASKING
-                // Yield will allow measurements to complete, ensures first log out doesn't contain invalid values
+                // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
                 if ((feedRes->getAirTemperatureSensor() && !feedRes->getAirTemperature().getMeasurementFrame()) ||
                     (feedRes->getAirCO2Sensor() && !feedRes->getAirCO2().getMeasurementFrame())) {
                     yield();
