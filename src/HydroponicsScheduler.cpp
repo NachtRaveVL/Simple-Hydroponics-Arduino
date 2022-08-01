@@ -32,7 +32,7 @@ void HydroponicsScheduler::update()
             if (_inDaytimeMode != daytimeMode) {
                 _inDaytimeMode = daytimeMode;
                 setNeedsScheduling();
-                // TODO: GUI update notify on day/night transition
+                // TODO: UI update notify on day/night transition
             }
 
             if (_lastDayNum != currTime.day()) {
@@ -452,7 +452,7 @@ void HydroponicsScheduler::updateDayTracking()
     _lastDayNum = currTime.day();
     _inDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
     setNeedsScheduling();
-    // TODO: GUI update notify on major time event
+    // TODO: UI update notify on major time event
 }
 
 void HydroponicsScheduler::performScheduling()

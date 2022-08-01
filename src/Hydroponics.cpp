@@ -66,12 +66,11 @@ void __int_restore_irq(int *primask)
 
 Hydroponics *Hydroponics::_activeInstance = nullptr;
 
-Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sdCardCSPin, byte controlInputPin1,
+Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sdCardCSPin, byte *ctrlInputPinMap,
                          byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress,
                          TwoWire &i2cWire, uint32_t i2cSpeed, uint32_t sdCardSpeed, WiFiClass &wifi)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _sdCardSpeed(sdCardSpeed), _wifi(&wifi),
-      _piezoBuzzerPin(piezoBuzzerPin), _eepromDeviceSize(eepromDeviceSize), _sdCardCSPin(sdCardCSPin),
-      _ctrlInputPin1(controlInputPin1), _ctrlInputPinMap{-1},
+      _piezoBuzzerPin(piezoBuzzerPin), _eepromDeviceSize(eepromDeviceSize), _sdCardCSPin(sdCardCSPin), _ctrlInputPinMap(ctrlInputPinMap),
       _eepromI2CAddr(eepromI2CAddress | HYDRUINO_SYS_I2CEEPROM_BASEADDR), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
       _eeprom(nullptr), _rtc(nullptr), _sd(nullptr),
       _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _wifiBegan(false),
@@ -82,15 +81,6 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sd
       _sysConfigFile(F("hydruino.cfg")), _sysDataAddress(-1)
 {
     _activeInstance = this;
-    if (isValidPin(_ctrlInputPin1)) {
-        for (byte pinIndex = 0; pinIndex < HYDRUINO_CTRLINPINMAP_MAXSIZE; ++pinIndex) {
-            _ctrlInputPinMap[pinIndex] = _ctrlInputPin1 + pinIndex;
-        }
-    }
-
-    #ifndef HYDRUINO_DISABLE_MULTITASKING
-        taskManager.setInterruptCallback(::handleInterrupt);
-    #endif
 }
 
 Hydroponics::~Hydroponics()
@@ -586,6 +576,9 @@ void Hydroponics::commonPreInit()
         pinMode(_sdCardCSPin, OUTPUT);
         digitalWrite(_sdCardCSPin, HIGH);
     }
+    #ifndef HYDRUINO_DISABLE_MULTITASKING
+        taskManager.setInterruptCallback(::handleInterrupt);
+    #endif
 }
 
 void Hydroponics::commonPostInit()
@@ -1007,26 +1000,13 @@ void Hydroponics::returnPinLock(byte pin)
     }
 }
 
-void Hydroponics::setControlInputPinMap(byte *pinMap)
-{
-    HYDRUINO_SOFT_ASSERT(pinMap, SFP(HStr_Err_InvalidParameter));
-    const int ctrlInPinCount = getControlInputRibbonPinCount();
-    HYDRUINO_SOFT_ASSERT(!pinMap || (ctrlInPinCount > 0), SFP(HStr_Err_UnsupportedOperation));
-
-    if (pinMap && ctrlInPinCount) {
-        for (int ribbonPinIndex = 0; ribbonPinIndex < ctrlInPinCount; ++ribbonPinIndex) {
-            _ctrlInputPinMap[ribbonPinIndex] = pinMap[ribbonPinIndex];
-        }
-    }
-}
-
 void Hydroponics::setSystemName(String systemName)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && !systemName.equals(getSystemName())) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
-        // TODO: notify GUI to update
+        // TODO: notify UI to update
     }
 }
 
@@ -1036,7 +1016,7 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
     if (_systemData && _systemData->timeZoneOffset != timeZoneOffset) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
-        // TODO: notify GUI to update
+        // TODO: notify UI to update
         scheduler.setNeedsScheduling();
     }
 }
