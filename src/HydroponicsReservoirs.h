@@ -145,23 +145,18 @@ public:
     virtual HydroponicsSensorAttachment &getAirTemperature(bool poll = false) override;
     virtual HydroponicsSensorAttachment &getAirCO2(bool poll = false) override;
 
-    shared_ptr<HydroponicsBalancer> setWaterPHBalancer(float phSetpoint, Hydroponics_UnitsType phSetpointUnits);
     inline void setWaterPHBalancer(shared_ptr<HydroponicsBalancer> phBalancer) { _waterPHBalancer.setObject(phBalancer); }
     inline shared_ptr<HydroponicsBalancer> getWaterPHBalancer() { return _waterPHBalancer.getObject(); }
 
-    shared_ptr<HydroponicsBalancer> setWaterTDSBalancer(float tdsSetpoint, Hydroponics_UnitsType tdsSetpointUnits);
     inline void setWaterTDSBalancer(shared_ptr<HydroponicsBalancer> tdsBalancer) { _waterTDSBalancer.setObject(tdsBalancer); }
     inline shared_ptr<HydroponicsBalancer> getWaterTDSBalancer() { return _waterTDSBalancer.getObject(); }
 
-    shared_ptr<HydroponicsBalancer> setWaterTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
     inline void setWaterTemperatureBalancer(shared_ptr<HydroponicsBalancer> waterTempBalancer) { _waterTempBalancer.setObject(waterTempBalancer); }
     inline shared_ptr<HydroponicsBalancer> getWaterTemperatureBalancer() { return _waterTempBalancer.getObject(); }
 
-    shared_ptr<HydroponicsBalancer> setAirTemperatureBalancer(float tempSetpoint, Hydroponics_UnitsType tempSetpointUnits);
     inline void setAirTemperatureBalancer(shared_ptr<HydroponicsBalancer> airTempBalancer) { _airTempBalancer.setObject(airTempBalancer); }
     inline shared_ptr<HydroponicsBalancer> getAirTemperatureBalancer() { return _airTempBalancer.getObject(); }
 
-    shared_ptr<HydroponicsBalancer> setAirCO2Balancer(float co2Setpoint, Hydroponics_UnitsType co2SetpointUnits);
     inline void setAirCO2Balancer(shared_ptr<HydroponicsBalancer> co2Balancer) { _airCO2Balancer.setObject(co2Balancer); }
     inline shared_ptr<HydroponicsBalancer> getAirCO2Balancer() { return _airCO2Balancer.getObject(); }
 

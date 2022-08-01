@@ -117,7 +117,7 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::detachObject()
 template<class ParameterType, int Slots> template<class U>
 void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlot<U,ParameterType> handleMethod)
 {
-    if (!(*_handleMethod == handleMethod)) {
+    if (!_handleMethod || (*_handleMethod == handleMethod)) {
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(*_handleMethod); }
 
         if (_handleMethod) { delete _handleMethod; _handleMethod = nullptr; }
@@ -126,7 +126,6 @@ void HydroponicsSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlo
         if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(*_handleMethod); }
     }
 }
-
 
 inline void HydroponicsSensorAttachment::updateIfNeeded(bool poll)
 {
