@@ -10,7 +10,7 @@ Created by NachtRaveVL, May 20th, 2022.
 
 **UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to local or remote data files, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers ([provided by tcMenu](https://github.com/davetcc/tcMenu)). We even made some ([custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied)) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
+This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to local or remote data files, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, RasPi Pico, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
 
@@ -87,10 +87,65 @@ From Hydroponics.h, in class Hydroponics:
                 WiFiClass &wifi = WiFi);                    // WiFi class instance
 ```
 
+#### Controller Initialization
+
+Additionally, a call is expected to be provided to the controller class object's `init[From…](…)` method, commonly called inside of the sketch's `setup()` function. This allows one to set the controller's system type (Recycling or DrainToWaste), units of measurement (Metric, Imperial, or Scientific), control input mode, and display output mode. The default mode of the controller, if left unspecified, is a Recycling system set to Metric units, without any input control or output display.
+
+From Hydroponics.h, in class Hydroponics:
+```Arduino
+    // Initializes default empty system. Typically called near top of setup().
+    // See individual enums for more info.
+    void init(Hydroponics_SystemMode systemMode = Hydroponics_SystemMode_Recycling,                 // What system of crop feeding is performed
+              Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Default,        // What units of measurement should be used
+              Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
+              Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
+
+    // Initializes system from EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    bool initFromEEPROM(bool jsonFormat = false);
+    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    bool initFromSDCard(bool jsonFormat = true);
+    // Initializes system from custom JSON-based stream, returning success flag
+    bool initFromJSONStream(Stream *streamIn);
+    // Initializes system from custom binary stream, returning success flag
+    bool initFromBinaryStream(Stream *streamIn);
+```
+
+The controller can also be initialized from a saved configuration, such as from an EEPROM or SD Card, or other JSON or Binary stream. A saved configuration of the system can be made via the controller class object's `saveTo…(…)` methods, or called automatically on timer by setting an Autosave mode/interval.
+
+From Hydroponics.h, in class Hydroponics:
+```Arduino
+    // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    bool saveToEEPROM(bool jsonFormat = false);
+    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    bool saveToSDCard(bool jsonFormat = true);
+    // Saves current system setup to custom JSON-based stream, returning success flag
+    bool saveToJSONStream(Stream *streamOut, bool compact = true);
+    // Saves current system setup to custom binary stream, returning success flag
+    bool saveToBinaryStream(Stream *streamOut);
+```
+
+### Event Logging & Data Publishing
+
+The controller can, after initialization, be set to produce logs and data files that can be further used by other applications. Log entries are timestamped and can keep track of when feedings are performed, when devices enable/disable, etc., while data files can be read into plotting applications or exported to a database for further processing. The passed file prefix is typically the subfolder that such files should reside under and is appended with the year, month, and date (in YYMMDD format).
+
+Note: You can also get the same logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.
+
+Note: Files on FAT32-based SD cards are limited to 8 character file/folder names and a 3 character extension.
+
+From Hydroponics.h, in class Hydroponics:
+```Arduino
+    // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
+    inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy");
+
+    // Enables data publishing to the SD card. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
+    inline bool enableDataPublishingToSDCard(String dataFilePrefix = "data/hy");
+```
+
 ## Hookup Callouts
 
 * The recommended Vcc power supply and logic level is 5v.
   * There are some devices that may be 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
+  * Devices that do not have the same Vcc power supply levels will need a level converter (or similar) to operate together.
 
 ### Serial UART
 
@@ -107,8 +162,9 @@ Serial UART Devices Supported: ESP8266 WiFi module (3.3v only)
 
 SPI devices can be chained together on the same shared data lines (no flipping of wires), which are typically labeled `MOSI`, `MISO`, and `SCK` (often with an additional `SS`). Each SPI device requires its own individual cable-select `CS` wire as only one SPI device may be active at any given time - accomplished by pulling its `CS` line of that device low (aka active-low). SPI runs at MHz speeds and is useful for large data block transfers.
 
-* The `CS` pin may be connected to any digital output pin, but it's common to use `SS` for the first device. Additional devices are not restricted to what pin they can or should use, but given it's a signal pin not using an interrupt-capable pin allows those to be used for interrupt driven mechanisms.
-* Many low-cost SD card reader modules on market only read SDHC sized SD cards (2GB to 32GB), with the recommended size being 32GB for most compatibility.
+* The `CS` pin may be connected to any digital output pin, but it's common to use the `SS` pin for the first device. Additional devices are not restricted to what pin they can or should use, but given it's a signal pin not using an interrupt-capable pin allows those to be used for interrupt driven mechanisms.
+* Many low-cost SPI-based SD card reader modules on market only read SDHC sized SD cards (2GB to 32GB) formatted in FAT32 (filenames limited to 8 characters plus 3 character file extension).
+  * Some SD cards simply will not play nicely with these modules and you may have to try another SD card manufacturer. We recommend 32GB SD cards due to overall lowest cost (5~10 $USD/SD card - smaller SD cards actually becoming _more_ expensive) and highest probability of compatibility (almost all 32GB SD cards on market being SDHC).
 
 SPI Devices Supported: SD card reader modules (4+MHz)
 
@@ -126,34 +182,36 @@ I2C Devices Supported: DS3231 RTC modules, AT24C* EEPROM modules, 16x2/20x4 LCD 
 OneWire devices can be chained together on the same shared data lines (no flipping of wires). Devices can be of the same or different types, require minimal setup (and no soldering), and most can even operate in "parasite" power mode where they use the power from the data line (and an internal capacitor) to function (thus saving a `Vcc` line, only requiring `Data` and `GND`). OneWire runs only in the low kb/s speeds and is useful for digital sensors.
 
 * Typically, sensors are limited to 20 devices along a maximum 100m of wire.
-* When more than one OneWire device is on the same data data line, each device registers itself an enumeration index (0-X) along with a 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID (or enumeration index) by the system in the future.
+* When more than one OneWire device is on the same data data line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
 
 ### Analog IO
 
-* Ensure AREF pin is set to the correct max input voltage to ensure analog sensors can use their full input range. The AREF pin, by default, is the same voltage as the MCU.
-  * Analog sensors will be able to customize per-pin voltage ranges in software later on (as long as voltages are not negative) - it's more important to know the max input voltage in use for correctly setting AREF.
-  * Not setting this correctly may affect measured analog values. Some sensors we've tested, for instance, are calibrated to operate up to 5.5v direct from factory, others operate from -5v to +5v and have to be modified to output 0-5v.
-* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) support different bit resolutions for analog/PWM pins, but also may limit how many pins are able to use these higher resolutions. See the datasheet of your MCU for details.
+* Ensure `AREF` pin is set to the correct max input voltage to ensure analog sensors can use their full input range. The `AREF` pin, by default, is the same voltage as the MCU.
+  * Analog sensors will be able to customize per-pin voltage ranges in software later on (as long as voltages are not negative or over `AREF`) - it's more important to know the max input voltage in use for correctly setting `AREF`.
+  * Not setting this correctly will affect measured analog values. Some sensors we've tested, for instance, are calibrated to operate up to 5.5v direct from factory, others operate from -5v to +5v and have to be modified to output 0v to 5v.
+* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) as well as the RasPi Pico and others support different bit resolutions for analog/PWM pins, but also may limit how many pins are able to use these higher resolutions. See the datasheet of your MCU for details.
 
 ### Sensors
 
-* If able to set in hardware, ensure any TDS meters and soil moisture sensors use EC (aka mS/cm) mode. EC is considered a normalized measurement, while PPM can be split into different scale categories depending on sensor chemistry in use. PPM based sensors operating on anything other than a 1v=500ppm mode will need to have their PPM scale explicitly set.
+* If able to set in hardware, ensure any TDS meters and soil moisture sensors use EC (aka mS/cm) mode. EC is considered a normalized measurement while PPM can be split into different scale categories depending on sensor chemistry in use (often tied to country of origin). PPM based sensors operating on anything other than a 1v=500ppm mode will need to have their PPM scale explicitly set.
 * Many different kinds of hobbyist sensors label their analog output `AO` (or `Ao`) - however, always check your specific sensor's datasheet.
-* Sensor pins used for event triggering when measurements go above/below a pre-set tolerance can be safely ignored, as the software implementation of this mechanism is more versatile.
-* CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, not to mention require `Vcc` for the heating element (5v @ 130mA for MQ-135) thus cannot use parasitic power mode. Then to calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
+  * Again, make sure sensor is calibrated to output 0v - `AREF` volts in range - negative voltage or voltage above AREF may cause damage!
+* Sensor pins used for event triggering when measurements go above/below a pre-set tolerance - many of which are deceptively labeled `DO` (or `Do`), despite having nothing to do with being `D`ata lines of any kind - can be safely ignored, as the software implementation of such mechanism is more than sufficient.
+  * Often these pins are used to drive other hardware-only based solutions that aren't a part of Hydruino's use case.
+* CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, and _require_ `Vcc` for its heating element (5v @ 130mA for MQ-135) thus cannot use OneWire parasitic power mode. To calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
 
 We also ask that our users report any broken sensors (outside of bad calibration data) for us to consider adding support to (also consider sponsoring our work on [Patreon](www.patreon.com/nachtrave)).
 
 ## Memory Callouts
 
-* The total number of and different types of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Objects range in size from 150 to 350 bytes or more depending on settings.
-* For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while more recent devices like the RasPi Pico have 2MB of Flash and 264kB of RAM. The ATMega2560 may struggle with full system builds and may be limited to specific system setups (such as no debug assertions, external crops library, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled without issue.
+* The total number of objects and different kinds of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 350 bytes or more depending on settings, with the base Flash memory usage ranging from 100kB to 300kB+ again depending on settings.
+* For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while on the upper end we have modern devices like the RasPi Pico with 2MB of Flash and 264kB of RAM. The ATMega2560 may struggle with full system builds and may be limited to specific system setups (such as no debug assertions, external crops library, only minimal UI, etc. - see Vertical NFT Example), while other newer devices with more capacity build with everything enabled without issue.
 * For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various array structures the controller uses.
-  * If, for example, you had a large number of crops attached to a single feed reservoir, you can modify these defines to give more space for such object storage to avoid running into any storage limitations.
-* To save on the cost of code for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used (e.g. WiFi not being included in the build if you don't actually use any WiFi).
+  * If, for example, you had a large number of crops attached to a single feed reservoir, you could modify these defines to give more space for such object storage to avoid running into storage limitations.
+* To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used (e.g. WiFi not being included in the build if you don't actually use any WiFi).
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
-* See the Crop Writer Example to see how to externalize the Crops Library onto an SD Card or EEPROM.
-  * Upgrading between versions or changing custom crop/string data may require you rebuild and redeploy.
+* To further save on code size cost, see the Data Writer Example to see how to externalize crops library, string, and other data onto an SD Card or EEPROM.
+  * Note: Upgrading between versions or changing custom data may require you rebuild and redeploy to such external devices.
 
 ## Example Usage
 
@@ -161,11 +219,14 @@ Below are several examples of controller usage.
 
 ### Simple Deep Water Culture (DWC) System Example
 
-The Simple DWC Example sketch shows how a simple Hydruino system can be setup using the most minimal of work. In this sketch only that what you need is built into the final binary, making it an ideal lean choice for those who don't need anything fancy.
+DWC setups are great for beginners and for crops that do not flower, and has the advantage of being able to be built out of commonly available plastic containers. Aeration is important in this setup to oxygenate the non-circulating water.
+
+The Simple DWC Example sketch shows how a simple Hydruino system can be setup using the most minimal of work. In this sketch only that which you actually use is built into the final compiled binary, making it an ideal lean choice for those who don't need anything fancy. This sketch has no UI or input control, but with a simple buzzer and some additional sensors the system can alert you to when the feed is low and more is needed, or when pH is too high, etc.
 
 ```Arduino
 #include <Hydroponics.h>
 
+#define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_GROW_LIGHTS_PIN           8               // Grow lights relay pin (digital)
 #define SETUP_WATER_AERATOR_PIN         7               // Aerator relay pin (digital)
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
@@ -175,16 +236,19 @@ The Simple DWC Example sketch shows how a simple Hydruino system can be setup us
 #define SETUP_CROP1_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 1
 #define SETUP_CROP1_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 1
 
-Hydroponics hydroController;            // Controller using default settings
+Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
 
 void setup() {
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else.
     hydroController.init();
 
+    // DWC systems tend to require less feed, so we can tell the system feeding scheduler that our feeding rates should reflect such.
+    hydroController.scheduler.setBaseFeedMultiplier(0.5);
+
     // Adds a simple relay power rail using standard AC. This will manage how many active devices can be turned on at the same time.
     auto relayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
 
-    // Adds a 5 unit main water reservoir, already filled with feed water.
+    // Adds a main water reservoir of SETUP_FEED_RESERVOIR_SIZE size, treated as already being filled with water.
     auto feedReservoir = hydroController.addFeedWaterReservoir(SETUP_FEED_RESERVOIR_SIZE, true);
 
     // Adds a water aerator at SETUP_WATER_AERATOR_PIN, and links it to the feed water reservoir and the relay power rail.
@@ -219,7 +283,7 @@ void loop()
 
 The Vertical NFT Example sketch is the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It is recommended for storage constrained MCUs such as the ATMega2560, ESP8266, etc. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code. This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
 
-The Full System Example sketch on the other hand will build an empty system with all object and system features enabled. It is recommended for more modern MCUs that have plenty of storage space to use such as the ESP32, Raspberry Pi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where UI interaction will be used to create the objects (or also done in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
+The Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for more modern MCUs that have plenty of storage space to use such as the ESP32, Raspberry Pi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where UI interaction will be used to create the objects (or also done in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
 
 Included below is the default system setup defines of the Vertical NFT example to illustrate a variety of the controller features. This is not an exhaustive list of course, as there are many more things the controller is capable of, as documented in its main header file include and elsewhere.
 
@@ -364,3 +428,5 @@ In serial monitor (near end):
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24
 2022-08-01T04:03:23 [INFO] Done!
 ```
+
+Note: Again, you can get logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.

@@ -209,7 +209,7 @@ public:
     bool saveToSDCard(bool jsonFormat = true);
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
-    // Saves current system setup 
+    // Saves current system setup to custom binary stream, returning success flag
     bool saveToBinaryStream(Stream *streamOut);
     // TODO: Network URL save
     //bool saveToNetworkURL(urlDataTODO);
@@ -228,14 +228,14 @@ public:
 
     // System Logging.
 
-    // Enables data logging to the SD card. Log file names will concat YYMMDD.txt to the specified prefix. Returns success boolean.
+    // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToSDCard(String logFilePrefix) { return logger.beginLoggingToSDCard(logFilePrefix); }
     // TODO: Network URL sys logging
     //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix);
 
     // Data Publishing.
 
-    // Enables data publishing to the SD card. Log file names will concat YYMMDD.csv to the specified prefix. Returns success boolean.
+    // Enables data publishing to the SD card. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return publisher.beginPublishingToSDCard(dataFilePrefix); }
     // TODO: Network URL data pub
     //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix);

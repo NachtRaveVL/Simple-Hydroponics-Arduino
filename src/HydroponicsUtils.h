@@ -253,22 +253,22 @@ inline void flushYield() {
 
 // Units & Conversion
 
-// Tries to convert value from one unit to another (if supported), returning conversion success boolean.
+// Tries to convert value from one unit to another (if supported), returning conversion success flag.
 // Convert param used in certain unit conversions as external additional value (e.g. voltage for power/current conversion).
 // This is the main conversion function that all others wrap around.
 extern bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam = FLT_UNDEF);
 
 // Attempts to convert value in-place from one unit to another, and if successful then assigns value back overtop of itself.
-// Convert param used in certain unit conversions. Returns conversion success boolean.
+// Convert param used in certain unit conversions. Returns conversion success flag.
 extern bool convertUnits(float *valueInOut, Hydroponics_UnitsType *unitsInOut, Hydroponics_UnitsType outUnits, float convertParam = FLT_UNDEF);
 // Attempts to convert value from one unit to another, and if successful then assigns value, and optionally units, to output.
-// Convert param used in certain unit conversions. Returns conversion success boolean.
+// Convert param used in certain unit conversions. Returns conversion success flag.
 extern bool convertUnits(float valueIn, float *valueOut, Hydroponics_UnitsType unitsIn, Hydroponics_UnitsType outUnits, Hydroponics_UnitsType *unitsOut = nullptr, float convertParam = FLT_UNDEF);
 // Attempts to convert measurement in-place from one unit to another, and if successful then assigns value and units back overtop of itself.
-// Convert param used in certain unit conversions. Returns conversion success boolean.
+// Convert param used in certain unit conversions. Returns conversion success flag.
 inline bool convertUnits(HydroponicsSingleMeasurement *measureInOut, Hydroponics_UnitsType outUnits, float convertParam = FLT_UNDEF) { return convertUnits(&measureInOut->value, &measureInOut->units, outUnits, convertParam); }
 // Attemps to convert measurement from one unit to another, and if successful then assigns value and units to output measurement.
-// Convert param used in certain unit conversions. Returns conversion success boolean.
+// Convert param used in certain unit conversions. Returns conversion success flag.
 inline bool convertUnits(const HydroponicsSingleMeasurement *measureIn, HydroponicsSingleMeasurement *measureOut, Hydroponics_UnitsType outUnits, float convertParam = FLT_UNDEF) { return convertUnits(measureIn->value, &measureOut->value, measureIn->units, outUnits, &measureOut->units, convertParam); }
 
 // Returns the base units from a rate unit (e.g. L/min -> L).
