@@ -53,9 +53,9 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x27f0          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2577          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EEPROM_STRINGS_ADDR       0x1de4          // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 
 byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;

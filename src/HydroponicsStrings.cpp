@@ -247,7 +247,7 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Log_PreFeedTopOff;
         } break;
         case HStr_Log_PreLightSpraying: {
-            static const char flashStr_Log_PreLightSpraying[] PROGMEM = {" pre-light spraying"};
+            static const char flashStr_Log_PreLightSpraying[] PROGMEM = {" dawntime spraying"};
             return flashStr_Log_PreLightSpraying;
         } break;
         case HStr_Log_SystemDataSaved: {
@@ -259,60 +259,72 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Log_SystemUptime;
         } break;
 
+        case HSTR_Log_Field_Aerator_Duration: {
+            static const char flashStr_Log_Field_Aerator_Duration[] PROGMEM = {"  Aerator duration: "};
+            return flashStr_Log_Field_Aerator_Duration;
+        } break;
+        case HSTR_Log_Field_Light_Duration: {
+            static const char flashStr_Log_Field_Light_Duration[] PROGMEM = {"  Daylight duration: "};
+            return flashStr_Log_Field_Light_Duration;
+        } break;
+        case HSTR_Log_Field_Sprayer_Duration: {
+            static const char flashStr_Log_Field_Sprayer_Duration[] PROGMEM = {"  Sprayer duration: "};
+            return flashStr_Log_Field_Sprayer_Duration;
+        } break;
         case HStr_Log_Field_pH_Setpoint: {
-            static const char flashStr_Log_Field_pH_Setpoint[] PROGMEM = {"  ph Setpoint: "};
+            static const char flashStr_Log_Field_pH_Setpoint[] PROGMEM = {"  ph setpoint: "};
             return flashStr_Log_Field_pH_Setpoint;
         } break;
         case HStr_Log_Field_TDS_Setpoint: {
-            static const char flashStr_Log_Field_TDS_Setpoint[] PROGMEM = {"  TDS Setpoint: "};
+            static const char flashStr_Log_Field_TDS_Setpoint[] PROGMEM = {"  TDS setpoint: "};
             return flashStr_Log_Field_TDS_Setpoint;
         } break;
         case HStr_Log_Field_Temp_Setpoint: {
-            static const char flashStr_Log_Field_Temp_Setpoint[] PROGMEM = {"  Temp Setpoint: "};
+            static const char flashStr_Log_Field_Temp_Setpoint[] PROGMEM = {"  Temp setpoint: "};
             return flashStr_Log_Field_Temp_Setpoint;
         } break;
         case HStr_Log_Field_CO2_Setpoint: {
-            static const char flashStr_Log_Field_CO2_Setpoint[] PROGMEM = {"  CO2 Setpoint: "};
+            static const char flashStr_Log_Field_CO2_Setpoint[] PROGMEM = {"  CO2 setpoint: "};
             return flashStr_Log_Field_CO2_Setpoint;
         } break;
         case HStr_Log_Field_Time_Calculated: {
-            static const char flashStr_Log_Field_Time_Calculated[] PROGMEM = {"  Pump Time: "};
+            static const char flashStr_Log_Field_Time_Calculated[] PROGMEM = {"  Pump time: "};
             return flashStr_Log_Field_Time_Calculated;
         } break;
         case HStr_Log_Field_Vol_Calculated: {
-            static const char flashStr_Log_Field_Vol_Calculated[] PROGMEM = {"  Est. Vol: "};
+            static const char flashStr_Log_Field_Vol_Calculated[] PROGMEM = {"  Est. vol.: "};
             return flashStr_Log_Field_Vol_Calculated;
         } break;
         case HStr_Log_Field_pH_Measured: {
-            static const char flashStr_Log_Field_pH_Measured[] PROGMEM = {"  ph Sensor: "};
+            static const char flashStr_Log_Field_pH_Measured[] PROGMEM = {"  ph sensor: "};
             return flashStr_Log_Field_pH_Measured;
         } break;
         case HStr_Log_Field_TDS_Measured: {
-            static const char flashStr_Log_Field_TDS_Measured[] PROGMEM = {"  TDS Sensor: "};
+            static const char flashStr_Log_Field_TDS_Measured[] PROGMEM = {"  TDS sensor: "};
             return flashStr_Log_Field_TDS_Measured;
         } break;
         case HStr_Log_Field_Temp_Measured: {
-            static const char flashStr_Log_Field_Temp_Measured[] PROGMEM = {"  Temp Sensor: "};
+            static const char flashStr_Log_Field_Temp_Measured[] PROGMEM = {"  Temp sensor: "};
             return flashStr_Log_Field_Temp_Measured;
         } break;
         case HStr_Log_Field_CO2_Measured: {
-            static const char flashStr_Log_Field_CO2_Measured[] PROGMEM = {"  CO2 Sensor: "};
+            static const char flashStr_Log_Field_CO2_Measured[] PROGMEM = {"  CO2 sensor: "};
             return flashStr_Log_Field_CO2_Measured;
         } break;
         case HStr_Log_Field_Time_Measured: {
-            static const char flashStr_Log_Field_Time_Measured[] PROGMEM = {"  Elapsed Time: "};
+            static const char flashStr_Log_Field_Time_Measured[] PROGMEM = {"  Elapsed time: "};
             return flashStr_Log_Field_Time_Measured;
         } break;
         case HStr_Log_Field_Vol_Measured: {
-            static const char flashStr_Log_Field_Vol_Measured[] PROGMEM = {"  Pumped Vol: "};
+            static const char flashStr_Log_Field_Vol_Measured[] PROGMEM = {"  Pumped vol.: "};
             return flashStr_Log_Field_Vol_Measured;
         } break;
         case HStr_Log_Field_Time_Start: {
-            static const char flashStr_Log_Field_Time_Start[] PROGMEM = {"  Start Time: "};
+            static const char flashStr_Log_Field_Time_Start[] PROGMEM = {"  Start time: "};
             return flashStr_Log_Field_Time_Start;
         } break;
         case HStr_Log_Field_Time_Finish: {
-            static const char flashStr_Log_Field_Time_Finish[] PROGMEM = {"  Finish Time: "};
+            static const char flashStr_Log_Field_Time_Finish[] PROGMEM = {"  Finish time: "};
             return flashStr_Log_Field_Time_Finish;
         } break;
 

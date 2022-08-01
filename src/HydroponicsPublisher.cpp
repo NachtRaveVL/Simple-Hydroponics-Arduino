@@ -32,9 +32,10 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 
         if (sd) {
             String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HStr_csv));
+            createDirectoryFor(sd, dataFileName);
             auto dataFile = sd->open(dataFileName, FILE_WRITE);
 
-            if (dataFile && dataFile.availableForWrite()) {
+            if (dataFile) {
                 dataFile.close();
                 Hydroponics::_activeInstance->endSDCard(sd);
 
@@ -47,8 +48,6 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 
                 return true;
             }
-
-            if (dataFile) { dataFile.close(); }
         }
 
         if (sd) { Hydroponics::_activeInstance->endSDCard(sd); }
@@ -143,9 +142,10 @@ void HydroponicsPublisher::publish(time_t timestamp)
         auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
+            createDirectoryFor(sd, _dataFileName);
             auto dataFile = sd->open(_dataFileName, FILE_WRITE);
 
-            if (dataFile && dataFile.availableForWrite()) {
+            if (dataFile) {
                 dataFile.print(timestamp);
 
                 for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
@@ -154,9 +154,8 @@ void HydroponicsPublisher::publish(time_t timestamp)
                 }
 
                 dataFile.println();
+                dataFile.close();
             }
-
-            if (dataFile) { dataFile.close(); }
 
             Hydroponics::_activeInstance->endSDCard(sd);
         }
@@ -229,9 +228,10 @@ void HydroponicsPublisher::resetDataFile()
             if (sd->exists(_dataFileName)) {
                 sd->remove(_dataFileName);
             }
+            createDirectoryFor(sd, _dataFileName);
             auto dataFile = sd->open(_dataFileName, FILE_WRITE);
 
-            if (dataFile && dataFile.availableForWrite()) {
+            if (dataFile) {
                 HydroponicsSensor *lastSensor = nullptr;
                 byte measurementRow = 0;
 
@@ -256,10 +256,8 @@ void HydroponicsPublisher::resetDataFile()
                     }
                 }
 
-                dataFile.println();
+                dataFile.close();
             }
-
-            if (dataFile) { dataFile.close(); }
 
             Hydroponics::_activeInstance->endSDCard(sd);
         }

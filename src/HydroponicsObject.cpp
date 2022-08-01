@@ -115,8 +115,11 @@ Hydroponics_KeyType HydroponicsIdentity::regenKey()
         default: // Unable
             return key;
     }
-    keyString.concat('.');
-    keyString.concat(positionIndexToString(posIndex, true));
+    if (posIndex > 1) {
+        keyString.concat(' ');
+        keyString.concat('#');
+        keyString.concat(positionIndexToString(posIndex, true));
+    }
     key = stringHash(keyString);
     return key;
 }

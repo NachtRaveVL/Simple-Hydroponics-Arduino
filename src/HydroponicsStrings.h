@@ -48,6 +48,9 @@ enum Hydroponics_String : unsigned char {
     HStr_Log_SystemDataSaved,
     HStr_Log_SystemUptime,
 
+    HSTR_Log_Field_Aerator_Duration,
+    HSTR_Log_Field_Light_Duration,
+    HSTR_Log_Field_Sprayer_Duration,
     HStr_Log_Field_pH_Setpoint,
     HStr_Log_Field_TDS_Setpoint,
     HStr_Log_Field_Temp_Setpoint,

@@ -175,8 +175,19 @@ String getNNFilename(String prefix, unsigned int value, String ext)
     retVal.concat(prefix);
     if (value < 10) { retVal.concat('0'); }
     retVal.concat(value);
+    retVal.concat('.');
+    retVal.concat(ext);
 
     return retVal;
+}
+
+void createDirectoryFor(SDClass *sd, String filename)
+{
+    auto slashIndex = filename.indexOf(HYDRUINO_SDCPATH_SEPARATOR);
+    String directory = slashIndex != -1 ? filename.substring(0, slashIndex) : String();
+    if (directory.length() && !sd->exists(directory + String(HYDRUINO_SDCPATH_SEPARATOR))) {
+        sd->mkdir(directory);
+    }
 }
 
 Hydroponics_KeyType stringHash(String string)

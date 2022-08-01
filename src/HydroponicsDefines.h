@@ -111,6 +111,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #else
 #define HYDRUINO_BLDPATH_SEPARATOR          '\\'                    // Path separator for win-based build machines
 #endif
+#define HYDRUINO_SDCPATH_SEPARATOR          '/'                     // Path separator for SD card paths
 
 
 // Crop Type

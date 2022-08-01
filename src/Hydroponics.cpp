@@ -263,11 +263,10 @@ bool Hydroponics::saveToSDCard(bool jsonFormat)
             bool retVal = false;
             auto configFile = sd->open(_sysConfigFile.c_str(), FILE_READ);
 
-            if (configFile && configFile.availableForWrite()) {
+            if (configFile) {
                 retVal = jsonFormat ? saveToJSONStream(&configFile, false) : saveToBinaryStream(&configFile);
+                configFile.close();
             }
-
-            if (configFile) { configFile.close(); }
 
             endSDCard(sd);
             return retVal;

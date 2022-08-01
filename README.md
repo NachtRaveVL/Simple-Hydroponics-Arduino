@@ -108,8 +108,9 @@ Serial UART Devices Supported: ESP8266 WiFi module (3.3v only)
 SPI devices can be chained together on the same shared data lines (no flipping of wires), which are typically labeled `MOSI`, `MISO`, and `SCK` (often with an additional `SS`). Each SPI device requires its own individual cable-select `CS` wire as only one SPI device may be active at any given time - accomplished by pulling its `CS` line of that device low (aka active-low). SPI runs at MHz speeds and is useful for large data block transfers.
 
 * The `CS` pin may be connected to any digital output pin, but it's common to use `SS` for the first device. Additional devices are not restricted to what pin they can or should use, but given it's a signal pin not using an interrupt-capable pin allows those to be used for interrupt driven mechanisms.
+* Many low-cost SD card reader modules on market only read SDHC sized SD cards (2GB to 32GB), with the recommended size being 32GB for most compatibility.
 
-SPI Devices Supported: SD card modules (4+MHz)
+SPI Devices Supported: SD card reader modules (4+MHz)
 
 ### I2C Bus
 
@@ -152,6 +153,7 @@ We also ask that our users report any broken sensors (outside of bad calibration
 * To save on the cost of code for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used (e.g. WiFi not being included in the build if you don't actually use any WiFi).
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
 * See the Crop Writer Example to see how to externalize the Crops Library onto an SD Card or EEPROM.
+  * Upgrading between versions or changing custom crop/string data may require you rebuild and redeploy.
 
 ## Example Usage
 
@@ -266,14 +268,14 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 // External Data Settings
-#define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card
+#define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card (searched first for crops lib data)
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
-#define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM
+#define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x27f0          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2577          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EEPROM_STRINGS_ADDR       0x1de4          // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
@@ -281,6 +283,8 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
 #define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
+#define SETUP_PERI_PUMP_FLOWRATE        0.0070          // The base continuous flow rate of any peristaltic pumps, in L/min
 
 // Device Setup
 #define SETUP_PH_METER_PIN              A0              // pH meter sensor pin (analog), else -1
@@ -331,7 +335,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 
 ### Data Writer Example
 
-The Data Writer Example sketch can be used to write the Crops Library and Strings data onto an SD Card or EEPROM so that storage constrained devices can still build at least the Vertical NFT system. This Example doesn't actually run the controller in full, but a code stripped version of it that will more easily compile down onto storage constrained devices. You can also program in any custom data you want made available later if you choose to change the default library data, such as custom crops data.
+The Data Writer Example sketch can be used to write the Crops Library and Strings data onto an SD Card or EEPROM so that storage constrained devices can still build at least something like the Vertical NFT system. This Example doesn't actually run the controller in full, but a code stripped version of it that will more easily compile down onto storage constrained devices. You can also program in any custom data you want made available later if you choose to change the default library data, such as custom crops data.
 
 Inside of the Data Writer's `setup()` function:
 ```Arduino
@@ -344,18 +348,19 @@ Inside of the Data Writer's `setup()` function:
     //getCropsLibraryInstance()->setCustomCropData(&customCrop1);
 ```
 
-In particular, after setting up the settings defines similarly to that of the Vertical NFT or Full System sketch, running the Data Writer sketch will produce the EEPROM configuration setup defines to use for that particular run. You typically won't need to copy these over unless you are planning to utilize an external EEPROM and have made any custom data modifications, as these defines are updated by the dev team prior to release. If however you do have custom data modifications and using an external EEPROM, do copy these values over into your Main System sketch.
+In particular, after setting up the settings defines similarly to that of the Vertical NFT or Full System sketch, running the Data Writer sketch will produce the EEPROM configuration setup defines to then use. You typically won't need to copy these over unless you are planning to utilize an external EEPROM storage device and have made any custom data modifications, as these defines are updated by the dev team prior to release. If however you do have custom data modifications and are using an external EEPROM device, do copy these values over into your Main System sketch.
 
 In serial monitor (near end):
 ```
-2022-07-29T22:24:52 [INFO] Writing String: #170 "wirePosIndex"
-2022-07-29T22:24:52 [INFO] ... to location: 10296 (0x2838)
-2022-07-29T22:24:52 [INFO] Successfully wrote: 2572 bytes
-2022-07-29T22:24:52 [INFO] Total EEPROM usage: 10309 bytes
-2022-07-29T22:24:52 [INFO] EEPROM capacity used: 31.46% of 32768 bytes
-2022-07-29T22:24:52 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x27f0
+2022-08-01T04:03:23 [INFO] Writing String: #173 "wirePosIndex"
+2022-08-01T04:03:23 [INFO] ... to byte offset: 9578 (0x256a)
+2022-08-01T04:03:23 [INFO] Wrote: 13 bytes
+2022-08-01T04:03:23 [INFO] Successfully wrote: 2643 bytes
+2022-08-01T04:03:23 [INFO] Total EEPROM usage: 9591 bytes
+2022-08-01T04:03:23 [INFO] EEPROM capacity used: 29.27% of 32768 bytes
+2022-08-01T04:03:23 [INFO] Use the following EEPROM setup defines in your sketch:
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2577
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
-#define SETUP_EEPROM_STRINGS_ADDR       0x1de4
-2022-07-29T22:24:52 [INFO] Done!
+#define SETUP_EEPROM_STRINGS_ADDR       0x1b24
+2022-08-01T04:03:23 [INFO] Done!
 ```

@@ -47,7 +47,7 @@ void setup() {
         if (cropData) {
             // case Hydroponics_CropType_AloeVera: {
             //     static const char flashStr_AloeVera[] PROGMEM = {"{\"type\":\"HCLD\"}"};
-            //     progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_AloeVera);
+            //     progmemStream = HydroponicsPROGMEMStream((uintptr_t)flashStr_AloeVera);
             // } break;
 
             Serial.print(spacing);
@@ -73,7 +73,7 @@ void setup() {
             Serial.println(F("\"};"));
 
             Serial.print(indent);
-            Serial.print(F("progmemStream = HydroponicsPROGMEMStream((uint16_t)flashStr_"));
+            Serial.print(F("progmemStream = HydroponicsPROGMEMStream((uintptr_t)flashStr_"));
             Serial.print(cropTypeToString((Hydroponics_CropType)cropType));
             Serial.println(F(");"));
 

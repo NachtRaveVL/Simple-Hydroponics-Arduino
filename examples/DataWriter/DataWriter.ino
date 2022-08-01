@@ -67,7 +67,7 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_SD_CARD_SPI_SPEED);
 
 // Wraps a formatted address as appended pseudo alt text, e.g. " (0xADDR)"
-String stringAltFor16bAddr(uint16_t addr)
+String altAddressToString(uint16_t addr)
 {
     String retVal;
     retVal.concat(' '); retVal.concat('('); 
@@ -101,17 +101,19 @@ void setup() {
 
             for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
                 auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
+                String filename = getNNFilename(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")), cropType, SFP(HStr_dat));
 
-                if (cropData) {
+                if (cropData && cropData->cropName[0]) {
                     getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
-                    String filename = getNNFilename(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")), cropType, SFP(HStr_dat));
                     getLoggerInstance()->logMessage(F("... to file: "), filename);
 
+                    createDirectoryFor(sd, filename);
                     auto file = sd->open(filename, O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
-                    if (file.availableForWrite()) {
+                    if (file) {
                         StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                         JsonObject jsonObject = doc.to<JsonObject>();
-                        uint16_t bytesWritten = serializeJsonPretty(jsonObject, file); // Could also write out in binary but we have acres of cheap storage
+                        cropData->toJSONObject(jsonObject);
+                        uint16_t bytesWritten = serializeJsonPretty(jsonObject, file); // Could also write out in binary but we have acres of cheap SD storage
 
                         if (bytesWritten) {
                             getLoggerInstance()->logMessage(F("Wrote: "), String(bytesWritten), F(" bytes"));
@@ -120,11 +122,12 @@ void setup() {
                         }
                         file.close();
                     } else {
-                        if (file) { file.close(); }
                         getLoggerInstance()->logError(F("Failure opening crops lib data file for writing!"));
                     }
 
                     getCropsLibraryInstance()->returnCropsData(cropData);
+                } else if (sd->exists(filename)) {
+                    sd->remove(filename);
                 }
 
                 yield();
@@ -148,8 +151,9 @@ void setup() {
                 String filename = String(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings.")) + SFP(HStr_dat));
                 getLoggerInstance()->logMessage(F("... to file: "), filename);
 
+                createDirectoryFor(sd, filename);
                 auto file = sd->open(filename, O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
-                if (file.availableForWrite()) { // Strings data goes into a single file as binary
+                if (file) { // Strings data goes into a single file as binary
                     uint16_t bytesWritten = 0;
 
                     // Lookup table constructed first to avoid random seeking
@@ -167,7 +171,6 @@ void setup() {
                     }
                     file.close();
                 } else {
-                    if (file) { file.close(); }
                     getLoggerInstance()->logError(F("Failure opening strings data file for writing!"));
                 }
 
@@ -201,9 +204,9 @@ void setup() {
                 for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
                     auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
 
-                    if (cropData) {
+                    if (cropData && cropData->cropName[0]) {
                         getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
-                        getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr), stringAltFor16bAddr(writeAddr));
+                        getLoggerInstance()->logMessage(F("... to byte offset: "), String(writeAddr), altAddressToString(writeAddr));
 
                         auto eepromStream = HydroponicsEEPROMStream(writeAddr, sizeof(HydroponicsCropsLibData));
                         size_t bytesWritten = serializeDataToBinaryStream(cropData, &eepromStream); // Could also write out in JSON, but is space inefficient
@@ -212,6 +215,8 @@ void setup() {
                         if (bytesWritten && eeprom->updateBlockVerify(cropsLibBegAddr + ((cropType + 1) * sizeof(uint16_t)),
                                                                       (const byte *)&writeAddr, sizeof(uint16_t))) {
                             writeAddr += bytesWritten;
+
+                            getLoggerInstance()->logMessage(F("Wrote: "), String(bytesWritten), F(" bytes"));
                         } else {
                             getLoggerInstance()->logError(F("Failure writing crops lib data to EEPROM!"));
                         }
@@ -247,12 +252,13 @@ void setup() {
                     String string = SFP((Hydroponics_String)stringNum);
 
                     getLoggerInstance()->logMessage(F("Writing String: #"), String(stringNum) + String(F(" \"")), string + String(F("\"")));
-                    getLoggerInstance()->logMessage(F("... to location: "), String(writeAddr), stringAltFor16bAddr(writeAddr));
+                    getLoggerInstance()->logMessage(F("... to byte offset: "), String(writeAddr), altAddressToString(writeAddr));
 
                     if(eeprom->updateBlockVerify(writeAddr, (const byte *)string.c_str(), string.length() + 1) &&
                        eeprom->updateBlockVerify(stringsBegAddr + ((stringNum + 1) * sizeof(uint16_t)),
                                                  (const byte *)&writeAddr, sizeof(uint16_t))) {
                         writeAddr += string.length() + 1;
+                        getLoggerInstance()->logMessage(F("Wrote: "), String(string.length() + 1), F(" bytes"));
                     } else {
                         getLoggerInstance()->logError(F("Failure writing strings data to EEPROM!"));
                     }
@@ -277,11 +283,11 @@ void setup() {
             getLoggerInstance()->logMessage(F("EEPROM capacity used: "), String(((float)sysDataBegAddr / eeprom->getDeviceSize()) * 100.0f) + String(F("% of ")), String(eeprom->getDeviceSize()) + String(F(" bytes")));
             getLoggerInstance()->logMessage(F("Use the following EEPROM setup defines in your sketch:"));
             Serial.print(F("#define SETUP_EEPROM_SYSDATA_ADDR       "));
-            Serial.println(stringFor16bAddr(sysDataBegAddr));
+            Serial.println(addressToString(sysDataBegAddr));
             Serial.print(F("#define SETUP_EEPROM_CROPSLIB_ADDR      "));
-            Serial.println(stringFor16bAddr(cropsLibBegAddr));
+            Serial.println(addressToString(cropsLibBegAddr));
             Serial.print(F("#define SETUP_EEPROM_STRINGS_ADDR       "));
-            Serial.println(stringFor16bAddr(stringsBegAddr));
+            Serial.println(addressToString(stringsBegAddr));
         } else {
             getLoggerInstance()->logWarning(F("Could not find EEPROM device. Check that you have it set up properly."));
         }

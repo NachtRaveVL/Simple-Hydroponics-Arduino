@@ -52,9 +52,9 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x27f0          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2577          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EEPROM_STRINGS_ADDR       0x1de4          // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
@@ -62,6 +62,8 @@
 #define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
 #define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
+#define SETUP_PERI_PUMP_FLOWRATE        0.0070          // The base continuous flow rate of any peristaltic pumps, in L/min
 
 // Device Setup
 #define SETUP_PH_METER_PIN              A0              // pH meter sensor pin (analog), else -1
@@ -320,7 +322,7 @@ void setup() {
             } else {
                 feedPump->setOutputReservoir(feedReservoir);
             }
-            // TODO: set ballpark continuous pump rate based on pump size branding
+            feedPump->setContinuousFlowRate(SETUP_FEED_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_WATER_HEATER_PIN >= 0
@@ -354,7 +356,7 @@ void setup() {
             nutrientPump->setRail(dcRelayPower);
             nutrientPump->setInputReservoir(nutrientMix);
             nutrientPump->setOutputReservoir(feedReservoir);
-            // TODO: set ballpark continuous peristaltic pump rate
+            nutrientPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_FRESH_WATER_PIN >= 0
@@ -363,7 +365,7 @@ void setup() {
             dilutionPump->setRail(dcRelayPower);
             dilutionPump->setInputReservoir(freshWater);
             dilutionPump->setOutputReservoir(feedReservoir);
-            // TODO: set ballpark continuous peristaltic pump rate
+            dilutionPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_PH_UP_PIN >= 0
@@ -372,7 +374,7 @@ void setup() {
             pHUpPump->setRail(dcRelayPower);
             pHUpPump->setInputReservoir(phUpSolution);
             pHUpPump->setOutputReservoir(feedReservoir);
-            // TODO: set ballpark continuous peristaltic pump rate
+            pHUpPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_PH_DOWN_PIN >= 0
@@ -381,7 +383,7 @@ void setup() {
             pHDownPump->setRail(dcRelayPower);
             pHDownPump->setInputReservoir(phDownSolution);
             pHDownPump->setOutputReservoir(feedReservoir);
-            // TODO: set ballpark continuous peristaltic pump rate
+            pHDownPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
 

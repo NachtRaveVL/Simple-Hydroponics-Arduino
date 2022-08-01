@@ -175,6 +175,9 @@ extern String getYYMMDDFilename(String prefix, String ext);
 // Returns a proper filename for a storage library data file that uses ## as filename.
 extern String getNNFilename(String prefix, unsigned int value, String ext);
 
+// Creates intermediate folders given a filename. Currently only supports a single folder depth.
+extern void createDirectoryFor(SDClass *sd, String filename);
+
 // Computes a hash for a string using a fast and efficient (read as: good enough for our use) hashing algorithm.
 extern Hydroponics_KeyType stringHash(String string);
 
