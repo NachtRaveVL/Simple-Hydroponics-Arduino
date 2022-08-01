@@ -20,7 +20,7 @@
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,
-                            -1,
+                            nullptr,
                             SETUP_EEPROM_I2C_ADDR,
                             SETUP_RTC_I2C_ADDR,
                             0,

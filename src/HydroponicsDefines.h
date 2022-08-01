@@ -38,7 +38,6 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_NAME_MAXSIZE               24                      // Naming character maximum size (system name, crop name, etc.)
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
-#define HYDRUINO_CTRLINPINMAP_MAXSIZE       8                       // Maximum array size for control input pinmap (max # of ribbon pins)
 #define HYDRUINO_JSON_DOC_SYSSIZE           384                     // JSON document chunk data bytes for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           256                     // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRUINO_STRING_BUFFER_SIZE         32                      // Size in bytes of string serialization buffers

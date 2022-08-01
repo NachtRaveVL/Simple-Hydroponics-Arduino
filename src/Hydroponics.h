@@ -174,7 +174,7 @@ public:
     Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
                 byte sdCardCSPin = -1,                      // SD card CS pin, else -1
-                byte controlInputPin1 = -1,                 // First pin of input ribbon, else -1 (ribbon pins can be individually customized later)
+                byte *ctrlInputPinMap = nullptr,            // Control input pin map, else nullptr
                 byte eepromI2CAddress = B000,               // EEPROM address
                 byte rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
                 byte lcdI2CAddress = B000,                  // LCD i2c address
@@ -279,8 +279,6 @@ public:
 
     // Mutators.
 
-    // Sets custom pin mapping for control input, overriding consecutive ribbon pin numbers as default
-    void setControlInputPinMap(byte *pinMap);
     // Sets display name of system (HYDRUINO_NAME_MAXSIZE size limit)
     void setSystemName(String systemName);
     // Sets system time zone offset from UTC
@@ -379,7 +377,7 @@ protected:
     const uint32_t _eepromDeviceSize;                               // EEPROM device size (default: 0/Disabled)
     const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: Disabled)
     const byte _sdCardCSPin;                                        // SD card cable select (CS) pin (default: Disabled)
-    const byte _ctrlInputPin1;                                      // Control input pin 1 (default: Disabled)
+    const byte *_ctrlInputPinMap;                                   // Control input pin mapping (default: Disabled/nullptr)
     const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
     const byte _rtcI2CAddr;                                         // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
     const byte _lcdI2CAddr;                                         // LCD i2c address, format: {A2,A1,A0} (default: B000)
@@ -394,7 +392,6 @@ protected:
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
     bool _wifiBegan;                                                // Status of WiFi begin() call
-    byte _ctrlInputPinMap[HYDRUINO_CTRLINPINMAP_MAXSIZE];           // Control input pin map
 
     #ifndef HYDRUINO_DISABLE_MULTITASKING
     taskid_t _controlTaskId;                                        // Control task Id if created, else TASKMGR_INVALIDID

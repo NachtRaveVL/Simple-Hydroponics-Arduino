@@ -116,7 +116,7 @@ byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,
-                            _SETUP_CTRL_INPUT_PINS[0],
+                            _SETUP_CTRL_INPUT_PINS,
                             SETUP_EEPROM_I2C_ADDR,
                             SETUP_RTC_I2C_ADDR,
                             SETUP_LCD_I2C_ADDR,
@@ -151,11 +151,6 @@ void setup() {
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_SSID);
     #endif
-
-    // Sets control input pins, if any
-    if (isValidPin(_SETUP_CTRL_INPUT_PINS[0])) {
-        hydroController.setControlInputPinMap(_SETUP_CTRL_INPUT_PINS);
-    }
 
     // Sets system config name used in any of the following inits.
     #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE

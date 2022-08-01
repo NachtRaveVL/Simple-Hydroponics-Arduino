@@ -58,7 +58,7 @@
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,
-                            -1,
+                            nullptr,
                             SETUP_EEPROM_I2C_ADDR,
                             SETUP_RTC_I2C_ADDR,
                             0,
@@ -78,7 +78,7 @@ String altAddressToString(uint16_t addr)
 
 void setup() {
     Serial.begin(115200);               // Begin USB Serial interface
-    while (!Serial) { ; }                // Wait for USB Serial to connect
+    while (!Serial) { ; }               // Wait for USB Serial to connect
     #if defined(ESP32) || defined(ESP8266)
         SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
