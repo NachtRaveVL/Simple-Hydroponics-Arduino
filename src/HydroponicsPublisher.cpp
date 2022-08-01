@@ -48,9 +48,9 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 
                 return true;
             }
-        }
 
-        if (sd) { Hydroponics::_activeInstance->endSDCard(sd); }
+            Hydroponics::_activeInstance->endSDCard(sd);
+        }
     }
     return false;
 }
