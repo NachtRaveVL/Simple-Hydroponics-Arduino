@@ -136,7 +136,7 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
 #else
 #define SETUP_USE_ANALOG_BITRES     10
 #endif
-#define SETUP_USE_DIGITAL_BITRES    12
+#define SETUP_USE_ONEWIRE_BITRES    12
 
 void setup() {
     // Setup base interfaces
@@ -245,7 +245,7 @@ void setup() {
             feedReservoir->setAirCO2Sensor(co2Sensor);
         }
         #endif
-        #if SETUP_POWER_SENSOR_PIN
+        #if SETUP_POWER_SENSOR_PIN >= 0
         {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
             powerMeter->setReservoir(feedReservoir);
             #if SETUP_DC_SUPPLY_POWER
@@ -262,7 +262,7 @@ void setup() {
 
         // Digital Sensors
         #if SETUP_DS18_WTEMP_PIN >= 0
-        {   auto dsTemperatureSensor = hydroController.addDSTemperatureSensor(SETUP_DS18_WTEMP_PIN, SETUP_USE_DIGITAL_BITRES);
+        {   auto dsTemperatureSensor = hydroController.addDSTemperatureSensor(SETUP_DS18_WTEMP_PIN, SETUP_USE_ONEWIRE_BITRES);
             dsTemperatureSensor->setReservoir(feedReservoir);
             feedReservoir->setWaterTemperatureSensor(dsTemperatureSensor);
         }
