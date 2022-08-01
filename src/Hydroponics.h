@@ -22,7 +22,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
 
-    Simple-Hydroponics-Arduino - Version 0.3
+    Simple-Hydroponics-Arduino - Version 0.4
 */
 
 #ifndef Hydroponics_H

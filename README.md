@@ -1,7 +1,7 @@
 # Hydruino
 Hydruino: Simple Hydroponics Automation Controller.
 
-**Simple-Hydroponics-Arduino v0.3**
+**Simple-Hydroponics-Arduino v0.4**
 
 Simple automation controller for hydroponic grow systems using an Arduino board.  
 Licensed under the non-restrictive MIT license.
@@ -69,7 +69,7 @@ There are several initialization mode settings exposed through this controller t
 
 #### Class Instantiation
 
-The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin, input ribbon pin1, EEPROM i2c address, RTC i2c address, LCD i2c address,, i2c Wire class instance, i2c clock speed, SD Card SPI speed (hard-wired to `25M`Hz on Teensy), and WiFi class instance. The default constructor values of the controller, if left unspecified, has no pins set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, SD Card SPI speed @ `4M`Hz, and WiFi class instance `WiFi`.
+The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address,, i2c Wire class instance, i2c clock speed, SD Card SPI speed (hard-wired to `25M`Hz on Teensy), and WiFi class instance. The default constructor values of the controller, if left unspecified, has no pins set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, SD Card SPI speed @ `4M`Hz, and WiFi class instance `WiFi`.
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
@@ -77,7 +77,7 @@ From Hydroponics.h, in class Hydroponics:
     Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
                 byte sdCardCSPin = -1,                      // SD card CS pin, else -1
-                byte controlInputPin1 = -1,                 // First pin of input ribbon, else -1 (ribbon pins can be individually customized later)
+                byte *ctrlInputPinMap = nullptr,            // Control input pin map, else nullptr
                 byte eepromI2CAddress = B000,               // EEPROM address
                 byte rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
                 byte lcdI2CAddress = B000,                  // LCD i2c address
