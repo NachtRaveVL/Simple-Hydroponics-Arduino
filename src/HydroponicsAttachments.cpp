@@ -81,7 +81,7 @@ HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface
           parent, &HydroponicsSensor::getMeasurementSignal),
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
 {
-    setHandleMethod(&handleMeasurement);
+    setHandleMethod(&HydroponicsSensorAttachment::handleMeasurement);
 }
 
 void HydroponicsSensorAttachment::attachObject()

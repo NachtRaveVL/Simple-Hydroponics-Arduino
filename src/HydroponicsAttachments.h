@@ -134,7 +134,7 @@ public:
     virtual void detachObject() override;
 
     template<class U> void setHandleMethod(MethodSlot<U,ParameterType> handleMethod);
-    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType)) { setHandleMethod(MethodSlot<HydroponicsObjInterface,ParameterType>(_parent, (HandleMethodPtr)handleMethodPtr)); }
+    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType)) { setHandleMethod<U>(MethodSlot<U,ParameterType>(reinterpret_cast<U *>(_parent), handleMethodPtr)); }
 
     inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsSignalAttachment<ParameterType,Slots> &operator=(const char *rhs) { setObject(HydroponicsIdentity(rhs)); return *this; }

@@ -10,7 +10,7 @@ HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, f
       _sensor(this), _balancerState(Hydroponics_BalancerState_Undefined)
 {
     _sensor.setMeasurementRow(measurementRow);
-    _sensor.setHandleMethod(&handleMeasurement);
+    _sensor.setHandleMethod(&HydroponicsBalancer::handleMeasurement);
     _sensor.setObject(sensor);
 }
 

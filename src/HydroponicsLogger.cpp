@@ -76,16 +76,10 @@ void HydroponicsLogger::logPumping(const HydroponicsPumpObjectInterface *pump, c
 
 void HydroponicsLogger::logSystemUptime()
 {
-    TimeSpan elapsed(unixNow() - _initDate);
-
+    TimeSpan elapsed(getSystemUptime());
     if (elapsed.totalseconds()) {
         logMessage(SFP(HStr_Log_SystemUptime), timeSpanToString(elapsed));
     }
-}
-
-void HydroponicsLogger::logSystemSave()
-{
-    logMessage(SFP(HStr_Log_SystemDataSaved));
 }
 
 void HydroponicsLogger::logMessage(const String &msg, const String &suffix1, const String &suffix2)

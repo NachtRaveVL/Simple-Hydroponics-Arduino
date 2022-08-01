@@ -43,7 +43,7 @@ public:
     void logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString = String());
 
     void logSystemUptime();
-    void logSystemSave();
+    inline void logSystemSave() { logMessage(SFP(HStr_Log_SystemDataSaved)); }
 
     void logMessage(const String &msg, const String &suffix1 = String(), const String &suffix2 = String());
     void logWarning(const String &warn, const String &suffix1 = String(), const String &suffix2 = String());
