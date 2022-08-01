@@ -677,16 +677,30 @@ void HydroponicsFeeding::setupStaging()
 
     if (stage == PreFeed) {
         if (feedRes->getWaterPHSensor()) {
-            auto phBalancer = feedRes->setWaterPHBalancer(phSetpoint, Hydroponics_UnitsType_Alkalinity_pH_0_14);
-            if (phBalancer) {
+            auto phBalancer = feedRes->getWaterPHBalancer();
+            if (!phBalancer) {
+                phBalancer = make_shared<HydroponicsTimedDosingBalancer>(feedRes->getWaterPHSensor(), phSetpoint, HYDRUINO_RANGE_PH_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits());
+                HYDRUINO_SOFT_ASSERT(phBalancer, SFP(HStr_Err_AllocationFailure));
                 getSchedulerInstance()->setupWaterPHBalancer(feedRes.get(), phBalancer);
+                feedRes->setWaterPHBalancer(phBalancer);
+            }
+            if (phBalancer) {
+                phBalancer->setTargetSetpoint(phSetpoint);
+                phBalancer->setTargetUnits(Hydroponics_UnitsType_Alkalinity_pH_0_14);
                 phBalancer->setEnabled(true);
             }
         }
         if (feedRes->getWaterTDSSensor()) {
-            auto tdsBalancer = feedRes->setWaterTDSBalancer(tdsSetpoint, Hydroponics_UnitsType_Concentration_EC);
-            if (tdsBalancer) {
+            auto tdsBalancer = feedRes->getWaterTDSBalancer();
+            if (!tdsBalancer) {
+                tdsBalancer = make_shared<HydroponicsTimedDosingBalancer>(feedRes->getWaterTDSSensor(), tdsSetpoint, HYDRUINO_RANGE_EC_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits());
+                HYDRUINO_SOFT_ASSERT(tdsBalancer, SFP(HStr_Err_AllocationFailure));
                 getSchedulerInstance()->setupWaterTDSBalancer(feedRes.get(), tdsBalancer);
+                feedRes->setWaterTDSBalancer(tdsBalancer);
+            }
+            if (tdsBalancer) {
+                tdsBalancer->setTargetSetpoint(tdsSetpoint);
+                tdsBalancer->setTargetUnits(Hydroponics_UnitsType_Concentration_EC);
                 tdsBalancer->setEnabled(true);
             }
         }
@@ -698,9 +712,16 @@ void HydroponicsFeeding::setupStaging()
     }
 
     if ((stage == PreFeed || stage == Feed) && feedRes->getWaterTemperatureSensor()) {
-        auto waterTempBalancer = feedRes->setWaterTemperatureBalancer(waterTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
-        if (waterTempBalancer) {
+        auto waterTempBalancer = feedRes->getWaterTemperatureBalancer();
+        if (!waterTempBalancer) {
+            waterTempBalancer = make_shared<HydroponicsLinearEdgeBalancer>(feedRes->getWaterTemperatureSensor(), waterTempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -HYDRUINO_RANGE_TEMP_HALF * 0.25f, HYDRUINO_RANGE_TEMP_HALF * 0.5f);
+            HYDRUINO_SOFT_ASSERT(waterTempBalancer, SFP(HStr_Err_AllocationFailure));
             getSchedulerInstance()->setupWaterTemperatureBalancer(feedRes.get(), waterTempBalancer);
+            feedRes->setWaterTemperatureBalancer(waterTempBalancer);
+        }
+        if (waterTempBalancer) {
+            waterTempBalancer->setTargetSetpoint(waterTempSetpoint);
+            waterTempBalancer->setTargetUnits(Hydroponics_UnitsType_Temperature_Celsius);
             waterTempBalancer->setEnabled(true);
         }
     } else {
@@ -709,9 +730,16 @@ void HydroponicsFeeding::setupStaging()
     }
 
     if (feedRes->getAirTemperatureSensor()) {
-        auto airTempBalancer = feedRes->setAirTemperatureBalancer(airTempSetpoint, Hydroponics_UnitsType_Temperature_Celsius);
-        if (airTempBalancer) {
+        auto airTempBalancer = feedRes->getAirTemperatureBalancer();
+        if (!airTempBalancer) {
+            airTempBalancer = make_shared<HydroponicsLinearEdgeBalancer>(feedRes->getAirTemperatureSensor(), airTempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -HYDRUINO_RANGE_TEMP_HALF * 0.25f, HYDRUINO_RANGE_TEMP_HALF * 0.5f);
+            HYDRUINO_SOFT_ASSERT(airTempBalancer, SFP(HStr_Err_AllocationFailure));
             getSchedulerInstance()->setupAirTemperatureBalancer(feedRes.get(), airTempBalancer);
+            feedRes->setAirTemperatureBalancer(airTempBalancer);
+        }
+        if (airTempBalancer) {
+            airTempBalancer->setTargetSetpoint(airTempSetpoint);
+            airTempBalancer->setTargetUnits(Hydroponics_UnitsType_Temperature_Celsius);
             airTempBalancer->setEnabled(true);
         }
     } else {
@@ -720,9 +748,16 @@ void HydroponicsFeeding::setupStaging()
     }
 
     if (feedRes->getAirCO2Sensor()) {
-        auto co2Balancer = feedRes->setAirCO2Balancer(co2Setpoint, Hydroponics_UnitsType_Concentration_PPM);
-        if (co2Balancer) {
+        auto co2Balancer = feedRes->getAirTemperatureBalancer();
+        if (!co2Balancer) {
+            co2Balancer = make_shared<HydroponicsLinearEdgeBalancer>(feedRes->getAirCO2Sensor(), co2Setpoint, HYDRUINO_RANGE_CO2_HALF, -HYDRUINO_RANGE_CO2_HALF * 0.25f, HYDRUINO_RANGE_CO2_HALF * 0.5f);
+            HYDRUINO_SOFT_ASSERT(co2Balancer, SFP(HStr_Err_AllocationFailure));
             getSchedulerInstance()->setupAirCO2Balancer(feedRes.get(), co2Balancer);
+            feedRes->setAirCO2Balancer(co2Balancer);
+        }
+        if (co2Balancer) {
+            co2Balancer->setTargetSetpoint(co2Setpoint);
+            co2Balancer->setTargetUnits(Hydroponics_UnitsType_Concentration_PPM);
             co2Balancer->setEnabled(true);
         }
     } else {
