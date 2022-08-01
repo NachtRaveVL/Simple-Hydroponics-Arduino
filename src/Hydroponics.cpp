@@ -228,11 +228,10 @@ bool Hydroponics::initFromSDCard(bool jsonFormat)
             bool retVal = false;
             auto configFile = sd->open(_sysConfigFile.c_str(), FILE_READ);
 
-            if (configFile && configFile.available()) {
+            if (configFile) {
                 retVal = jsonFormat ? initFromJSONStream(&configFile) : initFromBinaryStream(&configFile);
+                configFile.close();
             }
-
-            if (configFile) { configFile.close(); }
 
             endSDCard(sd);
             return retVal;
@@ -611,8 +610,15 @@ void Hydroponics::commonPostInit()
             Serial.print(F(", sdCardCSPin: "));
             if (isValidPin(_sdCardCSPin)) { Serial.print(_sdCardCSPin); }
             else { Serial.print(SFP(HStr_Disabled)); }
-            Serial.print(F(", controlInputPin1: "));
-            if (isValidPin(_ctrlInputPin1)) { Serial.print(_ctrlInputPin1); }
+            Serial.print(F(", controlInputPinMap: "));
+            if (getControlInputRibbonPinCount() && _ctrlInputPinMap && isValidPin(_ctrlInputPinMap[0])) {
+                Serial.print('{');
+                for (int i = 0; i < getControlInputRibbonPinCount(); ++i) {
+                    if (i) { Serial.print(','); }
+                    Serial.print(_ctrlInputPinMap[i]);
+                }
+                Serial.print('}');
+            }
             else { Serial.print(SFP(HStr_Disabled)); }
             Serial.print(F(", EEPROMi2cAddress: 0x"));
             Serial.print(_eepromI2CAddr & ~HYDRUINO_SYS_I2CEEPROM_BASEADDR, HEX);
