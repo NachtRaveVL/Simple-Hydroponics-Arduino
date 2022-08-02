@@ -191,7 +191,11 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
-        pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+        #ifdef INPUT_PULLDOWN
+            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
+        #else
+            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+        #endif
     }
 }
 
@@ -200,7 +204,11 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(const HydroponicsBinarySensorDa
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
-        pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+        #ifdef INPUT_PULLDOWN
+            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
+        #else
+            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+        #endif
     }
     if (dataIn->usingISR) { tryRegisterAsISR(); }
 }
