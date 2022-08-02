@@ -31,16 +31,17 @@ String stringFromPGM(Hydroponics_String strNum) {
             eeprom->readBlock(_strDataAddress + (sizeof(uint16_t) * ((int)strNum + 1)), // +1 for initial total size word
                               (byte *)&lookupOffset, sizeof(lookupOffset));
 
-            {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+            {   String retVal;
+                char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
                 eeprom->readBlock(lookupOffset, (byte *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
-                return charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
 
-                // The following will be needed in case we go over 32 bytes in a single string data
-                // while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
-                //     lookupOffset += HYDRUINO_STRING_BUFFER_SIZE;
-                //     eeprom->readBlock(lookupOffset, (byte *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
-                //     retVal += charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                // }
+                while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
+                    lookupOffset += HYDRUINO_STRING_BUFFER_SIZE;
+                    eeprom->readBlock(lookupOffset, (byte *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
+                    if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
+                }
+                return retVal;
             }
         }
     }
@@ -54,7 +55,8 @@ String stringFromPGM(Hydroponics_String strNum) {
 
         if (sd) {
             String retVal;
-            String filename = _strDataFilePrefix;
+            String filename; filename.reserve(_strDataFilePrefix.length() + 12);
+            filename = _strDataFilePrefix;
             filename.concat('s'); // Cannot use SFP here so have to do it the long way
             filename.concat('t');
             filename.concat('r');
@@ -76,11 +78,11 @@ String stringFromPGM(Hydroponics_String strNum) {
                 {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
                     file.seek(lookupOffset);
                     file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                    retVal = charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                    retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
 
                     while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
                         file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                        retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
+                        if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
                     }
                 }
 
@@ -98,20 +100,18 @@ String stringFromPGM(Hydroponics_String strNum) {
 #ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
 
 String stringFromPGMAddr(const char *flashStr) {
-    if (flashStr) {
-        char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+    String retVal; retVal.reserve(strlen_P(flashStr) + 1);
+    char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+    strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
+    retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
+
+    while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
+        flashStr += HYDRUINO_STRING_BUFFER_SIZE;
         strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
-        String retVal = charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
-
-        while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
-            flashStr += HYDRUINO_STRING_BUFFER_SIZE;
-            strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
-            retVal += charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
-        }
-
-        return retVal;
+        if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
     }
-    return String();
+
+    return retVal;
 }
 
 const char *pgmAddrForStr(Hydroponics_String strNum)
@@ -175,14 +175,14 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_DataName_HADD;
         } break;
 
-        case HStr_Default_SystemName:
+        case HStr_Default_SystemName: {
             static const char flashStr_Default_SystemName[] PROGMEM = {"Hydruino"};
             return flashStr_Default_SystemName;
-            break;
-        case HStr_Default_ConfigFile:
+        } break;
+        case HStr_Default_ConfigFile: {
             static const char flashStr_Default_ConfigFile[] PROGMEM = {"hydruino.cfg"};
             return flashStr_Default_ConfigFile;
-            break;
+        } break;
 
         case HStr_Err_AllocationFailure: {
             static const char flashStr_Err_AllocationFailure[] PROGMEM = {"Allocation failure"};
@@ -289,7 +289,7 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Log_PreLightSpraying[] PROGMEM = {" dawntime spraying"};
             return flashStr_Log_PreLightSpraying;
         } break;
-        HStr_Log_RTCBatteryFailure: {
+        case HStr_Log_RTCBatteryFailure: {
             static const char flashStr_Log_RTCBatteryFailure[] PROGMEM = {"RTC battery failure, time needs reset."};
             return flashStr_Log_RTCBatteryFailure;
         } break;

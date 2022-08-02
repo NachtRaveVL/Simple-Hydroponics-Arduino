@@ -196,7 +196,7 @@ Signal<Hydroponics_CropType> &HydroponicsCropsLibrary::getCustomCropSignal()
     return _cropDataSignal;
 }
 
-HydroponicsCropsLibraryBook * HydroponicsCropsLibrary::newBookFromType(Hydroponics_CropType cropType)
+HydroponicsCropsLibraryBook *HydroponicsCropsLibrary::newBookFromType(Hydroponics_CropType cropType)
 {
     if (_libSDCropPrefix.length()) {
         HydroponicsCropsLibraryBook *retVal = nullptr;

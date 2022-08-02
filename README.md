@@ -51,7 +51,7 @@ From Hydroponics.h:
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, disables built-in Crops Lib and String data, instead relying solely on external device.
+//#define HYDRUINO_ENABLE_EXTERNAL_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -337,7 +337,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e07          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e2d          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
@@ -416,17 +416,18 @@ In particular, after setting up the settings defines similarly to that of the Ve
 
 In serial monitor (near end):
 ```
-2022-08-02T13:42:52 [INFO] Writing String: #367 "W"
-2022-08-02T13:42:52 [INFO] ... to byte offset: 11781 (0x2e05)
-2022-08-02T13:42:52 [INFO] Wrote: 2 bytes
-2022-08-02T13:42:52 [INFO] Successfully wrote: 4835 bytes
-2022-08-02T13:42:52 [INFO] Total EEPROM usage: 11783 bytes
-2022-08-02T13:42:52 [INFO] EEPROM capacity used: 35.96% of 32768 bytes
-2022-08-02T13:42:52 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e07
+…
+2022-08-02T15:19:34 [INFO] Writing String: #367 "W"
+2022-08-02T15:19:34 [INFO] ... to byte offset: 11819 (0x2e2b)
+2022-08-02T15:19:34 [INFO] Wrote: 2 bytes
+2022-08-02T15:19:34 [INFO] Successfully wrote: 4873 bytes
+2022-08-02T15:19:34 [INFO] Total EEPROM usage: 11821 bytes
+2022-08-02T15:19:34 [INFO] EEPROM capacity used: 36.07% of 32768 bytes
+2022-08-02T15:19:34 [INFO] Use the following EEPROM setup defines in your sketch:
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e2d
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24
-2022-08-02T13:42:52 [INFO] Done!
+2022-08-02T15:19:34 [INFO] Done!
 ```
 
 Note: Again, you can get logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.
