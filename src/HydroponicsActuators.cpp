@@ -34,9 +34,11 @@ HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
       _outputPin(outputPin), _enabled(false), _rail(this), _reservoir(this)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HStr_Err_InvalidPinOrType));
-    if (isValidPin(_outputPin)) {
-        pinMode(_outputPin, OUTPUT);
-    }
+    #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+        if (isValidPin(_outputPin)) {
+            pinMode(_outputPin, OUTPUT);
+        }
+    #endif
 }
 
 HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
@@ -46,9 +48,11 @@ HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
       _rail(this), _reservoir(this)
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HStr_Err_InvalidPinOrType));
-    if (isValidPin(_outputPin)) {
-        pinMode(_outputPin, OUTPUT);
-    }
+    #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+        if (isValidPin(_outputPin)) {
+            pinMode(_outputPin, OUTPUT);
+        }
+    #endif
     _rail.setObject(dataIn->railName);
     _reservoir.setObject(dataIn->reservoirName);
 }
@@ -141,26 +145,32 @@ HydroponicsRelayActuator::HydroponicsRelayActuator(Hydroponics_ActuatorType actu
     : HydroponicsActuator(actuatorType, actuatorIndex, outputPin, classType),
       _activeLow(activeLow)
 {
-    if (isValidPin(_outputPin)) {
-        digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
-    }
+    #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+        if (isValidPin(_outputPin)) {
+            digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+        }
+    #endif
 }
 
 HydroponicsRelayActuator::HydroponicsRelayActuator(const HydroponicsRelayActuatorData *dataIn)
     : HydroponicsActuator(dataIn), _activeLow(dataIn->activeLow)
 {
-    if (isValidPin(_outputPin)) {
-        digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
-    }
+    #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+        if (isValidPin(_outputPin)) {
+            digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+        }
+    #endif
 }
 
 HydroponicsRelayActuator::~HydroponicsRelayActuator()
 {
     if (_enabled) {
         _enabled = false;
-        if (isValidPin(_outputPin)) {
-            digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
-        }
+        #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+            if (isValidPin(_outputPin)) {
+                digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+            }
+        #endif
     }
 }
 
@@ -499,27 +509,33 @@ HydroponicsPWMActuator::HydroponicsPWMActuator(Hydroponics_ActuatorType actuator
     : HydroponicsActuator(actuatorType, actuatorIndex, outputPin, classType),
       _pwmAmount(0.0f), _pwmResolution(outputBitResolution)
 {
-    if (isValidPin(_outputPin)) {
-        analogWrite(_outputPin, 0);
-    }
+    #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+        if (isValidPin(_outputPin)) {
+            analogWrite(_outputPin, 0);
+        }
+    #endif
 }
 
 HydroponicsPWMActuator::HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn)
     : HydroponicsActuator(dataIn),
       _pwmAmount(0.0f), _pwmResolution(dataIn->outputBitResolution)
 {
-    if (isValidPin(_outputPin)) {
-        analogWrite(_outputPin, 0);
-    }
+    #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+        if (isValidPin(_outputPin)) {
+            analogWrite(_outputPin, 0);
+        }
+    #endif
 }
 
 HydroponicsPWMActuator::~HydroponicsPWMActuator()
 {
     if (_enabled) {
         _enabled = false;
-        if (isValidPin(_outputPin)) {
-            analogWrite(_outputPin, 0);
-        }
+        #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+            if (isValidPin(_outputPin)) {
+                analogWrite(_outputPin, 0);
+            }
+        #endif
     }
 }
 
@@ -603,14 +619,14 @@ void HydroponicsPWMActuator::saveToData(HydroponicsData *dataOut)
 
 void HydroponicsPWMActuator::applyPWM()
 {
-    if (isValidPin(_outputPin)) {
-        #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-            analogWriteResolution(_pwmResolution.bitRes);
-        #endif
-        #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+    #if !HYDRUINO_SYS_DRY_RUN_ENABLE
+        if (isValidPin(_outputPin)) {
+            #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+                analogWriteResolution(_pwmResolution.bitRes);
+            #endif
             analogWrite(_outputPin, _enabled ? getPWMAmount(0) : 0);
-        #endif
-    }
+        }
+    #endif
 }
 
 
