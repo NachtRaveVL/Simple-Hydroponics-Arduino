@@ -54,7 +54,18 @@ String stringFromPGM(Hydroponics_String strNum) {
 
         if (sd) {
             String retVal;
-            String filename = String(_strDataFilePrefix + String(F("strings.")) + SFP(HStr_dat));
+            String filename = _strDataFilePrefix;
+            filename.concat('s'); // Cannot use SFP here so have to do it the long way
+            filename.concat('t');
+            filename.concat('r');
+            filename.concat('i');
+            filename.concat('n');
+            filename.concat('g');
+            filename.concat('s');
+            filename.concat('.');
+            filename.concat('d');
+            filename.concat('a');
+            filename.concat('t');
 
             auto file = sd->open(filename, FILE_READ);
             if (file) {
@@ -67,11 +78,10 @@ String stringFromPGM(Hydroponics_String strNum) {
                     file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
                     retVal = charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
 
-                    // The following will be needed in case we go over 32 bytes in a single string data
-                    // while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
-                    //     file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                    //     retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
-                    // }
+                    while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
+                        file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                        retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
+                    }
                 }
 
                 file.close();
@@ -93,13 +103,12 @@ String stringFromPGMAddr(const char *flashStr) {
         strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
         String retVal = charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
 
-        // The following will be needed in case we go over 32 bytes in a single string data
-        // while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
-        //     flashStr += HYDRUINO_STRING_BUFFER_SIZE;
-        //     strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
-        //     retVal += charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
-        // }
-        
+        while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
+            flashStr += HYDRUINO_STRING_BUFFER_SIZE;
+            strncpy_P(buffer, flashStr, HYDRUINO_STRING_BUFFER_SIZE);
+            retVal += charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE);
+        }
+
         return retVal;
     }
     return String();
@@ -132,6 +141,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Disabled[] PROGMEM = {"Disabled"};
             return flashStr_Disabled;
         } break;
+        case HStr_raw: {
+            static const char flashStr_raw[] PROGMEM = {"raw"};
+            return flashStr_raw;
+        } break;
         case HStr_txt: {
             static const char flashStr_txt[] PROGMEM = {"txt"};
             return flashStr_txt;
@@ -144,6 +157,32 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_null[] PROGMEM = {"null"};
             return flashStr_null;
         } break;
+
+        case HStr_DataName_HSYS: {
+            static const char flashStr_DataName_HSYS[] PROGMEM = {"HSYS"};
+            return flashStr_DataName_HSYS;
+        } break;
+        case HStr_DataName_HCAL: {
+            static const char flashStr_DataName_HCAL[] PROGMEM = {"HCAL"};
+            return flashStr_DataName_HCAL;
+        } break;
+        case HStr_DataName_HCLD: {
+            static const char flashStr_DataName_HCLD[] PROGMEM = {"HCLD"};
+            return flashStr_DataName_HCLD;
+        } break;
+        case HStr_DataName_HADD: {
+            static const char flashStr_DataName_HADD[] PROGMEM = {"HADD"};
+            return flashStr_DataName_HADD;
+        } break;
+
+        case HStr_Default_SystemName:
+            static const char flashStr_Default_SystemName[] PROGMEM = {"Hydruino"};
+            return flashStr_Default_SystemName;
+            break;
+        case HStr_Default_ConfigFile:
+            static const char flashStr_Default_ConfigFile[] PROGMEM = {"hydruino.cfg"};
+            return flashStr_Default_ConfigFile;
+            break;
 
         case HStr_Err_AllocationFailure: {
             static const char flashStr_Err_AllocationFailure[] PROGMEM = {"Allocation failure"};
@@ -250,6 +289,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Log_PreLightSpraying[] PROGMEM = {" dawntime spraying"};
             return flashStr_Log_PreLightSpraying;
         } break;
+        HStr_Log_RTCBatteryFailure: {
+            static const char flashStr_Log_RTCBatteryFailure[] PROGMEM = {"RTC battery failure, time needs reset."};
+            return flashStr_Log_RTCBatteryFailure;
+        } break;
         case HStr_Log_SystemDataSaved: {
             static const char flashStr_Log_SystemDataSaved[] PROGMEM = {"System data saved"};
             return flashStr_Log_SystemDataSaved;
@@ -259,15 +302,28 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Log_SystemUptime;
         } break;
 
-        case HSTR_Log_Field_Aerator_Duration: {
+        case HStr_Log_Prefix_Info: {
+            static const char flashStr_Prefix_Info[] PROGMEM = {"[INFO] "};
+            return flashStr_Prefix_Info;
+        } break;
+        case HStr_Log_Prefix_Warning: {
+            static const char flashStr_Log_Prefix_Warning[] PROGMEM = {"[WARN] "};
+            return flashStr_Log_Prefix_Warning;
+        } break;
+        case HStr_Log_Prefix_Error: {
+            static const char flashStr_Log_Prefix_Error[] PROGMEM = {"[FAIL] "};
+            return flashStr_Log_Prefix_Error;
+        } break;
+
+        case HStr_Log_Field_Aerator_Duration: {
             static const char flashStr_Log_Field_Aerator_Duration[] PROGMEM = {"  Aerator duration: "};
             return flashStr_Log_Field_Aerator_Duration;
         } break;
-        case HSTR_Log_Field_Light_Duration: {
+        case HStr_Log_Field_Light_Duration: {
             static const char flashStr_Log_Field_Light_Duration[] PROGMEM = {"  Daylight duration: "};
             return flashStr_Log_Field_Light_Duration;
         } break;
-        case HSTR_Log_Field_Sprayer_Duration: {
+        case HStr_Log_Field_Sprayer_Duration: {
             static const char flashStr_Log_Field_Sprayer_Duration[] PROGMEM = {"  Sprayer duration: "};
             return flashStr_Log_Field_Sprayer_Duration;
         } break;
@@ -807,6 +863,740 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         case HStr_Key_WirePosIndex: {
             static const char flashStr_Key_WirePosIndex[] PROGMEM = {"wirePosIndex"};
             return flashStr_Key_WirePosIndex;
+        } break;
+
+        case HStr_Enum_16x2LCD: {
+            static const char flashStr_Enum_16x2LCD[] PROGMEM = {"16x2LCD"};
+            return flashStr_Enum_16x2LCD;
+        } break;
+        case HStr_Enum_16x2LCDSwapped: {
+            static const char flashStr_Enum_16x2LCDSwapped[] PROGMEM = {"16x2LCDSwapped"};
+            return flashStr_Enum_16x2LCDSwapped;
+        } break;
+        case HStr_Enum_20x4LCD: {
+            static const char flashStr_Enum_20x4LCD[] PROGMEM = {"20x4LCD"};
+            return flashStr_Enum_20x4LCD;
+        } break;
+        case HStr_Enum_20x4LCDSwapped: {
+            static const char flashStr_Enum_20x4LCDSwapped[] PROGMEM = {"20x4LCDSwapped"};
+            return flashStr_Enum_20x4LCDSwapped;
+        } break;
+        case HStr_Enum_2x2Matrix: {
+            static const char flashStr_Enum_2x2Matrix[] PROGMEM = {"2x2Matrix"};
+            return flashStr_Enum_2x2Matrix;
+        } break;
+        case HStr_Enum_4xButton: {
+            static const char flashStr_Enum_4xButton[] PROGMEM = {"4xButton"};
+            return flashStr_Enum_4xButton;
+        } break;
+        case HStr_Enum_6xButton: {
+            static const char flashStr_Enum_6xButton[] PROGMEM = {"6xButton"};
+            return flashStr_Enum_6xButton;
+        } break;
+        case HStr_Enum_AC110V: {
+            static const char flashStr_Enum_AC110V[] PROGMEM = {"AC110V"};
+            return flashStr_Enum_AC110V;
+        } break;
+        case HStr_Enum_AC220V: {
+            static const char flashStr_Enum_AC220V[] PROGMEM = {"AC220V"};
+            return flashStr_Enum_AC220V;
+        } break;
+        case HStr_Enum_AirCarbonDioxide: {
+            static const char flashStr_Enum_AirCarbonDioxide[] PROGMEM = {"AirCO2"};
+            return flashStr_Enum_AirCarbonDioxide;
+        } break;
+        case HStr_Enum_AirConcentration: {
+            static const char flashStr_Enum_AirConcentration[] PROGMEM = {"AirConcentration"};
+            return flashStr_Enum_AirConcentration;
+        } break;
+        case HStr_Enum_AirHeatIndex: {
+            static const char flashStr_Enum_AirHeatIndex[] PROGMEM = {"AirHeatIndex"};
+            return flashStr_Enum_AirHeatIndex;
+        } break;
+        case HStr_Enum_AirHumidity: {
+            static const char flashStr_Enum_AirHumidity[] PROGMEM = {"AirHumidity"};
+            return flashStr_Enum_AirHumidity;
+        } break;
+        case HStr_Enum_AirTemperature: {
+            static const char flashStr_Enum_AirTemperature[] PROGMEM = {"AirTemperature"};
+            return flashStr_Enum_AirTemperature;
+        } break;
+        case HStr_Enum_AirTemperatureHumidity: {
+            static const char flashStr_Enum_AirTemperatureHumidity[] PROGMEM = {"AirTempHumid"};
+            return flashStr_Enum_AirTemperatureHumidity;
+        } break;
+        case HStr_Enum_Alkalinity: {
+            static const char flashStr_Enum_Alkalinity[] PROGMEM = {"Alkalinity"};
+            return flashStr_Enum_Alkalinity;
+        } break;
+        case HStr_Enum_AloeVera: {
+            static const char flashStr_Enum_AloeVera[] PROGMEM = {"AloeVera"};
+            return flashStr_Enum_AloeVera;
+        } break;
+        case HStr_Enum_Anise: {
+            static const char flashStr_Enum_Anise[] PROGMEM = {"Anise"};
+            return flashStr_Enum_Anise;
+        } break;
+        case HStr_Enum_Artichoke: {
+            static const char flashStr_Enum_Artichoke[] PROGMEM = {"Artichoke"};
+            return flashStr_Enum_Artichoke;
+        } break;
+        case HStr_Enum_Arugula: {
+            static const char flashStr_Enum_Arugula[] PROGMEM = {"Arugula"};
+            return flashStr_Enum_Arugula;
+        } break;
+        case HStr_Enum_Asparagus: {
+            static const char flashStr_Enum_Asparagus[] PROGMEM = {"Asparagus"};
+            return flashStr_Enum_Asparagus;
+        } break;
+        case HStr_Enum_Basil: {
+            static const char flashStr_Enum_Basil[] PROGMEM = {"Basil"};
+            return flashStr_Enum_Basil;
+        } break;
+        case HStr_Enum_Bean: {
+            static const char flashStr_Enum_Bean[] PROGMEM = {"Bean"};
+            return flashStr_Enum_Bean;
+        } break;
+        case HStr_Enum_BeanBroad: {
+            static const char flashStr_Enum_BeanBroad[] PROGMEM = {"BeanBroad"};
+            return flashStr_Enum_BeanBroad;
+        } break;
+        case HStr_Enum_Beetroot: {
+            static const char flashStr_Enum_Beetroot[] PROGMEM = {"Beetroot"};
+            return flashStr_Enum_Beetroot;
+        } break;
+        case HStr_Enum_BlackCurrant: {
+            static const char flashStr_Enum_BlackCurrant[] PROGMEM = {"BlackCurrant"};
+            return flashStr_Enum_BlackCurrant;
+        } break;
+        case HStr_Enum_Blueberry: {
+            static const char flashStr_Enum_Blueberry[] PROGMEM = {"Blueberry"};
+            return flashStr_Enum_Blueberry;
+        } break;
+        case HStr_Enum_BokChoi: {
+            static const char flashStr_Enum_BokChoi[] PROGMEM = {"BokChoi"};
+            return flashStr_Enum_BokChoi;
+        } break;
+        case HStr_Enum_Broccoli: {
+            static const char flashStr_Enum_Broccoli[] PROGMEM = {"Broccoli"};
+            return flashStr_Enum_Broccoli;
+        } break;
+        case HStr_Enum_BrusselsSprout: {
+            static const char flashStr_Enum_BrusselsSprout[] PROGMEM = {"BrusselsSprout"};
+            return flashStr_Enum_BrusselsSprout;
+        } break;
+        case HStr_Enum_Cabbage: {
+            static const char flashStr_Enum_Cabbage[] PROGMEM = {"Cabbage"};
+            return flashStr_Enum_Cabbage;
+        } break;
+        case HStr_Enum_Cannabis: {
+            static const char flashStr_Enum_Cannabis[] PROGMEM = {"Cannabis"};
+            return flashStr_Enum_Cannabis;
+        } break;
+        case HStr_Enum_Capsicum: {
+            static const char flashStr_Enum_Capsicum[] PROGMEM = {"Capsicum"};
+            return flashStr_Enum_Capsicum;
+        } break;
+        case HStr_Enum_Carrots: {
+            static const char flashStr_Enum_Carrots[] PROGMEM = {"Carrots"};
+            return flashStr_Enum_Carrots;
+        } break;
+        case HStr_Enum_Catnip: {
+            static const char flashStr_Enum_Catnip[] PROGMEM = {"Catnip"};
+            return flashStr_Enum_Catnip;
+        } break;
+        case HStr_Enum_Cauliflower: {
+            static const char flashStr_Enum_Cauliflower[] PROGMEM = {"Cauliflower"};
+            return flashStr_Enum_Cauliflower;
+        } break;
+        case HStr_Enum_Celery: {
+            static const char flashStr_Enum_Celery[] PROGMEM = {"Celery"};
+            return flashStr_Enum_Celery;
+        } break;
+        case HStr_Enum_Chamomile: {
+            static const char flashStr_Enum_Chamomile[] PROGMEM = {"Chamomile"};
+            return flashStr_Enum_Chamomile;
+        } break;
+        case HStr_Enum_Chicory: {
+            static const char flashStr_Enum_Chicory[] PROGMEM = {"Chicory"};
+            return flashStr_Enum_Chicory;
+        } break;
+        case HStr_Enum_Chives: {
+            static const char flashStr_Enum_Chives[] PROGMEM = {"Chives"};
+            return flashStr_Enum_Chives;
+        } break;
+        case HStr_Enum_Cilantro: {
+            static const char flashStr_Enum_Cilantro[] PROGMEM = {"Cilantro"};
+            return flashStr_Enum_Cilantro;
+        } break;
+        case HStr_Enum_ClayPebbles: {
+            static const char flashStr_Enum_ClayPebbles[] PROGMEM = {"ClayPebbles"};
+            return flashStr_Enum_ClayPebbles;
+        } break;
+        case HStr_Enum_CoconutCoir: {
+            static const char flashStr_Enum_CoconutCoir[] PROGMEM = {"CoconutCoir"};
+            return flashStr_Enum_CoconutCoir;
+        } break;
+        case HStr_Enum_Coriander: {
+            static const char flashStr_Enum_Coriander[] PROGMEM = {"Coriander"};
+            return flashStr_Enum_Coriander;
+        } break;
+        case HStr_Enum_CornSweet: {
+            static const char flashStr_Enum_CornSweet[] PROGMEM = {"CornSweet"};
+            return flashStr_Enum_CornSweet;
+        } break;
+        case HStr_Enum_Cucumber: {
+            static const char flashStr_Enum_Cucumber[] PROGMEM = {"Cucumber"};
+            return flashStr_Enum_Cucumber;
+        } break;
+        case HStr_Enum_CustomAdditive1: {
+            static const char flashStr_Enum_CustomAdditive1[] PROGMEM = {"CustomAdditive1"};
+            return flashStr_Enum_CustomAdditive1;
+        } break;
+        case HStr_Enum_CustomAdditive2: {
+            static const char flashStr_Enum_CustomAdditive2[] PROGMEM = {"CustomAdditive2"};
+            return flashStr_Enum_CustomAdditive2;
+        } break;
+        case HStr_Enum_CustomAdditive3: {
+            static const char flashStr_Enum_CustomAdditive3[] PROGMEM = {"CustomAdditive3"};
+            return flashStr_Enum_CustomAdditive3;
+        } break;
+        case HStr_Enum_CustomAdditive4: {
+            static const char flashStr_Enum_CustomAdditive4[] PROGMEM = {"CustomAdditive4"};
+            return flashStr_Enum_CustomAdditive4;
+        } break;
+        case HStr_Enum_CustomAdditive5: {
+            static const char flashStr_Enum_CustomAdditive5[] PROGMEM = {"CustomAdditive5"};
+            return flashStr_Enum_CustomAdditive5;
+        } break;
+        case HStr_Enum_CustomAdditive6: {
+            static const char flashStr_Enum_CustomAdditive6[] PROGMEM = {"CustomAdditive6"};
+            return flashStr_Enum_CustomAdditive6;
+        } break;
+        case HStr_Enum_CustomAdditive7: {
+            static const char flashStr_Enum_CustomAdditive7[] PROGMEM = {"CustomAdditive7"};
+            return flashStr_Enum_CustomAdditive7;
+        } break;
+        case HStr_Enum_CustomAdditive8: {
+            static const char flashStr_Enum_CustomAdditive8[] PROGMEM = {"CustomAdditive8"};
+            return flashStr_Enum_CustomAdditive8;
+        } break;
+        case HStr_Enum_CustomAdditive9: {
+            static const char flashStr_Enum_CustomAdditive9[] PROGMEM = {"CustomAdditive9"};
+            return flashStr_Enum_CustomAdditive9;
+        } break;
+        case HStr_Enum_CustomAdditive10: {
+            static const char flashStr_Enum_CustomAdditive10[] PROGMEM = {"CustomAdditive10"};
+            return flashStr_Enum_CustomAdditive10;
+        } break;
+        case HStr_Enum_CustomAdditive11: {
+            static const char flashStr_Enum_CustomAdditive11[] PROGMEM = {"CustomAdditive11"};
+            return flashStr_Enum_CustomAdditive11;
+        } break;
+        case HStr_Enum_CustomAdditive12: {
+            static const char flashStr_Enum_CustomAdditive12[] PROGMEM = {"CustomAdditive12"};
+            return flashStr_Enum_CustomAdditive12;
+        } break;
+        case HStr_Enum_CustomAdditive13: {
+            static const char flashStr_Enum_CustomAdditive13[] PROGMEM = {"CustomAdditive13"};
+            return flashStr_Enum_CustomAdditive13;
+        } break;
+        case HStr_Enum_CustomAdditive14: {
+            static const char flashStr_Enum_CustomAdditive14[] PROGMEM = {"CustomAdditive14"};
+            return flashStr_Enum_CustomAdditive14;
+        } break;
+        case HStr_Enum_CustomAdditive15: {
+            static const char flashStr_Enum_CustomAdditive15[] PROGMEM = {"CustomAdditive15"};
+            return flashStr_Enum_CustomAdditive15;
+        } break;
+        case HStr_Enum_CustomAdditive16: {
+            static const char flashStr_Enum_CustomAdditive16[] PROGMEM = {"CustomAdditive16"};
+            return flashStr_Enum_CustomAdditive16;
+        } break;
+        case HStr_Enum_CustomCrop1: {
+            static const char flashStr_Enum_CustomCrop1[] PROGMEM = {"CustomCrop1"};
+            return flashStr_Enum_CustomCrop1;
+        } break;
+        case HStr_Enum_CustomCrop2: {
+            static const char flashStr_Enum_CustomCrop2[] PROGMEM = {"CustomCrop2"};
+            return flashStr_Enum_CustomCrop2;
+        } break;
+        case HStr_Enum_CustomCrop3: {
+            static const char flashStr_Enum_CustomCrop3[] PROGMEM = {"CustomCrop3"};
+            return flashStr_Enum_CustomCrop3;
+        } break;
+        case HStr_Enum_CustomCrop4: {
+            static const char flashStr_Enum_CustomCrop4[] PROGMEM = {"CustomCrop4"};
+            return flashStr_Enum_CustomCrop4;
+        } break;
+        case HStr_Enum_CustomCrop5: {
+            static const char flashStr_Enum_CustomCrop5[] PROGMEM = {"CustomCrop5"};
+            return flashStr_Enum_CustomCrop5;
+        } break;
+        case HStr_Enum_CustomCrop6: {
+            static const char flashStr_Enum_CustomCrop6[] PROGMEM = {"CustomCrop6"};
+            return flashStr_Enum_CustomCrop6;
+        } break;
+        case HStr_Enum_CustomCrop7: {
+            static const char flashStr_Enum_CustomCrop7[] PROGMEM = {"CustomCrop7"};
+            return flashStr_Enum_CustomCrop7;
+        } break;
+        case HStr_Enum_CustomCrop8: {
+            static const char flashStr_Enum_CustomCrop8[] PROGMEM = {"CustomCrop8"};
+            return flashStr_Enum_CustomCrop8;
+        } break;
+        case HStr_Enum_DC12V: {
+            static const char flashStr_Enum_DC12V[] PROGMEM = {"DC12V"};
+            return flashStr_Enum_DC12V;
+        } break;
+        case HStr_Enum_DC5V: {
+            static const char flashStr_Enum_DC5V[] PROGMEM = {"DC5V"};
+            return flashStr_Enum_DC5V;
+        } break;
+        case HStr_Enum_Dill: {
+            static const char flashStr_Enum_Dill[] PROGMEM = {"Dill"};
+            return flashStr_Enum_Dill;
+        } break;
+        case HStr_Enum_DissolvedSolids: {
+            static const char flashStr_Enum_DissolvedSolids[] PROGMEM = {"DissolvedSolids"};
+            return flashStr_Enum_DissolvedSolids;
+        } break;
+        case HStr_Enum_Distance: {
+            static const char flashStr_Enum_Distance[] PROGMEM = {"Distance"};
+            return flashStr_Enum_Distance;
+        } break;
+        case HStr_Enum_DrainToWaste: {
+            static const char flashStr_Enum_DrainToWaste[] PROGMEM = {"DrainToWaste"};
+            return flashStr_Enum_DrainToWaste;
+        } break;
+        case HStr_Enum_DrainageWater: {
+            static const char flashStr_Enum_DrainageWater[] PROGMEM = {"DrainageWater"};
+            return flashStr_Enum_DrainageWater;
+        } break;
+        case HStr_Enum_Eggplant: {
+            static const char flashStr_Enum_Eggplant[] PROGMEM = {"Eggplant"};
+            return flashStr_Enum_Eggplant;
+        } break;
+        case HStr_Enum_Endive: {
+            static const char flashStr_Enum_Endive[] PROGMEM = {"Endive"};
+            return flashStr_Enum_Endive;
+        } break;
+        case HStr_Enum_FanExhaust: {
+            static const char flashStr_Enum_FanExhaust[] PROGMEM = {"FanExhaust"};
+            return flashStr_Enum_FanExhaust;
+        } break;
+        case HStr_Enum_FeedWater: {
+            static const char flashStr_Enum_FeedWater[] PROGMEM = {"FeedWater"};
+            return flashStr_Enum_FeedWater;
+        } break;
+        case HStr_Enum_Fennel: {
+            static const char flashStr_Enum_Fennel[] PROGMEM = {"Fennel"};
+            return flashStr_Enum_Fennel;
+        } break;
+        case HStr_Enum_Flowers: {
+            static const char flashStr_Enum_Flowers[] PROGMEM = {"Flowers"};
+            return flashStr_Enum_Flowers;
+        } break;
+        case HStr_Enum_Fodder: {
+            static const char flashStr_Enum_Fodder[] PROGMEM = {"Fodder"};
+            return flashStr_Enum_Fodder;
+        } break;
+        case HStr_Enum_FreshWater: {
+            static const char flashStr_Enum_FreshWater[] PROGMEM = {"FreshWater"};
+            return flashStr_Enum_FreshWater;
+        } break;
+        case HStr_Enum_Garlic: {
+            static const char flashStr_Enum_Garlic[] PROGMEM = {"Garlic"};
+            return flashStr_Enum_Garlic;
+        } break;
+        case HStr_Enum_Ginger: {
+            static const char flashStr_Enum_Ginger[] PROGMEM = {"Ginger"};
+            return flashStr_Enum_Ginger;
+        } break;
+        case HStr_Enum_GrowLights: {
+            static const char flashStr_Enum_GrowLights[] PROGMEM = {"GrowLights"};
+            return flashStr_Enum_GrowLights;
+        } break;
+        case HStr_Enum_Imperial: {
+            static const char flashStr_Enum_Imperial[] PROGMEM = {"Imperial"};
+            return flashStr_Enum_Imperial;
+        } break;
+        case HStr_Enum_Kale: {
+            static const char flashStr_Enum_Kale[] PROGMEM = {"Kale"};
+            return flashStr_Enum_Kale;
+        } break;
+        case HStr_Enum_Lavender: {
+            static const char flashStr_Enum_Lavender[] PROGMEM = {"Lavender"};
+            return flashStr_Enum_Lavender;
+        } break;
+        case HStr_Enum_Leek: {
+            static const char flashStr_Enum_Leek[] PROGMEM = {"Leek"};
+            return flashStr_Enum_Leek;
+        } break;
+        case HStr_Enum_LemonBalm: {
+            static const char flashStr_Enum_LemonBalm[] PROGMEM = {"LemonBalm"};
+            return flashStr_Enum_LemonBalm;
+        } break;
+        case HStr_Enum_Lettuce: {
+            static const char flashStr_Enum_Lettuce[] PROGMEM = {"Lettuce"};
+            return flashStr_Enum_Lettuce;
+        } break;
+        case HStr_Enum_LiqDilution: {
+            static const char flashStr_Enum_LiqDilution[] PROGMEM = {"LiqDilution"};
+            return flashStr_Enum_LiqDilution;
+        } break;
+        case HStr_Enum_LiqFlowRate: {
+            static const char flashStr_Enum_LiqFlowRate[] PROGMEM = {"LiqFlowRate"};
+            return flashStr_Enum_LiqFlowRate;
+        } break;
+        case HStr_Enum_LiqTemperature: {
+            static const char flashStr_Enum_LiqTemperature[] PROGMEM = {"LiqTemperature"};
+            return flashStr_Enum_LiqTemperature;
+        } break;
+        case HStr_Enum_LiqVolume: {
+            static const char flashStr_Enum_LiqVolume[] PROGMEM = {"LiqVolume"};
+            return flashStr_Enum_LiqVolume;
+        } break;
+        case HStr_Enum_Marrow: {
+            static const char flashStr_Enum_Marrow[] PROGMEM = {"Marrow"};
+            return flashStr_Enum_Marrow;
+        } break;
+        case HStr_Enum_Melon: {
+            static const char flashStr_Enum_Melon[] PROGMEM = {"Melon"};
+            return flashStr_Enum_Melon;
+        } break;
+        case HStr_Enum_Metric: {
+            static const char flashStr_Enum_Metric[] PROGMEM = {"Metric"};
+            return flashStr_Enum_Metric;
+        } break;
+        case HStr_Enum_Mint: {
+            static const char flashStr_Enum_Mint[] PROGMEM = {"Mint"};
+            return flashStr_Enum_Mint;
+        } break;
+        case HStr_Enum_MustardCress: {
+            static const char flashStr_Enum_MustardCress[] PROGMEM = {"MustardCress"};
+            return flashStr_Enum_MustardCress;
+        } break;
+        case HStr_Enum_NutrientPremix: {
+            static const char flashStr_Enum_NutrientPremix[] PROGMEM = {"NutrientPremix"};
+            return flashStr_Enum_NutrientPremix;
+        } break;
+        case HStr_Enum_Okra: {
+            static const char flashStr_Enum_Okra[] PROGMEM = {"Okra"};
+            return flashStr_Enum_Okra;
+        } break;
+        case HStr_Enum_Onions: {
+            static const char flashStr_Enum_Onions[] PROGMEM = {"Onions"};
+            return flashStr_Enum_Onions;
+        } break;
+        case HStr_Enum_Oregano: {
+            static const char flashStr_Enum_Oregano[] PROGMEM = {"Oregano"};
+            return flashStr_Enum_Oregano;
+        } break;
+        case HStr_Enum_PakChoi: {
+            static const char flashStr_Enum_PakChoi[] PROGMEM = {"PakChoi"};
+            return flashStr_Enum_PakChoi;
+        } break;
+        case HStr_Enum_Parsley: {
+            static const char flashStr_Enum_Parsley[] PROGMEM = {"Parsley"};
+            return flashStr_Enum_Parsley;
+        } break;
+        case HStr_Enum_Parsnip: {
+            static const char flashStr_Enum_Parsnip[] PROGMEM = {"Parsnip"};
+            return flashStr_Enum_Parsnip;
+        } break;
+        case HStr_Enum_Pea: {
+            static const char flashStr_Enum_Pea[] PROGMEM = {"Pea"};
+            return flashStr_Enum_Pea;
+        } break;
+        case HStr_Enum_PeaSugar: {
+            static const char flashStr_Enum_PeaSugar[] PROGMEM = {"PeaSugar"};
+            return flashStr_Enum_PeaSugar;
+        } break;
+        case HStr_Enum_Pepino: {
+            static const char flashStr_Enum_Pepino[] PROGMEM = {"Pepino"};
+            return flashStr_Enum_Pepino;
+        } break;
+        case HStr_Enum_PeppersBell: {
+            static const char flashStr_Enum_PeppersBell[] PROGMEM = {"PeppersBell"};
+            return flashStr_Enum_PeppersBell;
+        } break;
+        case HStr_Enum_PeppersHot: {
+            static const char flashStr_Enum_PeppersHot[] PROGMEM = {"PeppersHot"};
+            return flashStr_Enum_PeppersHot;
+        } break;
+        case HStr_Enum_PeristalticPump: {
+            static const char flashStr_Enum_PeristalticPump[] PROGMEM = {"PeristalticPump"};
+            return flashStr_Enum_PeristalticPump;
+        } break;
+        case HStr_Enum_PhDownSolution: {
+            static const char flashStr_Enum_PhDownSolution[] PROGMEM = {"PhDownSolution"};
+            return flashStr_Enum_PhDownSolution;
+        } break;
+        case HStr_Enum_PhUpSolution: {
+            static const char flashStr_Enum_PhUpSolution[] PROGMEM = {"PhUpSolution"};
+            return flashStr_Enum_PhUpSolution;
+        } break;
+        case HStr_Enum_Potato: {
+            static const char flashStr_Enum_Potato[] PROGMEM = {"Potato"};
+            return flashStr_Enum_Potato;
+        } break;
+        case HStr_Enum_PotatoSweet: {
+            static const char flashStr_Enum_PotatoSweet[] PROGMEM = {"PotatoSweet"};
+            return flashStr_Enum_PotatoSweet;
+        } break;
+        case HStr_Enum_Power: {
+            static const char flashStr_Enum_Power[] PROGMEM = {"Power"};
+            return flashStr_Enum_Power;
+        } break;
+        case HStr_Enum_PowerUsageMeter: {
+            static const char flashStr_Enum_PowerUsageMeter[] PROGMEM = {"PowerUsage"};
+            return flashStr_Enum_PowerUsageMeter;
+        } break;
+        case HStr_Enum_Pumpkin: {
+            static const char flashStr_Enum_Pumpkin[] PROGMEM = {"Pumpkin"};
+            return flashStr_Enum_Pumpkin;
+        } break;
+        case HStr_Enum_Radish: {
+            static const char flashStr_Enum_Radish[] PROGMEM = {"Radish"};
+            return flashStr_Enum_Radish;
+        } break;
+        case HStr_Enum_Recycling: {
+            static const char flashStr_Enum_Recycling[] PROGMEM = {"Recycling"};
+            return flashStr_Enum_Recycling;
+        } break;
+        case HStr_Enum_Rhubarb: {
+            static const char flashStr_Enum_Rhubarb[] PROGMEM = {"Rhubarb"};
+            return flashStr_Enum_Rhubarb;
+        } break;
+        case HStr_Enum_Rockwool: {
+            static const char flashStr_Enum_Rockwool[] PROGMEM = {"Rockwool"};
+            return flashStr_Enum_Rockwool;
+        } break;
+        case HStr_Enum_Rosemary: {
+            static const char flashStr_Enum_Rosemary[] PROGMEM = {"Rosemary"};
+            return flashStr_Enum_Rosemary;
+        } break;
+        case HStr_Enum_RotaryEncoder: {
+            static const char flashStr_Enum_RotaryEncoder[] PROGMEM = {"RotaryEncoder"};
+            return flashStr_Enum_RotaryEncoder;
+        } break;
+        case HStr_Enum_Sage: {
+            static const char flashStr_Enum_Sage[] PROGMEM = {"Sage"};
+            return flashStr_Enum_Sage;
+        } break;
+        case HStr_Enum_Scientific: {
+            static const char flashStr_Enum_Scientific[] PROGMEM = {"Scientific"};
+            return flashStr_Enum_Scientific;
+        } break;
+        case HStr_Enum_Silverbeet: {
+            static const char flashStr_Enum_Silverbeet[] PROGMEM = {"Silverbeet"};
+            return flashStr_Enum_Silverbeet;
+        } break;
+        case HStr_Enum_SoilMoisture: {
+            static const char flashStr_Enum_SoilMoisture[] PROGMEM = {"SoilMoisture"};
+            return flashStr_Enum_SoilMoisture;
+        } break;
+        case HStr_Enum_Spinach: {
+            static const char flashStr_Enum_Spinach[] PROGMEM = {"Spinach"};
+            return flashStr_Enum_Spinach;
+        } break;
+        case HStr_Enum_Squash: {
+            static const char flashStr_Enum_Squash[] PROGMEM = {"Squash"};
+            return flashStr_Enum_Squash;
+        } break;
+        case HStr_Enum_Strawberries: {
+            static const char flashStr_Enum_Strawberries[] PROGMEM = {"Strawberries"};
+            return flashStr_Enum_Strawberries;
+        } break;
+        case HStr_Enum_Sunflower: {
+            static const char flashStr_Enum_Sunflower[] PROGMEM = {"Sunflower"};
+            return flashStr_Enum_Sunflower;
+        } break;
+        case HStr_Enum_SwissChard: {
+            static const char flashStr_Enum_SwissChard[] PROGMEM = {"SwissChard"};
+            return flashStr_Enum_SwissChard;
+        } break;
+        case HStr_Enum_Taro: {
+            static const char flashStr_Enum_Taro[] PROGMEM = {"Taro"};
+            return flashStr_Enum_Taro;
+        } break;
+        case HStr_Enum_Tarragon: {
+            static const char flashStr_Enum_Tarragon[] PROGMEM = {"Tarragon"};
+            return flashStr_Enum_Tarragon;
+        } break;
+        case HStr_Enum_Thyme: {
+            static const char flashStr_Enum_Thyme[] PROGMEM = {"Thyme"};
+            return flashStr_Enum_Thyme;
+        } break;
+        case HStr_Enum_Tomato: {
+            static const char flashStr_Enum_Tomato[] PROGMEM = {"Tomato"};
+            return flashStr_Enum_Tomato;
+        } break;
+        case HStr_Enum_Turnip: {
+            static const char flashStr_Enum_Turnip[] PROGMEM = {"Turnip"};
+            return flashStr_Enum_Turnip;
+        } break;
+        case HStr_Enum_WaterAerator: {
+            static const char flashStr_Enum_WaterAerator[] PROGMEM = {"WaterAerator"};
+            return flashStr_Enum_WaterAerator;
+        } break;
+        case HStr_Enum_WaterHeater: {
+            static const char flashStr_Enum_WaterHeater[] PROGMEM = {"WaterHeater"};
+            return flashStr_Enum_WaterHeater;
+        } break;
+        case HStr_Enum_WaterHeightMeter: {
+            static const char flashStr_Enum_WaterHeightMeter[] PROGMEM = {"WaterHeight"};
+            return flashStr_Enum_WaterHeightMeter;
+        } break;
+        case HStr_Enum_WaterLevelIndicator: {
+            static const char flashStr_Enum_WaterLevelIndicator[] PROGMEM = {"LevelIndicator"};
+            return flashStr_Enum_WaterLevelIndicator;
+        } break;
+        case HStr_Enum_WaterPH: {
+            static const char flashStr_Enum_WaterPH[] PROGMEM = {"WaterPH"};
+            return flashStr_Enum_WaterPH;
+        } break;
+        case HStr_Enum_WaterPump: {
+            static const char flashStr_Enum_WaterPump[] PROGMEM = {"WaterPump"};
+            return flashStr_Enum_WaterPump;
+        } break;
+        case HStr_Enum_WaterPumpFlowSensor: {
+            static const char flashStr_Enum_WaterPumpFlowSensor[] PROGMEM = {"PumpFlow"};
+            return flashStr_Enum_WaterPumpFlowSensor;
+        } break;
+        case HStr_Enum_WaterTDS: {
+            static const char flashStr_Enum_WaterTDS[] PROGMEM = {"WaterTDS"};
+            return flashStr_Enum_WaterTDS;
+        } break;
+        case HStr_Enum_WaterTemperature: {
+            static const char flashStr_Enum_WaterTemperature[] PROGMEM = {"WaterTemp"};
+            return flashStr_Enum_WaterTemperature;
+        } break;
+        case HStr_Enum_Watercress: {
+            static const char flashStr_Enum_Watercress[] PROGMEM = {"Watercress"};
+            return flashStr_Enum_Watercress;
+        } break;
+        case HStr_Enum_Watermelon: {
+            static const char flashStr_Enum_Watermelon[] PROGMEM = {"Watermelon"};
+            return flashStr_Enum_Watermelon;
+        } break;
+        case HStr_Enum_Weight: {
+            static const char flashStr_Enum_Weight[] PROGMEM = {"Weight"};
+            return flashStr_Enum_Weight;
+        } break;
+        case HStr_Enum_Zucchini: {
+            static const char flashStr_Enum_Zucchini[] PROGMEM = {"Zucchini"};
+            return flashStr_Enum_Zucchini;
+        } break;
+
+        case HStr_Unit_Amperage: {
+            static const char flashStr_Unit_Amperage[] PROGMEM = {"A"};
+            return flashStr_Unit_Amperage;
+        } break;
+        case HStr_Unit_Celsius: {
+            static const char flashStr_Unit_Celsius[] PROGMEM = {"°C"};
+            return flashStr_Unit_Celsius;
+        } break;
+        case HStr_Unit_Count: {
+            static const char flashStr_Unit_Count[] PROGMEM = {"qty"};
+            return flashStr_Unit_Count;
+        } break;
+        case HStr_Unit_EC: {
+            static const char flashStr_Unit_EC[] PROGMEM = {"EC"};
+            return flashStr_Unit_EC;
+        } break;
+        case HStr_Unit_Fahrenheit: {
+            static const char flashStr_Unit_Fahrenheit[] PROGMEM = {"°F"};
+            return flashStr_Unit_Fahrenheit;
+        } break;
+        case HStr_Unit_Feet: {
+            static const char flashStr_Unit_Feet[] PROGMEM = {"ft"};
+            return flashStr_Unit_Feet;
+        } break;
+        case HStr_Unit_Gallons: {
+            static const char flashStr_Unit_Gallons[] PROGMEM = {"gal"};
+            return flashStr_Unit_Gallons;
+        } break;
+        case HStr_Unit_GallonsPerMin: {
+            static const char flashStr_Unit_GallonsPerMin[] PROGMEM = {"gal/min"};
+            return flashStr_Unit_GallonsPerMin;
+        } break;
+        case HStr_Unit_JoulesPerSecond: {
+            static const char flashStr_Unit_JoulesPerSecond[] PROGMEM = {"J/s"};
+            return flashStr_Unit_JoulesPerSecond;
+        } break;
+        case HStr_Unit_Kelvin: {
+            static const char flashStr_Unit_Kelvin[] PROGMEM = {"°K"};
+            return flashStr_Unit_Kelvin;
+        } break;
+        case HStr_Unit_Kilogram: {
+            static const char flashStr_Unit_Kilogram[] PROGMEM = {"Kg"};
+            return flashStr_Unit_Kilogram;
+        } break;
+        case HStr_Unit_Liters: {
+            static const char flashStr_Unit_Liters[] PROGMEM = {"L"};
+            return flashStr_Unit_Liters;
+        } break;
+        case HStr_Unit_LitersPerMin: {
+            static const char flashStr_Unit_LitersPerMin[] PROGMEM = {"L/m"};
+            return flashStr_Unit_LitersPerMin;
+        } break;
+        case HStr_Unit_Meters: {
+            static const char flashStr_Unit_Meters[] PROGMEM = {"m"};
+            return flashStr_Unit_Meters;
+        } break;
+        case HStr_Unit_MilliLiterPerGallon: {
+            static const char flashStr_Unit_MilliLiterPerGallon[] PROGMEM = {"mL/gal"};
+            return flashStr_Unit_MilliLiterPerGallon;
+        } break;
+        case HStr_Unit_MilliLiterPerLiter: {
+            static const char flashStr_Unit_MilliLiterPerLiter[] PROGMEM = {"mL/L"};
+            return flashStr_Unit_MilliLiterPerLiter;
+        } break;
+        case HStr_Unit_MilliSiemensPerCentimeter: {
+            static const char flashStr_Unit_MilliSiemensPerCentimeter[] PROGMEM = {"mS/cm"};
+            return flashStr_Unit_MilliSiemensPerCentimeter;
+        } break;
+        case HStr_Unit_Percentile: {
+            static const char flashStr_Unit_Percentile[] PROGMEM = {"%"};
+            return flashStr_Unit_Percentile;
+        } break;
+        case HStr_Unit_pH: {
+            static const char flashStr_Unit_pH[] PROGMEM = {"pH"};
+            return flashStr_Unit_pH;
+        } break;
+        case HStr_Unit_PPM: {
+            static const char flashStr_Unit_PPM[] PROGMEM = {"ppm"};
+            return flashStr_Unit_PPM;
+        } break;
+        case HStr_Unit_PPM500: {
+            static const char flashStr_Unit_PPM500[] PROGMEM = {"ppm(500)"};
+            return flashStr_Unit_PPM500;
+        } break;
+        case HStr_Unit_PPM640: {
+            static const char flashStr_Unit_PPM640[] PROGMEM = {"ppm(640)"};
+            return flashStr_Unit_PPM640;
+        } break;
+        case HStr_Unit_PPM700: {
+            static const char flashStr_Unit_PPM700[] PROGMEM = {"ppm(700)"};
+            return flashStr_Unit_PPM700;
+        } break;
+        case HStr_Unit_Pounds: {
+            static const char flashStr_Unit_Pounds[] PROGMEM = {"lbs"};
+            return flashStr_Unit_Pounds;
+        } break;
+        case HStr_Unit_TDS: {
+            static const char flashStr_Unit_TDS[] PROGMEM = {"TDS"};
+            return flashStr_Unit_TDS;
+        } break;
+        case HStr_Unit_Undefined: {
+            static const char flashStr_Unit_Undefined[] PROGMEM = {"undef"};
+            return flashStr_Unit_Undefined;
+        } break;
+        case HStr_Unit_Wattage: {
+            static const char flashStr_Unit_Wattage[] PROGMEM = {"W"};
+            return flashStr_Unit_Wattage;
         } break;
 
         default:

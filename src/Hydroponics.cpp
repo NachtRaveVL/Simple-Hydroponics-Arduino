@@ -78,7 +78,7 @@ Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sd
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
       _systemData(nullptr), _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0),
-      _sysConfigFile(F("hydruino.cfg")), _sysDataAddress(-1)
+      _sysConfigFile(SFP(HStr_Default_ConfigFile)), _sysDataAddress(-1)
 {
     _activeInstance = this;
 }
@@ -1160,7 +1160,7 @@ RTC_DS3231 *Hydroponics::getRealTimeClock(bool begin)
             bool rtcBattFailBefore = _rtcBattFail;
             _rtcBattFail = _rtc->lostPower();
             if (_rtcBattFail && !rtcBattFailBefore) {
-                logger.logWarning(F("RTC battery failure, time needs reset."));
+                logger.logWarning(SFP(HStr_Log_RTCBatteryFailure));
             }
         } else {
             deallocateRTC();

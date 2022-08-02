@@ -1135,9 +1135,9 @@ String systemModeToString(Hydroponics_SystemMode systemMode, bool excludeSpecial
 {
     switch (systemMode) {
         case Hydroponics_SystemMode_Recycling:
-            return F("Recycling");
+            return SFP(HStr_Enum_Recycling);
         case Hydroponics_SystemMode_DrainToWaste:
-            return F("DrainToWaste");
+            return SFP(HStr_Enum_DrainToWaste);
         case Hydroponics_SystemMode_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_SystemMode_Undefined:
@@ -1150,11 +1150,11 @@ String measurementModeToString(Hydroponics_MeasurementMode measurementMode, bool
 {
     switch (measurementMode) {
         case Hydroponics_MeasurementMode_Imperial:
-            return F("Imperial");
+            return SFP(HStr_Enum_Imperial);
         case Hydroponics_MeasurementMode_Metric:
-            return F("Metric");
+            return SFP(HStr_Enum_Metric);
         case Hydroponics_MeasurementMode_Scientific:
-            return F("Scientific");
+            return SFP(HStr_Enum_Scientific);
         case Hydroponics_MeasurementMode_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_MeasurementMode_Undefined:
@@ -1169,13 +1169,13 @@ String displayOutputModeToString(Hydroponics_DisplayOutputMode displayOutMode, b
         case Hydroponics_DisplayOutputMode_Disabled:
             return SFP(HStr_Disabled);
         case Hydroponics_DisplayOutputMode_20x4LCD:
-            return F("20x4LCD");
+            return SFP(HStr_Enum_20x4LCD);
         case Hydroponics_DisplayOutputMode_20x4LCD_Swapped:
-            return F("20x4LCDSwapped");
+            return SFP(HStr_Enum_20x4LCDSwapped);
         case Hydroponics_DisplayOutputMode_16x2LCD:
-            return F("16x2LCD");
+            return SFP(HStr_Enum_16x2LCD);
         case Hydroponics_DisplayOutputMode_16x2LCD_Swapped:
-            return F("16x2LCDSwapped");
+            return SFP(HStr_Enum_16x2LCDSwapped);
         case Hydroponics_DisplayOutputMode_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_DisplayOutputMode_Undefined:
@@ -1190,13 +1190,13 @@ String controlInputModeToString(Hydroponics_ControlInputMode controlInMode, bool
         case Hydroponics_ControlInputMode_Disabled:
             return SFP(HStr_Disabled);
         case Hydroponics_ControlInputMode_2x2Matrix:
-            return F("2x2Matrix");
+            return SFP(HStr_Enum_2x2Matrix);
         case Hydroponics_ControlInputMode_4xButton:
-            return F("4xButton");
+            return SFP(HStr_Enum_4xButton);
         case Hydroponics_ControlInputMode_6xButton:
-            return F("6xButton");
+            return SFP(HStr_Enum_6xButton);
         case Hydroponics_ControlInputMode_RotaryEncoder:
-            return F("RotaryEncoder");
+            return SFP(HStr_Enum_RotaryEncoder);
         case Hydroponics_ControlInputMode_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_ControlInputMode_Undefined:
@@ -1234,17 +1234,17 @@ String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeS
 {
     switch (actuatorType) {
         case Hydroponics_ActuatorType_GrowLights:
-            return F("GrowLights");
+            return SFP(HStr_Enum_GrowLights);
         case Hydroponics_ActuatorType_WaterPump:
-            return F("WaterPump");
+            return SFP(HStr_Enum_WaterPump);
         case Hydroponics_ActuatorType_PeristalticPump:
-            return F("PeristalticPump");
+            return SFP(HStr_Enum_PeristalticPump);
         case Hydroponics_ActuatorType_WaterHeater:
-            return F("WaterHeater");
+            return SFP(HStr_Enum_WaterHeater);
         case Hydroponics_ActuatorType_WaterAerator:
-            return F("WaterAerator");
+            return SFP(HStr_Enum_WaterAerator);
         case Hydroponics_ActuatorType_FanExhaust:
-            return F("FanExhaust");
+            return SFP(HStr_Enum_FanExhaust);
         case Hydroponics_ActuatorType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_ActuatorType_Undefined:
@@ -1257,25 +1257,25 @@ String sensorTypeToString(Hydroponics_SensorType sensorType, bool excludeSpecial
 {
     switch (sensorType) {
         case Hydroponics_SensorType_PotentialHydrogen:
-            return F("WaterPH");
+            return SFP(HStr_Enum_WaterPH);
         case Hydroponics_SensorType_TotalDissolvedSolids:
-            return F("WaterTDS");
+            return SFP(HStr_Enum_WaterTDS);
         case Hydroponics_SensorType_SoilMoisture:
-            return F("SoilMoisture");
+            return SFP(HStr_Enum_SoilMoisture);
         case Hydroponics_SensorType_WaterTemperature:
-            return F("WaterTemp");
+            return SFP(HStr_Enum_WaterTemperature);
         case Hydroponics_SensorType_WaterPumpFlowSensor:
-            return F("PumpFlow");
+            return SFP(HStr_Enum_WaterPumpFlowSensor);
         case Hydroponics_SensorType_WaterLevelIndicator:
-            return F("LevelIndicator");
+            return SFP(HStr_Enum_WaterLevelIndicator);
         case Hydroponics_SensorType_WaterHeightMeter:
-            return F("WaterHeight");
+            return SFP(HStr_Enum_WaterHeightMeter);
         case Hydroponics_SensorType_AirTempHumidity:
-            return F("AirTempHumid");
+            return SFP(HStr_Enum_AirTemperatureHumidity);
         case Hydroponics_SensorType_AirCarbonDioxide:
-            return F("AirCO2");
+            return SFP(HStr_Enum_AirCarbonDioxide);
         case Hydroponics_SensorType_PowerUsageMeter:
-            return F("PowerUsage");
+            return SFP(HStr_Enum_PowerUsageMeter);
         case Hydroponics_SensorType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_SensorType_Undefined:
@@ -1288,175 +1288,175 @@ String cropTypeToString(Hydroponics_CropType cropType, bool excludeSpecial)
 {
     switch (cropType) {
         case Hydroponics_CropType_AloeVera:
-            return F("AloeVera");
+            return SFP(HStr_Enum_AloeVera);
         case Hydroponics_CropType_Anise:
-            return F("Anise");
+            return SFP(HStr_Enum_Anise);
         case Hydroponics_CropType_Artichoke:
-            return F("Artichoke");
+            return SFP(HStr_Enum_Artichoke);
         case Hydroponics_CropType_Arugula:
-            return F("Arugula");
+            return SFP(HStr_Enum_Arugula);
         case Hydroponics_CropType_Asparagus:
-            return F("Asparagus");
+            return SFP(HStr_Enum_Asparagus);
         case Hydroponics_CropType_Basil:
-            return F("Basil");
+            return SFP(HStr_Enum_Basil);
         case Hydroponics_CropType_Bean:
-            return F("Bean");
+            return SFP(HStr_Enum_Bean);
         case Hydroponics_CropType_BeanBroad:
-            return F("BeanBroad");
+            return SFP(HStr_Enum_BeanBroad);
         case Hydroponics_CropType_Beetroot:
-            return F("Beetroot");
+            return SFP(HStr_Enum_Beetroot);
         case Hydroponics_CropType_BlackCurrant:
-            return F("BlackCurrant");
+            return SFP(HStr_Enum_BlackCurrant);
         case Hydroponics_CropType_Blueberry:
-            return F("Blueberry");
+            return SFP(HStr_Enum_Blueberry);
         case Hydroponics_CropType_BokChoi:
-            return F("BokChoi");
+            return SFP(HStr_Enum_BokChoi);
         case Hydroponics_CropType_Broccoli:
-            return F("Broccoli");
+            return SFP(HStr_Enum_Broccoli);
         case Hydroponics_CropType_BrusselsSprout:
-            return F("BrusselsSprout");
+            return SFP(HStr_Enum_BrusselsSprout);
         case Hydroponics_CropType_Cabbage:
-            return F("Cabbage");
+            return SFP(HStr_Enum_Cabbage);
         case Hydroponics_CropType_Cannabis:
-            return F("Cannabis");
+            return SFP(HStr_Enum_Cannabis);
         case Hydroponics_CropType_Capsicum:
-            return F("Capsicum");
+            return SFP(HStr_Enum_Capsicum);
         case Hydroponics_CropType_Carrots:
-            return F("Carrots");
+            return SFP(HStr_Enum_Carrots);
         case Hydroponics_CropType_Catnip:
-            return F("Catnip");
+            return SFP(HStr_Enum_Catnip);
         case Hydroponics_CropType_Cauliflower:
-            return F("Cauliflower");
+            return SFP(HStr_Enum_Cauliflower);
         case Hydroponics_CropType_Celery:
-            return F("Celery");
+            return SFP(HStr_Enum_Celery);
         case Hydroponics_CropType_Chamomile:
-            return F("Chamomile");
+            return SFP(HStr_Enum_Chamomile);
         case Hydroponics_CropType_Chicory:
-            return F("Chicory");
+            return SFP(HStr_Enum_Chicory);
         case Hydroponics_CropType_Chives:
-            return F("Chives");
+            return SFP(HStr_Enum_Chives);
         case Hydroponics_CropType_Cilantro:
-            return F("Cilantro");
+            return SFP(HStr_Enum_Cilantro);
         case Hydroponics_CropType_Coriander:
-            return F("Coriander");
+            return SFP(HStr_Enum_Coriander);
         case Hydroponics_CropType_CornSweet:
-            return F("CornSweet");
+            return SFP(HStr_Enum_CornSweet);
         case Hydroponics_CropType_Cucumber:
-            return F("Cucumber");
+            return SFP(HStr_Enum_Cucumber);
         case Hydroponics_CropType_Dill:
-            return F("Dill");
+            return SFP(HStr_Enum_Dill);
         case Hydroponics_CropType_Eggplant:
-            return F("Eggplant");
+            return SFP(HStr_Enum_Eggplant);
         case Hydroponics_CropType_Endive:
-            return F("Endive");
+            return SFP(HStr_Enum_Endive);
         case Hydroponics_CropType_Fennel:
-            return F("Fennel");
+            return SFP(HStr_Enum_Fennel);
         case Hydroponics_CropType_Fodder:
-            return F("Fodder");
+            return SFP(HStr_Enum_Fodder);
         case Hydroponics_CropType_Flowers:
-            return F("Flowers");
+            return SFP(HStr_Enum_Flowers);
         case Hydroponics_CropType_Garlic:
-            return F("Garlic");
+            return SFP(HStr_Enum_Garlic);
         case Hydroponics_CropType_Ginger:
-            return F("Ginger");
+            return SFP(HStr_Enum_Ginger);
         case Hydroponics_CropType_Kale:
-            return F("Kale");
+            return SFP(HStr_Enum_Kale);
         case Hydroponics_CropType_Lavender:
-            return F("Lavender");
+            return SFP(HStr_Enum_Lavender);
         case Hydroponics_CropType_Leek:
-            return F("Leek");
+            return SFP(HStr_Enum_Leek);
         case Hydroponics_CropType_LemonBalm:
-            return F("LemonBalm");
+            return SFP(HStr_Enum_LemonBalm);
         case Hydroponics_CropType_Lettuce:
-            return F("Lettuce");
+            return SFP(HStr_Enum_Lettuce);
         case Hydroponics_CropType_Marrow:
-            return F("Marrow");
+            return SFP(HStr_Enum_Marrow);
         case Hydroponics_CropType_Melon:
-            return F("Melon");
+            return SFP(HStr_Enum_Melon);
         case Hydroponics_CropType_Mint:
-            return F("Mint");
+            return SFP(HStr_Enum_Mint);
         case Hydroponics_CropType_MustardCress:
-            return F("MustardCress");
+            return SFP(HStr_Enum_MustardCress);
         case Hydroponics_CropType_Okra:
-            return F("Okra");
+            return SFP(HStr_Enum_Okra);
         case Hydroponics_CropType_Onions:
-            return F("Onions");
+            return SFP(HStr_Enum_Onions);
         case Hydroponics_CropType_Oregano:
-            return F("Oregano");
+            return SFP(HStr_Enum_Oregano);
         case Hydroponics_CropType_PakChoi:
-            return F("PakChoi");
+            return SFP(HStr_Enum_PakChoi);
         case Hydroponics_CropType_Parsley:
-            return F("Parsley");
+            return SFP(HStr_Enum_Parsley);
         case Hydroponics_CropType_Parsnip:
-            return F("Parsnip");
+            return SFP(HStr_Enum_Parsnip);
         case Hydroponics_CropType_Pea:
-            return F("Pea");
+            return SFP(HStr_Enum_Pea);
         case Hydroponics_CropType_PeaSugar:
-            return F("PeaSugar");
+            return SFP(HStr_Enum_PeaSugar);
         case Hydroponics_CropType_Pepino:
-            return F("Pepino");
+            return SFP(HStr_Enum_Pepino);
         case Hydroponics_CropType_PeppersBell:
-            return F("PeppersBell");
+            return SFP(HStr_Enum_PeppersBell);
         case Hydroponics_CropType_PeppersHot:
-            return F("PeppersHot");
+            return SFP(HStr_Enum_PeppersHot);
         case Hydroponics_CropType_Potato:
-            return F("Potato");
+            return SFP(HStr_Enum_Potato);
         case Hydroponics_CropType_PotatoSweet:
-            return F("PotatoSweet");
+            return SFP(HStr_Enum_PotatoSweet);
         case Hydroponics_CropType_Pumpkin:
-            return F("Pumpkin");
+            return SFP(HStr_Enum_Pumpkin);
         case Hydroponics_CropType_Radish:
-            return F("Radish");
+            return SFP(HStr_Enum_Radish);
         case Hydroponics_CropType_Rhubarb:
-            return F("Rhubarb");
+            return SFP(HStr_Enum_Rhubarb);
         case Hydroponics_CropType_Rosemary:
-            return F("Rosemary");
+            return SFP(HStr_Enum_Rosemary);
         case Hydroponics_CropType_Sage:
-            return F("Sage");
+            return SFP(HStr_Enum_Sage);
         case Hydroponics_CropType_Silverbeet:
-            return F("Silverbeet");
+            return SFP(HStr_Enum_Silverbeet);
         case Hydroponics_CropType_Spinach:
-            return F("Spinach");
+            return SFP(HStr_Enum_Spinach);
         case Hydroponics_CropType_Squash:
-            return F("Squash");
+            return SFP(HStr_Enum_Squash);
         case Hydroponics_CropType_Sunflower:
-            return F("Sunflower");
+            return SFP(HStr_Enum_Sunflower);
         case Hydroponics_CropType_Strawberries:
-            return F("Strawberries");
+            return SFP(HStr_Enum_Strawberries);
         case Hydroponics_CropType_SwissChard:
-            return F("SwissChard");
+            return SFP(HStr_Enum_SwissChard);
         case Hydroponics_CropType_Taro:
-            return F("Taro");
+            return SFP(HStr_Enum_Taro);
         case Hydroponics_CropType_Tarragon:
-            return F("Tarragon");
+            return SFP(HStr_Enum_Tarragon);
         case Hydroponics_CropType_Thyme:
-            return F("Thyme");
+            return SFP(HStr_Enum_Thyme);
         case Hydroponics_CropType_Tomato:
-            return F("Tomato");
+            return SFP(HStr_Enum_Tomato);
         case Hydroponics_CropType_Turnip:
-            return F("Turnip");
+            return SFP(HStr_Enum_Turnip);
         case Hydroponics_CropType_Watercress:
-            return F("Watercress");
+            return SFP(HStr_Enum_Watercress);
         case Hydroponics_CropType_Watermelon:
-            return F("Watermelon");
+            return SFP(HStr_Enum_Watermelon);
         case Hydroponics_CropType_Zucchini:
-            return F("Zucchini");
+            return SFP(HStr_Enum_Zucchini);
         case Hydroponics_CropType_CustomCrop1:
-            return F("CustomCrop1");
+            return SFP(HStr_Enum_CustomCrop1);
         case Hydroponics_CropType_CustomCrop2:
-            return F("CustomCrop2");
+            return SFP(HStr_Enum_CustomCrop2);
         case Hydroponics_CropType_CustomCrop3:
-            return F("CustomCrop3");
+            return SFP(HStr_Enum_CustomCrop3);
         case Hydroponics_CropType_CustomCrop4:
-            return F("CustomCrop4");
+            return SFP(HStr_Enum_CustomCrop4);
         case Hydroponics_CropType_CustomCrop5:
-            return F("CustomCrop5");
+            return SFP(HStr_Enum_CustomCrop5);
         case Hydroponics_CropType_CustomCrop6:
-            return F("CustomCrop6");
+            return SFP(HStr_Enum_CustomCrop6);
         case Hydroponics_CropType_CustomCrop7:
-            return F("CustomCrop7");
+            return SFP(HStr_Enum_CustomCrop7);
         case Hydroponics_CropType_CustomCrop8:
-            return F("CustomCrop8");
+            return SFP(HStr_Enum_CustomCrop8);
         case Hydroponics_CropType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_CropType_Undefined:
@@ -1469,11 +1469,11 @@ String substrateTypeToString(Hydroponics_SubstrateType substrateType, bool exclu
 {
     switch (substrateType) {
         case Hydroponics_SubstrateType_ClayPebbles:
-            return F("ClayPebbles");
+            return SFP(HStr_Enum_ClayPebbles);
         case Hydroponics_SubstrateType_CoconutCoir:
-            return F("CoconutCoir");
+            return SFP(HStr_Enum_CoconutCoir);
         case Hydroponics_SubstrateType_Rockwool:
-            return F("Rockwool");
+            return SFP(HStr_Enum_Rockwool);
         case Hydroponics_SubstrateType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_SubstrateType_Undefined:
@@ -1486,49 +1486,49 @@ String reservoirTypeToString(Hydroponics_ReservoirType reservoirType, bool exclu
 {
     switch (reservoirType) {
         case Hydroponics_ReservoirType_FeedWater:
-            return F("FeedWater");
+            return SFP(HStr_Enum_FeedWater);
         case Hydroponics_ReservoirType_DrainageWater:
-            return F("DrainageWater");
+            return SFP(HStr_Enum_DrainageWater);
         case Hydroponics_ReservoirType_NutrientPremix:
-            return F("NutrientPremix");
+            return SFP(HStr_Enum_NutrientPremix);
         case Hydroponics_ReservoirType_FreshWater:
-            return F("FreshWater");
+            return SFP(HStr_Enum_FreshWater);
         case Hydroponics_ReservoirType_PhUpSolution:
-            return F("phUpSolution");
+            return SFP(HStr_Enum_PhUpSolution);
         case Hydroponics_ReservoirType_PhDownSolution:
-            return F("pHDownSolution");
+            return SFP(HStr_Enum_PhDownSolution);
         case Hydroponics_ReservoirType_CustomAdditive1:
-            return F("CustomAdditive1");
+            return SFP(HStr_Enum_CustomAdditive1);
         case Hydroponics_ReservoirType_CustomAdditive2:
-            return F("CustomAdditive2");
+            return SFP(HStr_Enum_CustomAdditive2);
         case Hydroponics_ReservoirType_CustomAdditive3:
-            return F("CustomAdditive3");
+            return SFP(HStr_Enum_CustomAdditive3);
         case Hydroponics_ReservoirType_CustomAdditive4:
-            return F("CustomAdditive4");
+            return SFP(HStr_Enum_CustomAdditive4);
         case Hydroponics_ReservoirType_CustomAdditive5:
-            return F("CustomAdditive5");
+            return SFP(HStr_Enum_CustomAdditive5);
         case Hydroponics_ReservoirType_CustomAdditive6:
-            return F("CustomAdditive6");
+            return SFP(HStr_Enum_CustomAdditive6);
         case Hydroponics_ReservoirType_CustomAdditive7:
-            return F("CustomAdditive7");
+            return SFP(HStr_Enum_CustomAdditive7);
         case Hydroponics_ReservoirType_CustomAdditive8:
-            return F("CustomAdditive8");
+            return SFP(HStr_Enum_CustomAdditive8);
         case Hydroponics_ReservoirType_CustomAdditive9:
-            return F("CustomAdditive9");
+            return SFP(HStr_Enum_CustomAdditive9);
         case Hydroponics_ReservoirType_CustomAdditive10:
-            return F("CustomAdditive10");
+            return SFP(HStr_Enum_CustomAdditive10);
         case Hydroponics_ReservoirType_CustomAdditive11:
-            return F("CustomAdditive11");
+            return SFP(HStr_Enum_CustomAdditive11);
         case Hydroponics_ReservoirType_CustomAdditive12:
-            return F("CustomAdditive12");
+            return SFP(HStr_Enum_CustomAdditive12);
         case Hydroponics_ReservoirType_CustomAdditive13:
-            return F("CustomAdditive13");
+            return SFP(HStr_Enum_CustomAdditive13);
         case Hydroponics_ReservoirType_CustomAdditive14:
-            return F("CustomAdditive14");
+            return SFP(HStr_Enum_CustomAdditive14);
         case Hydroponics_ReservoirType_CustomAdditive15:
-            return F("CustomAdditive15");
+            return SFP(HStr_Enum_CustomAdditive15);
         case Hydroponics_ReservoirType_CustomAdditive16:
-            return F("CustomAdditive16");
+            return SFP(HStr_Enum_CustomAdditive16);
         case Hydroponics_ReservoirType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_ReservoirType_Undefined:
@@ -1557,13 +1557,13 @@ String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial)
 {
     switch (railType) {
         case Hydroponics_RailType_AC110V:
-            return F("AC110V");
+            return SFP(HStr_Enum_AC110V);
         case Hydroponics_RailType_AC220V:
-            return F("AC220V");
+            return SFP(HStr_Enum_AC220V);
         case Hydroponics_RailType_DC5V:
-            return F("DC5V");
+            return SFP(HStr_Enum_DC5V);
         case Hydroponics_RailType_DC12V:
-            return F("DC12V");
+            return SFP(HStr_Enum_DC12V);
         case Hydroponics_ReservoirType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_ReservoirType_Undefined:
@@ -1576,33 +1576,33 @@ String unitsCategoryToString(Hydroponics_UnitsCategory unitsCategory, bool exclu
 {
     switch (unitsCategory) {
         case Hydroponics_UnitsCategory_Alkalinity:
-            return F("Alkalinity");
+            return SFP(HStr_Enum_Alkalinity);
         case Hydroponics_UnitsCategory_DissolvedSolids:
-            return F("DissolvedSolids");
+            return SFP(HStr_Enum_DissolvedSolids);
         case Hydroponics_UnitsCategory_SoilMoisture:
-            return F("SoilMoisture");
+            return SFP(HStr_Enum_SoilMoisture);
         case Hydroponics_UnitsCategory_LiqTemperature:
-            return F("LiqTemperature");
+            return SFP(HStr_Enum_LiqTemperature);
         case Hydroponics_UnitsCategory_LiqVolume:
-            return F("LiqVolume");
+            return SFP(HStr_Enum_LiqVolume);
         case Hydroponics_UnitsCategory_LiqFlowRate:
-            return F("LiqFlowRate");
+            return SFP(HStr_Enum_LiqFlowRate);
         case Hydroponics_UnitsCategory_LiqDilution:
-            return F("LiqDilution");
+            return SFP(HStr_Enum_LiqDilution);
         case Hydroponics_UnitsCategory_AirTemperature:
-            return F("AirTemperature");
+            return SFP(HStr_Enum_AirTemperature);
         case Hydroponics_UnitsCategory_AirHumidity:
-            return F("AirHumidity");
+            return SFP(HStr_Enum_AirHumidity);
         case Hydroponics_UnitsCategory_AirHeatIndex:
-            return F("AirHeatIndex");
+            return SFP(HStr_Enum_AirHeatIndex);
         case Hydroponics_UnitsCategory_AirConcentration:
-            return F("AirConcentration");
+            return SFP(HStr_Enum_AirConcentration);
         case Hydroponics_UnitsCategory_Distance:
-            return F("Distance");
+            return SFP(HStr_Enum_Distance);
         case Hydroponics_UnitsCategory_Weight:
-            return F("Weight");
+            return SFP(HStr_Enum_Weight);
         case Hydroponics_UnitsCategory_Power:
-            return F("Power");
+            return SFP(HStr_Enum_Power);
         case Hydroponics_UnitsCategory_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydroponics_UnitsCategory_Undefined:
@@ -1615,55 +1615,55 @@ String unitsTypeToSymbol(Hydroponics_UnitsType unitsType, bool excludeSpecial)
 {
     switch (unitsType) {
         case Hydroponics_UnitsType_Raw_0_1:
-            return F("raw");
+            return SFP(HStr_raw);
         case Hydroponics_UnitsType_Percentile_0_100:
-            return F("%");
+            return SFP(HStr_Unit_Percentile);
         case Hydroponics_UnitsType_Alkalinity_pH_0_14:
-            return !excludeSpecial ? F("pH") : String(); // technically unitless
+            return !excludeSpecial ? SFP(HStr_Unit_pH) : String(); // technically unitless
         case Hydroponics_UnitsType_Concentration_EC:
-            return F("EC"); // alt: mS/cm, TDS
+            return SFP(HStr_Unit_EC); // alt: mS/cm, TDS
         case Hydroponics_UnitsType_Temperature_Celsius:
-            return F("°C");
+            return SFP(HStr_Unit_Celsius);
         case Hydroponics_UnitsType_Temperature_Fahrenheit:
-            return F("°F");
+            return SFP(HStr_Unit_Fahrenheit);
         case Hydroponics_UnitsType_Temperature_Kelvin:
-            return F("°K");
+            return SFP(HStr_Unit_Kelvin);
         case Hydroponics_UnitsType_LiqVolume_Liters:
-            return F("L");
+            return SFP(HStr_Unit_Liters);
         case Hydroponics_UnitsType_LiqVolume_Gallons:
-            return F("gal");
+            return SFP(HStr_Unit_Gallons);
         case Hydroponics_UnitsType_LiqFlowRate_LitersPerMin:
-            return F("L/min");
+            return SFP(HStr_Unit_LitersPerMin);
         case Hydroponics_UnitsType_LiqFlowRate_GallonsPerMin:
-            return F("gal/min");
+            return SFP(HStr_Unit_GallonsPerMin);
         case Hydroponics_UnitsType_LiqDilution_MilliLiterPerLiter:
-            return F("mL/L");
+            return SFP(HStr_Unit_MilliLiterPerLiter);
         case Hydroponics_UnitsType_LiqDilution_MilliLiterPerGallon:
-            return F("mL/gal");
+            return SFP(HStr_Unit_MilliLiterPerGallon);
         case Hydroponics_UnitsType_Concentration_PPM:
-            return F("ppm");
+            return SFP(HStr_Unit_PPM500);
         case Hydroponics_UnitsType_Concentration_PPM640:
-            return F("ppm(640)");
+            return SFP(HStr_Unit_PPM640);
         case Hydroponics_UnitsType_Concentration_PPM700:
-            return F("ppm(700)");
+            return SFP(HStr_Unit_PPM700);
         case Hydroponics_UnitsType_Distance_Meters:
-            return F("m");
+            return SFP(HStr_Unit_Meters);
         case Hydroponics_UnitsType_Distance_Feet:
-            return F("ft");
+            return SFP(HStr_Unit_Feet);
         case Hydroponics_UnitsType_Weight_Kilogram:
-            return F("Kg");
+            return SFP(HStr_Unit_Kilogram);
         case Hydroponics_UnitsType_Weight_Pounds:
-            return F("lbs");
+            return SFP(HStr_Unit_Pounds);
         case Hydroponics_UnitsType_Power_Wattage:
-            return F("W"); // alt: J/s
+            return SFP(HStr_Unit_Wattage); // alt: J/s
         case Hydroponics_UnitsType_Power_Amperage:
-            return F("A");
+            return SFP(HStr_Unit_Amperage);
         case Hydroponics_UnitsType_Count:
-            return !excludeSpecial ? F("qty") : String();
+            return !excludeSpecial ? SFP(HStr_Unit_Count) : String();
         case Hydroponics_UnitsType_Undefined:
             break;
     }
-    return !excludeSpecial ? F("undef") : String();
+    return !excludeSpecial ? SFP(HStr_Unit_Undefined) : String();
 }
 
 String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool excludeSpecial)
@@ -1786,8 +1786,9 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             return (Hydroponics_UnitsType)typeIndex;
         }
     }
-    if (unitsSymbolStr.equals(F("J/s"))) { return Hydroponics_UnitsType_Power_Wattage; }
-    if (unitsSymbolStr.equalsIgnoreCase(F("mS/cm")) || unitsSymbolStr.equalsIgnoreCase(F("TDS"))) { return Hydroponics_UnitsType_Concentration_TDS; }
+    if (unitsSymbolStr.equals(SFP(HStr_Unit_JoulesPerSecond))) { return Hydroponics_UnitsType_Power_Wattage; }
+    if (unitsSymbolStr.equalsIgnoreCase(SFP(HStr_Unit_MilliSiemensPerCentimeter)) ||
+        unitsSymbolStr.equalsIgnoreCase(SFP(HStr_Unit_TDS))) { return Hydroponics_UnitsType_Concentration_TDS; }
     return Hydroponics_UnitsType_Undefined;
 }
 

@@ -127,14 +127,15 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     inline void setFromScale(float scale) { setFromRange(0.0, scale); }
 };
 
-enum HydroponicsCropsLibData_Flag : unsigned short {
-    HydroponicsCropsLibData_Flag_Invasive =  0x01,              // Flag indicating plant is invasive and will take over other plants (default: false)
-    HydroponicsCropsLibData_Flag_Viner =     0x02,              // Flag indicating plant is a viner and will require a stick for support (default: false)
-    HydroponicsCropsLibData_Flag_Large =     0x04,              // Flag indicating plant grows large and will require proper support (default: false)
-    HydroponicsCropsLibData_Flag_Perennial = 0x08,              // Flag indicating plant grows back year after year (default: false)
-    HydroponicsCropsLibData_Flag_Toxic =     0x10,              // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
-    HydroponicsCropsLibData_Flag_Pruning =   0x20,              // Flag indicating plant benefits from active pruning (default: false)
-    HydroponicsCropsLibData_Flag_Spraying =  0x40               // Flag indicating plant benefits from spraying in the morning (default: false)
+// Crops Data Flags
+enum Hydroponics_CropsDataFlag : unsigned short {
+    Hydroponics_CropsDataFlag_Invasive =  0x01,             // Flag indicating plant is invasive and will take over other plants (default: false)
+    Hydroponics_CropsDataFlag_Viner =     0x02,             // Flag indicating plant is a viner and will require a stick for support (default: false)
+    Hydroponics_CropsDataFlag_Large =     0x04,             // Flag indicating plant grows large and will require proper support (default: false)
+    Hydroponics_CropsDataFlag_Perennial = 0x08,             // Flag indicating plant grows back year after year (default: false)
+    Hydroponics_CropsDataFlag_Toxic =     0x10,             // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
+    Hydroponics_CropsDataFlag_Pruning =   0x20,             // Flag indicating plant benefits from active pruning (default: false)
+    Hydroponics_CropsDataFlag_Spraying =  0x40              // Flag indicating plant benefits from spraying in the morning (default: false)
 };
 
 // Crops Library Data
@@ -159,13 +160,13 @@ struct HydroponicsCropsLibData : public HydroponicsData {
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 
-    inline bool isInvasive() const { return flags & HydroponicsCropsLibData_Flag_Invasive; }
-    inline bool isViner() const { return flags & HydroponicsCropsLibData_Flag_Viner; }
-    inline bool isLarge() const { return flags & HydroponicsCropsLibData_Flag_Large; }
-    inline bool isPerennial() const { return flags & HydroponicsCropsLibData_Flag_Perennial; }
-    inline bool isToxicToPets() const { return flags & HydroponicsCropsLibData_Flag_Toxic; }
-    inline bool needsPrunning() const { return flags & HydroponicsCropsLibData_Flag_Pruning; }
-    inline bool needsSpraying() const { return flags & HydroponicsCropsLibData_Flag_Spraying; }
+    inline bool isInvasive() const { return flags & Hydroponics_CropsDataFlag_Invasive; }
+    inline bool isViner() const { return flags & Hydroponics_CropsDataFlag_Viner; }
+    inline bool isLarge() const { return flags & Hydroponics_CropsDataFlag_Large; }
+    inline bool isPerennial() const { return flags & Hydroponics_CropsDataFlag_Perennial; }
+    inline bool isToxicToPets() const { return flags & Hydroponics_CropsDataFlag_Toxic; }
+    inline bool needsPrunning() const { return flags & Hydroponics_CropsDataFlag_Pruning; }
+    inline bool needsSpraying() const { return flags & Hydroponics_CropsDataFlag_Spraying; }
 };
 
 
