@@ -101,15 +101,14 @@ HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
 }
 
 HydroponicsSystemData::HydroponicsSystemData()
-    : HydroponicsData("HSYS", 1),
+    : HydroponicsData(SFP(HStr_DataName_HSYS).c_str(), 1),
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
       systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL), autosaveEnabled(Hydroponics_Autosave_Disabled), autosaveInterval(HYDRUINO_SYS_AUTOSAVE_INTERVAL),
       wifiSSID{0}, wifiPassword{0}, wifiPasswordSeed(0)
 {
     _size = sizeof(*this);
-    String defaultSysStr(F("Hydruino"));
-    strncpy(systemName, defaultSysStr.c_str(), HYDRUINO_NAME_MAXSIZE);
+    strncpy(systemName, SFP(HStr_Default_SystemName).c_str(), HYDRUINO_NAME_MAXSIZE);
 }
 
 void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
@@ -182,7 +181,7 @@ void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
 
 
 HydroponicsCalibrationData::HydroponicsCalibrationData()
-    : HydroponicsData("HCAL", 1),
+    : HydroponicsData(SFP(HStr_DataName_HCAL).c_str(), 1),
       sensorName{0}, calibUnits(Hydroponics_UnitsType_Undefined),
       multiplier(1.0f), offset(0.0f)
 {
@@ -190,7 +189,7 @@ HydroponicsCalibrationData::HydroponicsCalibrationData()
 }
 
 HydroponicsCalibrationData::HydroponicsCalibrationData(HydroponicsIdentity sensorId, Hydroponics_UnitsType calibUnitsIn)
-    : HydroponicsData("HCAL", 1),
+    : HydroponicsData(SFP(HStr_DataName_HCAL).c_str(), 1),
       sensorName{0}, calibUnits(calibUnitsIn),
       multiplier(1.0f), offset(0.0f)
 {
@@ -236,7 +235,7 @@ void HydroponicsCalibrationData::setFromTwoPoints(float point1MeasuredAt, float 
 
 
 HydroponicsCropsLibData::HydroponicsCropsLibData()
-    : HydroponicsData("HCLD", 1),
+    : HydroponicsData(SFP(HStr_DataName_HCLD).c_str(), 1),
       cropType(Hydroponics_CropType_Undefined), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
@@ -248,7 +247,7 @@ HydroponicsCropsLibData::HydroponicsCropsLibData()
 }
 
 HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType cropTypeIn)
-    : HydroponicsData("HCLD", 1),
+    : HydroponicsData(SFP(HStr_DataName_HCLD).c_str(), 1),
       cropType(cropTypeIn), cropName{0},
       totalGrowWeeks(14), lifeCycleWeeks(0),
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
@@ -397,35 +396,35 @@ void HydroponicsCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
         if (flagsVar.is<JsonArrayConst>()) {
             JsonArrayConst flagsArray = flagsVar;
             for (String flagStr : flagsArray) {
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Invasive))) { flags |= HydroponicsCropsLibData_Flag_Invasive; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Viner))) { flags |= HydroponicsCropsLibData_Flag_Viner; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Large))) { flags |= HydroponicsCropsLibData_Flag_Large; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Perennial))) { flags |= HydroponicsCropsLibData_Flag_Perennial; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Toxic))) { flags |= HydroponicsCropsLibData_Flag_Toxic; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Pruning))) { flags |= HydroponicsCropsLibData_Flag_Pruning; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Spraying))) { flags |= HydroponicsCropsLibData_Flag_Spraying; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Invasive))) { flags |= Hydroponics_CropsDataFlag_Invasive; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Viner))) { flags |= Hydroponics_CropsDataFlag_Viner; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Large))) { flags |= Hydroponics_CropsDataFlag_Large; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Perennial))) { flags |= Hydroponics_CropsDataFlag_Perennial; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Toxic))) { flags |= Hydroponics_CropsDataFlag_Toxic; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Pruning))) { flags |= Hydroponics_CropsDataFlag_Pruning; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Spraying))) { flags |= Hydroponics_CropsDataFlag_Spraying; }
             }
         } else if (!flagsVar.isNull()) {
             String flagsString = String(',') + objectIn[SFP(HStr_Key_Flags)].as<String>() + String(',');
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Invasive) + String(','))) { flags |= HydroponicsCropsLibData_Flag_Invasive; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Viner) + String(','))) { flags |= HydroponicsCropsLibData_Flag_Viner; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Large) + String(','))) { flags |= HydroponicsCropsLibData_Flag_Large; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Perennial) + String(','))) { flags |= HydroponicsCropsLibData_Flag_Perennial; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Toxic) + String(','))) { flags |= HydroponicsCropsLibData_Flag_Toxic; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Pruning) + String(','))) { flags |= HydroponicsCropsLibData_Flag_Pruning; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Spraying) + String(','))) { flags |= HydroponicsCropsLibData_Flag_Spraying; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Invasive) + String(','))) { flags |= Hydroponics_CropsDataFlag_Invasive; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Viner) + String(','))) { flags |= Hydroponics_CropsDataFlag_Viner; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Large) + String(','))) { flags |= Hydroponics_CropsDataFlag_Large; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Perennial) + String(','))) { flags |= Hydroponics_CropsDataFlag_Perennial; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Toxic) + String(','))) { flags |= Hydroponics_CropsDataFlag_Toxic; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Pruning) + String(','))) { flags |= Hydroponics_CropsDataFlag_Pruning; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Spraying) + String(','))) { flags |= Hydroponics_CropsDataFlag_Spraying; }
         }
     }
 }
 
 HydroponicsCustomAdditiveData::HydroponicsCustomAdditiveData()
-    : HydroponicsData("HCAL", 1), additiveName{0}, weeklyDosingRates{1}
+    : HydroponicsData(SFP(HStr_DataName_HADD).c_str(), 1), additiveName{0}, weeklyDosingRates{1}
 {
     _size = sizeof(*this);
 }
 
 HydroponicsCustomAdditiveData::HydroponicsCustomAdditiveData(Hydroponics_ReservoirType reservoirType)
-    : HydroponicsData("HCAL", 1), additiveName{0}, weeklyDosingRates{0}
+    : HydroponicsData(SFP(HStr_DataName_HADD).c_str(), 1), additiveName{0}, weeklyDosingRates{1}
 {
     _size = sizeof(*this);
 

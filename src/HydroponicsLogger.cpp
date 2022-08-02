@@ -84,21 +84,21 @@ void HydroponicsLogger::logSystemUptime()
 void HydroponicsLogger::logMessage(const String &msg, const String &suffix1, const String &suffix2)
 {
     if (hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logLevel <= Hydroponics_LogLevel_All) {
-        log(F("[INFO] "), msg, suffix1, suffix2);
+        log(SFP(HStr_Log_Prefix_Info), msg, suffix1, suffix2);
     }
 }
 
 void HydroponicsLogger::logWarning(const String &warn, const String &suffix1, const String &suffix2)
 {
     if (hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logLevel <= Hydroponics_LogLevel_Warnings) {
-        log(F("[WARN] "), warn, suffix1, suffix2);
+        log(SFP(HStr_Log_Prefix_Warning), warn, suffix1, suffix2);
     }
 }
 
 void HydroponicsLogger::logError(const String &err, const String &suffix1, const String &suffix2)
 {
     if (hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logLevel <= Hydroponics_LogLevel_Errors) {
-        log(F("[FAIL] "), err, suffix1, suffix2);
+        log(SFP(HStr_Log_Prefix_Error), err, suffix1, suffix2);
     }
 }
 

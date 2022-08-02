@@ -52,7 +52,7 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2577          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e07          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
@@ -152,6 +152,20 @@ void setup() {
         String wifiPassword = F(SETUP_WIFI_SSID);
     #endif
 
+    // Begin external data storage devices for crop, strings, and other data.
+    #if SETUP_EXTDATA_EEPROM_ENABLE
+        beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
+    #endif
+    #if SETUP_EXTDATA_SD_ENABLE
+        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
+    #endif
+    #if SETUP_EXTDATA_SD_ENABLE
+        getCropsLibraryInstance()->beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
+    #endif
+    #if SETUP_EXTDATA_EEPROM_ENABLE
+        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
+    #endif
+
     // Sets system config name used in any of the following inits.
     #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
         hydroController.setSystemConfigFile(F(SETUP_SD_CARD_CONFIG_FILE));
@@ -159,16 +173,6 @@ void setup() {
     // Sets the EEPROM memory address for system data.
     #if SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
         hydroController.setSystemDataAddress(SETUP_EEPROM_SYSDATA_ADDR);
-    #endif
-
-    // Enables external crops library with external data devices, needed for storage constrained devices.
-    #if SETUP_EXTDATA_SD_ENABLE
-        getCropsLibraryInstance()->beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
-        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
-    #endif
-    #if SETUP_EXTDATA_EEPROM_ENABLE
-        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
-        beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
     #endif
 
     // Initializes controller with first initialization method that successfully returns.

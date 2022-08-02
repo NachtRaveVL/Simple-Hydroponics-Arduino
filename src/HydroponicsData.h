@@ -42,10 +42,10 @@ struct HydroponicsData : public HydroponicsJSONSerializableInterface {
     bool _modified;                                             // Flag tracking modified status
 
     inline bool isStandardData() const { return id.chars[0] == 'H'; }
-    inline bool isSystemData() const { return strncasecmp(id.chars, "HSYS", 4) == 0; }
-    inline bool isCalibrationData() const { return strncasecmp(id.chars, "HSYS", 4) == 0; }
-    inline bool isCropsLibData() const { return strncasecmp(id.chars, "HCLD", 4) == 0; }
-    inline bool isAdditiveData() const { return strncasecmp(id.chars, "HADD", 4) == 0; }
+    inline bool isSystemData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HSYS).c_str(), 4) == 0; }
+    inline bool isCalibrationData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HCAL).c_str(), 4) == 0; }
+    inline bool isCropsLibData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HCLD).c_str(), 4) == 0; }
+    inline bool isAdditiveData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HADD).c_str(), 4) == 0; }
     inline bool isObjectectData() const { return !isStandardData() && id.object.idType >= 0; }
 
     HydroponicsData();                                          // Default constructor

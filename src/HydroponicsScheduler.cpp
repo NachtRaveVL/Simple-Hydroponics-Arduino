@@ -906,7 +906,7 @@ void HydroponicsFeeding::update()
 
                 getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_PreFeedBalancing), SFP(HStr_Log_HasBegan));
                 if (actuatorReqs.size()) {
-                    getLoggerInstance()->logMessage(SFP(HSTR_Log_Field_Aerator_Duration), String(getSchedulerInstance()->getPreFeedAeratorMins()), String('m'));
+                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Aerator_Duration), String(getSchedulerInstance()->getPreFeedAeratorMins()), String('m'));
                 }
                 logFeeding(HydroponicsFeedingLogType_WaterSetpoints);
                 logFeeding(HydroponicsFeedingLogType_WaterMeasures);
@@ -1203,7 +1203,7 @@ void HydroponicsLighting::update()
 
                 if (lightStart > sprayStart) {
                     getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_PreLightSpraying), SFP(HStr_Log_HasBegan));
-                    getLoggerInstance()->logMessage(SFP(HSTR_Log_Field_Sprayer_Duration), String(getSchedulerInstance()->getPreLightSprayMins()), String('m'));
+                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Sprayer_Duration), String(getSchedulerInstance()->getPreLightSprayMins()), String('m'));
                     getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)sprayStart).timestamp(DateTime::TIMESTAMP_TIME));
                     getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
                 }
@@ -1216,7 +1216,7 @@ void HydroponicsLighting::update()
                 setupStaging();
 
                 getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_LightingSequence), SFP(HStr_Log_HasBegan));
-                getLoggerInstance()->logMessage(SFP(HSTR_Log_Field_Light_Duration), roundToString(lightHours), String('h'));
+                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Light_Duration), roundToString(lightHours), String('h'));
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)lightEnd).timestamp(DateTime::TIMESTAMP_TIME));
             } else {

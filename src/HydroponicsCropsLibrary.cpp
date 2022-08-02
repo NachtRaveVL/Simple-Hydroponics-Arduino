@@ -132,6 +132,7 @@ bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *c
             }
         } else {
             iter->second->data = *cropData;
+            iter->second->userSet = true;
             retVal = true;
         }
 
