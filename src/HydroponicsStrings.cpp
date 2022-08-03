@@ -1457,6 +1457,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Enum_WaterPumpFlowSensor[] PROGMEM = {"PumpFlow"};
             return flashStr_Enum_WaterPumpFlowSensor;
         } break;
+        case HStr_Enum_WaterSprayer: {
+            static const char flashStr_Enum_WaterSprayer[] PROGMEM = {"WaterSprayer"};
+            return flashStr_Enum_WaterSprayer;
+        } break;
         case HStr_Enum_WaterTDS: {
             static const char flashStr_Enum_WaterTDS[] PROGMEM = {"WaterTDS"};
             return flashStr_Enum_WaterTDS;

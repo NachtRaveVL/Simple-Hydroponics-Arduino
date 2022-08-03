@@ -1243,6 +1243,8 @@ String actuatorTypeToString(Hydroponics_ActuatorType actuatorType, bool excludeS
             return SFP(HStr_Enum_WaterHeater);
         case Hydroponics_ActuatorType_WaterAerator:
             return SFP(HStr_Enum_WaterAerator);
+        case Hydroponics_ActuatorType_WaterSprayer:
+            return SFP(HStr_Enum_WaterSprayer);
         case Hydroponics_ActuatorType_FanExhaust:
             return SFP(HStr_Enum_FanExhaust);
         case Hydroponics_ActuatorType_Count:
@@ -1564,9 +1566,9 @@ String railTypeToString(Hydroponics_RailType railType, bool excludeSpecial)
             return SFP(HStr_Enum_DC5V);
         case Hydroponics_RailType_DC12V:
             return SFP(HStr_Enum_DC12V);
-        case Hydroponics_ReservoirType_Count:
+        case Hydroponics_RailType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
-        case Hydroponics_ReservoirType_Undefined:
+        case Hydroponics_RailType_Undefined:
             break;
     }
     return !excludeSpecial ? SFP(HStr_Undefined) : String();
@@ -1767,12 +1769,12 @@ Hydroponics_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
                     return (Hydroponics_ActuatorType)3;
                 case 'A':
                     return (Hydroponics_ActuatorType)4;
+                case 'S':
+                    return (Hydroponics_ActuatorType)5;
             }
             break;
         case 'P':
             return (Hydroponics_ActuatorType)2;
-        case 'U':
-            return (Hydroponics_ActuatorType)5;
         case 'F':
             return (Hydroponics_ActuatorType)6;
         case 'C':
@@ -2251,6 +2253,8 @@ Hydroponics_RailType railTypeFromString(String railTypeStr) {
                     return (Hydroponics_RailType)1;
             }
             break;
+        case 'C':
+            return (Hydroponics_RailType)4;
         case 'D':
             switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\0') {
                 case '5':
@@ -2259,8 +2263,6 @@ Hydroponics_RailType railTypeFromString(String railTypeStr) {
                     return (Hydroponics_RailType)3;
             }
             break;
-        case 'U':
-            return (Hydroponics_RailType)4;
     }
     return Hydroponics_RailType_Undefined;
 }
@@ -2396,8 +2398,8 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             return (Hydroponics_UnitsType)20;
         case '%':
             return (Hydroponics_UnitsType)1;
-        case '°':
-            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
+        default:
+            switch (unitsSymbolStr.length() >= 3 ? unitsSymbolStr[2] : '\0') {
                 case 'C':
                     return (Hydroponics_UnitsType)4;
                 case 'F':
@@ -2407,6 +2409,7 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             }
             break;
     }
+    return Hydroponics_UnitsType_Undefined;
 }
 
 Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)

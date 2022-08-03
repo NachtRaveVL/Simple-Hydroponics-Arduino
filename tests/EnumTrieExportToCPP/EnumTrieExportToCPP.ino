@@ -17,7 +17,6 @@
 #define SETUP_ESP_I2C_SCL               SCL
 #define SETUP_SD_CARD_SPI_SPEED         4000000U
 
-
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,
@@ -159,7 +158,7 @@ void buildCropTypeTree() {
 
     for (char charIndex = 'A'; charIndex <= 'Z'; ++charIndex) {
         if (freeMemory() < 2000 && _root->map.size()) { printCropTypeTree(); }
-        for (int typeIndex = 0; typeIndex <= Hydroponics_CropType_Count; ++typeIndex) {
+        for (int typeIndex = -1; typeIndex <= Hydroponics_CropType_Count; ++typeIndex) {
             String cropType = cropTypeToString((Hydroponics_CropType)typeIndex);
             if (toupper(cropType[0]) == charIndex) {
                 _root->insert(nullptr, cropType, typeIndex);
@@ -167,7 +166,7 @@ void buildCropTypeTree() {
         }
     }
 
-    for (int typeIndex = 0; typeIndex <= Hydroponics_CropType_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_CropType_Count; ++typeIndex) {
         String cropType = cropTypeToString((Hydroponics_CropType)typeIndex);
         if (toupper(cropType[0]) < 'A' || toupper(cropType[0]) > 'Z') {
             _root->insert(nullptr, cropType, typeIndex);
@@ -179,7 +178,7 @@ void buildCropTypeTree() {
 
 void buildSystemModeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_SystemMode_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_SystemMode_Count; ++typeIndex) {
         _root->insert(nullptr, systemModeToString((Hydroponics_SystemMode)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_SystemMode)"));
@@ -189,7 +188,7 @@ void buildSystemModeTree() {
 
 void buildMeasurementModeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_MeasurementMode_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_MeasurementMode_Count; ++typeIndex) {
         _root->insert(nullptr, measurementModeToString((Hydroponics_MeasurementMode)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_MeasurementMode)"));
@@ -199,7 +198,7 @@ void buildMeasurementModeTree() {
 
 void buildDisplayOutputModeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_DisplayOutputMode_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_DisplayOutputMode_Count; ++typeIndex) {
         _root->insert(nullptr, displayOutputModeToString((Hydroponics_DisplayOutputMode)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_DisplayOutputMode)"));
@@ -209,7 +208,7 @@ void buildDisplayOutputModeTree() {
 
 void buildControlInputModeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_ControlInputMode_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_ControlInputMode_Count; ++typeIndex) {
         _root->insert(nullptr, controlInputModeToString((Hydroponics_ControlInputMode)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_ControlInputMode)"));
@@ -219,7 +218,7 @@ void buildControlInputModeTree() {
 
 void buildActuatorTypeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_ActuatorType_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_ActuatorType_Count; ++typeIndex) {
         _root->insert(nullptr, actuatorTypeToString((Hydroponics_ActuatorType)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_ActuatorType)"));
@@ -229,7 +228,7 @@ void buildActuatorTypeTree() {
 
 void buildSensorTypeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_SensorType_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_SensorType_Count; ++typeIndex) {
         _root->insert(nullptr, sensorTypeToString((Hydroponics_SensorType)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_SensorType)"));
@@ -239,7 +238,7 @@ void buildSensorTypeTree() {
 
 void buildSubstrateTypeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_SubstrateType_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_SubstrateType_Count; ++typeIndex) {
         _root->insert(nullptr, substrateTypeToString((Hydroponics_SubstrateType)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_SubstrateType)"));
@@ -249,7 +248,7 @@ void buildSubstrateTypeTree() {
 
 void buildReservoirTypeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_ReservoirType_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_ReservoirType_Count; ++typeIndex) {
         _root->insert(nullptr, reservoirTypeToString((Hydroponics_ReservoirType)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_ReservoirType)"));
@@ -259,7 +258,7 @@ void buildReservoirTypeTree() {
 
 void buildRailTypeTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_RailType_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_RailType_Count; ++typeIndex) {
         _root->insert(nullptr, railTypeToString((Hydroponics_RailType)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_RailType)"));
@@ -269,7 +268,7 @@ void buildRailTypeTree() {
 
 void buildUnitsCategoryTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
-    for (int typeIndex = 0; typeIndex <= Hydroponics_UnitsCategory_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_UnitsCategory_Count; ++typeIndex) {
         _root->insert(nullptr, unitsCategoryToString((Hydroponics_UnitsCategory)typeIndex), typeIndex);
     }
     String typeCast(F("(Hydroponics_UnitsCategory)"));
@@ -289,7 +288,7 @@ void buildUnitsTypeTree() {
 
     for (char charIndex = 'A'; charIndex <= 'Z'; ++charIndex) {
         if (freeMemory() < 2000 && _root->map.size()) { printUnitsTypeTree(); }
-        for (int typeIndex = 0; typeIndex <= Hydroponics_UnitsType_Count; ++typeIndex) {
+        for (int typeIndex = -1; typeIndex <= Hydroponics_UnitsType_Count; ++typeIndex) {
             String unitsType = unitsTypeToSymbol((Hydroponics_UnitsType)typeIndex);
             if (toupper(unitsType[0]) == charIndex) {
                 _root->insert(nullptr, unitsType, typeIndex);
@@ -302,7 +301,7 @@ void buildUnitsTypeTree() {
         if (charIndex == 'T') { _root->insert(nullptr, F("TDS"), Hydroponics_UnitsType_Concentration_TDS); }
     }
 
-    for (int typeIndex = 0; typeIndex <= Hydroponics_UnitsType_Count; ++typeIndex) {
+    for (int typeIndex = -1; typeIndex <= Hydroponics_UnitsType_Count; ++typeIndex) {
         String unitsType = unitsTypeToSymbol((Hydroponics_UnitsType)typeIndex);
         if (toupper(unitsType[0]) < 'A' || toupper(unitsType[0]) > 'Z') {
             _root->insert(nullptr, unitsType, typeIndex);
