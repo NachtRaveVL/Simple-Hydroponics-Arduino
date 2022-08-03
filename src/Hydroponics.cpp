@@ -564,7 +564,12 @@ void Hydroponics::commonPreInit()
 {
     if (isValidPin(_piezoBuzzerPin)) {
         pinMode(_piezoBuzzerPin, OUTPUT);
-        noTone(_piezoBuzzerPin);
+        #ifdef ESP32
+            ledcSetup(0, 0, 10);
+            ledcAttachPin(_piezoBuzzerPin, 0);
+        #else
+            noTone(_piezoBuzzerPin);
+        #endif
     }
     if (_i2cWire) {
         _i2cWire->setClock(_i2cSpeed);
@@ -576,7 +581,7 @@ void Hydroponics::commonPreInit()
         digitalWrite(_sdCardCSPin, HIGH);
     }
     #ifndef HYDRUINO_DISABLE_MULTITASKING
-        taskManager.setInterruptCallback(::handleInterrupt);
+        taskManager.setInterruptCallback(&handleInterrupt);
     #endif
 }
 
@@ -589,7 +594,6 @@ void Hydroponics::commonPostInit()
     scheduler.updateDayTracking(); // also calls setNeedsScheduling
     logger.updateInitTracking();
     publisher.setNeedsTabulation();
-    _lastAutosave = isAutosaveEnabled() ? unixNow() : 0;
 
     if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
         setWiFiConnection(getWiFiSSID(), getWiFiPassword()); // sets seed and encrypts
@@ -1056,7 +1060,6 @@ void Hydroponics::setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint1
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->autosaveEnabled = autosaveEnabled;
         _systemData->autosaveInterval = autosaveInterval;
-        _lastAutosave = autosaveEnabled ? unixNow() : 0;
     }
 }
 
@@ -1329,7 +1332,7 @@ String Hydroponics::getWiFiPassword()
 void Hydroponics::notifyRTCTimeUpdated()
 {
     _rtcBattFail = false;
-    _lastAutosave = isAutosaveEnabled() ? unixNow() : 0;
+    _lastAutosave = 0;
     logger.updateInitTracking();
     scheduler.broadcastDayChange();
 }
