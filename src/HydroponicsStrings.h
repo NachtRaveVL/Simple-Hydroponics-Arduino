@@ -344,6 +344,7 @@ enum Hydroponics_String : unsigned short {
     HStr_Enum_WaterPH,
     HStr_Enum_WaterPump,
     HStr_Enum_WaterPumpFlowSensor,
+    HStr_Enum_WaterSprayer,
     HStr_Enum_WaterTDS,
     HStr_Enum_WaterTemperature,
     HStr_Enum_Watercress,

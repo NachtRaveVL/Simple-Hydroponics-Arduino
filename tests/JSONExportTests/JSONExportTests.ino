@@ -273,7 +273,7 @@ void setup() {
 
     hydroController.init();
 
-    Serial.println(); Serial.println("=BEGIN=");
+    getLoggerInstance()->logMessage(F("=BEGIN="));
 
     testActuators();
     testSensors();
@@ -281,7 +281,7 @@ void setup() {
     testReservoirs();
     testRails();
 
-    Serial.println(); Serial.println(F("=FINISH="));
+    getLoggerInstance()->logMessage(F("=FINISH="));
 }
 
 void loop()
