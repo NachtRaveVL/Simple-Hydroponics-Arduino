@@ -112,7 +112,7 @@
 #define SETUP_CROP5_SOILM_PIN           -1              // Soil moisture sensor for crop at position 5 pin (analog), else -1
 
 
-byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
+uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,

@@ -21,17 +21,17 @@ struct HydroponicsMeasurementData;
 extern HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasurementData *dataIn);
 
 // Gets the value of a measurement at a specified row (with optional binary true value).
-extern float getMeasurementValue(const HydroponicsMeasurement *measurement, byte measurementRow = 0, float binTrue = 1.0f);
+extern float getMeasurementValue(const HydroponicsMeasurement *measurement, uint8_t measurementRow = 0, float binTrue = 1.0f);
 // Gets the units of a measurement at a specified row (with optional binary units).
-extern Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurement, byte measurementRow = 0, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
+extern Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurement, uint8_t measurementRow = 0, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
 // Gets the number of rows of data that a measurement holds.
-extern byte getMeasurementRowCount(const HydroponicsMeasurement *measurement);
+extern uint8_t getMeasurementRowCount(const HydroponicsMeasurement *measurement);
 // Gets the single measurement of a measurement (with optional binary true value / units).
-extern HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement *measurement, byte measurementRow = 0, float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
+extern HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement *measurement, uint8_t measurementRow = 0, float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1);
 
 // Sensor Data Measurement Base
 struct HydroponicsMeasurement {
-    enum : char { Binary, Single, Double, Triple, Unknown = -1 } type; // Measurement type (custom RTTI)
+    enum : signed char { Binary, Single, Double, Triple, Unknown = -1 } type; // Measurement type (custom RTTI)
     inline bool isBinaryType() const { return type == Binary; }
     inline bool isSingleType() const { return type == Single; }
     inline bool isDoubleType() const { return type == Double; }
@@ -49,7 +49,7 @@ struct HydroponicsMeasurement {
                            uint16_t frame);
     HydroponicsMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
     inline void updateTimestamp() { timestamp = unixNow(); }
     void updateFrame(unsigned int minFrame = 0);
@@ -71,7 +71,7 @@ struct HydroponicsSingleMeasurement : public HydroponicsMeasurement {
                                  uint16_t frame);
     HydroponicsSingleMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 };
 
 // Binary Value Sensor Data Measurement
@@ -86,7 +86,7 @@ struct HydroponicsBinaryMeasurement : public HydroponicsMeasurement {
                                  uint16_t frame);
     HydroponicsBinaryMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
     inline HydroponicsSingleMeasurement getAsSingleMeasurement(float binTrue = 1.0f, Hydroponics_UnitsType binUnits = Hydroponics_UnitsType_Raw_0_1) { return HydroponicsSingleMeasurement(state ? binTrue : 0.0f, binUnits, timestamp, frame); }
 };
@@ -110,9 +110,9 @@ struct HydroponicsDoubleMeasurement : public HydroponicsMeasurement {
                                  uint16_t frame);
     HydroponicsDoubleMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroponicsSingleMeasurement getAsSingleMeasurement(byte measurementRow) { return HydroponicsSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
+    inline HydroponicsSingleMeasurement getAsSingleMeasurement(uint8_t measurementRow) { return HydroponicsSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
 };
 
 // Triple Value Sensor Data Measurement
@@ -138,16 +138,16 @@ struct HydroponicsTripleMeasurement : public HydroponicsMeasurement {
                                  uint16_t frame);
     HydroponicsTripleMeasurement(const HydroponicsMeasurementData *dataIn);
 
-    void saveToData(HydroponicsMeasurementData *dataOut, byte measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroponicsMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroponicsSingleMeasurement getAsSingleMeasurement(byte measurementRow) { return HydroponicsSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
-    inline HydroponicsDoubleMeasurement getAsDoubleMeasurement(byte measurementRow1, byte measurementRow2) { return HydroponicsDoubleMeasurement(value[measurementRow1], units[measurementRow1], value[measurementRow2], units[measurementRow2], timestamp, frame); }
+    inline HydroponicsSingleMeasurement getAsSingleMeasurement(uint8_t measurementRow) { return HydroponicsSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
+    inline HydroponicsDoubleMeasurement getAsDoubleMeasurement(uint8_t measurementRow1, uint8_t measurementRow2) { return HydroponicsDoubleMeasurement(value[measurementRow1], units[measurementRow1], value[measurementRow2], units[measurementRow2], timestamp, frame); }
 };
 
 
 // Combined Measurement Serialization Sub Data
 struct HydroponicsMeasurementData : public HydroponicsSubData {
-    byte measurementRow;                                    // Source measurement row index that data is from
+    uint8_t measurementRow;                                 // Source measurement row index that data is from
     float value;                                            // Value
     Hydroponics_UnitsType units;                            // Units of value
     time_t timestamp;                                       // Timestamp

@@ -28,7 +28,7 @@ HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorData *da
 
 HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
                                          Hydroponics_PositionIndex actuatorIndex,
-                                         byte outputPin,
+                                         uint8_t outputPin,
                                          int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
       _outputPin(outputPin), _enabled(false), _rail(this), _reservoir(this)
@@ -140,7 +140,7 @@ void HydroponicsActuator::saveToData(HydroponicsData *dataOut)
 
 HydroponicsRelayActuator::HydroponicsRelayActuator(Hydroponics_ActuatorType actuatorType,
                                                    Hydroponics_PositionIndex actuatorIndex,
-                                                   byte outputPin, bool activeLow,
+                                                   uint8_t outputPin, bool activeLow,
                                                    int classType)
     : HydroponicsActuator(actuatorType, actuatorIndex, outputPin, classType),
       _activeLow(activeLow)
@@ -239,7 +239,7 @@ void HydroponicsRelayActuator::saveToData(HydroponicsData *dataOut)
 
 HydroponicsPumpRelayActuator::HydroponicsPumpRelayActuator(Hydroponics_ActuatorType actuatorType,
                                                            Hydroponics_PositionIndex actuatorIndex,
-                                                           byte outputPin, bool activeLow,
+                                                           uint8_t outputPin, bool activeLow,
                                                            int classType)
     :  HydroponicsRelayActuator(actuatorType, actuatorIndex, outputPin, activeLow, classType),
        _flowRateUnits(defaultLiquidFlowUnits()), _flowRate(this), _destReservoir(this), _pumpVolumeAcc(0.0f), _pumpTimeBegMillis(0), _pumpTimeAccMillis(0)
@@ -503,8 +503,8 @@ void HydroponicsPumpRelayActuator::handlePumpTime(time_t timeMillis)
 
 HydroponicsPWMActuator::HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,
                                                Hydroponics_PositionIndex actuatorIndex,
-                                               byte outputPin,
-                                               byte outputBitResolution,
+                                               uint8_t outputPin,
+                                               uint8_t outputBitResolution,
                                                int classType)
     : HydroponicsActuator(actuatorType, actuatorIndex, outputPin, classType),
       _pwmAmount(0.0f), _pwmResolution(outputBitResolution)

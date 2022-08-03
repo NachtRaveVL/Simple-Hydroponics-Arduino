@@ -19,11 +19,6 @@ enum Hydroponics_String : unsigned short {
     HStr_Undefined,
     HStr_null,
 
-    HStr_DataName_HSYS,
-    HStr_DataName_HCAL,
-    HStr_DataName_HCLD,
-    HStr_DataName_HADD,
-   
     HStr_Default_SystemName,
     HStr_Default_ConfigFile,
 
@@ -96,7 +91,6 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_ContFlowRate,
     HStr_Key_ContPowerUsage,
     HStr_Key_CropName,
-    HStr_Key_CropType,
     HStr_Key_CtrlInMode,
     HStr_Key_DHTType,
     HStr_Key_DailyLightHours,
@@ -157,7 +151,6 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_PullupPin,
     HStr_Key_RailName,
     HStr_Key_ReservoirName,
-    HStr_Key_ReservoirType,
     HStr_Key_Revision,
     HStr_Key_Scheduler,
     HStr_Key_SensorName,

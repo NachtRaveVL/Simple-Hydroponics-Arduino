@@ -25,7 +25,7 @@ extern HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 // where it lives, what's attached to it, and who can activate under it.
 class HydroponicsRail : public HydroponicsObject, public HydroponicsRailObjectInterface {
 public:
-    const enum : char { Simple, Regulated, Unknown = -1 } classType; // Power rail class (custom RTTI)
+    const enum : signed char { Simple, Regulated, Unknown = -1 } classType; // Power rail class (custom RTTI)
     inline bool isSimpleClass() const { return classType == Simple; }
     inline bool isRegulatedClass() const { return classType == Regulated; }
     inline bool isUnknownClass() const { return classType <= Unknown; }
@@ -118,8 +118,8 @@ public:
     void setLimitTrigger(HydroponicsTrigger *limitTrigger);
     const HydroponicsTrigger *getLimitTrigger() const;
 
-    inline void setLimitTrigger(shared_ptr<HydroponicsTrigger> limitTrigger) { _limitTrigger = limitTrigger; }
-    inline shared_ptr<HydroponicsTrigger> getLimitTrigger() { return _limitTrigger.getObject(); }
+    inline void setLimitTrigger(SharedPtr<HydroponicsTrigger> limitTrigger) { _limitTrigger = limitTrigger; }
+    inline SharedPtr<HydroponicsTrigger> getLimitTrigger() { return _limitTrigger.getObject(); }
 
     inline float getMaxPower() const { return _maxPower; }
 

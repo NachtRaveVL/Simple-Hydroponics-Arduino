@@ -5,7 +5,7 @@
 
 #include "Hydroponics.h"
 
-#ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
+#ifndef HYDRUINO_DISABLE_BUILTIN_DATA
 String stringFromPGMAddr(const char *flashStr);
 const char *pgmAddrForStr(Hydroponics_String strNum);
 #endif
@@ -22,32 +22,43 @@ void beginStringsFromSDCard(String dataFilePrefix)
     _strDataFilePrefix = dataFilePrefix;
 }
 
-String stringFromPGM(Hydroponics_String strNum) {
-    if (_strDataAddress != (size_t)-1) {
+String stringFromPGM(Hydroponics_String strNum)
+{    
+    static Hydroponics_String _lookupStrNum = Hydroponics_Strings_Count; // Simple LRU cache reduces a lot of lookup access
+    static String _lookupCachedRes;
+    if (strNum == _lookupStrNum && _lookupCachedRes.length()) { return _lookupCachedRes; }
+    else { _lookupStrNum = strNum; } // _lookupCachedRes set below
+
+    if (_strDataAddress != (uint16_t)-1) {
         auto eeprom = getHydroponicsInstance()->getEEPROM();
 
         if (eeprom) {
             uint16_t lookupOffset = 0;
             eeprom->readBlock(_strDataAddress + (sizeof(uint16_t) * ((int)strNum + 1)), // +1 for initial total size word
-                              (byte *)&lookupOffset, sizeof(lookupOffset));
+                              (uint8_t *)&lookupOffset, sizeof(lookupOffset));
 
             {   String retVal;
                 char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
-                eeprom->readBlock(lookupOffset, (byte *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
-                retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
+                uint16_t bytesRead = eeprom->readBlock(lookupOffset, (uint8_t *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
+                retVal.concat(charsToString(buffer, bytesRead));
 
                 while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
                     lookupOffset += HYDRUINO_STRING_BUFFER_SIZE;
-                    eeprom->readBlock(lookupOffset, (byte *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
+                    eeprom->readBlock(lookupOffset, (uint8_t *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
                     if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
                 }
-                return retVal;
+
+                Serial.println(retVal);
+
+                if (retVal.length()) {
+                    return (_lookupCachedRes = retVal);
+                }
             }
         }
     }
 
-    #ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
-        return stringFromPGMAddr(pgmAddrForStr(strNum));
+    #ifndef HYDRUINO_DISABLE_BUILTIN_DATA
+        return (_lookupCachedRes = stringFromPGMAddr(pgmAddrForStr(strNum)));
     #endif
 
     if (_strDataFilePrefix.length()) {
@@ -73,7 +84,11 @@ String stringFromPGM(Hydroponics_String strNum) {
             if (file) {
                 uint16_t lookupOffset = 0;
                 file.seek(sizeof(uint16_t) * (int)strNum);
-                file.readBytes((byte *)&lookupOffset, sizeof(lookupOffset));
+                #if defined(ARDUINO_ARCH_RP2040)
+                    file.readBytes((char *)&lookupOffset, sizeof(lookupOffset));
+                #else
+                    file.readBytes((uint8_t *)&lookupOffset, sizeof(lookupOffset));
+                #endif
 
                 {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
                     file.seek(lookupOffset);
@@ -90,14 +105,16 @@ String stringFromPGM(Hydroponics_String strNum) {
             }
 
             getHydroponicsInstance()->endSDCard(sd);
-            if (retVal.length()) { return retVal; }
+            if (retVal.length()) {
+                return (_lookupCachedRes = retVal);
+            }
         }
     }
 
-    return String();
+    return (_lookupCachedRes = String());
 }
 
-#ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
+#ifndef HYDRUINO_DISABLE_BUILTIN_DATA
 
 String stringFromPGMAddr(const char *flashStr) {
     String retVal; retVal.reserve(strlen_P(flashStr) + 1);
@@ -156,23 +173,6 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         case HStr_null: {
             static const char flashStr_null[] PROGMEM = {"null"};
             return flashStr_null;
-        } break;
-
-        case HStr_DataName_HSYS: {
-            static const char flashStr_DataName_HSYS[] PROGMEM = {"HSYS"};
-            return flashStr_DataName_HSYS;
-        } break;
-        case HStr_DataName_HCAL: {
-            static const char flashStr_DataName_HCAL[] PROGMEM = {"HCAL"};
-            return flashStr_DataName_HCAL;
-        } break;
-        case HStr_DataName_HCLD: {
-            static const char flashStr_DataName_HCLD[] PROGMEM = {"HCLD"};
-            return flashStr_DataName_HCLD;
-        } break;
-        case HStr_DataName_HADD: {
-            static const char flashStr_DataName_HADD[] PROGMEM = {"HADD"};
-            return flashStr_DataName_HADD;
         } break;
 
         case HStr_Default_SystemName: {
@@ -316,15 +316,15 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         } break;
 
         case HStr_Log_Field_Aerator_Duration: {
-            static const char flashStr_Log_Field_Aerator_Duration[] PROGMEM = {"  Aerator duration: "};
+            static const char flashStr_Log_Field_Aerator_Duration[] PROGMEM = {"  Aerator run time: "};
             return flashStr_Log_Field_Aerator_Duration;
         } break;
         case HStr_Log_Field_Light_Duration: {
-            static const char flashStr_Log_Field_Light_Duration[] PROGMEM = {"  Daylight duration: "};
+            static const char flashStr_Log_Field_Light_Duration[] PROGMEM = {"  Daylight hours: "};
             return flashStr_Log_Field_Light_Duration;
         } break;
         case HStr_Log_Field_Sprayer_Duration: {
-            static const char flashStr_Log_Field_Sprayer_Duration[] PROGMEM = {"  Sprayer duration: "};
+            static const char flashStr_Log_Field_Sprayer_Duration[] PROGMEM = {"  Sprayer run time: "};
             return flashStr_Log_Field_Sprayer_Duration;
         } break;
         case HStr_Log_Field_pH_Setpoint: {
@@ -344,15 +344,15 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Log_Field_CO2_Setpoint;
         } break;
         case HStr_Log_Field_Time_Calculated: {
-            static const char flashStr_Log_Field_Time_Calculated[] PROGMEM = {"  Pump time: "};
+            static const char flashStr_Log_Field_Time_Calculated[] PROGMEM = {"  Pump run time: "};
             return flashStr_Log_Field_Time_Calculated;
         } break;
         case HStr_Log_Field_Vol_Calculated: {
-            static const char flashStr_Log_Field_Vol_Calculated[] PROGMEM = {"  Est. vol.: "};
+            static const char flashStr_Log_Field_Vol_Calculated[] PROGMEM = {"  Est. pumped vol.: "};
             return flashStr_Log_Field_Vol_Calculated;
         } break;
         case HStr_Log_Field_pH_Measured: {
-            static const char flashStr_Log_Field_pH_Measured[] PROGMEM = {"  ph sensor: "};
+            static const char flashStr_Log_Field_pH_Measured[] PROGMEM = {"  pH sensor: "};
             return flashStr_Log_Field_pH_Measured;
         } break;
         case HStr_Log_Field_TDS_Measured: {
@@ -372,7 +372,7 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Log_Field_Time_Measured;
         } break;
         case HStr_Log_Field_Vol_Measured: {
-            static const char flashStr_Log_Field_Vol_Measured[] PROGMEM = {"  Pumped vol.: "};
+            static const char flashStr_Log_Field_Vol_Measured[] PROGMEM = {"  Res. pumped vol.: "};
             return flashStr_Log_Field_Vol_Measured;
         } break;
         case HStr_Log_Field_Time_Start: {
@@ -447,10 +447,6 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         case HStr_Key_CropName: {
             static const char flashStr_Key_CropName[] PROGMEM = {"cropName"};
             return flashStr_Key_CropName;
-        } break;
-        case HStr_Key_CropType: {
-            static const char flashStr_Key_CropType[] PROGMEM = {"cropType"};
-            return flashStr_Key_CropType;
         } break;
         case HStr_Key_CtrlInMode: {
             static const char flashStr_Key_CtrlInMode[] PROGMEM = {"ctrlInMode"};
@@ -691,10 +687,6 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         case HStr_Key_ReservoirName: {
             static const char flashStr_Key_ReservoirName[] PROGMEM = {"reservoirName"};
             return flashStr_Key_ReservoirName;
-        } break;
-        case HStr_Key_ReservoirType: {
-            static const char flashStr_Key_ReservoirType[] PROGMEM = {"reservoirType"};
-            return flashStr_Key_ReservoirType;
         } break;
         case HStr_Key_Revision: {
             static const char flashStr_Key_Revision[] PROGMEM = {"revision"};

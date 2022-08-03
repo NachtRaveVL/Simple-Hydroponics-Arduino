@@ -19,14 +19,14 @@ struct HydroponicsObjectData;
 extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
 
 // Shortcut to get shared pointer for object with static pointer cast built-in.
-template<class T = HydroponicsObjInterface> inline shared_ptr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? reinterpret_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
+template<class T = HydroponicsObjInterface> inline SharedPtr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? reinterpret_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
 
 
 // Simple class for referencing an object in the Hydroponics system.
 // This class is mainly used to simplify object key generation, which is used when we
 // want to uniquely refer to objects in the Hydroponics system.
 struct HydroponicsIdentity {
-    enum : char { Actuator, Sensor, Crop, Reservoir, Rail, Unknown = -1 } type; // Object type (custom RTTI)
+    enum : signed char { Actuator, Sensor, Crop, Reservoir, Rail, Unknown = -1 } type; // Object type (custom RTTI)
     inline bool isActuatorType() const { return type == Actuator; }
     inline bool isSensorType() const { return type == Sensor; }
     inline bool isCropType() const { return type == Crop; }
@@ -113,13 +113,13 @@ public:
     bool hasLinkage(HydroponicsObject *obj) const;          // Checks object linkage to this object
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
-    // Objects are considered strong pointers, since existence -> shared_ptr ref to this instance exists.
+    // Objects are considered strong pointers, since existence -> SharedPtr ref to this instance exists.
     inline const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type getLinkages() const { return _links; }
 
     virtual HydroponicsIdentity getId() const override;     // Returns the unique Identity of the object
     virtual Hydroponics_KeyType getKey() const override;    // Returns the unique key of the object
     virtual String getKeyString() const override;           // Returns the key string of the object
-    virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const  override; // Returns the shared_ptr instance of the object
+    virtual SharedPtr<HydroponicsObjInterface> getSharedPtr() const  override; // Returns the SharedPtr instance of the object
 
 protected:
     HydroponicsIdentity _id;                                // Object id
@@ -141,7 +141,7 @@ public:
     virtual HydroponicsIdentity getId() const override;
     virtual Hydroponics_KeyType getKey() const override;
     virtual String getKeyString() const override;
-    virtual shared_ptr<HydroponicsObjInterface> getSharedPtr() const override;
+    virtual SharedPtr<HydroponicsObjInterface> getSharedPtr() const override;
 
     virtual bool addLinkage(HydroponicsObject *obj) override;
     virtual bool removeLinkage(HydroponicsObject *obj) override;

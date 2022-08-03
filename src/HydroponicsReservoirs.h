@@ -29,7 +29,7 @@ extern HydroponicsReservoir *newReservoirObjectFromData(const HydroponicsReservo
 // who can activate under it.
 class HydroponicsReservoir : public HydroponicsObject, public HydroponicsReservoirObjectInterface {
 public:
-    const enum : char { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
+    const enum : signed char { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
     inline bool isFluidClass() const { return classType == Fluid; }
     inline bool isFeedClass() const { return classType == Feed; }
     inline bool isPipeClass() const { return classType == Pipe; }
@@ -97,11 +97,11 @@ public:
 
     virtual HydroponicsSensorAttachment &getWaterVolume(bool poll = false) override;
 
-    inline void setFilledTrigger(shared_ptr<HydroponicsTrigger> filledTrigger) { _filledTrigger = filledTrigger; }
-    inline shared_ptr<HydroponicsTrigger> getFilledTrigger() { return _filledTrigger.getObject(); }
+    inline void setFilledTrigger(SharedPtr<HydroponicsTrigger> filledTrigger) { _filledTrigger = filledTrigger; }
+    inline SharedPtr<HydroponicsTrigger> getFilledTrigger() { return _filledTrigger.getObject(); }
 
-    inline void setEmptyTrigger(shared_ptr<HydroponicsTrigger> emptyTrigger) { _emptyTrigger = emptyTrigger; }
-    inline shared_ptr<HydroponicsTrigger> getEmptyTrigger() { return _emptyTrigger.getObject(); }
+    inline void setEmptyTrigger(SharedPtr<HydroponicsTrigger> emptyTrigger) { _emptyTrigger = emptyTrigger; }
+    inline SharedPtr<HydroponicsTrigger> getEmptyTrigger() { return _emptyTrigger.getObject(); }
 
     inline float getMaxVolume() const { return _maxVolume; }
 
@@ -145,20 +145,20 @@ public:
     virtual HydroponicsSensorAttachment &getAirTemperature(bool poll = false) override;
     virtual HydroponicsSensorAttachment &getAirCO2(bool poll = false) override;
 
-    inline void setWaterPHBalancer(shared_ptr<HydroponicsBalancer> phBalancer) { _waterPHBalancer.setObject(phBalancer); }
-    inline shared_ptr<HydroponicsBalancer> getWaterPHBalancer() { return _waterPHBalancer.getObject(); }
+    inline void setWaterPHBalancer(SharedPtr<HydroponicsBalancer> phBalancer) { _waterPHBalancer.setObject(phBalancer); }
+    inline SharedPtr<HydroponicsBalancer> getWaterPHBalancer() { return _waterPHBalancer.getObject(); }
 
-    inline void setWaterTDSBalancer(shared_ptr<HydroponicsBalancer> tdsBalancer) { _waterTDSBalancer.setObject(tdsBalancer); }
-    inline shared_ptr<HydroponicsBalancer> getWaterTDSBalancer() { return _waterTDSBalancer.getObject(); }
+    inline void setWaterTDSBalancer(SharedPtr<HydroponicsBalancer> tdsBalancer) { _waterTDSBalancer.setObject(tdsBalancer); }
+    inline SharedPtr<HydroponicsBalancer> getWaterTDSBalancer() { return _waterTDSBalancer.getObject(); }
 
-    inline void setWaterTemperatureBalancer(shared_ptr<HydroponicsBalancer> waterTempBalancer) { _waterTempBalancer.setObject(waterTempBalancer); }
-    inline shared_ptr<HydroponicsBalancer> getWaterTemperatureBalancer() { return _waterTempBalancer.getObject(); }
+    inline void setWaterTemperatureBalancer(SharedPtr<HydroponicsBalancer> waterTempBalancer) { _waterTempBalancer.setObject(waterTempBalancer); }
+    inline SharedPtr<HydroponicsBalancer> getWaterTemperatureBalancer() { return _waterTempBalancer.getObject(); }
 
-    inline void setAirTemperatureBalancer(shared_ptr<HydroponicsBalancer> airTempBalancer) { _airTempBalancer.setObject(airTempBalancer); }
-    inline shared_ptr<HydroponicsBalancer> getAirTemperatureBalancer() { return _airTempBalancer.getObject(); }
+    inline void setAirTemperatureBalancer(SharedPtr<HydroponicsBalancer> airTempBalancer) { _airTempBalancer.setObject(airTempBalancer); }
+    inline SharedPtr<HydroponicsBalancer> getAirTemperatureBalancer() { return _airTempBalancer.getObject(); }
 
-    inline void setAirCO2Balancer(shared_ptr<HydroponicsBalancer> co2Balancer) { _airCO2Balancer.setObject(co2Balancer); }
-    inline shared_ptr<HydroponicsBalancer> getAirCO2Balancer() { return _airCO2Balancer.getObject(); }
+    inline void setAirCO2Balancer(SharedPtr<HydroponicsBalancer> co2Balancer) { _airCO2Balancer.setObject(co2Balancer); }
+    inline SharedPtr<HydroponicsBalancer> getAirCO2Balancer() { return _airCO2Balancer.getObject(); }
 
     inline Hydroponics_PositionIndex getChannelNumber() const { return _id.posIndex; }
 

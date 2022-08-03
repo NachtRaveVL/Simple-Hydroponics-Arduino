@@ -233,7 +233,7 @@ void HydroponicsPublisher::resetDataFile()
 
             if (dataFile) {
                 HydroponicsSensor *lastSensor = nullptr;
-                byte measurementRow = 0;
+                uint8_t measurementRow = 0;
 
                 dataFile.print(SFP(HStr_Key_Timestamp));
 

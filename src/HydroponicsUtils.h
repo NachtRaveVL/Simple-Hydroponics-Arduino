@@ -22,10 +22,10 @@ class ActuatorTimedEnableTask;
 // Simple class for describing an analog bit resolution.
 // This class is mainly used to calculate analog pin range boundary values.
 struct HydroponicsBitResolution {
-    byte bitRes;                                // Bit resolution (# of bits)
+    uint8_t bitRes;                             // Bit resolution (# of bits)
     int maxVal;                                 // Maximum value (2 ^ (# of bits))
 
-    HydroponicsBitResolution(byte bitRes);      // Constructor
+    HydroponicsBitResolution(uint8_t bitRes);      // Constructor
 
     // Transforms value from raw integer (or initial) value into normalized raw (or transformed) value.
     inline float transform(int intValue) const { return constrain(intValue / (float)maxVal, 0.0f, 1.0f); }
@@ -45,15 +45,15 @@ extern BasicArduinoInterruptAbstraction interruptImpl;
 
 // This will schedule an actuator to enable on the next TaskManagerIO runloop using the given intensity and enable time millis.
 // Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
-taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis);
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis);
 
 // This will schedule an actuator to enable on the next TaskManagerIO runloop using the given enable time millis.
 // Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
-taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, time_t enableTimeMillis);
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroponicsActuator> actuator, time_t enableTimeMillis);
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter.
 // Object is captured, if not nullptr. Returns taskId or TASKMGR_INVALIDID on error.
-template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObjInterface> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam);
+template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(SharedPtr<HydroponicsObjInterface> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam);
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter, w/o capturing object.
 // Returns taskId or TASKMGR_INVALIDID on error.
@@ -61,7 +61,7 @@ template<typename ParameterType, int Slots> taskid_t scheduleSignalFireOnce(Sign
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter.
 // Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
-template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
+template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethodCallOnce(SharedPtr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam);
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the given method slot and call parameter, w/o capturing object.
 // Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
@@ -69,7 +69,7 @@ template<class ObjectType, typename ParameterType> taskid_t scheduleObjectMethod
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created.
 // Object is captured. Returns taskId or TASKMGR_INVALIDID on error.
-template<class ObjectType> taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
+template<class ObjectType> taskid_t scheduleObjectMethodCallWithTaskIdOnce(SharedPtr<ObjectType> object, void (ObjectType::*method)(taskid_t));
 
 // This will schedule an object's method to be called on the next TaskManagerIO runloop using the taskId that was created, w/o capturing object.
 // Returns taskId or TASKMGR_INVALIDID on error.
@@ -83,14 +83,14 @@ template<typename ParameterType, int Slots>
 class SignalFireTask : public Executable {
 public:
     taskid_t taskId;
-    SignalFireTask(shared_ptr<HydroponicsObjInterface> object,
+    SignalFireTask(SharedPtr<HydroponicsObjInterface> object,
                    Signal<ParameterType,Slots> &signal,
                    ParameterType &param)
         : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
 
     virtual void exec() override { _signal->fire(_param); }
 private:
-    shared_ptr<HydroponicsObjInterface> _object;
+    SharedPtr<HydroponicsObjInterface> _object;
     Signal<ParameterType, Slots> *_signal;
     ParameterType _param;
 };
@@ -104,16 +104,16 @@ public:
     typedef void (ObjectType::*FunctPtr)(ParameterType);
     taskid_t taskId;
 
-    MethodSlotCallTask(shared_ptr<ObjectType> object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
+    MethodSlotCallTask(SharedPtr<ObjectType> object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
     MethodSlotCallTask(ObjectType *object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(nullptr), _methodSlot(object, method), _callParam(callParam) { ; }
 
     virtual void exec() override { _methodSlot(_callParam); }
 private:
-    shared_ptr<ObjectType> _object;
+    SharedPtr<ObjectType> _object;
     MethodSlot<ObjectType,ParameterType> _methodSlot;
     ParameterType _callParam;
 
-    friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t));
+    friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(SharedPtr<ObjectType> object, void (ObjectType::*method)(taskid_t));
     friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(ObjectType *object, void (ObjectType::*method)(taskid_t));
 };
 
@@ -123,13 +123,13 @@ private:
 class ActuatorTimedEnableTask : public Executable {
 public:
     taskid_t taskId;
-    ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator,
+    ActuatorTimedEnableTask(SharedPtr<HydroponicsActuator> actuator,
                             float enableIntensity,
                             time_t enableTimeMillis);
 
     virtual void exec() override;
 private:
-    shared_ptr<HydroponicsActuator> _actuator;
+    SharedPtr<HydroponicsActuator> _actuator;
     float _enableIntensity;
     time_t _enableTimeMillis;
 };
@@ -206,11 +206,11 @@ template<typename T> void commaStringToArray(String stringIn, T *arrayOut, size_
 template<typename T> void commaStringToArray(JsonVariantConst &variantIn, T *arrayOut, size_t length);
 
 // Encodes a byte array to hexadecimal string.
-extern String hexStringFromBytes(const byte *bytesIn, size_t length);
+extern String hexStringFromBytes(const uint8_t *bytesIn, size_t length);
 // Decodes a hexadecimal string back to a byte array.
-extern void hexStringToBytes(String stringIn, byte *bytesOut, size_t length);
+extern void hexStringToBytes(String stringIn, uint8_t *bytesOut, size_t length);
 // Decodes a hexadecimal JSON variant, if not null, object, or array, back to a byte array.
-extern void hexStringToBytes(JsonVariantConst &variantIn, byte *bytesOut, size_t length);
+extern void hexStringToBytes(JsonVariantConst &variantIn, uint8_t *bytesOut, size_t length);
 
 // Returns # of occurrences of character in string.
 int occurrencesInString(String string, char singleChar);
@@ -240,7 +240,7 @@ extern time_t rtcNow();
 inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
 
 // This will handle interrupts for task manager.
-extern void handleInterrupt(byte pin);
+extern void handleInterrupt(uint8_t pin);
 
 // This is used to force debug statements through to serial monitor.
 inline void flushYield() {
@@ -315,23 +315,23 @@ template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountCrops(const typena
 // Returns the # of actuators of a certain type that operate on a specific reservoir.
 template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE> int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType);
 
-// Recombines filtered object list back into shared_ptr actuator list.
-template<size_t N> void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, typename Vector<shared_ptr<HydroponicsActuator>, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType);
-// Recombines filtered object list back into shared_ptr actuator list paired with rate value.
-template<size_t N> void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, float rateValue, typename Vector<typename Pair<shared_ptr<HydroponicsActuator>, float>::type, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType);
+// Recombines filtered object list back into SharedPtr actuator list.
+template<size_t N> void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, typename Vector<SharedPtr<HydroponicsActuator>, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType);
+// Recombines filtered object list back into SharedPtr actuator list paired with rate value.
+template<size_t N> void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, float rateValue, typename Vector<typename Pair<SharedPtr<HydroponicsActuator>, float>::type, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType);
 
 // Pins & Checks
 
 // Checks to see if the pin is an analog input pin.
-extern bool checkPinIsAnalogInput(byte pin);
+extern bool checkPinIsAnalogInput(uint8_t pin);
 // Checks to see if the pin is an analog output pin.
-extern bool checkPinIsAnalogOutput(byte pin);
+extern bool checkPinIsAnalogOutput(uint8_t pin);
 // Checks to see if the pin is a standard digital (non-analog) pin.
-inline bool checkPinIsDigital(byte pin) { return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin); }
+inline bool checkPinIsDigital(uint8_t pin) { return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin); }
 // Checks to see if the pin can produce a digital PWM output signal.
-inline bool checkPinIsPWMOutput(byte pin) { return digitalPinHasPWM(pin); }
+inline bool checkPinIsPWMOutput(uint8_t pin);
 // Checks to see if the pin can be set up with an ISR to handle digital level changes.
-inline bool checkPinCanInterrupt(byte pin) { return isValidPin(digitalPinToInterrupt(pin)); }
+inline bool checkPinCanInterrupt(uint8_t pin) { return isValidPin(digitalPinToInterrupt(pin)); }
 
 // Enums & Conversions
 

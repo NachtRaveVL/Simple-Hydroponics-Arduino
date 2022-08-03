@@ -27,7 +27,7 @@ extern HydroponicsCrop *newCropObjectFromData(const HydroponicsCropData *dataIn)
 // feeds it, etc.
 class HydroponicsCrop : public HydroponicsObject, public HydroponicsCropObjectInterface, public HydroponicsFeedReservoirAttachmentInterface {
 public:
-    const enum : char { Timed, Adaptive, Unknown = -1 } classType; // Crop class type (custom RTTI)
+    const enum : signed char { Timed, Adaptive, Unknown = -1 } classType; // Crop class type (custom RTTI)
     inline bool isTimedClass() const { return classType == Timed; }
     inline bool isAdaptiveClass() const { return classType == Adaptive; }
     inline bool isUnknownClass() const { return classType <= Unknown; }
@@ -116,7 +116,7 @@ public:
 
 protected:
     time_t _lastFeedingDate;                                // Last feeding date (UTC)
-    byte _feedTimingMins[2];                                // Feed timing (on/off), in minutes
+    uint8_t _feedTimingMins[2];                             // Feed timing (on/off), in minutes
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };
@@ -143,8 +143,8 @@ public:
 
     virtual HydroponicsSensorAttachment &getSoilMoisture(bool poll = false) override;
 
-    inline void setFeedingTrigger(shared_ptr<HydroponicsTrigger> feedingTrigger) { _feedingTrigger = feedingTrigger; }
-    inline shared_ptr<HydroponicsTrigger> getFeedingTrigger() { return _feedingTrigger.getObject(); }
+    inline void setFeedingTrigger(SharedPtr<HydroponicsTrigger> feedingTrigger) { _feedingTrigger = feedingTrigger; }
+    inline SharedPtr<HydroponicsTrigger> getFeedingTrigger() { return _feedingTrigger.getObject(); }
 
 protected:
     Hydroponics_UnitsType _moistureUnits;                   // Moisture units preferred
@@ -172,7 +172,7 @@ struct HydroponicsCropData : public HydroponicsObjectData
 struct HydroponicsTimedCropData : public HydroponicsCropData
 {
     time_t lastFeedingDate;
-    byte feedTimingMins[2];
+    uint8_t feedTimingMins[2];
 
     HydroponicsTimedCropData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

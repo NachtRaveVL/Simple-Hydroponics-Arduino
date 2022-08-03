@@ -37,7 +37,7 @@ void HydroponicsDLinkObject::unresolve()
     _obj = nullptr;
 }
 
-shared_ptr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject()
+SharedPtr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject()
 {
     if (_obj) { return _obj; }
     if (_key == (Hydroponics_KeyType)-1) { return nullptr; }
@@ -76,7 +76,7 @@ void HydroponicsAttachment::detachObject()
     // note: used to set _obj to nullptr here, but found that it's best not to -> avoids additional operator= calls during typical detach scenarios
 }
 
-HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, byte measurementRow)
+HydroponicsSensorAttachment::HydroponicsSensorAttachment(HydroponicsObjInterface *parent, uint8_t measurementRow)
     : HydroponicsSignalAttachment<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS>(
           parent, &HydroponicsSensor::getMeasurementSignal),
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
@@ -121,7 +121,7 @@ void HydroponicsSensorAttachment::setMeasurement(HydroponicsSingleMeasurement me
     _needsMeasurement = false;
 }
 
-void HydroponicsSensorAttachment::setMeasurementRow(byte measurementRow)
+void HydroponicsSensorAttachment::setMeasurementRow(uint8_t measurementRow)
 {
     if (_measurementRow != measurementRow) {
         _measurementRow = measurementRow;

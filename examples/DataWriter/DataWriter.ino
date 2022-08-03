@@ -14,7 +14,7 @@
 // the various data address locations (e.g. CROP_ADDR, STR_ADDR, etc.).
 //
 // Make sure that any EEPROM Write-Protect jumpers are disabled, and that you have not
-// defined HYDRUINO_ENABLE_EXTERNAL_DATA so that the full data is built into the onboard
+// defined HYDRUINO_DISABLE_BUILTIN_DATA so that the full data is built into the onboard
 // Flash. You may also enable Serial log output by defining HYDRUINO_ENABLE_DEBUG_OUTPUT.
 // You may refer to: https://forum.arduino.cc/index.php?topic=602603.0 on how to define
 // custom build flags manually via modifying platform[.local].txt.
@@ -22,7 +22,7 @@
 // In Hydroponics.h:
 // 
 // // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
-// // #define HYDRUINO_ENABLE_EXTERNAL_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
+// // #define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
 // 
 // // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 // #define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -33,8 +33,8 @@
 #include <Hydroponics.h>
 
 // Compiler flag check
-#ifdef HYDRUINO_ENABLE_EXTERNAL_DATA
-#error The HYDRUINO_ENABLE_EXTERNAL_DATA flag is expected to be undefined in order to run this sketch
+#ifdef HYDRUINO_DISABLE_BUILTIN_DATA
+#error The HYDRUINO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
 #endif
 
 // Pins & Class Instances
@@ -157,7 +157,7 @@ void setup() {
                     uint16_t bytesWritten = 0;
 
                     // Lookup table constructed first to avoid random seeking
-                    bytesWritten += file.write((const byte *)lookupTable, sizeof(lookupTable));
+                    bytesWritten += file.write((const uint8_t *)lookupTable, sizeof(lookupTable));
 
                     for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {
                         String string = SFP((Hydroponics_String)stringNum);
@@ -213,7 +213,7 @@ void setup() {
 
                         // After writing data out, write location out to lookup table
                         if (bytesWritten && eeprom->updateBlockVerify(cropsLibBegAddr + ((cropType + 1) * sizeof(uint16_t)),
-                                                                      (const byte *)&writeAddr, sizeof(uint16_t))) {
+                                                                      (const uint8_t *)&writeAddr, sizeof(uint16_t))) {
                             writeAddr += bytesWritten;
 
                             getLoggerInstance()->logMessage(F("Wrote: "), String(bytesWritten), F(" bytes"));
@@ -234,7 +234,7 @@ void setup() {
                 if (writeAddr > cropsLibBegAddr + ((Hydroponics_CropType_Count + 1) * sizeof(uint16_t))) {
                     uint16_t totalBytesWritten = writeAddr - cropsLibBegAddr;
 
-                    if (eeprom->updateBlockVerify(cropsLibBegAddr, (const byte *)&totalBytesWritten, sizeof(uint16_t))) {
+                    if (eeprom->updateBlockVerify(cropsLibBegAddr, (const uint8_t *)&totalBytesWritten, sizeof(uint16_t))) {
                         stringsBegAddr = writeAddr;
                         getLoggerInstance()->logMessage(F("Successfully wrote: "), String(totalBytesWritten), F(" bytes"));
                     } else {
@@ -254,9 +254,9 @@ void setup() {
                     getLoggerInstance()->logMessage(F("Writing String: #"), String(stringNum) + String(F(" \"")), string + String(F("\"")));
                     getLoggerInstance()->logMessage(F("... to byte offset: "), String(writeAddr), altAddressToString(writeAddr));
 
-                    if(eeprom->updateBlockVerify(writeAddr, (const byte *)string.c_str(), string.length() + 1) &&
+                    if(eeprom->updateBlockVerify(writeAddr, (const uint8_t *)string.c_str(), string.length() + 1) &&
                        eeprom->updateBlockVerify(stringsBegAddr + ((stringNum + 1) * sizeof(uint16_t)),
-                                                 (const byte *)&writeAddr, sizeof(uint16_t))) {
+                                                 (const uint8_t *)&writeAddr, sizeof(uint16_t))) {
                         writeAddr += string.length() + 1;
                         getLoggerInstance()->logMessage(F("Wrote: "), String(string.length() + 1), F(" bytes"));
                     } else {
@@ -270,7 +270,7 @@ void setup() {
                 if (writeAddr > stringsBegAddr + ((Hydroponics_Strings_Count + 1) * sizeof(uint16_t))) {
                     uint16_t totalBytesWritten = writeAddr - stringsBegAddr;
 
-                    if (eeprom->updateBlockVerify(stringsBegAddr, (const byte *)&totalBytesWritten, sizeof(uint16_t))) {
+                    if (eeprom->updateBlockVerify(stringsBegAddr, (const uint8_t *)&totalBytesWritten, sizeof(uint16_t))) {
                         getLoggerInstance()->logMessage(F("Successfully wrote: "), String(totalBytesWritten), F(" bytes"));
                         sysDataBegAddr = writeAddr;
                     } else {

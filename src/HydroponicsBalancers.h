@@ -21,15 +21,15 @@ class HydroponicsTimedDosingBalancer;
 // measured value. Balancers allow for a setpoint to be used to drive such devices.
 class HydroponicsBalancer : public HydroponicsSubObject, public HydroponicsBalancerObjectInterface {
 public:
-    const enum : char { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
+    const enum : signed char { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
     inline bool isLinearEdgeType() const { return type == LinearEdge; }
     inline bool isTimedDosingType() const { return type == TimedDosing; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
-    HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor,
+    HydroponicsBalancer(SharedPtr<HydroponicsSensor> sensor,
                         float targetSetpoint,
                         float targetRange,
-                        byte measurementRow = 0,
+                        uint8_t measurementRow = 0,
                         int type = Unknown);
     virtual ~HydroponicsBalancer();
 
@@ -41,10 +41,10 @@ public:
     void setTargetUnits(Hydroponics_UnitsType targetUnits) { _sensor.setMeasurementUnits(targetUnits); }
     inline Hydroponics_UnitsType getTargetUnits() const { return _sensor.getMeasurementUnits(); }
 
-    void setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators);
-    void setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators);
-    inline const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &getIncrementActuators() { return _incActuators; }
-    inline const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators() { return _decActuators; }
+    void setIncrementActuators(const Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators);
+    void setDecrementActuators(const Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators);
+    inline const Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &getIncrementActuators() { return _incActuators; }
+    inline const Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &getDecrementActuators() { return _decActuators; }
 
     inline void setEnabled(bool enabled) { _enabled = enabled; }
     inline bool isEnabled() const { return _enabled; }
@@ -52,8 +52,8 @@ public:
     inline float getTargetSetpoint() const { return _targetSetpoint; }
     inline float getTargetRange() const { return _targetRange; }
 
-    inline shared_ptr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
-    inline byte getMeasurementRow() const { return _sensor.getMeasurementRow(); }
+    inline SharedPtr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
+    inline uint8_t getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
     Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> &getBalancerSignal();
 
@@ -66,8 +66,8 @@ protected:
 
     Signal<Hydroponics_BalancerState, HYDRUINO_BALANCER_STATE_SLOTS> _balancerSignal; // Balancer signal
 
-    Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type _incActuators; // Increment actuators
-    Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type _decActuators; // Decrement actuators
+    Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type _incActuators; // Increment actuators
+    Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type _decActuators; // Decrement actuators
 
     void disableAllActuators();
 
@@ -82,12 +82,12 @@ protected:
 // an edge with zero length, which is the default. Useful for fans, heaters, and others.
 class HydroponicsLinearEdgeBalancer : public HydroponicsBalancer {
 public:
-    HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor,
+    HydroponicsLinearEdgeBalancer(SharedPtr<HydroponicsSensor> sensor,
                                   float targetSetpoint,
                                   float targetRange,
                                   float edgeOffset = 0,
                                   float edgeLength = 0,
-                                  byte measurementRow = 0);
+                                  uint8_t measurementRow = 0);
 
     virtual void update() override;
 
@@ -108,18 +108,18 @@ protected:
 // in subsequent dispensing to help speed up the balancing process.
 class HydroponicsTimedDosingBalancer : public HydroponicsBalancer {
 public:
-    HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor,
+    HydroponicsTimedDosingBalancer(SharedPtr<HydroponicsSensor> sensor,
                                    float targetSetpoint,
                                    float targetRange,
                                    time_t baseDosingMillis,
                                    time_t mixTime,
-                                   byte measurementRow = 0);
-    HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor,
+                                   uint8_t measurementRow = 0);
+    HydroponicsTimedDosingBalancer(SharedPtr<HydroponicsSensor> sensor,
                                    float targetSetpoint,
                                    float targetRange,
                                    float reservoirVolume,
                                    Hydroponics_UnitsType volumeUnits,
-                                   byte measurementRow = 0);
+                                   uint8_t measurementRow = 0);
 
     virtual void update() override;
 
@@ -137,7 +137,7 @@ protected:
     int8_t _dosingActIndex;                                 // Next dosing actuator to run
 
     void performDosing();
-    void performDosing(shared_ptr<HydroponicsActuator> actuator, time_t timeMillis);
+    void performDosing(SharedPtr<HydroponicsActuator> actuator, time_t timeMillis);
 };
 
 #endif // /ifndef HydroponicsBalancers_H

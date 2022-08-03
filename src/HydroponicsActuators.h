@@ -26,7 +26,7 @@ extern HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorD
 // where it lives, and what it's attached to.
 class HydroponicsActuator : public HydroponicsObject, public HydroponicsActuatorObjectInterface, public HydroponicsRailAttachmentInterface, public HydroponicsReservoirAttachmentInterface {
 public:
-    const enum : char { Relay, RelayPump, PWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
+    const enum : signed char { Relay, RelayPump, PWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
     inline bool isRelayClass() const { return classType == Relay; }
     inline bool isRelayPumpClass() const { return classType == RelayPump; }
     inline bool isPWMClass() const { return classType == PWM; }
@@ -36,7 +36,7 @@ public:
 
     HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
                         Hydroponics_PositionIndex actuatorIndex,
-                        byte outputPin = -1,
+                        uint8_t outputPin = -1,
                         int classType = Unknown);
     HydroponicsActuator(const HydroponicsActuatorData *dataIn);
 
@@ -53,14 +53,14 @@ public:
     virtual HydroponicsAttachment &getParentRail(bool resolve = true) override;
     virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) override;
 
-    inline byte getOutputPin() const { return _outputPin; }
+    inline uint8_t getOutputPin() const { return _outputPin; }
     inline Hydroponics_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
     inline Hydroponics_PositionIndex getActuatorIndex() const { return _id.posIndex; }
 
     Signal<HydroponicsActuator *> &getActivationSignal();
 
 protected:
-    byte _outputPin;                                        // Output pin
+    uint8_t _outputPin;                                     // Output pin
     bool _enabled;                                          // Enabled state flag
     HydroponicsSingleMeasurement _contPowerUsage;           // Continuous power draw
     HydroponicsAttachment _rail;                            // Power rail attachment
@@ -79,7 +79,7 @@ class HydroponicsRelayActuator : public HydroponicsActuator {
 public:
     HydroponicsRelayActuator(Hydroponics_ActuatorType actuatorType,
                              Hydroponics_PositionIndex actuatorIndex,
-                             byte outputPin,
+                             uint8_t outputPin,
                              bool activeLow = true,
                              int classType = Relay);
     HydroponicsRelayActuator(const HydroponicsRelayActuatorData *dataIn);
@@ -104,7 +104,7 @@ class HydroponicsPumpRelayActuator : public HydroponicsRelayActuator, public Hyd
 public:
     HydroponicsPumpRelayActuator(Hydroponics_ActuatorType actuatorType,
                                  Hydroponics_PositionIndex actuatorIndex,
-                                 byte outputPin,
+                                 uint8_t outputPin,
                                  bool activeLow = true,
                                  int classType = RelayPump);
     HydroponicsPumpRelayActuator(const HydroponicsPumpRelayActuatorData *dataIn);
@@ -155,8 +155,8 @@ class HydroponicsPWMActuator : public HydroponicsActuator {
 public:
     HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,
                            Hydroponics_PositionIndex actuatorIndex,
-                           byte outputPin,
-                           byte outputBitResolution = 8,
+                           uint8_t outputPin,
+                           uint8_t outputBitResolution = 8,
                            int classType = PWM);
     HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn);
     virtual ~HydroponicsPWMActuator();
@@ -185,7 +185,7 @@ protected:
 // Actuator Serialization Data
 struct HydroponicsActuatorData : public HydroponicsObjectData
 {
-    byte outputPin;
+    uint8_t outputPin;
     HydroponicsMeasurementData contPowerUsage;
     char railName[HYDRUINO_NAME_MAXSIZE];
     char reservoirName[HYDRUINO_NAME_MAXSIZE];
@@ -221,7 +221,7 @@ struct HydroponicsPumpRelayActuatorData : public HydroponicsRelayActuatorData
 // PWM Actuator Serialization Data
 struct HydroponicsPWMActuatorData : public HydroponicsActuatorData
 {
-    byte outputBitResolution;
+    uint8_t outputBitResolution;
 
     HydroponicsPWMActuatorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

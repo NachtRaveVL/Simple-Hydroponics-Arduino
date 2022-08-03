@@ -25,16 +25,16 @@ extern HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerS
 // to some change in a tracked property.
 class HydroponicsTrigger : public HydroponicsSubObject, public HydroponicsTriggerObjectInterface {
 public:
-    const enum : char { MeasureValue, MeasureRange, Unknown = -1 } type; // Trigger type (custom RTTI)
+    const enum : signed char { MeasureValue, MeasureRange, Unknown = -1 } type; // Trigger type (custom RTTI)
     inline bool isMeasureValueType() const { return type == MeasureValue; }
     inline bool isMeasureRangeType() const { return type == MeasureRange; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
     HydroponicsTrigger(HydroponicsIdentity sensorId,
-                       byte measurementRow = 0,
+                       uint8_t measurementRow = 0,
                        int type = Unknown);
-    HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor,
-                       byte measurementRow = 0,
+    HydroponicsTrigger(SharedPtr<HydroponicsSensor> sensor,
+                       uint8_t measurementRow = 0,
                        int type = Unknown);
     HydroponicsTrigger(const HydroponicsTriggerSubData *dataIn);
 
@@ -48,8 +48,8 @@ public:
     inline void setToleranceUnits(Hydroponics_UnitsType toleranceUnits) { _sensor.setMeasurementUnits(toleranceUnits); }
     inline Hydroponics_UnitsType getToleranceUnits() const { return _sensor.getMeasurementUnits(); }
 
-    inline shared_ptr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
-    inline byte getMeasurementRow() const { return _sensor.getMeasurementRow(); }
+    inline SharedPtr<HydroponicsSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
+    inline uint8_t getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
     Signal<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> &getTriggerSignal();
 
@@ -74,12 +74,12 @@ public:
                                        float triggerTol,
                                        bool triggerBelow = true,
                                        float detriggerTol = 0,
-                                       byte measurementRow = 0);
-    HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor,
+                                       uint8_t measurementRow = 0);
+    HydroponicsMeasurementValueTrigger(SharedPtr<HydroponicsSensor> sensor,
                                        float triggerTol,
                                        bool triggerBelow = true,
                                        float detriggerTol = 0,
-                                       byte measurementRow = 0);
+                                       uint8_t measurementRow = 0);
     HydroponicsMeasurementValueTrigger(const HydroponicsTriggerSubData *dataIn);
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
@@ -114,13 +114,13 @@ public:
                                        float toleranceHigh,
                                        bool triggerOutside = true,
                                        float detriggerTol = 0,
-                                       byte measurementRow = 0);
-    HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor,
+                                       uint8_t measurementRow = 0);
+    HydroponicsMeasurementRangeTrigger(SharedPtr<HydroponicsSensor> sensor,
                                        float toleranceLow,
                                        float toleranceHigh,
                                        bool triggerOutside = true,
                                        float detriggerTol = 0,
-                                       byte measurementRow = 0);
+                                       uint8_t measurementRow = 0);
     HydroponicsMeasurementRangeTrigger(const HydroponicsTriggerSubData *dataIn);
 
     virtual void saveToData(HydroponicsTriggerSubData *dataOut) const override;
