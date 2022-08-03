@@ -2375,6 +2375,7 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
                     return (Hydroponics_UnitsType)2;
                 case 'p':
                     switch (unitsSymbolStr.length() >= 5 ? unitsSymbolStr[4] : '\0') {
+                        case '\0':
                         case '5':
                             return (Hydroponics_UnitsType)13;
                         case '6':
@@ -2396,7 +2397,7 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
         case '%':
             return (Hydroponics_UnitsType)1;
         case '°':
-            switch (unitsSymbolStr.length() >= 3 ? unitsSymbolStr[2] : '\0') {
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
                 case 'C':
                     return (Hydroponics_UnitsType)4;
                 case 'F':
