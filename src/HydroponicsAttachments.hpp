@@ -38,7 +38,7 @@ inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(const Hydroponi
 }
 
 template<class U>
-inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(shared_ptr<U> &rhs)
+inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(SharedPtr<U> &rhs)
 {
     _key = rhs ? rhs->getKey() : (Hydroponics_KeyType)-1;
     _obj = rhs ? reinterpret_pointer_cast<HydroponicsObjInterface>(rhs) : nullptr;
@@ -60,7 +60,7 @@ void HydroponicsAttachment::setObject(U obj)
 }
 
 template<class U>
-shared_ptr<U> HydroponicsAttachment::getObject()
+SharedPtr<U> HydroponicsAttachment::getObject()
 {
     if (_obj) { return _obj.getObject<U>(); }
     if (_obj.getKey() == (Hydroponics_KeyType)-1) { return nullptr; }

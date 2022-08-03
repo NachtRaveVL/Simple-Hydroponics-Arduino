@@ -13,7 +13,7 @@ struct HydroponicsLoggerSubData;
 
 // Logging Level
 // Log levels that can be filtered upon if desired.
-enum Hydroponics_LogLevel : char {
+enum Hydroponics_LogLevel : signed char {
     Hydroponics_LogLevel_All,                               // All (info, warn, err)
     Hydroponics_LogLevel_Warnings,                          // Warnings & errors (warn, err)
     Hydroponics_LogLevel_Errors,                            // Just errors (err)
@@ -54,7 +54,7 @@ public:
     inline Hydroponics_LogLevel getLogLevel() const;
 
     inline bool isLoggingEnabled() const;
-    inline time_t getSystemUptime() const { unixNow() - (_initDate ?: SECONDS_FROM_1970_TO_2000); }
+    inline time_t getSystemUptime() const { return unixNow() - (_initDate ?: SECONDS_FROM_1970_TO_2000); }
 
     void notifyDayChanged();
 

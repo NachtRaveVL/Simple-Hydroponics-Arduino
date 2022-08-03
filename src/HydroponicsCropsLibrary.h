@@ -18,7 +18,7 @@ struct HydroponicsCropsLibraryBook;
 // which ones can unload. It is recommended to use the HydroponicsCropsLubData class if
 // using a temporary, otherwise this checkout/return system. The returned crop lib data
 // instance is guaranteed to stay unique for as long as it is allocated.
-// Unless the HYDRUINO_ENABLE_EXTERNAL_DATA define is defined, all crop data is
+// Unless the HYDRUINO_DISABLE_BUILTIN_DATA define is defined, all crop data is
 // internally stored as JSON strings in the Flash PROGMEM memory space. See the Data
 // Writer Example sketch on how to program an EEPROM or SD Card with such data.
 class HydroponicsCropsLibrary {
@@ -33,7 +33,7 @@ public:
     void beginCropsLibraryFromEEPROM(size_t dataAddress = 0, bool jsonFormat = false);
 
     // Checks out the crop data for this crop from the library, created via the JSON from
-    // PROGMEM if needed (nullptr return = failure). Increments crop data ref count by one.
+    // PROGMEM if needed (nullptr return -> failure). Increments crop data ref count by one.
     const HydroponicsCropsLibData *checkoutCropsData(Hydroponics_CropType cropType);
 
     // Returns crop data back to the library, to delete when no longer used. Decrements crop

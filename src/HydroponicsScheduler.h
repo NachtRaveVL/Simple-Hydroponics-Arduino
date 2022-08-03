@@ -27,13 +27,12 @@ public:
     ~HydroponicsScheduler();
 
     void update();
-    void handleLowMemory();
 
-    void setupWaterPHBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterPHBalancer);
-    void setupWaterTDSBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterTDSBalancer);
-    void setupWaterTemperatureBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> waterTempBalancer);
-    void setupAirTemperatureBalancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> airTempBalancer);
-    void setupAirCO2Balancer(HydroponicsReservoir *reservoir, shared_ptr<HydroponicsBalancer> airCO2Balancer);
+    void setupWaterPHBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> waterPHBalancer);
+    void setupWaterTDSBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> waterTDSBalancer);
+    void setupWaterTemperatureBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> waterTempBalancer);
+    void setupAirTemperatureBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> airTempBalancer);
+    void setupAirCO2Balancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> airCO2Balancer);
 
     void setBaseFeedMultiplier(float feedMultiplier);
     void setWeeklyDosingRate(int weekIndex, float dosingRate, Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_NutrientPremix);
@@ -80,7 +79,7 @@ protected:
 
 
 // Hydroponics Scheduler Feeding Process Log Type
-enum HydroponicsFeedingLogType : char {
+enum HydroponicsFeedingLogType : signed char {
     HydroponicsFeedingLogType_WaterSetpoints,               // Water setpoints
     HydroponicsFeedingLogType_WaterMeasures,                // Water measurements
     HydroponicsFeedingLogType_AirSetpoints,                 // Air setpoints
@@ -88,7 +87,7 @@ enum HydroponicsFeedingLogType : char {
 };
 
 // Hydroponics Scheduler Feeding Process Broadcast Type
-enum HydroponicsFeedingBroadcastType : char {
+enum HydroponicsFeedingBroadcastType : signed char {
     HydroponicsFeedingBroadcastType_Began,                  // Began main process
     HydroponicsFeedingBroadcastType_Ended                   // Ended main process
 };
@@ -97,20 +96,20 @@ enum HydroponicsFeedingBroadcastType : char {
 // Processes are created and managed by Scheduler to manage the feeding and lighting
 // sequences necessary for crops to grow.
 struct HydroponicsProcess {
-    shared_ptr<HydroponicsFeedReservoir> feedRes;           // Feed reservoir
-    Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs; // Actuators required for this stage (keep-enabled list)
+    SharedPtr<HydroponicsFeedReservoir> feedRes;            // Feed reservoir
+    Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs; // Actuators required for this stage (keep-enabled list)
 
     time_t stageStart;                                      // Stage start time
 
-    HydroponicsProcess(shared_ptr<HydroponicsFeedReservoir> feedRes);
+    HydroponicsProcess(SharedPtr<HydroponicsFeedReservoir> feedRes);
 
     void clearActuatorReqs();
-    void setActuatorReqs(const Vector<shared_ptr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn);
+    void setActuatorReqs(const Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn);
 };
 
 // Hydroponics Scheduler Feeding Process
 struct HydroponicsFeeding : public HydroponicsProcess {
-    enum : char {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
+    enum : signed char {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
 
     time_t canFeedAfter;                                    // Time next feeding can occur (UTC)
     time_t lastAirReport;                                   // Last time an air report was generated (UTC)
@@ -121,7 +120,7 @@ struct HydroponicsFeeding : public HydroponicsProcess {
     float airTempSetpoint;                                  // Calculated air temp setpoint for attached crops
     float co2Setpoint;                                      // Calculated co2 level setpoint for attached crops
 
-    HydroponicsFeeding(shared_ptr<HydroponicsFeedReservoir> feedRes);
+    HydroponicsFeeding(SharedPtr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsFeeding();
 
     void recalcFeeding();
@@ -136,7 +135,7 @@ private:
 
 // Hydroponics Scheduler Lighting Process
 struct HydroponicsLighting : public HydroponicsProcess {
-    enum : char {Init,Spray,Light,Done,Unknown = -1} stage; // Current lighting stage
+    enum : signed char {Init,Spray,Light,Done,Unknown = -1} stage; // Current lighting stage
 
     time_t sprayStart;                                      // Time when spraying should start (TZ)
     time_t lightStart;                                      // Time when lighting should start / spraying should end (TZ, same as sprayStart when no spraying needed)
@@ -144,7 +143,7 @@ struct HydroponicsLighting : public HydroponicsProcess {
 
     float lightHours;                                       // Calculated light hours for attached crops
 
-    HydroponicsLighting(shared_ptr<HydroponicsFeedReservoir> feedRes);
+    HydroponicsLighting(SharedPtr<HydroponicsFeedReservoir> feedRes);
     ~HydroponicsLighting();
 
     void recalcLighting();

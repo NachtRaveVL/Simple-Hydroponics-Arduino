@@ -11,7 +11,7 @@
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 
 template<typename ParameterType, int Slots>
-taskid_t scheduleSignalFireOnce(shared_ptr<HydroponicsObjInterface> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
+taskid_t scheduleSignalFireOnce(SharedPtr<HydroponicsObjInterface> object, Signal<ParameterType,Slots> &signal, ParameterType fireParam)
 {
     SignalFireTask<ParameterType,Slots> *fireTask = object ? new SignalFireTask<ParameterType,Slots>(object, signal, fireParam) : nullptr;
     HYDRUINO_SOFT_ASSERT(!object || fireTask, SFP(HStr_Err_AllocationFailure));
@@ -29,7 +29,7 @@ taskid_t scheduleSignalFireOnce(Signal<ParameterType,Slots> &signal, ParameterTy
 }
 
 template<class ObjectType, typename ParameterType>
-taskid_t scheduleObjectMethodCallOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam)
+taskid_t scheduleObjectMethodCallOnce(SharedPtr<ObjectType> object, void (ObjectType::*method)(ParameterType), ParameterType callParam)
 {
     MethodSlotCallTask<ObjectType,ParameterType> *callTask = object ? new MethodSlotCallTask<ObjectType,ParameterType>(object, method, callParam) : nullptr;
     HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HStr_Err_AllocationFailure));
@@ -47,7 +47,7 @@ taskid_t scheduleObjectMethodCallOnce(ObjectType *object, void (ObjectType::*met
 }
 
 template<class ObjectType>
-taskid_t scheduleObjectMethodCallWithTaskIdOnce(shared_ptr<ObjectType> object, void (ObjectType::*method)(taskid_t))
+taskid_t scheduleObjectMethodCallWithTaskIdOnce(SharedPtr<ObjectType> object, void (ObjectType::*method)(taskid_t))
 {
     MethodSlotCallTask<ObjectType,taskid_t> *callTask = object ? new MethodSlotCallTask<ObjectType,taskid_t>(object, method, (taskid_t)0) : nullptr;
     HYDRUINO_SOFT_ASSERT(!object || callTask, SFP(HStr_Err_AllocationFailure));
@@ -241,7 +241,7 @@ int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType
 }
 
 template<size_t N>
-void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, typename Vector<shared_ptr<HydroponicsActuator>, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
+void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, typename Vector<SharedPtr<HydroponicsActuator>, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
@@ -253,7 +253,7 @@ void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &
 }
 
 template<size_t N>
-void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, float rateValue, typename Vector<typename Pair<shared_ptr<HydroponicsActuator>, float>::type, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
+void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, float rateValue, typename Vector<typename Pair<SharedPtr<HydroponicsActuator>, float>::type, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
@@ -263,6 +263,15 @@ void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>
             actuatorsOut.push_back(pair);
         }
     }
+}
+
+inline bool checkPinIsPWMOutput(uint8_t pin)
+{
+    #if defined(ARDUINO_ARCH_RP2040)
+        return true; // all pins are PWM capable
+    #else
+        return digitalPinHasPWM(pin);
+    #endif
 }
 
 #endif // /ifndef HydroponicsUtils_HPP

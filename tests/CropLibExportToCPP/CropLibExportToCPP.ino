@@ -2,8 +2,8 @@
 
 #include <Hydroponics.h>
 
-#ifdef HYDRUINO_ENABLE_EXTERNAL_DATA
-#error The HYDRUINO_ENABLE_EXTERNAL_DATA flag is expected to be undefined in order to run this sketch
+#ifdef HYDRUINO_DISABLE_BUILTIN_DATA
+#error The HYDRUINO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
 #endif
 
 #define SETUP_PIEZO_BUZZER_PIN          11

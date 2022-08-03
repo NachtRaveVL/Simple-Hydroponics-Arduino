@@ -25,14 +25,14 @@ HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData 
 }
 
 
-HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, byte measurementRow, int typeIn)
+HydroponicsTrigger::HydroponicsTrigger(HydroponicsIdentity sensorId, uint8_t measurementRow, int typeIn)
     : type((typeof(type))typeIn), _sensor(this), _triggerState(Hydroponics_TriggerState_Disabled)
 {
     _sensor.setMeasurementRow(measurementRow);
     _sensor.setObject(sensorId);
 }
 
-HydroponicsTrigger::HydroponicsTrigger(shared_ptr<HydroponicsSensor> sensor, byte measurementRow, int typeIn)
+HydroponicsTrigger::HydroponicsTrigger(SharedPtr<HydroponicsSensor> sensor, uint8_t measurementRow, int typeIn)
     : type((typeof(type))typeIn), _sensor(this), _triggerState(Hydroponics_TriggerState_Disabled)
 {
     _sensor.setMeasurementRow(measurementRow);
@@ -75,14 +75,14 @@ Signal<Hydroponics_TriggerState, HYDRUINO_TRIGGER_STATE_SLOTS> &HydroponicsTrigg
 }
 
 
-HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float tolerance, bool triggerBelow, float detriggerTol, byte measurementRow)
+HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(HydroponicsIdentity sensorId, float tolerance, bool triggerBelow, float detriggerTol, uint8_t measurementRow)
     : HydroponicsTrigger(sensorId, measurementRow, MeasureValue),
       _triggerTol(tolerance), _detriggerTol(detriggerTol), _triggerBelow(triggerBelow)
 {
     _sensor.setHandleMethod(&HydroponicsMeasurementValueTrigger::handleMeasurement);
 }
 
-HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(shared_ptr<HydroponicsSensor> sensor, float tolerance, bool triggerBelow, float detriggerTol, byte measurementRow)
+HydroponicsMeasurementValueTrigger::HydroponicsMeasurementValueTrigger(SharedPtr<HydroponicsSensor> sensor, float tolerance, bool triggerBelow, float detriggerTol, uint8_t measurementRow)
     : HydroponicsTrigger(sensor, measurementRow, MeasureValue),
       _triggerTol(tolerance), _detriggerTol(detriggerTol), _triggerBelow(triggerBelow)
 {
@@ -147,7 +147,7 @@ void HydroponicsMeasurementValueTrigger::handleMeasurement(const HydroponicsMeas
 }
 
 
-HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, byte measurementRow)
+HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(HydroponicsIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, uint8_t measurementRow)
     : HydroponicsTrigger(sensorId, measurementRow, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)
@@ -155,7 +155,7 @@ HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(Hydroponi
     _sensor.setHandleMethod(&HydroponicsMeasurementRangeTrigger::handleMeasurement);
 }
 
-HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(shared_ptr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, byte measurementRow)
+HydroponicsMeasurementRangeTrigger::HydroponicsMeasurementRangeTrigger(SharedPtr<HydroponicsSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, uint8_t measurementRow)
     : HydroponicsTrigger(sensor, measurementRow, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)

@@ -6,7 +6,7 @@
 #include "Hydroponics.h"
 #include <pins_arduino.h>
 
-HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn)
+HydroponicsBitResolution::HydroponicsBitResolution(uint8_t bitResIn)
     : bitRes(bitResIn), maxVal(1 << bitResIn)
 { ; }
 
@@ -15,7 +15,7 @@ HydroponicsBitResolution::HydroponicsBitResolution(byte bitResIn)
 
 BasicArduinoInterruptAbstraction interruptImpl;
 
-ActuatorTimedEnableTask::ActuatorTimedEnableTask(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
+ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
     : taskId(TASKMGR_INVALIDID), _actuator(actuator), _enableIntensity(enableIntensity), _enableTimeMillis(enableTimeMillis)
 { ; }
 
@@ -29,7 +29,7 @@ void ActuatorTimedEnableTask::exec()
     _actuator->disableActuator();
 }
 
-taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
 {
     ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, enableIntensity, enableTimeMillis) : nullptr;
     HYDRUINO_SOFT_ASSERT(!actuator || enableTask, SFP(HStr_Err_AllocationFailure));
@@ -37,7 +37,7 @@ taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuato
     return (enableTask ? (enableTask->taskId = retVal) : retVal);
 }
 
-taskid_t scheduleActuatorTimedEnableOnce(shared_ptr<HydroponicsActuator> actuator, time_t enableTimeMillis)
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroponicsActuator> actuator, time_t enableTimeMillis)
 {
     ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, 1.0f, enableTimeMillis) : nullptr;
     HYDRUINO_SOFT_ASSERT(!actuator || enableTask, SFP(HStr_Err_AllocationFailure));
@@ -127,7 +127,7 @@ void publishData(HydroponicsSensor *sensor)
         Hydroponics_PositionIndex columnIndexStart = getPublisherInstance()->getColumnIndexStart(sensor->getKey());
 
         if (columnIndexStart >= 0) {
-            for (byte measurementRow = 0; measurementRow < rows; ++measurementRow) {
+            for (uint8_t measurementRow = 0; measurementRow < rows; ++measurementRow) {
                 getPublisherInstance()->publishData(columnIndexStart + measurementRow, getAsSingleMeasurement(measurement, measurementRow));
             }
         }
@@ -219,7 +219,7 @@ String addressToString(uintptr_t addr)
         if (addr <       0x10) { retVal.concat('0'); }
     }
 
-    retVal.concat(String(addr, 16));
+    retVal.concat(String((unsigned long)addr, 16));
 
     return retVal;
 }
@@ -353,7 +353,7 @@ void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length
     }
 }
 
-String hexStringFromBytes(const byte *bytesIn, size_t length)
+String hexStringFromBytes(const uint8_t *bytesIn, size_t length)
 {
     if (!bytesIn || !length) { return String(SFP(HStr_null)); }
     String retVal; retVal.reserve((length << 1) + 1);
@@ -366,7 +366,7 @@ String hexStringFromBytes(const byte *bytesIn, size_t length)
     return retVal.length() ? retVal : String(SFP(HStr_null));
 }
 
-void hexStringToBytes(String stringIn, byte *bytesOut, size_t length)
+void hexStringToBytes(String stringIn, uint8_t *bytesOut, size_t length)
 {
     if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HStr_null))) { return; }
     for (size_t index = 0; index < length; ++index) {
@@ -376,7 +376,7 @@ void hexStringToBytes(String stringIn, byte *bytesOut, size_t length)
     }
 }
 
-void hexStringToBytes(JsonVariantConst &variantIn, byte *bytesOut, size_t length)
+void hexStringToBytes(JsonVariantConst &variantIn, uint8_t *bytesOut, size_t length)
 {
     if (variantIn.isNull() || variantIn.is<JsonObjectConst>() || variantIn.is<JsonArrayConst>()) { return; }
     hexStringToBytes(variantIn.as<String>(), bytesOut, length);
@@ -1030,7 +1030,7 @@ int defaultDecimalPlaces(Hydroponics_MeasurementMode measureMode)
 }
 
 
-bool checkPinIsAnalogInput(byte pin)
+bool checkPinIsAnalogInput(uint8_t pin)
 {
     #if !defined(NUM_ANALOG_INPUTS) || NUM_ANALOG_INPUTS == 0
         return false;
@@ -1092,7 +1092,7 @@ bool checkPinIsAnalogInput(byte pin)
     #endif
 }
 
-bool checkPinIsAnalogOutput(byte pin)
+bool checkPinIsAnalogOutput(uint8_t pin)
 {
     #if !defined(NUM_ANALOG_OUTPUTS) || NUM_ANALOG_OUTPUTS == 0
         return false;
@@ -1682,124 +1682,730 @@ String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool exclu
 
 Hydroponics_SystemMode systemModeFromString(String systemModeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_SystemMode_Count; ++typeIndex) {
-        if (systemModeStr == systemModeToString((Hydroponics_SystemMode)typeIndex)) {
-            return (Hydroponics_SystemMode)typeIndex;
-        }
+    switch (systemModeStr.length() >= 1 ? systemModeStr[0] : '\0') {
+        case 'R':
+            return (Hydroponics_SystemMode)0;
+        case 'D':
+            return (Hydroponics_SystemMode)1;
+        case 'C':
+            return (Hydroponics_SystemMode)2;
     }
     return Hydroponics_SystemMode_Undefined;
 }
 
 Hydroponics_MeasurementMode measurementModeFromString(String measurementModeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_MeasurementMode_Count; ++typeIndex) {
-        if (measurementModeStr == measurementModeToString((Hydroponics_MeasurementMode)typeIndex)) {
-            return (Hydroponics_MeasurementMode)typeIndex;
-        }
+    switch (measurementModeStr.length() >= 1 ? measurementModeStr[0] : '\0') {
+        case 'I':
+            return (Hydroponics_MeasurementMode)0;
+        case 'M':
+            return (Hydroponics_MeasurementMode)1;
+        case 'S':
+            return (Hydroponics_MeasurementMode)2;
+        case 'C':
+            return (Hydroponics_MeasurementMode)3;
     }
     return Hydroponics_MeasurementMode_Undefined;
 }
 
 Hydroponics_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_DisplayOutputMode_Count; ++typeIndex) {
-        if (displayOutModeStr == displayOutputModeToString((Hydroponics_DisplayOutputMode)typeIndex)) {
-            return (Hydroponics_DisplayOutputMode)typeIndex;
-        }
+    switch (displayOutModeStr.length() >= 1 ? displayOutModeStr[0] : '\0') {
+        case 'D':
+            return (Hydroponics_DisplayOutputMode)0;
+        case '2':
+            switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
+                case '\0':
+                    return (Hydroponics_DisplayOutputMode)1;
+                case 'S':
+                    return (Hydroponics_DisplayOutputMode)2;
+            }
+            break;
+        case '1':
+            switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
+                case '\0':
+                    return (Hydroponics_DisplayOutputMode)3;
+                case 'S':
+                    return (Hydroponics_DisplayOutputMode)4;
+            }
+            break;
+        case 'C':
+            return (Hydroponics_DisplayOutputMode)5;
     }
     return Hydroponics_DisplayOutputMode_Undefined;
 }
 
 Hydroponics_ControlInputMode controlInputModeFromString(String controlInModeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_ControlInputMode_Count; ++typeIndex) {
-        if (controlInModeStr == controlInputModeToString((Hydroponics_ControlInputMode)typeIndex)) {
-            return (Hydroponics_ControlInputMode)typeIndex;
-        }
+    switch (controlInModeStr.length() >= 1 ? controlInModeStr[0] : '\0') {
+        case 'D':
+            return (Hydroponics_ControlInputMode)0;
+        case '2':
+            return (Hydroponics_ControlInputMode)1;
+        case '4':
+            return (Hydroponics_ControlInputMode)2;
+        case '6':
+            return (Hydroponics_ControlInputMode)3;
+        case 'R':
+            return (Hydroponics_ControlInputMode)4;
+        case 'C':
+            return (Hydroponics_ControlInputMode)5;
     }
     return Hydroponics_ControlInputMode_Undefined;
 }
 
 Hydroponics_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_ActuatorType_Count; ++typeIndex) {
-        if (actuatorTypeStr == actuatorTypeToString((Hydroponics_ActuatorType)typeIndex)) {
-            return (Hydroponics_ActuatorType)typeIndex;
-        }
+    switch (actuatorTypeStr.length() >= 1 ? actuatorTypeStr[0] : '\0') {
+        case 'G':
+            return (Hydroponics_ActuatorType)0;
+        case 'W':
+            switch (actuatorTypeStr.length() >= 6 ? actuatorTypeStr[5] : '\0') {
+                case 'P':
+                    return (Hydroponics_ActuatorType)1;
+                case 'H':
+                    return (Hydroponics_ActuatorType)3;
+                case 'A':
+                    return (Hydroponics_ActuatorType)4;
+            }
+            break;
+        case 'P':
+            return (Hydroponics_ActuatorType)2;
+        case 'U':
+            return (Hydroponics_ActuatorType)5;
+        case 'F':
+            return (Hydroponics_ActuatorType)6;
+        case 'C':
+            return (Hydroponics_ActuatorType)7;
     }
     return Hydroponics_ActuatorType_Undefined;
 }
 
 Hydroponics_SensorType sensorTypeFromString(String sensorTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_SensorType_Count; ++typeIndex) {
-        if (sensorTypeStr == sensorTypeToString((Hydroponics_SensorType)typeIndex)) {
-            return (Hydroponics_SensorType)typeIndex;
-        }
+    switch (sensorTypeStr.length() >= 1 ? sensorTypeStr[0] : '\0') {
+        case 'W':
+            switch (sensorTypeStr.length() >= 6 ? sensorTypeStr[5] : '\0') {
+                case 'P':
+                    return (Hydroponics_SensorType)0;
+                case 'T':
+                    switch (sensorTypeStr.length() >= 7 ? sensorTypeStr[6] : '\0') {
+                        case 'D':
+                            return (Hydroponics_SensorType)1;
+                        case 'e':
+                            return (Hydroponics_SensorType)3;
+                    }
+                    break;
+                case 'H':
+                    return (Hydroponics_SensorType)6;
+            }
+            break;
+        case 'S':
+            return (Hydroponics_SensorType)2;
+        case 'P':
+            switch (sensorTypeStr.length() >= 2 ? sensorTypeStr[1] : '\0') {
+                case 'u':
+                    return (Hydroponics_SensorType)4;
+                case 'o':
+                    return (Hydroponics_SensorType)9;
+            }
+            break;
+        case 'L':
+            return (Hydroponics_SensorType)5;
+        case 'A':
+            switch (sensorTypeStr.length() >= 4 ? sensorTypeStr[3] : '\0') {
+                case 'T':
+                    return (Hydroponics_SensorType)7;
+                case 'C':
+                    return (Hydroponics_SensorType)8;
+            }
+            break;
+        case 'C':
+            return (Hydroponics_SensorType)10;
     }
     return Hydroponics_SensorType_Undefined;
 }
 
 Hydroponics_CropType cropTypeFromString(String cropTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_CropType_Count; ++typeIndex) {
-        if (cropTypeStr == cropTypeToString((Hydroponics_CropType)typeIndex)) {
-            return (Hydroponics_CropType)typeIndex;
-        }
+    switch (cropTypeStr.length() >= 1 ? cropTypeStr[0] : '\0') {
+        case 'A':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'l':
+                    return (Hydroponics_CropType)0;
+                case 'n':
+                    return (Hydroponics_CropType)1;
+                case 'r':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 't':
+                            return (Hydroponics_CropType)2;
+                        case 'u':
+                            return (Hydroponics_CropType)3;
+                    }
+                    break;
+                case 's':
+                    return (Hydroponics_CropType)4;
+            }
+            break;
+        case 'B':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    return (Hydroponics_CropType)5;
+                case 'e':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'a':
+                            switch (cropTypeStr.length() >= 5 ? cropTypeStr[4] : '\0') {
+                                case '\0':
+                                    return (Hydroponics_CropType)6;
+                                case 'B':
+                                    return (Hydroponics_CropType)7;
+                            }
+                            break;
+                        case 'e':
+                            return (Hydroponics_CropType)8;
+                    }
+                    break;
+                case 'l':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'a':
+                            return (Hydroponics_CropType)9;
+                        case 'u':
+                            return (Hydroponics_CropType)10;
+                    }
+                    break;
+                case 'o':
+                    return (Hydroponics_CropType)11;
+                case 'r':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'o':
+                            return (Hydroponics_CropType)12;
+                        case 'u':
+                            return (Hydroponics_CropType)13;
+                    }
+                    break;
+            }
+            break;
+        case 'C':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'b':
+                            return (Hydroponics_CropType)14;
+                        case 'n':
+                            return (Hydroponics_CropType)15;
+                        case 'p':
+                            return (Hydroponics_CropType)16;
+                        case 'r':
+                            return (Hydroponics_CropType)17;
+                        case 't':
+                            return (Hydroponics_CropType)18;
+                        case 'u':
+                            return (Hydroponics_CropType)19;
+                    }
+                    break;
+                case 'e':
+                    return (Hydroponics_CropType)20;
+                case 'h':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'a':
+                            return (Hydroponics_CropType)21;
+                        case 'i':
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                                case 'c':
+                                    return (Hydroponics_CropType)22;
+                                case 'v':
+                                    return (Hydroponics_CropType)23;
+                            }
+                            break;
+                    }
+                    break;
+                case 'i':
+                    return (Hydroponics_CropType)24;
+                case 'o':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'r':
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                                case 'i':
+                                    return (Hydroponics_CropType)25;
+                                case 'n':
+                                    return (Hydroponics_CropType)26;
+                            }
+                            break;
+                        case 'u':
+                            return (Hydroponics_CropType)85;
+                    }
+                    break;
+                case 'u':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'c':
+                            return (Hydroponics_CropType)27;
+                        case 's':
+                            switch (cropTypeStr.length() >= 11 ? cropTypeStr[10] : '\0') {
+                                case '1':
+                                    return (Hydroponics_CropType)77;
+                                case '2':
+                                    return (Hydroponics_CropType)78;
+                                case '3':
+                                    return (Hydroponics_CropType)79;
+                                case '4':
+                                    return (Hydroponics_CropType)80;
+                                case '5':
+                                    return (Hydroponics_CropType)81;
+                                case '6':
+                                    return (Hydroponics_CropType)82;
+                                case '7':
+                                    return (Hydroponics_CropType)83;
+                                case '8':
+                                    return (Hydroponics_CropType)84;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+        case 'D':
+            return (Hydroponics_CropType)28;
+        case 'E':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'g':
+                    return (Hydroponics_CropType)29;
+                case 'n':
+                    return (Hydroponics_CropType)30;
+            }
+            break;
+        case 'F':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'e':
+                    return (Hydroponics_CropType)31;
+                case 'o':
+                    return (Hydroponics_CropType)32;
+                case 'l':
+                    return (Hydroponics_CropType)33;
+            }
+            break;
+        case 'G':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    return (Hydroponics_CropType)34;
+                case 'i':
+                    return (Hydroponics_CropType)35;
+            }
+            break;
+        case 'K':
+            return (Hydroponics_CropType)36;
+        case 'L':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    return (Hydroponics_CropType)37;
+                case 'e':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'e':
+                            return (Hydroponics_CropType)38;
+                        case 'm':
+                            return (Hydroponics_CropType)39;
+                        case 't':
+                            return (Hydroponics_CropType)40;
+                    }
+                    break;
+            }
+            break;
+        case 'M':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    return (Hydroponics_CropType)41;
+                case 'e':
+                    return (Hydroponics_CropType)42;
+                case 'i':
+                    return (Hydroponics_CropType)43;
+                case 'u':
+                    return (Hydroponics_CropType)44;
+            }
+            break;
+        case 'O':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'k':
+                    return (Hydroponics_CropType)45;
+                case 'n':
+                    return (Hydroponics_CropType)46;
+                case 'r':
+                    return (Hydroponics_CropType)47;
+            }
+            break;
+        case 'P':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'k':
+                            return (Hydroponics_CropType)48;
+                        case 'r':
+                            switch (cropTypeStr.length() >= 5 ? cropTypeStr[4] : '\0') {
+                                case 'l':
+                                    return (Hydroponics_CropType)49;
+                                case 'n':
+                                    return (Hydroponics_CropType)50;
+                            }
+                            break;
+                    }
+                    break;
+                case 'e':
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                        case 'a':
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                                case '\0':
+                                    return (Hydroponics_CropType)51;
+                                case 'S':
+                                    return (Hydroponics_CropType)52;
+                            }
+                            break;
+                        case 'p':
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                                case 'i':
+                                    return (Hydroponics_CropType)53;
+                                case 'p':
+                                    switch (cropTypeStr.length() >= 8 ? cropTypeStr[7] : '\0') {
+                                        case 'B':
+                                            return (Hydroponics_CropType)54;
+                                        case 'H':
+                                            return (Hydroponics_CropType)55;
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+                case 'o':
+                    switch (cropTypeStr.length() >= 7 ? cropTypeStr[6] : '\0') {
+                        case '\0':
+                            return (Hydroponics_CropType)56;
+                        case 'S':
+                            return (Hydroponics_CropType)57;
+                    }
+                    break;
+                case 'u':
+                    return (Hydroponics_CropType)58;
+            }
+            break;
+        case 'R':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    return (Hydroponics_CropType)59;
+                case 'h':
+                    return (Hydroponics_CropType)60;
+                case 'o':
+                    return (Hydroponics_CropType)61;
+            }
+            break;
+        case 'S':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    return (Hydroponics_CropType)62;
+                case 'i':
+                    return (Hydroponics_CropType)63;
+                case 'p':
+                    return (Hydroponics_CropType)64;
+                case 'q':
+                    return (Hydroponics_CropType)65;
+                case 'u':
+                    return (Hydroponics_CropType)66;
+                case 't':
+                    return (Hydroponics_CropType)67;
+                case 'w':
+                    return (Hydroponics_CropType)68;
+            }
+            break;
+        case 'T':
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+                case 'a':
+                    switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                        case 'o':
+                            return (Hydroponics_CropType)69;
+                        case 'r':
+                            return (Hydroponics_CropType)70;
+                    }
+                    break;
+                case 'h':
+                    return (Hydroponics_CropType)71;
+                case 'o':
+                    return (Hydroponics_CropType)72;
+                case 'u':
+                    return (Hydroponics_CropType)73;
+            }
+            break;
+        case 'W':
+            switch (cropTypeStr.length() >= 6 ? cropTypeStr[5] : '\0') {
+                case 'c':
+                    return (Hydroponics_CropType)74;
+                case 'm':
+                    return (Hydroponics_CropType)75;
+            }
+            break;
+        case 'Z':
+            return (Hydroponics_CropType)76;
     }
     return Hydroponics_CropType_Undefined;
 }
 
 Hydroponics_SubstrateType substrateTypeFromString(String substrateTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_SubstrateType_Count; ++typeIndex) {
-        if (substrateTypeStr == substrateTypeToString((Hydroponics_SubstrateType)typeIndex)) {
-            return (Hydroponics_SubstrateType)typeIndex;
-        }
+    switch (substrateTypeStr.length() >= 1 ? substrateTypeStr[0] : '\0') {
+        case 'C':
+            switch (substrateTypeStr.length() >= 2 ? substrateTypeStr[1] : '\0') {
+                case 'l':
+                    return (Hydroponics_SubstrateType)0;
+                case 'o':
+                    switch (substrateTypeStr.length() >= 3 ? substrateTypeStr[2] : '\0') {
+                        case 'c':
+                            return (Hydroponics_SubstrateType)1;
+                        case 'u':
+                            return (Hydroponics_SubstrateType)3;
+                    }
+                    break;
+            }
+            break;
+        case 'R':
+            return (Hydroponics_SubstrateType)2;
     }
     return Hydroponics_SubstrateType_Undefined;
 }
 
 Hydroponics_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
 {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_ReservoirType_Count; ++typeIndex) {
-        if (reservoirTypeStr == reservoirTypeToString((Hydroponics_ReservoirType)typeIndex)) {
-            return (Hydroponics_ReservoirType)typeIndex;
-        }
+    switch (reservoirTypeStr.length() >= 1 ? reservoirTypeStr[0] : '\0') {
+        case 'F':
+            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\0') {
+                case 'e':
+                    return (Hydroponics_ReservoirType)0;
+                case 'r':
+                    return (Hydroponics_ReservoirType)3;
+            }
+            break;
+        case 'D':
+            return (Hydroponics_ReservoirType)1;
+        case 'N':
+            return (Hydroponics_ReservoirType)2;
+        case 'P':
+            switch (reservoirTypeStr.length() >= 3 ? reservoirTypeStr[2] : '\0') {
+                case 'U':
+                    return (Hydroponics_ReservoirType)4;
+                case 'D':
+                    return (Hydroponics_ReservoirType)5;
+            }
+            break;
+        case 'C':
+            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\0') {
+                case 'u':
+                    switch (reservoirTypeStr.length() >= 15 ? reservoirTypeStr[14] : '\0') {
+                        case '1':
+                            switch (reservoirTypeStr.length() >= 16 ? reservoirTypeStr[15] : '\0') {
+                                case '\0':
+                                    return (Hydroponics_ReservoirType)6;
+                                case '0':
+                                    return (Hydroponics_ReservoirType)15;
+                                case '1':
+                                    return (Hydroponics_ReservoirType)16;
+                                case '2':
+                                    return (Hydroponics_ReservoirType)17;
+                                case '3':
+                                    return (Hydroponics_ReservoirType)18;
+                                case '4':
+                                    return (Hydroponics_ReservoirType)19;
+                                case '5':
+                                    return (Hydroponics_ReservoirType)20;
+                                case '6':
+                                    return (Hydroponics_ReservoirType)21;
+                            }
+                            break;
+                        case '2':
+                            return (Hydroponics_ReservoirType)7;
+                        case '3':
+                            return (Hydroponics_ReservoirType)8;
+                        case '4':
+                            return (Hydroponics_ReservoirType)9;
+                        case '5':
+                            return (Hydroponics_ReservoirType)10;
+                        case '6':
+                            return (Hydroponics_ReservoirType)11;
+                        case '7':
+                            return (Hydroponics_ReservoirType)12;
+                        case '8':
+                            return (Hydroponics_ReservoirType)13;
+                        case '9':
+                            return (Hydroponics_ReservoirType)14;
+                    }
+                    break;
+                case 'o':
+                    return (Hydroponics_ReservoirType)22;
+            }
+            break;
     }
     return Hydroponics_ReservoirType_Undefined;
 }
 
 Hydroponics_RailType railTypeFromString(String railTypeStr) {
-    for (int typeIndex = 0; typeIndex <= Hydroponics_RailType_Count; ++typeIndex) {
-        if (railTypeStr == railTypeToString((Hydroponics_RailType)typeIndex)) {
-            return (Hydroponics_RailType)typeIndex;
-        }
+    switch (railTypeStr.length() >= 1 ? railTypeStr[0] : '\0') {
+        case 'A':
+            switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\0') {
+                case '1':
+                    return (Hydroponics_RailType)0;
+                case '2':
+                    return (Hydroponics_RailType)1;
+            }
+            break;
+        case 'D':
+            switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\0') {
+                case '5':
+                    return (Hydroponics_RailType)2;
+                case '1':
+                    return (Hydroponics_RailType)3;
+            }
+            break;
+        case 'U':
+            return (Hydroponics_RailType)4;
     }
     return Hydroponics_RailType_Undefined;
 }
 
-Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
-{
-    for (int typeIndex = 0; typeIndex <= Hydroponics_UnitsType_Count; ++typeIndex) {
-        if (unitsSymbolStr == unitsTypeToSymbol((Hydroponics_UnitsType)typeIndex)) {
-            return (Hydroponics_UnitsType)typeIndex;
-        }
-    }
-    if (unitsSymbolStr.equals(SFP(HStr_Unit_JoulesPerSecond))) { return Hydroponics_UnitsType_Power_Wattage; }
-    if (unitsSymbolStr.equalsIgnoreCase(SFP(HStr_Unit_MilliSiemensPerCentimeter)) ||
-        unitsSymbolStr.equalsIgnoreCase(SFP(HStr_Unit_TDS))) { return Hydroponics_UnitsType_Concentration_TDS; }
-    return Hydroponics_UnitsType_Undefined;
-}
-
 Hydroponics_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
 {
-    for (int categoryIndex = 0; categoryIndex <= Hydroponics_UnitsCategory_Count; ++categoryIndex) {
-        if (unitsCategoryStr == unitsCategoryToString((Hydroponics_UnitsCategory)categoryIndex)) {
-            return (Hydroponics_UnitsCategory)categoryIndex;
-        }
+    switch (unitsCategoryStr.length() >= 1 ? unitsCategoryStr[0] : '\0') {
+        case 'A':
+            switch (unitsCategoryStr.length() >= 2 ? unitsCategoryStr[1] : '\0') {
+                case 'l':
+                    return (Hydroponics_UnitsCategory)0;
+                case 'i':
+                    switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\0') {
+                        case 'T':
+                            return (Hydroponics_UnitsCategory)7;
+                        case 'H':
+                            switch (unitsCategoryStr.length() >= 5 ? unitsCategoryStr[4] : '\0') {
+                                case 'u':
+                                    return (Hydroponics_UnitsCategory)8;
+                                case 'e':
+                                    return (Hydroponics_UnitsCategory)9;
+                            }
+                            break;
+                        case 'C':
+                            return (Hydroponics_UnitsCategory)10;
+                    }
+                    break;
+            }
+            break;
+        case 'D':
+            switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\0') {
+                case 's':
+                    return (Hydroponics_UnitsCategory)1;
+                case 't':
+                    return (Hydroponics_UnitsCategory)11;
+            }
+            break;
+        case 'S':
+            return (Hydroponics_UnitsCategory)2;
+        case 'L':
+            switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\0') {
+                case 'T':
+                    return (Hydroponics_UnitsCategory)3;
+                case 'V':
+                    return (Hydroponics_UnitsCategory)4;
+                case 'F':
+                    return (Hydroponics_UnitsCategory)5;
+                case 'D':
+                    return (Hydroponics_UnitsCategory)6;
+            }
+            break;
+        case 'W':
+            return (Hydroponics_UnitsCategory)12;
+        case 'P':
+            return (Hydroponics_UnitsCategory)13;
+        case 'C':
+            return (Hydroponics_UnitsCategory)14;
     }
     return Hydroponics_UnitsCategory_Undefined;
+}
+
+Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
+{
+    switch (unitsSymbolStr.length() >= 1 ? unitsSymbolStr[0] : '\0') {
+        case 'A':
+            return (Hydroponics_UnitsType)21;
+        case 'E':
+            return (Hydroponics_UnitsType)3;
+        case 'f':
+            return (Hydroponics_UnitsType)17;
+        case 'g':
+            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
+                case '\0':
+                    return (Hydroponics_UnitsType)8;
+                case '/':
+                    return (Hydroponics_UnitsType)10;
+            }
+            break;
+        case 'J':
+            return (Hydroponics_UnitsType)20;
+        case 'K':
+            return (Hydroponics_UnitsType)18;
+        case 'L':
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
+                case '\0':
+                    return (Hydroponics_UnitsType)7;
+                case '/':
+                    return (Hydroponics_UnitsType)9;
+            }
+            break;
+        case 'l':
+            return (Hydroponics_UnitsType)19;
+        case 'm':
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
+                case 'L':
+                    switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
+                        case 'L':
+                            return (Hydroponics_UnitsType)11;
+                        case 'g':
+                            return (Hydroponics_UnitsType)12;
+                    }
+                    break;
+                case 'S':
+                    return (Hydroponics_UnitsType)3;
+                case '\0':
+                    return (Hydroponics_UnitsType)16;
+            }
+            break;
+        case 'p':
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
+                case 'H':
+                    return (Hydroponics_UnitsType)2;
+                case 'p':
+                    switch (unitsSymbolStr.length() >= 5 ? unitsSymbolStr[4] : '\0') {
+                        case '5':
+                            return (Hydroponics_UnitsType)13;
+                        case '6':
+                            return (Hydroponics_UnitsType)14;
+                        case '7':
+                            return (Hydroponics_UnitsType)15;
+                    }
+                    break;
+            }
+            break;
+        case 'q':
+            return (Hydroponics_UnitsType)22;
+        case 'r':
+            return (Hydroponics_UnitsType)0;
+        case 'T':
+            return (Hydroponics_UnitsType)3;
+        case 'W':
+            return (Hydroponics_UnitsType)20;
+        case '%':
+            return (Hydroponics_UnitsType)1;
+        case '°':
+            switch (unitsSymbolStr.length() >= 3 ? unitsSymbolStr[2] : '\0') {
+                case 'C':
+                    return (Hydroponics_UnitsType)4;
+                case 'F':
+                    return (Hydroponics_UnitsType)5;
+                case 'K':
+                    return (Hydroponics_UnitsType)6;
+            }
+            break;
+    }
 }
 
 Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)

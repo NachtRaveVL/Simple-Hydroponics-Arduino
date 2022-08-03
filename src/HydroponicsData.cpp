@@ -7,12 +7,12 @@
 
 size_t serializeDataToBinaryStream(const HydroponicsData *data, Stream *streamOut, size_t skipBytes)
 {
-    return streamOut->write((const byte *)((intptr_t)data + skipBytes), data->_size - skipBytes);
+    return streamOut->write((const uint8_t *)((intptr_t)data + skipBytes), data->_size - skipBytes);
 }
 
 size_t deserializeDataFromBinaryStream(HydroponicsData *data, Stream *streamIn, size_t skipBytes)
 {
-    return streamIn->readBytes((byte *)((intptr_t)data + skipBytes), data->_size - skipBytes);
+    return streamIn->readBytes((uint8_t *)((intptr_t)data + skipBytes), data->_size - skipBytes);
 }
 
 HydroponicsData *newDataFromBinaryStream(Stream *streamIn)
@@ -59,12 +59,11 @@ HydroponicsData::HydroponicsData()
     _size = sizeof(*this);
 }
 
-HydroponicsData::HydroponicsData(const char *idIn, uint8_t version, uint8_t revision)
-    : id{.chars={'\0','\0','\0','\0'}}, _version(version), _revision(revision), _modified(false)
+HydroponicsData::HydroponicsData(char id0, char id1, char id2, char id3, uint8_t version, uint8_t revision)
+    : id{.chars={id0,id1,id2,id3}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
-    HYDRUINO_HARD_ASSERT(idIn, SFP(HStr_Err_InvalidParameter));
-    strncpy(id.chars, idIn, sizeof(id.chars));
+    HYDRUINO_HARD_ASSERT(isStandardData(), SFP(HStr_Err_InvalidParameter));
 }
 
 HydroponicsData::HydroponicsData(int8_t idType, int8_t objType, int8_t posIndex, int8_t classType, uint8_t version, uint8_t revision)
@@ -81,7 +80,7 @@ HydroponicsData::HydroponicsData(const HydroponicsIdentity &id)
 
 void HydroponicsData::toJSONObject(JsonObject &objectOut) const
 {
-    if (this->isStandardData()) {
+    if (isStandardData()) {
         objectOut[SFP(HStr_Key_Type)] = charsToString(id.chars, sizeof(id.chars));
     } else {
         int8_t typeVals[4] = {id.object.idType, id.object.objType, id.object.posIndex, id.object.classType};
@@ -96,7 +95,7 @@ void HydroponicsData::fromJSONObject(JsonObjectConst &objectIn)
     JsonVariantConst idVar = objectIn[SFP(HStr_Key_Type)];
     const char *idStr = idVar.as<const char *>();
     if (idStr && idStr[0] == 'H') {
-        strncpy(id.chars, idStr, sizeof(id.chars));
+        strncpy(id.chars, idStr, 4);
     } else if (idStr) {
         int8_t typeVals[4];
         commaStringToArray(idStr, typeVals, 4);

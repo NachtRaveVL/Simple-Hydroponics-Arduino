@@ -45,7 +45,7 @@ protected:
     String _dataFileName;                                   // Resolved data file name (based on day)
     uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
     bool _needsTabulation;                                  // Needs tabulation tracking flag
-    byte _columnCount;                                      // Data columns count
+    uint8_t _columnCount;                                   // Data columns count
     HydroponicsDataColumn *_dataColumns;                    // Data columns (owned)
 
     friend class Hydroponics;
@@ -54,7 +54,7 @@ protected:
     inline bool hasPublisherData() const;
 
     void advancePollingFrame();
-    friend void ::dataLoop();
+    friend void dataLoop();
 
     void checkCanPublish();
     void publish(time_t timestamp);

@@ -53,12 +53,12 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e2d          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e03          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 
-byte _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
+uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_SD_CARD_CS_PIN,

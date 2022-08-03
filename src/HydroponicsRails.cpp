@@ -190,7 +190,7 @@ void HydroponicsSimpleRail::handleActivation(HydroponicsActuator *actuator)
 HydroponicsRegulatedRail::HydroponicsRegulatedRail(Hydroponics_RailType railType,
                                                    Hydroponics_PositionIndex railIndex,
                                                    float maxPower,
-                                                   int classType = Regulated)
+                                                   int classType)
     : HydroponicsRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());

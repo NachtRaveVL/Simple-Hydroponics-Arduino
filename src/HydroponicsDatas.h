@@ -18,7 +18,7 @@ struct HydroponicsCustomAdditiveData;
 #include "HydroponicsLogger.h"
 
 // Autosave Enumeration
-enum Hydroponics_Autosave : char {
+enum Hydroponics_Autosave : signed char {
     Hydroponics_Autosave_EnabledToSDCardJson,                   // Autosave to SD Card in Json
     Hydroponics_Autosave_EnabledToSDCardRaw,                    // Autosave to SD Card in binary
     Hydroponics_Autosave_EnabledToEEPROMJson,                   // Autosave to EEPROM in Json
@@ -39,7 +39,7 @@ struct HydroponicsSystemData : public HydroponicsData {
     Hydroponics_Autosave autosaveEnabled;                       // Autosave enabled
     uint16_t autosaveInterval;                                  // Autosave interval, in minutes
     char wifiSSID[HYDRUINO_NAME_MAXSIZE];                       // WiFi SSID
-    byte wifiPassword[HYDRUINO_NAME_MAXSIZE];                   // WiFi password (xor encrypted)
+    uint8_t wifiPassword[HYDRUINO_NAME_MAXSIZE];                // WiFi password (xor encrypted)
     uint32_t wifiPasswordSeed;                                  // Seed for WiFi password one-time pad
 
     HydroponicsSchedulerSubData scheduler;                      // Scheduler subdata
@@ -129,13 +129,13 @@ struct HydroponicsCalibrationData : public HydroponicsData {
 
 // Crops Data Flags
 enum Hydroponics_CropsDataFlag : unsigned short {
-    Hydroponics_CropsDataFlag_Invasive =  0x01,             // Flag indicating plant is invasive and will take over other plants (default: false)
-    Hydroponics_CropsDataFlag_Viner =     0x02,             // Flag indicating plant is a viner and will require a stick for support (default: false)
-    Hydroponics_CropsDataFlag_Large =     0x04,             // Flag indicating plant grows large and will require proper support (default: false)
-    Hydroponics_CropsDataFlag_Perennial = 0x08,             // Flag indicating plant grows back year after year (default: false)
-    Hydroponics_CropsDataFlag_Toxic =     0x10,             // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
-    Hydroponics_CropsDataFlag_Pruning =   0x20,             // Flag indicating plant benefits from active pruning (default: false)
-    Hydroponics_CropsDataFlag_Spraying =  0x40              // Flag indicating plant benefits from spraying in the morning (default: false)
+    Hydroponics_CropsDataFlag_Invasive =    0x01,           // Flag indicating plant is invasive and will take over other plants (default: false)
+    Hydroponics_CropsDataFlag_Viner =       0x02,           // Flag indicating plant is a viner and will require a stick for support (default: false)
+    Hydroponics_CropsDataFlag_Large =       0x04,           // Flag indicating plant grows large and will require proper support (default: false)
+    Hydroponics_CropsDataFlag_Perennial =   0x08,           // Flag indicating plant grows back year after year (default: false)
+    Hydroponics_CropsDataFlag_Toxic =       0x10,           // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
+    Hydroponics_CropsDataFlag_Pruning =     0x20,           // Flag indicating plant benefits from active pruning (default: false)
+    Hydroponics_CropsDataFlag_Spraying =    0x40            // Flag indicating plant benefits from spraying in the morning (default: false)
 };
 
 // Crops Library Data
@@ -143,10 +143,10 @@ enum Hydroponics_CropsDataFlag : unsigned short {
 struct HydroponicsCropsLibData : public HydroponicsData {
     Hydroponics_CropType cropType;                              // Crop type
     char cropName[HYDRUINO_NAME_MAXSIZE];                       // Name of crop
-    byte totalGrowWeeks;                                        // How long it takes to grow until harvestable, in weeks (default: 14)
-    byte lifeCycleWeeks;                                        // How long a perennials life cycle lasts, in weeks (default: 0)
-    byte phaseDurationWeeks[Hydroponics_CropPhase_MainCount];   // How many weeks each main crop phase lasts (seed,veg,bloom&> - default: 2,4,8)
-    byte dailyLightHours[Hydroponics_CropPhase_MainCount];      // How many light hours per day is needed per main stages (seed,veg,bloom&> or all - default: 20,18,12)
+    uint8_t totalGrowWeeks;                                     // How long it takes to grow until harvestable, in weeks (default: 14)
+    uint8_t lifeCycleWeeks;                                     // How long a perennials life cycle lasts, in weeks (default: 0)
+    uint8_t phaseDurationWeeks[Hydroponics_CropPhase_MainCount]; // How many weeks each main crop phase lasts (seed,veg,bloom&> - default: 2,4,8)
+    uint8_t dailyLightHours[Hydroponics_CropPhase_MainCount];   // How many light hours per day is needed per main stages (seed,veg,bloom&> or all - default: 20,18,12)
     float phRange[2];                                           // Ideal pH range (min,max or mid - default: 6)
     float tdsRange[2];                                          // Ideal TDS/EC range (min,max or mid - default: 1.8,2.4)
     float nightlyFeedRate;                                      // Nightly feed multiplier, if crop uses a lower TDS/EC at night (default: 1)

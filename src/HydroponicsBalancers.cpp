@@ -5,7 +5,7 @@
 
 #include "Hydroponics.h"
 
-HydroponicsBalancer::HydroponicsBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, byte measurementRow, int typeIn)
+HydroponicsBalancer::HydroponicsBalancer(SharedPtr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, uint8_t measurementRow, int typeIn)
     : type((typeof(type))typeIn), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false),
       _sensor(this), _balancerState(Hydroponics_BalancerState_Undefined)
 {
@@ -39,7 +39,7 @@ Hydroponics_BalancerState HydroponicsBalancer::getBalancerState() const
     return _balancerState;
 }
 
-void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators)
+void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type &incActuators)
 {
     for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
         bool found = false;
@@ -65,7 +65,7 @@ void HydroponicsBalancer::setIncrementActuators(const Vector<Pair<shared_ptr<Hyd
     }
 }
 
-void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<shared_ptr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators)
+void HydroponicsBalancer::setDecrementActuators(const Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type &decActuators)
 {
     for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
         bool found = false;
@@ -136,7 +136,7 @@ void HydroponicsBalancer::handleMeasurement(const HydroponicsMeasurement *measur
 }
 
 
-HydroponicsLinearEdgeBalancer::HydroponicsLinearEdgeBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float edgeOffset, float edgeLength, byte measurementRow)
+HydroponicsLinearEdgeBalancer::HydroponicsLinearEdgeBalancer(SharedPtr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float edgeOffset, float edgeLength, uint8_t measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, LinearEdge), _edgeOffset(edgeOffset), _edgeLength(edgeLength)
 { ; }
 
@@ -166,13 +166,13 @@ void HydroponicsLinearEdgeBalancer::update()
 }
 
 
-HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, time_t mixTime, byte measurementRow)
+HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(SharedPtr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, time_t mixTime, uint8_t measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
       _lastDosingTime(0), _lastDosingValue(0.0f), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1),
       _baseDosingMillis(baseDosingMillis), _mixTime(mixTime)
 { ; }
 
-HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(shared_ptr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, byte measurementRow)
+HydroponicsTimedDosingBalancer::HydroponicsTimedDosingBalancer(SharedPtr<HydroponicsSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydroponics_UnitsType volumeUnits, uint8_t measurementRow)
     : HydroponicsBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
       _lastDosingTime(0), _lastDosingValue(0.0f), _dosingMillis(0), _dosingDir(Hydroponics_BalancerState_Undefined), _dosingActIndex(-1)
 {
@@ -257,7 +257,7 @@ void HydroponicsTimedDosingBalancer::performDosing()
     _lastDosingTime = unixNow();
 }
 
-void HydroponicsTimedDosingBalancer::performDosing(shared_ptr<HydroponicsActuator> actuator, time_t timeMillis)
+void HydroponicsTimedDosingBalancer::performDosing(SharedPtr<HydroponicsActuator> actuator, time_t timeMillis)
 {
     if (actuator->isAnyPumpClass()) {
         ((HydroponicsPumpObjectInterface *)(actuator.get()))->pump(timeMillis); // pumps have nice logging output

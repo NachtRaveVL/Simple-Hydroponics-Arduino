@@ -42,14 +42,17 @@ struct HydroponicsData : public HydroponicsJSONSerializableInterface {
     bool _modified;                                             // Flag tracking modified status
 
     inline bool isStandardData() const { return id.chars[0] == 'H'; }
-    inline bool isSystemData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HSYS).c_str(), 4) == 0; }
-    inline bool isCalibrationData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HCAL).c_str(), 4) == 0; }
-    inline bool isCropsLibData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HCLD).c_str(), 4) == 0; }
-    inline bool isAdditiveData() const { return strncasecmp(id.chars, SFP(HStr_DataName_HADD).c_str(), 4) == 0; }
+    inline bool isSystemData() const { return id.chars[0] == 'H' && id.chars[1] == 'S' && id.chars[2] == 'Y' && id.chars[3] == 'S'; }
+    inline bool isCalibrationData() const { return id.chars[0] == 'H' && id.chars[1] == 'C' && id.chars[2] == 'A' && id.chars[3] == 'L'; }
+    inline bool isCropsLibData() const { return id.chars[0] == 'H' && id.chars[1] == 'C' && id.chars[2] == 'L' && id.chars[3] == 'D'; }
+    inline bool isAdditiveData() const { return id.chars[0] == 'H' && id.chars[1] == 'A' && id.chars[2] == 'D' && id.chars[3] == 'D'; }
     inline bool isObjectectData() const { return !isStandardData() && id.object.idType >= 0; }
 
     HydroponicsData();                                          // Default constructor
-    HydroponicsData(const char *id,                             // 4-char identifier
+    HydroponicsData(char id0,                                   // 4-char identifier, index 0
+                    char id1,                                   // 4-char identifier, index 1
+                    char id2,                                   // 4-char identifier, index 2
+                    char id3,                                   // 4-char identifier, index 3
                     uint8_t version = 1,                        // Data structure version #
                     uint8_t revision = 1);                      // Stored data revision #
     HydroponicsData(int8_t idType,                              // ID type enum value

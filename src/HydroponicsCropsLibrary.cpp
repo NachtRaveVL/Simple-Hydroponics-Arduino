@@ -226,7 +226,7 @@ HydroponicsCropsLibraryBook *HydroponicsCropsLibrary::newBookFromType(Hydroponic
         if (eeprom) {
             uint16_t lookupOffset = 0;
             eeprom->readBlock(_libEEPROMDataAddress + (((int)cropType + 1) * sizeof(uint16_t)), // +1 for initial total size word
-                              (byte *)&lookupOffset, sizeof(lookupOffset));
+                              (uint8_t *)&lookupOffset, sizeof(lookupOffset));
 
             if (lookupOffset) {
                 auto eepromStream = HydroponicsEEPROMStream(lookupOffset, sizeof(HydroponicsCropsLibData));
@@ -237,7 +237,7 @@ HydroponicsCropsLibraryBook *HydroponicsCropsLibrary::newBookFromType(Hydroponic
         if (retVal) { return retVal; }
     }
 
-    #ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
+    #ifndef HYDRUINO_DISABLE_BUILTIN_DATA
     {   HydroponicsPROGMEMStream progmemStream(0, 0);
         switch (cropType) {
             case Hydroponics_CropType_AloeVera: {
@@ -552,6 +552,6 @@ HydroponicsCropsLibraryBook *HydroponicsCropsLibrary::newBookFromType(Hydroponic
         }
         if (progmemStream.available()) { return new HydroponicsCropsLibraryBook(progmemStream, true); }
     }
-    #endif // /ifndef HYDRUINO_ENABLE_EXTERNAL_DATA
+    #endif // /ifndef HYDRUINO_DISABLE_BUILTIN_DATA
     return nullptr;
 }

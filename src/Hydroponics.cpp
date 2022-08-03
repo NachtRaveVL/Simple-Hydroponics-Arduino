@@ -10,7 +10,7 @@ time_t rtcNow() {
     return _rtcSyncProvider ? _rtcSyncProvider->now().unixtime() : 0;
 }
 
-void handleInterrupt(byte pin)
+void handleInterrupt(uint8_t pin)
 {
     if (Hydroponics::_activeInstance) {
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
@@ -66,8 +66,8 @@ void __int_restore_irq(int *primask)
 
 Hydroponics *Hydroponics::_activeInstance = nullptr;
 
-Hydroponics::Hydroponics(byte piezoBuzzerPin, uint32_t eepromDeviceSize, byte sdCardCSPin, byte *ctrlInputPinMap,
-                         byte eepromI2CAddress, byte rtcI2CAddress, byte lcdI2CAddress,
+Hydroponics::Hydroponics(uint8_t piezoBuzzerPin, uint32_t eepromDeviceSize, uint8_t sdCardCSPin, uint8_t *ctrlInputPinMap,
+                         uint8_t eepromI2CAddress, uint8_t rtcI2CAddress, uint8_t lcdI2CAddress,
                          TwoWire &i2cWire, uint32_t i2cSpeed, uint32_t sdCardSpeed, WiFiClass &wifi)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _sdCardSpeed(sdCardSpeed), _wifi(&wifi),
       _piezoBuzzerPin(piezoBuzzerPin), _eepromDeviceSize(eepromDeviceSize), _sdCardCSPin(sdCardCSPin), _ctrlInputPinMap(ctrlInputPinMap),
@@ -308,7 +308,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                     delete data; data = nullptr;
 
                     if (obj && !obj->isUnknownType()) {
-                        _objects[obj->getKey()] = shared_ptr<HydroponicsObject>(obj);
+                        _objects[obj->getKey()] = SharedPtr<HydroponicsObject>(obj);
                     } else {
                         HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_ImportFailure));
                         if (obj) { delete obj; }
@@ -463,7 +463,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                     delete data; data = nullptr;
 
                     if (obj && !obj->isUnknownType()) {
-                        _objects[obj->getKey()] = shared_ptr<HydroponicsObject>(obj);
+                        _objects[obj->getKey()] = SharedPtr<HydroponicsObject>(obj);
                     } else {
                         HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_ImportFailure));
                         if (obj) { delete obj; }
@@ -804,7 +804,7 @@ void Hydroponics::update()
     #endif
 }
 
-bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
+bool Hydroponics::registerObject(SharedPtr<HydroponicsObject> obj)
 {
     HYDRUINO_SOFT_ASSERT(obj->getId().posIndex >= 0 && obj->getId().posIndex < HYDRUINO_POS_MAXSIZE, SFP(HStr_Err_InvalidParameter));
     if (obj && _objects.find(obj->getKey()) == _objects.end()) {
@@ -822,7 +822,7 @@ bool Hydroponics::registerObject(shared_ptr<HydroponicsObject> obj)
     return false;
 }
 
-bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
+bool Hydroponics::unregisterObject(SharedPtr<HydroponicsObject> obj)
 {
     auto iter = _objects.find(obj->getKey());
     if (iter != _objects.end()) {
@@ -833,7 +833,7 @@ bool Hydroponics::unregisterObject(shared_ptr<HydroponicsObject> obj)
     return false;
 }
 
-shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) const
+SharedPtr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) const
 {
     if (id.posIndex == HYDRUINO_POS_SEARCH_FROMBEG) {
         while (++id.posIndex < HYDRUINO_POS_MAXSIZE) {
@@ -871,7 +871,7 @@ shared_ptr<HydroponicsObject> Hydroponics::objectById(HydroponicsIdentity id) co
     return nullptr;
 }
 
-shared_ptr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
+SharedPtr<HydroponicsObject> Hydroponics::objectById_Col(const HydroponicsIdentity &id) const
 {
     HYDRUINO_SOFT_ASSERT(false, F("Hashing collision")); // exhaustive search must be performed, publishing may miss values
 
@@ -981,7 +981,7 @@ const HydroponicsCustomAdditiveData *Hydroponics::getCustomAdditiveData(Hydropon
     return nullptr;
 }
 
-bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
+bool Hydroponics::tryGetPinLock(uint8_t pin, time_t waitMillis)
 {
     time_t startMillis = millis();
     while (1) {
@@ -999,7 +999,7 @@ bool Hydroponics::tryGetPinLock(byte pin, time_t waitMillis)
     }
 }
 
-void Hydroponics::returnPinLock(byte pin)
+void Hydroponics::returnPinLock(uint8_t pin)
 {
     CRITICAL_SECTION {
         _pinLocks.erase(pin);
@@ -1082,7 +1082,7 @@ void Hydroponics::setWiFiConnection(String ssid, String password)
 
                 randomSeed(_systemData->wifiPasswordSeed);
                 for (int charIndex = 0; charIndex < HYDRUINO_NAME_MAXSIZE; ++charIndex) {
-                    _systemData->wifiPassword[charIndex] = (byte)(charIndex < password.length() ? password[charIndex] : '\0') ^ (byte)random(256);
+                    _systemData->wifiPassword[charIndex] = (uint8_t)(charIndex < password.length() ? password[charIndex] : '\0') ^ (uint8_t)random(256);
                 }
             } else {
                 _systemData->wifiPasswordSeed = 0;
@@ -1127,7 +1127,7 @@ int Hydroponics::getControlInputRibbonPinCount() const
     }
 }
 
-byte Hydroponics::getControlInputPin(int ribbonPinIndex) const
+uint8_t Hydroponics::getControlInputPin(int ribbonPinIndex) const
 {
     int ctrlInPinCount = getControlInputRibbonPinCount();
     HYDRUINO_SOFT_ASSERT(ctrlInPinCount > 0, SFP(HStr_Err_UnsupportedOperation));
@@ -1223,7 +1223,7 @@ WiFiClass *Hydroponics::getWiFi(bool begin)
     return _wifi;
 }
 
-OneWire *Hydroponics::getOneWireForPin(byte pin)
+OneWire *Hydroponics::getOneWireForPin(uint8_t pin)
 {
     auto wireIter = _oneWires.find(pin);
     if (wireIter != _oneWires.end()) {
@@ -1239,7 +1239,7 @@ OneWire *Hydroponics::getOneWireForPin(byte pin)
     return nullptr;
 }
 
-void Hydroponics::dropOneWireForPin(byte pin)
+void Hydroponics::dropOneWireForPin(uint8_t pin)
 {
     auto wireIter = _oneWires.find(pin);
     if (wireIter != _oneWires.end()) {
@@ -1315,7 +1315,7 @@ String Hydroponics::getWiFiPassword()
         if (_systemData->wifiPasswordSeed) {
             randomSeed(_systemData->wifiPasswordSeed);
             for (int charIndex = 0; charIndex < HYDRUINO_NAME_MAXSIZE; ++charIndex) {
-                wifiPassword[charIndex] = (char)(_systemData->wifiPassword[charIndex] ^ (byte)random(256));
+                wifiPassword[charIndex] = (char)(_systemData->wifiPassword[charIndex] ^ (uint8_t)random(256));
             }
         } else {
             strncpy(wifiPassword, (const char *)(_systemData->wifiPassword), HYDRUINO_NAME_MAXSIZE);
@@ -1362,20 +1362,9 @@ void Hydroponics::checkFreeMemory()
 
 void Hydroponics::broadcastLowMemory()
 {
-    #ifdef HYDRUINO_USE_STDCPP_CONTAINERS
-        _objects.shrink_to_fit();
-        _additives.shrink_to_fit();
-        _oneWires.shrink_to_fit();
-        _pinLocks.shrink_to_fit();
-        getCalibrationsStoreInstance()->_calibrationData.shrink_to_fit();
-        getCropsLibraryInstance()->_cropsData.shrink_to_fit();
-    #endif
-
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         iter->second->handleLowMemory();
     }
-
-    scheduler.handleLowMemory();
 }
 
 static uint32_t getSDCardFreeSpace()

@@ -140,11 +140,7 @@ void HydroponicsObject::update()
 { ; }
 
 void HydroponicsObject::handleLowMemory()
-{
-    #ifdef HYDRUINO_USE_STDCPP_CONTAINERS
-        _links.shrink_to_fit(); // only implemented in libstdc++
-    #endif
-}
+{ ; }
 
 HydroponicsData *HydroponicsObject::newSaveData()
 {
@@ -198,7 +194,7 @@ String HydroponicsObject::getKeyString() const
     return _id.keyString;
 }
 
-shared_ptr<HydroponicsObjInterface> HydroponicsObject::getSharedPtr() const
+SharedPtr<HydroponicsObjInterface> HydroponicsObject::getSharedPtr() const
 {
     return getHydroponicsInstance() ? static_pointer_cast<HydroponicsObjInterface>(getHydroponicsInstance()->objectById(_id)) : nullptr;
 }
@@ -235,9 +231,9 @@ String HydroponicsSubObject::getKeyString() const
     return addressToString((uintptr_t)this);
 }
 
-shared_ptr<HydroponicsObjInterface> HydroponicsSubObject::getSharedPtr() const
+SharedPtr<HydroponicsObjInterface> HydroponicsSubObject::getSharedPtr() const
 {
-    return shared_ptr<HydroponicsObjInterface>(this);
+    return SharedPtr<HydroponicsObjInterface>((HydroponicsObjInterface *)this);
 }
 
 bool HydroponicsSubObject::addLinkage(HydroponicsObject *obj)

@@ -10,7 +10,7 @@ void testActuators()
 {
     Serial.println(); Serial.println("-- Actuators --");
 
-    {   auto relay = make_shared<HydroponicsRelayActuator>(Hydroponics_ActuatorType_GrowLights, 0, 7);
+    {   auto relay = arx::stdx::make_shared<HydroponicsRelayActuator>(Hydroponics_ActuatorType_GrowLights, 0, 7);
         relay->setRail(HydroponicsIdentity(String(F("ASDF"))));
         relay->setReservoir(HydroponicsIdentity(String(F("JKL"))));
 
@@ -27,7 +27,7 @@ void testActuators()
         Serial.println(); flushYield();
     }
 
-    {   auto pumpRelay = make_shared<HydroponicsPumpRelayActuator>(Hydroponics_ActuatorType_WaterPump, 0, 7);
+    {   auto pumpRelay = arx::stdx::make_shared<HydroponicsPumpRelayActuator>(Hydroponics_ActuatorType_WaterPump, 0, 7);
         pumpRelay->setRail(HydroponicsIdentity(String(F("ASDF"))));
         pumpRelay->setReservoir(HydroponicsIdentity(String(F("JKL"))));
 
@@ -44,7 +44,7 @@ void testActuators()
         Serial.println(); flushYield();
     }
 
-    {   auto pwmFan = make_shared<HydroponicsPWMActuator>(Hydroponics_ActuatorType_FanExhaust, 0, 7);
+    {   auto pwmFan = arx::stdx::make_shared<HydroponicsPWMActuator>(Hydroponics_ActuatorType_FanExhaust, 0, 7);
         pwmFan->setRail(HydroponicsIdentity(String(F("ASDF"))));
         pwmFan->setReservoir(HydroponicsIdentity(String(F("JKL"))));
 
@@ -66,7 +66,7 @@ void testSensors()
 {
     Serial.println(); Serial.println("-- Sensors --");
 
-    {   auto binarySensor = make_shared<HydroponicsBinarySensor>(Hydroponics_SensorType_WaterLevelIndicator, 0, 0);
+    {   auto binarySensor = arx::stdx::make_shared<HydroponicsBinarySensor>(Hydroponics_SensorType_WaterLevelIndicator, 0, 0);
         binarySensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
         binarySensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
 
@@ -83,7 +83,7 @@ void testSensors()
         Serial.println(); flushYield();
     }
 
-    {   auto analogSensor = make_shared<HydroponicsAnalogSensor>(Hydroponics_SensorType_WaterHeightMeter, 0, 0);
+    {   auto analogSensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(Hydroponics_SensorType_WaterHeightMeter, 0, 0);
         analogSensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
         analogSensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
 
@@ -100,7 +100,7 @@ void testSensors()
         Serial.println(); flushYield();
     }
 
-    {   auto dhtSensor = make_shared<HydroponicsDHTTempHumiditySensor>(0, 0);
+    {   auto dhtSensor = arx::stdx::make_shared<HydroponicsDHTTempHumiditySensor>(0, 0);
         dhtSensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
         dhtSensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
 
@@ -117,7 +117,7 @@ void testSensors()
         Serial.println(); flushYield();
     }
 
-    {   auto dsSensor = make_shared<HydroponicsDSTemperatureSensor>(0, 0);
+    {   auto dsSensor = arx::stdx::make_shared<HydroponicsDSTemperatureSensor>(0, 0);
         dsSensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
         dsSensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
 
@@ -139,7 +139,7 @@ void testCrops()
 {
     Serial.println(); Serial.println("-- Crops --");
 
-    {   auto timedCrop = make_shared<HydroponicsTimedCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
+    {   auto timedCrop = arx::stdx::make_shared<HydroponicsTimedCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
         timedCrop->setFeedReservoir(HydroponicsIdentity(String(F("ASDF"))));
 
         auto data = (HydroponicsTimedCropData *)(timedCrop->newSaveData());
@@ -155,7 +155,7 @@ void testCrops()
         Serial.println(); flushYield();
     }
 
-    {   auto adaptiveCrop = make_shared<HydroponicsAdaptiveCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
+    {   auto adaptiveCrop = arx::stdx::make_shared<HydroponicsAdaptiveCrop>(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime());
         adaptiveCrop->setFeedReservoir(HydroponicsIdentity(String(F("ASDF"))));
         adaptiveCrop->setSoilMoistureSensor(HydroponicsIdentity(String(F("JKL"))));
 
@@ -177,7 +177,7 @@ void testReservoirs()
 {
     Serial.println(); Serial.println("-- Reservoirs --");
 
-    {   auto fluidRes = make_shared<HydroponicsFluidReservoir>(Hydroponics_ReservoirType_NutrientPremix, 0, 5);
+    {   auto fluidRes = arx::stdx::make_shared<HydroponicsFluidReservoir>(Hydroponics_ReservoirType_NutrientPremix, 0, 5);
         fluidRes->setWaterVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
 
         auto data = (HydroponicsFluidReservoirData *)(fluidRes->newSaveData());
@@ -193,7 +193,7 @@ void testReservoirs()
         Serial.println(); flushYield();
     }
 
-    {   auto feedRes = make_shared<HydroponicsFeedReservoir>(0, 5);
+    {   auto feedRes = arx::stdx::make_shared<HydroponicsFeedReservoir>(0, 5);
         feedRes->setWaterVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
         feedRes->setWaterPHSensor(HydroponicsIdentity(String(F("JKL"))));
         feedRes->setWaterTDSSensor(HydroponicsIdentity(String(F("QWER"))));
@@ -214,7 +214,7 @@ void testReservoirs()
         Serial.println(); flushYield();
     }
 
-    {   auto pipeRes = make_shared<HydroponicsInfiniteReservoir>(Hydroponics_ReservoirType_DrainageWater, 0);
+    {   auto pipeRes = arx::stdx::make_shared<HydroponicsInfiniteReservoir>(Hydroponics_ReservoirType_DrainageWater, 0);
 
         auto data = (HydroponicsInfiniteReservoirData *)(pipeRes->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -234,7 +234,7 @@ void testRails()
 {
     Serial.println(); Serial.println("-- Rails --");
 
-    {   auto rail = make_shared<HydroponicsSimpleRail>(Hydroponics_RailType_AC110V, 0);
+    {   auto rail = arx::stdx::make_shared<HydroponicsSimpleRail>(Hydroponics_RailType_AC110V, 0);
 
         auto data = (HydroponicsSimpleRailData *)(rail->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -249,7 +249,7 @@ void testRails()
         Serial.println(); flushYield();
     }
 
-    {   auto regRail = make_shared<HydroponicsRegulatedRail>(Hydroponics_RailType_AC110V, 0, 15);
+    {   auto regRail = arx::stdx::make_shared<HydroponicsRegulatedRail>(Hydroponics_RailType_AC110V, 0, 15);
         regRail->setPowerUsageSensor(HydroponicsIdentity(String(F("ASDF"))));
 
         auto data = (HydroponicsRegulatedRailData *)(regRail->newSaveData());

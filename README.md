@@ -51,7 +51,7 @@ From Hydroponics.h:
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRUINO_ENABLE_EXTERNAL_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
+//#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -74,13 +74,13 @@ The controller's class object must first be instantiated, commonly at the top of
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
     // Controller constructor. Typically called during class instantiation, before setup().
-    Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
+    Hydroponics(uint8_t piezoBuzzerPin = -1,                // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-                byte sdCardCSPin = -1,                      // SD card CS pin, else -1
-                byte *ctrlInputPinMap = nullptr,            // Control input pin map, else nullptr
-                byte eepromI2CAddress = B000,               // EEPROM address
-                byte rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
-                byte lcdI2CAddress = B000,                  // LCD i2c address
+                uint8_t sdCardCSPin = -1,                   // SD card CS pin, else -1
+                uint8_t *ctrlInputPinMap = nullptr,         // Control input pin map, else nullptr
+                uint8_t eepromI2CAddress = B000,            // EEPROM address
+                uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
+                uint8_t lcdI2CAddress = B000,               // LCD i2c address
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
                 uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
                 uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored if on Teensy)
@@ -337,7 +337,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e2d          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e03          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
@@ -417,17 +417,17 @@ In particular, after setting up the settings defines similarly to that of the Ve
 In serial monitor (near end):
 ```
 …
-2022-08-02T15:19:34 [INFO] Writing String: #367 "W"
-2022-08-02T15:19:34 [INFO] ... to byte offset: 11819 (0x2e2b)
-2022-08-02T15:19:34 [INFO] Wrote: 2 bytes
-2022-08-02T15:19:34 [INFO] Successfully wrote: 4873 bytes
-2022-08-02T15:19:34 [INFO] Total EEPROM usage: 11821 bytes
-2022-08-02T15:19:34 [INFO] EEPROM capacity used: 36.07% of 32768 bytes
-2022-08-02T15:19:34 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e2d
+2022-08-02T17:53:12 [INFO] Writing String: #361 "W"
+2022-08-02T17:53:12 [INFO] ... to byte offset: 11777 (0x2e01)
+2022-08-02T17:53:12 [INFO] Wrote: 2 bytes
+2022-08-02T17:53:12 [INFO] Successfully wrote: 4831 bytes
+2022-08-02T17:53:12 [INFO] Total EEPROM usage: 11779 bytes
+2022-08-02T17:53:12 [INFO] EEPROM capacity used: 35.95% of 32768 bytes
+2022-08-02T17:53:12 [INFO] Use the following EEPROM setup defines in your sketch:
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e03
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24
-2022-08-02T15:19:34 [INFO] Done!
+2022-08-02T17:53:12 [INFO] Done!
 ```
 
 Note: Again, you can get logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.

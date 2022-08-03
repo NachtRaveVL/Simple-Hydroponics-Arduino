@@ -39,7 +39,7 @@
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRUINO_ENABLE_EXTERNAL_DATA             // If enabled, disables built-in Crops Lib and String data, instead relying solely on external device.
+//#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -47,7 +47,7 @@
 // Uncomment or -D this define to enable verbose debug output (note: adds considerable size to compiled sketch).
 //#define HYDRUINO_ENABLE_VERBOSE_DEBUG
 
-// Uncomment or -D this define to enable debug assertions (note: adds considerable size to compiled sketch).
+// Uncomment or -D this define to enable debug assertions (note: adds significant size to compiled sketch).
 //#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
 
 
@@ -65,6 +65,9 @@
 
 #if defined(ESP32) || defined(ESP8266)
 typedef SDFileSystemClass SDClass;
+#endif
+#if defined(ARDUINO_ARCH_RP2040)
+#include <api/Common.h>
 #endif
 
 #ifndef HYDRUINO_DISABLE_MULTITASKING
@@ -125,16 +128,21 @@ using namespace std;
 template<typename K, typename V, size_t N = 16> struct Map { typedef std::map<K,V> type; };
 template<typename T, size_t N = 16> struct Vector { typedef std::vector<T> type; };
 template<class T1, class T2> struct Pair { typedef std::pair<T1,T2> type; };
-#define HYDRUINO_USE_STDCPP_CONTAINERS
+#include "ArxSmartPtr/shared_ptr.h" // forced include
 #else
 using namespace arx;
+using namespace arx::stdx;
 template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> struct Map { typedef arx::map<K,V,N> type; };
 template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> struct Vector { typedef arx::vector<T,N> type; };
 template<class T1, class T2> struct Pair { typedef arx::pair<T1,T2> type; };
-#define HYDRUINO_USE_ARX_CONTAINERS
 #endif
-using namespace arx::stdx;
+template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
+
 extern time_t unixNow();
+extern void handleInterrupt(uint8_t pin);
+extern void controlLoop();
+extern void dataLoop();
+extern void miscLoop();
 
 #include "HydroponicsDefines.h"
 #include "HydroponicsStrings.h"
@@ -171,13 +179,13 @@ public:
     HydroponicsPublisher publisher;                         // Publisher public instance
 
     // Controller constructor. Typically called during class instantiation, before setup().
-    Hydroponics(byte piezoBuzzerPin = -1,                   // Piezo buzzer pin, else -1
+    Hydroponics(uint8_t piezoBuzzerPin = -1,                // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-                byte sdCardCSPin = -1,                      // SD card CS pin, else -1
-                byte *ctrlInputPinMap = nullptr,            // Control input pin map, else nullptr
-                byte eepromI2CAddress = B000,               // EEPROM address
-                byte rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
-                byte lcdI2CAddress = B000,                  // LCD i2c address
+                uint8_t sdCardCSPin = -1,                   // SD card CS pin, else -1
+                uint8_t *ctrlInputPinMap = nullptr,         // Control input pin map, else nullptr
+                uint8_t eepromI2CAddress = B000,            // EEPROM address
+                uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
+                uint8_t lcdI2CAddress = B000,               // LCD i2c address
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
                 uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
                 uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored if on Teensy)
@@ -247,12 +255,12 @@ public:
     // Object Registration.
 
     // Adds object to system, returning success
-    bool registerObject(shared_ptr<HydroponicsObject> obj);
+    bool registerObject(SharedPtr<HydroponicsObject> obj);
     // Removes object from system, returning success
-    bool unregisterObject(shared_ptr<HydroponicsObject> obj);
+    bool unregisterObject(SharedPtr<HydroponicsObject> obj);
 
     // Searches for object by id key (nullptr return = no obj by that id, position index may use HYDRUINO_POS_SEARCH* defines)
-    shared_ptr<HydroponicsObject> objectById(HydroponicsIdentity id) const;
+    SharedPtr<HydroponicsObject> objectById(HydroponicsIdentity id) const;
 
     // Finds first position either open or taken, given the id type
     Hydroponics_PositionIndex firstPosition(HydroponicsIdentity id, bool taken);
@@ -273,9 +281,9 @@ public:
     // Pin Locks.
 
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
-    bool tryGetPinLock(byte pin, time_t waitMillis = 150);
+    bool tryGetPinLock(uint8_t pin, time_t waitMillis = 150);
     // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
-    void returnPinLock(byte pin);
+    void returnPinLock(uint8_t pin);
 
     // Mutators.
 
@@ -301,33 +309,33 @@ public:
 
     // Currently active Hydroponics instance
     static inline Hydroponics *getActiveInstance() { return _activeInstance; }
-    // i2c Wire interface instance (customizable)
+    // i2c Wire interface instance (available after constructor)
     inline TwoWire *getI2C() const { return _i2cWire; }
     // i2c clock speed, in Hz (default: 400kHz)
     inline uint32_t getI2CSpeed() const { return _i2cSpeed; }
-    // SPI interface instance (hardwired)
+    // SPI interface instance (hardwired, always available)
     inline SPIClass *getSPI() const { return &SPI; }
     // SD card SPI clock speed, in Hz (default: 4MHz, hardwired to 25MHz on Teensy)
     uint32_t getSDCardSpeed() const;
     // Total number of pins being used for the current control input ribbon mode
     int getControlInputRibbonPinCount() const;
     // Control input pin mapped to ribbon pin index, or -1 (255) if not used
-    byte getControlInputPin(int ribbonPinIndex) const;
+    uint8_t getControlInputPin(int ribbonPinIndex) const;
 
-    // EEPROM instance (lazily instantiated, nullptr return = failure/no device)
+    // EEPROM instance (lazily instantiated, nullptr return -> failure/no device)
     I2C_eeprom *getEEPROM(bool begin = true);
-    // Real time clock instance (lazily instantiated, nullptr return = failure/no device)
+    // Real time clock instance (lazily instantiated, nullptr return -> failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);
-    // SD card instance (if began user code *must* call endSDCard(inst) to free interface, lazily instantiated, nullptr return = failure/no device)
+    // SD card instance (if began user code *must* call endSDCard(inst) to free interface, lazily instantiated, nullptr return -> failure/no device)
     SDClass *getSDCard(bool begin = true);
     // Ends SD card transaction with proper regards to platform
     void endSDCard(SDClass *sd);
-    // WiFi instance (nullptr return = failure/no device, note: this method may block for up to a minute)
+    // WiFi instance (nullptr return -> failure/no device, note: this method may block for up to a minute)
     WiFiClass *getWiFi(bool begin = true);
     // OneWire instance for given pin (lazily instantiated)
-    OneWire *getOneWireForPin(byte pin);
+    OneWire *getOneWireForPin(uint8_t pin);
     // Drops OneWire instance for given pin (if created)
-    void dropOneWireForPin(byte pin);
+    void dropOneWireForPin(uint8_t pin);
 
     // Whenever the system is in operational mode (has been launched), or not
     inline bool inOperationalMode() const { return !_suspend; }
@@ -375,12 +383,12 @@ protected:
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
     const uint32_t _eepromDeviceSize;                               // EEPROM device size (default: 0/Disabled)
-    const byte _piezoBuzzerPin;                                     // Piezo buzzer pin (default: Disabled)
-    const byte _sdCardCSPin;                                        // SD card cable select (CS) pin (default: Disabled)
-    const byte *_ctrlInputPinMap;                                   // Control input pin mapping (weak, default: Disabled/nullptr)
-    const byte _eepromI2CAddr;                                      // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
-    const byte _rtcI2CAddr;                                         // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
-    const byte _lcdI2CAddr;                                         // LCD i2c address, format: {A2,A1,A0} (default: B000)
+    const uint8_t _piezoBuzzerPin;                                  // Piezo buzzer pin (default: Disabled)
+    const uint8_t _sdCardCSPin;                                     // SD card cable select (CS) pin (default: Disabled)
+    const uint8_t *_ctrlInputPinMap;                                // Control input pin mapping (weak, default: Disabled/nullptr)
+    const uint8_t _eepromI2CAddr;                                   // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
+    const uint8_t _rtcI2CAddr;                                      // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
+    const uint8_t _lcdI2CAddr;                                      // LCD i2c address, format: {A2,A1,A0} (default: B000)
     TwoWire *_i2cWire;                                              // Controller's i2c wire class instance (strong, default: Wire)
     uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
     uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz, ignored if on Teensy)
@@ -405,10 +413,10 @@ protected:
     String _sysConfigFile;                                          // SD Card system config filename used in serialization (default: "hydruino.cfg")
     uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
-    Map<Hydroponics_KeyType, shared_ptr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
+    Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
     Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount>::type _additives; // Custom additives data
-    Map<byte, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE>::type _oneWires; // pin->OneWire mapping
-    Map<byte, byte, HYDRUINO_SYS_PINLOCKS_MAXSIZE>::type _pinLocks; // Pin locks mapping (existence = locked)
+    Map<uint8_t, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE>::type _oneWires; // pin->OneWire mapping
+    Map<uint8_t, uint8_t, HYDRUINO_SYS_PINLOCKS_MAXSIZE>::type _pinLocks; // Pin locks mapping (existence = locked)
 
     friend Hydroponics *::getHydroponicsInstance();
     friend HydroponicsScheduler *::getSchedulerInstance();
@@ -429,12 +437,12 @@ protected:
     void commonPostInit();
     void commonPostSave();
 
-    shared_ptr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
-    friend shared_ptr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject();
-    friend void ::controlLoop();
-    friend void ::dataLoop();
-    friend void ::miscLoop();
-    friend void ::handleInterrupt(byte pin);
+    SharedPtr<HydroponicsObject> objectById_Col(const HydroponicsIdentity &id) const;
+    friend SharedPtr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject();
+    friend void controlLoop();
+    friend void dataLoop();
+    friend void miscLoop();
+    friend void handleInterrupt(uint8_t pin);
 
     void checkFreeMemory();
     void broadcastLowMemory();
