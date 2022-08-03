@@ -48,8 +48,6 @@ String stringFromPGM(Hydroponics_String strNum)
                     if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
                 }
 
-                Serial.println(retVal);
-
                 if (retVal.length()) {
                     return (_lookupCachedRes = retVal);
                 }
