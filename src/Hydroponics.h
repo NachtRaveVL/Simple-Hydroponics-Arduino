@@ -124,11 +124,11 @@ extern void __int_restore_irq(int *primask);
 #endif
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
+#include "ArxSmartPtr/shared_ptr.h"     // Forced shared pointer library
 using namespace std;
-template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> using Vector = std::vector<T>;
+template<typename T, size_t N = 16> using Vector = std::vector<T>;
 template<class T1, class T2> using Pair = std::pair<T1,T2>;
-template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> using Map = std::map<K,V>;
-#include "ArxSmartPtr/shared_ptr.h" // forced include
+template<typename K, typename V, size_t N = 16> using Map = std::map<K,V>;
 #else
 using namespace arx;
 using namespace arx::stdx;
