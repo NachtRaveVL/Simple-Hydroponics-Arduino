@@ -1098,7 +1098,9 @@ bool checkPinIsAnalogOutput(uint8_t pin)
         return false;
     #else
         switch (pin) {
-            #if NUM_ANALOG_OUTPUTS > 0
+            #if NUM_ANALOG_OUTPUTS > 0 && defined(DAC)
+                case (int)DAC:
+            #elif NUM_ANALOG_OUTPUTS > 0
                 case (int)DAC0:
             #endif
             #if NUM_ANALOG_OUTPUTS > 1

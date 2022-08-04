@@ -33,6 +33,8 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
       _substrateType(substrateType), _sowDate(sowDate.unixtime()), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
+    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type();
+
     if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
         getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
@@ -47,6 +49,8 @@ HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
       _cropsData(nullptr), _growWeek(0), _feedingWeight(dataIn->feedingWeight),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
+    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type();
+
     if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
         auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
         getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);

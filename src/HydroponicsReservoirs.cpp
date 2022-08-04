@@ -30,13 +30,17 @@ HydroponicsReservoir::HydroponicsReservoir(Hydroponics_ReservoirType reservoirTy
     : HydroponicsObject(HydroponicsIdentity(reservoirType, reservoirIndex)), classType((typeof(classType))classTypeIn),
       _volumeUnits(defaultLiquidVolumeUnits()),
       _filledState(Hydroponics_TriggerState_Disabled), _emptyState(Hydroponics_TriggerState_Disabled)
-{ ; }
+{
+    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type();
+}
 
 HydroponicsReservoir::HydroponicsReservoir(const HydroponicsReservoirData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
       _volumeUnits(definedUnitsElse(dataIn->volumeUnits, defaultLiquidVolumeUnits())),
       _filledState(Hydroponics_TriggerState_Disabled), _emptyState(Hydroponics_TriggerState_Disabled)
-{ ; }
+{
+    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type();
+}
 
 void HydroponicsReservoir::update()
 {

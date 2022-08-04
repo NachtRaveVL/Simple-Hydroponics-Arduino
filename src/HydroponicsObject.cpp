@@ -126,15 +126,17 @@ Hydroponics_KeyType HydroponicsIdentity::regenKey()
 
 
 HydroponicsObject::HydroponicsObject(HydroponicsIdentity id)
-    : _id(id), _links()
+    : _id(id), _links(nullptr)
 { ; }
 
 HydroponicsObject::HydroponicsObject(const HydroponicsData *data)
-    : _id(data), _links()
+    : _id(data), _links(nullptr)
 { ; }
 
 HydroponicsObject::~HydroponicsObject()
-{ ; }
+{
+    if (_links) { delete _links; _links = nullptr; }
+}
 
 void HydroponicsObject::update()
 { ; }
@@ -152,23 +154,27 @@ HydroponicsData *HydroponicsObject::newSaveData()
 
 bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
 {
-    auto iter = _links.find(obj->getKey());
-    if (iter != _links.end()) {
-        iter->second.second++;
-    } else {
-        _links[obj->getKey()] = make_pair(obj, (int8_t)1);
-        return true;
+    if (_links) {
+        auto iter = _links->find(obj->getKey());
+        if (iter != _links->end()) {
+            iter->second.second++;
+        } else {
+            (*_links)[obj->getKey()] = make_pair(obj, (int8_t)1);
+            return true;
+        }
     }
     return false;
 }
 
 bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 {
-    auto iter = _links.find(obj->getKey());
-    if (iter != _links.end()) {
-        if (--iter->second.second == 0) {
-            _links.erase(iter);
-            return true;
+    if (_links) {
+        auto iter = _links->find(obj->getKey());
+        if (iter != _links->end()) {
+            if (--iter->second.second == 0) {
+                _links->erase(iter);
+                return true;
+            }
         }
     }
     return false;
@@ -176,7 +182,7 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 
 bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
 {
-    return (_links.find(obj->getKey()) != _links.end());
+    return _links ? (_links->find(obj->getKey()) != _links->end()) : false;
 }
 
 HydroponicsIdentity HydroponicsObject::getId() const
