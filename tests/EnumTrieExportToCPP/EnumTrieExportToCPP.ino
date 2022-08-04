@@ -33,7 +33,7 @@ static TreeNode *_root;
 // Trie Encoding Tree
 struct TreeNode {
     String piece;
-    Map<char, TreeNode *>::type map;
+    Map<char, TreeNode *> map;
     bool end;
     int typeIndex;
 

@@ -58,7 +58,7 @@ void HydroponicsScheduler::update()
 void HydroponicsScheduler::setupWaterPHBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> waterPHBalancer)
 {
     if (reservoir && waterPHBalancer) {
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type incActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_INCACTUATORS_MAXSIZE> incActuators;
             auto phUpPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRUINO_BAL_INCACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydroponics_ReservoirType_PhUpSolution);
             float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_PhUpSolution);
 
@@ -70,7 +70,7 @@ void HydroponicsScheduler::setupWaterPHBalancer(HydroponicsReservoir *reservoir,
             waterPHBalancer->setIncrementActuators(incActuators);
         }
 
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type decActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_DECACTUATORS_MAXSIZE> decActuators;
             auto phDownPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRUINO_BAL_DECACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydroponics_ReservoirType_PhDownSolution);
             float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_PhDownSolution);
 
@@ -87,7 +87,7 @@ void HydroponicsScheduler::setupWaterPHBalancer(HydroponicsReservoir *reservoir,
 void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> waterTDSBalancer)
 {
     if (reservoir && waterTDSBalancer) {
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type incActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_INCACTUATORS_MAXSIZE> incActuators;
             float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_NutrientPremix);
 
             if (dosingRate > FLT_EPSILON) {
@@ -123,7 +123,7 @@ void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir
             waterTDSBalancer->setIncrementActuators(incActuators);
         }
 
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type decActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_DECACTUATORS_MAXSIZE> decActuators;
             float dosingRate = getCombinedDosingRate(reservoir, Hydroponics_ReservoirType_FreshWater);
 
             if (dosingRate > FLT_EPSILON) {
@@ -143,7 +143,7 @@ void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir
 void HydroponicsScheduler::setupWaterTemperatureBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> waterTempBalancer)
 {
     if (reservoir && waterTempBalancer) {
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type incActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_INCACTUATORS_MAXSIZE> incActuators;
             auto heaters = linksFilterActuatorsByReservoirAndType<HYDRUINO_BAL_INCACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydroponics_ActuatorType_WaterHeater);
 
             linksResolveActuatorsPairRateByType<HYDRUINO_BAL_INCACTUATORS_MAXSIZE>(heaters, 1.0f, incActuators, Hydroponics_ActuatorType_WaterHeater);
@@ -151,7 +151,7 @@ void HydroponicsScheduler::setupWaterTemperatureBalancer(HydroponicsReservoir *r
             waterTempBalancer->setIncrementActuators(incActuators);
         }
 
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type decActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_DECACTUATORS_MAXSIZE> decActuators;
             waterTempBalancer->setDecrementActuators(decActuators);
         }
     }
@@ -160,11 +160,11 @@ void HydroponicsScheduler::setupWaterTemperatureBalancer(HydroponicsReservoir *r
 void HydroponicsScheduler::setupAirTemperatureBalancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> airTempBalancer)
 {
     if (reservoir && airTempBalancer) {
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type incActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_INCACTUATORS_MAXSIZE> incActuators;
             airTempBalancer->setIncrementActuators(incActuators);
         }
 
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type decActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_DECACTUATORS_MAXSIZE> decActuators;
             auto fans = linksFilterActuatorsByReservoirAndType<HYDRUINO_BAL_DECACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydroponics_ActuatorType_FanExhaust);
 
             linksResolveActuatorsPairRateByType<HYDRUINO_BAL_DECACTUATORS_MAXSIZE>(fans, 1.0f, decActuators, Hydroponics_ActuatorType_FanExhaust);
@@ -175,7 +175,7 @@ void HydroponicsScheduler::setupAirTemperatureBalancer(HydroponicsReservoir *res
 void HydroponicsScheduler::setupAirCO2Balancer(HydroponicsReservoir *reservoir, SharedPtr<HydroponicsBalancer> airCO2Balancer)
 {
     if (reservoir && airCO2Balancer) {
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_INCACTUATORS_MAXSIZE>::type incActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_INCACTUATORS_MAXSIZE> incActuators;
             auto fans = linksFilterActuatorsByReservoirAndType<HYDRUINO_BAL_INCACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydroponics_ActuatorType_FanExhaust);
 
             linksResolveActuatorsPairRateByType<HYDRUINO_BAL_INCACTUATORS_MAXSIZE>(fans, 1.0f, incActuators, Hydroponics_ActuatorType_FanExhaust);
@@ -183,7 +183,7 @@ void HydroponicsScheduler::setupAirCO2Balancer(HydroponicsReservoir *reservoir, 
             airCO2Balancer->setIncrementActuators(incActuators);
         }
 
-        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>::type, HYDRUINO_BAL_DECACTUATORS_MAXSIZE>::type decActuators;
+        {   Vector<Pair<SharedPtr<HydroponicsActuator>, float>, HYDRUINO_BAL_DECACTUATORS_MAXSIZE> decActuators;
             airCO2Balancer->setDecrementActuators(decActuators);
         }
     }
@@ -555,7 +555,7 @@ void HydroponicsProcess::clearActuatorReqs()
     }
 }
 
-void HydroponicsProcess::setActuatorReqs(const Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn)
+void HydroponicsProcess::setActuatorReqs(const Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn)
 {
     for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
         bool found = false;
@@ -770,7 +770,7 @@ void HydroponicsFeeding::setupStaging()
 
         case TopOff: {
             if (!feedRes->isFilled()) {
-                Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
+                Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
                 auto topOffPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ReservoirType_FreshWater);
 
                 linksResolveActuatorsByType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(topOffPumps, newActuatorReqs, Hydroponics_ActuatorType_WaterPump); // fresh water pumps
@@ -786,7 +786,7 @@ void HydroponicsFeeding::setupStaging()
         } break;
 
         case PreFeed: {
-            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
+            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
             auto aerators = linksFilterActuatorsByReservoirAndType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ActuatorType_WaterAerator);
 
             linksResolveActuatorsByType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(aerators, newActuatorReqs, Hydroponics_ActuatorType_WaterAerator);
@@ -795,7 +795,7 @@ void HydroponicsFeeding::setupStaging()
         } break;
 
         case Feed: {
-            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
+            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
 
             {   auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ReservoirType_FeedWater);
 
@@ -821,7 +821,7 @@ void HydroponicsFeeding::setupStaging()
         } break;
 
         case Drain: {
-            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
+            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
             auto drainPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ReservoirType_DrainageWater);
 
             linksResolveActuatorsByType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(drainPumps, newActuatorReqs, Hydroponics_ActuatorType_WaterPump); // drainage water pump
@@ -1141,7 +1141,7 @@ void HydroponicsLighting::setupStaging()
         } break;
 
         case Spray: {
-            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
+            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
             auto sprayers = linksFilterActuatorsByReservoirAndType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ActuatorType_WaterSprayer);
 
             linksResolveActuatorsByType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(sprayers, newActuatorReqs, Hydroponics_ActuatorType_WaterSprayer);
@@ -1150,7 +1150,7 @@ void HydroponicsLighting::setupStaging()
         } break;
 
         case Light: {
-            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type newActuatorReqs;
+            Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
             auto lights = linksFilterActuatorsByReservoirAndType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydroponics_ActuatorType_GrowLights);
 
             linksResolveActuatorsByType<HYDRUINO_SCH_REQACTUATORS_MAXSIZE>(lights, newActuatorReqs, Hydroponics_ActuatorType_GrowLights);

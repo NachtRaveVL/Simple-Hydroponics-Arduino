@@ -125,16 +125,16 @@ extern void __int_restore_irq(int *primask);
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 using namespace std;
-template<typename K, typename V, size_t N = 16> struct Map { typedef std::map<K,V> type; };
-template<typename T, size_t N = 16> struct Vector { typedef std::vector<T> type; };
-template<class T1, class T2> struct Pair { typedef std::pair<T1,T2> type; };
+template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> using Vector = std::vector<T>;
+template<class T1, class T2> using Pair = std::pair<T1,T2>;
+template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> using Map = std::map<K,V>;
 #include "ArxSmartPtr/shared_ptr.h" // forced include
 #else
 using namespace arx;
 using namespace arx::stdx;
-template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> struct Map { typedef arx::map<K,V,N> type; };
-template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> struct Vector { typedef arx::vector<T,N> type; };
-template<class T1, class T2> struct Pair { typedef arx::pair<T1,T2> type; };
+template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> using Vector = arx::vector<T,N>;
+template<class T1, class T2> using Pair = arx::pair<T1,T2>;
+template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> using Map = arx::map<K,V,N>;
 #endif
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
 
@@ -413,10 +413,10 @@ protected:
     String _sysConfigFile;                                          // SD Card system config filename used in serialization (default: "hydruino.cfg")
     uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
-    Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE>::type _objects; // Shared object collection, key'ed by HydroponicsIdentity
-    Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount>::type _additives; // Custom additives data
-    Map<uint8_t, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE>::type _oneWires; // pin->OneWire mapping
-    Map<uint8_t, uint8_t, HYDRUINO_SYS_PINLOCKS_MAXSIZE>::type _pinLocks; // Pin locks mapping (existence = locked)
+    Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
+    Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount> _additives; // Custom additives data
+    Map<uint8_t, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE> _oneWires; // pin->OneWire mapping
+    Map<uint8_t, uint8_t, HYDRUINO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
 
     friend Hydroponics *::getHydroponicsInstance();
     friend HydroponicsScheduler *::getSchedulerInstance();
