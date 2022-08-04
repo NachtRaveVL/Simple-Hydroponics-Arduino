@@ -53,7 +53,7 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e03          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e12          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
@@ -82,21 +82,17 @@ void setup() {
     #endif
     #if SETUP_ENABLE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
-        String wifiPassword = F(SETUP_WIFI_SSID);
+        String wifiPassword = F(SETUP_WIFI_PASS);
     #endif
 
     // Begin external data storage devices for crop, strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
+        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
     #if SETUP_EXTDATA_SD_ENABLE
         beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
-    #endif
-    #if SETUP_EXTDATA_SD_ENABLE
         getCropsLibraryInstance()->beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
-    #endif
-    #if SETUP_EXTDATA_EEPROM_ENABLE
-        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
 
     // Sets system config name used in any of the following inits.
@@ -147,6 +143,10 @@ void setup() {
 
         // No further setup is necessary, as system is assumed to be built/managed via UI.
     }
+
+    #if SETUP_ENABLE_WIFI
+        wifiSSID = wifiPassword = String(); // no longer needed
+    #endif
 
     // TODO: UI initialization, other setup options
 

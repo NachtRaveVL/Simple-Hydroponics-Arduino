@@ -60,8 +60,8 @@
 #endif
 #include <SPI.h>
 #include <SD.h>
-#include <WiFi.h>
 #include <Wire.h>
+#include <WiFi.h>
 
 #if defined(ESP32) || defined(ESP8266)
 typedef SDFileSystemClass SDClass;
@@ -109,10 +109,10 @@ extern void __int_restore_irq(int *primask);
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "I2C_eeprom.h"                 // i2c EEPROM library
-#ifndef __STM32__
-#include "OneWire.h"                    // OneWire library
-#else
+#ifdef ARDUINO_ARCH_STM32
 #include <OneWireSTM.h>                 // STM32 version of OneWire (via stm32duino)
+#else
+#include "OneWire.h"                    // OneWire library
 #endif
 #include "RTClib.h"                     // i2c RTC library
 #ifndef HYDRUINO_DISABLE_MULTITASKING

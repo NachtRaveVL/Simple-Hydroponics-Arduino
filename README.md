@@ -160,9 +160,9 @@ Serial UART Devices Supported: ESP8266 WiFi module (3.3v only)
 
 ### SPI Bus
 
-SPI devices can be chained together on the same shared data lines (no flipping of wires), which are typically labeled `MOSI`, `MISO`, and `SCK` (often with an additional `SS`). Each SPI device requires its own individual cable-select `CS` wire as only one SPI device may be active at any given time - accomplished by pulling its `CS` line of that device low (aka active-low). SPI runs at MHz speeds and is useful for large data block transfers.
+SPI devices can be chained together on the same shared data lines, which are typically labeled `COPI` (or `MOSI`), `CIPO` (or `MISO`), and `SCK`, often with an additional `CS` (or `SS`). Each SPI device requires its own individual cable-select `CS` wire as only one SPI device may be active at any given time - accomplished by pulling its `CS` line of that device low (aka active-low). SPI runs at MHz speeds and is useful for large data block transfers.
 
-* The `CS` pin may be connected to any digital output pin, but it's common to use the `SS` pin for the first device. Additional devices are not restricted to what pin they can or should use, but given it's a signal pin not using an interrupt-capable pin allows those to be used for interrupt driven mechanisms.
+* The `CS` pin may be connected to any digital output pin, but it's common to use the `CS` (or `SS`) pin for the first device. Additional devices are not restricted to what pin they can or should use, but given it's not a data pin not using a choice interrupt-capable pin allows those to be used for interrupt driven mechanisms.
 * Many low-cost SPI-based SD card reader modules on market only read SDHC sized SD cards (2GB to 32GB) formatted in FAT32 (filenames limited to 8 characters plus 3 character file extension).
   * Some SD cards simply will not play nicely with these modules and you may have to try another SD card manufacturer. We recommend 32GB SD cards due to overall lowest cost (5~10 $USD/SD card - smaller SD cards actually becoming _more_ expensive) and highest probability of compatibility (almost all 32GB SD cards on market being SDHC).
 
@@ -232,9 +232,9 @@ The Simple DWC Example sketch shows how a simple Hydruino system can be setup us
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
 #define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
 
-#define SETUP_CROP1_TYPE                Lettuce         // Type of crop planted at position 1, else Undefined
-#define SETUP_CROP1_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 1
-#define SETUP_CROP1_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 1
+#define SETUP_CROP_TYPE                Lettuce         // Type of crop planted at position 1, else Undefined
+#define SETUP_CROP_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 1
+#define SETUP_CROP_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 1
 
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
 
@@ -262,9 +262,9 @@ void setup() {
     lights->setReservoir(feedReservoir);
 
     // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
-    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP1_TYPE),
-                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP1_SUBSTRATE),
-                                                SETUP_CROP1_SOW_DATE);
+    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
+                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+                                                SETUP_CROP_SOW_DATE);
     crop->setFeedReservoir(feedReservoir);
 
     // Launches controller into main operation.
@@ -315,8 +315,8 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
 // System Saves Settings                                (note: only one save mechanism may be enabled at a time)
-#define SETUP_SYS_AUTOSAVE_ENABLE       true            // If autosaving system out is enabled or not
-#define SETUP_SAVES_SD_CARD_ENABLE      true            // If saving/loading from SD card is enable
+#define SETUP_SYS_AUTOSAVE_ENABLE       false           // If autosaving system out is enabled or not
+#define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
@@ -326,9 +326,9 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             true            // If system logging is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             false            // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            true            // If system data publishing is enabled to SD card
+#define SETUP_DATA_SD_ENABLE            false            // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 // External Data Settings
@@ -337,18 +337,9 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e03          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e12          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
-
-// Base Setup
-#define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
-#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
-#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
-#define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
-#define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
-#define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
-#define SETUP_PERI_PUMP_FLOWRATE        0.0070          // The base continuous flow rate of any peristaltic pumps, in L/min
 
 // Device Setup
 #define SETUP_PH_METER_PIN              A0              // pH meter sensor pin (analog), else -1
@@ -372,29 +363,22 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_PH_UP_PIN                 27              // pH up solution peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_DOWN_PIN               29              // pH down solution peristaltic pump relay pin (digital), else -1
 
+// Base Setup
+#define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
+#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
+#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
+#define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
+#define SETUP_PERI_PUMP_FLOWRATE        0.0070          // The base continuous flow rate of any peristaltic pumps, in L/min
+
 // Crop Setup
 #define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for
 #define SETUP_CROP_OFF_TIME             45              // Minutes feeding pumps are to be turned off for
-#define SETUP_CROP1_TYPE                Lettuce         // Type of crop planted at position 1, else Undefined
-#define SETUP_CROP1_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 1
-#define SETUP_CROP1_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 1
-#define SETUP_CROP1_SOILM_PIN           -1              // Soil moisture sensor for crop at position 1 pin (analog), else -1
-#define SETUP_CROP2_TYPE                Lettuce         // Type of crop planted at position 2, else Undefined
-#define SETUP_CROP2_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 2
-#define SETUP_CROP2_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 2
-#define SETUP_CROP2_SOILM_PIN           -1              // Soil moisture sensor for crop at position 2 pin (analog), else -1
-#define SETUP_CROP3_TYPE                Lettuce         // Type of crop planted at position 3, else Undefined
-#define SETUP_CROP3_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 3
-#define SETUP_CROP3_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 3
-#define SETUP_CROP3_SOILM_PIN           -1              // Soil moisture sensor for crop at position 3 pin (analog), else -1
-#define SETUP_CROP4_TYPE                Lettuce         // Type of crop planted at position 4, else Undefined
-#define SETUP_CROP4_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 4
-#define SETUP_CROP4_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 4
-#define SETUP_CROP4_SOILM_PIN           -1              // Soil moisture sensor for crop at position 4 pin (analog), else -1
-#define SETUP_CROP5_TYPE                Lettuce         // Type of crop planted at position 5, else Undefined
-#define SETUP_CROP5_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 5
-#define SETUP_CROP5_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 5
-#define SETUP_CROP5_SOILM_PIN           -1              // Soil moisture sensor for crop at position 5 pin (analog), else -1
+#define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
+#define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate, else Undefined
+#define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted at
+#define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
 ```
 
 ### Data Writer Example
@@ -417,17 +401,17 @@ In particular, after setting up the settings defines similarly to that of the Ve
 In serial monitor (near end):
 ```
 …
-2022-08-02T17:53:12 [INFO] Writing String: #361 "W"
-2022-08-02T17:53:12 [INFO] ... to byte offset: 11777 (0x2e01)
-2022-08-02T17:53:12 [INFO] Wrote: 2 bytes
-2022-08-02T17:53:12 [INFO] Successfully wrote: 4831 bytes
-2022-08-02T17:53:12 [INFO] Total EEPROM usage: 11779 bytes
-2022-08-02T17:53:12 [INFO] EEPROM capacity used: 35.95% of 32768 bytes
-2022-08-02T17:53:12 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e03
+2022-08-03T22:38:46 [INFO] Writing String: #362 "W"
+2022-08-03T22:38:46 [INFO] ... to byte offset: 11792 (0x2e10)
+2022-08-03T22:38:46 [INFO] Wrote: 2 bytes
+2022-08-03T22:38:46 [INFO] Successfully wrote: 4846 bytes
+2022-08-03T22:38:46 [INFO] Total EEPROM usage: 11794 bytes
+2022-08-03T22:38:46 [INFO] EEPROM capacity used: 35.99% of 32768 bytes
+2022-08-03T22:38:46 [INFO] Use the following EEPROM setup defines in your sketch:
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e12
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24
-2022-08-02T17:53:12 [INFO] Done!
+2022-08-03T22:38:46 [INFO] Done!
 ```
 
 Note: Again, you can get logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.

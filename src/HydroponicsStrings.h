@@ -387,6 +387,9 @@ enum Hydroponics_String : unsigned short {
 extern String stringFromPGM(Hydroponics_String strNum);
 #define SFP(strNum) stringFromPGM((strNum))
 
+// Returns memory resident string from PROGMEM (Flash) string address.
+String stringFromPGMAddr(const char *flashStr);
+
 // Makes Strings lookup go through EEPROM, with specified data begin address.
 extern void beginStringsFromEEPROM(uint16_t dataAddress);
 

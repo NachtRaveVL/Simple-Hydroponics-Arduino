@@ -17,9 +17,9 @@
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
 #define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
 
-#define SETUP_CROP1_TYPE                Lettuce         // Type of crop planted at position 1, else Undefined
-#define SETUP_CROP1_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 1
-#define SETUP_CROP1_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 1
+#define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
+#define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate
+#define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted
 
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
 
@@ -47,9 +47,9 @@ void setup() {
     lights->setReservoir(feedReservoir);
 
     // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
-    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP1_TYPE),
-                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP1_SUBSTRATE),
-                                                SETUP_CROP1_SOW_DATE);
+    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
+                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+                                                SETUP_CROP_SOW_DATE);
     crop->setFeedReservoir(feedReservoir);
 
     // Launches controller into main operation.

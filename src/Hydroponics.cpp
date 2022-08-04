@@ -779,6 +779,10 @@ void Hydroponics::launch()
             taskManager.setTaskEnabled(_miscTaskId, true);
         }
     #endif
+
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+        Serial.println(F("Hydroponics::launch System launched!")); flushYield();
+    #endif
 }
 
 void Hydroponics::suspend()
@@ -794,6 +798,10 @@ void Hydroponics::suspend()
         if (_miscTaskId != TASKMGR_INVALIDID) {
             taskManager.setTaskEnabled(_miscTaskId, false);
         }
+    #endif
+
+    #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+        Serial.println(F("Hydroponics::suspend System suspended!")); flushYield();
     #endif
 }
 

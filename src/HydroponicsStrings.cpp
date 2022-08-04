@@ -112,8 +112,6 @@ String stringFromPGM(Hydroponics_String strNum)
     return (_lookupCachedRes = String());
 }
 
-#ifndef HYDRUINO_DISABLE_BUILTIN_DATA
-
 String stringFromPGMAddr(const char *flashStr) {
     String retVal; retVal.reserve(strlen_P(flashStr) + 1);
     char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
@@ -128,6 +126,8 @@ String stringFromPGMAddr(const char *flashStr) {
 
     return retVal;
 }
+
+#ifndef HYDRUINO_DISABLE_BUILTIN_DATA
 
 const char *pgmAddrForStr(Hydroponics_String strNum)
 {

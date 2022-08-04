@@ -52,18 +52,9 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e03          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e12          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
-
-// Base Setup
-#define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
-#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
-#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
-#define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
-#define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
-#define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
-#define SETUP_PERI_PUMP_FLOWRATE        0.0070          // The base continuous flow rate of any peristaltic pumps, in L/min
 
 // Device Setup
 #define SETUP_PH_METER_PIN              A0              // pH meter sensor pin (analog), else -1
@@ -87,30 +78,22 @@
 #define SETUP_PH_UP_PIN                 27              // pH up solution peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_DOWN_PIN               29              // pH down solution peristaltic pump relay pin (digital), else -1
 
+// Base Setup
+#define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
+#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
+#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
+#define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
+#define SETUP_PERI_PUMP_FLOWRATE        0.0070          // The base continuous flow rate of any peristaltic pumps, in L/min
+
 // Crop Setup
 #define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for
 #define SETUP_CROP_OFF_TIME             45              // Minutes feeding pumps are to be turned off for
-#define SETUP_CROP1_TYPE                Lettuce         // Type of crop planted at position 1, else Undefined
-#define SETUP_CROP1_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 1
-#define SETUP_CROP1_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 1
-#define SETUP_CROP1_SOILM_PIN           -1              // Soil moisture sensor for crop at position 1 pin (analog), else -1
-#define SETUP_CROP2_TYPE                Lettuce         // Type of crop planted at position 2, else Undefined
-#define SETUP_CROP2_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 2
-#define SETUP_CROP2_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 2
-#define SETUP_CROP2_SOILM_PIN           -1              // Soil moisture sensor for crop at position 2 pin (analog), else -1
-#define SETUP_CROP3_TYPE                Lettuce         // Type of crop planted at position 3, else Undefined
-#define SETUP_CROP3_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 3
-#define SETUP_CROP3_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 3
-#define SETUP_CROP3_SOILM_PIN           -1              // Soil moisture sensor for crop at position 3 pin (analog), else -1
-#define SETUP_CROP4_TYPE                Lettuce         // Type of crop planted at position 4, else Undefined
-#define SETUP_CROP4_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 4
-#define SETUP_CROP4_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 4
-#define SETUP_CROP4_SOILM_PIN           -1              // Soil moisture sensor for crop at position 4 pin (analog), else -1
-#define SETUP_CROP5_TYPE                Lettuce         // Type of crop planted at position 5, else Undefined
-#define SETUP_CROP5_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 5
-#define SETUP_CROP5_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 5
-#define SETUP_CROP5_SOILM_PIN           -1              // Soil moisture sensor for crop at position 5 pin (analog), else -1
-
+#define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
+#define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate, else Undefined
+#define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted at
+#define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
 
 uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
@@ -149,21 +132,17 @@ void setup() {
     #endif
     #if SETUP_ENABLE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
-        String wifiPassword = F(SETUP_WIFI_SSID);
+        String wifiPassword = F(SETUP_WIFI_PASS);
     #endif
 
     // Begin external data storage devices for crop, strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
+        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
     #if SETUP_EXTDATA_SD_ENABLE
         beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
-    #endif
-    #if SETUP_EXTDATA_SD_ENABLE
         getCropsLibraryInstance()->beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
-    #endif
-    #if SETUP_EXTDATA_EEPROM_ENABLE
-        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
 
     // Sets system config name used in any of the following inits.
@@ -228,7 +207,28 @@ void setup() {
             #endif
         #endif
         auto feedReservoir = hydroController.addFeedWaterReservoir(SETUP_FEED_RESERVOIR_SIZE, hydroController.getSystemMode() != Hydroponics_SystemMode_DrainToWaste);
-        auto drainagePipe = hydroController.getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? hydroController.addDrainagePipe() : shared_ptr<HydroponicsInfiniteReservoir>();
+        auto drainagePipe = hydroController.getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? hydroController.addDrainagePipe() : SharedPtr<HydroponicsInfiniteReservoir>();
+
+        // Crop
+        {   auto cropType = JOIN(Hydroponics_CropType,SETUP_CROP_TYPE);
+            if (cropType != Hydroponics_CropType_Undefined) {
+                #if SETUP_CROP_SOILM_PIN >= 0
+                    auto moistureSensor = hydroController.addAnalogMoistureSensor(SETUP_CROP_SOILM_PIN, SETUP_USE_ANALOG_BITRES);
+                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
+                                                                   JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+                                                                   SETUP_CROP_SOW_DATE);
+                    moistureSensor->setCrop(crop);
+                    crop->setSoilMoistureSensor(moistureSensor);
+                #else
+                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
+                                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+                                                                SETUP_CROP_SOW_DATE,
+                                                                SETUP_CROP_ON_TIME,
+                                                                SETUP_CROP_OFF_TIME);
+                    crop->setFeedReservoir(feedReservoir);
+                #endif
+            }
+        }
 
         // Analog Sensors
         #if SETUP_PH_METER_PIN >= 0
@@ -385,103 +385,11 @@ void setup() {
             pHDownPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
-
-        {   auto cropType = JOIN(Hydroponics_CropType,SETUP_CROP1_TYPE);
-            if (cropType != Hydroponics_CropType_Undefined) {
-                #if SETUP_CROP1_SOILM_PIN >= 0
-                    auto moistureSensor = hydroController.addAnalogMoistureSensor(SETUP_CROP1_SOILM_PIN, SETUP_USE_ANALOG_BITRES);
-                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP1_TYPE),
-                                                                   JOIN(Hydroponics_SubstrateType,SETUP_CROP1_SUBSTRATE),
-                                                                   SETUP_CROP1_SOW_DATE);
-                    moistureSensor->setCrop(crop);
-                    crop->setSoilMoistureSensor(moistureSensor);
-                #else
-                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP1_TYPE),
-                                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP1_SUBSTRATE),
-                                                                SETUP_CROP1_SOW_DATE,
-                                                                SETUP_CROP_ON_TIME,
-                                                                SETUP_CROP_OFF_TIME);
-                    crop->setFeedReservoir(feedReservoir);
-                #endif
-            }
-        }
-        {   auto cropType = JOIN(Hydroponics_CropType,SETUP_CROP2_TYPE);
-            if (cropType != Hydroponics_CropType_Undefined) {
-                #if SETUP_CROP2_SOILM_PIN >= 0
-                    auto moistureSensor = hydroController.addAnalogMoistureSensor(SETUP_CROP2_SOILM_PIN, SETUP_USE_ANALOG_BITRES);
-                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP2_TYPE),
-                                                                   JOIN(Hydroponics_SubstrateType,SETUP_CROP2_SUBSTRATE),
-                                                                   SETUP_CROP2_SOW_DATE);
-                    moistureSensor->setCrop(crop);
-                    crop->setSoilMoistureSensor(moistureSensor);
-                #else
-                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP2_TYPE),
-                                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP2_SUBSTRATE),
-                                                                SETUP_CROP2_SOW_DATE,
-                                                                SETUP_CROP_ON_TIME,
-                                                                SETUP_CROP_OFF_TIME);
-                    crop->setFeedReservoir(feedReservoir);
-                #endif
-            }
-        }
-        {   auto cropType = JOIN(Hydroponics_CropType,SETUP_CROP3_TYPE);
-            if (cropType != Hydroponics_CropType_Undefined) {
-                #if SETUP_CROP3_SOILM_PIN >= 0
-                    auto moistureSensor = hydroController.addAnalogMoistureSensor(SETUP_CROP3_SOILM_PIN, SETUP_USE_ANALOG_BITRES);
-                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP3_TYPE),
-                                                                   JOIN(Hydroponics_SubstrateType,SETUP_CROP3_SUBSTRATE),
-                                                                   SETUP_CROP3_SOW_DATE);
-                    moistureSensor->setCrop(crop);
-                    crop->setSoilMoistureSensor(moistureSensor);
-                #else
-                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP3_TYPE),
-                                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP3_SUBSTRATE),
-                                                                SETUP_CROP3_SOW_DATE,
-                                                                SETUP_CROP_ON_TIME,
-                                                                SETUP_CROP_OFF_TIME);
-                    crop->setFeedReservoir(feedReservoir);
-                #endif
-            }
-        }
-        {   auto cropType = JOIN(Hydroponics_CropType,SETUP_CROP4_TYPE);
-            if (cropType != Hydroponics_CropType_Undefined) {
-                #if SETUP_CROP4_SOILM_PIN >= 0
-                    auto moistureSensor = hydroController.addAnalogMoistureSensor(SETUP_CROP4_SOILM_PIN, SETUP_USE_ANALOG_BITRES);
-                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP4_TYPE),
-                                                                   JOIN(Hydroponics_SubstrateType,SETUP_CROP4_SUBSTRATE),
-                                                                   SETUP_CROP4_SOW_DATE);
-                    moistureSensor->setCrop(crop);
-                    crop->setSoilMoistureSensor(moistureSensor);
-                #else
-                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP4_TYPE),
-                                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP4_SUBSTRATE),
-                                                                SETUP_CROP4_SOW_DATE,
-                                                                SETUP_CROP_ON_TIME,
-                                                                SETUP_CROP_OFF_TIME);
-                    crop->setFeedReservoir(feedReservoir);
-                #endif
-            }
-        }
-        {   auto cropType = JOIN(Hydroponics_CropType,SETUP_CROP5_TYPE);
-            if (cropType != Hydroponics_CropType_Undefined) {
-                #if SETUP_CROP5_SOILM_PIN >= 0
-                    auto moistureSensor = hydroController.addAnalogMoistureSensor(SETUP_CROP5_SOILM_PIN, SETUP_USE_ANALOG_BITRES);
-                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP5_TYPE),
-                                                                   JOIN(Hydroponics_SubstrateType,SETUP_CROP5_SUBSTRATE),
-                                                                   SETUP_CROP5_SOW_DATE);
-                    moistureSensor->setCrop(crop);
-                    crop->setSoilMoistureSensor(moistureSensor);
-                #else
-                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP5_TYPE),
-                                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP5_SUBSTRATE),
-                                                                SETUP_CROP5_SOW_DATE,
-                                                                SETUP_CROP_ON_TIME,
-                                                                SETUP_CROP_OFF_TIME);
-                    crop->setFeedReservoir(feedReservoir);
-                #endif
-            }
-        }
     }
+
+    #if SETUP_ENABLE_WIFI
+        wifiSSID = wifiPassword = String(); // no longer needed
+    #endif
 
     // TODO: UI initialization, other setup options
 
