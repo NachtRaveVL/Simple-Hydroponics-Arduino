@@ -28,7 +28,7 @@ HydroponicsRail::HydroponicsRail(Hydroponics_RailType railType, Hydroponics_Posi
     : HydroponicsObject(HydroponicsIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
       _powerUnits(Hydroponics_UnitsType_Power_Wattage), _limitState(Hydroponics_TriggerState_Undefined)
 {
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type();
+    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
 }
 
 HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
@@ -36,7 +36,7 @@ HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
       _limitState(Hydroponics_TriggerState_Undefined),
       _powerUnits(definedUnitsElse(dataIn->powerUnits, Hydroponics_UnitsType_Power_Wattage))
 {
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type();
+    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
 }
 
 HydroponicsRail::~HydroponicsRail()

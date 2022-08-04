@@ -64,8 +64,8 @@ protected:
     bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
     int _lastDayNum;                                        // Last day number tracking for daily rescheduling tracking
-    Map<Hydroponics_KeyType, HydroponicsFeeding *, HYDRUINO_SCH_FEEDRES_MAXSIZE>::type _feedings; // Feedings in progress
-    Map<Hydroponics_KeyType, HydroponicsLighting *, HYDRUINO_SCH_FEEDRES_MAXSIZE>::type _lightings; // Lightings in progress
+    Map<Hydroponics_KeyType, HydroponicsFeeding *, HYDRUINO_SCH_FEEDRES_MAXSIZE> _feedings; // Feedings in progress
+    Map<Hydroponics_KeyType, HydroponicsLighting *, HYDRUINO_SCH_FEEDRES_MAXSIZE> _lightings; // Lightings in progress
 
     friend class Hydroponics;
 
@@ -97,14 +97,14 @@ enum HydroponicsFeedingBroadcastType : signed char {
 // sequences necessary for crops to grow.
 struct HydroponicsProcess {
     SharedPtr<HydroponicsFeedReservoir> feedRes;            // Feed reservoir
-    Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type actuatorReqs; // Actuators required for this stage (keep-enabled list)
+    Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> actuatorReqs; // Actuators required for this stage (keep-enabled list)
 
     time_t stageStart;                                      // Stage start time
 
     HydroponicsProcess(SharedPtr<HydroponicsFeedReservoir> feedRes);
 
     void clearActuatorReqs();
-    void setActuatorReqs(const Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE>::type &actuatorReqsIn);
+    void setActuatorReqs(const Vector<SharedPtr<HydroponicsActuator>, HYDRUINO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn);
 };
 
 // Hydroponics Scheduler Feeding Process

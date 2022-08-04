@@ -114,9 +114,9 @@ bool arrayElementsEqual(const T *arrayIn, size_t length, T value)
 
 
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links)
+Vector<HydroponicsObject *, N> linksFilterActuators(const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> &links)
 {
-    typename Vector<HydroponicsObject *, N>::type retVal;
+    Vector<HydroponicsObject *, N> retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second.first && iter->second.first->isActuatorType()) {
@@ -129,9 +129,9 @@ typename Vector<HydroponicsObject *, N>::type linksFilterActuators(const typenam
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links)
+Vector<HydroponicsObject *, N> linksFilterCrops(const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> &links)
 {
-    typename Vector<HydroponicsObject *, N>::type retVal;
+    Vector<HydroponicsObject *, N> retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second.first && iter->second.first->isCropType()) {
@@ -144,9 +144,9 @@ typename Vector<HydroponicsObject *, N>::type linksFilterCrops(const typename Ma
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-typename Vector<HydroponicsObject *, N>::type linksFilterActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
+Vector<HydroponicsObject *, N> linksFilterActuatorsByReservoirAndType(const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
 {
-    typename Vector<HydroponicsObject *, N>::type retVal;
+    Vector<HydroponicsObject *, N> retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second.first && iter->second.first->isActuatorType()) {
@@ -163,9 +163,9 @@ typename Vector<HydroponicsObject *, N>::type linksFilterActuatorsByReservoirAnd
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ReservoirType destReservoirType)
+Vector<HydroponicsObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> &links, HydroponicsReservoir *srcReservoir, Hydroponics_ReservoirType destReservoirType)
 {
-    typename Vector<HydroponicsObject *, N>::type retVal;
+    Vector<HydroponicsObject *, N> retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second.first && iter->second.first->isActuatorType()) {
@@ -186,9 +186,9 @@ typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByInputRes
 }
 
 template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType)
+Vector<HydroponicsObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> &links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType)
 {
-    typename Vector<HydroponicsObject *, N>::type retVal;
+    Vector<HydroponicsObject *, N> retVal;
 
     for (auto iter = links.begin(); iter != links.end(); ++iter) {
         if (iter->second.first && iter->second.first->isActuatorType()) {
@@ -209,7 +209,7 @@ typename Vector<HydroponicsObject *, N>::type linksFilterPumpActuatorsByOutputRe
 }
 
 template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-int linksCountCrops(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links)
+int linksCountCrops(const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> &links)
 {
     int retVal = 0;
 
@@ -223,7 +223,7 @@ int linksCountCrops(const typename Map<Hydroponics_KeyType, typename Pair<Hydrop
 }
 
 template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType, typename Pair<HydroponicsObject *, int8_t>::type, M>::type &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
+int linksCountActuatorsByReservoirAndType(const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> &links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
 {
     int retVal = 0;
 
@@ -241,7 +241,7 @@ int linksCountActuatorsByReservoirAndType(const typename Map<Hydroponics_KeyType
 }
 
 template<size_t N>
-void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, typename Vector<SharedPtr<HydroponicsActuator>, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
+void linksResolveActuatorsByType(Vector<HydroponicsObject *, N> &actuatorsIn, Vector<SharedPtr<HydroponicsActuator>, N> &actuatorsOut, Hydroponics_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
@@ -253,7 +253,7 @@ void linksResolveActuatorsByType(typename Vector<HydroponicsObject *, N>::type &
 }
 
 template<size_t N>
-void linksResolveActuatorsPairRateByType(typename Vector<HydroponicsObject *, N>::type &actuatorsIn, float rateValue, typename Vector<typename Pair<SharedPtr<HydroponicsActuator>, float>::type, N>::type &actuatorsOut, Hydroponics_ActuatorType actuatorType)
+void linksResolveActuatorsPairRateByType(Vector<HydroponicsObject *, N> &actuatorsIn, float rateValue, Vector<Pair<SharedPtr<HydroponicsActuator>, float>, N> &actuatorsOut, Hydroponics_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);

@@ -114,7 +114,7 @@ public:
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
     // Objects are considered strong pointers, since existence -> SharedPtr ref to this instance exists.
-    inline const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type &getLinkages() const { return _links ? *_links : Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type(); }
+    inline const Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE> &getLinkages() const { return _links ? *_links : Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>(); }
 
     virtual HydroponicsIdentity getId() const override;     // Returns the unique Identity of the object
     virtual Hydroponics_KeyType getKey() const override;    // Returns the unique key of the object
@@ -123,7 +123,7 @@ public:
 
 protected:
     HydroponicsIdentity _id;                                // Object id
-    Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>::type, HYDRUINO_OBJ_LINKS_MAXSIZE>::type *_links; // Linked objects (owned, only allocated if needed)
+    Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE> *_links; // Linked objects (owned, only allocated if needed)
 
     virtual HydroponicsData *allocateData() const;          // Only up to base type classes (sensor, crop, etc.) does this need overriden
     virtual void saveToData(HydroponicsData *dataOut);      // *ALL* derived classes must override and implement

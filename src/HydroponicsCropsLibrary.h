@@ -53,7 +53,7 @@ public:
     Signal<Hydroponics_CropType> &getCustomCropSignal();
 
 protected:
-    Map<Hydroponics_CropType, HydroponicsCropsLibraryBook *, HYDRUINO_CROPSLIB_CROPS_MAXSIZE>::type _cropsData; // Loaded crops library data
+    Map<Hydroponics_CropType, HydroponicsCropsLibraryBook *, HYDRUINO_CROPSLIB_CROPS_MAXSIZE> _cropsData; // Loaded crops library data
     bool _hasCustomCrops = false;                           // Has custom crops flag
 
     String _libSDCropPrefix;                                // Library data files prefix for SD Card, else "" if unused
