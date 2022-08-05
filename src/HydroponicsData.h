@@ -39,7 +39,7 @@ struct HydroponicsData : public HydroponicsJSONSerializableInterface {
     uint16_t _size;                                             // The size (in bytes) of the data
     uint8_t _version;                                           // Version # of data container
     uint8_t _revision;                                          // Revision # of stored data
-    bool _modified;                                             // Flag tracking modified status
+    bool _modified;                                             // Flag tracking modified status (reset to false after save)
 
     inline bool isStandardData() const { return id.chars[0] == 'H'; }
     inline bool isSystemData() const { return id.chars[0] == 'H' && id.chars[1] == 'S' && id.chars[2] == 'Y' && id.chars[3] == 'S'; }

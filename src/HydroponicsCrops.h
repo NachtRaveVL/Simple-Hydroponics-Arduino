@@ -84,9 +84,10 @@ protected:
     void handleFeeding(Hydroponics_TriggerState feedingState);
     friend class HydroponicsAdaptiveCrop;
 
-    void recalcGrowWeekAndPhase();
+    void recalcCropGrowthParams();
     void checkoutCropsLibData();
     void returnCropsLibData();
+    friend class HydroponicsCropsLibrary;
 
     void handleCustomCropUpdated(Hydroponics_CropType cropType);
 };

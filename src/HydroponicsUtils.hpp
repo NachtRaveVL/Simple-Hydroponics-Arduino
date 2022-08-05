@@ -265,6 +265,38 @@ void linksResolveActuatorsPairRateByType(Vector<HydroponicsObject *, N> &actuato
     }
 }
 
+
+inline Hydroponics *getHydroponicsInstance()
+{
+    return Hydroponics::_activeInstance;
+}
+
+inline HydroponicsScheduler *getSchedulerInstance()
+{
+    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->scheduler : nullptr;
+}
+
+inline HydroponicsLogger *getLoggerInstance()
+{
+    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->logger : nullptr;
+}
+
+inline HydroponicsPublisher *getPublisherInstance()
+{
+    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->publisher : nullptr;
+}
+
+inline DateTime getCurrentTime()
+{
+    return DateTime((uint32_t)(unixNow() + (getHydroponicsInstance() ? getHydroponicsInstance()->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
+}
+
+inline time_t getCurrentDayStartTime()
+{
+    DateTime currTime = getCurrentTime();
+    return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime();
+}
+
 inline bool checkPinIsPWMOutput(pintype_t pin)
 {
     #if defined(digitalPinHasPWM)

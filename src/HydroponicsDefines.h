@@ -45,6 +45,10 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SENSOR_MEASUREMENT_SLOTS   4                       // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
 #define HYDRUINO_TRIGGER_STATE_SLOTS        4                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
 #define HYDRUINO_BALANCER_STATE_SLOTS       4                       // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
+#define HYDRUINO_CROPS_LINKS_BASESIZE       1                       // Base array size for crop's linkage list
+#define HYDRUINO_FLUIDRES_LINKS_BASESIZE    1                       // Base array size for fluid reservoir's linkage list
+#define HYDRUINO_FEEDRES_LINKS_BASESIZE     4                       // Base array size for feed reservoir's linkage list
+#define HYDRUINO_RAILS_LINKS_BASESIZE       4                       // Base array size for rail's linkage list
 // The following max sizes only matter for architectures that do not have STL support
 #define HYDRUINO_SYS_OBJECTS_MAXSIZE        16                      // Maximum array size for system objects (max # of objects in system)
 #define HYDRUINO_CROPSLIB_CROPS_MAXSIZE     8                       // Maximum array size for crops library objects (max # of different kinds of crops)

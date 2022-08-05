@@ -52,14 +52,7 @@ bool HydroponicsCalibrationsStore::setUserCalibrationData(const HydroponicsCalib
             retVal = true;
         }
 
-        if (retVal) {
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                scheduleSignalFireOnce<Hydroponics_KeyType>(_calibrationSignal, key);
-            #else
-                _calibrationSignal.fire(key);
-            #endif
-            return true;
-        }
+        return retVal;
     }
     return false;
 }
@@ -74,12 +67,6 @@ bool HydroponicsCalibrationsStore::dropUserCalibrationData(const HydroponicsCali
         if (iter->second) { delete iter->second; }
         _calibrationData.erase(iter);
 
-        #ifndef HYDRUINO_DISABLE_MULTITASKING
-            scheduleSignalFireOnce<Hydroponics_KeyType>(_calibrationSignal, key);
-        #else
-            _calibrationSignal.fire(key);
-        #endif
-
         return true;
     }
 
@@ -89,9 +76,4 @@ bool HydroponicsCalibrationsStore::dropUserCalibrationData(const HydroponicsCali
 bool HydroponicsCalibrationsStore::hasUserCalibrations() const
 {
     return _calibrationData.size();
-}
-
-Signal<Hydroponics_KeyType> &HydroponicsCalibrationsStore::getUserCalibrationSignal()
-{
-    return _calibrationSignal;
 }

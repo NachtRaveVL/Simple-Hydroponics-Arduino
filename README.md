@@ -50,6 +50,12 @@ From Hydroponics.h:
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
+// Uncomment or -D this define to enable usage of the on-board WiFi library, which enables networking capabilities.
+//#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
+
+// Uncomment or -D this define to enable usage of the external serial ESP8266 WiFi library, which enables networking capabilities.
+//#define HYDRUINO_ENABLE_ESP8266WIFI               // https://github.com/NachtRaveVL/WiFiEsp-Continued
+
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
 
@@ -59,7 +65,7 @@ From Hydroponics.h:
 // Uncomment or -D this define to enable verbose debug output (note: adds considerable size to compiled sketch).
 //#define HYDRUINO_ENABLE_VERBOSE_DEBUG
 
-// Uncomment or -D this define to enable debug assertions (note: adds considerable size to compiled sketch).
+// Uncomment or -D this define to enable debug assertions (note: adds significant size to compiled sketch).
 //#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
 ```
 
@@ -74,10 +80,10 @@ The controller's class object must first be instantiated, commonly at the top of
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
     // Controller constructor. Typically called during class instantiation, before setup().
-    Hydroponics(uint8_t piezoBuzzerPin = -1,                // Piezo buzzer pin, else -1
+    Hydroponics(pintype_t piezoBuzzerPin = -1,              // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-                uint8_t sdCardCSPin = -1,                   // SD card CS pin, else -1
-                uint8_t *ctrlInputPinMap = nullptr,         // Control input pin map, else nullptr
+                pintype_t sdCardCSPin = -1,                 // SD card CS pin, else -1
+                pintype_t *ctrlInputPinMap = nullptr,       // Control input pin map, else nullptr
                 uint8_t eepromI2CAddress = B000,            // EEPROM address
                 uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
                 uint8_t lcdI2CAddress = B000,               // LCD i2c address
@@ -393,7 +399,7 @@ Inside of the Data Writer's `setup()` function:
     // Right here would be the place to program in any custom crop data that you want made available for later.
     //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
     //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
-    //getCropsLibraryInstance()->setCustomCropData(&customCrop1);
+    //getCropsLibraryInstance()->setUserCropData(&customCrop1);
 ```
 
 In particular, after setting up the settings defines similarly to that of the Vertical NFT or Full System sketch, running the Data Writer sketch will produce the EEPROM configuration setup defines to then use. You typically won't need to copy these over unless you are planning to utilize an external EEPROM storage device and have made any custom data modifications, as these defines are updated by the dev team prior to release. If however you do have custom data modifications and are using an external EEPROM device, do copy these values over into your Main System sketch.

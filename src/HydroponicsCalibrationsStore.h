@@ -29,12 +29,8 @@ public:
     // Returns if there are user calibrations in the store
     bool hasUserCalibrations() const;
 
-    // Signal when user calibrations are added/updated in the store
-    Signal<Hydroponics_KeyType> &getUserCalibrationSignal();
-
 protected:
     Map<Hydroponics_KeyType, HydroponicsCalibrationData *, HYDRUINO_CALSTORE_CALIBS_MAXSIZE> _calibrationData; // Loaded user calibration data
-    Signal<Hydroponics_KeyType> _calibrationSignal;             // User calibration data updated signal    
 
 private:
     static HydroponicsCalibrationsStore *_instance;             // Shared instance

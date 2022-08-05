@@ -119,8 +119,7 @@ void HydroponicsMeasurement::saveToData(HydroponicsMeasurementData *dataOut, uin
 
 void HydroponicsMeasurement::updateFrame(unsigned int minFrame)
 {
-    auto hydroponics = getHydroponicsInstance();
-    frame = max(minFrame, hydroponics ? hydroponics->getPollingFrame() : 0);
+    frame = max(minFrame, getHydroponicsInstance() ? getHydroponicsInstance()->getPollingFrame() : 0);
 }
 
 

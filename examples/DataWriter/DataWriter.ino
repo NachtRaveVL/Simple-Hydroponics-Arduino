@@ -89,7 +89,7 @@ void setup() {
     // Right here would be the place to program in any custom crop data that you want made available for later.
     //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
     //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
-    //getCropsLibraryInstance()->setCustomCropData(&customCrop1);
+    //getCropsLibraryInstance()->setUserCropData(&customCrop1);
 
     getLoggerInstance()->logMessage(F("Writing external data..."));
 

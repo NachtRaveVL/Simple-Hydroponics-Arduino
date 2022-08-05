@@ -98,10 +98,9 @@ void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cro
     if (iter != _cropsData.end()) {
         auto book = iter->second;
         if (book) {
-            book->count -= 1;
+            book->count--;
 
-            if (book->count <= 0 && // delete on 0 count
-               (book->data.cropType < Hydroponics_CropType_CustomCrop1 || !book->userSet)) { // don't delete custom unless not user set
+            if (book->count <= 0 && (!book->userSet || !book->data._modified)) {
                 delete iter->second;
                 _cropsData.erase(iter);
             }
@@ -109,91 +108,85 @@ void HydroponicsCropsLibrary::returnCropsData(const HydroponicsCropsLibData *cro
     }
 }
 
-bool HydroponicsCropsLibrary::setCustomCropData(const HydroponicsCropsLibData *cropData)
+bool HydroponicsCropsLibrary::setUserCropData(const HydroponicsCropsLibData *cropData)
 {
     HYDRUINO_HARD_ASSERT(cropData, SFP(HStr_Err_InvalidParameter));
-    HYDRUINO_SOFT_ASSERT(!cropData || (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
-                                       cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), SFP(HStr_Err_InvalidParameter));
 
-    if (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
-        cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
-        Hydroponics_CropType cropType = cropData->cropType;
-        auto iter = _cropsData.find(cropType);
-        bool retVal = false;
+    auto iter = _cropsData.find(cropData->cropType);
+    bool retVal = false;
 
-        if (iter == _cropsData.end()) {
-            auto book = new HydroponicsCropsLibraryBook(*cropData);
+    if (iter == _cropsData.end()) {
+        auto book = new HydroponicsCropsLibraryBook(*cropData);
+        HYDRUINO_HARD_ASSERT(book, SFP(HStr_Err_AllocationFailure));
 
-            HYDRUINO_SOFT_ASSERT(book, SFP(HStr_Err_AllocationFailure));
-            if (book) {
-                book->userSet = true;
-                _cropsData[cropData->cropType] = book;
-                retVal = (_cropsData.find(cropData->cropType) != _cropsData.end());
-            }
-        } else {
-            iter->second->data = *cropData;
-            iter->second->userSet = true;
-            retVal = true;
-        }
+        book->userSet = true;
+        _cropsData[cropData->cropType] = book;
+        retVal = (_cropsData.find(cropData->cropType) != _cropsData.end());
+    } else {
+        iter->second->data = *cropData;
+        iter->second->userSet = true;
+        retVal = true;
+    }
 
-        if (retVal) {
-            _hasCustomCrops = true;
-
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                scheduleSignalFireOnce<Hydroponics_CropType>(_cropDataSignal, cropType);
-            #else
-                _cropDataSignal.fire(cropType);
-            #endif
-
-            return true;
-        }
+    if (retVal) {
+        _hasUserCrops = true;
+        updateCropsOfType(cropData->cropType);
+        return true;
     }
     return false;
 }
 
-bool HydroponicsCropsLibrary::dropCustomCropData(const HydroponicsCropsLibData *cropData)
+bool HydroponicsCropsLibrary::dropUserCropData(const HydroponicsCropsLibData *cropData)
 {
     HYDRUINO_HARD_ASSERT(cropData, SFP(HStr_Err_InvalidParameter));
-    HYDRUINO_SOFT_ASSERT(!cropData || (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
-                                       cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount), SFP(HStr_Err_InvalidParameter));
 
-    if (cropData->cropType >= Hydroponics_CropType_CustomCrop1 &&
-        cropData->cropType < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
-        Hydroponics_CropType cropType = cropData->cropType;
-        auto iter = _cropsData.find(cropType);
+    auto iter = _cropsData.find(cropData->cropType);
 
-        if (iter != _cropsData.end()) {
-            delete iter->second;
-            _cropsData.erase(iter);
+    if (iter != _cropsData.end()) {
+        delete iter->second;
+        _cropsData.erase(iter);
 
-            updateHasCustom();
-
-            #ifndef HYDRUINO_DISABLE_MULTITASKING
-                scheduleSignalFireOnce<Hydroponics_CropType>(_cropDataSignal, cropType);
-            #else
-                _cropDataSignal.fire(cropType);
-            #endif
-
-            return true;
-        }
+        updateHasUserCrops();
+        updateCropsOfType(cropData->cropType);
+        return true;
     }
 
     return false;
 }
 
-bool HydroponicsCropsLibrary::updateHasCustom()
+bool HydroponicsCropsLibrary::updateHasUserCrops()
 {
     for (auto iter = _cropsData.begin(); iter != _cropsData.end(); ++iter) {
-        if (iter->first >= Hydroponics_CropType_CustomCrop1) {
-            return (_hasCustomCrops = true);
+        if (iter->second->userSet) {
+            return (_hasUserCrops = true);
         }
     }
-    return (_hasCustomCrops = false);
+    return (_hasUserCrops = false);
 }
 
-Signal<Hydroponics_CropType> &HydroponicsCropsLibrary::getCustomCropSignal()
+void HydroponicsCropsLibrary::updateCropsOfType(Hydroponics_CropType cropType)
 {
-    return _cropDataSignal;
+    if (Hydroponics::_activeInstance) {
+        for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
+            if (iter->second->isCropType()) {
+                auto crop = static_pointer_cast<HydroponicsCrop>(iter->second);
+                if (crop->getCropType() == cropType) {
+                    bool incCount = false;
+                    if (_cropsData.find(cropType) != _cropsData.end()) {
+                        _cropsData[cropType]->count++; // prevents auto-deletion of underlying data
+                        incCount = true;
+                    }
+
+                    crop->returnCropsLibData(); // forces new data checkout
+                    crop->recalcCropGrowthParams();
+
+                    if (incCount) {
+                        _cropsData[cropType]->count--;
+                    }
+                }
+            }
+        }
+    }
 }
 
 HydroponicsCropsLibraryBook *HydroponicsCropsLibrary::newBookFromType(Hydroponics_CropType cropType)

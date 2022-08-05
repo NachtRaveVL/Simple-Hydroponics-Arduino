@@ -15,8 +15,8 @@ struct HydroponicsCropsLibraryBook;
 // Crop data is vast and most microcontrollers don't have the memory to load all the crop
 // data up at once. The crops library uses a library book like checkout and return system,
 // in which case reference counting is performed to see which crops need to be loaded and
-// which ones can unload. It is recommended to use the HydroponicsCropsLubData class if
-// using a temporary, otherwise this checkout/return system. The returned crop lib data
+// which ones can unload. It is recommended to use the HydroponicsCropsLibData constructor
+// if using a temporary, otherwise this checkout/return system. The returned crop lib data
 // instance is guaranteed to stay unique for as long as it is allocated.
 // Unless the HYDRUINO_DISABLE_BUILTIN_DATA define is defined, all crop data is
 // internally stored as JSON strings in the Flash PROGMEM memory space. See the Data
@@ -41,30 +41,26 @@ public:
     void returnCropsData(const HydroponicsCropsLibData *cropData);
 
     // Adds/updates custom crop data to the library, returning success flag
-    bool setCustomCropData(const HydroponicsCropsLibData *cropData);
+    bool setUserCropData(const HydroponicsCropsLibData *cropData);
 
     // Drops/removes custom crop data from the library, returning success flag
-    bool dropCustomCropData(const HydroponicsCropsLibData *cropData);
+    bool dropUserCropData(const HydroponicsCropsLibData *cropData);
 
     // Returns if there are custom crops in the library
-    inline bool hasCustomCrops() const { return _hasCustomCrops; }
-
-    // Signal when custom crops are added/updated in the library
-    Signal<Hydroponics_CropType> &getCustomCropSignal();
+    inline bool hasUserCrops() const { return _hasUserCrops; }
 
 protected:
     Map<Hydroponics_CropType, HydroponicsCropsLibraryBook *, HYDRUINO_CROPSLIB_CROPS_MAXSIZE> _cropsData; // Loaded crops library data
-    bool _hasCustomCrops = false;                           // Has custom crops flag
+    bool _hasUserCrops = false;                             // Has user crops flag
 
     String _libSDCropPrefix;                                // Library data files prefix for SD Card, else "" if unused
     bool _libSDJSONFormat = false;                          // Library SD Card data files JSON format tracking flag
     size_t _libEEPROMDataAddress = (size_t)-1;              // Library EEPROM data begin address, else -1 if unused
     bool _libEEPROMJSONFormat = false;                      // Library EEPROM data JSON format tracking flag
 
-    Signal<Hydroponics_CropType> _cropDataSignal;           // Custom crop data updated signal    
-
     HydroponicsCropsLibraryBook *newBookFromType(Hydroponics_CropType cropType);
-    bool updateHasCustom();
+    bool updateHasUserCrops();
+    void updateCropsOfType(Hydroponics_CropType cropType);
 
 private:
     static HydroponicsCropsLibrary *_instance;              // Shared instance
