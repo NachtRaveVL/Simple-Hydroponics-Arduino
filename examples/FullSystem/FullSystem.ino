@@ -59,7 +59,7 @@
 
 
 #if SETUP_ENABLE_WIFI && !defined(HYDRUINO_USE_WIFI)
-#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP8266WIFI flag is expected to be defined in order to run this sketch
+#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI flag is expected to be defined in order to run this sketch
 #undef SETUP_ENABLE_WIFI
 #define SETUP_ENABLE_WIFI false
 #endif
@@ -79,7 +79,10 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_I2C_WIRE_INST,
                             SETUP_I2C_SPEED,
                             SETUP_SD_CARD_SPI_SPEED,
-                            SETUP_WIFI_INST);
+#if defined(HYDRUINO_USE_WIFI)
+                            ,SETUP_WIFI_INST
+#endif
+                            );
 
 void setup() {
     // Setup base interfaces
@@ -94,7 +97,7 @@ void setup() {
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
         #ifdef HYDRUINO_USE_SERIALWIFI
-            Serial1.begin(HYDRUINO_SYS_ESP8266SERIAL_BAUD);
+            Serial1.begin(HYDRUINO_SYS_ESPWIFI_SERIALBAUD);
             SETUP_WIFI_INST.init(&Serial1); // Change to Serial instance of your choice, otherwise
         #endif
     #endif

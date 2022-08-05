@@ -598,9 +598,11 @@ void Hydroponics::commonPostInit()
     logger.updateInitTracking();
     publisher.setNeedsTabulation();
 
-    if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
-        setWiFiConnection(getWiFiSSID(), getWiFiPassword()); // sets seed and encrypts
-    }
+    #ifdef HYDRUINO_USE_WIFI
+        if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
+            setWiFiConnection(getWiFiSSID(), getWiFiPassword()); // sets seed and encrypts
+        }
+    #endif
 
     #ifndef HYDRUINO_DISABLE_GUI
         // TODO: tcMenu setup

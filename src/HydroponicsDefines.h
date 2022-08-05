@@ -99,16 +99,16 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_SYS_AUTOSAVE_INTERVAL      120                     // Default autosave interval, in minutes
 #define HYDRUINO_SYS_I2CEEPROM_BASEADDR     0x50                    // Base address of I2C EEPROM (bitwise or'ed with passed address)
-#define HYDRUINO_SYS_ESP8266SERIAL_BAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps
+#define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps
 #define HYDRUINO_SYS_FREERAM_LOWBYTES       1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
 #define HYDRUINO_SYS_FREESPACE_INTERVAL     240                     // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
 #define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
-#define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   true                   // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
-#define HYDRUINO_SYS_MEM_LOGGING_ENABLE     true                   // If system will periodically log memory remaining messages (mainly used for debugging)
+#define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   false                   // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
+#define HYDRUINO_SYS_MEM_LOGGING_ENABLE     false                   // If system will periodically log memory remaining messages (mainly used for debugging)
 #define HYDRUINO_SYS_ALIVE_LOGGING_ENABLE   false                   // If system will periodically log alive messages for all active runloops (mainly used for debugging)
-#define HYDRUINO_SYS_DRY_RUN_ENABLE         true                   // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
+#define HYDRUINO_SYS_DRY_RUN_ENABLE         false                   // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
