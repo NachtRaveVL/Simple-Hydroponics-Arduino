@@ -38,6 +38,12 @@
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
+// Uncomment or -D this define to enable usage of the on-board WiFi library, which enables networking capabilities.
+//#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
+
+// Uncomment or -D this define to enable usage of the external serial ESP8266 WiFi library, which enables networking capabilities.
+//#define HYDRUINO_ENABLE_ESP8266WIFI               // https://github.com/NachtRaveVL/WiFiEsp-Continued
+
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
 
@@ -53,19 +59,34 @@
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include <Arduino.h>
-#elif defined(__MBED__)
-#include <mbed.h>
 #else
 #include <WProgram.h>
 #endif
-#include <SPI.h>
 #include <SD.h>
+#include <SPI.h>
 #include <Wire.h>
+
+#if defined(HYDRUINO_ENABLE_WIFI)
+#if defined(ARDUINO_SAMD_MKRWIFI1010) || defined(ARDUINO_SAMD_MKRVIDOR4000) || defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_AVR_UNO_WIFI_REV2)
+#include <WiFiNINA.h>                               // https://github.com/arduino-libraries/WiFiNINA
+#elif defined(ARDUINO_SAMD_MKR1000)
+#include <WiFi101.h>                                // https://github.com/arduino-libraries/WiFi101
+#else
 #include <WiFi.h>
+#endif
+#define HYDRUINO_USE_WIFI
+#elif defined(HYDRUINO_ENABLE_ESP8266WIFI)
+#include "WiFiEsp-Continued.h"                      // Note: Original library is no longer maintained, use our fork
+typedef WiFiEspClass WiFiClass;
+typedef WiFiEspClient WiFiClient;
+#define HYDRUINO_USE_SERIALWIFI
+#define HYDRUINO_USE_WIFI
+#endif
 
 #if defined(ESP32) || defined(ESP8266)
 typedef SDFileSystemClass SDClass;
 #endif
+
 #if defined(ARDUINO_ARCH_RP2040)
 #include <api/Common.h>
 #endif
@@ -79,6 +100,7 @@ typedef SDFileSystemClass SDClass;
 extern int __int_disable_irq(void);
 extern void __int_restore_irq(int *primask);
 #define CRITICAL_SECTION for (int primask_save __attribute__((__cleanup__(__int_restore_irq))) = __int_disable_irq(), __ToDo = 1; __ToDo; __ToDo = 0)
+#define HYDRUINO_USE_PRIMASK_CRITSECT
 #endif
 #else
 #ifndef HYDRUINO_DISABLE_GUI
@@ -86,6 +108,11 @@ extern void __int_restore_irq(int *primask);
 #endif
 #define secondsToMillis(val) ((val)*1000U)
 #define CRITICAL_SECTION if (1)
+#if defined(ARDUINO_ARCH_MBED)
+typedef uint32_t pintype_t;
+#else
+typedef uint8_t pintype_t;
+#endif
 #endif // /ifndef HYDRUINO_DISABLE_MULTITASKING
 
 #if defined(NDEBUG) && defined(HYDRUINO_ENABLE_DEBUG_OUTPUT)
@@ -139,7 +166,7 @@ template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> using Map = ar
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
 
 extern time_t unixNow();
-extern void handleInterrupt(uint8_t pin);
+extern void handleInterrupt(pintype_t pin);
 extern void controlLoop();
 extern void dataLoop();
 extern void miscLoop();
@@ -179,17 +206,20 @@ public:
     HydroponicsPublisher publisher;                         // Publisher public instance
 
     // Controller constructor. Typically called during class instantiation, before setup().
-    Hydroponics(uint8_t piezoBuzzerPin = -1,                // Piezo buzzer pin, else -1
+    Hydroponics(pintype_t piezoBuzzerPin = -1,              // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-                uint8_t sdCardCSPin = -1,                   // SD card CS pin, else -1
-                uint8_t *ctrlInputPinMap = nullptr,         // Control input pin map, else nullptr
+                pintype_t sdCardCSPin = -1,                 // SD card CS pin, else -1
+                pintype_t *ctrlInputPinMap = nullptr,       // Control input pin map, else nullptr
                 uint8_t eepromI2CAddress = B000,            // EEPROM address
                 uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
                 uint8_t lcdI2CAddress = B000,               // LCD i2c address
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
                 uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
-                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored if on Teensy)
-                WiFiClass &wifi = WiFi);                    // WiFi class instance
+                uint32_t sdCardSpeed = 4000000U             // SD card SPI speed, in Hz (ignored if on Teensy)
+#ifdef HYDRUINO_USE_WIFI
+                , WiFiClass &wifi = WiFi                    // WiFi class instance
+#endif
+                );
     // Library destructor. Just in case.
     ~Hydroponics();
 
@@ -281,9 +311,9 @@ public:
     // Pin Locks.
 
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
-    bool tryGetPinLock(uint8_t pin, time_t waitMillis = 150);
+    bool tryGetPinLock(pintype_t pin, time_t waitMillis = 150);
     // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
-    void returnPinLock(uint8_t pin);
+    void returnPinLock(pintype_t pin);
 
     // Mutators.
 
@@ -299,8 +329,10 @@ public:
     inline void setSystemConfigFile(String configFileName) { _sysConfigFile = configFileName; }
     // Sets EEPROM system data address as used in init and save by EEPROM.
     inline void setSystemDataAddress(uint16_t sysDataAddress) { _sysDataAddress = sysDataAddress; }
+#ifdef HYDRUINO_USE_WIFI
     // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
     void setWiFiConnection(String ssid, String password);
+#endif
 
     // Sets the RTC's time to the passed time, with respect to set timezone. Will trigger significant time event.
     void setRealTimeClockTime(DateTime time);
@@ -320,7 +352,7 @@ public:
     // Total number of pins being used for the current control input ribbon mode
     int getControlInputRibbonPinCount() const;
     // Control input pin mapped to ribbon pin index, or -1 (255) if not used
-    uint8_t getControlInputPin(int ribbonPinIndex) const;
+    pintype_t getControlInputPin(int ribbonPinIndex) const;
 
     // EEPROM instance (lazily instantiated, nullptr return -> failure/no device)
     I2C_eeprom *getEEPROM(bool begin = true);
@@ -330,12 +362,14 @@ public:
     SDClass *getSDCard(bool begin = true);
     // Ends SD card transaction with proper regards to platform
     void endSDCard(SDClass *sd);
+#ifdef HYDRUINO_USE_WIFI
     // WiFi instance (nullptr return -> failure/no device, note: this method may block for up to a minute)
     WiFiClass *getWiFi(bool begin = true);
+#endif
     // OneWire instance for given pin (lazily instantiated)
-    OneWire *getOneWireForPin(uint8_t pin);
+    OneWire *getOneWireForPin(pintype_t pin);
     // Drops OneWire instance for given pin (if created)
-    void dropOneWireForPin(uint8_t pin);
+    void dropOneWireForPin(pintype_t pin);
 
     // Whenever the system is in operational mode (has been launched), or not
     inline bool inOperationalMode() const { return !_suspend; }
@@ -365,10 +399,12 @@ public:
     inline String getSystemConfigFile() const { return _sysConfigFile; }
     // System data address used in init and save by EEPROM
     inline uint16_t getSystemDataAddress() const { return _sysDataAddress; }
+#ifdef HYDRUINO_USE_WIFI
     // SSID for WiFi connection
     String getWiFiSSID();
     // Password for WiFi connection (plaintext)
     String getWiFiPassword();
+#endif
 
     // Misc.
 
@@ -383,23 +419,27 @@ protected:
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
     const uint32_t _eepromDeviceSize;                               // EEPROM device size (default: 0/Disabled)
-    const uint8_t _piezoBuzzerPin;                                  // Piezo buzzer pin (default: Disabled)
-    const uint8_t _sdCardCSPin;                                     // SD card cable select (CS) pin (default: Disabled)
-    const uint8_t *_ctrlInputPinMap;                                // Control input pin mapping (weak, default: Disabled/nullptr)
+    const pintype_t _piezoBuzzerPin;                                // Piezo buzzer pin (default: Disabled)
+    const pintype_t _sdCardCSPin;                                   // SD card cable select (CS) pin (default: Disabled)
+    const pintype_t *_ctrlInputPinMap;                              // Control input pin mapping (weak, default: Disabled/nullptr)
     const uint8_t _eepromI2CAddr;                                   // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
     const uint8_t _rtcI2CAddr;                                      // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
     const uint8_t _lcdI2CAddr;                                      // LCD i2c address, format: {A2,A1,A0} (default: B000)
     TwoWire *_i2cWire;                                              // Controller's i2c wire class instance (strong, default: Wire)
     uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
     uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz, ignored if on Teensy)
+#ifdef HYDRUINO_USE_WIFI
     WiFiClass *_wifi;                                               // WiFi class instance (strong, default: WiFi)
+#endif
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
     bool _eepromBegan;                                              // Status of EEPROM begin() call
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
+#ifdef HYDRUINO_USE_WIFI
     bool _wifiBegan;                                                // Status of WiFi begin() call
+#endif
 
     #ifndef HYDRUINO_DISABLE_MULTITASKING
     taskid_t _controlTaskId;                                        // Control task Id if created, else TASKMGR_INVALIDID
@@ -415,8 +455,8 @@ protected:
 
     Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
     Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount> _additives; // Custom additives data
-    Map<uint8_t, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE> _oneWires; // pin->OneWire mapping
-    Map<uint8_t, uint8_t, HYDRUINO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
+    Map<pintype_t, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE> _oneWires; // pin->OneWire mapping
+    Map<pintype_t, pintype_t, HYDRUINO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
 
     friend Hydroponics *::getHydroponicsInstance();
     friend HydroponicsScheduler *::getSchedulerInstance();
@@ -442,7 +482,7 @@ protected:
     friend void controlLoop();
     friend void dataLoop();
     friend void miscLoop();
-    friend void handleInterrupt(uint8_t pin);
+    friend void handleInterrupt(pintype_t pin);
 
     void checkFreeMemory();
     void broadcastLowMemory();

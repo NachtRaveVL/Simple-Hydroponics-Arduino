@@ -8,7 +8,7 @@
 #include "Hydroponics.h"
 
 // Checks if pin is valid or not.
-static inline bool isValidPin(uint8_t pin) { return pin != (uint8_t)-1; }
+static inline bool isValidPin(pintype_t pin) { return pin != (pintype_t)-1; }
 // Checks if measurement row is valid or not.
 static inline bool isValidRow(uint8_t row) { return row != (uint8_t)-1; }
 

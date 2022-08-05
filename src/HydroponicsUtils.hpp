@@ -265,12 +265,12 @@ void linksResolveActuatorsPairRateByType(Vector<HydroponicsObject *, N> &actuato
     }
 }
 
-inline bool checkPinIsPWMOutput(uint8_t pin)
+inline bool checkPinIsPWMOutput(pintype_t pin)
 {
-    #if defined(ARDUINO_ARCH_RP2040)
-        return true; // all pins are PWM capable
-    #else
+    #if defined(digitalPinHasPWM)
         return digitalPinHasPWM(pin);
+    #else
+        return checkPinIsDigital(pin); // all digital pins are PWM capable
     #endif
 }
 

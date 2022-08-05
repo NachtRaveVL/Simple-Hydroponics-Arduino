@@ -93,7 +93,7 @@ Hydroponics_UnitsCategory defaultMeasureCategoryForSensorType(Hydroponics_Sensor
 
 HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
                                      Hydroponics_PositionIndex sensorIndex,
-                                     uint8_t inputPin,
+                                     pintype_t inputPin,
                                      int classTypeIn)
     : HydroponicsObject(HydroponicsIdentity(sensorType, sensorIndex)), classType((typeof(classType))classTypeIn),
       _inputPin(inputPin), _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
@@ -183,7 +183,7 @@ void HydroponicsSensor::saveToData(HydroponicsData *dataOut)
 
 HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorType,
                                                  Hydroponics_PositionIndex sensorIndex,
-                                                 uint8_t inputPin,
+                                                 pintype_t inputPin,
                                                  bool activeLow,
                                                  int classType)
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType),
@@ -296,7 +296,7 @@ void HydroponicsBinarySensor::saveToData(HydroponicsData *dataOut)
 
 HydroponicsAnalogSensor::HydroponicsAnalogSensor(Hydroponics_SensorType sensorType,
                                                  Hydroponics_PositionIndex sensorIndex,
-                                                 uint8_t inputPin, uint8_t inputBitRes, bool inputInversion,
+                                                 pintype_t inputPin, uint8_t inputBitRes, bool inputInversion,
                                                  int classType)
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType),
       _inputResolution(inputBitRes), _inputInversion(inputInversion), _measurementUnits(defaultMeasureUnitsForSensorType(sensorType))
@@ -425,7 +425,7 @@ void HydroponicsAnalogSensor::saveToData(HydroponicsData *dataOut)
 
 HydroponicsDigitalSensor::HydroponicsDigitalSensor(Hydroponics_SensorType sensorType,
                                                    Hydroponics_PositionIndex sensorIndex,
-                                                   uint8_t inputPin, uint8_t inputBitRes,
+                                                   pintype_t inputPin, uint8_t inputBitRes,
                                                    bool allocate1W,
                                                    int classType)
     : HydroponicsSensor(sensorType, sensorIndex, inputPin, classType), _inputBitRes(inputBitRes), _oneWire(nullptr), _wirePosIndex(-1), _wireDevAddress{0}
@@ -540,7 +540,7 @@ void HydroponicsDigitalSensor::saveToData(HydroponicsData *dataOut)
 
 
 HydroponicsDHTTempHumiditySensor::HydroponicsDHTTempHumiditySensor(Hydroponics_PositionIndex sensorIndex,
-                                                                   uint8_t inputPin,
+                                                                   pintype_t inputPin,
                                                                    uint8_t dhtType,
                                                                    bool computeHeatIndex,
                                                                    int classType)
@@ -701,8 +701,8 @@ void HydroponicsDHTTempHumiditySensor::saveToData(HydroponicsData *dataOut)
 
 
 HydroponicsDSTemperatureSensor::HydroponicsDSTemperatureSensor(Hydroponics_PositionIndex sensorIndex,
-                                                               uint8_t inputPin, uint8_t inputBitRes,
-                                                               uint8_t pullupPin,
+                                                               pintype_t inputPin, uint8_t inputBitRes,
+                                                               pintype_t pullupPin,
                                                                int classType)
     : HydroponicsDigitalSensor(Hydroponics_SensorType_WaterTemperature, sensorIndex, inputPin, inputBitRes, true, classType),
       _dt(new DallasTemperature()), _pullupPin(pullupPin), _measurementUnits(defaultTemperatureUnits())

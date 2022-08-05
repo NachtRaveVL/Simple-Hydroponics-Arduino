@@ -240,7 +240,7 @@ extern time_t rtcNow();
 inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
 
 // This will handle interrupts for task manager.
-extern void handleInterrupt(uint8_t pin);
+extern void handleInterrupt(pintype_t pin);
 
 // This is used to force debug statements through to serial monitor.
 inline void flushYield() {
@@ -323,15 +323,15 @@ template<size_t N> void linksResolveActuatorsPairRateByType(Vector<HydroponicsOb
 // Pins & Checks
 
 // Checks to see if the pin is an analog input pin.
-extern bool checkPinIsAnalogInput(uint8_t pin);
+extern bool checkPinIsAnalogInput(pintype_t pin);
 // Checks to see if the pin is an analog output pin.
-extern bool checkPinIsAnalogOutput(uint8_t pin);
+extern bool checkPinIsAnalogOutput(pintype_t pin);
 // Checks to see if the pin is a standard digital (non-analog) pin.
-inline bool checkPinIsDigital(uint8_t pin) { return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin); }
+inline bool checkPinIsDigital(pintype_t pin) { return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin); }
 // Checks to see if the pin can produce a digital PWM output signal.
-inline bool checkPinIsPWMOutput(uint8_t pin);
+inline bool checkPinIsPWMOutput(pintype_t pin);
 // Checks to see if the pin can be set up with an ISR to handle digital level changes.
-inline bool checkPinCanInterrupt(uint8_t pin) { return isValidPin(digitalPinToInterrupt(pin)); }
+inline bool checkPinCanInterrupt(pintype_t pin) { return isValidPin(digitalPinToInterrupt(pin)); }
 
 // Enums & Conversions
 
