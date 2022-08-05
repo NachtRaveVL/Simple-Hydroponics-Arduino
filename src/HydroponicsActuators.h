@@ -36,7 +36,7 @@ public:
 
     HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
                         Hydroponics_PositionIndex actuatorIndex,
-                        uint8_t outputPin = -1,
+                        pintype_t outputPin = -1,
                         int classType = Unknown);
     HydroponicsActuator(const HydroponicsActuatorData *dataIn);
 
@@ -53,14 +53,14 @@ public:
     virtual HydroponicsAttachment &getParentRail(bool resolve = true) override;
     virtual HydroponicsAttachment &getParentReservoir(bool resolve = true) override;
 
-    inline uint8_t getOutputPin() const { return _outputPin; }
+    inline pintype_t getOutputPin() const { return _outputPin; }
     inline Hydroponics_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
     inline Hydroponics_PositionIndex getActuatorIndex() const { return _id.posIndex; }
 
     Signal<HydroponicsActuator *> &getActivationSignal();
 
 protected:
-    uint8_t _outputPin;                                     // Output pin
+    pintype_t _outputPin;                                   // Output pin
     bool _enabled;                                          // Enabled state flag
     HydroponicsSingleMeasurement _contPowerUsage;           // Continuous power draw
     HydroponicsAttachment _rail;                            // Power rail attachment
@@ -79,7 +79,7 @@ class HydroponicsRelayActuator : public HydroponicsActuator {
 public:
     HydroponicsRelayActuator(Hydroponics_ActuatorType actuatorType,
                              Hydroponics_PositionIndex actuatorIndex,
-                             uint8_t outputPin,
+                             pintype_t outputPin,
                              bool activeLow = true,
                              int classType = Relay);
     HydroponicsRelayActuator(const HydroponicsRelayActuatorData *dataIn);
@@ -104,7 +104,7 @@ class HydroponicsPumpRelayActuator : public HydroponicsRelayActuator, public Hyd
 public:
     HydroponicsPumpRelayActuator(Hydroponics_ActuatorType actuatorType,
                                  Hydroponics_PositionIndex actuatorIndex,
-                                 uint8_t outputPin,
+                                 pintype_t outputPin,
                                  bool activeLow = true,
                                  int classType = RelayPump);
     HydroponicsPumpRelayActuator(const HydroponicsPumpRelayActuatorData *dataIn);
@@ -155,7 +155,7 @@ class HydroponicsPWMActuator : public HydroponicsActuator {
 public:
     HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,
                            Hydroponics_PositionIndex actuatorIndex,
-                           uint8_t outputPin,
+                           pintype_t outputPin,
                            uint8_t outputBitResolution = 8,
                            int classType = PWM);
     HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn);
@@ -185,7 +185,7 @@ protected:
 // Actuator Serialization Data
 struct HydroponicsActuatorData : public HydroponicsObjectData
 {
-    uint8_t outputPin;
+    pintype_t outputPin;
     HydroponicsMeasurementData contPowerUsage;
     char railName[HYDRUINO_NAME_MAXSIZE];
     char reservoirName[HYDRUINO_NAME_MAXSIZE];

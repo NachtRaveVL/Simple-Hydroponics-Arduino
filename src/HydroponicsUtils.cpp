@@ -1030,59 +1030,59 @@ int defaultDecimalPlaces(Hydroponics_MeasurementMode measureMode)
 }
 
 
-bool checkPinIsAnalogInput(uint8_t pin)
+bool checkPinIsAnalogInput(pintype_t pin)
 {
     #if !defined(NUM_ANALOG_INPUTS) || NUM_ANALOG_INPUTS == 0
         return false;
     #else
         switch (pin) {
             #if NUM_ANALOG_INPUTS > 0
-                case (int)A0:
+                case (pintype_t)A0:
             #endif
             #if NUM_ANALOG_INPUTS > 1
-                case (int)A1:
+                case (pintype_t)A1:
             #endif
             #if NUM_ANALOG_INPUTS > 2
-                case (int)A2:
+                case (pintype_t)A2:
             #endif
             #if NUM_ANALOG_INPUTS > 3
-                case (int)A3:
+                case (pintype_t)A3:
             #endif
             #if NUM_ANALOG_INPUTS > 4
-                case (int)A4:
+                case (pintype_t)A4:
             #endif
             #if NUM_ANALOG_INPUTS > 5
-                case (int)A5:
+                case (pintype_t)A5:
             #endif
             #if NUM_ANALOG_INPUTS > 6
-                case (int)A6:
+                case (pintype_t)A6:
             #endif
             #if NUM_ANALOG_INPUTS > 7
-                case (int)A7:
+                case (pintype_t)A7:
             #endif
             #if NUM_ANALOG_INPUTS > 8
-                case (int)A8:
+                case (pintype_t)A8:
             #endif
             #if NUM_ANALOG_INPUTS > 9
-                case (int)A9:
+                case (pintype_t)A9:
             #endif
             #if NUM_ANALOG_INPUTS > 10
-                case (int)A10:
+                case (pintype_t)A10:
             #endif
             #if NUM_ANALOG_INPUTS > 11
-                case (int)A11:
+                case (pintype_t)A11:
             #endif
             #if NUM_ANALOG_INPUTS > 12
-                case (int)A12:
+                case (pintype_t)A12:
             #endif
             #if NUM_ANALOG_INPUTS > 13
-                case (int)A13:
+                case (pintype_t)A13:
             #endif
             #if NUM_ANALOG_INPUTS > 14
-                case (int)A14:
+                case (pintype_t)A14:
             #endif
             #if NUM_ANALOG_INPUTS > 15
-                case (int)A15:
+                case (pintype_t)A15:
             #endif
                 return true;
 
@@ -1092,37 +1092,37 @@ bool checkPinIsAnalogInput(uint8_t pin)
     #endif
 }
 
-bool checkPinIsAnalogOutput(uint8_t pin)
+bool checkPinIsAnalogOutput(pintype_t pin)
 {
     #if !defined(NUM_ANALOG_OUTPUTS) || NUM_ANALOG_OUTPUTS == 0
         return false;
     #else
         switch (pin) {
             #if NUM_ANALOG_OUTPUTS > 0 && defined(DAC)
-                case (int)DAC:
+                case (pintype_t)DAC:
             #elif NUM_ANALOG_OUTPUTS > 0
-                case (int)DAC0:
+                case (pintype_t)DAC0:
             #endif
             #if NUM_ANALOG_OUTPUTS > 1
-                case (int)DAC1:
+                case (pintype_t)DAC1:
             #endif
             #if NUM_ANALOG_OUTPUTS > 2
-                case (int)DAC2:
+                case (pintype_t)DAC2:
             #endif
             #if NUM_ANALOG_OUTPUTS > 3
-                case (int)DAC3:
+                case (pintype_t)DAC3:
             #endif
             #if NUM_ANALOG_OUTPUTS > 4
-                case (int)DAC4:
+                case (pintype_t)DAC4:
             #endif
             #if NUM_ANALOG_OUTPUTS > 5
-                case (int)DAC5:
+                case (pintype_t)DAC5:
             #endif
             #if NUM_ANALOG_OUTPUTS > 6
-                case (int)DAC6:
+                case (pintype_t)DAC6:
             #endif
             #if NUM_ANALOG_OUTPUTS > 7
-                case (int)DAC7:
+                case (pintype_t)DAC7:
             #endif
                 return true;
 

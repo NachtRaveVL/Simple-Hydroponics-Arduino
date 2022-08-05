@@ -5,7 +5,7 @@
 
 #include "Hydroponics.h"
 
-SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addGrowLightsRelay(uint8_t outputPin)
+SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addGrowLightsRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_GrowLights));
@@ -23,7 +23,7 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addGrowLightsRelay(uint8
     return nullptr;
 }
 
-SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addWaterPumpRelay(uint8_t outputPin)
+SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addWaterPumpRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterPump));
@@ -42,7 +42,7 @@ SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addWaterPumpRelay(ui
     return nullptr;
 }
 
-SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterHeaterRelay(uint8_t outputPin)
+SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterHeaterRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterHeater));
@@ -61,7 +61,7 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterHeaterRelay(uint
     return nullptr;
 }
 
-SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterSprayerRelay(uint8_t outputPin)
+SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterSprayerRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterSprayer));
@@ -80,7 +80,7 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterSprayerRelay(uin
     return nullptr;
 }
 
-SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterAeratorRelay(uint8_t outputPin)
+SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterAeratorRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_WaterAerator));
@@ -99,7 +99,7 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterAeratorRelay(uin
     return nullptr;
 }
 
-SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(uint8_t outputPin)
+SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
@@ -118,7 +118,7 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(uint8
     return nullptr;
 }
 
-SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(uint8_t outputPin, uint8_t outputBitRes)
+SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pintype_t outputPin, uint8_t outputBitRes)
 {
     bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
@@ -137,7 +137,7 @@ SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(uin
     return nullptr;
 }
 
-SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addPeristalticPumpRelay(uint8_t outputPin)
+SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addPeristalticPumpRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_PeristalticPump));
@@ -156,7 +156,7 @@ SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addPeristalticPumpRe
     return nullptr;
 }
 
-SharedPtr<HydroponicsBinarySensor> HydroponicsFactory::addLevelIndicator(uint8_t inputPin)
+SharedPtr<HydroponicsBinarySensor> HydroponicsFactory::addLevelIndicator(pintype_t inputPin)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterLevelIndicator));
@@ -175,7 +175,7 @@ SharedPtr<HydroponicsBinarySensor> HydroponicsFactory::addLevelIndicator(uint8_t
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPhMeter(uint8_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPhMeter(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PotentialHydrogen));
@@ -194,7 +194,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPhMeter(uint8_t 
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTDSElectrode(uint8_t inputPin, int ppmScale, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTDSElectrode(pintype_t inputPin, int ppmScale, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_TotalDissolvedSolids));
@@ -222,7 +222,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTDSElectrode(uin
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTemperatureSensor(uint8_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTemperatureSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));
@@ -241,7 +241,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTemperatureSenso
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(uint8_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirCarbonDioxide));
@@ -260,7 +260,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(uint8_
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogMoistureSensor(uint8_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogMoistureSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_SoilMoisture));
@@ -279,7 +279,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogMoistureSensor(u
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPWMPumpFlowSensor(uint8_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPWMPumpFlowSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterPumpFlowSensor));
@@ -298,7 +298,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPWMPumpFlowSenso
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogWaterHeightMeter(uint8_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogWaterHeightMeter(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
@@ -317,7 +317,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogWaterHeightMeter
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addUltrasonicDistanceSensor(uint8_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addUltrasonicDistanceSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterHeightMeter));
@@ -336,7 +336,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addUltrasonicDistanceSens
     return nullptr;
 }
 
-SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addPowerUsageMeter(uint8_t inputPin, bool isWattageBased, uint8_t inputBitRes)
+SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addPowerUsageMeter(pintype_t inputPin, bool isWattageBased, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_PowerUsageMeter));
@@ -358,7 +358,7 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addPowerUsageMeter(uint8_
     return nullptr;
 }
 
-SharedPtr<HydroponicsDHTTempHumiditySensor> HydroponicsFactory::addDHTTempHumiditySensor(uint8_t inputPin, uint8_t dhtType)
+SharedPtr<HydroponicsDHTTempHumiditySensor> HydroponicsFactory::addDHTTempHumiditySensor(pintype_t inputPin, uint8_t dhtType)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_AirTempHumidity));
@@ -377,7 +377,7 @@ SharedPtr<HydroponicsDHTTempHumiditySensor> HydroponicsFactory::addDHTTempHumidi
     return nullptr;
 }
 
-SharedPtr<HydroponicsDSTemperatureSensor> HydroponicsFactory::addDSTemperatureSensor(uint8_t inputPin, uint8_t inputBitRes, uint8_t pullupPin)
+SharedPtr<HydroponicsDSTemperatureSensor> HydroponicsFactory::addDSTemperatureSensor(pintype_t inputPin, uint8_t inputBitRes, pintype_t pullupPin)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_SensorType_WaterTemperature));

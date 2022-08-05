@@ -49,7 +49,7 @@ public:
 
     HydroponicsSensor(Hydroponics_SensorType sensorType,
                       Hydroponics_PositionIndex sensorIndex,
-                      uint8_t inputPin = -1,
+                      pintype_t inputPin = -1,
                       int classType = Unknown);
     HydroponicsSensor(const HydroponicsSensorData *dataIn);
     virtual ~HydroponicsSensor();
@@ -70,14 +70,14 @@ public:
     void setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData);
     inline const HydroponicsCalibrationData *getUserCalibrationData() const { return _calibrationData; }
 
-    inline uint8_t getInputPin() const { return _inputPin; }
+    inline pintype_t getInputPin() const { return _inputPin; }
     inline Hydroponics_SensorType getSensorType() const { return _id.objTypeAs.sensorType; }
     inline Hydroponics_PositionIndex getSensorIndex() const { return _id.posIndex; }
 
     Signal<const HydroponicsMeasurement *, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> &getMeasurementSignal();
 
 protected:
-    uint8_t _inputPin;                                      // Input pin
+    pintype_t _inputPin;                                    // Input pin
     bool _isTakingMeasure;                                  // Taking measurement flag
     HydroponicsAttachment _crop;                            // Crop attachment
     HydroponicsAttachment _reservoir;                       // Reservoir attachment
@@ -96,7 +96,7 @@ class HydroponicsBinarySensor : public HydroponicsSensor {
 public:
     HydroponicsBinarySensor(Hydroponics_SensorType sensorType,
                             Hydroponics_PositionIndex sensorIndex,
-                            uint8_t inputPin,
+                            pintype_t inputPin,
                             bool activeLow = true,
                             int classType = Binary);
     HydroponicsBinarySensor(const HydroponicsBinarySensorData *dataIn);
@@ -134,7 +134,7 @@ class HydroponicsAnalogSensor : public HydroponicsSensor {
 public:
     HydroponicsAnalogSensor(Hydroponics_SensorType sensorType,
                             Hydroponics_PositionIndex sensorIndex,
-                            uint8_t inputPin,
+                            pintype_t inputPin,
                             uint8_t inputBitRes = 10,
                             bool inputInversion = false,
                             int classType = Analog);
@@ -167,7 +167,7 @@ class HydroponicsDigitalSensor : public HydroponicsSensor {
 public:
     HydroponicsDigitalSensor(Hydroponics_SensorType sensorType,
                              Hydroponics_PositionIndex sensorIndex,
-                             uint8_t inputPin = -1, uint8_t inputBitRes = 9,
+                             pintype_t inputPin = -1, uint8_t inputBitRes = 9,
                              bool allocate1W = false,
                              int classType = Digital);
     HydroponicsDigitalSensor(const HydroponicsDigitalSensorData *dataIn, bool allocate1W = false);
@@ -197,7 +197,7 @@ protected:
 class HydroponicsDHTTempHumiditySensor : public HydroponicsDigitalSensor {
 public:
     HydroponicsDHTTempHumiditySensor(Hydroponics_PositionIndex sensorIndex,
-                                     uint8_t inputPin,
+                                     pintype_t inputPin,
                                      uint8_t dhtType = DHT12,
                                      bool computeHeatIndex = true,
                                      int classType = DHT1W);
@@ -241,9 +241,9 @@ protected:
 class HydroponicsDSTemperatureSensor : public HydroponicsDigitalSensor {
 public:
     HydroponicsDSTemperatureSensor(Hydroponics_PositionIndex sensorIndex,
-                                   uint8_t inputPin,
+                                   pintype_t inputPin,
                                    uint8_t inputBitRes = 9,
-                                   uint8_t pullupPin = -1,
+                                   pintype_t pullupPin = -1,
                                    int classType = DS1W);
     HydroponicsDSTemperatureSensor(const HydroponicsDSTemperatureSensorData *dataIn);
     virtual ~HydroponicsDSTemperatureSensor();
@@ -256,11 +256,11 @@ public:
     virtual void setMeasurementUnits(Hydroponics_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
     virtual Hydroponics_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
 
-    inline uint8_t getPullupPin() const { return _pullupPin; }
+    inline pintype_t getPullupPin() const { return _pullupPin; }
 
 protected:
     DallasTemperature *_dt;                                 // DallasTemperature instance (owned)
-    uint8_t _pullupPin;                                     // Pullup pin, if used
+    pintype_t _pullupPin;                                   // Pullup pin, if used
     HydroponicsSingleMeasurement _lastMeasurement;          // Latest successful measurement
     Hydroponics_UnitsType _measurementUnits;                // Measurement units preferred
 
@@ -272,7 +272,7 @@ protected:
 
 // Sensor Serialization Data
 struct HydroponicsSensorData : public HydroponicsObjectData {
-    uint8_t inputPin;
+    pintype_t inputPin;
     char cropName[HYDRUINO_NAME_MAXSIZE];
     char reservoirName[HYDRUINO_NAME_MAXSIZE];
 
@@ -326,7 +326,7 @@ struct HydroponicsDHTTempHumiditySensorData : public HydroponicsDigitalSensorDat
 
 // DS Temp Sensor Serialization Data
 struct HydroponicsDSTemperatureSensorData : public HydroponicsDigitalSensorData {
-    uint8_t pullupPin;
+    pintype_t pullupPin;
     Hydroponics_UnitsType measurementUnits;
 
     HydroponicsDSTemperatureSensorData();

@@ -95,6 +95,17 @@
 #define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted at
 #define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
 
+
+#if SETUP_ENABLE_WIFI && !defined(HYDRUINO_USE_WIFI)
+#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP8266WIFI flag is expected to be defined in order to run this sketch
+#undef SETUP_ENABLE_WIFI
+#define SETUP_ENABLE_WIFI false
+#endif
+#if SETUP_ENABLE_WIFI && defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
+#include "SoftwareSerial.h"
+SoftwareSerial Serial1(SERIAL1_RX, SERIAL1_TX);         // Replace with Rx/Tx pins of your choice
+#endif
+
 uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
@@ -105,8 +116,11 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_LCD_I2C_ADDR,
                             SETUP_I2C_WIRE_INST,
                             SETUP_I2C_SPEED,
-                            SETUP_SD_CARD_SPI_SPEED,
-                            SETUP_WIFI_INST);
+                            SETUP_SD_CARD_SPI_SPEED
+#if defined(HYDRUINO_USE_WIFI)
+                            ,SETUP_WIFI_INST
+#endif
+                            );
 
 #if SETUP_GROW_LIGHTS_PIN >= 0 || SETUP_WATER_AERATOR_PIN >= 0 ||  SETUP_FEED_PUMP_PIN >= 0 || SETUP_WATER_HEATER_PIN >= 0 || SETUP_WATER_SPRAYER_PIN >= 0 || SETUP_FAN_EXHAUST_PIN >= 0
 #define SETUP_USE_AC_RAIL
@@ -133,6 +147,10 @@ void setup() {
     #if SETUP_ENABLE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
+        #ifdef HYDRUINO_USE_SERIALWIFI
+            Serial1.begin(HYDRUINO_SYS_ESP8266SERIAL_BAUD);
+            SETUP_WIFI_INST.init(&Serial1); // Change to Serial instance of your choice, otherwise
+        #endif
     #endif
 
     // Begin external data storage devices for crop, strings, and other data.

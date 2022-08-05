@@ -58,6 +58,16 @@
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 
+#if SETUP_ENABLE_WIFI && !defined(HYDRUINO_USE_WIFI)
+#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP8266WIFI flag is expected to be defined in order to run this sketch
+#undef SETUP_ENABLE_WIFI
+#define SETUP_ENABLE_WIFI false
+#endif
+#if SETUP_ENABLE_WIFI && defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
+#include "SoftwareSerial.h"
+SoftwareSerial Serial1(SERIAL1_RX, SERIAL1_TX);         // Replace with Rx/Tx pins of your choice
+#endif
+
 uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
@@ -83,6 +93,10 @@ void setup() {
     #if SETUP_ENABLE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
+        #ifdef HYDRUINO_USE_SERIALWIFI
+            Serial1.begin(HYDRUINO_SYS_ESP8266SERIAL_BAUD);
+            SETUP_WIFI_INST.init(&Serial1); // Change to Serial instance of your choice, otherwise
+        #endif
     #endif
 
     // Begin external data storage devices for crop, strings, and other data.
