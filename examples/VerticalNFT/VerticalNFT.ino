@@ -30,26 +30,26 @@
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
 // System Saves Settings                                (note: only one save mechanism may be enabled at a time)
-#define SETUP_SYS_AUTOSAVE_ENABLE       true            // If autosaving system out is enabled or not
-#define SETUP_SAVES_SD_CARD_ENABLE      true            // If saving/loading from SD card is enable
+#define SETUP_SYS_AUTOSAVE_ENABLE       false           // If autosaving system out is enabled or not
+#define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
 // WiFi Settings
-#define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
+#define SETUP_ENABLE_WIFI               false           // If WiFi is enabled (must also define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             true            // If system logging is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             false            // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            true            // If system data publishing is enabled to SD card
+#define SETUP_DATA_SD_ENABLE            false            // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 // External Data Settings
-#define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card (searched first for crops lib data)
+#define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
-#define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
+#define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
 #define SETUP_EEPROM_SYSDATA_ADDR       0x2e12          // System data memory offset for EEPROM saves (from Data Writer output)
@@ -97,7 +97,7 @@
 
 
 #if SETUP_ENABLE_WIFI && !defined(HYDRUINO_USE_WIFI)
-#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP8266WIFI flag is expected to be defined in order to run this sketch
+#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI flag is expected to be defined in order to run this sketch
 #undef SETUP_ENABLE_WIFI
 #define SETUP_ENABLE_WIFI false
 #endif
@@ -148,12 +148,12 @@ void setup() {
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
         #ifdef HYDRUINO_USE_SERIALWIFI
-            Serial1.begin(HYDRUINO_SYS_ESP8266SERIAL_BAUD);
+            Serial1.begin(HYDRUINO_SYS_ESPWIFI_SERIALBAUD);
             SETUP_WIFI_INST.init(&Serial1); // Change to Serial instance of your choice, otherwise
         #endif
     #endif
 
-    // Begin external data storage devices for crop, strings, and other data.
+    // Begin external data storage devices for crop,fSETUP_ENABLE_WIFI strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
         getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);

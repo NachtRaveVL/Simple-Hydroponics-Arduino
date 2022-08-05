@@ -41,8 +41,8 @@
 // Uncomment or -D this define to enable usage of the on-board WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
 
-// Uncomment or -D this define to enable usage of the external serial ESP8266 WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_ESP8266WIFI               // https://github.com/NachtRaveVL/WiFiEsp-Continued
+// Uncomment or -D this define to enable usage of the external serial ESP WiFi library, which enables networking capabilities.
+//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/NachtRaveVL/WiFiEsp-Continued
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
@@ -75,7 +75,7 @@
 #include <WiFi.h>
 #endif
 #define HYDRUINO_USE_WIFI
-#elif defined(HYDRUINO_ENABLE_ESP8266WIFI)
+#elif defined(HYDRUINO_ENABLE_ESPWIFI)
 #include "WiFiEsp-Continued.h"                      // Note: Original library is no longer maintained, use our fork
 typedef WiFiEspClass WiFiClass;
 typedef WiFiEspClient WiFiClient;
@@ -238,8 +238,10 @@ public:
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
     bool initFromBinaryStream(Stream *streamIn);
+#ifdef HYDRUINO_USE_WIFI
     // TODO: Network URL init
     //bool initFromNetworkURL(urlDataTODO);
+#endif
 
     // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
     bool saveToEEPROM(bool jsonFormat = false);
@@ -249,8 +251,10 @@ public:
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup to custom binary stream, returning success flag
     bool saveToBinaryStream(Stream *streamOut);
+#ifdef HYDRUINO_USE_WIFI
     // TODO: Network URL save
     //bool saveToNetworkURL(urlDataTODO);
+#endif
 
     // System Operation.
 
@@ -268,19 +272,23 @@ public:
 
     // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToSDCard(String logFilePrefix) { return logger.beginLoggingToSDCard(logFilePrefix); }
+#ifdef HYDRUINO_USE_WIFI
     // TODO: Network URL sys logging
     //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix);
+#endif
 
     // Data Publishing.
 
     // Enables data publishing to the SD card. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return publisher.beginPublishingToSDCard(dataFilePrefix); }
+#ifdef HYDRUINO_USE_WIFI
     // TODO: Network URL data pub
     //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix);
     // TODO: MQTT data pub
     //bool enableDataPublishingToMQTT(mqttBrokerTODO, deviceDataTODO);
     // TODO: Web API data pub
     //bool enableDataPublishingToWebAPI(urlDataTODO, apiInterfaceTODO);
+#endif
 
     // Object Registration.
 

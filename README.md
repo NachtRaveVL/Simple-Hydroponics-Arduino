@@ -30,11 +30,19 @@ Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like
 
 ## Controller Setup
 
+### Requirements
+
+Minimum MCU: 256kB Flash, 8kB SRAM, 8 MHz  
+Recommended: 512+kB Flash, 32+kB SRAM, 16+ MHz
+
+Recommended MCUs: Nano 33 IoT, MKR (any), Due, Zero, ESP32, Teensy 3+, RasPi Pico, etc.  
+Known not to work: Uno (any), Nano (classic), Leonardo, Micro, ESP12, ESP8266, Teensy 2, etc.
+
 ### Installation
 
 The easiest way to install this controller is to utilize the Arduino IDE library manager, or through a package manager such as PlatformIO. Otherwise, simply download this controller and extract its files into a `Simple-Hydroponics-Arduino` folder in your Arduino custom libraries folder, typically found in your `[My ]Documents\Arduino\libraries` folder (Windows), or `~/Documents/Arduino/libraries/` folder (Linux/OSX).
 
-From there, you can make a local copy of one of the examples based on the kind of system setup you want to use. If you are unsure of which, we recommend using the Vertical NFT Example for older storage constrained MCUs, or using the Full System Example for more modern MCUs.
+From there, you can make a local copy of one of the examples based on the kind of system setup you want to use. If you are unsure of which, we recommend using the Vertical NFT Example for older storage constrained MCUs, or using the Full System Example (TODO) for more modern MCUs.
 
 ### Header Defines
 
@@ -53,8 +61,8 @@ From Hydroponics.h:
 // Uncomment or -D this define to enable usage of the on-board WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
 
-// Uncomment or -D this define to enable usage of the external serial ESP8266 WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_ESP8266WIFI               // https://github.com/NachtRaveVL/WiFiEsp-Continued
+// Uncomment or -D this define to enable usage of the external serial ESP WiFi library, which enables networking capabilities.
+//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/NachtRaveVL/WiFiEsp-Continued
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
@@ -149,7 +157,7 @@ From Hydroponics.h, in class Hydroponics:
 
 ## Hookup Callouts
 
-* The recommended Vcc power supply and logic level is 5v.
+* The recommended Vcc power supply and logic level is 5v for older MCUs, 3.3v for newer MCUs.
   * There are some devices that may be 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
   * Devices that do not have the same Vcc power supply levels will need a level converter (or similar) to operate together.
 
@@ -210,14 +218,14 @@ We also ask that our users report any broken sensors (outside of bad calibration
 
 ## Memory Callouts
 
-* The total number of objects and different kinds of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 350 bytes or more depending on settings, with the base Flash memory usage ranging from 100kB to 300kB+ again depending on settings.
-* For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while on the upper end we have modern devices like the RasPi Pico with 2MB of Flash and 264kB of RAM. The ATMega2560 may struggle with full system builds and may be limited to specific system setups (such as no debug assertions, external crops library, only minimal UI, etc. - see Vertical NFT Example), while other newer devices with more capacity build with everything enabled without issue.
-* For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various array structures the controller uses.
+* The total number of objects and different kinds of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 500 bytes or more depending on settings and object type, with the base Flash memory usage ranging from 100kB to 300kB+ depending on settings.
+  * For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while on the upper end we have modern devices like the RasPi Pico with 2MB of Flash and 264kB of RAM. Devices with < 16kB of RAM may struggle with system builds and may be limited to specific system setups (such as no WiFi, no built-in data, only minimal UI, etc. - see Vertical NFT Example), while other newer devices with more capacity build with everything enabled without issue.
+* For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller uses.
   * If, for example, you had a large number of crops attached to a single feed reservoir, you could modify these defines to give more space for such object storage to avoid running into storage limitations.
-* To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used (e.g. WiFi not being included in the build if you don't actually use any WiFi).
+* To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
-* To further save on code size cost, see the Data Writer Example to see how to externalize crops library, string, and other data onto an SD Card or EEPROM.
-  * Note: Upgrading between versions or changing custom data may require you rebuild and redeploy to such external devices.
+* To further save on code size cost, see the Data Writer Example to see how to externalize controller data onto an SD Card or EEPROM.
+  * Note: Upgrading between versions or changing custom/user data may require you rebuild and redeploy to such external devices.
 
 ## Example Usage
 
@@ -327,20 +335,20 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
 // WiFi Settings
-#define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
+#define SETUP_ENABLE_WIFI               false           // If WiFi is enabled (must also define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             false            // If system logging is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            false            // If system data publishing is enabled to SD card
+#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 // External Data Settings
-#define SETUP_EXTDATA_SD_ENABLE         true            // If data should be read from an external SD Card (searched first for crops lib data)
+#define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
-#define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be read from an external EEPROM (searched first for strings data)
+#define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
 #define SETUP_EEPROM_SYSDATA_ADDR       0x2e12          // System data memory offset for EEPROM saves (from Data Writer output)
