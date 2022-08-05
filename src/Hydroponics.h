@@ -158,11 +158,11 @@ template<class T1, class T2> using Pair = std::pair<T1,T2>;
 template<typename K, typename V, size_t N = 16> using Map = std::map<K,V>;
 #else
 using namespace arx;
-using namespace arx::stdx;
 template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> using Vector = arx::vector<T,N>;
 template<class T1, class T2> using Pair = arx::pair<T1,T2>;
 template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> using Map = arx::map<K,V,N>;
 #endif
+using namespace arx::stdx;
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
 
 extern time_t unixNow();
@@ -462,6 +462,8 @@ protected:
     friend HydroponicsScheduler *::getSchedulerInstance();
     friend HydroponicsLogger *::getLoggerInstance();
     friend HydroponicsPublisher *::getPublisherInstance();
+    friend class HydroponicsCalibrationsStore;
+    friend class HydroponicsCropsLibrary;
     friend class HydroponicsScheduler;
     friend class HydroponicsLogger;
     friend class HydroponicsPublisher;

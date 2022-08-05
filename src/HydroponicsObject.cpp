@@ -126,23 +126,25 @@ Hydroponics_KeyType HydroponicsIdentity::regenKey()
 
 
 HydroponicsObject::HydroponicsObject(HydroponicsIdentity id)
-    : _id(id), _links(nullptr)
+    : _id(id), _linksSize(0), _links(nullptr)
 { ; }
 
 HydroponicsObject::HydroponicsObject(const HydroponicsData *data)
-    : _id(data), _links(nullptr)
+    : _id(data), _linksSize(0), _links(nullptr)
 { ; }
 
 HydroponicsObject::~HydroponicsObject()
 {
-    if (_links) { delete _links; _links = nullptr; }
+    if (_links) { delete [] _links; _links = nullptr; }
 }
 
 void HydroponicsObject::update()
 { ; }
 
 void HydroponicsObject::handleLowMemory()
-{ ; }
+{
+    if (_links && !_links[_linksSize >> 1].first) { allocateLinkages(_linksSize >> 1); } // shrink /2 if too big
+}
 
 HydroponicsData *HydroponicsObject::newSaveData()
 {
@@ -152,14 +154,45 @@ HydroponicsData *HydroponicsObject::newSaveData()
     return data;
 }
 
+void HydroponicsObject::allocateLinkages(size_t size)
+{
+    if (_linksSize != size) {
+        Pair<HydroponicsObject *, int8_t> *newLinks = size ? new Pair<HydroponicsObject *, int8_t>[size] : nullptr;
+
+        if (size) {
+            HYDRUINO_HARD_ASSERT(newLinks, SFP(HStr_Err_AllocationFailure));
+
+            int linksIndex = 0;
+            if (_links) {
+                for (; linksIndex < _linksSize && linksIndex < size; ++linksIndex) {
+                    newLinks[linksIndex] = _links[linksIndex];
+                }
+            }
+            for (; linksIndex < size; ++linksIndex) {
+                newLinks[linksIndex] = make_pair<HydroponicsObject *, int8_t>(nullptr, 0);
+            }
+        }
+
+        if (_links) { delete [] _links; }
+        _links = newLinks;
+        _linksSize = size;
+    }
+}
+
 bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
 {
+    if (!_links) { allocateLinkages(); }
     if (_links) {
-        auto iter = _links->find(obj->getKey());
-        if (iter != _links->end()) {
-            iter->second.second++;
-        } else {
-            (*_links)[obj->getKey()] = make_pair(obj, (int8_t)1);
+        if (_links[_linksSize-1].first) { allocateLinkages(_linksSize << 1); } // grow *2 if too small
+        int linksIndex = 0;
+        for (; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
+            if (_links[linksIndex].first == obj) {
+                _links[linksIndex].second++;
+                return true;
+            }
+        }
+        if (linksIndex < _linksSize) {
+            _links[linksIndex] = make_pair<HydroponicsObject *, int8_t>(obj, 0);
             return true;
         }
     }
@@ -169,10 +202,12 @@ bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
 bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 {
     if (_links) {
-        auto iter = _links->find(obj->getKey());
-        if (iter != _links->end()) {
-            if (--iter->second.second == 0) {
-                _links->erase(iter);
+        for (int linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
+            if (_links[linksIndex].first == obj) {
+                for (int linksSubIndex = linksIndex; linksSubIndex < _linksSize - 1; ++linksSubIndex) {
+                    _links[linksSubIndex] = _links[linksSubIndex + 1];
+                }
+                _links[_linksSize - 1] = make_pair<HydroponicsObject *, int8_t>(nullptr, 0);
                 return true;
             }
         }
@@ -182,7 +217,27 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
 
 bool HydroponicsObject::hasLinkage(HydroponicsObject *obj) const
 {
-    return _links ? (_links->find(obj->getKey()) != _links->end()) : false;
+    if (_links) {
+        for (int linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
+            if (_links[linksIndex].first == obj) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE> HydroponicsObject::getLinkages() const
+{
+    Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE> retVal;
+
+    if (_links) {
+        for (int linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
+            retVal[_links[linksIndex].first->getKey()] = _links[linksIndex];
+        }
+    }
+
+    return retVal;
 }
 
 HydroponicsIdentity HydroponicsObject::getId() const

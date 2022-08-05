@@ -28,7 +28,7 @@ HydroponicsRail::HydroponicsRail(Hydroponics_RailType railType, Hydroponics_Posi
     : HydroponicsObject(HydroponicsIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
       _powerUnits(Hydroponics_UnitsType_Power_Wattage), _limitState(Hydroponics_TriggerState_Undefined)
 {
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
+    allocateLinkages(HYDRUINO_RAILS_LINKS_BASESIZE);
 }
 
 HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
@@ -36,13 +36,13 @@ HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
       _limitState(Hydroponics_TriggerState_Undefined),
       _powerUnits(definedUnitsElse(dataIn->powerUnits, Hydroponics_UnitsType_Power_Wattage))
 {
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
+    allocateLinkages(HYDRUINO_RAILS_LINKS_BASESIZE);
 }
 
 HydroponicsRail::~HydroponicsRail()
 {
     if (_links) {
-        auto actuators = linksFilterActuators<HYDRUINO_OBJ_LINKS_MAXSIZE>(*_links);
+        auto actuators = linksFilterActuators<HYDRUINO_OBJ_LINKS_MAXSIZE>(getLinkages());
         for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeLinkage(*iter); }
     }
 }

@@ -307,7 +307,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
                     } else if (data->isCropsLibData()) {
-                        getCropsLibraryInstance()->setCustomCropData((HydroponicsCropsLibData *)data);
+                        getCropsLibraryInstance()->setUserCropData((HydroponicsCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
                         setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
@@ -358,9 +358,7 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
         }
 
         if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
-            auto calibsStore = getCalibrationsStoreInstance();
-
-            for (auto iter = calibsStore->_calibrationData.begin(); iter != calibsStore->_calibrationData.end(); ++iter) {
+            for (auto iter = getCalibrationsStoreInstance()->_calibrationData.begin(); iter != getCalibrationsStoreInstance()->_calibrationData.end(); ++iter) {
                 StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                 JsonObject calibDataObj = doc.to<JsonObject>();
@@ -373,11 +371,9 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
-        if (getCropsLibraryInstance()->hasCustomCrops()) {
-            auto cropsLib = getCropsLibraryInstance();
-
-            for (auto iter = cropsLib->_cropsData.begin(); iter != cropsLib->_cropsData.end(); ++iter) {
-                if (iter->first >= Hydroponics_CropType_CustomCrop1) {
+        if (getCropsLibraryInstance()->hasUserCrops()) {
+            for (auto iter = getCropsLibraryInstance()->_cropsData.begin(); iter != getCropsLibraryInstance()->_cropsData.end(); ++iter) {
+                if (iter->second->userSet) {
                     StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                     JsonObject cropDataObj = doc.to<JsonObject>();
@@ -462,7 +458,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
                     } else if (data->isCropsLibData()) {
-                        getCropsLibraryInstance()->setCustomCropData((HydroponicsCropsLibData *)data);
+                        getCropsLibraryInstance()->setUserCropData((HydroponicsCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
                         setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
@@ -508,10 +504,9 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
         }
 
         if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
-            auto calibsStore = getCalibrationsStoreInstance();
             size_t bytesWritten = 0;
 
-            for (auto iter = calibsStore->_calibrationData.begin(); iter != calibsStore->_calibrationData.end(); ++iter) {
+            for (auto iter = getCalibrationsStoreInstance()->_calibrationData.begin(); iter != getCalibrationsStoreInstance()->_calibrationData.end(); ++iter) {
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
@@ -519,11 +514,10 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
             if (!bytesWritten) { return false; }
         }
 
-        if (getCropsLibraryInstance()->hasCustomCrops()) {
-            auto cropsLib = getCropsLibraryInstance();
+        if (getCropsLibraryInstance()->hasUserCrops()) {
             size_t bytesWritten = 0;
 
-            for (auto iter = cropsLib->_cropsData.begin(); iter != cropsLib->_cropsData.end(); ++iter) {
+            for (auto iter = getCropsLibraryInstance()->_cropsData.begin(); iter != getCropsLibraryInstance()->_cropsData.end(); ++iter) {
                 if (iter->first >= Hydroponics_CropType_CustomCrop1) {
                     bytesWritten += serializeDataToBinaryStream(&(iter->second->data), streamOut);
                 }
@@ -661,18 +655,14 @@ void Hydroponics::commonPostSave()
     logger.logSystemSave();
 
     if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
-        auto calibsStore = getCalibrationsStoreInstance();
-
-        for (auto iter = calibsStore->_calibrationData.begin(); iter != calibsStore->_calibrationData.end(); ++iter) {
+        for (auto iter = getCalibrationsStoreInstance()->_calibrationData.begin(); iter != getCalibrationsStoreInstance()->_calibrationData.end(); ++iter) {
             iter->second->_unsetModded();
         }
     }
 
-    if (getCropsLibraryInstance()->hasCustomCrops()) {
-        auto cropsLib = getCropsLibraryInstance();
-
-        for (auto iter = cropsLib->_cropsData.begin(); iter != cropsLib->_cropsData.end(); ++iter) {
-            if (iter->first >= Hydroponics_CropType_CustomCrop1) {
+    if (getCropsLibraryInstance()->hasUserCrops()) {
+        for (auto iter = getCropsLibraryInstance()->_cropsData.begin(); iter != getCropsLibraryInstance()->_cropsData.end(); ++iter) {
+            if (iter->second->userSet) {
                 iter->second->data._unsetModded();
             }
         }

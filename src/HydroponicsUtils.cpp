@@ -97,26 +97,6 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
 #endif // /ifdef HYDRUINO_USE_DEBUG_ASSERTIONS
 
 
-Hydroponics *getHydroponicsInstance()
-{
-    return Hydroponics::_activeInstance;
-}
-
-HydroponicsScheduler *getSchedulerInstance()
-{
-    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->scheduler : nullptr;
-}
-
-HydroponicsLogger *getLoggerInstance()
-{
-    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->logger : nullptr;
-}
-
-HydroponicsPublisher *getPublisherInstance()
-{
-    return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->publisher : nullptr;
-}
-
 void publishData(HydroponicsSensor *sensor)
 {
     HYDRUINO_HARD_ASSERT(sensor, SFP(HStr_Err_InvalidParameter));
@@ -132,18 +112,6 @@ void publishData(HydroponicsSensor *sensor)
             }
         }
     }
-}
-
-DateTime getCurrentTime()
-{
-    auto hydroponics = Hydroponics::getActiveInstance();
-    return DateTime((uint32_t)(unixNow() + (hydroponics ? hydroponics->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
-}
-
-time_t getCurrentDayStartTime()
-{
-    DateTime currTime = getCurrentTime();
-    return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime();
 }
 
 String getYYMMDDFilename(String prefix, String ext)
@@ -908,8 +876,7 @@ Hydroponics_UnitsType baseUnitsFromDilution(Hydroponics_UnitsType units)
 Hydroponics_UnitsType defaultTemperatureUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (measureMode) {
@@ -927,8 +894,7 @@ Hydroponics_UnitsType defaultTemperatureUnits(Hydroponics_MeasurementMode measur
 Hydroponics_UnitsType defaultDistanceUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (measureMode) {
@@ -945,8 +911,7 @@ Hydroponics_UnitsType defaultDistanceUnits(Hydroponics_MeasurementMode measureMo
 Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (measureMode) {
@@ -963,8 +928,7 @@ Hydroponics_UnitsType defaultWeightUnits(Hydroponics_MeasurementMode measureMode
 Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (measureMode) {
@@ -981,8 +945,7 @@ Hydroponics_UnitsType defaultLiquidVolumeUnits(Hydroponics_MeasurementMode measu
 Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (measureMode) {
@@ -999,8 +962,7 @@ Hydroponics_UnitsType defaultLiquidFlowUnits(Hydroponics_MeasurementMode measure
 Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (measureMode) {
@@ -1017,8 +979,7 @@ Hydroponics_UnitsType defaultLiquidDilutionUnits(Hydroponics_MeasurementMode mea
 int defaultDecimalPlaces(Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (measureMode) {

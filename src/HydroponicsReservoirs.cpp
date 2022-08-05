@@ -30,17 +30,13 @@ HydroponicsReservoir::HydroponicsReservoir(Hydroponics_ReservoirType reservoirTy
     : HydroponicsObject(HydroponicsIdentity(reservoirType, reservoirIndex)), classType((typeof(classType))classTypeIn),
       _volumeUnits(defaultLiquidVolumeUnits()),
       _filledState(Hydroponics_TriggerState_Disabled), _emptyState(Hydroponics_TriggerState_Disabled)
-{
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
-}
+{ ; }
 
 HydroponicsReservoir::HydroponicsReservoir(const HydroponicsReservoirData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
       _volumeUnits(definedUnitsElse(dataIn->volumeUnits, defaultLiquidVolumeUnits())),
       _filledState(Hydroponics_TriggerState_Disabled), _emptyState(Hydroponics_TriggerState_Disabled)
-{
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
-}
+{ ; }
 
 void HydroponicsReservoir::update()
 {
@@ -142,6 +138,8 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(Hydroponics_ReservoirType r
     : HydroponicsReservoir(reservoirType, reservoirIndex, classType),
       _maxVolume(maxVolume), _waterVolume(this), _filledTrigger(this), _emptyTrigger(this)
 {
+    allocateLinkages(getReservoirType() == Hydroponics_ReservoirType_FeedWater ? HYDRUINO_FEEDRES_LINKS_BASESIZE : HYDRUINO_FLUIDRES_LINKS_BASESIZE);
+
     _filledTrigger.setHandleMethod(&HydroponicsFluidReservoir::handleFilled);
     _emptyTrigger.setHandleMethod(&HydroponicsFluidReservoir::handleEmpty);
 }
@@ -150,6 +148,8 @@ HydroponicsFluidReservoir::HydroponicsFluidReservoir(const HydroponicsFluidReser
     : HydroponicsReservoir(dataIn),
       _maxVolume(dataIn->maxVolume), _waterVolume(this), _filledTrigger(this), _emptyTrigger(this)
 {
+    allocateLinkages(getReservoirType() == Hydroponics_ReservoirType_FeedWater ? HYDRUINO_FEEDRES_LINKS_BASESIZE : HYDRUINO_FLUIDRES_LINKS_BASESIZE);
+
     _waterVolume.setObject(dataIn->volumeSensor);
 
     _filledTrigger.setHandleMethod(&HydroponicsFluidReservoir::handleFilled);
@@ -267,8 +267,7 @@ HydroponicsFeedReservoir::HydroponicsFeedReservoir(const HydroponicsFeedReservoi
       _waterPHBalancer(this), _waterTDSBalancer(this), _waterTempBalancer(this), _airTempBalancer(this), _airCO2Balancer(this)
 {
     if (_lastFeedingDate) {
-        auto hydroponics = getHydroponicsInstance();
-        auto lastFeeding = DateTime((uint32_t)(_lastFeedingDate + (hydroponics ? hydroponics->getTimeZoneOffset() * SECS_PER_HOUR : 0)));
+        auto lastFeeding = DateTime((uint32_t)(_lastFeedingDate + (getHydroponicsInstance() ? getHydroponicsInstance()->getTimeZoneOffset() * SECS_PER_HOUR : 0)));
         auto currTime = getCurrentTime();
 
         if (currTime.year() != lastFeeding.year() ||

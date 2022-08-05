@@ -33,14 +33,9 @@ HydroponicsCrop::HydroponicsCrop(Hydroponics_CropType cropType,
       _substrateType(substrateType), _sowDate(sowDate.unixtime()), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
+    allocateLinkages(HYDRUINO_CROPS_LINKS_BASESIZE);
 
-    if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
-        getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
-    }
-
-    recalcGrowWeekAndPhase();
+    recalcCropGrowthParams();
 }
 
 HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
@@ -49,23 +44,13 @@ HydroponicsCrop::HydroponicsCrop(const HydroponicsCropData *dataIn)
       _cropsData(nullptr), _growWeek(0), _feedingWeight(dataIn->feedingWeight),
       _cropPhase(Hydroponics_CropPhase_Undefined), _feedingState(Hydroponics_TriggerState_NotTriggered)
 {
-    _links = new Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE>();
+    allocateLinkages(HYDRUINO_CROPS_LINKS_BASESIZE);
 
-    if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
-        getCropsLibraryInstance()->getCustomCropSignal().attach(methodSlot);
-    }
-    _feedReservoir.setObject(dataIn->feedReservoir);
-
-    recalcGrowWeekAndPhase();
+    recalcCropGrowthParams();
 }
 
 HydroponicsCrop::~HydroponicsCrop()
 {
-    if (getCropType() >= Hydroponics_CropType_CustomCrop1 && getCropType() < Hydroponics_CropType_CustomCrop1 + Hydroponics_CropType_CustomCropCount) {
-        auto methodSlot = MethodSlot<typeof(*this), Hydroponics_CropType>(this, &HydroponicsCrop::handleCustomCropUpdated);
-        getCropsLibraryInstance()->getCustomCropSignal().detach(methodSlot);
-    }
     if (_cropsData) { returnCropsLibData(); }
 }
 
@@ -113,7 +98,7 @@ Signal<HydroponicsCrop *> &HydroponicsCrop::getFeedingSignal()
 
 void HydroponicsCrop::notifyDayChanged()
 {
-    recalcGrowWeekAndPhase();
+    recalcCropGrowthParams();
 }
 
 HydroponicsData *HydroponicsCrop::allocateData() const
@@ -149,7 +134,7 @@ void HydroponicsCrop::handleFeeding(Hydroponics_TriggerState feedingState)
     }
 }
 
-void HydroponicsCrop::recalcGrowWeekAndPhase()
+void HydroponicsCrop::recalcCropGrowthParams()
 {
     TimeSpan dateSpan(unixNow() - _sowDate);
     _growWeek = dateSpan.days() / DAYS_PER_WEEK;
@@ -186,7 +171,7 @@ void HydroponicsCrop::handleCustomCropUpdated(Hydroponics_CropType cropType)
 {
     if (getCropType() == cropType) {
         returnCropsLibData(); // forces re-checkout
-        recalcGrowWeekAndPhase();
+        recalcCropGrowthParams();
         if (getSchedulerInstance()) { getSchedulerInstance()->setNeedsScheduling(); }
     }
 }

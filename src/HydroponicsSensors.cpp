@@ -31,8 +31,7 @@ HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn)
 Hydroponics_UnitsType defaultMeasureUnitsForSensorType(Hydroponics_SensorType sensorType, uint8_t measurementRow, Hydroponics_MeasurementMode measureMode)
 {
     if (measureMode == Hydroponics_MeasurementMode_Undefined) {
-        auto hydroponics = getHydroponicsInstance();
-        measureMode = (hydroponics ? hydroponics->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
+        measureMode = (getHydroponicsInstance() ? getHydroponicsInstance()->getMeasurementMode() : Hydroponics_MeasurementMode_Default);
     }
 
     switch (sensorType) {
@@ -130,9 +129,8 @@ bool HydroponicsSensor::isTakingMeasurement() const
 
 bool HydroponicsSensor::needsPolling(uint32_t allowance) const
 {
-    auto hydroponics = getHydroponicsInstance();
     auto latestMeasurement = getLatestMeasurement();
-    return hydroponics && latestMeasurement ? hydroponics->isPollingFrameOld(latestMeasurement->frame, allowance) : false;
+    return getHydroponicsInstance() && latestMeasurement ? getHydroponicsInstance()->isPollingFrameOld(latestMeasurement->frame, allowance) : false;
 }
 
 HydroponicsAttachment &HydroponicsSensor::getParentCrop(bool resolve)
@@ -432,8 +430,7 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(Hydroponics_SensorType sensor
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (allocate1W && isValidPin(_inputPin)) {
-        auto hydroponics = getHydroponicsInstance();
-        _oneWire = hydroponics ? hydroponics->getOneWireForPin(_inputPin) : nullptr;
+        _oneWire = getHydroponicsInstance() ? getHydroponicsInstance()->getOneWireForPin(_inputPin) : nullptr;
         HYDRUINO_SOFT_ASSERT(_oneWire, SFP(HStr_Err_AllocationFailure));
     }
 }
@@ -443,8 +440,7 @@ HydroponicsDigitalSensor::HydroponicsDigitalSensor(const HydroponicsDigitalSenso
 {
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (allocate1W && isValidPin(_inputPin)) {
-        auto hydroponics = getHydroponicsInstance();
-        _oneWire = hydroponics ? hydroponics->getOneWireForPin(_inputPin) : nullptr;
+        _oneWire = getHydroponicsInstance() ? getHydroponicsInstance()->getOneWireForPin(_inputPin) : nullptr;
         HYDRUINO_SOFT_ASSERT(_oneWire, SFP(HStr_Err_AllocationFailure));
 
         if (!arrayElementsEqual<uint8_t>(dataIn->wireDevAddress, 8, 0)) {
