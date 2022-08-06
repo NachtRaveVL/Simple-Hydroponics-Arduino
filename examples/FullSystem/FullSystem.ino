@@ -36,8 +36,7 @@
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
-// WiFi Settings
-#define SETUP_ENABLE_WIFI               false           // If WiFi is enabled
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
@@ -58,12 +57,7 @@
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 
-#if SETUP_ENABLE_WIFI && !defined(HYDRUINO_USE_WIFI)
-#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI flag is expected to be defined in order to run this sketch
-#undef SETUP_ENABLE_WIFI
-#define SETUP_ENABLE_WIFI false
-#endif
-#if SETUP_ENABLE_WIFI && defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
+#if defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
 #include "SoftwareSerial.h"
 SoftwareSerial Serial1(SERIAL1_RX, SERIAL1_TX);         // Replace with Rx/Tx pins of your choice
 #endif
@@ -78,7 +72,7 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_LCD_I2C_ADDR,
                             SETUP_I2C_WIRE_INST,
                             SETUP_I2C_SPEED,
-                            SETUP_SD_CARD_SPI_SPEED,
+                            SETUP_SD_CARD_SPI_SPEED
 #if defined(HYDRUINO_USE_WIFI)
                             ,SETUP_WIFI_INST
 #endif
@@ -93,7 +87,7 @@ void setup() {
     #if defined(ESP32) || defined(ESP8266)
         SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
-    #if SETUP_ENABLE_WIFI
+    #ifdef HYDRUINO_USE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
         #ifdef HYDRUINO_USE_SERIALWIFI
@@ -123,7 +117,7 @@ void setup() {
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false
-        //#if SETUP_ENABLE_WIFI && SETUP_SAVELOAD_NETWORKURL_ENABLE
+        //#if defined(HYDRUINO_USE_WIFI) && SETUP_SAVES_NETURL_ENABLE
             //|| hydroController.initFromURL(wifiSSID, wifiPassword, urlDataTODO)
         //#endif
         #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
@@ -148,12 +142,12 @@ void setup() {
         #if SETUP_DATA_SD_ENABLE
             hydroController.enableDataPublishingToSDCard(F(SETUP_DATA_FILE_PREFIX));
         #endif
-        #if SETUP_ENABLE_WIFI
+        #ifdef HYDRUINO_USE_WIFI
             hydroController.setWiFiConnection(wifiSSID, wifiPassword);
             hydroController.getWiFi();      // Forces start, may block for a while
         #endif
         #if SETUP_SYS_AUTOSAVE_ENABLE && SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson);    
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson);
         #elif SETUP_SYS_AUTOSAVE_ENABLE && SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
             hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToEEPROMRaw);
         #endif
@@ -161,7 +155,7 @@ void setup() {
         // No further setup is necessary, as system is assumed to be built/managed via UI.
     }
 
-    #if SETUP_ENABLE_WIFI
+    #ifdef HYDRUINO_USE_WIFI
         wifiSSID = wifiPassword = String(); // no longer needed
     #endif
 

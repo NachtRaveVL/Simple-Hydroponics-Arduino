@@ -17,7 +17,7 @@
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
-#define SETUP_SD_CARD_SPI_SPEED         4000000U        // SD card SPI speed, in Hz (ignored if on Teensy)
+#define SETUP_SD_CARD_SPI_SPEED         4000000U        // SD card SPI speed, in Hz (ignored on Teensy)
 #define SETUP_WIFI_INST                 WiFi            // WiFi class instance
 
 // System Settings
@@ -35,8 +35,7 @@
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
-// WiFi Settings
-#define SETUP_ENABLE_WIFI               false           // If WiFi is enabled (must also define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI)
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
@@ -62,21 +61,21 @@
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
 #define SETUP_POWER_SENSOR_PIN          -1              // Power meter sensor pin (analog), else -1
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
-#define SETUP_DS18_WTEMP_PIN            3               // DS18* water temp sensor data pin (digital), else -1
-#define SETUP_DHT_ATEMP_PIN             4               // DHT* air temp sensor data pin (digital), else -1
+#define SETUP_DS18_WTEMP_PIN            2               // DS18* water temp sensor data pin (digital), else -1
+#define SETUP_DHT_ATEMP_PIN             3               // DHT* air temp sensor data pin (digital), else -1
 #define SETUP_DHT_SENSOR_TYPE           DHT12           // DHT sensor type enum (use DHT* defines)
-#define SETUP_VOL_FILLED_PIN            -1              // Water level filled indicator pin (digital/ISR), else -1
+#define SETUP_VOL_FILLED_PIN            4               // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
-#define SETUP_GROW_LIGHTS_PIN           22              // Grow lights relay pin (digital), else -1
-#define SETUP_WATER_AERATOR_PIN         24              // Aerator relay pin (digital), else -1
-#define SETUP_FEED_PUMP_PIN             26              // Water level low indicator pin, else -1
-#define SETUP_WATER_HEATER_PIN          28              // Water heater relay pin (digital), else -1
+#define SETUP_GROW_LIGHTS_PIN           5               // Grow lights relay pin (digital), else -1
+#define SETUP_WATER_AERATOR_PIN         6               // Aerator relay pin (digital), else -1
+#define SETUP_FEED_PUMP_PIN             7               // Water level low indicator pin, else -1
+#define SETUP_WATER_HEATER_PIN          8               // Water heater relay pin (digital), else -1
 #define SETUP_WATER_SPRAYER_PIN         -1              // Water sprayer relay pin (digital), else -1
 #define SETUP_FAN_EXHAUST_PIN           -1              // Fan exhaust relay pin (digital/PWM), else -1
-#define SETUP_NUTRIENT_MIX_PIN          23              // Nutrient premix peristaltic pump relay pin (digital), else -1
-#define SETUP_FRESH_WATER_PIN           25              // Fresh water peristaltic pump relay pin (digital), else -1
-#define SETUP_PH_UP_PIN                 27              // pH up solution peristaltic pump relay pin (digital), else -1
-#define SETUP_PH_DOWN_PIN               29              // pH down solution peristaltic pump relay pin (digital), else -1
+#define SETUP_NUTRIENT_MIX_PIN          9               // Nutrient premix peristaltic pump relay pin (digital), else -1
+#define SETUP_FRESH_WATER_PIN           10              // Fresh water peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_UP_PIN                 12              // pH up solution peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_DOWN_PIN               13              // pH down solution peristaltic pump relay pin (digital), else -1
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
@@ -96,12 +95,7 @@
 #define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
 
 
-#if SETUP_ENABLE_WIFI && !defined(HYDRUINO_USE_WIFI)
-#error The HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI flag is expected to be defined in order to run this sketch
-#undef SETUP_ENABLE_WIFI
-#define SETUP_ENABLE_WIFI false
-#endif
-#if SETUP_ENABLE_WIFI && defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
+#if defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
 #include "SoftwareSerial.h"
 SoftwareSerial Serial1(SERIAL1_RX, SERIAL1_TX);         // Replace with Rx/Tx pins of your choice
 #endif
@@ -144,7 +138,7 @@ void setup() {
     #if defined(ESP32) || defined(ESP8266)
         SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
-    #if SETUP_ENABLE_WIFI
+    #ifdef HYDRUINO_USE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
         #ifdef HYDRUINO_USE_SERIALWIFI
@@ -153,7 +147,7 @@ void setup() {
         #endif
     #endif
 
-    // Begin external data storage devices for crop,fSETUP_ENABLE_WIFI strings, and other data.
+    // Begin external data storage devices for crop, strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
         getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
@@ -174,7 +168,7 @@ void setup() {
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false
-        //#if SETUP_ENABLE_WIFI && SETUP_SAVELOAD_NETWORKURL_ENABLE
+        //#if defined(HYDRUINO_USE_WIFI) && SETUP_SAVES_NETURL_ENABLE
             //|| hydroController.initFromURL(wifiSSID, wifiPassword, urlDataTODO)
         //#endif
         #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
@@ -199,12 +193,12 @@ void setup() {
         #if SETUP_DATA_SD_ENABLE
             hydroController.enableDataPublishingToSDCard(F(SETUP_DATA_FILE_PREFIX));
         #endif
-        #if SETUP_ENABLE_WIFI
+        #ifdef HYDRUINO_USE_WIFI
             hydroController.setWiFiConnection(wifiSSID, wifiPassword);
             hydroController.getWiFi();      // Forces start, but may block for a while if not already initialized
         #endif
         #if SETUP_SYS_AUTOSAVE_ENABLE && SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson);    
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson);
         #elif SETUP_SYS_AUTOSAVE_ENABLE && SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
             hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToEEPROMRaw);
         #endif
@@ -213,6 +207,7 @@ void setup() {
         #ifdef SETUP_USE_AC_RAIL
             #if SETUP_AC_SUPPLY_POWER
                 auto acRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE),SETUP_AC_SUPPLY_POWER);
+                // TODO: power sensor
             #else
                 auto acRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
             #endif
@@ -220,6 +215,7 @@ void setup() {
         #ifdef SETUP_USE_DC_RAIL
             #if SETUP_DC_SUPPLY_POWER
                 auto dcRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE),SETUP_DC_SUPPLY_POWER);
+                // TODO: power sensor
             #else
                 auto dcRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE));
             #endif
@@ -365,7 +361,7 @@ void setup() {
             fanExhaust->setReservoir(feedReservoir);
         }
         #endif
-        
+
         // DC-Based Peristaltic Pumps
         #if SETUP_NUTRIENT_MIX_PIN >= 0
         {   auto nutrientMix = hydroController.addFluidReservoir(Hydroponics_ReservoirType_NutrientPremix, 1, true);
@@ -405,7 +401,7 @@ void setup() {
         #endif
     }
 
-    #if SETUP_ENABLE_WIFI
+    #ifdef HYDRUINO_USE_WIFI
         wifiSSID = wifiPassword = String(); // no longer needed
     #endif
 

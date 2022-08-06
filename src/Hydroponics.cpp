@@ -573,6 +573,7 @@ void Hydroponics::commonPreInit()
         #else
             noTone(_piezoBuzzerPin);
         #endif
+        digitalWrite(_piezoBuzzerPin, LOW);
     }
     if (_i2cWire) {
         _i2cWire->setClock(_i2cSpeed);
