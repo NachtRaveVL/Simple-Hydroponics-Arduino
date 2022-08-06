@@ -1382,7 +1382,7 @@ void Hydroponics::notifyDayChanged()
 
 void Hydroponics::checkFreeMemory()
 {
-    int memLeft = freeMemory();
+    auto memLeft = freeMemory();
     if (memLeft != -1 && memLeft < HYDRUINO_SYS_FREERAM_LOWBYTES) {
         broadcastLowMemory();
     }

@@ -82,7 +82,7 @@ String stringFromPGM(Hydroponics_String strNum)
             if (file) {
                 uint16_t lookupOffset = 0;
                 file.seek(sizeof(uint16_t) * (int)strNum);
-                #if defined(ARDUINO_ARCH_RP2040)
+                #if defined(ARDUINO_ARCH_RP2040) || defined(ESP_PLATFORM)
                     file.readBytes((char *)&lookupOffset, sizeof(lookupOffset));
                 #else
                     file.readBytes((uint8_t *)&lookupOffset, sizeof(lookupOffset));
@@ -678,6 +678,16 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Key_PullupPin[] PROGMEM = {"pullupPin"};
             return flashStr_Key_PullupPin;
         } break;
+#ifdef ESP_PLATFORM
+        case HStr_Key_PWMChannel: {
+            static const char flashStr_Key_PWMChannel[] PROGMEM = {"pwmChannel"};
+            return flashStr_Key_PWMChannel;
+        } break;
+        case HStr_Key_PWMFrequency: {
+            static const char flashStr_Key_PWMFrequency[] PROGMEM = {"pwmFrequency"};
+            return flashStr_Key_PWMFrequency;
+        } break;
+#endif
         case HStr_Key_RailName: {
             static const char flashStr_Key_RailName[] PROGMEM = {"railName"};
             return flashStr_Key_RailName;

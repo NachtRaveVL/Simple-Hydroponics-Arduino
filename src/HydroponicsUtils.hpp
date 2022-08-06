@@ -260,6 +260,15 @@ inline time_t getCurrentDayStartTime()
     return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime();
 }
 
+inline bool checkPinIsDigital(pintype_t pin)
+{
+    #ifdef ESP32
+        return true; // all digital pins are ADC capable
+    #else // separate analog from digital pins
+        return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin);
+    #endif
+}
+
 inline bool checkPinIsPWMOutput(pintype_t pin)
 {
     #if defined(digitalPinHasPWM)
@@ -267,6 +276,11 @@ inline bool checkPinIsPWMOutput(pintype_t pin)
     #else
         return checkPinIsDigital(pin); // all digital pins are PWM capable
     #endif
+}
+
+inline bool checkPinCanInterrupt(pintype_t pin)
+{
+    return isValidPin(digitalPinToInterrupt(pin));
 }
 
 #endif // /ifndef HydroponicsUtils_HPP

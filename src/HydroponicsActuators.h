@@ -154,7 +154,11 @@ public:
     HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,
                            Hydroponics_PositionIndex actuatorIndex,
                            pintype_t outputPin,
-                           uint8_t outputBitResolution = 8,
+#ifdef ESP_PLATFORM
+                           uint8_t pwmChannel,
+                           float pwmFrequency = 1000,
+#endif
+                           uint8_t outputBitRes = 8,
                            int classType = PWM);
     HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn);
     virtual ~HydroponicsPWMActuator();
@@ -172,6 +176,10 @@ public:
 
 protected:
     float _pwmAmount;                                       // Current set PWM amount
+#ifdef ESP_PLATFORM
+    uint8_t _pwmChannel;                                    // PWM output channel
+    float _pwmFrequency;                                    // PWM output frequency
+#endif
     HydroponicsBitResolution _pwmResolution;                // PWM output resolution
 
     virtual void saveToData(HydroponicsData *dataOut) override;
@@ -219,7 +227,11 @@ struct HydroponicsPumpRelayActuatorData : public HydroponicsRelayActuatorData
 // PWM Actuator Serialization Data
 struct HydroponicsPWMActuatorData : public HydroponicsActuatorData
 {
-    uint8_t outputBitResolution;
+#ifdef ESP_PLATFORM
+    uint8_t pwmChannel;
+    float pwmFrequency;
+#endif
+    uint8_t outputBitRes;
 
     HydroponicsPWMActuatorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

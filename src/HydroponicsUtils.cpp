@@ -426,20 +426,24 @@ bool arrayElementsEqual<double>(const double *arrayIn, size_t length, double val
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
 extern "C" char* sbrk(int incr);
-#else  // __ARM__
+#elif !defined(ESP_PLATFORM)
 extern char *__brkval;
 #endif  // __arm__
 
-int freeMemory() {
-    char top;
-    #ifdef __arm__
-        return &top - reinterpret_cast<char*>(sbrk(0));
-    #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-        return &top - __brkval;
-    #else  // __arm__
-        return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-    #endif  // __arm__
-    return -1;
+unsigned int freeMemory() {
+    #if defined(ESP_PLATFORM)
+        return esp_get_free_heap_size();
+    #else
+        char top;
+        #ifdef __arm__
+            return &top - reinterpret_cast<char*>(sbrk(0));
+        #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+            return &top - __brkval;
+        #else  // __arm__
+            return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+        #endif  // #ifdef __arm__
+        return 0;
+    #endif
 }
 
 void delayFine(time_t timeMillis) {
@@ -1031,10 +1035,10 @@ bool checkPinIsAnalogInput(pintype_t pin)
             #if NUM_ANALOG_INPUTS > 0
                 case (pintype_t)A0:
             #endif
-            #if NUM_ANALOG_INPUTS > 1
+            #if NUM_ANALOG_INPUTS > 1 && !defined(ESP32)
                 case (pintype_t)A1:
             #endif
-            #if NUM_ANALOG_INPUTS > 2
+            #if NUM_ANALOG_INPUTS > 2 && !defined(ESP32)
                 case (pintype_t)A2:
             #endif
             #if NUM_ANALOG_INPUTS > 3
@@ -1052,10 +1056,10 @@ bool checkPinIsAnalogInput(pintype_t pin)
             #if NUM_ANALOG_INPUTS > 7
                 case (pintype_t)A7:
             #endif
-            #if NUM_ANALOG_INPUTS > 8
+            #if NUM_ANALOG_INPUTS > 8 && !defined(ESP32)
                 case (pintype_t)A8:
             #endif
-            #if NUM_ANALOG_INPUTS > 9
+            #if NUM_ANALOG_INPUTS > 9 && !defined(ESP32)
                 case (pintype_t)A9:
             #endif
             #if NUM_ANALOG_INPUTS > 10
@@ -1075,6 +1079,12 @@ bool checkPinIsAnalogInput(pintype_t pin)
             #endif
             #if NUM_ANALOG_INPUTS > 15
                 case (pintype_t)A15:
+            #endif
+            #ifdef ESP32
+                case (pintype_t)A16:
+                case (pintype_t)A17:
+                case (pintype_t)A18:
+                case (pintype_t)A19:
             #endif
                 return true;
 

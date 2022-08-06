@@ -118,7 +118,11 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(pinty
     return nullptr;
 }
 
-SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pintype_t outputPin, uint8_t outputBitRes)
+SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pintype_t outputPin,
+#ifdef ESP_PLATFORM
+                                                                             uint8_t pwmChannel, float pwmFrequency,
+#endif
+                                                                             uint8_t outputBitRes)
 {
     bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
     Hydroponics_PositionIndex positionIndex = getHydroponicsInstance()->firstPositionOpen(HydroponicsIdentity(Hydroponics_ActuatorType_FanExhaust));
@@ -129,7 +133,11 @@ SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pin
         auto actuator = arx::stdx::make_shared<HydroponicsPWMActuator>(
             Hydroponics_ActuatorType_FanExhaust,
             positionIndex,
-            outputPin, outputBitRes
+            outputPin,
+#ifdef ESP_PLATFORM
+            pwmChannel, pwmFrequency,
+#endif
+            outputBitRes
         );
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }

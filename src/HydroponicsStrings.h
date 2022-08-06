@@ -149,6 +149,10 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_PublishToSDCard,
     HStr_Key_Publisher,
     HStr_Key_PullupPin,
+#ifdef ESP_PLATFORM
+    HStr_Key_PWMChannel,
+    HStr_Key_PWMFrequency,
+#endif
     HStr_Key_RailName,
     HStr_Key_ReservoirName,
     HStr_Key_Revision,

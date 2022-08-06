@@ -501,6 +501,7 @@ protected:
 };
 
 // Template implementations
+#include "HydroponicsInterfaces.hpp"
 #include "Hydroponics.hpp"
 #include "HydroponicsAttachments.hpp"
 #include "HydroponicsUtils.hpp"
