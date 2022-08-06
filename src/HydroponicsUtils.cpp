@@ -1059,9 +1059,7 @@ bool checkPinIsAnalogOutput(pintype_t pin)
         return false;
     #else
         switch (pin) {
-            #if NUM_ANALOG_OUTPUTS > 0 && defined(DAC)
-                case (pintype_t)DAC:
-            #elif NUM_ANALOG_OUTPUTS > 0
+            #if NUM_ANALOG_OUTPUTS > 0
                 case (pintype_t)DAC0:
             #endif
             #if NUM_ANALOG_OUTPUTS > 1

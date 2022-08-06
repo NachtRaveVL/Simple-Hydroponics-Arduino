@@ -169,7 +169,7 @@ void HydroponicsObject::allocateLinkages(size_t size)
                 }
             }
             for (; linksIndex < size; ++linksIndex) {
-                newLinks[linksIndex] = make_pair<HydroponicsObject *, int8_t>(nullptr, 0);
+                newLinks[linksIndex] = make_pair((HydroponicsObject *)nullptr, 0);
             }
         }
 
@@ -192,7 +192,7 @@ bool HydroponicsObject::addLinkage(HydroponicsObject *obj)
             }
         }
         if (linksIndex < _linksSize) {
-            _links[linksIndex] = make_pair<HydroponicsObject *, int8_t>(obj, 0);
+            _links[linksIndex] = make_pair(obj, 0);
             return true;
         }
     }
@@ -207,7 +207,7 @@ bool HydroponicsObject::removeLinkage(HydroponicsObject *obj)
                 for (int linksSubIndex = linksIndex; linksSubIndex < _linksSize - 1; ++linksSubIndex) {
                     _links[linksSubIndex] = _links[linksSubIndex + 1];
                 }
-                _links[_linksSize - 1] = make_pair<HydroponicsObject *, int8_t>(nullptr, 0);
+                _links[_linksSize - 1] = make_pair((HydroponicsObject *)nullptr, 0);
                 return true;
             }
         }
