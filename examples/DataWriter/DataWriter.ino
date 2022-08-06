@@ -79,7 +79,7 @@ String altAddressToString(uint16_t addr)
 void setup() {
     Serial.begin(115200);               // Begin USB Serial interface
     while (!Serial) { ; }               // Wait for USB Serial to connect
-    #if defined(ESP32) || defined(ESP8266)
+    #if defined(ESP_PLATFORM)
         SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
 

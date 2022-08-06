@@ -35,8 +35,8 @@ Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like
 Minimum MCU: 256kB Flash, 8kB SRAM, 8 MHz  
 Recommended: 512+kB Flash, 32+kB SRAM, 16+ MHz
 
-Recommended MCUs: Nano 33 IoT, MKR (any), Due, Zero, ESP32, Teensy 3+, RasPi Pico, etc.  
-Known not to work: Uno (any), Nano (classic), Leonardo, Micro, ESP12, ESP8266, Teensy 2, etc.
+Recommended MCUs: Nano 33 (any), MKR (any), Due, Zero, ESP32, Teensy 3+, RasPi Pico, etc.  
+Known not to work: Uno (any), Nano (classic & Every), Leonardo, Micro, ESP12, ESP8266, Teensy 2, etc.
 
 ### Installation
 
@@ -343,7 +343,6 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
 // WiFi Settings
-#define SETUP_ENABLE_WIFI               false           // If WiFi is enabled (must also define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 

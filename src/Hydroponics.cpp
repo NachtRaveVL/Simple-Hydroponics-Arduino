@@ -573,7 +573,6 @@ void Hydroponics::commonPreInit()
         #else
             noTone(_piezoBuzzerPin);
         #endif
-        digitalWrite(_piezoBuzzerPin, LOW);
     }
     if (_i2cWire) {
         _i2cWire->setClock(_i2cSpeed);
@@ -1192,7 +1191,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
     if (!_sd) { allocateSD(); }
 
     if (_sd && begin) {
-        #if defined(ESP32) || defined(ESP8266)
+        #if defined(ESP_PLATFORM)
             bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), getSDCardSpeed());
         #elif defined(CORE_TEENSY)
             bool sdBegan = _sd->begin(_sdCardCSPin); // card speed not possible to set on teensy

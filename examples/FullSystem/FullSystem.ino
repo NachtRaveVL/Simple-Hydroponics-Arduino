@@ -59,7 +59,7 @@
 
 #if defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
 #include "SoftwareSerial.h"
-SoftwareSerial Serial1(SERIAL1_RX, SERIAL1_TX);         // Replace with Rx/Tx pins of your choice
+SoftwareSerial Serial1(RX, TX);                         // Replace with Rx/Tx pins of your choice
 #endif
 
 uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -84,7 +84,7 @@ void setup() {
         Serial.begin(115200);           // Begin USB Serial interface
         while (!Serial) { ; }           // Wait for USB Serial to connect
     #endif
-    #if defined(ESP32) || defined(ESP8266)
+    #if defined(ESP_PLATFORM)
         SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
     #ifdef HYDRUINO_USE_WIFI
