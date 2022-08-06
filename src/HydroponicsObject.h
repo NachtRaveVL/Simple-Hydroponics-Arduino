@@ -115,7 +115,7 @@ public:
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
     // Objects are considered strong pointers, since existence -> SharedPtr ref to this instance exists.
-    Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, HYDRUINO_OBJ_LINKS_MAXSIZE> getLinkages() const;
+    inline Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> getLinkages() const { return make_pair(_linksSize, _links); }
 
     virtual HydroponicsIdentity getId() const override;     // Returns the unique Identity of the object
     virtual Hydroponics_KeyType getKey() const override;    // Returns the unique key of the object

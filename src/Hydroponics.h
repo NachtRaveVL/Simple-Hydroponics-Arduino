@@ -215,7 +215,7 @@ public:
                 uint8_t lcdI2CAddress = B000,               // LCD i2c address
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
                 uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
-                uint32_t sdCardSpeed = 4000000U             // SD card SPI speed, in Hz (ignored if on Teensy)
+                uint32_t sdCardSpeed = 4000000U             // SD card SPI speed, in Hz (ignored on Teensy)
 #ifdef HYDRUINO_USE_WIFI
                 , WiFiClass &wifi = WiFi                    // WiFi class instance
 #endif
@@ -435,7 +435,7 @@ protected:
     const uint8_t _lcdI2CAddr;                                      // LCD i2c address, format: {A2,A1,A0} (default: B000)
     TwoWire *_i2cWire;                                              // Controller's i2c wire class instance (strong, default: Wire)
     uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
-    uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz, ignored if on Teensy)
+    uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz, ignored on Teensy)
 #ifdef HYDRUINO_USE_WIFI
     WiFiClass *_wifi;                                               // WiFi class instance (strong, default: WiFi)
 #endif
@@ -461,7 +461,7 @@ protected:
     String _sysConfigFile;                                          // SD Card system config filename used in serialization (default: "hydruino.cfg")
     uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
-    Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_OBJ_LINKS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
+    Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
     Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount> _additives; // Custom additives data
     Map<pintype_t, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE> _oneWires; // pin->OneWire mapping
     Map<pintype_t, pintype_t, HYDRUINO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
