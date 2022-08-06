@@ -26,6 +26,10 @@ HydroponicsScheduler::~HydroponicsScheduler()
 void HydroponicsScheduler::update()
 {
     if (hasSchedulerData()) {
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("Scheduler::update")); flushYield();
+        #endif
+
         {   DateTime currTime = getCurrentTime();
             bool daytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
 
@@ -52,6 +56,10 @@ void HydroponicsScheduler::update()
         for (auto lightingIter = _lightings.begin(); lightingIter != _lightings.end(); ++lightingIter) {
             lightingIter->second->update();
         }
+
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("Scheduler::~update")); flushYield();
+        #endif
     }
 }
 

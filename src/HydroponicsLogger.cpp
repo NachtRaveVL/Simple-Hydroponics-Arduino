@@ -45,34 +45,6 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
     return false;
 }
 
-void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
-{
-    if (actuator) {
-        logMessage(actuator->getKeyString(), SFP(HStr_Log_HasEnabled));
-    }
-}
-
-void HydroponicsLogger::logDeactivation(const HydroponicsActuator *actuator)
-{
-    if (actuator) {
-        logMessage(actuator->getKeyString(), SFP(HStr_Log_HasDisabled));
-    }
-}
-
-void HydroponicsLogger::logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString, const String &statusString)
-{
-    if (feedReservoir) {
-        logMessage(feedReservoir->getKeyString(), processString, statusString);
-    }
-}
-
-void HydroponicsLogger::logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString)
-{
-    if (pump) {
-        logMessage(((HydroponicsObject *)pump)->getKeyString(), pumpString);
-    }
-}
-
 void HydroponicsLogger::logSystemUptime()
 {
     TimeSpan elapsed(getSystemUptime());
