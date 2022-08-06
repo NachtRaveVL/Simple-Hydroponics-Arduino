@@ -42,7 +42,7 @@ HydroponicsRail::HydroponicsRail(const HydroponicsRailData *dataIn)
 HydroponicsRail::~HydroponicsRail()
 {
     if (_links) {
-        auto actuators = linksFilterActuators<HYDRUINO_OBJ_LINKS_MAXSIZE>(getLinkages());
+        auto actuators = linksFilterActuators(getLinkages());
         for (auto iter = actuators.begin(); iter != actuators.end(); ++iter) { removeLinkage(*iter); }
     }
 }

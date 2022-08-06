@@ -97,7 +97,7 @@ From Hydroponics.h, in class Hydroponics:
                 uint8_t lcdI2CAddress = B000,               // LCD i2c address
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
                 uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
-                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored if on Teensy)
+                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored on Teensy)
                 WiFiClass &wifi = WiFi);                    // WiFi class instance
 ```
 
@@ -324,7 +324,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
-#define SETUP_SD_CARD_SPI_SPEED         4000000U        // SD card SPI speed, in Hz (ignored if on Teensy)
+#define SETUP_SD_CARD_SPI_SPEED         4000000U        // SD card SPI speed, in Hz (ignored on Teensy)
 #define SETUP_WIFI_INST                 WiFi            // WiFi class instance
 
 // System Settings

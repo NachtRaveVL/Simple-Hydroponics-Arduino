@@ -113,45 +113,45 @@ bool arrayElementsEqual(const T *arrayIn, size_t length, T value)
 }
 
 
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-Vector<HydroponicsObject *, N> linksFilterActuators(Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> links)
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE>
+Vector<HydroponicsObject *, N> linksFilterActuators(Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> links)
 {
     Vector<HydroponicsObject *, N> retVal;
 
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second.first->isActuatorType()) {
-            retVal.push_back(iter->second.first);
+    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+        if (links.second[linksIndex].first->isActuatorType()) {
+            retVal.push_back(links.second[linksIndex].first);
         }
     }
 
     return retVal;
 }
 
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-Vector<HydroponicsObject *, N> linksFilterCrops(Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> links)
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE>
+Vector<HydroponicsObject *, N> linksFilterCrops(Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> links)
 {
     Vector<HydroponicsObject *, N> retVal;
 
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second.first->isCropType()) {
-            retVal.push_back(iter->second.first);
+    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+        if (links.second[linksIndex].first->isCropType()) {
+            retVal.push_back(links.second[linksIndex].first);
         }
     }
 
     return retVal;
 }
 
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-Vector<HydroponicsObject *, N> linksFilterActuatorsByReservoirAndType(Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE>
+Vector<HydroponicsObject *, N> linksFilterActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
 {
     Vector<HydroponicsObject *, N> retVal;
 
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second.first->isActuatorType()) {
-            auto actuator = static_cast<HydroponicsActuator *>(iter->second.first);
+    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+        if (links.second[linksIndex].first->isActuatorType()) {
+            auto actuator = static_cast<HydroponicsActuator *>(links.second[linksIndex].first);
 
             if (actuator->getActuatorType() == actuatorType && actuator->getReservoir().get() == srcReservoir) {
-                retVal.push_back(iter->second.first);
+                retVal.push_back(links.second[linksIndex].first);
             }
         }
     }
@@ -159,20 +159,20 @@ Vector<HydroponicsObject *, N> linksFilterActuatorsByReservoirAndType(Map<Hydrop
     return retVal;
 }
 
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-Vector<HydroponicsObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> links, HydroponicsReservoir *srcReservoir, Hydroponics_ReservoirType destReservoirType)
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE>
+Vector<HydroponicsObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> links, HydroponicsReservoir *srcReservoir, Hydroponics_ReservoirType destReservoirType)
 {
     Vector<HydroponicsObject *, N> retVal;
 
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second.first->isActuatorType()) {
-            auto actuator = static_cast<HydroponicsActuator *>(iter->second.first);
+    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+        if (links.second[linksIndex].first->isActuatorType()) {
+            auto actuator = static_cast<HydroponicsActuator *>(links.second[linksIndex].first);
 
             if (actuator->isRelayPumpClass() && static_cast<HydroponicsPumpRelayActuator *>(actuator)->getInputReservoir().get() == srcReservoir) {
                 auto outputReservoir = static_cast<HydroponicsPumpRelayActuator *>(actuator)->getOutputReservoir().get();
 
                 if (outputReservoir && outputReservoir->getReservoirType() == destReservoirType) {
-                    retVal.push_back(iter->second.first);
+                    retVal.push_back(links.second[linksIndex].first);
                 }
             }
         }
@@ -181,53 +181,21 @@ Vector<HydroponicsObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutput
     return retVal;
 }
 
-template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE, size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-Vector<HydroponicsObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType)
+template<size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE>
+Vector<HydroponicsObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> links, HydroponicsReservoir *destReservoir, Hydroponics_ReservoirType srcReservoirType)
 {
     Vector<HydroponicsObject *, N> retVal;
 
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second.first->isActuatorType()) {
-            auto actuator = static_cast<HydroponicsActuator *>(iter->second.first);
+    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+        if (links.second[linksIndex].first->isActuatorType()) {
+            auto actuator = static_cast<HydroponicsActuator *>(links.second[linksIndex].first);
 
             if (actuator->isRelayPumpClass() && static_cast<HydroponicsPumpRelayActuator *>(actuator)->getOutputReservoir().get() == destReservoir) {
                 auto inputReservoir = static_cast<HydroponicsPumpRelayActuator *>(actuator)->getInputReservoir().get();
 
                 if (inputReservoir && inputReservoir->getReservoirType() == srcReservoirType) {
-                    retVal.push_back(iter->second.first);
+                    retVal.push_back(links.second[linksIndex].first);
                 }
-            }
-        }
-    }
-
-    return retVal;
-}
-
-template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-int linksCountCrops(Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> links)
-{
-    int retVal = 0;
-
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second.first->isCropType()) {
-            retVal++;
-        }
-    }
-
-    return retVal;
-}
-
-template<size_t M = HYDRUINO_OBJ_LINKS_MAXSIZE>
-int linksCountActuatorsByReservoirAndType(Map<Hydroponics_KeyType, Pair<HydroponicsObject *, int8_t>, M> links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
-{
-    int retVal = 0;
-
-    for (auto iter = links.begin(); iter != links.end(); ++iter) {
-        if (iter->second.first->isActuatorType()) {
-            auto actuator = static_cast<HydroponicsActuator *>(iter->second.first);
-
-            if (actuator->getActuatorType() == actuatorType && actuator->getReservoir().get() == srcReservoir) {
-                retVal++;
             }
         }
     }

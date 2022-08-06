@@ -991,6 +991,37 @@ int defaultDecimalPlaces(Hydroponics_MeasurementMode measureMode)
 }
 
 
+int linksCountCrops(Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> links)
+{
+    int retVal = 0;
+
+    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+        if (links.second[linksIndex].first->isCropType()) {
+            retVal++;
+        }
+    }
+
+    return retVal;
+}
+
+int linksCountActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroponicsObject *, int8_t> *> links, HydroponicsReservoir *srcReservoir, Hydroponics_ActuatorType actuatorType)
+{
+    int retVal = 0;
+
+    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+        if (links.second[linksIndex].first->isActuatorType()) {
+            auto actuator = static_cast<HydroponicsActuator *>(links.second[linksIndex].first);
+
+            if (actuator->getActuatorType() == actuatorType && actuator->getReservoir().get() == srcReservoir) {
+                retVal++;
+            }
+        }
+    }
+
+    return retVal;
+}
+
+
 bool checkPinIsAnalogInput(pintype_t pin)
 {
     #if !defined(NUM_ANALOG_INPUTS) || NUM_ANALOG_INPUTS == 0
