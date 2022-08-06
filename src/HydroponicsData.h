@@ -46,7 +46,7 @@ struct HydroponicsData : public HydroponicsJSONSerializableInterface {
     inline bool isCalibrationData() const { return id.chars[0] == 'H' && id.chars[1] == 'C' && id.chars[2] == 'A' && id.chars[3] == 'L'; }
     inline bool isCropsLibData() const { return id.chars[0] == 'H' && id.chars[1] == 'C' && id.chars[2] == 'L' && id.chars[3] == 'D'; }
     inline bool isAdditiveData() const { return id.chars[0] == 'H' && id.chars[1] == 'A' && id.chars[2] == 'D' && id.chars[3] == 'D'; }
-    inline bool isObjectectData() const { return !isStandardData() && id.object.idType >= 0; }
+    inline bool isObjectData() const { return !isStandardData() && id.object.idType >= 0; }
 
     HydroponicsData();                                          // Default constructor
     HydroponicsData(char id0,                                   // 4-char identifier, index 0

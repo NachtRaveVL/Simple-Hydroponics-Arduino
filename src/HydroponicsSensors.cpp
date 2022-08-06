@@ -8,9 +8,9 @@
 HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
-    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectectData(), SFP(HStr_Err_InvalidParameter));
+    HYDRUINO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
-    if (dataIn && dataIn->isObjectectData()) {
+    if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
             case 0: // Binary
                 return new HydroponicsBinarySensor((const HydroponicsBinarySensorData *)dataIn);
