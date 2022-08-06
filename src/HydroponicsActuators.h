@@ -31,8 +31,6 @@ public:
     inline bool isRelayPumpClass() const { return classType == RelayPump; }
     inline bool isPWMClass() const { return classType == PWM; }
     inline bool isUnknownClass() const { return classType <= Unknown; }
-    inline bool isAnyPumpClass() const { return isRelayPumpClass(); }
-    inline bool isAnyRelayClass() const { return isRelayClass() || isRelayPumpClass(); }
 
     HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
                         Hydroponics_PositionIndex actuatorIndex,
