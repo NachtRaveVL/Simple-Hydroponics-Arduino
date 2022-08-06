@@ -28,7 +28,7 @@
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
-#if defined(ESP32) || defined(ESP8266)                              // ESP missing defs
+#if defined(ESP_PLATFORM)                                           // ESP missing defs
 #define min _min
 #define max _max
 #endif

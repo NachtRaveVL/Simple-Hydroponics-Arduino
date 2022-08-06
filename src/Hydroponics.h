@@ -83,7 +83,7 @@ typedef WiFiEspClient WiFiClient;
 #define HYDRUINO_USE_WIFI
 #endif
 
-#if defined(ESP32) || defined(ESP8266)
+#if defined(ESP_PLATFORM)
 typedef SDFileSystemClass SDClass;
 #endif
 
