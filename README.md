@@ -157,18 +157,21 @@ From Hydroponics.h, in class Hydroponics:
 
 ## Hookup Callouts
 
-* The recommended Vcc power supply and logic level is 5v for older MCUs, 3.3v for newer MCUs.
-  * There are some devices that may be 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
-  * Devices that do not have the same Vcc power supply levels will need a level converter (or similar) to operate together.
+* The recommended Vcc power supply and logic level is 5v, with newer MCUs restricted to 3.3v logic level.
+  * There are many devices that are 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
+  * Devices that do not have the same logic level voltage as the MCU will need a level converter (or similar), bi-directional particularly on any fast data lines, in order to operate together (unless capable of doing so without such).
+    * OneWire sensors must be powered with the same Vcc power supply level as logic level. Most of the time this isn't an issue, but some may require 5v Vcc power and need level converted to 3.3v.
+    * 5v analog sensor signal lines won't need level converted, as the `AREF` (sometimes `IOREF`) pin is easily used to specify maximum analog sensor input voltage for the MCU's ADC.
+    * Alternatively, using a 10kΩ voltage dividing resistor can often times be enough to convert 5v to 3.3v.
 
 ### Serial UART
 
 Serial UART uses individual communication lines for each device, with the receive `RX` pin of one being the transmit `TX` pin of the other - thus having to "flip wires" when connecting. However, devices can always be active and never have to share their access. UART runs at low to mid kHz speeds and is useful for simple device control, albeit somewhat clumsy at times.
 
 * When wiring up modules that use Serial UART, make sure to flip `RX`/`TX` lines.
-  * 3.3v devices that are not 5v tolerant (such as ESP8266 WiFi modules) may require a bi-directional logic level converter/shifter to access on 5v MCUs.
+  * 3.3v devices that are not 5v tolerant (such as external [serial-based ESP WiFi modules](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/)) may require a bi-directional logic level converter/shifter to access on 5v MCUs.
     * We have included a small breakout PCB ([gerbers in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up such common WiFi and level shifter modules alongside one another.
-    * Alternatively, hack a 1kΩ resistor between the MCU's TX pin and module's RX pin.
+    * Alternatively, hack a 10kΩ voltage dividing resistor between the MCU's TX pin and module's RX pin.
 
 Serial UART Devices Supported: ESP8266 WiFi module (3.3v only)
 
@@ -200,28 +203,33 @@ OneWire devices can be chained together on the same shared data lines (no flippi
 
 ### Analog IO
 
-* Ensure `AREF` pin is set to the correct max input voltage to ensure analog sensors can use their full input range. The `AREF` pin, by default, is the same voltage as the MCU.
-  * Analog sensors will be able to customize per-pin voltage ranges in software later on (as long as voltages are not negative or over `AREF`) - it's more important to know the max input voltage in use for correctly setting `AREF`.
-  * Not setting this correctly will affect measured analog values. Some sensors we've tested, for instance, are calibrated to operate up to 5.5v direct from factory, others operate from -5v to +5v and have to be modified to output 0v to 5v.
+* All analog sensors will need to have the same operational voltage range. Many analog sensors are set to use 0v to 5v by default.
+* Ensure `AREF` (sometimes `IOREF`) pin is set to the correct maximum input voltage that all analog input sensors should be calibrated towards. The `AREF` pin, by default, is the same voltage as the MCU.
+  * Not setting this correctly will affect measured analog values. For example, some sensors we've tested are calibrated to operate up to 5.5v direct from factory, while others operate from -5v to +5v and have to be modified to output 0v to 5v. Some even have a switch or pin header to switch between 3.3v and 5v.
+  * Analog sensors will be able to customize voltage->value calibrations in software later on (as long as voltages are not negative or over `AREF`) - it's more important to know the input voltage range in use for correctly setting `AREF`.
 * The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) as well as the RasPi Pico and others support different bit resolutions for analog/PWM pins, but also may limit how many pins are able to use these higher resolutions. See the datasheet of your MCU for details.
 
 ### Sensors
 
-* If able to set in hardware, ensure any TDS meters and soil moisture sensors use EC (aka mS/cm) mode. EC is considered a normalized measurement while PPM can be split into different scale categories depending on sensor chemistry in use (often tied to country of origin). PPM based sensors operating on anything other than a 1v=500ppm mode will need to have their PPM scale explicitly set.
+* If able to set in hardware, ensure any TDS meters and soil moisture sensors use EC (aka mS/cm) mode. EC is considered a normalized measurement while PPM can be split into different scale categories depending on sensor chemistry in use (often tied to country of origin). PPM/EC based sensors operating on anything other than a 1v=500ppm/1v=1EC mode will need to have their PPM scale explicitly set.
 * Many different kinds of hobbyist sensors label their analog output `AO` (or `Ao`) - however, always check your specific sensor's datasheet.
-  * Again, make sure sensor is calibrated to output 0v - `AREF` volts in range - negative voltage or voltage above AREF may cause damage!
+  * Again, make sure all analog sensors are calibrated to output the same 0v - `AREF` (sometimes `IOREF`) volts in range.
 * Sensor pins used for event triggering when measurements go above/below a pre-set tolerance - many of which are deceptively labeled `DO` (or `Do`), despite having nothing to do with being `D`ata lines of any kind - can be safely ignored, as the software implementation of such mechanism is more than sufficient.
   * Often these pins are used to drive other hardware-only based solutions that aren't a part of Hydruino's use case.
 * CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, and _require_ `Vcc` for its heating element (5v @ 130mA for MQ-135) thus cannot use OneWire parasitic power mode. To calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
 
 We also ask that our users report any broken sensors (outside of bad calibration data) for us to consider adding support to (also consider sponsoring our work on [Patreon](www.patreon.com/nachtrave)).
 
+### WiFi
+
+* Devices with built-in WiFi can enable such through header defines while other devices can utilize an external [serial-based ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/).
+  * Again, we have included a small breakout PCB ([gerbers in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up these common WiFi modules alongside a level shifter, which will be needed if using a 5v MCU.
+
 ## Memory Callouts
 
 * The total number of objects and different kinds of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 500 bytes or more depending on settings and object type, with the base Flash memory usage ranging from 100kB to 300kB+ depending on settings.
-  * For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while on the upper end we have modern devices like the RasPi Pico with 2MB of Flash and 264kB of RAM. Devices with < 16kB of RAM may struggle with system builds and may be limited to specific system setups (such as no WiFi, no built-in data, only minimal UI, etc. - see Vertical NFT Example), while other newer devices with more capacity build with everything enabled without issue.
+  * For our target microcontroller range, on the low end we have ATMega2560 with 256kB of Flash and 8kB of RAM, while on the upper end we have more modern devices with 2+MB of Flash and 256+kB of RAM. Devices with < 16kB of RAM may struggle with system builds and may be limited to specific system setups (such as no WiFi, no data publishing, no built-in crop data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
 * For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller uses.
-  * If, for example, you had a large number of crops attached to a single feed reservoir, you could modify these defines to give more space for such object storage to avoid running into storage limitations.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
 * To further save on code size cost, see the Data Writer Example to see how to externalize controller data onto an SD Card or EEPROM.
