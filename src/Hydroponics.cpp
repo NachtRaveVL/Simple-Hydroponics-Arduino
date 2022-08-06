@@ -302,7 +302,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                 JsonObjectConst dataObj = doc.as<JsonObjectConst>();
                 HydroponicsData *data = newDataFromJSONObject(dataObj);
 
-                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectectData()), SFP(HStr_Err_ImportFailure));
+                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HStr_Err_ImportFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
@@ -312,7 +312,7 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                         setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
-                } else if (data && data->isObjectectData()) {
+                } else if (data && data->isObjectData()) {
                     HydroponicsObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
 
@@ -405,8 +405,8 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroponicsData *data = iter->second->newSaveData();
 
-                HYDRUINO_SOFT_ASSERT(data && data->isObjectectData(), SFP(HStr_Err_AllocationFailure));
-                if (data && data->isObjectectData()) {
+                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), SFP(HStr_Err_AllocationFailure));
+                if (data && data->isObjectData()) {
                     StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                     JsonObject objectDataObj = doc.to<JsonObject>();
@@ -453,7 +453,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
             while (streamIn->available()) {
                 HydroponicsData *data = newDataFromBinaryStream(streamIn);
 
-                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectectData()), SFP(HStr_Err_AllocationFailure));
+                HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HStr_Err_AllocationFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
                         getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
@@ -463,7 +463,7 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                         setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
-                } else if (data && data->isObjectectData()) {
+                } else if (data && data->isObjectData()) {
                     HydroponicsObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
 
@@ -542,8 +542,8 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroponicsData *data = iter->second->newSaveData();
 
-                HYDRUINO_SOFT_ASSERT(data && data->isObjectectData(), SFP(HStr_Err_AllocationFailure));
-                if (data && data->isObjectectData()) {
+                HYDRUINO_SOFT_ASSERT(data && data->isObjectData(), SFP(HStr_Err_AllocationFailure));
+                if (data && data->isObjectData()) {
                     size_t bytesWritten = serializeDataToBinaryStream(data, streamOut);
                     delete data; data = nullptr;
 

@@ -19,7 +19,7 @@ HydroponicsData *_allocateDataFromBaseDecode(const HydroponicsData &baseDecode)
         } else if (baseDecode.isAdditiveData()) {
             retVal = new HydroponicsCustomAdditiveData();
         }
-    } else if (baseDecode.isObjectectData()) {
+    } else if (baseDecode.isObjectData()) {
         retVal = _allocateDataForObjType(baseDecode.id.object.idType, baseDecode.id.object.classType);
     }
 
