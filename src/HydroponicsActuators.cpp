@@ -374,8 +374,7 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
 
 HydroponicsAttachment &HydroponicsPumpRelayActuator::getParentReservoir(bool resolve)
 {
-    if (resolve) { _reservoir.resolve(); }
-    return _reservoir;
+    return HydroponicsActuator::getParentReservoir(resolve);
 }
 
 HydroponicsAttachment &HydroponicsPumpRelayActuator::getDestinationReservoir(bool resolve)

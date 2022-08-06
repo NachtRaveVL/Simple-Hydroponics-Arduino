@@ -259,8 +259,8 @@ void HydroponicsTimedDosingBalancer::performDosing()
 
 void HydroponicsTimedDosingBalancer::performDosing(SharedPtr<HydroponicsActuator> actuator, time_t timeMillis)
 {
-    if (actuator->isAnyPumpClass()) {
-        ((HydroponicsPumpObjectInterface *)(actuator.get()))->pump(timeMillis); // pumps have nice logging output
+    if (actuator->isRelayPumpClass()) {
+        static_pointer_cast<HydroponicsPumpRelayActuator>(actuator)->pump(timeMillis); // pumps have nice logging output
     } else {
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             scheduleActuatorTimedEnableOnce(actuator, timeMillis);

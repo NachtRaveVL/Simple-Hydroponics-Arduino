@@ -44,8 +44,6 @@ public:
     inline bool isDHTClass() const { return classType == DHT1W; }
     inline bool isDSClassType() const { return classType == DS1W; }
     inline bool isUnknownClass() const { return classType <= Unknown; }
-    inline bool isAnyAnalogClass() const { return isAnalogClass(); }
-    inline bool isAnyDigitalClass() const { return isDigitalClass() || isDHTClass() || isDSClassType(); }
 
     HydroponicsSensor(Hydroponics_SensorType sensorType,
                       Hydroponics_PositionIndex sensorIndex,
