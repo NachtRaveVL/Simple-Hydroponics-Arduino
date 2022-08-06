@@ -228,7 +228,7 @@ template<typename T> bool arrayElementsEqual(const T *arrayIn, size_t length, T 
 template<typename T> inline T mapValue(T value, T inMin, T inMax, T outMin, T outMax) { return ((value - inMin) * ((outMax - outMin) / (inMax - inMin))) + outMin; }
 
 // Returns the amount of space between the stack and heap (ie free space left), else -1 if undeterminable.
-extern int freeMemory();
+extern unsigned int freeMemory();
 
 // This delays a finely timed amount, with spin loop nearer to end. Used in finely timed dispensers.
 extern void delayFine(time_t timeMillis);
@@ -327,11 +327,11 @@ extern bool checkPinIsAnalogInput(pintype_t pin);
 // Checks to see if the pin is an analog output pin.
 extern bool checkPinIsAnalogOutput(pintype_t pin);
 // Checks to see if the pin is a standard digital (non-analog) pin.
-inline bool checkPinIsDigital(pintype_t pin) { return !checkPinIsAnalogInput(pin) && !checkPinIsAnalogOutput(pin); }
+inline bool checkPinIsDigital(pintype_t pin);
 // Checks to see if the pin can produce a digital PWM output signal.
 inline bool checkPinIsPWMOutput(pintype_t pin);
 // Checks to see if the pin can be set up with an ISR to handle digital level changes.
-inline bool checkPinCanInterrupt(pintype_t pin) { return isValidPin(digitalPinToInterrupt(pin)); }
+inline bool checkPinCanInterrupt(pintype_t pin);
 
 // Enums & Conversions
 

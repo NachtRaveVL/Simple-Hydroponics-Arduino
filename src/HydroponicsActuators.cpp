@@ -503,25 +503,42 @@ void HydroponicsPumpRelayActuator::handlePumpTime(time_t timeMillis)
 HydroponicsPWMActuator::HydroponicsPWMActuator(Hydroponics_ActuatorType actuatorType,
                                                Hydroponics_PositionIndex actuatorIndex,
                                                pintype_t outputPin,
-                                               uint8_t outputBitResolution,
+#ifdef ESP_PLATFORM
+                                               uint8_t pwmChannel,
+                                               float pwmFrequency,
+#endif
+                                               uint8_t outputBitRes,
                                                int classType)
     : HydroponicsActuator(actuatorType, actuatorIndex, outputPin, classType),
-      _pwmAmount(0.0f), _pwmResolution(outputBitResolution)
+      _pwmAmount(0.0f), _pwmResolution(outputBitRes)
+#ifdef ESP_PLATFORM
+      , _pwmChannel(pwmChannel), _pwmFrequency(pwmFrequency)
+#endif
 {
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE
         if (isValidPin(_outputPin)) {
-            analogWrite(_outputPin, 0);
+            #ifdef ESP32
+                ledcAttachPin(outputPin, _pwmChannel);
+                ledcSetup(_pwmChannel, _pwmFrequency, outputBitRes);
+                ledcWrite(_pwmChannel, 0);
+            #else
+                analogWrite(_outputPin, 0);
+            #endif
         }
     #endif
 }
 
 HydroponicsPWMActuator::HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn)
     : HydroponicsActuator(dataIn),
-      _pwmAmount(0.0f), _pwmResolution(dataIn->outputBitResolution)
+      _pwmAmount(0.0f), _pwmResolution(dataIn->outputBitRes)
 {
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE
         if (isValidPin(_outputPin)) {
-            analogWrite(_outputPin, 0);
+            #ifdef ESP32
+                ledcWrite(_pwmChannel, 0);
+            #else
+                analogWrite(_outputPin, 0);
+            #endif
         }
     #endif
 }
@@ -532,7 +549,11 @@ HydroponicsPWMActuator::~HydroponicsPWMActuator()
         _enabled = false;
         #if !HYDRUINO_SYS_DRY_RUN_ENABLE
             if (isValidPin(_outputPin)) {
-                analogWrite(_outputPin, 0);
+                #ifdef ESP32
+                    ledcWrite(_pwmChannel, 0);
+                #else
+                    analogWrite(_outputPin, 0);
+                #endif
             }
         #endif
     }
@@ -613,17 +634,24 @@ void HydroponicsPWMActuator::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsActuator::saveToData(dataOut);
 
-    ((HydroponicsPWMActuatorData *)dataOut)->outputBitResolution = _pwmResolution.bitRes;
+    ((HydroponicsPWMActuatorData *)dataOut)->outputBitRes = _pwmResolution.bitRes;
 }
 
 void HydroponicsPWMActuator::applyPWM()
 {
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE
         if (isValidPin(_outputPin)) {
-            #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-                analogWriteResolution(_pwmResolution.bitRes);
+            #ifdef ESP32
+                ledcWrite(_pwmChannel, _enabled ? getPWMAmount(0) : 0);
+            #else
+                #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+                    analogWriteResolution(_pwmResolution.bitRes);
+                #elif defined(ESP8266)
+                    analogWriteRange(_pwmResolution.maxVal);
+                    analogWriteFreq(_pwmFrequency);
+                #endif
+                analogWrite(_outputPin, _enabled ? getPWMAmount(0) : 0);
             #endif
-            analogWrite(_outputPin, _enabled ? getPWMAmount(0) : 0);
         }
     #endif
 }
@@ -714,7 +742,10 @@ void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroponicsPWMActuatorData::HydroponicsPWMActuatorData()
-    : HydroponicsActuatorData(), outputBitResolution(10)
+    : HydroponicsActuatorData(), outputBitRes(10)
+#ifdef ESP_PLATFORM
+      , pwmChannel(0), pwmFrequency(0)
+#endif
 {
     _size = sizeof(*this);
 }
@@ -723,12 +754,20 @@ void HydroponicsPWMActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroponicsActuatorData::toJSONObject(objectOut);
 
-    if (outputBitResolution != 10) { objectOut[SFP(HStr_Key_OutputBitRes)] = outputBitResolution; }
+    #ifdef ESP_PLATFORM
+        if (pwmChannel) { objectOut[SFP(HStr_Key_PWMChannel)] = pwmChannel; }
+        if (pwmFrequency > FLT_EPSILON) { objectOut[SFP(HStr_Key_PWMFrequency)] = pwmFrequency; }
+    #endif
+    if (outputBitRes != 10) { objectOut[SFP(HStr_Key_OutputBitRes)] = outputBitRes; }
 }
 
 void HydroponicsPWMActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroponicsActuatorData::fromJSONObject(objectIn);
 
-    outputBitResolution = objectIn[SFP(HStr_Key_OutputBitRes)] | outputBitResolution;
+    #ifdef ESP_PLATFORM
+        pwmChannel = objectIn[SFP(HStr_Key_PWMChannel)] | pwmChannel;
+        pwmFrequency = objectIn[SFP(HStr_Key_PWMFrequency)] | pwmFrequency;
+    #endif
+    outputBitRes = objectIn[SFP(HStr_Key_OutputBitRes)] | outputBitRes;
 }
