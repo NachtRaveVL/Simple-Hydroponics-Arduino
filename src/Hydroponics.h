@@ -87,10 +87,6 @@ typedef WiFiEspClient WiFiClient;
 typedef SDFileSystemClass SDClass;
 #endif
 
-#if defined(ARDUINO_ARCH_RP2040)
-#include <api/Common.h>
-#endif
-
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 #if defined(__AVR__)
 #include <util/atomic.h>
