@@ -144,7 +144,7 @@ public:
 
     virtual HydroponicsSensorAttachment &getSoilMoisture(bool poll = false) override;
 
-    inline void setFeedingTrigger(SharedPtr<HydroponicsTrigger> feedingTrigger) { _feedingTrigger = feedingTrigger; }
+    template<typename T> inline void setFeedingTrigger(T feedingTrigger) { _feedingTrigger = feedingTrigger; }
     inline SharedPtr<HydroponicsTrigger> getFeedingTrigger() { return _feedingTrigger.getObject(); }
 
 protected:
