@@ -35,12 +35,10 @@ public:
     bool beginLoggingToSDCard(String logFilePrefix);
     inline bool isLoggingToSDCard() const;
 
-    void logActivation(const HydroponicsActuator *actuator);
-    void logDeactivation(const HydroponicsActuator *actuator);
-
-    void logProcess(const HydroponicsFeedReservoir *feedReservoir, const String &processString = String(), const String &statusString = String());
-
-    void logPumping(const HydroponicsPumpObjectInterface *pump, const String &pumpString = String());
+    inline void logActivation(const HydroponicsActuator *actuator);
+    inline void logDeactivation(const HydroponicsActuator *actuator);
+    inline void logProcess(const HydroponicsObject *obj, const String &processString = String(), const String &statusString = String());
+    inline void logStatus(const HydroponicsObject *obj, const String &statusString = String());
 
     void logSystemUptime();
     inline void logSystemSave() { logMessage(SFP(HStr_Log_SystemDataSaved)); }

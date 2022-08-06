@@ -680,6 +680,10 @@ void Hydroponics::commonPostSave()
 void controlLoop()
 {
     if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("controlLoop")); flushYield();
+        #endif
+
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
             iter->second->update();
         }
@@ -694,6 +698,10 @@ void controlLoop()
             }
         }
         #endif
+
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("~controlLoop")); flushYield();
+        #endif
     }
 
     yield();
@@ -702,6 +710,10 @@ void controlLoop()
 void dataLoop()
 {
     if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("dataLoop")); flushYield();
+        #endif
+
         Hydroponics::_activeInstance->publisher.advancePollingFrame();
 
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
@@ -721,6 +733,10 @@ void dataLoop()
             }
         }
         #endif
+
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("~dataLoop")); flushYield();
+        #endif
     }
 
     yield();
@@ -729,6 +745,10 @@ void dataLoop()
 void miscLoop()
 {
     if (Hydroponics::_activeInstance && !Hydroponics::_activeInstance->_suspend) {
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("miscLoop")); flushYield();
+        #endif
+
         Hydroponics::_activeInstance->checkFreeMemory();
         Hydroponics::_activeInstance->checkFreeSpace();
         Hydroponics::_activeInstance->checkAutosave();
@@ -750,6 +770,10 @@ void miscLoop()
                 Hydroponics::_activeInstance->logger.logMessage(String(F("Free memory: ")), String(freeMemory()));
             }
         }
+        #endif
+
+        #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
+            Serial.println(F("~miscLoop")); flushYield();
         #endif
     }
 

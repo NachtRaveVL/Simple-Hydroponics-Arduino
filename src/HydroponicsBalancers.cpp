@@ -195,38 +195,44 @@ void HydroponicsTimedDosingBalancer::update()
     }
 
     if (_dosingActIndex >= 0) { // has dosing that needs performed
-        if (_dosingDir == Hydroponics_BalancerState_TooLow) {
-            while (_dosingActIndex < _incActuators.size()) {
-                auto actuatorIter = _incActuators.begin();
-                for (int actuatorIndex = 0; actuatorIter != _incActuators.end() && actuatorIndex != _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
-                if (actuatorIter != _incActuators.end()) {
-                    performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
-                                  actuatorIter->second * _dosingMillis);
-                    #ifdef HYDRUINO_DISABLE_MULTITASKING
-                        break; // only one dosing pass per call when done this way
-                    #endif
-                } else { break; }
-            }
+        switch (_dosingDir) {
+            case Hydroponics_BalancerState_TooLow:
+                while (_dosingActIndex < _incActuators.size()) {
+                    auto actuatorIter = _incActuators.begin(); // advance iter to index
+                    for (int actuatorIndex = 0; actuatorIter != _incActuators.end() && actuatorIndex < _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
 
-            if (_dosingActIndex >= _incActuators.size()) {
-                _dosingActIndex = -1; // dosing completed
-            }
-        } else {
-            while (_dosingActIndex < _decActuators.size()) {
-                auto actuatorIter = _decActuators.begin();
-                for (int actuatorIndex = 0; actuatorIter != _decActuators.end() && actuatorIndex != _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
-                if (actuatorIter != _decActuators.end()) {
-                    performDosing(static_pointer_cast<HydroponicsActuator>(actuatorIter->first),
-                                  actuatorIter->second * _dosingMillis);
-                    #ifdef HYDRUINO_DISABLE_MULTITASKING
-                        break; // only one dosing pass per call when done this way
-                    #endif
-                } else { break; }
-            }
+                    if (actuatorIter != _incActuators.end()) {
+                        performDosing(actuatorIter->first, actuatorIter->second * _dosingMillis);
+                        #ifdef HYDRUINO_DISABLE_MULTITASKING
+                            break; // only one dosing pass per call when done this way
+                        #endif
+                    } else { break; }
+                }
+                if (_dosingActIndex >= _incActuators.size()) {
+                    _dosingActIndex = -1; // dosing completed
+                }
+                break;
 
-            if (_dosingActIndex >= _decActuators.size()) {
-                _dosingActIndex = -1; // dosing completed
-            }
+            case Hydroponics_BalancerState_TooHigh:
+                while (_dosingActIndex < _decActuators.size()) {
+                    auto actuatorIter = _decActuators.begin();  // advance iter to index
+                    for (int actuatorIndex = 0; actuatorIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
+
+                    if (actuatorIter != _decActuators.end()) {
+                        performDosing(actuatorIter->first, actuatorIter->second * _dosingMillis);
+                        #ifdef HYDRUINO_DISABLE_MULTITASKING
+                            break; // only one dosing pass per call when done this way
+                        #endif
+                    } else { break; }
+                }
+                if (_dosingActIndex >= _decActuators.size()) {
+                    _dosingActIndex = -1; // dosing completed
+                }
+                break;
+
+            default:
+                HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
+                break;
         }
     }
 }
@@ -257,19 +263,18 @@ void HydroponicsTimedDosingBalancer::performDosing()
     _lastDosingTime = unixNow();
 }
 
-void HydroponicsTimedDosingBalancer::performDosing(SharedPtr<HydroponicsActuator> actuator, time_t timeMillis)
+void HydroponicsTimedDosingBalancer::performDosing(SharedPtr<HydroponicsActuator> &actuator, time_t timeMillis)
 {
     if (actuator->isRelayPumpClass()) {
         static_pointer_cast<HydroponicsPumpRelayActuator>(actuator)->pump(timeMillis); // pumps have nice logging output
     } else {
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             scheduleActuatorTimedEnableOnce(actuator, timeMillis);
-            _dosingActIndex++;
         #else
             actuator->enableActuator();
             delayFine(timeMillis);
             actuator->disableActuator();
-            _dosingActIndex++;
         #endif
     }
+    _dosingActIndex++;
 }

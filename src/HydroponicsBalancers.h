@@ -132,12 +132,12 @@ protected:
 
     time_t _lastDosingTime;                                 // Date dosing was last performed (UTC)
     float _lastDosingValue;                                 // Last used dosing value
-    time_t _dosingMillis;                                   // Dosing missis for next runs
+    time_t _dosingMillis;                                   // Dosing millis for next runs
     Hydroponics_BalancerState _dosingDir;                   // Dosing direction for next runs
     int8_t _dosingActIndex;                                 // Next dosing actuator to run
 
     void performDosing();
-    void performDosing(SharedPtr<HydroponicsActuator> actuator, time_t timeMillis);
+    void performDosing(SharedPtr<HydroponicsActuator> &actuator, time_t timeMillis);
 };
 
 #endif // /ifndef HydroponicsBalancers_H

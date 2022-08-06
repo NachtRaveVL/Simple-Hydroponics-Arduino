@@ -308,7 +308,7 @@ void HydroponicsPumpRelayActuator::disableActuator()
         _pumpTimeAccMillis = 0;
         pumpMillis = timeMillis - _pumpTimeBegMillis;
 
-        getLoggerInstance()->logPumping(this, SFP(HStr_Log_MeasuredPumping));
+        getLoggerInstance()->logStatus(this, SFP(HStr_Log_MeasuredPumping));
         getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), 1));
         getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(timeMillis / 1000.0f, 1), String('s'));
     }
@@ -316,9 +316,8 @@ void HydroponicsPumpRelayActuator::disableActuator()
 
 bool HydroponicsPumpRelayActuator::canPump(float volume, Hydroponics_UnitsType volumeUnits)
 {
-    auto reservoir = getReservoir();
-    if (reservoir && _contFlowRate.value > FLT_EPSILON) {
-        auto waterVolume = reservoir->getWaterVolume().getMeasurement();
+    if (getReservoir() && _contFlowRate.value > FLT_EPSILON) {
+        auto waterVolume = getReservoir()->getWaterVolume().getMeasurement();
         convertUnits(&volume, &volumeUnits, waterVolume.units);
         return volume <= waterVolume.value + FLT_EPSILON;
     }
@@ -327,8 +326,7 @@ bool HydroponicsPumpRelayActuator::canPump(float volume, Hydroponics_UnitsType v
 
 bool HydroponicsPumpRelayActuator::pump(float volume, Hydroponics_UnitsType volumeUnits)
 {
-    auto reservoir = getReservoir();
-    if (reservoir && _contFlowRate.value > FLT_EPSILON) {
+    if (getReservoir() && _contFlowRate.value > FLT_EPSILON) {
         convertUnits(&volume, &volumeUnits, baseUnitsFromRate(getFlowRateUnits()));
         return pump((time_t)((volume / _contFlowRate.value) * secondsToMillis(SECS_PER_MIN)));
     }
@@ -337,8 +335,7 @@ bool HydroponicsPumpRelayActuator::pump(float volume, Hydroponics_UnitsType volu
 
 bool HydroponicsPumpRelayActuator::canPump(time_t timeMillis)
 {
-    auto reservoir = getReservoir();
-    if (reservoir && _contFlowRate.value > FLT_EPSILON) {
+    if (getReservoir() && _contFlowRate.value > FLT_EPSILON) {
         return canPump(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()));
     }
     return false;
@@ -346,11 +343,10 @@ bool HydroponicsPumpRelayActuator::canPump(time_t timeMillis)
 
 bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
 {
-    auto reservoir = getReservoir();
-    if (reservoir) {
+    if (getReservoir()) {
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
-                getLoggerInstance()->logPumping(this, SFP(HStr_Log_CalculatedPumping));
+                getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
                 if (_contFlowRate.value > FLT_EPSILON) {
                     getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
                 }
@@ -358,7 +354,7 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
                 return true;
             }
         #else
-            getLoggerInstance()->logPumping(this, SFP(HStr_Log_CalculatedPumping));
+            getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
             if (_contFlowRate.value > FLT_EPSILON) {
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
             }

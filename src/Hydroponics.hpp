@@ -20,6 +20,26 @@ inline bool HydroponicsLogger::isLoggingToSDCard() const
     return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logToSDCard;
 }
 
+inline void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
+{
+    if (actuator) { logMessage(actuator->getKeyString(), SFP(HStr_Log_HasEnabled)); }
+}
+
+inline void HydroponicsLogger::logDeactivation(const HydroponicsActuator *actuator)
+{
+    if (actuator) { logMessage(actuator->getKeyString(), SFP(HStr_Log_HasDisabled)); }
+}
+
+inline void HydroponicsLogger::logProcess(const HydroponicsObject *obj, const String &processString, const String &statusString)
+{
+    if (obj) { logMessage(obj->getKeyString(), processString, statusString); }
+}
+
+inline void HydroponicsLogger::logStatus(const HydroponicsObject *obj, const String &statusString)
+{
+    if (obj) { logMessage(obj->getKeyString(), statusString); }
+}
+
 inline Hydroponics_LogLevel HydroponicsLogger::getLogLevel() const
 {
     return hasLoggerData() ? loggerData()->logLevel : Hydroponics_LogLevel_None;
