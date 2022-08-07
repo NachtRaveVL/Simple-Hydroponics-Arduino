@@ -321,6 +321,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Log_Field_Light_Duration[] PROGMEM = {"  Daylight hours: "};
             return flashStr_Log_Field_Light_Duration;
         } break;
+        case HStr_Log_Field_MixTime_Duration: {
+            static const char flashStr_Log_Field_MixTime_Duration[] PROGMEM = {"  Dosing mix time: "};
+            return flashStr_Log_Field_MixTime_Duration;
+        } break;
         case HStr_Log_Field_Sprayer_Duration: {
             static const char flashStr_Log_Field_Sprayer_Duration[] PROGMEM = {"  Sprayer run time: "};
             return flashStr_Log_Field_Sprayer_Duration;
@@ -380,6 +384,14 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         case HStr_Log_Field_Time_Finish: {
             static const char flashStr_Log_Field_Time_Finish[] PROGMEM = {"  Finish time: "};
             return flashStr_Log_Field_Time_Finish;
+        } break;
+        case HStr_Log_Field_Source_Reservoir: {
+            static const char flashStr_Log_Field_Source_Reservoir[] PROGMEM = {"  From reservoir: "};
+            return flashStr_Log_Field_Source_Reservoir;
+        } break;
+        case HStr_Log_Field_Destination_Reservoir: {
+            static const char flashStr_Log_Field_Destination_Reservoir[] PROGMEM = {"  To reservoir: "};
+            return flashStr_Log_Field_Destination_Reservoir;
         } break;
 
         case HStr_Key_ActiveLow: {

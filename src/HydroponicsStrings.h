@@ -59,6 +59,7 @@ enum Hydroponics_String : unsigned short {
 
     HStr_Log_Field_Aerator_Duration,
     HStr_Log_Field_Light_Duration,
+    HStr_Log_Field_MixTime_Duration,
     HStr_Log_Field_Sprayer_Duration,
     HStr_Log_Field_pH_Setpoint,
     HStr_Log_Field_TDS_Setpoint,
@@ -74,6 +75,8 @@ enum Hydroponics_String : unsigned short {
     HStr_Log_Field_Vol_Measured,
     HStr_Log_Field_Time_Start,
     HStr_Log_Field_Time_Finish,
+    HStr_Log_Field_Source_Reservoir,
+    HStr_Log_Field_Destination_Reservoir,
 
     HStr_Key_ActiveLow,
     HStr_Key_AdditiveName,

@@ -360,7 +360,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e12          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e50          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
@@ -424,17 +424,17 @@ In particular, after setting up the settings defines similarly to that of the Ve
 In serial monitor (near end):
 ```
 …
-2022-08-03T22:38:46 [INFO] Writing String: #362 "W"
-2022-08-03T22:38:46 [INFO] ... to byte offset: 11792 (0x2e10)
-2022-08-03T22:38:46 [INFO] Wrote: 2 bytes
-2022-08-03T22:38:46 [INFO] Successfully wrote: 4846 bytes
-2022-08-03T22:38:46 [INFO] Total EEPROM usage: 11794 bytes
-2022-08-03T22:38:46 [INFO] EEPROM capacity used: 35.99% of 32768 bytes
-2022-08-03T22:38:46 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e12
+2022-08-07T04:24:27 [INFO] Writing String: #365 "W"
+2022-08-07T04:24:27 [INFO] ... to byte offset: 11854 (0x2e4e)
+2022-08-07T04:24:27 [INFO] Wrote: 2 bytes
+2022-08-07T04:24:27 [INFO] Successfully wrote: 4908 bytes
+2022-08-07T04:24:27 [INFO] Total EEPROM usage: 11856 bytes
+2022-08-07T04:24:27 [INFO] EEPROM capacity used: 36.18% of 32768 bytes
+2022-08-07T04:24:27 [INFO] Use the following EEPROM setup defines in your sketch:
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2e50
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24
-2022-08-03T22:38:46 [INFO] Done!
+2022-08-07T04:24:27 [INFO] Done!
 ```
 
 Note: Again, you can get logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.
