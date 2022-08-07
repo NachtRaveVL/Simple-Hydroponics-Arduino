@@ -370,7 +370,7 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Log_Field_Time_Measured;
         } break;
         case HStr_Log_Field_Vol_Measured: {
-            static const char flashStr_Log_Field_Vol_Measured[] PROGMEM = {"  Res. pumped vol.: "};
+            static const char flashStr_Log_Field_Vol_Measured[] PROGMEM = {"  Act. pumped vol.: "};
             return flashStr_Log_Field_Vol_Measured;
         } break;
         case HStr_Log_Field_Time_Start: {

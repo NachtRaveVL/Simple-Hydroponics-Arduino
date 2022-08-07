@@ -307,10 +307,11 @@ void HydroponicsPumpRelayActuator::disableActuator()
         if (pumpMillis) { handlePumpTime(pumpMillis); }
         _pumpTimeAccMillis = 0;
         pumpMillis = timeMillis - _pumpTimeBegMillis;
+        uint8_t addDecPlaces = getActuatorType() == Hydroponics_ActuatorType_PeristalticPump ? 3 - defaultDecimalPlaces() : 1;
 
         getLoggerInstance()->logStatus(this, SFP(HStr_Log_MeasuredPumping));
-        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), 1));
-        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(timeMillis / 1000.0f, 1), String('s'));
+        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
+        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(pumpMillis / 1000.0f, 1), String('s'));
     }
 }
 
@@ -348,7 +349,8 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
             if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
                 getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
                 if (_contFlowRate.value > FLT_EPSILON) {
-                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
+                    uint8_t addDecPlaces = getActuatorType() == Hydroponics_ActuatorType_PeristalticPump ? 3 - defaultDecimalPlaces() : 1;
+                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
                 }
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
                 return true;
@@ -356,7 +358,8 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
         #else
             getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
             if (_contFlowRate.value > FLT_EPSILON) {
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits())));
+                uint8_t addDecPlaces = getActuatorType() == Hydroponics_ActuatorType_PeristalticPump ? 3 - defaultDecimalPlaces() : 1;
+                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
             }
             getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
             enableActuator();

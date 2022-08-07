@@ -12,9 +12,9 @@ Created by NachtRaveVL, May 20th, 2022.
 
 This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to local or remote data files, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
 
-Made primarily for Arduino microcontrollers, but should work with PlatformIO, ESP32/8266, Teensy, RasPi Pico, and others - although one might experience turbulence until the bug reports get ironed out. Unknown architectures must ensure `BUFFER_LENGTH` (or `I2C_BUFFER_LENGTH`) and `WIRE_INTERFACES_COUNT` are properly defined.
+Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), and Time.
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like library (optional): WiFiNINA (33IoT/MKR), WiFi101 (MKR1000), WiFi (WiFi-like shield), or ESPWiFi-Continued (external serial).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -32,11 +32,13 @@ Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like
 
 ### Requirements
 
-Minimum MCU: 256kB Flash, 8kB SRAM, 8 MHz  
-Recommended: 512+kB Flash, 32+kB SRAM, 16+ MHz
+Minimum MCU: 256kB Flash, 8kB SRAM, 16 MHz  
+Recommended: 512+kB Flash, 32+kB SRAM, 32+ MHz
 
-Recommended MCUs: Nano 33 (any), MKR (any), Due, Zero, ESP32, Teensy 3+, RasPi Pico, etc.  
-Known not to work: Uno (any), Nano (classic & Every), Leonardo, Micro, ESP12, ESP8266, Teensy 2, etc.
+Will work: Nano 33 (any), MKR (any), Due, Zero, ESP32, Teensy 3+, STM32, Pico, etc.  
+Won't work: Uno (any), Nano (classic & Every), Leonardo, Micro, ESP12-, Teensy 2-, etc.
+
+Other devices that _may_ work, but only with custom tweaking: ATMega2560, ESP8266, etc.
 
 ### Installation
 
