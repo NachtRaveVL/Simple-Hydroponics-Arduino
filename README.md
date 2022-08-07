@@ -14,7 +14,7 @@ This controller allows one to set up an entire system of sensors, pumps, relays,
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like library (optional): WiFiNINA (33IoT/MKR), WiFi101 (MKR1000), WiFi (WiFi-like shield), or ESPWiFi-Continued (external serial).
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like library (optional): WiFiNINA (33IoT/MKR1010/MKR4000), WiFi101 (MKR1000), WiFi (WiFi-like shield), or ESPWiFi-Continued (external serial).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -393,7 +393,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
-#define SETUP_PERI_PUMP_FLOWRATE        0.0070          // The base continuous flow rate of any peristaltic pumps, in L/min
+#define SETUP_PERI_PUMP_FLOWRATE        0.070           // The base continuous flow rate of any peristaltic pumps, in L/min
 
 // Crop Setup
 #define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for
