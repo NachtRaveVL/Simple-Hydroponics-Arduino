@@ -902,6 +902,12 @@ void HydroponicsFeeding::update()
                 if (actuatorReqs.size()) {
                     getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Aerator_Duration), String(getSchedulerInstance()->getPreFeedAeratorMins()), String('m'));
                 }
+                if (feedRes->getWaterPHBalancer() || feedRes->getWaterTDSBalancer()) {
+                    auto balancer = static_pointer_cast<HydroponicsTimedDosingBalancer>(feedRes->getWaterPHBalancer() ? feedRes->getWaterPHBalancer() : feedRes->getWaterTDSBalancer());
+                    if (balancer) {
+                        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_MixTime_Duration), timeSpanToString(TimeSpan(balancer->getMixTime())));
+                    }
+                }
                 logFeeding(HydroponicsFeedingLogType_WaterSetpoints);
                 logFeeding(HydroponicsFeedingLogType_WaterMeasures);
             }

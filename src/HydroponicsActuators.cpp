@@ -310,6 +310,8 @@ void HydroponicsPumpRelayActuator::disableActuator()
         uint8_t addDecPlaces = getActuatorType() == Hydroponics_ActuatorType_PeristalticPump ? 2 : 1;
 
         getLoggerInstance()->logStatus(this, SFP(HStr_Log_MeasuredPumping));
+        if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
+        if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
         getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
         getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(pumpMillis / 1000.0f, 1), String('s'));
     }
@@ -348,6 +350,8 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
         #ifndef HYDRUINO_DISABLE_MULTITASKING
             if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
                 getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
+                if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
+                if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
                 if (_contFlowRate.value > FLT_EPSILON) {
                     uint8_t addDecPlaces = getActuatorType() == Hydroponics_ActuatorType_PeristalticPump ? 2 : 1;
                     getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
@@ -357,6 +361,8 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
             }
         #else
             getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
+            if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
+            if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
             if (_contFlowRate.value > FLT_EPSILON) {
                 uint8_t addDecPlaces = getActuatorType() == Hydroponics_ActuatorType_PeristalticPump ? 2 : 1;
                 getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
