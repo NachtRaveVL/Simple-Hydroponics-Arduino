@@ -690,15 +690,6 @@ void controlLoop()
 
         Hydroponics::_activeInstance->scheduler.update();
 
-        #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
-        {   static time_t _lastImAlive = unixNow();
-            if (unixNow() >= _lastImAlive + 30) {
-                _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->logger.logMessage(String(F("controlLoopAlive")));
-            }
-        }
-        #endif
-
         #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
             Serial.println(F("~controlLoop")); flushYield();
         #endif
@@ -725,15 +716,6 @@ void dataLoop()
             }
         }
 
-        #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
-        {   static time_t _lastImAlive = unixNow();
-            if (unixNow() >= _lastImAlive + 30) {
-                _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->logger.logMessage(String(F("dataLoopAlive")));
-            }
-        }
-        #endif
-
         #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
             Serial.println(F("~dataLoop")); flushYield();
         #endif
@@ -755,14 +737,6 @@ void miscLoop()
 
         Hydroponics::_activeInstance->publisher.update();
 
-        #if HYDRUINO_SYS_ALIVE_LOGGING_ENABLE
-        {   static time_t _lastImAlive = unixNow();
-            if (unixNow() >= _lastImAlive + 30) {
-                _lastImAlive = unixNow();
-                Hydroponics::_activeInstance->logger.logMessage(String(F("miscLoopAlive")));
-            }
-        }
-        #endif
         #if HYDRUINO_SYS_MEM_LOGGING_ENABLE
         {   static time_t _lastMemLog = unixNow();
             if (unixNow() >= _lastMemLog + 15) {

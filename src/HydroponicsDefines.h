@@ -107,7 +107,6 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
 #define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   false                   // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
 #define HYDRUINO_SYS_MEM_LOGGING_ENABLE     false                   // If system will periodically log memory remaining messages (mainly used for debugging)
-#define HYDRUINO_SYS_ALIVE_LOGGING_ENABLE   false                   // If system will periodically log alive messages for all active runloops (mainly used for debugging)
 #define HYDRUINO_SYS_DRY_RUN_ENABLE         false                   // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
