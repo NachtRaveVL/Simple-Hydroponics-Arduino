@@ -38,7 +38,7 @@ Recommended: 512+kB Flash, 32+kB SRAM, 32+ MHz
 Will work: Nano 33 (any), MKR (any), Due, Zero, ESP32, Teensy 3+, STM32, Pico, etc.  
 Won't work: Uno (any), Nano (classic & Every), Leonardo, Micro, ESP12-, Teensy 2-, etc.
 
-Other devices that _may_ work, but only with custom tweaking: ATMega2560, ESP8266, etc.
+Devices that _may_ work, but will require custom tweaking: ATMega2560, ESP8266, etc.
 
 ### Installation
 
@@ -230,7 +230,7 @@ We also ask that our users report any broken sensors (outside of bad calibration
 ## Memory Callouts
 
 * The total number of objects and different kinds of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 500 bytes or more depending on settings and object type, with the base Flash memory usage ranging from 100kB to 300kB+ depending on settings.
-  * For our target microcontroller range, on the low end we have older devices with 256kB of Flash and at least 8kB of RAM, while on the upper end we have more modern devices with 2+MB of Flash and 256+kB of RAM. Devices with < 16kB of RAM may struggle with system builds and may be limited to specific system setups (such as no WiFi, no data publishing, no built-in crop data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
+  * For our target microcontroller range, on the low end we have older devices with 256kB of Flash and at least 8kB of RAM, while on the upper end we have more modern devices with 2+MB of Flash and 256+kB of RAM. Devices with < 32kB of RAM may struggle with system builds and may be limited to specific system setups (such as no WiFi, no data publishing, no built-in crop data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
 * For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller uses.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
