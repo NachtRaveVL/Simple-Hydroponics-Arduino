@@ -32,13 +32,13 @@ Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like
 
 ### Requirements
 
-Minimum MCU: 256kB Flash, 8kB SRAM, 16 MHz  
+Minimum MCU: 256kB Flash, 24kB SRAM, 16 MHz  
 Recommended: 512+kB Flash, 32+kB SRAM, 32+ MHz
 
-Will work: Nano 33 (any), MKR (any), Due, Zero, ESP32, Teensy 3+, STM32, Pico, etc.  
+Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32, Pico, etc.  
 Won't work: Uno (any), Nano (classic & Every), Leonardo, Micro, ESP12-, Teensy 2-, etc.
 
-Devices that _may_ work, but will require custom tweaking: ATMega2560, ESP8266, etc.
+Devices that _may_ work, but only with custom tweaking: ATMega2560
 
 ### Installation
 
@@ -171,7 +171,7 @@ From Hydroponics.h, in class Hydroponics:
 Serial UART uses individual communication lines for each device, with the receive `RX` pin of one being the transmit `TX` pin of the other - thus having to "flip wires" when connecting. However, devices can always be active and never have to share their access. UART runs at low to mid kHz speeds and is useful for simple device control, albeit somewhat clumsy at times.
 
 * When wiring up modules that use Serial UART, make sure to flip `RX`/`TX` lines.
-  * 3.3v devices that are not 5v tolerant (such as external [serial-based ESP WiFi modules](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/)) may require a bi-directional logic level converter/shifter to access on 5v MCUs.
+  * 3.3v devices that are not 5v tolerant (such as external [serial-based ESP WiFi modules](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/)) will require a bi-directional logic level converter/shifter to access on 5v MCUs.
     * We have included a small breakout PCB ([gerbers in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up such common WiFi and level shifter modules alongside one another.
     * Alternatively, hack a 10kΩ voltage dividing resistor between the MCU's TX pin and module's RX pin.
 
@@ -305,7 +305,7 @@ void loop()
 
 ### Main System Examples
 
-The Vertical NFT Example sketch is the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It is recommended for storage constrained MCUs such as the ATMega2560, ESP8266, etc. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code. This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
+The Vertical NFT Example sketch is the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code. This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
 
 The Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for more modern MCUs that have plenty of storage space to use such as the ESP32, Raspberry Pi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where UI interaction will be used to create the objects (or also done in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
 
