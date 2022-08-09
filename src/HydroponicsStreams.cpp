@@ -91,13 +91,21 @@ int HydroponicsPROGMEMStream::available()
 int HydroponicsPROGMEMStream::read()
 {
     if (_readAddress >= _end) { return -1; }
-    return pgm_read_byte(_readAddress++);
+    #ifdef ESP8266
+        return pgm_read_byte((const void *)(_readAddress++));
+    #else
+        return pgm_read_byte(_readAddress++);
+    #endif
 }
 
 int HydroponicsPROGMEMStream::peek()
 {
     if (_readAddress >= _end) { return -1; }
-    return pgm_read_byte(_readAddress);
+    #ifdef ESP8266
+        return pgm_read_byte((const void *)(_readAddress));
+    #else
+        return pgm_read_byte(_readAddress);
+    #endif
 }
 
 void HydroponicsPROGMEMStream::flush()

@@ -83,8 +83,11 @@ typedef WiFiEspClient WiFiClient;
 #define HYDRUINO_USE_WIFI
 #endif
 
-#if defined(ESP_PLATFORM)
+#ifdef ESP32
 typedef SDFileSystemClass SDClass;
+#endif
+#ifdef ESP8266
+using namespace sdfat;
 #endif
 
 #ifndef HYDRUINO_DISABLE_MULTITASKING
@@ -209,7 +212,11 @@ public:
                 uint8_t eepromI2CAddress = B000,            // EEPROM address
                 uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
                 uint8_t lcdI2CAddress = B000,               // LCD i2c address
+#if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TWOWIRE)) || defined(Wire)
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
+#else
+                TwoWire &i2cWire = new TwoWire(),           // I2C wire class instance
+#endif
                 uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
                 uint32_t sdCardSpeed = 4000000U             // SD card SPI speed, in Hz (ignored on Teensy)
 #ifdef HYDRUINO_USE_WIFI
