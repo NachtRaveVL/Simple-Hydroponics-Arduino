@@ -426,12 +426,12 @@ bool arrayElementsEqual<double>(const double *arrayIn, size_t length, double val
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
 extern "C" char* sbrk(int incr);
-#elif !defined(ESP_PLATFORM)
+#elif !defined(ESP32)
 extern char *__brkval;
 #endif  // __arm__
 
 unsigned int freeMemory() {
-    #if defined(ESP_PLATFORM)
+    #ifdef ESP32
         return esp_get_free_heap_size();
     #else
         char top;

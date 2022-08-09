@@ -1189,7 +1189,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
     if (!_sd) { allocateSD(); }
 
     if (_sd && begin) {
-        #if defined(ESP_PLATFORM)
+        #if defined(ESP32)
             bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), getSDCardSpeed());
         #elif defined(CORE_TEENSY)
             bool sdBegan = _sd->begin(_sdCardCSPin); // card speed not possible to set on teensy
