@@ -82,10 +82,12 @@ Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
                          TwoWire &i2cWire,
                          uint32_t i2cSpeed)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed),
+#ifndef HYDRUINO_ENABLE_SD_VIRTMEM
 #ifndef CORE_TEENSY
       _sdCardSpeed(sdCardSpeed),
 #else
       _sdCardSpeed(25000000U),
+#endif
 #endif
 #if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
       _vAlloc(VIRTMEM_DEFAULT_POOLSIZE, sdCardCSPin, sdCardSpeed),
