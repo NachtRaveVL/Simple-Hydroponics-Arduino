@@ -28,12 +28,21 @@
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
-#if defined(ESP32) || defined(ESP8266)
+#if defined(ESP32) || defined(ESP8266)                              // ESP missing defs
 #ifndef ESP_PLATFORM
-#define ESP_PLATFORM                                                // ESP missing defs
+#define ESP_PLATFORM
 #endif
 #define min _min
 #define max _max
+#endif
+#ifndef F_SPD                                                       // F_CPU/F_BUS alias for default SPI device speeds
+#if defined(F_CPU)
+#define F_SPD F_CPU
+#elif defined(F_BUS)                                                // Teensy/etc support
+#define F_SPD F_BUS
+#else                                                               // Fast/good enough, same default as virtmem
+#define F_SPD 50000000U
+#endif
 #endif
 
 typedef int8_t Hydroponics_PositionIndex;                           // Position indexing type
@@ -100,9 +109,10 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
 
+#define HYDRUINO_SYS_WIFI_INSTANCE          WiFi                    // Default WiFi instance name
 #define HYDRUINO_SYS_AUTOSAVE_INTERVAL      120                     // Default autosave interval, in minutes
 #define HYDRUINO_SYS_I2CEEPROM_BASEADDR     0x50                    // Base address of I2C EEPROM (bitwise or'ed with passed address)
-#define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps
+#define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps (set to 9600 for the old blue boards)
 #define HYDRUINO_SYS_FREERAM_LOWBYTES       1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
 #define HYDRUINO_SYS_FREESPACE_INTERVAL     240                     // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first

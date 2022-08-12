@@ -242,8 +242,22 @@ String HydroponicsObject::getKeyString() const
 
 SharedPtr<HydroponicsObjInterface> HydroponicsObject::getSharedPtr() const
 {
-    return getHydroponicsInstance() ? static_pointer_cast<HydroponicsObjInterface>(getHydroponicsInstance()->objectById(_id)) : nullptr;
+    return getHydroponicsInstance() ? static_hyptr_cast<HydroponicsObjInterface>(getHydroponicsInstance()->objectById(_id)) : nullptr;
 }
+
+#ifdef HYDRUINO_USE_VIRTMEM
+
+void* HydroponicsObject::operator new(size_t size)
+{
+    return (void *)(getVirtualAllocator()->allocRaw(size));
+}
+
+void HydroponicsObject::operator delete(void* ptr)
+{
+    getVirtualAllocator()->freeRaw((VPtrNum)ptr);
+}
+
+#endif
 
 HydroponicsData *HydroponicsObject::allocateData() const
 {
@@ -291,6 +305,20 @@ bool HydroponicsSubObject::removeLinkage(HydroponicsObject *obj)
 {
     return false;
 }
+
+#ifdef HYDRUINO_USE_VIRTMEM
+
+void* HydroponicsSubObject::operator new(size_t size)
+{
+    return (void *)(getVirtualAllocator()->allocRaw(size));
+}
+
+void HydroponicsSubObject::operator delete(void* ptr)
+{
+    getVirtualAllocator()->freeRaw((VPtrNum)ptr);
+}
+
+#endif
 
 
 HydroponicsObjectData::HydroponicsObjectData()

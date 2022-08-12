@@ -44,6 +44,10 @@
 // Uncomment or -D this define to enable usage of the external serial ESP WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/NachtRaveVL/WiFiEsp-Continued
 
+// Uncomment or -D one of the following defines to enable usage of virtual memory, which allows SD cards or SPI serial RAM chips to extend available RAM.
+//#define HYDRUINO_ENABLE_SD_VIRTMEM                // https://github.com/NachtRaveVL/virtmem-continued
+//#define HYDRUINO_ENABLE_SPIRAM_VIRTMEM            // Enable either SD or SPI RAM
+
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
 
@@ -66,20 +70,14 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#if defined(HYDRUINO_ENABLE_WIFI)
+#ifdef HYDRUINO_ENABLE_WIFI
 #if defined(ARDUINO_SAMD_MKRWIFI1010) || defined(ARDUINO_SAMD_MKRVIDOR4000) || defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_AVR_UNO_WIFI_REV2)
 #include <WiFiNINA.h>                               // https://github.com/arduino-libraries/WiFiNINA
 #elif defined(ARDUINO_SAMD_MKR1000)
 #include <WiFi101.h>                                // https://github.com/arduino-libraries/WiFi101
 #else
-#include <WiFi.h>
+#include <WiFi.h>                                   // Platform/built-in library
 #endif
-#define HYDRUINO_USE_WIFI
-#elif defined(HYDRUINO_ENABLE_ESPWIFI)
-#include "WiFiEsp-Continued.h"                      // Note: Original library is no longer maintained, use our fork
-typedef WiFiEspClass WiFiClass;
-typedef WiFiEspClient WiFiClient;
-#define HYDRUINO_USE_SERIALWIFI
 #define HYDRUINO_USE_WIFI
 #endif
 
@@ -148,13 +146,26 @@ typedef uint8_t pintype_t;
 #ifndef HYDRUINO_DISABLE_GUI
 #include "tcMenu.h"                     // tcMenu library
 #endif
+#if defined(HYDRUINO_ENABLE_SD_VIRTMEM) || defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
+#include "virtmem-continued.h"          // Note: Original library is no longer maintained, use our fork
+#if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
+#include "alloc/sd_alloc.h"             // Note: If building fails, verify original library is not present
+#elif defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
+#include "alloc/spiram_alloc.h"         // Note: If building fails, verify original library is not present
+#endif
+#endif
+#ifdef HYDRUINO_ENABLE_ESPWIFI
+#include "WiFiEsp-Continued.h"          // Note: Original library is no longer maintained, use our fork
+#endif
+
+#include "HydroponicsDefines.h"
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 #include "ArxSmartPtr/shared_ptr.h"     // Forced shared pointer library
 using namespace std;
-template<typename T, size_t N = 16> using Vector = std::vector<T>;
+template<typename T, size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE> using Vector = std::vector<T>;
 template<class T1, class T2> using Pair = std::pair<T1,T2>;
-template<typename K, typename V, size_t N = 16> using Map = std::map<K,V>;
+template<typename K, typename V, size_t N = HYDRUINO_OBJ_LINKSFILTER_DEFSIZE> using Map = std::map<K,V>;
 #else
 using namespace arx;
 template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> using Vector = arx::vector<T,N>;
@@ -162,7 +173,27 @@ template<class T1, class T2> using Pair = arx::pair<T1,T2>;
 template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> using Map = arx::map<K,V,N>;
 #endif
 using namespace arx::stdx;
+
+#if defined(HYDRUINO_ENABLE_SD_VIRTMEM) || defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
+using namespace virtmem;
+#define HYDRUINO_USE_VIRTMEM
+#endif
+#if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
+template <typename T> using VirtualPtr = VPtr<T, SDVAlloc>;
+template <typename T> using SharedPtr = arx::stdx::shared_ptr<VirtualPtr<T>>;
+#elif defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
+template <typename T> using VirtualPtr = VPtr<T, SPIRAMVAlloc>;
+template <typename T> using SharedPtr = arx::stdx::shared_ptr<VirtualPtr<T>>;
+#else
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
+#endif
+
+#ifdef HYDRUINO_ENABLE_ESPWIFI
+typedef WiFiEspClass WiFiClass;
+typedef WiFiEspClient WiFiClient;
+#define HYDRUINO_USE_SERIALWIFI
+#define HYDRUINO_USE_WIFI
+#endif
 
 extern time_t unixNow();
 extern void handleInterrupt(pintype_t pin);
@@ -170,8 +201,8 @@ extern void controlLoop();
 extern void dataLoop();
 extern void miscLoop();
 
-#include "HydroponicsDefines.h"
 #include "HydroponicsStrings.h"
+#include "HydroponicsSharedVirtualPtr.hh"
 #include "HydroponicsInlines.hh"
 #include "HydroponicsCallback.hh"
 #include "HydroponicsInterfaces.h"
@@ -196,6 +227,7 @@ extern void miscLoop();
 #include "HydroponicsPublisher.h"
 #include "HydroponicsFactory.h"
 
+
 // Hydroponics Controller
 // Main controller interface of the Hydroponics system.
 class Hydroponics : public HydroponicsFactory {
@@ -207,22 +239,23 @@ public:
     // Controller constructor. Typically called during class instantiation, before setup().
     Hydroponics(pintype_t piezoBuzzerPin = -1,              // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-                pintype_t sdCardCSPin = -1,                 // SD card CS pin, else -1
-                pintype_t *ctrlInputPinMap = nullptr,       // Control input pin map, else nullptr
-                uint8_t eepromI2CAddress = B000,            // EEPROM address
+                uint8_t eepromI2CAddress = B000,            // EEPROM i2c address
                 uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
+                pintype_t sdCardCSPin = -1,                 // SD card CS pin, else -1
+                uint32_t sdCardSpeed = F_SPD,               // SD card SPI speed, in Hz (ignored on Teensy)
+#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
+                uint32_t spiRAMDeviceSize = 0,              // SPI RAM device size, else 0
+                pintype_t spiRAMCSPin = -1,                 // SPI RAM CS pin, else -1
+                uint32_t spiRAMSpeed = F_SPD,               // SPI RAM SPI speed, in Hz
+#endif
+                pintype_t *ctrlInputPinMap = nullptr,       // Control input pin map, else nullptr
                 uint8_t lcdI2CAddress = B000,               // LCD i2c address
 #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TWOWIRE)) || defined(Wire)
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
 #else
                 TwoWire &i2cWire = new TwoWire(),           // I2C wire class instance
 #endif
-                uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
-                uint32_t sdCardSpeed = 4000000U             // SD card SPI speed, in Hz (ignored on Teensy)
-#ifdef HYDRUINO_USE_WIFI
-                , WiFiClass &wifi = WiFi                    // WiFi class instance
-#endif
-                );
+                uint32_t i2cSpeed = 400000U);               // I2C speed, in Hz
     // Library destructor. Just in case.
     ~Hydroponics();
 
@@ -358,8 +391,32 @@ public:
     inline uint32_t getI2CSpeed() const { return _i2cSpeed; }
     // SPI interface instance (hardwired, always available)
     inline SPIClass *getSPI() const { return &SPI; }
-    // SD card SPI clock speed, in Hz (default: 4MHz, hardwired to 25MHz on Teensy)
-    uint32_t getSDCardSpeed() const;
+    // EEPROM device size, in bytes (default: Disabled)
+    inline uint32_t getEEPROMDeviceSize() const { return _eepromDeviceSize; }
+#ifdef HYDRUINO_ENABLE_SD_VIRTMEM
+    // SD card cable-select (CS) pin (default: Disabled)
+    inline pintype_t getSDCardCSPin() const { return _vAlloc.getSDCSPin(); }
+    // SD card SPI clock speed, in Hz (default: same as CPU (/0 divider), hardwired to 25MHz on Teensy)
+    inline uint32_t getSDCardSpeed() const { return _vAlloc.getSDSpeed(); }
+#else
+    // SD card cable-select (CS) pin (default: Disabled)
+    inline pintype_t getSDCardCSPin() const { return _sdCardCSPin; }
+    // SD card SPI clock speed, in Hz (default: same as CPU (/0 divider), hardwired to 25MHz on Teensy)
+    inline uint32_t getSDCardSpeed() const { return _sdCardSpeed; }
+#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
+    // SPI RAM device size, in bytes (default: Disabled)
+    inline uint32_t getSPIRAMDeviceSize() const { return _vAlloc.getPoolSize(); }
+    // SPI RAM cable-select (CS) pin (default: Disabled)
+    inline pintype_t getSPIRAMCSPin() const { return _vAlloc.getSRAMCSPin(); }
+#ifdef VIRTMEM_SPIRAM_CAPTURESPEED
+    // SPI RAM SPI clock speed, in Hz (default: same as CPU (/0 divider))
+    inline uint32_t getSPIRAMSpeed() const { return _vAlloc.getSRAMSpeed(); }
+#else
+    // SPI RAM SPI clock speed, in Hz (default: same as CPU (/0 divider))
+    inline uint32_t getSPIRAMSpeed() const { return _spiRAMSpeed; }
+#endif
+#endif // /ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
+#endif // /ifdef HYDRUINO_ENABLE_SD_VIRTMEM
     // Total number of pins being used for the current control input ribbon mode
     int getControlInputRibbonPinCount() const;
     // Control input pin mapped to ribbon pin index, or -1 (255) if not used
@@ -429,22 +486,29 @@ protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init, weak)
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
-    const uint32_t _eepromDeviceSize;                               // EEPROM device size (default: 0/Disabled)
     const pintype_t _piezoBuzzerPin;                                // Piezo buzzer pin (default: Disabled)
-    const pintype_t _sdCardCSPin;                                   // SD card cable select (CS) pin (default: Disabled)
-    const pintype_t *_ctrlInputPinMap;                              // Control input pin mapping (weak, default: Disabled/nullptr)
+    const uint32_t _eepromDeviceSize;                               // EEPROM device size (default: 0/Disabled)
     const uint8_t _eepromI2CAddr;                                   // EEPROM i2c address, format: {A2,A1,A0} (default: B000)
     const uint8_t _rtcI2CAddr;                                      // RTC i2c address, format: {A2,A1,A0} (default: B000, note: only B000 can be used atm)
+#ifndef HYDRUINO_ENABLE_SD_VIRTMEM
+    const pintype_t _sdCardCSPin;                                   // SD card cable select (CS) pin (default: Disabled)
+    const uint32_t _sdCardSpeed;                                    // SD card's SPI clock speed (default: same as CPU (/0 divider), ignored on Teensy)
+#endif
+    const pintype_t *_ctrlInputPinMap;                              // Control input pin mapping (weak, default: Disabled/nullptr)
     const uint8_t _lcdI2CAddr;                                      // LCD i2c address, format: {A2,A1,A0} (default: B000)
     TwoWire *_i2cWire;                                              // Controller's i2c wire class instance (strong, default: Wire)
-    uint32_t _i2cSpeed;                                             // Controller's i2c clock speed (default: 400kHz)
-    uint32_t _sdCardSpeed;                                          // SD card's SPI clock speed (default: 4MHz, ignored on Teensy)
-#ifdef HYDRUINO_USE_WIFI
-    WiFiClass *_wifi;                                               // WiFi class instance (strong, default: WiFi)
+    const uint32_t _i2cSpeed;                                       // Controller's i2c clock speed (default: 400kHz)
+#if defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM) && !defined(VIRTMEM_SPIRAM_CAPTURESPEED)
+    const uint32_t _spiRAMSpeed;                                    // SPI RAM's SPI clock speed (default: same as CPU (/0 divider))
 #endif
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
+#if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
+    SDVAlloc _vAlloc;                                               // SD card virtual memory allocator
+#elif defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
+    SPIRAMVAlloc _vAlloc;                                           // SPI ram virtual memory allocator
+#endif
     bool _eepromBegan;                                              // Status of EEPROM begin() call
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
@@ -452,11 +516,11 @@ protected:
     bool _wifiBegan;                                                // Status of WiFi begin() call
 #endif
 
-    #ifndef HYDRUINO_DISABLE_MULTITASKING
+#ifndef HYDRUINO_DISABLE_MULTITASKING
     taskid_t _controlTaskId;                                        // Control task Id if created, else TASKMGR_INVALIDID
     taskid_t _dataTaskId;                                           // Data polling task Id if created, else TASKMGR_INVALIDID
     taskid_t _miscTaskId;                                           // Misc task Id if created, else TASKMGR_INVALIDID
-    #endif
+#endif
     bool _suspend;                                                  // If system is currently suspended from operation
     uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                         // Last date storage media free space was checked, if able (UTC)
@@ -473,6 +537,7 @@ protected:
     friend HydroponicsScheduler *::getSchedulerInstance();
     friend HydroponicsLogger *::getLoggerInstance();
     friend HydroponicsPublisher *::getPublisherInstance();
+    friend BaseVAlloc *::getVirtualAllocator();
     friend class HydroponicsCalibrationsStore;
     friend class HydroponicsCropsLibrary;
     friend class HydroponicsScheduler;

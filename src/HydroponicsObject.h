@@ -19,7 +19,7 @@ struct HydroponicsObjectData;
 extern HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn);
 
 // Shortcut to get shared pointer for object with static pointer cast built-in.
-template<class T = HydroponicsObjInterface> inline SharedPtr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? reinterpret_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
+template<class T = HydroponicsObjInterface> inline SharedPtr<T> getSharedPtr(const HydroponicsObjInterface *obj) { return obj ? reinterpret_hyptr_cast<T>(obj->getSharedPtr()) : nullptr; }
 
 
 // Simple class for referencing an object in the Hydroponics system.
@@ -120,7 +120,12 @@ public:
     virtual HydroponicsIdentity getId() const override;     // Returns the unique Identity of the object
     virtual Hydroponics_KeyType getKey() const override;    // Returns the unique key of the object
     virtual String getKeyString() const override;           // Returns the key string of the object
-    virtual SharedPtr<HydroponicsObjInterface> getSharedPtr() const  override; // Returns the SharedPtr instance of the object
+    virtual SharedPtr<HydroponicsObjInterface> getSharedPtr() const override; // Returns the SharedPtr instance of the object
+
+#ifdef HYDRUINO_USE_VIRTMEM
+    static void* operator new(size_t size);
+    static void operator delete(void*);
+#endif
 
 protected:
     HydroponicsIdentity _id;                                // Object id
@@ -147,6 +152,11 @@ public:
 
     virtual bool addLinkage(HydroponicsObject *obj) override;
     virtual bool removeLinkage(HydroponicsObject *obj) override;
+
+#ifdef HYDRUINO_USE_VIRTMEM
+    static void* operator new(size_t size);
+    static void operator delete(void*);
+#endif
 };
 
 

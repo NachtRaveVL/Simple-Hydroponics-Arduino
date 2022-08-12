@@ -1,7 +1,11 @@
-// Copied and slightly modified from: https://github.com/tomstewart89/Callback
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
+    Copyright (C) 2022 NachtRaveVL          <nachtravevl@gmail.com>
+    Hydroponics Signal Callback
+*/
+// Copied and modified from: https://github.com/tomstewart89/Callback
 
-#ifndef CALLBACK_H
-#define CALLBACK_H
+#ifndef HydroponicsCallback_H
+#define HydroponicsCallback_H
 
 #include "Hydroponics.h"
 
@@ -165,4 +169,4 @@ public:
     }
 };
 
-#endif // CALLBACK_H
+#endif // HydroponicsCallback_H

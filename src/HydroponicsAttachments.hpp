@@ -41,7 +41,7 @@ template<class U>
 inline HydroponicsDLinkObject &HydroponicsDLinkObject::operator=(SharedPtr<U> &rhs)
 {
     _key = rhs ? rhs->getKey() : (Hydroponics_KeyType)-1;
-    _obj = rhs ? reinterpret_pointer_cast<HydroponicsObjInterface>(rhs) : nullptr;
+    _obj = rhs ? reinterpret_hyptr_cast<HydroponicsObjInterface>(rhs) : nullptr;
     if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
     return *this;
 }

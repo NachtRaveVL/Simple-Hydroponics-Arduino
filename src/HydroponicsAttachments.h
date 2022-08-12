@@ -37,7 +37,7 @@ public:
     void unresolve();
 
     template<class U> inline void setObject(U obj) { (*this) = obj; }
-    template<class U = HydroponicsObjInterface> inline SharedPtr<U> getObject() { return reinterpret_pointer_cast<U>(_getObject()); }
+    template<class U = HydroponicsObjInterface> inline SharedPtr<U> getObject() { return reinterpret_hyptr_cast<U>(_getObject()); }
     template<class U = HydroponicsObjInterface> inline U* get() { return getObject<U>().get(); }
 
     inline HydroponicsIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroponicsIdentity(_keyStr) : HydroponicsIdentity(_key)); }
@@ -45,8 +45,7 @@ public:
     inline String getKeyString() const { return _keyStr ? String(_keyStr) : (_obj ? _obj->getKeyString() : addressToString((uintptr_t)_key)); }
 
     inline operator bool() const { return isResolved(); }
-    inline HydroponicsObjInterface* operator->() { return get(); }
-    inline HydroponicsObjInterface* operator*() { return get(); }
+    inline HydroponicsObjInterface *operator->() { return get(); }
 
     inline HydroponicsDLinkObject &operator=(HydroponicsIdentity rhs);
     inline HydroponicsDLinkObject &operator=(const char *rhs);
@@ -97,7 +96,6 @@ public:
 
     inline operator bool() const { return isResolved(); }
     inline HydroponicsObjInterface* operator->() { return get<HydroponicsObjInterface>(); }
-    inline HydroponicsObjInterface* operator*() { return get<HydroponicsObjInterface>(); }
 
     inline HydroponicsAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
@@ -180,10 +178,10 @@ public:
     inline float getMeasurementConvertParam() const { return _convertParam; }
 
     inline SharedPtr<HydroponicsSensor> getObject() { return HydroponicsAttachment::getObject<HydroponicsSensor>(); }
-    inline HydroponicsSensor* get() { return HydroponicsAttachment::get<HydroponicsSensor>(); }
+    inline HydroponicsSensor *get() { return HydroponicsAttachment::get<HydroponicsSensor>(); }
 
-    inline HydroponicsSensor* operator->() { return HydroponicsAttachment::getObject<HydroponicsSensor>().get(); }
-    inline HydroponicsSensor* operator*() { return HydroponicsAttachment::getObject<HydroponicsSensor>().get(); }
+    inline HydroponicsSensor &operator*() { return *HydroponicsAttachment::getObject<HydroponicsSensor>().get(); }
+    inline HydroponicsSensor *operator->() { return HydroponicsAttachment::getObject<HydroponicsSensor>().get(); }
 
     inline HydroponicsSensorAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsSensorAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
@@ -215,10 +213,10 @@ public:
     inline Hydroponics_TriggerState getTriggerState();
 
     inline SharedPtr<HydroponicsTrigger> getObject() { return HydroponicsAttachment::getObject<HydroponicsTrigger>(); }
-    inline HydroponicsTrigger* get() { return HydroponicsAttachment::get<HydroponicsTrigger>(); }
+    inline HydroponicsTrigger *get() { return HydroponicsAttachment::get<HydroponicsTrigger>(); }
 
-    inline HydroponicsTrigger* operator->() { return HydroponicsAttachment::getObject<HydroponicsTrigger>().get(); }
-    inline HydroponicsTrigger* operator*() { return HydroponicsAttachment::getObject<HydroponicsTrigger>().get(); }
+    inline HydroponicsTrigger &operator*() { return *HydroponicsAttachment::getObject<HydroponicsTrigger>().get(); }
+    inline HydroponicsTrigger *operator->() { return HydroponicsAttachment::getObject<HydroponicsTrigger>().get(); }
 
     inline HydroponicsTriggerAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsTriggerAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
@@ -242,10 +240,10 @@ public:
     inline Hydroponics_BalancerState getBalancerState();
 
     inline SharedPtr<HydroponicsBalancer> getObject() { return HydroponicsAttachment::getObject<HydroponicsBalancer>(); }
-    inline HydroponicsBalancer* get() { return HydroponicsAttachment::get<HydroponicsBalancer>(); }
+    inline HydroponicsBalancer *get() { return HydroponicsAttachment::get<HydroponicsBalancer>(); }
 
-    inline HydroponicsBalancer* operator->() { return HydroponicsAttachment::getObject<HydroponicsBalancer>().get(); }
-    inline HydroponicsBalancer* operator*() { return HydroponicsAttachment::getObject<HydroponicsBalancer>().get(); }
+    inline HydroponicsBalancer &operator*() { return *HydroponicsAttachment::getObject<HydroponicsBalancer>().get(); }
+    inline HydroponicsBalancer *operator->() { return HydroponicsAttachment::getObject<HydroponicsBalancer>().get(); }
 
     inline HydroponicsBalancerAttachment &operator=(const HydroponicsIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroponicsBalancerAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
