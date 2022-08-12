@@ -537,7 +537,9 @@ protected:
     friend HydroponicsScheduler *::getSchedulerInstance();
     friend HydroponicsLogger *::getLoggerInstance();
     friend HydroponicsPublisher *::getPublisherInstance();
+#ifdef HYDRUINO_USE_VIRTMEM
     friend BaseVAlloc *::getVirtualAllocator();
+#endif
     friend class HydroponicsCalibrationsStore;
     friend class HydroponicsCropsLibrary;
     friend class HydroponicsScheduler;
