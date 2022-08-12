@@ -90,7 +90,7 @@ Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
 #endif
 #endif
 #if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
-      _vAlloc(VIRTMEM_DEFAULT_POOLSIZE, sdCardCSPin, sdCardSpeed),
+      _vAlloc(VIRTMEM_DEFAULT_POOLSIZE, sdCardCSPin, sdCardSpeed, getSDCard(false)),
 #elif defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
       _vAlloc(spiRAMDeviceSize, spiRAMCSPin, spiRAMSpeed),
 #ifndef VIRTMEM_SPIRAM_CAPTURESPEED
