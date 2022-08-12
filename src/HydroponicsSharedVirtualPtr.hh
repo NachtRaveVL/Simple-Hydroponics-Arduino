@@ -7,12 +7,9 @@
 #ifndef HydroponicsSharedVirtualPtr_H
 #define HydroponicsSharedVirtualPtr_H
 
-#include "ArxSmartPtr.h"
-#include "internal/vptr.h" 
-
-template<class T> class arx::stdx::shared_ptr<VirtualPtr<T>>;
-
 #include "Hydroponics.h"
+#ifdef HYDRUINO_USE_VIRTMEM
+#include "internal/vptr.h"
 
 // imported and simplified from https://github.com/boostorg/smart_ptr
 
@@ -382,8 +379,6 @@ namespace arx { namespace stdx
 
 }} // namespace arx::stdx
 
-#ifdef HYDRUINO_USE_VIRTMEM
-
 template<class T, class U> SharedPtr<T> static_hyptr_cast(const SharedPtr<U>& r) { return static_vpointer_cast<T,U>(r); }
 template<class T, class U> SharedPtr<T> static_hyptr_cast(SharedPtr<U>&& r) { return static_vpointer_cast<T,U>(r); }
 template<class T, class U> SharedPtr<T> const_hyptr_cast(const SharedPtr<U>& r) { return const_vpointer_cast<T,U>(r); }
@@ -408,6 +403,6 @@ template<class T, class U> SharedPtr<T> reinterpret_hyptr_cast(SharedPtr<U>&& r)
 template<class T> inline SharedPtr<T> make_hyptr_shared() { return arx::stdx::make_shared<T>(); }
 template<class T, class... Args> inline SharedPtr<T> make_hyptr_shared(Args&&... args) { return arx::stdx::make_shared<T>(args...); }
 
-#endif
+#endif // /ifdef HYDRUINO_USE_VIRTMEM
 
 #endif // /ifndef HydroponicsSharedVirtualPtr_H
