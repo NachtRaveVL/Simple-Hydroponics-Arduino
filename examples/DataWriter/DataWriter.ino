@@ -39,15 +39,20 @@
 
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          11              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-#define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
+#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
 #define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
+#define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
+#define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
+#define SETUP_SPIRAM_DEVICE_SIZE        0               // SPI RAM device size, in bytes, else 0 (note: define HYDRUINO_ENABLE_SPIRAM_VIRTMEM to enable SPIRAM)
+#define SETUP_SPIRAM_CS_PIN             -1              // SPI RAM CS pin, else -1
+#define SETUP_SPIRAM_SPI_SPEED          F_SPD           // SPI RAM SPI speed, in Hz
+#define SETUP_LCD_I2C_ADDR              B000            // LCD i2c address
+#define SETUP_CTRL_INPUT_PINS           {-1}            // Control input pin ribbon, else {-1}
 #define SETUP_I2C_WIRE_INST             Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
-#define SETUP_SD_CARD_SPI_SPEED         4000000U        // SD card SPI speed, in Hz (ignored on Teensy)
 
 // External Data Settings
 #define SETUP_EXTDATA_SD_ENABLE         true            // If data should be written to an external SD Card
@@ -55,16 +60,22 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be written to an external EEPROM
 #define SETUP_EXTDATA_EEPROM_BEG_ADDR   0               // Start data address for data to be written to EEPROM
 
+uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
-                            SETUP_SD_CARD_CS_PIN,
-                            nullptr,
                             SETUP_EEPROM_I2C_ADDR,
                             SETUP_RTC_I2C_ADDR,
-                            0,
+                            SETUP_SD_CARD_CS_PIN,
+                            SETUP_SD_CARD_SPI_SPEED,
+#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
+                            SETUP_SPIRAM_DEVICE_SIZE,
+                            SETUP_SPIRAM_CS_PIN,
+                            SETUP_SPIRAM_SPI_SPEED,
+#endif
+                            _SETUP_CTRL_INPUT_PINS,
+                            SETUP_LCD_I2C_ADDR,
                             SETUP_I2C_WIRE_INST,
-                            SETUP_I2C_SPEED,
-                            SETUP_SD_CARD_SPI_SPEED);
+                            SETUP_I2C_SPEED);
 
 // Wraps a formatted address as appended pseudo alt text, e.g. " (0xADDR)"
 String altAddressToString(uint16_t addr)

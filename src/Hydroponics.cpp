@@ -15,9 +15,9 @@ void handleInterrupt(pintype_t pin)
     if (Hydroponics::_activeInstance) {
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
             if (iter->second->isSensorType()) {
-                auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+                auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
                 if (sensor->getInputPin() == pin && sensor->isBinaryClass()) {
-                    auto binarySensor = static_pointer_cast<HydroponicsBinarySensor>(sensor);
+                    auto binarySensor = static_hyptr_cast<HydroponicsBinarySensor>(sensor);
                     if (binarySensor) { binarySensor->notifyISRTriggered(); }
                 }
             }
@@ -66,17 +66,43 @@ void __int_restore_irq(int *primask)
 
 Hydroponics *Hydroponics::_activeInstance = nullptr;
 
-Hydroponics::Hydroponics(pintype_t piezoBuzzerPin, uint32_t eepromDeviceSize, pintype_t sdCardCSPin, pintype_t *ctrlInputPinMap,
-                         uint8_t eepromI2CAddress, uint8_t rtcI2CAddress, uint8_t lcdI2CAddress,
-                         TwoWire &i2cWire, uint32_t i2cSpeed, uint32_t sdCardSpeed
-#ifdef HYDRUINO_USE_WIFI
-                         , WiFiClass &wifi
+Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
+                         uint32_t eepromDeviceSize,
+                         uint8_t eepromI2CAddress,
+                         uint8_t rtcI2CAddress,
+                         pintype_t sdCardCSPin,
+                         uint32_t sdCardSpeed,
+#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
+                         uint32_t spiRAMDeviceSize,
+                         pintype_t spiRAMCSPin,
+                         uint32_t spiRAMSpeed,
 #endif
-)   : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed), _sdCardSpeed(sdCardSpeed),
-#ifdef HYDRUINO_USE_WIFI
-      _wifi(&wifi), _wifiBegan(false),
+                         pintype_t *ctrlInputPinMap,
+                         uint8_t lcdI2CAddress,
+                         TwoWire &i2cWire,
+                         uint32_t i2cSpeed)
+    : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed),
+#ifndef CORE_TEENSY
+      _sdCardSpeed(sdCardSpeed),
+#else
+      _sdCardSpeed(25000000U),
 #endif
-      _piezoBuzzerPin(piezoBuzzerPin), _eepromDeviceSize(eepromDeviceSize), _sdCardCSPin(sdCardCSPin), _ctrlInputPinMap(ctrlInputPinMap),
+#if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
+      _vAlloc(VIRTMEM_DEFAULT_POOLSIZE, sdCardCSPin, sdCardSpeed),
+#elif defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
+      _vAlloc(spiRAMDeviceSize, spiRAMCSPin, spiRAMSpeed),
+#ifndef VIRTMEM_SPIRAM_CAPTURESPEED
+      _spiRAMSpeed(spiRAMSpeed),
+#endif
+#endif
+#ifdef HYDRUINO_USE_WIFI
+      _wifiBegan(false),
+#endif
+      _piezoBuzzerPin(piezoBuzzerPin), _eepromDeviceSize(eepromDeviceSize),
+#ifndef HYDRUINO_ENABLE_SD_VIRTMEM
+      _sdCardCSPin(sdCardCSPin),
+#endif
+      _ctrlInputPinMap(ctrlInputPinMap),
       _eepromI2CAddr(eepromI2CAddress | HYDRUINO_SYS_I2CEEPROM_BASEADDR), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
       _eeprom(nullptr), _rtc(nullptr), _sd(nullptr),
       _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
@@ -99,9 +125,6 @@ Hydroponics::~Hydroponics()
     deallocateRTC();
     deallocateSD();
     _i2cWire = nullptr;
-#ifdef HYDRUINO_USE_WIFI
-    _wifi = nullptr;
-#endif
     if (this == _activeInstance) { _activeInstance = nullptr; }
     if (_systemData) { delete _systemData; _systemData = nullptr; }
 }
@@ -577,11 +600,14 @@ void Hydroponics::commonPreInit()
     if (_i2cWire) {
         _i2cWire->setClock(_i2cSpeed);
     }
-    if (isValidPin(_sdCardCSPin)) {
+    #ifdef HYDRUINO_USE_VIRTMEM
+        _vAlloc.start();
+    #endif
+    if (isValidPin(getSDCardCSPin())) {
         getSPI()->begin();
         // some archs won't init pinMode/set CS high, so we do it manually to be on the safe side
-        pinMode(_sdCardCSPin, OUTPUT);
-        digitalWrite(_sdCardCSPin, HIGH);
+        pinMode(getSDCardCSPin(), OUTPUT);
+        digitalWrite(getSDCardCSPin(), HIGH);
     }
     #ifndef HYDRUINO_DISABLE_MULTITASKING
         taskManager.setInterruptCallback(&handleInterrupt);
@@ -614,11 +640,27 @@ void Hydroponics::commonPostInit()
             if (isValidPin(_piezoBuzzerPin)) { Serial.print(_piezoBuzzerPin); }
             else { Serial.print(SFP(HStr_Disabled)); }
             Serial.print(F(", eepromDeviceSize: "));
-            if (_eepromDeviceSize) { Serial.print(_eepromDeviceSize); }
+            if (getEEPROMDeviceSize()) { Serial.print(getEEPROMDeviceSize()); }
             else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", eepromI2CAddress: 0x"));
+            Serial.print(_eepromI2CAddr & ~HYDRUINO_SYS_I2CEEPROM_BASEADDR, HEX);
+            Serial.print(F(", rtcI2CAddress: 0x"));
+            Serial.print(_rtcI2CAddr, HEX);
             Serial.print(F(", sdCardCSPin: "));
-            if (isValidPin(_sdCardCSPin)) { Serial.print(_sdCardCSPin); }
+            if (isValidPin(getSDCardCSPin())) { Serial.print(getSDCardCSPin()); }
             else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", sdCardSpeed: "));
+            Serial.print(roundf(getSDCardSpeed() / 1000000.0f)); Serial.print(F("MHz"));
+#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
+            Serial.print(F(", spiRAMDeviceSize: "));
+            if (getSPIRAMDeviceSize()) { Serial.print(getSPIRAMDeviceSize()); }
+            else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", spiRAMCSPin: "));
+            if (isValidPin(getSPIRAMCSPin())) { Serial.print(getSPIRAMCSPin()); }
+            else { Serial.print(SFP(HStr_Disabled)); }
+            Serial.print(F(", spiRAMSpeed: "));
+            Serial.print(roundf(getSPIRAMSpeed() / 1000000.0f)); Serial.print(F("MHz"));
+#endif
             Serial.print(F(", controlInputPinMap: "));
             if (getControlInputRibbonPinCount() && _ctrlInputPinMap && isValidPin(_ctrlInputPinMap[0])) {
                 Serial.print('{');
@@ -629,16 +671,10 @@ void Hydroponics::commonPostInit()
                 Serial.print('}');
             }
             else { Serial.print(SFP(HStr_Disabled)); }
-            Serial.print(F(", EEPROMi2cAddress: 0x"));
-            Serial.print(_eepromI2CAddr & ~HYDRUINO_SYS_I2CEEPROM_BASEADDR, HEX);
-            Serial.print(F(", RTCi2cAddress: 0x"));
-            Serial.print(_rtcI2CAddr, HEX);
-            Serial.print(F(", LCDi2cAddress: 0x"));
+            Serial.print(F(", lcdI2CAddress: 0x"));
             Serial.print(_lcdI2CAddr, HEX);
             Serial.print(F(", i2cSpeed: "));
             Serial.print(roundf(getI2CSpeed() / 1000.0f)); Serial.print(F("kHz"));
-            Serial.print(F(", sdCardSpeed: "));
-            Serial.print(roundf(getSDCardSpeed() / 1000000.0f)); Serial.print(F("MHz"));
             Serial.print(F(", systemMode: "));
             Serial.print(systemModeToString(getSystemMode()));
             Serial.print(F(", measureMode: "));
@@ -709,7 +745,7 @@ void dataLoop()
 
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
             if (iter->second->isSensorType()) {
-                auto sensor = static_pointer_cast<HydroponicsSensor>(iter->second);
+                auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
                 if (sensor->needsPolling()) {
                     sensor->takeMeasurement(); // no force if already current for this frame #, we're just ensuring data for publisher
                 }
@@ -1101,7 +1137,7 @@ void Hydroponics::setWiFiConnection(String ssid, String password)
                 memset(_systemData->wifiPassword, '\0', HYDRUINO_NAME_MAXSIZE);
             }
 
-            if (_wifiBegan && (ssidChanged || passChanged)) { _wifi->disconnect(); _wifiBegan = false; } // forces re-connect on next getWifi
+            if (_wifiBegan && (ssidChanged || passChanged)) { HYDRUINO_SYS_WIFI_INSTANCE.disconnect(); _wifiBegan = false; } // forces re-connect on next getWifi
         }
     }
 }
@@ -1115,15 +1151,6 @@ void Hydroponics::setRealTimeClockTime(DateTime time)
         rtc->adjust(DateTime((uint32_t)(time.unixtime() + (-getTimeZoneOffset() * SECS_PER_HOUR))));
         notifyRTCTimeUpdated();
     }
-}
-
-uint32_t Hydroponics::getSDCardSpeed() const
-{
-    #if defined(CORE_TEENSY)
-        return 25000000U;
-    #else
-        return _sdCardSpeed;
-    #endif
 }
 
 int Hydroponics::getControlInputRibbonPinCount() const
@@ -1190,11 +1217,11 @@ SDClass *Hydroponics::getSDCard(bool begin)
 
     if (_sd && begin) {
         #if defined(ESP32)
-            bool sdBegan = _sd->begin(_sdCardCSPin, *getSPI(), getSDCardSpeed());
+            bool sdBegan = _sd->begin(getSDCardCSPin(), *getSPI(), getSDCardSpeed());
         #elif defined(CORE_TEENSY)
-            bool sdBegan = _sd->begin(_sdCardCSPin); // card speed not possible to set on teensy
+            bool sdBegan = _sd->begin(getSDCardCSPin()); // card speed not possible to set on teensy
         #else
-            bool sdBegan = _sd->begin(getSDCardSpeed(), _sdCardCSPin);
+            bool sdBegan = _sd->begin(getSDCardSpeed(), getSDCardCSPin());
         #endif
 
         if (!sdBegan) { deallocateSD(); }
@@ -1216,9 +1243,9 @@ void Hydroponics::endSDCard(SDClass *sd)
 
 WiFiClass *Hydroponics::getWiFi(bool begin)
 {
-    int status = _wifi ? _wifi->status() : WL_NO_SHIELD;
+    int status = HYDRUINO_SYS_WIFI_INSTANCE.status();
 
-    if (_wifi && begin && (!_wifiBegan || status != WL_CONNECTED)) {
+    if (begin && (!_wifiBegan || status != WL_CONNECTED)) {
         if (status == WL_CONNECTED) {
             _wifiBegan = true;
         } else if (status == WL_NO_SHIELD) {
@@ -1228,19 +1255,19 @@ WiFiClass *Hydroponics::getWiFi(bool begin)
             String pass = getWiFiPassword();
 
             #ifdef HYDRUINO_USE_SERIALWIFI
-                status = _wifi->begin(ssid.c_str(), pass.c_str());
+                status = HYDRUINO_SYS_WIFI_INSTANCE.begin(ssid.c_str(), pass.c_str());
             #else
-                status = pass.length() ? _wifi->begin(const_cast<char *>(ssid.c_str()), pass.c_str())
-                                       : _wifi->begin(const_cast<char *>(ssid.c_str()));
+                status = pass.length() ? HYDRUINO_SYS_WIFI_INSTANCE.begin(const_cast<char *>(ssid.c_str()), pass.c_str())
+                                       : HYDRUINO_SYS_WIFI_INSTANCE.begin(const_cast<char *>(ssid.c_str()));
             #endif
 
             _wifiBegan = (status == WL_CONNECTED);
         }
 
-        return _wifi && _wifiBegan ? _wifi : nullptr;
+        return _wifiBegan ? &HYDRUINO_SYS_WIFI_INSTANCE : nullptr;
     }
 
-    return _wifi;
+    return &HYDRUINO_SYS_WIFI_INSTANCE;
 }
 
 #endif
@@ -1364,14 +1391,14 @@ void Hydroponics::notifyDayChanged()
 {
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         if (iter->second->isReservoirType()) {
-            auto reservoir = static_pointer_cast<HydroponicsReservoir>(iter->second);
+            auto reservoir = static_hyptr_cast<HydroponicsReservoir>(iter->second);
 
             if (reservoir && reservoir->isFeedClass()) {
-                auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
+                auto feedReservoir = static_hyptr_cast<HydroponicsFeedReservoir>(iter->second);
                 if (feedReservoir) {feedReservoir->notifyDayChanged(); }
             }
         } else if (iter->second->isCropType()) {
-            auto crop = static_pointer_cast<HydroponicsCrop>(iter->second);
+            auto crop = static_hyptr_cast<HydroponicsCrop>(iter->second);
 
             if (crop) { crop->notifyDayChanged(); }
         }

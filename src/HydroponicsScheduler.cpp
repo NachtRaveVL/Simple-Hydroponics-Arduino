@@ -455,7 +455,7 @@ void HydroponicsScheduler::performScheduling()
 
     for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
         if (iter->second->isReservoirType() && ((HydroponicsReservoir *)(iter->second.get()))->isFeedClass()) {
-            auto feedReservoir = static_pointer_cast<HydroponicsFeedReservoir>(iter->second);
+            auto feedReservoir = static_hyptr_cast<HydroponicsFeedReservoir>(iter->second);
 
             {   auto feedingIter = _feedings.find(feedReservoir->getKey());
 
@@ -672,7 +672,7 @@ void HydroponicsFeeding::setupStaging()
         if (feedRes->getWaterPHSensor()) {
             auto phBalancer = feedRes->getWaterPHBalancer();
             if (!phBalancer) {
-                phBalancer = arx::stdx::make_shared<HydroponicsTimedDosingBalancer>(feedRes->getWaterPHSensor(), phSetpoint, HYDRUINO_RANGE_PH_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits());
+                phBalancer = SharedPtr<HydroponicsTimedDosingBalancer>(new HydroponicsTimedDosingBalancer(feedRes->getWaterPHSensor(), phSetpoint, HYDRUINO_RANGE_PH_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits()));
                 HYDRUINO_SOFT_ASSERT(phBalancer, SFP(HStr_Err_AllocationFailure));
                 getSchedulerInstance()->setupWaterPHBalancer(feedRes.get(), phBalancer);
                 feedRes->setWaterPHBalancer(phBalancer);
@@ -686,7 +686,7 @@ void HydroponicsFeeding::setupStaging()
         if (feedRes->getWaterTDSSensor()) {
             auto tdsBalancer = feedRes->getWaterTDSBalancer();
             if (!tdsBalancer) {
-                tdsBalancer = arx::stdx::make_shared<HydroponicsTimedDosingBalancer>(feedRes->getWaterTDSSensor(), tdsSetpoint, HYDRUINO_RANGE_EC_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits());
+                tdsBalancer = SharedPtr<HydroponicsTimedDosingBalancer>(new HydroponicsTimedDosingBalancer(feedRes->getWaterTDSSensor(), tdsSetpoint, HYDRUINO_RANGE_EC_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits()));
                 HYDRUINO_SOFT_ASSERT(tdsBalancer, SFP(HStr_Err_AllocationFailure));
                 getSchedulerInstance()->setupWaterTDSBalancer(feedRes.get(), tdsBalancer);
                 feedRes->setWaterTDSBalancer(tdsBalancer);
@@ -707,7 +707,7 @@ void HydroponicsFeeding::setupStaging()
     if ((stage == PreFeed || stage == Feed) && feedRes->getWaterTemperatureSensor()) {
         auto waterTempBalancer = feedRes->getWaterTemperatureBalancer();
         if (!waterTempBalancer) {
-            waterTempBalancer = arx::stdx::make_shared<HydroponicsLinearEdgeBalancer>(feedRes->getWaterTemperatureSensor(), waterTempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -HYDRUINO_RANGE_TEMP_HALF * 0.25f, HYDRUINO_RANGE_TEMP_HALF * 0.5f);
+            waterTempBalancer = SharedPtr<HydroponicsLinearEdgeBalancer>(new HydroponicsLinearEdgeBalancer(feedRes->getWaterTemperatureSensor(), waterTempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -HYDRUINO_RANGE_TEMP_HALF * 0.25f, HYDRUINO_RANGE_TEMP_HALF * 0.5f));
             HYDRUINO_SOFT_ASSERT(waterTempBalancer, SFP(HStr_Err_AllocationFailure));
             getSchedulerInstance()->setupWaterTemperatureBalancer(feedRes.get(), waterTempBalancer);
             feedRes->setWaterTemperatureBalancer(waterTempBalancer);
@@ -725,7 +725,7 @@ void HydroponicsFeeding::setupStaging()
     if (feedRes->getAirTemperatureSensor()) {
         auto airTempBalancer = feedRes->getAirTemperatureBalancer();
         if (!airTempBalancer) {
-            airTempBalancer = arx::stdx::make_shared<HydroponicsLinearEdgeBalancer>(feedRes->getAirTemperatureSensor(), airTempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -HYDRUINO_RANGE_TEMP_HALF * 0.25f, HYDRUINO_RANGE_TEMP_HALF * 0.5f);
+            airTempBalancer = SharedPtr<HydroponicsLinearEdgeBalancer>(new HydroponicsLinearEdgeBalancer(feedRes->getAirTemperatureSensor(), airTempSetpoint, HYDRUINO_RANGE_TEMP_HALF, -HYDRUINO_RANGE_TEMP_HALF * 0.25f, HYDRUINO_RANGE_TEMP_HALF * 0.5f));
             HYDRUINO_SOFT_ASSERT(airTempBalancer, SFP(HStr_Err_AllocationFailure));
             getSchedulerInstance()->setupAirTemperatureBalancer(feedRes.get(), airTempBalancer);
             feedRes->setAirTemperatureBalancer(airTempBalancer);
@@ -743,7 +743,7 @@ void HydroponicsFeeding::setupStaging()
     if (feedRes->getAirCO2Sensor()) {
         auto co2Balancer = feedRes->getAirTemperatureBalancer();
         if (!co2Balancer) {
-            co2Balancer = arx::stdx::make_shared<HydroponicsLinearEdgeBalancer>(feedRes->getAirCO2Sensor(), co2Setpoint, HYDRUINO_RANGE_CO2_HALF, -HYDRUINO_RANGE_CO2_HALF * 0.25f, HYDRUINO_RANGE_CO2_HALF * 0.5f);
+            co2Balancer = SharedPtr<HydroponicsLinearEdgeBalancer>(new HydroponicsLinearEdgeBalancer(feedRes->getAirCO2Sensor(), co2Setpoint, HYDRUINO_RANGE_CO2_HALF, -HYDRUINO_RANGE_CO2_HALF * 0.25f, HYDRUINO_RANGE_CO2_HALF * 0.5f));
             HYDRUINO_SOFT_ASSERT(co2Balancer, SFP(HStr_Err_AllocationFailure));
             getSchedulerInstance()->setupAirCO2Balancer(feedRes.get(), co2Balancer);
             feedRes->setAirCO2Balancer(co2Balancer);
@@ -902,7 +902,7 @@ void HydroponicsFeeding::update()
                     getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Aerator_Duration), String(getSchedulerInstance()->getPreFeedAeratorMins()), String('m'));
                 }
                 if (feedRes->getWaterPHBalancer() || feedRes->getWaterTDSBalancer()) {
-                    auto balancer = static_pointer_cast<HydroponicsTimedDosingBalancer>(feedRes->getWaterPHBalancer() ? feedRes->getWaterPHBalancer() : feedRes->getWaterTDSBalancer());
+                    auto balancer = static_hyptr_cast<HydroponicsTimedDosingBalancer>(feedRes->getWaterPHBalancer() ? feedRes->getWaterPHBalancer() : feedRes->getWaterTDSBalancer());
                     if (balancer) {
                         getLoggerInstance()->logMessage(SFP(HStr_Log_Field_MixTime_Duration), timeSpanToString(TimeSpan(balancer->getMixTime())));
                     }

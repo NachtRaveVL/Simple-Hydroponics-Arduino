@@ -12,11 +12,11 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addGrowLightsRelay(pinty
     HYDRUINO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsRelayActuator>(
+        auto actuator = SharedPtr<HydroponicsRelayActuator>(new HydroponicsRelayActuator(
             Hydroponics_ActuatorType_GrowLights,
             positionIndex,
             outputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -31,11 +31,11 @@ SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addWaterPumpRelay(pi
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsPumpRelayActuator>(
+        auto actuator = SharedPtr<HydroponicsPumpRelayActuator>(new HydroponicsPumpRelayActuator(
             Hydroponics_ActuatorType_WaterPump,
             positionIndex,
             outputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -50,11 +50,11 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterHeaterRelay(pint
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsRelayActuator>(
+        auto actuator = SharedPtr<HydroponicsRelayActuator>(new HydroponicsRelayActuator(
             Hydroponics_ActuatorType_WaterHeater,
             positionIndex,
             outputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -69,11 +69,11 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterSprayerRelay(pin
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsRelayActuator>(
+        auto actuator = SharedPtr<HydroponicsRelayActuator>(new HydroponicsRelayActuator(
             Hydroponics_ActuatorType_WaterSprayer,
             positionIndex,
             outputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -88,11 +88,11 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addWaterAeratorRelay(pin
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsRelayActuator>(
+        auto actuator = SharedPtr<HydroponicsRelayActuator>(new HydroponicsRelayActuator(
             Hydroponics_ActuatorType_WaterAerator,
             positionIndex,
             outputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -107,11 +107,11 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(pinty
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsRelayActuator>(
+        auto actuator = SharedPtr<HydroponicsRelayActuator>(new HydroponicsRelayActuator(
             Hydroponics_ActuatorType_FanExhaust,
             positionIndex,
             outputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -130,7 +130,7 @@ SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pin
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsPWM && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsPWMActuator>(
+        auto actuator = SharedPtr<HydroponicsPWMActuator>(new HydroponicsPWMActuator(
             Hydroponics_ActuatorType_FanExhaust,
             positionIndex,
             outputPin,
@@ -138,7 +138,7 @@ SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pin
             pwmChannel, pwmFrequency,
 #endif
             outputBitRes
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -153,11 +153,11 @@ SharedPtr<HydroponicsPumpRelayActuator> HydroponicsFactory::addPeristalticPumpRe
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = arx::stdx::make_shared<HydroponicsPumpRelayActuator>(
+        auto actuator = SharedPtr<HydroponicsPumpRelayActuator>(new HydroponicsPumpRelayActuator(
             Hydroponics_ActuatorType_PeristalticPump,
             positionIndex,
             outputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(actuator)) { return actuator; }
     }
 
@@ -172,11 +172,11 @@ SharedPtr<HydroponicsBinarySensor> HydroponicsFactory::addLevelIndicator(pintype
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsBinarySensor>(
+        auto sensor = SharedPtr<HydroponicsBinarySensor>(new HydroponicsBinarySensor(
             Hydroponics_SensorType_WaterLevelIndicator,
             positionIndex,
             inputPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -191,11 +191,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPhMeter(pintype_
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_PotentialHydrogen,
             positionIndex,
             inputPin, inputBitRes
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -210,11 +210,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTDSElectrode(pin
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_TotalDissolvedSolids,
             positionIndex,
             inputPin, inputBitRes
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) {
             if (ppmScale != 500) {
                 HydroponicsCalibrationData userCalibData(sensor->getId());
@@ -238,11 +238,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogTemperatureSenso
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_WaterTemperature,
             positionIndex,
             inputPin, inputBitRes
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -257,11 +257,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogCO2Sensor(pintyp
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_AirCarbonDioxide,
             positionIndex,
             inputPin, inputBitRes, true
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -276,11 +276,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogMoistureSensor(p
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_SoilMoisture,
             positionIndex,
             inputPin, inputBitRes, true
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -295,11 +295,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogPWMPumpFlowSenso
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_WaterPumpFlowSensor,
             positionIndex,
             inputPin, inputBitRes
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -314,11 +314,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addAnalogWaterHeightMeter
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_WaterHeightMeter,
             positionIndex,
             inputPin, inputBitRes
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -333,11 +333,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addUltrasonicDistanceSens
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_WaterHeightMeter,
             positionIndex,
             inputPin, inputBitRes, true
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -352,11 +352,11 @@ SharedPtr<HydroponicsAnalogSensor> HydroponicsFactory::addPowerUsageMeter(pintyp
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsAnalogSensor>(
+        auto sensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(
             Hydroponics_SensorType_PowerUsageMeter,
             positionIndex,
             inputPin, inputBitRes
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) {
             if (!isWattageBased) { sensor->setMeasurementUnits(Hydroponics_UnitsType_Power_Amperage); }
             return sensor;
@@ -374,11 +374,11 @@ SharedPtr<HydroponicsDHTTempHumiditySensor> HydroponicsFactory::addDHTTempHumidi
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsDHTTempHumiditySensor>(
+        auto sensor = SharedPtr<HydroponicsDHTTempHumiditySensor>(new HydroponicsDHTTempHumiditySensor(
             positionIndex,
             inputPin,
             dhtType
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -393,11 +393,11 @@ SharedPtr<HydroponicsDSTemperatureSensor> HydroponicsFactory::addDSTemperatureSe
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
-        auto sensor = arx::stdx::make_shared<HydroponicsDSTemperatureSensor>(
+        auto sensor = SharedPtr<HydroponicsDSTemperatureSensor>(new HydroponicsDSTemperatureSensor(
             positionIndex,
             inputPin, inputBitRes,
             pullupPin
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(sensor)) { return sensor; }
     }
 
@@ -413,14 +413,14 @@ SharedPtr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedCrop(Hydroponics_
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count && sowDate.unixtime() >= SECONDS_FROM_1970_TO_2000 && positionIndex != -1) {
-        auto crop = arx::stdx::make_shared<HydroponicsTimedCrop>(
+        auto crop = SharedPtr<HydroponicsTimedCrop>(new HydroponicsTimedCrop(
             cropType,
             positionIndex,
             substrateType,
             sowDate,
             TimeSpan(0,0,minsOn,0),
             TimeSpan(0,0,minsOff,0)
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(crop)) { return crop; }
     }
 
@@ -445,12 +445,12 @@ SharedPtr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedCrop(Hydrop
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if ((int)cropType >= 0 && cropType < Hydroponics_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydroponics_SubstrateType_Count && sowDate.unixtime() >= SECONDS_FROM_1970_TO_2000 && positionIndex != -1) {
-        auto crop = arx::stdx::make_shared<HydroponicsAdaptiveCrop>(
+        auto crop = SharedPtr<HydroponicsAdaptiveCrop>(new HydroponicsAdaptiveCrop(
             cropType,
             positionIndex,
             substrateType,
             sowDate
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(crop)) { return crop; }
     }
 
@@ -474,11 +474,11 @@ SharedPtr<HydroponicsFluidReservoir> HydroponicsFactory::addFluidReservoir(Hydro
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if ((int)reservoirType >= 0 && reservoirType < Hydroponics_ReservoirType_Count && maxVolume > FLT_EPSILON && positionIndex != -1) {
-        auto reservoir = arx::stdx::make_shared<HydroponicsFluidReservoir>(
+        auto reservoir = SharedPtr<HydroponicsFluidReservoir>(new HydroponicsFluidReservoir(
             reservoirType,
             positionIndex,
             maxVolume
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(reservoir)) {
             if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume()); }
             return reservoir;
@@ -496,12 +496,12 @@ SharedPtr<HydroponicsFeedReservoir> HydroponicsFactory::addFeedWaterReservoir(fl
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (maxVolume > FLT_EPSILON && lastChangeDate.unixtime() >= SECONDS_FROM_1970_TO_2000 && positionIndex != -1) {
-        auto reservoir = arx::stdx::make_shared<HydroponicsFeedReservoir>(
+        auto reservoir = SharedPtr<HydroponicsFeedReservoir>(new HydroponicsFeedReservoir(
             positionIndex,
             maxVolume,
             lastChangeDate,
             lastPruningDate
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(reservoir)) {
             if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume() * HYDRUINO_FEEDRES_FRACTION_FILLED); }
             return reservoir;
@@ -517,11 +517,11 @@ SharedPtr<HydroponicsInfiniteReservoir> HydroponicsFactory::addDrainagePipe()
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (positionIndex != -1) {
-        auto reservoir = arx::stdx::make_shared<HydroponicsInfiniteReservoir>(
+        auto reservoir = SharedPtr<HydroponicsInfiniteReservoir>(new HydroponicsInfiniteReservoir(
             Hydroponics_ReservoirType_DrainageWater,
             positionIndex,
             false
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(reservoir)) { return reservoir; }
     }
 
@@ -534,11 +534,11 @@ SharedPtr<HydroponicsInfiniteReservoir> HydroponicsFactory::addFreshWaterMain()
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (positionIndex != -1) {
-        auto reservoir = arx::stdx::make_shared<HydroponicsInfiniteReservoir>(
+        auto reservoir = SharedPtr<HydroponicsInfiniteReservoir>(new HydroponicsInfiniteReservoir(
             Hydroponics_ReservoirType_FreshWater,
             positionIndex,
             true
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(reservoir)) { return reservoir; }
     }
 
@@ -553,11 +553,11 @@ SharedPtr<HydroponicsSimpleRail> HydroponicsFactory::addSimplePowerRail(Hydropon
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if ((int)railType >= 0 && railType < Hydroponics_RailType_Count && maxActiveAtOnce > 0 && positionIndex != -1) {
-        auto rail = arx::stdx::make_shared<HydroponicsSimpleRail>(
+        auto rail = SharedPtr<HydroponicsSimpleRail>(new HydroponicsSimpleRail(
             railType,
             positionIndex,
             maxActiveAtOnce
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(rail)) { return rail; }
     }
 
@@ -572,11 +572,11 @@ SharedPtr<HydroponicsRegulatedRail> HydroponicsFactory::addRegulatedPowerRail(Hy
     HYDRUINO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if ((int)railType >= 0 && railType < Hydroponics_RailType_Count && maxPower > FLT_EPSILON && positionIndex != -1) {
-        auto rail = arx::stdx::make_shared<HydroponicsRegulatedRail>(
+        auto rail = SharedPtr<HydroponicsRegulatedRail>(new HydroponicsRegulatedRail(
             railType,
             positionIndex,
             maxPower
-        );
+        ));
         if (getHydroponicsInstance()->registerObject(rail)) { return rail; }
     }
 

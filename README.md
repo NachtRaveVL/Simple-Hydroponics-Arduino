@@ -85,7 +85,7 @@ There are several initialization mode settings exposed through this controller t
 
 #### Class Instantiation
 
-The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address,, i2c Wire class instance, i2c clock speed, SD Card SPI speed (hard-wired to `25M`Hz on Teensy), and WiFi class instance. The default constructor values of the controller, if left unspecified, has no pins set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, SD Card SPI speed @ `4M`Hz, and WiFi class instance `WiFi`.
+The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, i2c clock speed, and if enabled WiFi class instance. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, SPI speeds set to same as processor speed (/0 divider), and WiFi class instance `WiFi`.
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
@@ -93,14 +93,26 @@ From Hydroponics.h, in class Hydroponics:
     Hydroponics(pintype_t piezoBuzzerPin = -1,              // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
                 pintype_t sdCardCSPin = -1,                 // SD card CS pin, else -1
+                uint32_t sdCardSpeed = F_SPD,               // SD card SPI speed, in Hz (ignored on Teensy)
+#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
+                uint32_t spiRAMDeviceSize = 0,              // SPI RAM device size, else 0                  
+                pintype_t spiRAMCSPin = -1,                 // SPI RAM CS pin, else -1
+                uint32_t spiRAMSpeed = F_SPD,               // SPI RAM SPI speed, in Hz
+#endif
                 pintype_t *ctrlInputPinMap = nullptr,       // Control input pin map, else nullptr
                 uint8_t eepromI2CAddress = B000,            // EEPROM address
                 uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
                 uint8_t lcdI2CAddress = B000,               // LCD i2c address
+#if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TWOWIRE)) || defined(Wire)
                 TwoWire &i2cWire = Wire,                    // I2C wire class instance
-                uint32_t i2cSpeed = 400000U,                // I2C speed, in Hz
-                uint32_t sdCardSpeed = 4000000U,            // SD card SPI speed, in Hz (ignored on Teensy)
-                WiFiClass &wifi = WiFi);                    // WiFi class instance
+#else
+                TwoWire &i2cWire = new TwoWire(),           // I2C wire class instance
+#endif
+                uint32_t i2cSpeed = 400000U                 // I2C speed, in Hz
+#ifdef HYDRUINO_USE_WIFI
+                , WiFiClass &wifi = WiFi                    // WiFi class instance
+#endif
+                );
 ```
 
 #### Controller Initialization
@@ -256,9 +268,9 @@ The Simple DWC Example sketch shows how a simple Hydruino system can be setup us
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
 #define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
 
-#define SETUP_CROP_TYPE                Lettuce         // Type of crop planted at position 1, else Undefined
-#define SETUP_CROP_SUBSTRATE           ClayPebbles     // Type of crop substrate at position 1
-#define SETUP_CROP_SOW_DATE            DateTime(2022, 5, 21) // Date that crop was planted at position 1
+#define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
+#define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate
+#define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted
 
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
 
@@ -316,18 +328,20 @@ Included below is the default system setup defines of the Vertical NFT example t
 
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          11              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-#define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
-#define SETUP_CTRL_INPUT_PINS           {31,33,30,32}   // Control input pin ribbon, else {-1}
+#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
 #define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
+#define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
+#define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
+#define SETUP_SPIRAM_DEVICE_SIZE        0               // SPI serial RAM device size, in bytes, else 0 (note: define HYDRUINO_ENABLE_SPIRAM_VIRTMEM to enable SPIRAM)
+#define SETUP_SPIRAM_CS_PIN             -1              // SPI serial RAM CS pin, else -1
+#define SETUP_SPIRAM_SPI_SPEED          F_SPD           // SPI serial RAM SPI speed, in Hz
 #define SETUP_LCD_I2C_ADDR              B000            // LCD i2c address
+#define SETUP_CTRL_INPUT_PINS           {31,33,30,32}   // Control input pin ribbon, else {-1}
 #define SETUP_I2C_WIRE_INST             Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
-#define SETUP_SD_CARD_SPI_SPEED         4000000U        // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_WIFI_INST                 WiFi            // WiFi class instance
 
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
@@ -344,14 +358,14 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
-// WiFi Settings
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             true           // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
+#define SETUP_DATA_SD_ENABLE            true           // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
 
 // External Data Settings
@@ -370,21 +384,21 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
 #define SETUP_POWER_SENSOR_PIN          -1              // Power meter sensor pin (analog), else -1
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
-#define SETUP_DS18_WTEMP_PIN            3               // DS18* water temp sensor data pin (digital), else -1
-#define SETUP_DHT_ATEMP_PIN             4               // DHT* air temp sensor data pin (digital), else -1
+#define SETUP_DS18_WTEMP_PIN            2               // DS18* water temp sensor data pin (digital), else -1
+#define SETUP_DHT_ATEMP_PIN             3               // DHT* air temp sensor data pin (digital), else -1
 #define SETUP_DHT_SENSOR_TYPE           DHT12           // DHT sensor type enum (use DHT* defines)
-#define SETUP_VOL_FILLED_PIN            -1              // Water level filled indicator pin (digital/ISR), else -1
+#define SETUP_VOL_FILLED_PIN            4               // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
-#define SETUP_GROW_LIGHTS_PIN           22              // Grow lights relay pin (digital), else -1
-#define SETUP_WATER_AERATOR_PIN         24              // Aerator relay pin (digital), else -1
-#define SETUP_FEED_PUMP_PIN             26              // Water level low indicator pin, else -1
-#define SETUP_WATER_HEATER_PIN          28              // Water heater relay pin (digital), else -1
+#define SETUP_GROW_LIGHTS_PIN           5               // Grow lights relay pin (digital), else -1
+#define SETUP_WATER_AERATOR_PIN         6               // Aerator relay pin (digital), else -1
+#define SETUP_FEED_PUMP_PIN             7               // Water level low indicator pin, else -1
+#define SETUP_WATER_HEATER_PIN          8               // Water heater relay pin (digital), else -1
 #define SETUP_WATER_SPRAYER_PIN         -1              // Water sprayer relay pin (digital), else -1
 #define SETUP_FAN_EXHAUST_PIN           -1              // Fan exhaust relay pin (digital/PWM), else -1
-#define SETUP_NUTRIENT_MIX_PIN          23              // Nutrient premix peristaltic pump relay pin (digital), else -1
-#define SETUP_FRESH_WATER_PIN           25              // Fresh water peristaltic pump relay pin (digital), else -1
-#define SETUP_PH_UP_PIN                 27              // pH up solution peristaltic pump relay pin (digital), else -1
-#define SETUP_PH_DOWN_PIN               29              // pH down solution peristaltic pump relay pin (digital), else -1
+#define SETUP_NUTRIENT_MIX_PIN          9               // Nutrient premix peristaltic pump relay pin (digital), else -1
+#define SETUP_FRESH_WATER_PIN           10              // Fresh water peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_UP_PIN                 12              // pH up solution peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_DOWN_PIN               13              // pH down solution peristaltic pump relay pin (digital), else -1
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units

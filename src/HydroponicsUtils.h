@@ -161,6 +161,10 @@ inline HydroponicsScheduler *getSchedulerInstance();
 inline HydroponicsLogger *getLoggerInstance();
 // Returns the active publisher instance. Not guaranteed to be non-null.
 inline HydroponicsPublisher *getPublisherInstance();
+#ifdef HYDRUINO_USE_VIRTMEM
+// Returns the active virtual allocator instance. Not guaranteed to be non-null.
+inline BaseVAlloc *getVirtualAllocator();
+#endif
 
 // Publishes latest data from sensor to Publisher output.
 extern void publishData(HydroponicsSensor *sensor);

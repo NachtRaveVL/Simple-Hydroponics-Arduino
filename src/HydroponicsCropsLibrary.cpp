@@ -169,7 +169,7 @@ void HydroponicsCropsLibrary::updateCropsOfType(Hydroponics_CropType cropType)
     if (Hydroponics::_activeInstance) {
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
             if (iter->second->isCropType()) {
-                auto crop = static_pointer_cast<HydroponicsCrop>(iter->second);
+                auto crop = static_hyptr_cast<HydroponicsCrop>(iter->second);
                 if (crop->getCropType() == cropType) {
                     bool incCount = false;
                     if (_cropsData.find(cropType) != _cropsData.end()) {

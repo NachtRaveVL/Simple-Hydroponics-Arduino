@@ -249,6 +249,15 @@ inline HydroponicsPublisher *getPublisherInstance()
     return Hydroponics::_activeInstance ? &Hydroponics::_activeInstance->publisher : nullptr;
 }
 
+#ifdef HYDRUINO_USE_VIRTMEM
+
+inline BaseVAlloc *getVirtualAllocator()
+{
+    return Hydroponics::_activeInstance ? &(Hydroponics::_activeInstance->_vAlloc) : nullptr;
+}
+
+#endif
+
 inline DateTime getCurrentTime()
 {
     return DateTime((uint32_t)(unixNow() + (getHydroponicsInstance() ? getHydroponicsInstance()->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
