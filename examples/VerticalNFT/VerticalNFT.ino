@@ -63,21 +63,21 @@
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
 #define SETUP_POWER_SENSOR_PIN          -1              // Power meter sensor pin (analog), else -1
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
-#define SETUP_DS18_WTEMP_PIN            2               // DS18* water temp sensor data pin (digital), else -1
-#define SETUP_DHT_ATEMP_PIN             3               // DHT* air temp sensor data pin (digital), else -1
+#define SETUP_DS18_WTEMP_PIN            -1              // DS18* water temp sensor data pin (digital), else -1
+#define SETUP_DHT_ATEMP_PIN             -1              // DHT* air temp sensor data pin (digital), else -1
 #define SETUP_DHT_SENSOR_TYPE           DHT12           // DHT sensor type enum (use DHT* defines)
-#define SETUP_VOL_FILLED_PIN            4               // Water level filled indicator pin (digital/ISR), else -1
+#define SETUP_VOL_FILLED_PIN            -1              // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
-#define SETUP_GROW_LIGHTS_PIN           5               // Grow lights relay pin (digital), else -1
-#define SETUP_WATER_AERATOR_PIN         6               // Aerator relay pin (digital), else -1
-#define SETUP_FEED_PUMP_PIN             7               // Water level low indicator pin, else -1
-#define SETUP_WATER_HEATER_PIN          8               // Water heater relay pin (digital), else -1
+#define SETUP_GROW_LIGHTS_PIN           -1              // Grow lights relay pin (digital), else -1
+#define SETUP_WATER_AERATOR_PIN         -1              // Aerator relay pin (digital), else -1
+#define SETUP_FEED_PUMP_PIN             -1              // Water level low indicator pin, else -1
+#define SETUP_WATER_HEATER_PIN          -1              // Water heater relay pin (digital), else -1
 #define SETUP_WATER_SPRAYER_PIN         -1              // Water sprayer relay pin (digital), else -1
 #define SETUP_FAN_EXHAUST_PIN           -1              // Fan exhaust relay pin (digital/PWM), else -1
-#define SETUP_NUTRIENT_MIX_PIN          9               // Nutrient premix peristaltic pump relay pin (digital), else -1
-#define SETUP_FRESH_WATER_PIN           10              // Fresh water peristaltic pump relay pin (digital), else -1
-#define SETUP_PH_UP_PIN                 12              // pH up solution peristaltic pump relay pin (digital), else -1
-#define SETUP_PH_DOWN_PIN               13              // pH down solution peristaltic pump relay pin (digital), else -1
+#define SETUP_NUTRIENT_MIX_PIN          -1              // Nutrient premix peristaltic pump relay pin (digital), else -1
+#define SETUP_FRESH_WATER_PIN           -1              // Fresh water peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_UP_PIN                 -1              // pH up solution peristaltic pump relay pin (digital), else -1
+#define SETUP_PH_DOWN_PIN               -1              // pH down solution peristaltic pump relay pin (digital), else -1
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
