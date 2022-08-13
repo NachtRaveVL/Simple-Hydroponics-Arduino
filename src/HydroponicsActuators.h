@@ -26,10 +26,10 @@ extern HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorD
 // where it lives, and what it's attached to.
 class HydroponicsActuator : public HydroponicsObject, public HydroponicsActuatorObjectInterface, public HydroponicsRailAttachmentInterface, public HydroponicsReservoirAttachmentInterface {
 public:
-    const enum : signed char { Relay, RelayPump, PWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
+    const enum : signed char { Relay, RelayPump, VariablePWM, Unknown = -1 } classType; // Actuator class type (custom RTTI)
     inline bool isRelayClass() const { return classType == Relay; }
     inline bool isRelayPumpClass() const { return classType == RelayPump; }
-    inline bool isPWMClass() const { return classType == PWM; }
+    inline bool isVariablePWMClass() const { return classType == VariablePWM; }
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
@@ -159,7 +159,7 @@ public:
                            float pwmFrequency = 1000,
 #endif
                            uint8_t outputBitRes = 8,
-                           int classType = PWM);
+                           int classType = VariablePWM);
     HydroponicsPWMActuator(const HydroponicsPWMActuatorData *dataIn);
     virtual ~HydroponicsPWMActuator();
 

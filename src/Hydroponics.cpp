@@ -595,8 +595,10 @@ void Hydroponics::commonPreInit()
         #ifdef ESP32
             ledcSetup(0, 0, 10);
             ledcAttachPin(_piezoBuzzerPin, 0);
-        #else
+        #elif !defined(ARDUINO_SAM_DUE)
             noTone(_piezoBuzzerPin);
+        #else
+            digitalWrite(_piezoBuzzerPin, 0);
         #endif
     }
     if (_i2cWire) {
