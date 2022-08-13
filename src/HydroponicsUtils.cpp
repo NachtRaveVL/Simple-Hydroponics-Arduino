@@ -153,8 +153,9 @@ void createDirectoryFor(SDClass *sd, String filename)
 {
     auto slashIndex = filename.indexOf(HYDRUINO_SDCPATH_SEPARATOR);
     String directory = slashIndex != -1 ? filename.substring(0, slashIndex) : String();
-    if (directory.length() && !sd->exists(directory + String(HYDRUINO_SDCPATH_SEPARATOR))) {
-        sd->mkdir(directory);
+    String dirWithSep = directory + String(HYDRUINO_SDCPATH_SEPARATOR);
+    if (directory.length() && !sd->exists(dirWithSep.c_str())) {
+        sd->mkdir(directory.c_str());
     }
 }
 

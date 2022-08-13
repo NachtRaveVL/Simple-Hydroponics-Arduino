@@ -114,7 +114,7 @@ void setup() {
                     getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                     createDirectoryFor(sd, filename);
-                    auto file = sd->open(filename, O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
+                    auto file = sd->open(filename.c_str() O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
                     if (file) {
                         StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                         JsonObject jsonObject = doc.to<JsonObject>();
@@ -132,8 +132,8 @@ void setup() {
                     }
 
                     getCropsLibraryInstance()->returnCropsData(cropData);
-                } else if (sd->exists(filename)) {
-                    sd->remove(filename);
+                } else if (sd->exists(filename.c_str())) {
+                    sd->remove(filename.c_str());
                 }
 
                 yield();
@@ -158,7 +158,7 @@ void setup() {
                 getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                 createDirectoryFor(sd, filename);
-                auto file = sd->open(filename, O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
+                auto file = sd->open(filename.c_str(), O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
                 if (file) { // Strings data goes into a single file as binary
                     uint16_t bytesWritten = 0;
 

@@ -14,7 +14,7 @@ This controller allows one to set up an entire system of sensors, pumps, relays,
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, Callback, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire, RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like library (optional): WiFiNINA (33IoT/MKR1010/MKR4000), WiFi101 (MKR1000), WiFi (WiFi-like shield), or ESPWiFi-Continued (external serial).
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFiNINA (33IoT/MKR1010/MKR4000), WiFi101 (MKR1000), WiFi (shield/built-in), or WiFiEspAT (ext serial).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -26,19 +26,19 @@ We want to make Hydroponics more accessible by utilizing the widely available Io
 
 With the advances in technology bringing us even more compact MCUs at even lower costs, it becomes a lot more possible to simply use one of these small devices to do what amounts to turning a bunch of relays on and off in the right order. Hydroponics is a perfect application for these devices, especially as a data logger, feed balancer, and more.
 
-Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors from the hobby store, some aquarium pumps from the pet store, and other widely available low-cost hardware to build a working functional hydroponics controller systems. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the doors for more people to get involved in reducing their carbon footprint and becoming more knowledgeable about their food.
+Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors from the hobby store, some aquarium pumps from the pet store, and other widely available low-cost hardware to build a working functional hydroponics controller system. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the door for more people to get involved in reducing their carbon footprint, becoming more knowledgeable about their food, and learning some basic electronics.
 
 ## Controller Setup
 
 ### Requirements
 
-Minimum MCU: 256kB Flash, 24kB SRAM, 16 MHz  
-Recommended: 512+kB Flash, 32+kB SRAM, 32+ MHz
+Minimum MCU: 256kB Flash, 16kB SRAM, 16 MHz 
+Recommended: 1+MB Flash, 32+kB SRAM, 32+ MHz
 
 Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32, Pico, etc.  
 Won't work: Uno (any), Nano (classic & Every), Leonardo, Micro, ESP12-, Teensy 2-, etc.
 
-Devices that _may_ work, but only with custom tweaking: ATMega2560
+Devices that _may_ work, but only with custom tweaking/limited build: ATMega2560
 
 ### Installation
 

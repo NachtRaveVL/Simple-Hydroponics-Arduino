@@ -33,7 +33,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
         if (sd) {
             String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HStr_csv));
             createDirectoryFor(sd, dataFileName);
-            auto dataFile = sd->open(dataFileName, FILE_WRITE);
+            auto dataFile = sd->open(dataFileName.c_str(), FILE_WRITE);
 
             if (dataFile) {
                 dataFile.close();
@@ -143,7 +143,7 @@ void HydroponicsPublisher::publish(time_t timestamp)
 
         if (sd) {
             createDirectoryFor(sd, _dataFileName);
-            auto dataFile = sd->open(_dataFileName, FILE_WRITE);
+            auto dataFile = sd->open(_dataFileName.c_str(), FILE_WRITE);
 
             if (dataFile) {
                 dataFile.print(timestamp);
@@ -225,11 +225,11 @@ void HydroponicsPublisher::resetDataFile()
         auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
-            if (sd->exists(_dataFileName)) {
-                sd->remove(_dataFileName);
+            if (sd->exists(_dataFileName.c_str())) {
+                sd->remove(_dataFileName.c_str());
             }
             createDirectoryFor(sd, _dataFileName);
-            auto dataFile = sd->open(_dataFileName, FILE_WRITE);
+            auto dataFile = sd->open(_dataFileName.c_str(), FILE_WRITE);
 
             if (dataFile) {
                 HydroponicsSensor *lastSensor = nullptr;
