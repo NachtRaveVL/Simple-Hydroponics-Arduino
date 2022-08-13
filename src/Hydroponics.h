@@ -38,15 +38,17 @@
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
-// Uncomment or -D this define to enable usage of the on-board WiFi library, which enables networking capabilities.
+// Uncomment or -D this define to enable usage of the platform WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
 
 // Uncomment or -D this define to enable usage of the external serial ESP AT WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/jandrassy/WiFiEspAT
+//#define HYDRUINO_ENABLE_ESP_WIFI                  // https://github.com/jandrassy/WiFiEspAT
 
-// Uncomment or -D one of the following defines to enable usage of virtual memory, which allows SD cards or SPI serial RAM chips to extend available RAM.
+// Uncomment or -D this define to enable usage of SD card based virtual memory, which extends available RAM.
 //#define HYDRUINO_ENABLE_SD_VIRTMEM                // https://github.com/NachtRaveVL/virtmem-continued
-//#define HYDRUINO_ENABLE_SPIRAM_VIRTMEM            // Enable either SD or SPI RAM
+
+// Uncomment or -D this define to enable usage of SPI RAM based virtual memory, which extends available RAM.
+//#define HYDRUINO_ENABLE_SPIRAM_VIRTMEM            // https://github.com/NachtRaveVL/virtmem-continued
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
@@ -154,7 +156,7 @@ typedef uint8_t pintype_t;
 #include "alloc/spiram_alloc.h"         // Note: If building fails, verify original library is not present
 #endif
 #endif
-#ifdef HYDRUINO_ENABLE_ESPWIFI
+#ifdef HYDRUINO_ENABLE_ESP_WIFI
 #include "WiFiEspAT.h"                  // WiFi ESP library
 #endif
 
@@ -187,9 +189,7 @@ template <typename T> using SharedPtr = arx::stdx::shared_ptr<VirtualPtr<T>>;
 #else
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
 #endif
-
-#ifdef HYDRUINO_ENABLE_ESPWIFI
-#define HYDRUINO_USE_SERIALWIFI
+#ifdef HYDRUINO_ENABLE_ESP_WIFI
 #define HYDRUINO_USE_WIFI
 #endif
 

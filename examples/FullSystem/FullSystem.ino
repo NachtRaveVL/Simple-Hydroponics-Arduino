@@ -59,7 +59,7 @@
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 
-#if defined(HYDRUINO_USE_SERIALWIFI) && !(defined(SERIAL_PORT_HARDWARE1) || defined(Serial1))
+#if defined(HYDRUINO_ENABLE_ESP_WIFI) && !(defined(SERIAL_PORT_HARDWARE1) || defined(Serial1))
 #include "SoftwareSerial.h"
 SoftwareSerial Serial1(RX, TX);                         // Replace with Rx/Tx pins of your choice
 #endif
@@ -93,7 +93,7 @@ void setup() {
     #ifdef HYDRUINO_USE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
-        #ifdef HYDRUINO_USE_SERIALWIFI
+        #ifdef HYDRUINO_ENABLE_ESP_WIFI
             Serial1.begin(HYDRUINO_SYS_ESPWIFI_SERIALBAUD);
             HYDRUINO_SYS_WIFI_INSTANCE.init(Serial1); // Change to Serial instance of your choice, otherwise
         #endif

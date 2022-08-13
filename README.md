@@ -14,7 +14,7 @@ This controller allows one to set up an entire system of sensors, pumps, relays,
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFiNINA (33IoT/MKR1010/MKR4000), WiFi101 (MKR1000), WiFi (shield/built-in), or WiFiEspAT (ext serial).
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFiNINA (33IoT/MKR1010/MKR4000), WiFi101 (MKR1000), WiFi (platform), or WiFiEspAT (ext serial).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -60,11 +60,11 @@ From Hydroponics.h:
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
 //#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
-// Uncomment or -D this define to enable usage of the on-board WiFi library, which enables networking capabilities.
+// Uncomment or -D this define to enable usage of the platform WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
 
 // Uncomment or -D this define to enable usage of the external serial ESP WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/jandrassy/WiFiEspAT
+//#define HYDRUINO_ENABLE_ESP_WIFI                  // https://github.com/jandrassy/WiFiEspAT
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
@@ -358,7 +358,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI to enable WiFi)
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
