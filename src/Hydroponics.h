@@ -41,8 +41,8 @@
 // Uncomment or -D this define to enable usage of the on-board WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
 
-// Uncomment or -D this define to enable usage of the external serial ESP WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/NachtRaveVL/WiFiEsp-Continued
+// Uncomment or -D this define to enable usage of the external serial ESP AT WiFi library, which enables networking capabilities.
+//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/jandrassy/WiFiEspAT
 
 // Uncomment or -D one of the following defines to enable usage of virtual memory, which allows SD cards or SPI serial RAM chips to extend available RAM.
 //#define HYDRUINO_ENABLE_SD_VIRTMEM                // https://github.com/NachtRaveVL/virtmem-continued
@@ -155,7 +155,7 @@ typedef uint8_t pintype_t;
 #endif
 #endif
 #ifdef HYDRUINO_ENABLE_ESPWIFI
-#include "WiFiEsp-Continued.h"          // Note: Original library is no longer maintained, use our fork
+#include "WiFiEspAT.h"                  // WiFi ESP library
 #endif
 
 #include "HydroponicsDefines.h"
@@ -189,8 +189,6 @@ template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
 #endif
 
 #ifdef HYDRUINO_ENABLE_ESPWIFI
-typedef WiFiEspClass WiFiClass;
-typedef WiFiEspClient WiFiClient;
 #define HYDRUINO_USE_SERIALWIFI
 #define HYDRUINO_USE_WIFI
 #endif

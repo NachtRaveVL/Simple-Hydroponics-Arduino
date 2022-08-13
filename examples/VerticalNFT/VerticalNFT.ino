@@ -97,12 +97,12 @@
 #define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
 
 
-#if defined(HYDRUINO_USE_SERIALWIFI) && !defined(SERIAL_PORT_HARDWARE1)
-#include "SoftwareSerial.h"
-SoftwareSerial Serial1(RX, TX);                         // Replace with Rx/Tx pins of your choice
+#if defined(HYDRUINO_USE_SERIALWIFI) && !(defined(SERIAL_PORT_HARDWARE1) || defined(Serial1))
+//#include "SoftwareSerial.h"
+//SoftwareSerial Serial1(RX, TX);                         // Replace with Rx/Tx pins of your choice
 #endif
 
-uint8_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
+pintype_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
                             SETUP_EEPROM_I2C_ADDR,
@@ -148,7 +148,7 @@ void setup() {
         String wifiPassword = F(SETUP_WIFI_PASS);
         #ifdef HYDRUINO_USE_SERIALWIFI
             Serial1.begin(HYDRUINO_SYS_ESPWIFI_SERIALBAUD);
-            HYDRUINO_SYS_WIFI_INSTANCE.init(&Serial1); // Change to Serial instance of your choice, otherwise
+            HYDRUINO_SYS_WIFI_INSTANCE.init(Serial1); // Change to Serial instance of your choice, otherwise
         #endif
     #endif
 
