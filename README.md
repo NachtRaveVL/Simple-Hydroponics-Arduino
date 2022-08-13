@@ -64,7 +64,7 @@ From Hydroponics.h:
 //#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
 
 // Uncomment or -D this define to enable usage of the external serial ESP WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/NachtRaveVL/WiFiEsp-Continued
+//#define HYDRUINO_ENABLE_ESPWIFI                   // https://github.com/jandrassy/WiFiEspAT
 
 // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
