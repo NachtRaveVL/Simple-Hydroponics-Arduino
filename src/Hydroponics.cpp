@@ -1258,7 +1258,7 @@ WiFiClass *Hydroponics::getWiFi(bool begin)
             String ssid = getWiFiSSID();
             String pass = getWiFiPassword();
 
-            #ifdef HYDRUINO_USE_SERIALWIFI
+            #ifdef HYDRUINO_ENABLE_ESP_WIFI
                 status = HYDRUINO_SYS_WIFI_INSTANCE.begin(ssid.c_str(), pass.c_str());
             #else
                 status = pass.length() ? HYDRUINO_SYS_WIFI_INSTANCE.begin(const_cast<char *>(ssid.c_str()), pass.c_str())
