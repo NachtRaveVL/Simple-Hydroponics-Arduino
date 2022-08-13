@@ -198,8 +198,8 @@ HydroponicsCropsLibraryBook *HydroponicsCropsLibrary::newBookFromType(Hydroponic
         if (sd) {
             String filename = getNNFilename(_libSDCropPrefix, (unsigned int)cropType, SFP(HStr_dat));
 
-            if (sd->exists(filename)) {
-                auto file = sd->open(filename, FILE_READ);
+            if (sd->exists(filename.c_str())) {
+                auto file = sd->open(filename.c_str(), FILE_READ);
                 if (file) {
                     retVal = new HydroponicsCropsLibraryBook(file, _libSDJSONFormat);
                     file.close();

@@ -1424,13 +1424,13 @@ void Hydroponics::broadcastLowMemory()
     }
 }
 
-static uint32_t getSDCardFreeSpace()
+static uint64_t getSDCardFreeSpace()
 {
-    uint32_t retVal = HYDRUINO_SYS_FREESPACE_LOWSPACE;
+    uint64_t retVal = HYDRUINO_SYS_FREESPACE_LOWSPACE;
     #if defined(CORE_TEENSY)
         auto sd = getHydroponicsInstance()->getSDCard();
         if (sd) {
-            retVal = sd.vol()->freeClusterCount() * (sd.vol()->blocksPerCluster() >> 1);
+            retVal = sd->totalSize() - sd->usedSize();
             getHydroponicsInstance()->endSDCard(sd);
         }
     #endif
@@ -1442,7 +1442,7 @@ void Hydroponics::checkFreeSpace()
     if ((logger.isLoggingEnabled() || publisher.isPublishingEnabled()) &&
         (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (HYDRUINO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
         if (logger.isLoggingToSDCard() || publisher.isPublishingToSDCard()) {
-            uint32_t freeKB = getSDCardFreeSpace();
+            uint32_t freeKB = getSDCardFreeSpace() >> 10;
             while (freeKB < HYDRUINO_SYS_FREESPACE_LOWSPACE) {
                 logger.cleanupOldestLogs(true);
                 publisher.cleanupOldestData(true);

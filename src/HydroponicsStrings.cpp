@@ -78,7 +78,7 @@ String stringFromPGM(Hydroponics_String strNum)
             filename.concat('a');
             filename.concat('t');
 
-            auto file = sd->open(filename, FILE_READ);
+            auto file = sd->open(filename.c_str(), FILE_READ);
             if (file) {
                 uint16_t lookupOffset = 0;
                 file.seek(sizeof(uint16_t) * (int)strNum);
