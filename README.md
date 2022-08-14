@@ -175,10 +175,10 @@ From Hydroponics.h, in class Hydroponics:
 
 * The recommended Vcc power supply and logic level is 5v, with most newer MCUs restricted to 3.3v.
   * There are many devices that are 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
-  * Devices that do not have the same logic level voltage as the MCU will need a level converter (or similar), bi-directional particularly on any fast data lines, in order to operate together (unless capable of doing so without such).
-    * 5v analog sensor signal data lines, for example, will need level converted in order to connect to a 3.3v MCU, as the pins will not be 5v tolerant (this includes `AREF`).
-    * OneWire sensor's logic level voltage is the same as their Vcc supply voltage. Most of the time this isn't an issue, but some (such as CO2 sensors) may require 5v Vcc supply power and thus need their data line converted to 3.3v.
-    * Alternatively, using a 10kΩ resistor can often times be enough to 'convert' 5v to 3.3v, but the correct way is to use a 1kΩ resistor and a 2kΩ resistor (or any size with a 1:2 ratio) in a [simple voltage divider circuit](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/).
+* Devices that do not have the same logic level voltage as the MCU will need a level converter (or similar), bi-directional particularly on any fast data lines, in order to operate together (unless capable of doing so without such).
+  * 5v analog sensor signal data lines, for example, will need level converted in order to connect to a 3.3v MCU, as the pins will not be 5v tolerant (this includes `AREF`).
+  * Alternatively, using a 10kΩ resistor can often times be enough to 'convert' 5v to 3.3v, but the correct way is to use a 1kΩ resistor and a 2kΩ resistor (or any size with a 1:2 ratio) in a [simple voltage divider circuit](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/).
+* OneWire sensor's logic level voltage is the same as their Vcc supply voltage. Most of the time this isn't an issue, but some (such as CO2 sensors) may require 5v Vcc supply power and thus need their data line converted in order to connect to a 3.3v MCU.
 
 ### Serial UART
 
