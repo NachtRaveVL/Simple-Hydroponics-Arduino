@@ -7,6 +7,11 @@
 #include <Hydroponics.h>
 #include "full/HydroponicsUI.h"
 
+// Compiler flag checks
+#ifdef HYDRUINO_DISABLE_GUI
+#error The HYDRUINO_DISABLE_GUI flag is expected to be undefined in order to run this sketch
+#endif
+
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_SIZE        0               // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
