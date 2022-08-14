@@ -63,6 +63,7 @@
 #define SETUP_TDS_METER_PIN             -1              // TDS meter sensor pin (analog), else -1
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
 #define SETUP_POWER_SENSOR_PIN          -1              // Power meter sensor pin (analog), else -1
+#define SETUP_POWER_SENSOR_TYPE         AC              // Power sensor type (AC, DC)
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
 #define SETUP_DS18_WATER_TEMP_PIN       -1              // DS18* water temp sensor data pin (digital), else -1
 #define SETUP_DHT_AIR_TEMP_HUMID_PIN    -1              // DHT* air temp sensor data pin (digital), else -1
@@ -106,10 +107,12 @@
 //#include "SoftwareSerial.h"
 //SoftwareSerial Serial1(RX, TX);                       // Replace with Rx/Tx pins of your choice
 #endif
+#if !defined(HYDRUINO_DISABLE_GUI) && SETUP_LCD_OUT_MODE != Disabled
 #if SETUP_SYS_UI_MODE == Minimal
 #include "min/HydroponicsUI.h"
 #elif SETUP_SYS_UI_MODE == Full
 #include "full/HydroponicsUI.h"
+#endif
 #endif
 
 pintype_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -220,7 +223,6 @@ void setup() {
         #ifdef SETUP_USE_AC_RAIL
             #if SETUP_AC_SUPPLY_POWER
                 auto acRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE),SETUP_AC_SUPPLY_POWER);
-                // TODO: power sensor
             #else
                 auto acRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
             #endif
@@ -228,7 +230,6 @@ void setup() {
         #ifdef SETUP_USE_DC_RAIL
             #if SETUP_DC_SUPPLY_POWER
                 auto dcRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE),SETUP_DC_SUPPLY_POWER);
-                // TODO: power sensor
             #else
                 auto dcRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE));
             #endif
@@ -277,10 +278,11 @@ void setup() {
             feedReservoir->setAirCO2Sensor(co2Sensor);
         }
         #endif
-        #if SETUP_POWER_SENSOR_PIN >= 0
+        #if SETUP_POWER_SENSOR_PIN >= 0 && ((SETUP_USE_AC_RAIL && SETUP_AC_SUPPLY_POWER) || (SETUP_USE_DC_RAIL && SETUP_DC_SUPPLY_POWER))
         {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
-            powerMeter->setReservoir(feedReservoir);
-            #if SETUP_DC_SUPPLY_POWER
+            #if SETUP_USE_AC_RAIL && SETUP_AC_SUPPLY_POWER && SETUP_POWER_SENSOR_TYPE == AC
+                acRelayPower->setPowerSensor(powerMeter);
+            #elif SETUP_USE_DC_RAIL && SETUP_DC_SUPPLY_POWER && SETUP_POWER_SENSOR_TYPE == DC
                 dcRelayPower->setPowerSensor(powerMeter);
             #endif
         }
@@ -442,10 +444,10 @@ void setup() {
         wifiSSID = wifiPassword = String(); // no longer needed
     #endif
 
-    #if !defined(HYDRUINO_DISABLE_MULTITASKING) && SETUP_LCD_OUT_MODE != Disabled
-        #if SETUP_UI_MODE == Minimal
+    #if !defined(HYDRUINO_DISABLE_GUI) && SETUP_LCD_OUT_MODE != Disabled
+        #if SETUP_SYS_UI_MODE == Minimal
             hydroController.enableMinimalUI();
-        #elif SETUP_UI_MODE == Full
+        #elif SETUP_SYS_UI_MODE == Full
             hydroController.enableFullUI();
         #endif
     #endif
