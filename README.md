@@ -32,7 +32,7 @@ Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like
 
 ### Requirements
 
-Minimum MCU: 256kB Flash, 16kB SRAM, 16 MHz 
+Minimum MCU: 256kB Flash, 16kB SRAM, 16 MHz  
 Recommended: 1+MB Flash, 32+kB SRAM, 32+ MHz
 
 Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32, Pico, etc.  
