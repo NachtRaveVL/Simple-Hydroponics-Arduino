@@ -91,12 +91,12 @@ There are several initialization mode settings exposed through this controller t
 
 #### Class Instantiation
 
-The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, i2c clock speed, and if enabled WiFi class instance. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, SPI speeds set to same as processor speed (/0 divider), and WiFi class instance `WiFi`.
+The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, and i2c clock speed. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, and SPI speeds set to same as processor speed (/0 divider, else 50MHz if undetected).
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
     // Controller constructor. Typically called during class instantiation, before setup().
-        Hydroponics(pintype_t piezoBuzzerPin = -1,              // Piezo buzzer pin, else -1
+    Hydroponics(pintype_t piezoBuzzerPin = -1,              // Piezo buzzer pin, else -1
                 uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
                 uint8_t eepromI2CAddress = B000,            // EEPROM i2c address
                 uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
