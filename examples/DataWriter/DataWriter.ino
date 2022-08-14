@@ -44,7 +44,7 @@
 #endif
 
 // Pins & Class Instances
-#define SETUP_PIEZO_BUZZER_PIN          11              // Piezo buzzer pin, else -1
+#define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
 #define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
