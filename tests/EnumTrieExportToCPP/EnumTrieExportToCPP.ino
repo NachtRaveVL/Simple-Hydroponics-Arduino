@@ -6,7 +6,7 @@
 #error The HYDRUINO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
 #endif
 
-#define SETUP_PIEZO_BUZZER_PIN          11
+#define SETUP_PIEZO_BUZZER_PIN          -1
 #define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256
 #define SETUP_SD_CARD_CS_PIN            SS
 #define SETUP_EEPROM_I2C_ADDR           B000
@@ -19,14 +19,15 @@
 
 Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
                             SETUP_EEPROM_DEVICE_SIZE,
-                            SETUP_SD_CARD_CS_PIN,
-                            nullptr,
                             SETUP_EEPROM_I2C_ADDR,
                             SETUP_RTC_I2C_ADDR,
+                            SETUP_SD_CARD_CS_PIN,
+                            SETUP_SD_CARD_SPI_SPEED,
+                            nullptr,
                             0,
                             SETUP_I2C_WIRE_INST,
-                            SETUP_I2C_SPEED,
-                            SETUP_SD_CARD_SPI_SPEED);
+                            SETUP_I2C_SPEED);
+
 struct TreeNode;
 static TreeNode *_root;
 

@@ -62,8 +62,8 @@
 #define SETUP_PH_METER_PIN              -1              // pH meter sensor pin (analog), else -1
 #define SETUP_TDS_METER_PIN             -1              // TDS meter sensor pin (analog), else -1
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
-#define SETUP_POWER_SENSOR_PIN          -1              // Power meter sensor pin (analog), else -1
-#define SETUP_POWER_SENSOR_TYPE         AC              // Power sensor type (AC, DC)
+#define SETUP_AC_POWER_SENSOR_PIN       -1              // AC power meter sensor pin (analog), else -1
+#define SETUP_DC_POWER_SENSOR_PIN       -1              // DC power meter sensor pin (analog), else -1
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
 #define SETUP_DS18_WATER_TEMP_PIN       -1              // DS18* water temp sensor data pin (digital), else -1
 #define SETUP_DHT_AIR_TEMP_HUMID_PIN    -1              // DHT* air temp sensor data pin (digital), else -1
@@ -223,6 +223,11 @@ void setup() {
         #ifdef SETUP_USE_AC_RAIL
             #if SETUP_AC_SUPPLY_POWER
                 auto acRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE),SETUP_AC_SUPPLY_POWER);
+                #if SETUP_AC_POWER_SENSOR_PIN >= 0
+                {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_AC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
+                    acRelayPower->setPowerSensor(powerMeter);
+                }
+                #endif
             #else
                 auto acRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
             #endif
@@ -230,6 +235,11 @@ void setup() {
         #ifdef SETUP_USE_DC_RAIL
             #if SETUP_DC_SUPPLY_POWER
                 auto dcRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE),SETUP_DC_SUPPLY_POWER);
+                #if SETUP_DC_POWER_SENSOR_PIN >= 0
+                {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_DC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
+                    dcRelayPower->setPowerSensor(powerMeter);
+                }
+                #endif
             #else
                 auto dcRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE));
             #endif
@@ -276,15 +286,6 @@ void setup() {
         {   auto co2Sensor = hydroController.addAnalogCO2Sensor(SETUP_CO2_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
             co2Sensor->setReservoir(feedReservoir);
             feedReservoir->setAirCO2Sensor(co2Sensor);
-        }
-        #endif
-        #if SETUP_POWER_SENSOR_PIN >= 0 && ((SETUP_USE_AC_RAIL && SETUP_AC_SUPPLY_POWER) || (SETUP_USE_DC_RAIL && SETUP_DC_SUPPLY_POWER))
-        {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
-            #if SETUP_USE_AC_RAIL && SETUP_AC_SUPPLY_POWER && SETUP_POWER_SENSOR_TYPE == AC
-                acRelayPower->setPowerSensor(powerMeter);
-            #elif SETUP_USE_DC_RAIL && SETUP_DC_SUPPLY_POWER && SETUP_POWER_SENSOR_TYPE == DC
-                dcRelayPower->setPowerSensor(powerMeter);
-            #endif
         }
         #endif
         #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
