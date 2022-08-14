@@ -21,8 +21,16 @@
 #ifndef DISABLED
 #define DISABLED                            0x0                     // Disabled define (convenience)
 #endif
+#define ACTIVE_HIGH                         false                   // Active high (convenience)
+#define ACTIVE_ABOVE                        false                   // Active above (convenience)
+#define ACTIVE_LOW                          true                    // Active low (convenience)
+#define ACTIVE_BELOW                        true                    // Active below (convenience)
 #ifndef RANDOM_MAX
+#ifdef RAND_MAX
 #define RANDOM_MAX RAND_MAX                                         // Missing def
+#else
+#define RANDOM_MAX INTPTR_MAX
+#endif
 #endif
 #ifndef JOIN                                                        // Define joiner
 #define JOIN_(X,Y) X##_##Y
@@ -34,6 +42,9 @@
 #endif
 #define min _min
 #define max _max
+#if defined(ESP32) && !defined(ADC_RESOLUTION)
+#define ADC_RESOLUTION                      12
+#endif
 #endif
 #ifndef F_SPD                                                       // F_CPU/F_BUS alias for default SPI device speeds
 #if defined(F_CPU)
@@ -270,7 +281,7 @@ enum Hydroponics_MeasurementMode : signed char {
 
     Hydroponics_MeasurementMode_Count,                      // Internal use only
     Hydroponics_MeasurementMode_Undefined = -1,             // Internal use only
-    Hydroponics_MeasurementMode_Default = Hydroponics_MeasurementMode_Metric // Default system measurement mode
+    Hydroponics_MeasurementMode_Default = Hydroponics_MeasurementMode_Metric // Default system measurement mode (feel free to change)
 };
 
 // LCD/Display Output Mode

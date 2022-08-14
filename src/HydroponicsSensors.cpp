@@ -97,14 +97,14 @@ HydroponicsSensor::HydroponicsSensor(Hydroponics_SensorType sensorType,
     : HydroponicsObject(HydroponicsIdentity(sensorType, sensorIndex)), classType((typeof(classType))classTypeIn),
       _inputPin(inputPin), _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
-    _calibrationData = getCalibrationsStoreInstance()->getUserCalibrationData(_id.key);
+    _calibrationData = hydroCalibrations.getUserCalibrationData(_id.key);
 }
 
 HydroponicsSensor::HydroponicsSensor(const HydroponicsSensorData *dataIn)
     : HydroponicsObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
       _inputPin(dataIn->inputPin), _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
-    _calibrationData = getCalibrationsStoreInstance()->getUserCalibrationData(_id.key);
+    _calibrationData = hydroCalibrations.getUserCalibrationData(_id.key);
     _crop.setObject(dataIn->cropName);
     _reservoir.setObject(dataIn->reservoirName);
 }
@@ -147,9 +147,9 @@ HydroponicsAttachment &HydroponicsSensor::getParentReservoir(bool resolve)
 
 void HydroponicsSensor::setUserCalibrationData(HydroponicsCalibrationData *userCalibrationData)
 {
-    if (userCalibrationData && getCalibrationsStoreInstance()->setUserCalibrationData(userCalibrationData)) {
-        _calibrationData = getCalibrationsStoreInstance()->getUserCalibrationData(_id.key);
-    } else if (!userCalibrationData && _calibrationData && getCalibrationsStoreInstance()->dropUserCalibrationData(_calibrationData)) {
+    if (userCalibrationData && hydroCalibrations.setUserCalibrationData(userCalibrationData)) {
+        _calibrationData = hydroCalibrations.getUserCalibrationData(_id.key);
+    } else if (!userCalibrationData && _calibrationData && hydroCalibrations.dropUserCalibrationData(_calibrationData)) {
         _calibrationData = nullptr;
     }
 }

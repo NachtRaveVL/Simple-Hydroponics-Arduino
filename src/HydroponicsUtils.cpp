@@ -1102,28 +1102,60 @@ bool checkPinIsAnalogOutput(pintype_t pin)
     #else
         switch (pin) {
             #if NUM_ANALOG_OUTPUTS > 0
-                case (pintype_t)DAC0:
+                #ifndef PIN_DAC0
+                    case (pintype_t)A0:
+                #else
+                    case (pintype_t)DAC0:
+                #endif
             #endif
             #if NUM_ANALOG_OUTPUTS > 1
-                case (pintype_t)DAC1:
+                #ifndef PIN_DAC1
+                    case (pintype_t)A1:
+                #else
+                    case (pintype_t)DAC1:
+                #endif
             #endif
             #if NUM_ANALOG_OUTPUTS > 2
-                case (pintype_t)DAC2:
+                #ifndef PIN_DAC2
+                    case (pintype_t)A2:
+                #else
+                    case (pintype_t)DAC2:
+                #endif
             #endif
             #if NUM_ANALOG_OUTPUTS > 3
-                case (pintype_t)DAC3:
+                #ifndef PIN_DAC3
+                    case (pintype_t)A3:
+                #else
+                    case (pintype_t)DAC3:
+                #endif
             #endif
             #if NUM_ANALOG_OUTPUTS > 4
-                case (pintype_t)DAC4:
+                #ifndef PIN_DAC4
+                    case (pintype_t)A4:
+                #else
+                    case (pintype_t)DAC4:
+                #endif
             #endif
             #if NUM_ANALOG_OUTPUTS > 5
-                case (pintype_t)DAC5:
+                #ifndef PIN_DAC5
+                    case (pintype_t)A5:
+                #else
+                    case (pintype_t)DAC5:
+                #endif
             #endif
             #if NUM_ANALOG_OUTPUTS > 6
-                case (pintype_t)DAC6:
+                #ifndef PIN_DAC6
+                    case (pintype_t)A6:
+                #else
+                    case (pintype_t)DAC6:
+                #endif
             #endif
             #if NUM_ANALOG_OUTPUTS > 7
-                case (pintype_t)DAC7:
+                #ifndef PIN_DAC7
+                    case (pintype_t)A7:
+                #else
+                    case (pintype_t)DAC7:
+                #endif
             #endif
                 return true;
 

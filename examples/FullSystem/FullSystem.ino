@@ -5,6 +5,7 @@
 // TODO: STILL A WIP!
 
 #include <Hydroponics.h>
+#include "full/HydroponicsUI.h"
 
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
@@ -38,7 +39,7 @@
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled
 
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI to enable WiFi)
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
@@ -102,11 +103,11 @@ void setup() {
     // Begin external data storage devices for crop, strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
-        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
+        hydroCropsLib.beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
     #if SETUP_EXTDATA_SD_ENABLE
         beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
-        getCropsLibraryInstance()->beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
+        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
     #endif
 
     // Sets system config name used in any of the following inits.
@@ -162,7 +163,9 @@ void setup() {
         wifiSSID = wifiPassword = String(); // no longer needed
     #endif
 
-    // TODO: UI initialization, other setup options
+    #if !defined(HYDRUINO_DISABLE_MULTITASKING) && SETUP_LCD_OUT_MODE != Disabled
+        hydroController.enableFullUI();
+    #endif
 
     // Launches controller into main operation.
     hydroController.launch();

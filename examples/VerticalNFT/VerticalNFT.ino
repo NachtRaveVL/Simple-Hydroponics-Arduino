@@ -6,8 +6,8 @@
 #include <Hydroponics.h>
 
 // Pins & Class Instances
-#define SETUP_PIEZO_BUZZER_PIN          11              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
+#define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
+#define SETUP_EEPROM_DEVICE_SIZE        0               // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
 #define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
 #define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
@@ -16,7 +16,7 @@
 #define SETUP_SPIRAM_CS_PIN             -1              // SPI serial RAM CS pin, else -1
 #define SETUP_SPIRAM_SPI_SPEED          F_SPD           // SPI serial RAM SPI speed, in Hz
 #define SETUP_LCD_I2C_ADDR              B000            // LCD i2c address
-#define SETUP_CTRL_INPUT_PINS           {31,33,30,32}   // Control input pin ribbon, else {-1}
+#define SETUP_CTRL_INPUT_PINS           {-1}            // Control input pin ribbon, else {-1}
 #define SETUP_I2C_WIRE_INST             Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
@@ -24,9 +24,10 @@
 
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
-#define SETUP_MEASURE_MODE              Imperial        // System measurement mode (Default, Imperial, Metric, Scientific)
+#define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
 #define SETUP_LCD_OUT_MODE              Disabled        // System LCD output mode (Disabled, 20x4LCD, 20x4LCD_Swapped, 16x2LCD, 16x2LCD_Swapped)
 #define SETUP_CTRL_IN_MODE              Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
+#define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
@@ -37,7 +38,7 @@
 #define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
 
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESPWIFI to enable WiFi)
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
 
@@ -58,16 +59,19 @@
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
 
 // Device Setup
-#define SETUP_PH_METER_PIN              A0              // pH meter sensor pin (analog), else -1
-#define SETUP_TDS_METER_PIN             A1              // TDS meter sensor pin (analog), else -1
+#define SETUP_PH_METER_PIN              -1              // pH meter sensor pin (analog), else -1
+#define SETUP_TDS_METER_PIN             -1              // TDS meter sensor pin (analog), else -1
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
 #define SETUP_POWER_SENSOR_PIN          -1              // Power meter sensor pin (analog), else -1
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
-#define SETUP_DS18_WTEMP_PIN            -1              // DS18* water temp sensor data pin (digital), else -1
-#define SETUP_DHT_ATEMP_PIN             -1              // DHT* air temp sensor data pin (digital), else -1
+#define SETUP_DS18_WATER_TEMP_PIN       -1              // DS18* water temp sensor data pin (digital), else -1
+#define SETUP_DHT_AIR_TEMP_HUMID_PIN    -1              // DHT* air temp sensor data pin (digital), else -1
 #define SETUP_DHT_SENSOR_TYPE           DHT12           // DHT sensor type enum (use DHT* defines)
 #define SETUP_VOL_FILLED_PIN            -1              // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
+#define SETUP_VOL_INDICATOR_TYPE        ACTIVE_HIGH     // Water level indicator type/active level (ACTIVE_HIGH, ACTIVE_LOW)
+#define SETUP_VOL_LEVEL_PIN             -1              // Water level sensor pin (analog)
+#define SETUP_VOL_LEVEL_TYPE            Ultrasonic      // Water level device type (Ultrasonic, AnalogHeight)
 #define SETUP_GROW_LIGHTS_PIN           -1              // Grow lights relay pin (digital), else -1
 #define SETUP_WATER_AERATOR_PIN         -1              // Aerator relay pin (digital), else -1
 #define SETUP_FEED_PUMP_PIN             -1              // Water level low indicator pin, else -1
@@ -80,26 +84,32 @@
 #define SETUP_PH_DOWN_PIN               -1              // pH down solution peristaltic pump relay pin (digital), else -1
 
 // Base Setup
-#define SETUP_FEED_RESERVOIR_SIZE       4               // Reservoir size, in default measurement units
-#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for AC rail (AC110V, AC220V)
-#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump rail (DC5V, DC12V)
+#define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
+#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for actuator relay AC rail (AC110V, AC220V)
+#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump DC rail (DC5V, DC12V)
 #define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
 #define SETUP_PERI_PUMP_FLOWRATE        0.070           // The base continuous flow rate of any peristaltic pumps, in L/min
 
 // Crop Setup
-#define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for
-#define SETUP_CROP_OFF_TIME             45              // Minutes feeding pumps are to be turned off for
+#define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for (per feeding cycle)
+#define SETUP_CROP_OFF_TIME             45              // Minutes feeding pumps are to be turned off for (per feeding cycle)
 #define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
 #define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate, else Undefined
+#define SETUP_CROP_NUMBER               1               // Number of plants in crop position (aka averaging weight)
 #define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted at
 #define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
 
 
 #if defined(HYDRUINO_ENABLE_ESP_WIFI) && !(defined(SERIAL_PORT_HARDWARE1) || defined(Serial1))
 //#include "SoftwareSerial.h"
-//SoftwareSerial Serial1(RX, TX);                         // Replace with Rx/Tx pins of your choice
+//SoftwareSerial Serial1(RX, TX);                       // Replace with Rx/Tx pins of your choice
+#endif
+#if SETUP_SYS_UI_MODE == Minimal
+#include "min/HydroponicsUI.h"
+#elif SETUP_SYS_UI_MODE == Full
+#include "full/HydroponicsUI.h"
 #endif
 
 pintype_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -127,8 +137,6 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
 #endif
 #if defined(ADC_RESOLUTION)
 #define SETUP_USE_ANALOG_BITRES     ADC_RESOLUTION
-#elif defined(ESP32)
-#define SETUP_USE_ANALOG_BITRES     12
 #else
 #define SETUP_USE_ANALOG_BITRES     10
 #endif
@@ -155,11 +163,11 @@ void setup() {
     // Begin external data storage devices for crop, strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
-        getCropsLibraryInstance()->beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
+        hydroCropsLib.beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
     #if SETUP_EXTDATA_SD_ENABLE
         beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
-        getCropsLibraryInstance()->beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
+        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
     #endif
 
     // Sets system config name used in any of the following inits.
@@ -244,8 +252,9 @@ void setup() {
                                                                 SETUP_CROP_SOW_DATE,
                                                                 SETUP_CROP_ON_TIME,
                                                                 SETUP_CROP_OFF_TIME);
-                    crop->setFeedReservoir(feedReservoir);
                 #endif
+                crop->setFeedReservoir(feedReservoir);
+                crop->setFeedingWeight(SETUP_CROP_NUMBER);
             }
         }
 
@@ -284,14 +293,14 @@ void setup() {
         #endif
 
         // Digital Sensors
-        #if SETUP_DS18_WTEMP_PIN >= 0
-        {   auto dsTemperatureSensor = hydroController.addDSTemperatureSensor(SETUP_DS18_WTEMP_PIN, SETUP_USE_ONEWIRE_BITRES);
+        #if SETUP_DS18_WATER_TEMP_PIN >= 0
+        {   auto dsTemperatureSensor = hydroController.addDSTemperatureSensor(SETUP_DS18_WATER_TEMP_PIN, SETUP_USE_ONEWIRE_BITRES);
             dsTemperatureSensor->setReservoir(feedReservoir);
             feedReservoir->setWaterTemperatureSensor(dsTemperatureSensor);
         }
         #endif
-        #if SETUP_DHT_ATEMP_PIN >= 0
-        {   auto dhtTemperatureSensor = hydroController.addDHTTempHumiditySensor(SETUP_DHT_ATEMP_PIN, SETUP_DHT_SENSOR_TYPE);
+        #if SETUP_DHT_AIR_TEMP_HUMID_PIN >= 0
+        {   auto dhtTemperatureSensor = hydroController.addDHTTempHumiditySensor(SETUP_DHT_AIR_TEMP_HUMID_PIN, SETUP_DHT_SENSOR_TYPE);
             dhtTemperatureSensor->setReservoir(feedReservoir);
             feedReservoir->setAirTemperatureSensor(dhtTemperatureSensor);
         }
@@ -301,19 +310,42 @@ void setup() {
         #if SETUP_VOL_FILLED_PIN >= 0
         {   auto filledIndicator = hydroController.addLevelIndicator(SETUP_VOL_FILLED_PIN);
             filledIndicator->setReservoir(feedReservoir);
-            feedReservoir->setFilledTrigger(new HydroponicsMeasurementValueTrigger(filledIndicator, 0.5, false));
+            feedReservoir->setFilledTrigger(new HydroponicsMeasurementValueTrigger(filledIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
         }
         #endif
         #if SETUP_VOL_EMPTY_PIN >= 0
         {   auto emptyIndicator = hydroController.addLevelIndicator(SETUP_VOL_EMPTY_PIN);
             emptyIndicator->setReservoir(feedReservoir);
-            feedReservoir->setEmptyTrigger(new HydroponicsMeasurementValueTrigger(emptyIndicator, 0.5, false));
+            feedReservoir->setEmptyTrigger(new HydroponicsMeasurementValueTrigger(emptyIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
         }
         #endif
 
         // Distance->Volume Sensors
-        // TODO: ultrasonic distance
-        // TODO: water height meter
+        #if SETUP_VOL_LEVEL_PIN >= 0
+            #if SETUP_VOL_LEVEL_TYPE == Ultrasonic
+            {   auto distanceSensor = hydroController.addUltrasonicDistanceSensor(SETUP_VOL_LEVEL_PIN, SETUP_USE_ANALOG_BITRES);
+                distanceSensor->setReservoir(feedReservoir);
+                feedReservoir->setWaterVolumeSensor(distanceSensor);
+                #if SETUP_VOL_FILLED_PIN < 0
+                    feedReservoir->setFilledTrigger(new HydroponicsMeasurementValueTrigger(distanceSensor, HYDRUINO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
+                #endif
+                #if SETUP_VOL_EMPTY_PIN < 0
+                    feedReservoir->setEmptyTrigger(new HydroponicsMeasurementValueTrigger(distanceSensor, HYDRUINO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
+                #endif
+            }
+            #elif SETUP_VOL_LEVEL_TYPE == AnalogHeight
+            {   auto heightMeter = hydroController.addAnalogWaterHeightMeter(SETUP_VOL_LEVEL_PIN, SETUP_USE_ANALOG_BITRES);
+                heightMeter->setReservoir(feedReservoir);
+                feedReservoir->setWaterVolumeSensor(heightMeter);
+                #if SETUP_VOL_FILLED_PIN < 0
+                    feedReservoir->setFilledTrigger(new HydroponicsMeasurementValueTrigger(heightMeter, HYDRUINO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
+                #endif
+                #if SETUP_VOL_EMPTY_PIN < 0
+                    feedReservoir->setEmptyTrigger(new HydroponicsMeasurementValueTrigger(heightMeter, HYDRUINO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
+                #endif
+            }
+            #endif
+        #endif
 
         // AC-Based Actuators
         #if SETUP_GROW_LIGHTS_PIN >= 0
@@ -410,7 +442,13 @@ void setup() {
         wifiSSID = wifiPassword = String(); // no longer needed
     #endif
 
-    // TODO: UI initialization, other setup options
+    #if !defined(HYDRUINO_DISABLE_MULTITASKING) && SETUP_LCD_OUT_MODE != Disabled
+        #if SETUP_UI_MODE == Minimal
+            hydroController.enableMinimalUI();
+        #elif SETUP_UI_MODE == Full
+            hydroController.enableFullUI();
+        #endif
+    #endif
 
     // Launches controller into main operation.
     hydroController.launch();

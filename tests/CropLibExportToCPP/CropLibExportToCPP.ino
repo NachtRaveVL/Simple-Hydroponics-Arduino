@@ -42,7 +42,7 @@ void setup() {
     String spacing(F("            "));
     String indent = spacing + F("    ");
     for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
-        auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
+        auto cropData = hydroCropsLib.checkoutCropsData((Hydroponics_CropType)cropType);
 
         if (cropData) {
             // case Hydroponics_CropType_AloeVera: {
@@ -80,7 +80,7 @@ void setup() {
             Serial.print(spacing);
             Serial.println(F("} break;"));
 
-            getCropsLibraryInstance()->returnCropsData(cropData);
+            hydroCropsLib.returnCropsData(cropData);
         }
 
         yield();

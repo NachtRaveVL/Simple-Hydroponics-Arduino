@@ -262,13 +262,11 @@ HydroponicsCropsLibData::HydroponicsCropsLibData(const Hydroponics_CropType crop
     _size = sizeof(*this);
     HYDRUINO_HARD_ASSERT(isCropsLibData(), SFP(HStr_Err_OperationFailure));
 
-    auto cropsLibrary = getCropsLibraryInstance();
-    if (cropsLibrary) {
-        auto cropsLibData = cropsLibrary->checkoutCropsData(cropType);
+    {   auto cropsLibData = hydroCropsLib.checkoutCropsData(cropType);
         if (cropsLibData && this != cropsLibData) {
             *this = *cropsLibData;
         }
-        cropsLibrary->returnCropsData(cropsLibData);
+        hydroCropsLib.returnCropsData(cropsLibData);
     }
 }
 
@@ -435,8 +433,7 @@ HydroponicsCustomAdditiveData::HydroponicsCustomAdditiveData(Hydroponics_Reservo
     _size = sizeof(*this);
     HYDRUINO_HARD_ASSERT(isCalibrationData(), SFP(HStr_Err_OperationFailure));
 
-    if (getHydroponicsInstance()) { 
-        auto additiveData = getHydroponicsInstance()->getCustomAdditiveData(reservoirType);
+    {   auto additiveData = hydroAdditives.getCustomAdditiveData(reservoirType);
         if (additiveData && this != additiveData) {
             *this = *additiveData;
         }
