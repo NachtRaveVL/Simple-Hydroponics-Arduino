@@ -78,7 +78,7 @@
 #elif defined(ARDUINO_SAMD_MKR1000)
 #include <WiFi101.h>                                // https://github.com/arduino-libraries/WiFi101
 #else
-#include <WiFi.h>                                   // Platform/built-in library
+#include <WiFi.h>
 #endif
 #define HYDRUINO_USE_WIFI
 #endif
@@ -90,23 +90,11 @@ typedef SDFileSystemClass SDClass;
 using namespace sdfat;
 #endif
 
-#ifndef HYDRUINO_DISABLE_MULTITASKING
-#if defined(__AVR__)
-#include <util/atomic.h>
-#define CRITICAL_SECTION ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-#else
-// See http://stackoverflow.com/questions/27998059/atomic-block-for-reading-vs-arm-systicks
-extern int __int_disable_irq(void);
-extern void __int_restore_irq(int *primask);
-#define CRITICAL_SECTION for (int primask_save __attribute__((__cleanup__(__int_restore_irq))) = __int_disable_irq(), __ToDo = 1; __ToDo; __ToDo = 0)
-#define HYDRUINO_USE_PRIMASK_CRITSECT
-#endif
-#else
+#ifdef HYDRUINO_DISABLE_MULTITASKING
 #ifndef HYDRUINO_DISABLE_GUI
 #define HYDRUINO_DISABLE_GUI
 #endif
 #define secondsToMillis(val) ((val)*1000U)
-#define CRITICAL_SECTION if (1)
 #if defined(ARDUINO_ARCH_MBED)
 typedef uint32_t pintype_t;
 #else
@@ -157,7 +145,7 @@ typedef uint8_t pintype_t;
 #endif
 #endif
 #ifdef HYDRUINO_ENABLE_ESP_WIFI
-#include "WiFiEspAT.h"                  // WiFi ESP library
+#include "WiFiEspAT.h"                  // WiFi ESP AT library
 #endif
 
 #include "HydroponicsDefines.h"
@@ -212,6 +200,7 @@ extern void miscLoop();
 #include "HydroponicsDatas.h"
 #include "HydroponicsCropsLibrary.h"
 #include "HydroponicsCalibrationsStore.h"
+#include "HydroponicsAdditivesMarket.h"
 #include "HydroponicsStreams.h"
 #include "HydroponicsTriggers.h"
 #include "HydroponicsBalancers.h"
@@ -324,6 +313,17 @@ public:
     //bool enableDataPublishingToWebAPI(urlDataTODO, apiInterfaceTODO);
 #endif
 
+    // User Interface.
+
+#ifndef HYDRUINO_DISABLE_GUI
+    // Enables UI to run in minimal mode. This mode only allows the user to edit existing objects, not create nor delete them.
+    // NOTE: Be sure to manually include minimal UI system header file (i.e. #include "min/HydroponicsUI.h") in Arduino sketch.
+    inline bool enableMinimalUI() { return false; } // TODO: impl and remove stub
+    // Enables UI to run in full mode. This mode allows the user to add/remove system objects, customize features, change settings, etc.
+    // NOTE: Be sure to manually include full UI system header file (i.e. #include "full/HydroponicsUI.h") in Arduino sketch.
+    inline bool enableFullUI() { return false; } // TODO: impl and remove stub
+#endif
+
     // Object Registration.
 
     // Adds object to system, returning success
@@ -340,15 +340,6 @@ public:
     inline Hydroponics_PositionIndex firstPositionTaken(HydroponicsIdentity id) { return firstPosition(id, true); }
     // Finds first position open, given the id type
     inline Hydroponics_PositionIndex firstPositionOpen(HydroponicsIdentity id) { return firstPosition(id, false); }
-
-    // Custom Additives.
-
-    // Sets custom additive data, returning success flag.
-    bool setCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
-    // Drops custom additive data, returning success flag.
-    bool dropCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData);
-    // Returns custom additive data (if any), else nullptr.
-    const HydroponicsCustomAdditiveData *getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const;
 
     // Pin Locks.
 
@@ -527,7 +518,6 @@ protected:
     uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
     Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
-    Map<Hydroponics_ReservoirType, HydroponicsCustomAdditiveData *, Hydroponics_ReservoirType_CustomAdditiveCount> _additives; // Custom additives data
     Map<pintype_t, OneWire *, HYDRUINO_SYS_ONEWIRE_MAXSIZE> _oneWires; // pin->OneWire mapping
     Map<pintype_t, pintype_t, HYDRUINO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
 

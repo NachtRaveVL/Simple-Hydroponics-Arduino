@@ -95,7 +95,7 @@ void setup() {
     // Right here would be the place to program in any custom crop data that you want made available for later.
     //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
     //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
-    //getCropsLibraryInstance()->setUserCropData(&customCrop1);
+    //hydroCropsLib.setUserCropData(&customCrop1);
 
     getLoggerInstance()->logMessage(F("Writing external data..."));
 
@@ -106,7 +106,7 @@ void setup() {
             getLoggerInstance()->logMessage(F("=== Writing Crops Library data to SD Card ==="));
 
             for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
-                auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
+                auto cropData = hydroCropsLib.checkoutCropsData((Hydroponics_CropType)cropType);
                 String filename = getNNFilename(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")), cropType, SFP(HStr_dat));
 
                 if (cropData && cropData->cropName[0]) {
@@ -114,7 +114,7 @@ void setup() {
                     getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                     createDirectoryFor(sd, filename);
-                    auto file = sd->open(filename.c_str() O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
+                    auto file = sd->open(filename.c_str(), O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
                     if (file) {
                         StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                         JsonObject jsonObject = doc.to<JsonObject>();
@@ -131,7 +131,7 @@ void setup() {
                         getLoggerInstance()->logError(F("Failure opening crops lib data file for writing!"));
                     }
 
-                    getCropsLibraryInstance()->returnCropsData(cropData);
+                    hydroCropsLib.returnCropsData(cropData);
                 } else if (sd->exists(filename.c_str())) {
                     sd->remove(filename.c_str());
                 }
@@ -208,7 +208,7 @@ void setup() {
                 uint16_t writeAddr = cropsLibBegAddr + ((Hydroponics_CropType_Count + 1) * sizeof(uint16_t));
 
                 for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
-                    auto cropData = getCropsLibraryInstance()->checkoutCropsData((Hydroponics_CropType)cropType);
+                    auto cropData = hydroCropsLib.checkoutCropsData((Hydroponics_CropType)cropType);
 
                     if (cropData && cropData->cropName[0]) {
                         getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
@@ -227,7 +227,7 @@ void setup() {
                             getLoggerInstance()->logError(F("Failure writing crops lib data to EEPROM!"));
                         }
 
-                        getCropsLibraryInstance()->returnCropsData(cropData);
+                        hydroCropsLib.returnCropsData(cropData);
                     } else if (!eeprom->setBlockVerify(cropsLibBegAddr + ((cropType + 1) * sizeof(uint16_t)), 0, sizeof(uint16_t))) {
                         getLoggerInstance()->logError(F("Failure writing crops lib table data to EEPROM!"));
                     }

@@ -429,10 +429,10 @@ SharedPtr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedCrop(Hydroponics_
 
 SharedPtr<HydroponicsTimedCrop> HydroponicsFactory::addTimerFedPerennialCrop(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, DateTime lastHarvestDate, uint8_t minsOn, uint8_t minsOff)
 {
-    auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
+    auto cropData = hydroCropsLib.checkoutCropsData(cropType);
     time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
     auto crop = addTimerFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate), minsOn, minsOff);
-    getCropsLibraryInstance()->returnCropsData(cropData);
+    hydroCropsLib.returnCropsData(cropData);
     return crop;
 }
 
@@ -459,10 +459,10 @@ SharedPtr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedCrop(Hydrop
 
 SharedPtr<HydroponicsAdaptiveCrop> HydroponicsFactory::addAdaptiveFedPerennialCrop(Hydroponics_CropType cropType, Hydroponics_SubstrateType substrateType, DateTime lastHarvestDate)
 {
-    auto cropData = getCropsLibraryInstance()->checkoutCropsData(cropType);
+    auto cropData = hydroCropsLib.checkoutCropsData(cropType);
     time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
     auto crop = addAdaptiveFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate));
-    getCropsLibraryInstance()->returnCropsData(cropData);
+    hydroCropsLib.returnCropsData(cropData);
     return crop;
 }
 

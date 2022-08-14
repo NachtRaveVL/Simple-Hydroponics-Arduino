@@ -156,14 +156,14 @@ void HydroponicsCrop::recalcCropGrowthParams()
 void HydroponicsCrop::checkoutCropsLibData()
 {
     if (!_cropsData) {
-        _cropsData = getCropsLibraryInstance()->checkoutCropsData(_id.objTypeAs.cropType);
+        _cropsData = hydroCropsLib.checkoutCropsData(_id.objTypeAs.cropType);
     }
 }
 
 void HydroponicsCrop::returnCropsLibData()
 {
     if (_cropsData) {
-        getCropsLibraryInstance()->returnCropsData(_cropsData); _cropsData = nullptr;
+        hydroCropsLib.returnCropsData(_cropsData); _cropsData = nullptr;
     }
 }
 
@@ -172,7 +172,10 @@ void HydroponicsCrop::handleCustomCropUpdated(Hydroponics_CropType cropType)
     if (getCropType() == cropType) {
         returnCropsLibData(); // forces re-checkout
         recalcCropGrowthParams();
-        if (getSchedulerInstance()) { getSchedulerInstance()->setNeedsScheduling(); }
+
+        if (getSchedulerInstance()) {
+            getSchedulerInstance()->setNeedsScheduling();
+        }
     }
 }
 

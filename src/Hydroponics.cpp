@@ -26,44 +26,6 @@ void handleInterrupt(pintype_t pin)
 }
 
 
-#ifdef HYDRUINO_USE_PRIMASK_CRITSECT
-#ifdef __arm__
-
-int __int_disable_irq(void)
-{
-    int primask;
-    asm volatile("mrs %0, PRIMASK\n" : "=r"(primask));
-    asm volatile("cpsid i\n");
-    return primask & 1;
-}
-
-void __int_restore_irq(int *primask)
-{
-    if (!(*primask)) {
-        asm volatile ("" ::: "memory");
-        asm volatile("cpsie i\n");
-    }
-}
-
-#else
-
-static int8_t _irqCnt = 0;
-
-int __int_disable_irq(void)
-{
-    if (_irqCnt++ == 0) { noInterrupts(); return 1; }
-    return 0;
-}
-
-void __int_restore_irq(int *primask)
-{
-    if (--_irqCnt == 0) { interrupts(); }
-}
-
-#endif // /ifdef __arm__
-#endif // /ifndef HYDRUINO_USE_PRIMASK_CRITSECT
-
-
 Hydroponics *Hydroponics::_activeInstance = nullptr;
 
 Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
@@ -121,7 +83,6 @@ Hydroponics::~Hydroponics()
 {
     suspend();
     while (_objects.size()) { _objects.erase(_objects.begin()); }
-    while (_additives.size()) { dropCustomAdditiveData(_additives.begin()->second); }
     while (_oneWires.size()) { dropOneWireForPin(_oneWires.begin()->first); }
     deallocateEEPROM();
     deallocateRTC();
@@ -330,11 +291,11 @@ bool Hydroponics::initFromJSONStream(Stream *streamIn)
                 HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HStr_Err_ImportFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
-                        getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
+                        hydroCalibrations.setUserCalibrationData((HydroponicsCalibrationData *)data);
                     } else if (data->isCropsLibData()) {
-                        getCropsLibraryInstance()->setUserCropData((HydroponicsCropsLibData *)data);
+                        hydroCropsLib.setUserCropData((HydroponicsCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
-                        setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
+                        hydroAdditives.setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
                 } else if (data && data->isObjectData()) {
@@ -382,8 +343,8 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
-        if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
-            for (auto iter = getCalibrationsStoreInstance()->_calibrationData.begin(); iter != getCalibrationsStoreInstance()->_calibrationData.end(); ++iter) {
+        if (hydroCalibrations.hasUserCalibrations()) {
+            for (auto iter = hydroCalibrations._calibrationData.begin(); iter != hydroCalibrations._calibrationData.end(); ++iter) {
                 StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                 JsonObject calibDataObj = doc.to<JsonObject>();
@@ -396,8 +357,8 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
-        if (getCropsLibraryInstance()->hasUserCrops()) {
-            for (auto iter = getCropsLibraryInstance()->_cropsData.begin(); iter != getCropsLibraryInstance()->_cropsData.end(); ++iter) {
+        if (hydroCropsLib.hasUserCrops()) {
+            for (auto iter = hydroCropsLib._cropsData.begin(); iter != hydroCropsLib._cropsData.end(); ++iter) {
                 if (iter->second->userSet) {
                     StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
@@ -412,8 +373,8 @@ bool Hydroponics::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
-        if (_additives.size()) {
-            for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
+        if (hydroAdditives.hasCustomAdditives()) {
+            for (auto iter = hydroAdditives._additives.begin(); iter != hydroAdditives._additives.end(); ++iter) {
                 StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
 
                 JsonObject additiveDataObj = doc.to<JsonObject>();
@@ -481,11 +442,11 @@ bool Hydroponics::initFromBinaryStream(Stream *streamIn)
                 HYDRUINO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HStr_Err_AllocationFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
-                        getCalibrationsStoreInstance()->setUserCalibrationData((HydroponicsCalibrationData *)data);
+                        hydroCalibrations.setUserCalibrationData((HydroponicsCalibrationData *)data);
                     } else if (data->isCropsLibData()) {
-                        getCropsLibraryInstance()->setUserCropData((HydroponicsCropsLibData *)data);
+                        hydroCropsLib.setUserCropData((HydroponicsCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
-                        setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
+                        hydroAdditives.setCustomAdditiveData((HydroponicsCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
                 } else if (data && data->isObjectData()) {
@@ -528,10 +489,10 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
             if (!bytesWritten) { return false; }
         }
 
-        if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
+        if (hydroCalibrations.hasUserCalibrations()) {
             size_t bytesWritten = 0;
 
-            for (auto iter = getCalibrationsStoreInstance()->_calibrationData.begin(); iter != getCalibrationsStoreInstance()->_calibrationData.end(); ++iter) {
+            for (auto iter = hydroCalibrations._calibrationData.begin(); iter != hydroCalibrations._calibrationData.end(); ++iter) {
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
@@ -539,10 +500,10 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
             if (!bytesWritten) { return false; }
         }
 
-        if (getCropsLibraryInstance()->hasUserCrops()) {
+        if (hydroCropsLib.hasUserCrops()) {
             size_t bytesWritten = 0;
 
-            for (auto iter = getCropsLibraryInstance()->_cropsData.begin(); iter != getCropsLibraryInstance()->_cropsData.end(); ++iter) {
+            for (auto iter = hydroCropsLib._cropsData.begin(); iter != hydroCropsLib._cropsData.end(); ++iter) {
                 if (iter->first >= Hydroponics_CropType_CustomCrop1) {
                     bytesWritten += serializeDataToBinaryStream(&(iter->second->data), streamOut);
                 }
@@ -552,10 +513,10 @@ bool Hydroponics::saveToBinaryStream(Stream *streamOut)
             if (!bytesWritten) { return false; }
         }
 
-        if (_additives.size()) {
+        if (hydroAdditives.hasCustomAdditives()) {
             size_t bytesWritten = 0;
 
-            for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
+            for (auto iter = hydroAdditives._additives.begin(); iter != hydroAdditives._additives.end(); ++iter) {
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
@@ -696,22 +657,22 @@ void Hydroponics::commonPostSave()
 {
     logger.logSystemSave();
 
-    if (getCalibrationsStoreInstance()->hasUserCalibrations()) {
-        for (auto iter = getCalibrationsStoreInstance()->_calibrationData.begin(); iter != getCalibrationsStoreInstance()->_calibrationData.end(); ++iter) {
+    if (hydroCalibrations.hasUserCalibrations()) {
+        for (auto iter = hydroCalibrations._calibrationData.begin(); iter != hydroCalibrations._calibrationData.end(); ++iter) {
             iter->second->_unsetModded();
         }
     }
 
-    if (getCropsLibraryInstance()->hasUserCrops()) {
-        for (auto iter = getCropsLibraryInstance()->_cropsData.begin(); iter != getCropsLibraryInstance()->_cropsData.end(); ++iter) {
+    if (hydroCropsLib.hasUserCrops()) {
+        for (auto iter = hydroCropsLib._cropsData.begin(); iter != hydroCropsLib._cropsData.end(); ++iter) {
             if (iter->second->userSet) {
                 iter->second->data._unsetModded();
             }
         }
     }
 
-    if (_additives.size()) {
-        for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
+    if (hydroAdditives.hasCustomAdditives()) {
+        for (auto iter = hydroAdditives._additives.begin(); iter != hydroAdditives._additives.end(); ++iter) {
             iter->second->_unsetModded();
         }
     }
@@ -958,93 +919,15 @@ Hydroponics_PositionIndex Hydroponics::firstPosition(HydroponicsIdentity id, boo
     return -1;
 }
 
-bool Hydroponics::setCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData)
-{
-    HYDRUINO_SOFT_ASSERT(customAdditiveData, SFP(HStr_Err_InvalidParameter));
-    HYDRUINO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), SFP(HStr_Err_InvalidParameter));
-
-    if (customAdditiveData && customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-        customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
-        auto iter = _additives.find(customAdditiveData->reservoirType);
-        bool retVal = false;
-
-        if (iter == _additives.end()) {
-            auto additiveData = new HydroponicsCustomAdditiveData();
-
-            HYDRUINO_SOFT_ASSERT(additiveData, SFP(HStr_Err_AllocationFailure));
-            if (additiveData) {
-                *additiveData = *customAdditiveData;
-                _additives[customAdditiveData->reservoirType] = additiveData;
-                retVal = (_additives.find(customAdditiveData->reservoirType) != _additives.end());
-            }
-        } else {
-            *(iter->second) = *customAdditiveData;
-            retVal = true;
-        }
-
-        if (retVal) {
-            scheduler.setNeedsScheduling();
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Hydroponics::dropCustomAdditiveData(const HydroponicsCustomAdditiveData *customAdditiveData)
-{
-    HYDRUINO_HARD_ASSERT(customAdditiveData, SFP(HStr_Err_InvalidParameter));
-    HYDRUINO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                                                 customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount), SFP(HStr_Err_InvalidParameter));
-
-    if (customAdditiveData->reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-        customAdditiveData->reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
-        auto iter = _additives.find(customAdditiveData->reservoirType);
-        bool retVal = false;
-
-        if (iter != _additives.end()) {
-            if (iter->second) { delete iter->second; }
-            _additives.erase(iter);
-            retVal = true;
-        }
-
-        if (retVal) {
-            scheduler.setNeedsScheduling();
-            return true;
-        }
-    }
-    return false;
-}
-
-const HydroponicsCustomAdditiveData *Hydroponics::getCustomAdditiveData(Hydroponics_ReservoirType reservoirType) const
-{
-    HYDRUINO_SOFT_ASSERT(reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-                         reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount, SFP(HStr_Err_InvalidParameter));
-
-    if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 &&
-        reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
-        auto iter = _additives.find(reservoirType);
-
-        if (iter != _additives.end()) {
-            return iter->second;
-        }
-    }
-    return nullptr;
-}
-
 bool Hydroponics::tryGetPinLock(pintype_t pin, time_t waitMillis)
 {
     time_t startMillis = millis();
     while (1) {
-        bool gotLock = false;
-        CRITICAL_SECTION {
-            auto iter = _pinLocks.find(pin);
-            if (iter == _pinLocks.end()) {
-                _pinLocks[pin] = true;
-                gotLock = (_pinLocks.find(pin) != _pinLocks.end());
-            }
+        auto iter = _pinLocks.find(pin);
+        if (iter == _pinLocks.end()) {
+            _pinLocks[pin] = true;
+            return (_pinLocks.find(pin) != _pinLocks.end());
         }
-        if (gotLock) { return true; }
         else if (millis() - startMillis >= waitMillis) { return false; }
         else { yield(); }
     }
@@ -1052,9 +935,7 @@ bool Hydroponics::tryGetPinLock(pintype_t pin, time_t waitMillis)
 
 void Hydroponics::returnPinLock(pintype_t pin)
 {
-    CRITICAL_SECTION {
-        _pinLocks.erase(pin);
-    }
+    _pinLocks.erase(pin);
 }
 
 void Hydroponics::setSystemName(String systemName)
@@ -1258,7 +1139,7 @@ WiFiClass *Hydroponics::getWiFi(bool begin)
             String ssid = getWiFiSSID();
             String pass = getWiFiPassword();
 
-            #ifdef HYDRUINO_ENABLE_ESP_WIFI
+            #ifdef HYDRUINO_USE_SERIALWIFI
                 status = HYDRUINO_SYS_WIFI_INSTANCE.begin(ssid.c_str(), pass.c_str());
             #else
                 status = pass.length() ? HYDRUINO_SYS_WIFI_INSTANCE.begin(const_cast<char *>(ssid.c_str()), pass.c_str())

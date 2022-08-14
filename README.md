@@ -171,12 +171,12 @@ From Hydroponics.h, in class Hydroponics:
 
 ## Hookup Callouts
 
-* The recommended Vcc power supply and logic level is 5v, with newer MCUs restricted to 3.3v logic level.
+* The recommended Vcc power supply and logic level is 5v, with most newer MCUs restricted to 3.3v.
   * There are many devices that are 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
   * Devices that do not have the same logic level voltage as the MCU will need a level converter (or similar), bi-directional particularly on any fast data lines, in order to operate together (unless capable of doing so without such).
-    * OneWire sensors must be powered with the same Vcc power supply level as logic level. Most of the time this isn't an issue, but some may require 5v Vcc power and need level converted to 3.3v.
-    * 5v analog sensor signal lines won't need level converted, as the `AREF` (sometimes `IOREF`) pin is easily used to specify maximum analog sensor input voltage for the MCU's ADC.
-    * Alternatively, using a 10kΩ voltage dividing resistor can often times be enough to convert 5v to 3.3v.
+    * 5v analog sensor signal data lines, for example, will need level converted in order to connect to a 3.3v MCU, as the pins will not be 5v tolerant (this includes `AREF`).
+    * OneWire sensor's logic level voltage is the same as their Vcc supply voltage. Most of the time this isn't an issue, but some (such as CO2 sensors) may require 5v Vcc supply power and thus need their data line converted to 3.3v.
+    * Alternatively, using a 10kΩ resistor can often times be enough to 'convert' 5v to 3.3v, but the correct way is to use a 1kΩ resistor and a 2kΩ resistor (or any size with a 1:2 ratio) in a [simple voltage divider circuit](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/).
 
 ### Serial UART
 
@@ -217,17 +217,16 @@ OneWire devices can be chained together on the same shared data lines (no flippi
 
 ### Analog IO
 
-* All analog sensors will need to have the same operational voltage range. Many analog sensors are set to use 0v to 5v by default.
-* Ensure `AREF` (sometimes `IOREF`) pin is set to the correct maximum input voltage that all analog input sensors should be calibrated towards. The `AREF` pin, by default, is the same voltage as the MCU.
-  * Not setting this correctly will affect measured analog values. For example, some sensors we've tested are calibrated to operate up to 5.5v direct from factory, while others operate from -5v to +5v and have to be modified to output 0v to 5v. Some even have a switch or pin header to switch between 3.3v and 5v.
-  * Analog sensors will be able to customize voltage->value calibrations in software later on (as long as voltages are not negative or over `AREF`) - it's more important to know the input voltage range in use for correctly setting `AREF`.
+* All analog sensors will need to have the same operational voltage range. Many analog sensors are set to use 0v to 5v by default, but some can go -5v to +5v, some even up to 5.5v.
+* The `AREF` pin, by default, is the same voltage as the MCU. Analog sensors must not exceed this voltage limit.
+  * 5v analog sensor signal pins **must** be [level converted](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/) in order to connect to 3.3v MCUs.
 * The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) as well as the RasPi Pico and others support different bit resolutions for analog/PWM pins, but also may limit how many pins are able to use these higher resolutions. See the datasheet of your MCU for details.
 
 ### Sensors
 
 * If able to set in hardware, ensure any TDS meters and soil moisture sensors use EC (aka mS/cm) mode. EC is considered a normalized measurement while PPM can be split into different scale categories depending on sensor chemistry in use (often tied to country of origin). PPM/EC based sensors operating on anything other than a 1v=500ppm/1v=1EC mode will need to have their PPM scale explicitly set.
 * Many different kinds of hobbyist sensors label their analog output `AO` (or `Ao`) - however, always check your specific sensor's datasheet.
-  * Again, make sure all analog sensors are calibrated to output the same 0v - `AREF` (sometimes `IOREF`) volts in range.
+  * Again, make sure all analog sensors are calibrated to output the same 0v - `AREF` volts in range.
 * Sensor pins used for event triggering when measurements go above/below a pre-set tolerance - many of which are deceptively labeled `DO` (or `Do`), despite having nothing to do with being `D`ata lines of any kind - can be safely ignored, as the software implementation of such mechanism is more than sufficient.
   * Often these pins are used to drive other hardware-only based solutions that aren't a part of Hydruino's use case.
 * CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, and _require_ `Vcc` for its heating element (5v @ 130mA for MQ-135) thus cannot use OneWire parasitic power mode. To calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
@@ -384,8 +383,8 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
 #define SETUP_POWER_SENSOR_PIN          -1              // Power meter sensor pin (analog), else -1
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
-#define SETUP_DS18_WTEMP_PIN            2               // DS18* water temp sensor data pin (digital), else -1
-#define SETUP_DHT_ATEMP_PIN             3               // DHT* air temp sensor data pin (digital), else -1
+#define SETUP_DS18_WATER_TEMP_PIN            2               // DS18* water temp sensor data pin (digital), else -1
+#define SETUP_DHT_AIR_TEMP_HUMID_PIN             3               // DHT* air temp sensor data pin (digital), else -1
 #define SETUP_DHT_SENSOR_TYPE           DHT12           // DHT sensor type enum (use DHT* defines)
 #define SETUP_VOL_FILLED_PIN            4               // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
@@ -430,7 +429,7 @@ Inside of the Data Writer's `setup()` function:
     // Right here would be the place to program in any custom crop data that you want made available for later.
     //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
     //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
-    //getCropsLibraryInstance()->setUserCropData(&customCrop1);
+    //hydroCropsLib.setUserCropData(&customCrop1);
 ```
 
 In particular, after setting up the settings defines similarly to that of the Vertical NFT or Full System sketch, running the Data Writer sketch will produce the EEPROM configuration setup defines to then use. You typically won't need to copy these over unless you are planning to utilize an external EEPROM storage device and have made any custom data modifications, as these defines are updated by the dev team prior to release. If however you do have custom data modifications and are using an external EEPROM device, do copy these values over into your Main System sketch.

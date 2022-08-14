@@ -107,11 +107,11 @@ void HydroponicsScheduler::setupWaterTDSBalancer(HydroponicsReservoir *reservoir
                 }
             }
 
-            if (Hydroponics::_activeInstance->_additives.size()) {
+            if (hydroAdditives.hasCustomAdditives()) {
                 int prevIncSize = incActuators.size();
 
                 for (int reservoirType = Hydroponics_ReservoirType_CustomAdditive1; reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount; ++reservoirType) {
-                    if (Hydroponics::_activeInstance->getCustomAdditiveData((Hydroponics_ReservoirType)reservoirType)) {
+                    if (hydroAdditives.getCustomAdditiveData((Hydroponics_ReservoirType)reservoirType)) {
                         dosingRate = getCombinedDosingRate(reservoir, (Hydroponics_ReservoirType)reservoirType);
 
                         if (dosingRate > FLT_EPSILON) {
@@ -223,7 +223,7 @@ void HydroponicsScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, 
             HydroponicsCustomAdditiveData newAdditiveData(reservoirType);
             newAdditiveData._bumpRevIfNotAlreadyModded();
             newAdditiveData.weeklyDosingRates[weekIndex] = dosingRate;
-            Hydroponics::_activeInstance->setCustomAdditiveData(&newAdditiveData);
+            hydroAdditives.setCustomAdditiveData(&newAdditiveData);
 
             setNeedsScheduling();
         } else {
@@ -247,10 +247,10 @@ void HydroponicsScheduler::setStandardDosingRate(float dosingRate, Hydroponics_R
 
 void HydroponicsScheduler::setLastWeekAsFlush(Hydroponics_CropType cropType)
 {
-    auto cropLibData = getCropsLibraryInstance()->checkoutCropsData(cropType);
+    auto cropLibData = hydroCropsLib.checkoutCropsData(cropType);
     if (cropLibData) {
         setFlushWeek(cropLibData->totalGrowWeeks-1);
-        getCropsLibraryInstance()->returnCropsData(cropLibData);
+        hydroCropsLib.returnCropsData(cropLibData);
     }
 }
 
@@ -265,12 +265,12 @@ void HydroponicsScheduler::setFlushWeek(int weekIndex)
         for (Hydroponics_ReservoirType reservoirType = Hydroponics_ReservoirType_CustomAdditive1;
              reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount;
              reservoirType = (Hydroponics_ReservoirType)((int)reservoirType + 1)) {
-            auto additiveData = Hydroponics::_activeInstance->getCustomAdditiveData(reservoirType);
+            auto additiveData = hydroAdditives.getCustomAdditiveData(reservoirType);
             if (additiveData) {
                 HydroponicsCustomAdditiveData newAdditiveData = *additiveData;
                 newAdditiveData._bumpRevIfNotAlreadyModded();
                 newAdditiveData.weeklyDosingRates[weekIndex] = 0;
-                Hydroponics::_activeInstance->setCustomAdditiveData(&newAdditiveData);
+                hydroAdditives.setCustomAdditiveData(&newAdditiveData);
             }
         }
 
@@ -348,7 +348,7 @@ float HydroponicsScheduler::getCombinedDosingRate(HydroponicsReservoir *reservoi
                     totalWeights += crop->getFeedingWeight();
                     totalDosing += schedulerData()->stdDosingRates[reservoirType - Hydroponics_ReservoirType_FreshWater];
                 } else {
-                    auto additiveData = Hydroponics::_activeInstance->getCustomAdditiveData(reservoirType);
+                    auto additiveData = hydroAdditives.getCustomAdditiveData(reservoirType);
                     if (additiveData) {
                         totalWeights += crop->getFeedingWeight();
                         totalDosing += additiveData->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1)];
@@ -382,7 +382,7 @@ float HydroponicsScheduler::getWeeklyDosingRate(int weekIndex, Hydroponics_Reser
         if (reservoirType == Hydroponics_ReservoirType_NutrientPremix) {
             return schedulerData()->weeklyDosingRates[weekIndex];
         } else if (reservoirType >= Hydroponics_ReservoirType_CustomAdditive1 && reservoirType < Hydroponics_ReservoirType_CustomAdditive1 + Hydroponics_ReservoirType_CustomAdditiveCount) {
-            auto additiveDate = Hydroponics::_activeInstance->getCustomAdditiveData(reservoirType);
+            auto additiveDate = hydroAdditives.getCustomAdditiveData(reservoirType);
             return additiveDate ? additiveDate->weeklyDosingRates[weekIndex] : 0.0f;
         } else {
             HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
@@ -524,7 +524,7 @@ void HydroponicsScheduler::broadcastDayChange()
         // these can take a while to complete
         taskManager.scheduleOnce(0, []{
             if (getHydroponicsInstance()) {
-                Hydroponics::_activeInstance->notifyDayChanged();
+                getHydroponicsInstance()->notifyDayChanged();
             }
             yield();
             if (getLoggerInstance()) {
@@ -616,7 +616,7 @@ void HydroponicsFeeding::recalcFeeding()
     {   auto crops = linksFilterCrops(feedRes->getLinkages());
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
             auto crop = (HydroponicsCrop *)(*cropIter);
-            auto cropsLibData = getCropsLibraryInstance()->checkoutCropsData(crop->getCropType());
+            auto cropsLibData = hydroCropsLib.checkoutCropsData(crop->getCropType());
 
             if (cropsLibData) {
                 float weight = crop->getFeedingWeight();
@@ -634,7 +634,7 @@ void HydroponicsFeeding::recalcFeeding()
                 totalSetpoints[3] += ((cropsLibData->airTempRange[0] + cropsLibData->airTempRange[1]) * 0.5) * weight;
                 totalSetpoints[4] += cropsLibData->co2Levels[(crop->getCropPhase() <= Hydroponics_CropPhase_Vegetative ? 0 : 1)] * weight;
 
-                getCropsLibraryInstance()->returnCropsData(cropsLibData);
+                hydroCropsLib.returnCropsData(cropsLibData);
             }
         }
     }
@@ -1103,7 +1103,7 @@ void HydroponicsLighting::recalcLighting()
             auto cropPhase = (Hydroponics_CropPhase)constrain((int)(crop->getCropPhase()), 0, (int)Hydroponics_CropPhase_MainCount - 1);
 
             if ((int)cropPhase >= 0) {
-                auto cropsLibData = getCropsLibraryInstance()->checkoutCropsData(crop->getCropType());
+                auto cropsLibData = hydroCropsLib.checkoutCropsData(crop->getCropType());
 
                 if (cropsLibData) {
                     auto weight = crop->getFeedingWeight();
@@ -1111,7 +1111,7 @@ void HydroponicsLighting::recalcLighting()
                     totalLightHours += (cropsLibData->dailyLightHours[cropPhase] * weight);
                     sprayingNeeded = sprayingNeeded || cropsLibData->needsSpraying();
 
-                    getCropsLibraryInstance()->returnCropsData(cropsLibData);
+                    hydroCropsLib.returnCropsData(cropsLibData);
                 }
             }
         }

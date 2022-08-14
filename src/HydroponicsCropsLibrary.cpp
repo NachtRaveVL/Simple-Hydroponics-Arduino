@@ -36,20 +36,7 @@ HydroponicsCropsLibraryBook::HydroponicsCropsLibraryBook(const HydroponicsCropsL
 { ; }
 
 
-HydroponicsCropsLibrary *HydroponicsCropsLibrary::_instance = nullptr;
-
-HydroponicsCropsLibrary *HydroponicsCropsLibrary::getInstance()
-{
-    if (_instance) { return _instance; }
-    else {
-        CRITICAL_SECTION {
-            if (!_instance) {
-                _instance = new HydroponicsCropsLibrary();
-            }
-        }
-        return _instance;
-    }
-}
+HydroponicsCropsLibrary hydroCropsLib;
 
 void HydroponicsCropsLibrary::beginCropsLibraryFromSDCard(String dataFilePrefix, bool jsonFormat)
 {

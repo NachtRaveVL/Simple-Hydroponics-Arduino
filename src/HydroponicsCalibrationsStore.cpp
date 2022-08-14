@@ -5,20 +5,7 @@
 
 #include "Hydroponics.h"
 
-HydroponicsCalibrationsStore *HydroponicsCalibrationsStore::_instance = nullptr;
-
-HydroponicsCalibrationsStore *HydroponicsCalibrationsStore::getInstance()
-{
-    if (_instance) { return _instance; }
-    else {
-        CRITICAL_SECTION {
-            if (!_instance) {
-                _instance = new HydroponicsCalibrationsStore();
-            }
-        }
-        return _instance;
-    }
-}
+HydroponicsCalibrationsStore hydroCalibrations;
 
 const HydroponicsCalibrationData *HydroponicsCalibrationsStore::getUserCalibrationData(Hydroponics_KeyType key) const
 {
@@ -71,9 +58,4 @@ bool HydroponicsCalibrationsStore::dropUserCalibrationData(const HydroponicsCali
     }
 
     return false;
-}
-
-bool HydroponicsCalibrationsStore::hasUserCalibrations() const
-{
-    return _calibrationData.size();
 }

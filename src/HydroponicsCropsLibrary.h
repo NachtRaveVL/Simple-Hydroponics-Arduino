@@ -23,9 +23,6 @@ struct HydroponicsCropsLibraryBook;
 // Writer Example sketch on how to program an EEPROM or SD Card with such data.
 class HydroponicsCropsLibrary {
 public:
-    // Returns the singleton instance of the library
-    static HydroponicsCropsLibrary *getInstance();
-
     // Begins crops library from external SD card library, with specified file prefix and data format.
     void beginCropsLibraryFromSDCard(String dataFilePrefix, bool jsonFormat = true);
 
@@ -62,9 +59,6 @@ protected:
     bool updateHasUserCrops();
     void updateCropsOfType(Hydroponics_CropType cropType);
 
-private:
-    static HydroponicsCropsLibrary *_instance;              // Shared instance
-    HydroponicsCropsLibrary() = default;                    // Private constructor to force singleton
     friend class Hydroponics;
 };
 
@@ -81,6 +75,6 @@ struct HydroponicsCropsLibraryBook {
     inline Hydroponics_CropType getKey() const { return data.cropType; }
 };
 
-inline HydroponicsCropsLibrary *getCropsLibraryInstance() { return HydroponicsCropsLibrary::getInstance(); }
+extern HydroponicsCropsLibrary hydroCropsLib;
 
 #endif // /ifndef HydroponicsCropsLibrary_H

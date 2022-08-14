@@ -83,7 +83,7 @@ public:
                                                                  uint8_t inputBitRes = 10);         // ADC input bit resolution to use
     // Adds a new downward-facing analog ultrasonic distance sensor to the system using the given parameters.
     // Downward-facing ultrasonic distance sensors can be used to determine the volume of a container.
-    // (Pro-tip: These widely available inexpensive sensors don't sit in the water and thus won't corrode.)
+    // (Pro-tip: These widely available inexpensive sensors don't sit in the water and thus won't corrode as fast.)
     SharedPtr<HydroponicsAnalogSensor> addUltrasonicDistanceSensor(pintype_t inputPin,              // Analog input pin this sensor sits on
                                                                    uint8_t inputBitRes = 10);       // ADC input bit resolution to use
     // Adds a new analog power usage meter to the system using the given parameters.
