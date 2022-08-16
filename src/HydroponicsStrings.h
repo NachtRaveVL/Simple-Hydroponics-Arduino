@@ -123,6 +123,7 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_LogFilePrefix,
     HStr_Key_LogLevel,
     HStr_Key_LogToSDCard,
+    HStr_Key_LogToWiFiStorage,
     HStr_Key_Logger,
     HStr_Key_MaxActiveAtOnce,
     HStr_Key_MaxPower,
@@ -150,6 +151,7 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_PreLightSprayMins,
     HStr_Key_Pruning,
     HStr_Key_PublishToSDCard,
+    HStr_Key_PublishToWiFiStorage,
     HStr_Key_Publisher,
     HStr_Key_PullupPin,
 #ifdef ESP_PLATFORM

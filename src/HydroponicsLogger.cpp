@@ -45,6 +45,35 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
     return false;
 }
 
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+bool HydroponicsLogger::beginLoggingToWiFiStorage(String logFilePrefix)
+{
+    HYDRUINO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
+
+    if (hasLoggerData()) {
+        if (Hydroponics::_activeInstance->getWiFi()) {
+            String logFileName = getYYMMDDFilename(logFilePrefix, SFP(HStr_txt));
+            auto logFile = WiFiStorage.open(logFileName.c_str());
+
+            if (logFile) {
+                logFile.close();
+
+                Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+                strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
+                loggerData()->logToWiFiStorage = true;
+                _logFileName = logFileName;
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+#endif
+
 void HydroponicsLogger::logSystemUptime()
 {
     TimeSpan elapsed(getSystemUptime());
@@ -102,12 +131,34 @@ void HydroponicsLogger::log(const String &prefix, const String &msg, const Strin
                 logFile.print(suffix1);
                 logFile.println(suffix2);
 
+                logFile.flush();
                 logFile.close();
             }
 
             Hydroponics::_activeInstance->endSDCard(sd);
         }
     }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+    if (isLoggingToWiFiStorage()) {
+        if (Hydroponics::_activeInstance->getWiFi()) {
+            auto logFile = WiFiStorage.open(_logFileName.c_str());
+
+            if (logFile) {
+                auto logFileStream = HydroponicsWiFiStorageFileStream(logFile, logFile.size());
+
+                logFileStream.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
+                logFileStream.print(' ');
+                logFileStream.print(prefix);
+                logFileStream.print(msg);
+                logFileStream.print(suffix1);
+                logFileStream.println(suffix2);
+            }
+        }
+    }
+
+#endif
 }
 
 void HydroponicsLogger::flush()
@@ -142,7 +193,7 @@ void HydroponicsLogger::cleanupOldestLogs(bool force)
 
 
 HydroponicsLoggerSubData::HydroponicsLoggerSubData()
-    : HydroponicsSubData(), logLevel(Hydroponics_LogLevel_All), logFilePrefix{0}, logToSDCard(false)
+    : HydroponicsSubData(), logLevel(Hydroponics_LogLevel_All), logFilePrefix{0}, logToSDCard(false), logToWiFiStorage(false)
 {
     type = 0; // no type differentiation
 }
@@ -154,6 +205,7 @@ void HydroponicsLoggerSubData::toJSONObject(JsonObject &objectOut) const
     if (logLevel != Hydroponics_LogLevel_All) { objectOut[SFP(HStr_Key_LogLevel)] = logLevel; }
     if (logFilePrefix[0]) { objectOut[SFP(HStr_Key_LogFilePrefix)] = charsToString(logFilePrefix, 16); }
     if (logToSDCard != false) { objectOut[SFP(HStr_Key_LogToSDCard)] = logToSDCard; }
+    if (logToWiFiStorage != false) { objectOut[SFP(HStr_Key_LogToWiFiStorage)] = logToWiFiStorage; }
 }
 
 void HydroponicsLoggerSubData::fromJSONObject(JsonObjectConst &objectIn)
@@ -164,4 +216,5 @@ void HydroponicsLoggerSubData::fromJSONObject(JsonObjectConst &objectIn)
     const char *logFilePrefixStr = objectIn[SFP(HStr_Key_LogFilePrefix)];
     if (logFilePrefixStr && logFilePrefixStr[0]) { strncpy(logFilePrefix, logFilePrefixStr, 16); }
     logToSDCard = objectIn[SFP(HStr_Key_LogToSDCard)] | logToSDCard;
+    logToWiFiStorage = objectIn[SFP(HStr_Key_LogToWiFiStorage)] | logToWiFiStorage;
 }

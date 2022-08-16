@@ -31,6 +31,11 @@ public:
     bool beginPublishingToSDCard(String dataFilePrefix);
     inline bool isPublishingToSDCard() const;
 
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    bool beginPublishingToWiFiStorage(String dataFilePrefix);
+    inline bool isPublishingToWiFiStorage() const;
+#endif
+
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
 
     inline void setNeedsTabulation();
@@ -78,6 +83,7 @@ struct HydroponicsDataColumn {
 struct HydroponicsPublisherSubData : public HydroponicsSubData {
     char dataFilePrefix[16];                                // Base data file name prefix / folder (default: "data/hy")
     bool publishToSDCard;                                   // If publishing to SD card is enabled (default: false)
+    bool publishToWiFiStorage;                              // If publishing to WiFiStorage is enabled (default: false)
 
     HydroponicsPublisherSubData();
     void toJSONObject(JsonObject &objectOut) const;

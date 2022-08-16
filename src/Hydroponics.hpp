@@ -5,6 +5,16 @@
 
 #include "Hydroponics.h"
 
+#ifdef HYDRUINO_USE_WIFI
+
+inline WiFiClass *Hydroponics::getWiFi(bool begin)
+{
+    return getWiFi(getWiFiSSID(), getWiFiPassword(), begin);
+}
+
+#endif
+
+
 inline HydroponicsLoggerSubData *HydroponicsLogger::loggerData() const
 {
     return &Hydroponics::_activeInstance->_systemData->logger;
@@ -19,6 +29,15 @@ inline bool HydroponicsLogger::isLoggingToSDCard() const
 {
     return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logToSDCard;
 }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+inline bool HydroponicsLogger::isLoggingToWiFiStorage() const
+{
+    return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logToWiFiStorage;
+}
+
+#endif
 
 inline void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
 {
@@ -47,7 +66,7 @@ inline Hydroponics_LogLevel HydroponicsLogger::getLogLevel() const
 
 inline bool HydroponicsLogger::isLoggingEnabled() const
 {
-    return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && (loggerData()->logToSDCard);
+    return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && (loggerData()->logToSDCard || loggerData()->logToWiFiStorage);
 }
 
 
@@ -66,9 +85,18 @@ inline bool HydroponicsPublisher::isPublishingToSDCard() const
     return hasPublisherData() && publisherData()->publishToSDCard;
 }
 
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+inline bool HydroponicsPublisher::isPublishingToWiFiStorage() const
+{
+    return hasPublisherData() && publisherData()->publishToWiFiStorage;
+}
+
+#endif
+
 inline bool HydroponicsPublisher::isPublishingEnabled() const
 {
-    return hasPublisherData() && (publisherData()->publishToSDCard);
+    return hasPublisherData() && (publisherData()->publishToSDCard || publisherData()->publishToWiFiStorage);
 }
 
 inline void HydroponicsPublisher::setNeedsTabulation()

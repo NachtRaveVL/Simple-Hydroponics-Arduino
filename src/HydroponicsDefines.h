@@ -25,6 +25,8 @@
 #define ACTIVE_ABOVE                        false                   // Active above (convenience)
 #define ACTIVE_LOW                          true                    // Active low (convenience)
 #define ACTIVE_BELOW                        true                    // Active below (convenience)
+#define RAW                                 false                   // Raw mode (convenience)
+#define JSON                                true                    // JSON mode (convenience)
 #ifndef RANDOM_MAX
 #ifdef RAND_MAX
 #define RANDOM_MAX RAND_MAX                                         // Missing def
@@ -64,6 +66,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_JSON_DOC_SYSSIZE           256                     // JSON document chunk data bytes for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           192                     // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRUINO_STRING_BUFFER_SIZE         32                      // Size in bytes of string serialization buffers
+#define HYDRUINO_WIFISTREAM_BUFFER_SIZE     128                     // Size in bytes of WiFi serialization buffers
 // The following slot sizes apply to all architectures
 #define HYDRUINO_SENSOR_MEASUREMENT_SLOTS   4                       // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
 #define HYDRUINO_TRIGGER_STATE_SLOTS        4                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
@@ -138,7 +141,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #else
 #define HYDRUINO_BLDPATH_SEPARATOR          '\\'                    // Path separator for win-based build machines
 #endif
-#define HYDRUINO_SDCPATH_SEPARATOR          '/'                     // Path separator for SD card paths
+#define HYDRUINO_SDPATH_SEPARATOR           '/'                     // Path separator for SD card paths
+#define HYDRUINO_WIFIPATH_SEPARATOR         '/'                     // Path separator for WiFiStorage paths
 
 
 // Crop Type

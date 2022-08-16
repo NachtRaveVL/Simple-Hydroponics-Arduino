@@ -14,7 +14,7 @@ This controller allows one to set up an entire system of sensors, pumps, relays,
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFiNINA (33IoT/MKR1010/MKR4000), WiFi101 (MKR1000), WiFi (platform), or WiFiEspAT (ext serial).
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFi101 (MKR1000), WiFiNINA_Generic, or WiFiEspAT (external serial AT).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -355,10 +355,10 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
 // System Saves Settings                                (note: only one save mechanism may be enabled at a time)
-#define SETUP_SYS_AUTOSAVE_ENABLE       false           // If autosaving system out is enabled or not
+#define SETUP_SAVES_CONFIG_FILE         "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
-#define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
 #define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
+#define SETUP_SAVES_WIFISTORE_ENABLE    false           // If saving/loading from WiFiStorage is enabled (WiFiNINA only)
 
 // WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID

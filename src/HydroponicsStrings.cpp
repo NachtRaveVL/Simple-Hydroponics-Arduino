@@ -574,6 +574,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Key_LogToSDCard[] PROGMEM = {"logToSDCard"};
             return flashStr_Key_LogToSDCard;
         } break;
+        case HStr_Key_LogToWiFiStorage: {
+            static const char flashStr_Key_LogToWiFiStorage[] PROGMEM = {"logToWiFiStorage"};
+            return flashStr_Key_LogToWiFiStorage;
+        } break;
         case HStr_Key_Logger: {
             static const char flashStr_Key_Logger[] PROGMEM = {"logger"};
             return flashStr_Key_Logger;
@@ -681,6 +685,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
         case HStr_Key_PublishToSDCard: {
             static const char flashStr_Key_PublishToSDCard[] PROGMEM = {"publishToSDCard"};
             return flashStr_Key_PublishToSDCard;
+        } break;
+        case HStr_Key_PublishToWiFiStorage: {
+            static const char flashStr_Key_PublishToWiFiStorage[] PROGMEM = {"publishToWiFiStorage"};
+            return flashStr_Key_PublishToWiFiStorage;
         } break;
         case HStr_Key_Publisher: {
             static const char flashStr_Key_Publisher[] PROGMEM = {"publisher"};

@@ -73,12 +73,11 @@
 #include <Wire.h>
 
 #ifdef HYDRUINO_ENABLE_WIFI
-#if defined(ARDUINO_SAMD_MKRWIFI1010) || defined(ARDUINO_SAMD_MKRVIDOR4000) || defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_AVR_UNO_WIFI_REV2)
-#include <WiFiNINA.h>                               // https://github.com/arduino-libraries/WiFiNINA
-#elif defined(ARDUINO_SAMD_MKR1000)
+#if defined(ARDUINO_SAMD_MKR1000)
 #include <WiFi101.h>                                // https://github.com/arduino-libraries/WiFi101
 #else
-#include <WiFi.h>
+#include <WiFiNINA_Generic.h>                       // https://github.com/khoih-prog/WiFiNINA_Generic
+#define HYDRUINO_USE_WIFI_STORAGE
 #endif
 #define HYDRUINO_USE_WIFI
 #endif
@@ -261,9 +260,9 @@ public:
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
     bool initFromBinaryStream(Stream *streamIn);
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL init
-    //bool initFromNetworkURL(urlDataTODO);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Initializes system from a WiFiStorageFile save using the SSID/pass combo, returning success flag
+    bool initFromWiFiStorage(String ssid, String pass, bool jsonFormat = true);
 #endif
 
     // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
@@ -274,9 +273,9 @@ public:
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup to custom binary stream, returning success flag
     bool saveToBinaryStream(Stream *streamOut);
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL save
-    //bool saveToNetworkURL(urlDataTODO);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Saves current system setup to WiFiStorageFile save, returning success flag
+    bool saveToWiFiStorage(bool jsonFormat = true);
 #endif
 
     // System Operation.
@@ -295,23 +294,23 @@ public:
 
     // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToSDCard(String logFilePrefix) { return logger.beginLoggingToSDCard(logFilePrefix); }
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL sys logging
-    //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Enables data logging to a WiFiStorageFile. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
+    inline bool enableSysLoggingToWiFiStorage(String logFilePrefix) { return logger.beginLoggingToWiFiStorage(logFilePrefix); }
 #endif
 
     // Data Publishing.
 
     // Enables data publishing to the SD card. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return publisher.beginPublishingToSDCard(dataFilePrefix); }
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL data pub
-    //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Enable data publishing to a WiFiStorageFile. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
+    inline bool enableDataPublishingToWiFiStorage(String dataFilePrefix) { return publisher.beginPublishingToWiFiStorage(dataFilePrefix); }
+#endif
     // TODO: MQTT data pub
     //bool enableDataPublishingToMQTT(mqttBrokerTODO, deviceDataTODO);
     // TODO: Web API data pub
     //bool enableDataPublishingToWebAPI(urlDataTODO, apiInterfaceTODO);
-#endif
 
     // User Interface.
 
@@ -363,8 +362,8 @@ public:
     // Sets EEPROM system data address as used in init and save by EEPROM.
     inline void setSystemDataAddress(uint16_t sysDataAddress) { _sysDataAddress = sysDataAddress; }
 #ifdef HYDRUINO_USE_WIFI
-    // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
-    void setWiFiConnection(String ssid, String password);
+    // Sets WiFi connection's SSID/pass combo (note: password is stored encrypted, but is not hack-proof)
+    void setWiFiConnection(String ssid, String pass);
 #endif
 
     // Sets the RTC's time to the passed time, with respect to set timezone. Will trigger significant time event.
@@ -421,7 +420,9 @@ public:
     void endSDCard(SDClass *sd);
 #ifdef HYDRUINO_USE_WIFI
     // WiFi instance (nullptr return -> failure/no device, note: this method may block for up to a minute)
-    WiFiClass *getWiFi(bool begin = true);
+    inline WiFiClass *getWiFi(bool begin = true);
+    // WiFi instance from specific ssid/pass combo (nullptr return -> failure/no device, note: this method may block for up to a minute)
+    WiFiClass *getWiFi(String ssid, String pass, bool begin = true);
 #endif
     // OneWire instance for given pin (lazily instantiated)
     OneWire *getOneWireForPin(pintype_t pin);
@@ -493,6 +494,7 @@ protected:
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
+    int8_t _sdOut;                                                  // Number of SD card instances out
 #if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
     SDVAlloc _vAlloc;                                               // SD card virtual memory allocator
 #elif defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
@@ -501,6 +503,7 @@ protected:
     bool _eepromBegan;                                              // Status of EEPROM begin() call
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
+    bool _sdBegan;                                                  // Status of SD begin() call
 #ifdef HYDRUINO_USE_WIFI
     bool _wifiBegan;                                                // Status of WiFi begin() call
 #endif

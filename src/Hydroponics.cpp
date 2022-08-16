@@ -69,7 +69,7 @@ Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
       _ctrlInputPinMap(ctrlInputPinMap),
       _eepromI2CAddr(eepromI2CAddress | HYDRUINO_SYS_I2CEEPROM_BASEADDR), _rtcI2CAddr(rtcI2CAddress), _lcdI2CAddr(lcdI2CAddress),
       _eeprom(nullptr), _rtc(nullptr), _sd(nullptr),
-      _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false),
+      _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _sdBegan(false),
 #ifndef HYDRUINO_DISABLE_MULTITASKING
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
@@ -126,23 +126,26 @@ void Hydroponics::deallocateRTC()
 
 void Hydroponics::allocateSD()
 {
-    #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)) || defined(SD)
-        _sd = &SD;
-    #else
-        if (!_sd) {
+    if (!_sd) {
+        #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)) || defined(SD)
+            _sd = &SD;
+        #else
             _sd = new SDClass();
             HYDRUINO_SOFT_ASSERT(_sd, SFP(HStr_Err_AllocationFailure));
-        }
-    #endif
+        #endif
+        _sdBegan = false;
+    }
 }
 
 void Hydroponics::deallocateSD()
 {
-    #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)) || defined(SD)
-        _sd = nullptr;
-    #else
-        if (_sd) { delete _sd; _sd = nullptr; }
-    #endif
+    if (_sd) {
+        #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SD)) || defined(SD)
+            _sd = nullptr;
+        #else
+            delete _sd; _sd = nullptr;
+        #endif
+    }
 }
 
 void Hydroponics::init(Hydroponics_SystemMode systemMode,
@@ -249,6 +252,7 @@ bool Hydroponics::saveToSDCard(bool jsonFormat)
 
             if (configFile) {
                 retVal = jsonFormat ? saveToJSONStream(&configFile, false) : saveToBinaryStream(&configFile);
+                configFile.flush();
                 configFile.close();
             }
 
@@ -259,6 +263,57 @@ bool Hydroponics::saveToSDCard(bool jsonFormat)
 
     return false;
 }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+bool Hydroponics::initFromWiFiStorage(String ssid, String pass, bool jsonFormat)
+{
+    HYDRUINO_HARD_ASSERT(!_systemData, SFP(HStr_Err_AlreadyInitialized));
+
+    if (!_systemData) {
+        commonPreInit();
+
+        if (getWiFi(ssid, pass)) {
+            bool retVal = false;
+            auto configFile = WiFiStorage.open(_sysConfigFile.c_str());
+
+            if (configFile) {
+                auto configFileStream = HydroponicsWiFiStorageFileStream(configFile);
+                retVal = jsonFormat ? initFromJSONStream(&configFileStream) : initFromBinaryStream(&configFileStream);
+            }
+
+            return retVal;
+        }
+    }
+
+    return false;
+}
+
+bool Hydroponics::saveToWiFiStorage(bool jsonFormat)
+{
+    HYDRUINO_HARD_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
+
+    if (!_systemData) {
+        if (getWiFi()) {
+            bool retVal = false;
+            if (WiFiStorage.exists(_sysConfigFile.c_str())) {
+                WiFiStorage.remove(_sysConfigFile.c_str());
+            }
+            auto configFile = WiFiStorage.open(_sysConfigFile.c_str());
+
+            if (configFile) {
+                auto configFileStream = HydroponicsWiFiStorageFileStream(configFile);
+                retVal = jsonFormat ? saveToJSONStream(&configFileStream, false) : saveToBinaryStream(&configFileStream);
+            }
+
+            return retVal;
+        }
+    }
+
+    return false;
+}
+
+#endif
 
 bool Hydroponics::initFromJSONStream(Stream *streamIn)
 {
@@ -993,14 +1048,14 @@ void Hydroponics::setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint1
 
 #ifdef HYDRUINO_USE_WIFI
 
-void Hydroponics::setWiFiConnection(String ssid, String password)
+void Hydroponics::setWiFiConnection(String ssid, String pass)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData) {
         bool ssidChanged = ssid.equals(getWiFiSSID());
-        bool passChanged = password.equals(getWiFiPassword());
+        bool passChanged = pass.equals(getWiFiPassword());
 
-        if (ssidChanged || passChanged || (password.length() && !_systemData->wifiPasswordSeed)) {
+        if (ssidChanged || passChanged || (pass.length() && !_systemData->wifiPasswordSeed)) {
             _systemData->_bumpRevIfNotAlreadyModded();
 
             if (ssid.length()) {
@@ -1009,20 +1064,20 @@ void Hydroponics::setWiFiConnection(String ssid, String password)
                 memset(_systemData->wifiSSID, '\0', HYDRUINO_NAME_MAXSIZE);
             }
 
-            if (password.length()) {
+            if (pass.length()) {
                 randomSeed(unixNow());
                 _systemData->wifiPasswordSeed = random(1, RANDOM_MAX);
 
                 randomSeed(_systemData->wifiPasswordSeed);
                 for (int charIndex = 0; charIndex < HYDRUINO_NAME_MAXSIZE; ++charIndex) {
-                    _systemData->wifiPassword[charIndex] = (uint8_t)(charIndex < password.length() ? password[charIndex] : '\0') ^ (uint8_t)random(256);
+                    _systemData->wifiPassword[charIndex] = (uint8_t)(charIndex < pass.length() ? pass[charIndex] : '\0') ^ (uint8_t)random(256);
                 }
             } else {
                 _systemData->wifiPasswordSeed = 0;
                 memset(_systemData->wifiPassword, '\0', HYDRUINO_NAME_MAXSIZE);
             }
 
-            if (_wifiBegan && (ssidChanged || passChanged)) { HYDRUINO_SYS_WIFI_INSTANCE.disconnect(); _wifiBegan = false; } // forces re-connect on next getWifi
+            if (_wifiBegan && (ssidChanged || passChanged)) { HYDRUINO_SYS_WIFI_INSTANCE.disconnect(); _wifiBegan = false; } // forces re-connect on next getWiFi
         }
     }
 }
@@ -1101,17 +1156,26 @@ SDClass *Hydroponics::getSDCard(bool begin)
     if (!_sd) { allocateSD(); }
 
     if (_sd && begin) {
-        #if defined(ESP32)
-            bool sdBegan = _sd->begin(getSDCardCSPin(), *getSPI(), getSDCardSpeed());
-        #elif defined(CORE_TEENSY)
-            bool sdBegan = _sd->begin(getSDCardCSPin()); // card speed not possible to set on teensy
-        #else
-            bool sdBegan = _sd->begin(getSDCardSpeed(), getSDCardCSPin());
-        #endif
+        if (!_sdBegan) {
+            #ifdef HYDRUINO_ENABLE_SD_VIRTMEM
+                if (!_systemData && !_vAlloc.getSDBegan()) { commonPreInit(); }
+                _sdBegan = _vAlloc.getSDBegan();
+            #elif defined(ESP32)
+                _sdBegan = _sd->begin(getSDCardCSPin(), *getSPI(), getSDCardSpeed());
+            #elif defined(CORE_TEENSY)
+                _sdBegan = _sd->begin(getSDCardCSPin()); // card speed not possible to set on teensy
+            #else
+                _sdBegan = _sd->begin(getSDCardSpeed(), getSDCardCSPin());
+            #endif
+        }
 
-        if (!sdBegan) { deallocateSD(); }
+        if (!_sdBegan) { deallocateSD(); }
 
-        return _sd && sdBegan ? _sd : nullptr;
+        if (_sd && _sdBegan) {
+            _sdOut++;
+            return _sd;
+        }
+        return nullptr;
     }
 
     return _sd;
@@ -1119,14 +1183,18 @@ SDClass *Hydroponics::getSDCard(bool begin)
 
 void Hydroponics::endSDCard(SDClass *sd)
 {
-    #if !defined(CORE_TEENSY) // no delayed write on teensy's SD impl
-        sd->end();
+    #if defined(CORE_TEENSY)
+        --_sdOut; // no delayed write on teensy's SD impl
+    #else
+        if (--_sdOut == 0) {
+            sd->end();
+        }
     #endif
 }
 
 #ifdef HYDRUINO_USE_WIFI
 
-WiFiClass *Hydroponics::getWiFi(bool begin)
+WiFiClass *Hydroponics::getWiFi(String ssid, String pass, bool begin)
 {
     int status = HYDRUINO_SYS_WIFI_INSTANCE.status();
 
@@ -1136,9 +1204,6 @@ WiFiClass *Hydroponics::getWiFi(bool begin)
         } else if (status == WL_NO_SHIELD) {
             _wifiBegan = false;
         } else { // attempt connection
-            String ssid = getWiFiSSID();
-            String pass = getWiFiPassword();
-
             #ifdef HYDRUINO_USE_SERIALWIFI
                 status = HYDRUINO_SYS_WIFI_INSTANCE.begin(ssid.c_str(), pass.c_str());
             #else
@@ -1340,16 +1405,26 @@ void Hydroponics::checkAutosave()
     if (isAutosaveEnabled() && unixNow() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
         switch (_systemData->autosaveEnabled) {
             case Hydroponics_Autosave_EnabledToSDCardJson:
-                saveToSDCard(true);
+                saveToSDCard(JSON);
                 break;
             case Hydroponics_Autosave_EnabledToSDCardRaw:
-                saveToSDCard(false);
+                saveToSDCard(RAW);
                 break;
             case Hydroponics_Autosave_EnabledToEEPROMJson:
-                saveToEEPROM(true);
+                saveToEEPROM(JSON);
                 break;
             case Hydroponics_Autosave_EnabledToEEPROMRaw:
-                saveToEEPROM(false);
+                saveToEEPROM(RAW);
+                break;
+            case Hydroponics_Autosave_EnabledToWiFiStorageJson:
+                #ifdef HYDRUINO_USE_WIFI_STORAGE
+                    saveToWiFiStorage(JSON);
+                #endif
+                break;
+            case Hydroponics_Autosave_EnabledToWiFiStorageRaw:
+                #ifdef HYDRUINO_USE_WIFI_STORAGE
+                    saveToWiFiStorage(RAW);
+                #endif
                 break;
             case Hydroponics_Autosave_Disabled:
                 break;

@@ -126,6 +126,8 @@ void setup() {
                         } else {
                             getLoggerInstance()->logError(F("Failure writing to crops lib data file!"));
                         }
+
+                        file.flush();
                         file.close();
                     } else {
                         getLoggerInstance()->logError(F("Failure opening crops lib data file for writing!"));
@@ -175,6 +177,8 @@ void setup() {
                     } else {
                         getLoggerInstance()->logError(F("Failure writing to strings data file!"));
                     }
+
+                    file.flush();
                     file.close();
                 } else {
                     getLoggerInstance()->logError(F("Failure opening strings data file for writing!"));

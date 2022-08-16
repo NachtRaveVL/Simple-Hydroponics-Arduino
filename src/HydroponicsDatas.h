@@ -23,6 +23,8 @@ enum Hydroponics_Autosave : signed char {
     Hydroponics_Autosave_EnabledToSDCardRaw,                    // Autosave to SD Card in binary
     Hydroponics_Autosave_EnabledToEEPROMJson,                   // Autosave to EEPROM in Json
     Hydroponics_Autosave_EnabledToEEPROMRaw,                    // Autosave to EEPROM in binary
+    Hydroponics_Autosave_EnabledToWiFiStorageJson,              // Autosave to EEPROM in Json
+    Hydroponics_Autosave_EnabledToWiFiStorageRaw,               // Autosave to EEPROM in binary
     Hydroponics_Autosave_Disabled = -1                          // Autosave disabled
 };
 

@@ -35,6 +35,11 @@ public:
     bool beginLoggingToSDCard(String logFilePrefix);
     inline bool isLoggingToSDCard() const;
 
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    bool beginLoggingToWiFiStorage(String logFilePrefix);
+    inline bool isLoggingToWiFiStorage() const;
+#endif
+
     inline void logActivation(const HydroponicsActuator *actuator);
     inline void logDeactivation(const HydroponicsActuator *actuator);
     inline void logProcess(const HydroponicsObject *obj, const String &processString = String(), const String &statusString = String());
@@ -77,6 +82,7 @@ struct HydroponicsLoggerSubData : public HydroponicsSubData {
     Hydroponics_LogLevel logLevel;                          // Log level filter (default: All)
     char logFilePrefix[16];                                 // Base log file name prefix / folder (default: "logs/hy")
     bool logToSDCard;                                       // If publishing to SD card is enabled (default: false)
+    bool logToWiFiStorage;                                  // If publishing to WiFiStorageFile is enabled (default: false)
 
     HydroponicsLoggerSubData();
     void toJSONObject(JsonObject &objectOut) const;
