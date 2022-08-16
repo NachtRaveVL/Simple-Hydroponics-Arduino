@@ -177,16 +177,14 @@ int HydroponicsWiFiStorageFileStream::read()
 size_t HydroponicsWiFiStorageFileStream::readBytes(char *buffer, size_t length)
 {
     if (!_file || _readOffset >= _endOffset) { return -1; }
-
-    size_t outerOffset = 0;
     while (length && _readOffset < _endOffset) {
         prepareReadBuffer();
-        size_t howMany = available();
-        howMany = min(min(howMany, length), HYDRUINO_WIFISTREAM_BUFFER_SIZE - _bufferOffset);
-        memcpy(&buffer[outerOffset], &_buffer[_bufferOffset], howMany);
+        size_t howMany = min(length, _endOffset - _readOffset);
+        howMany = min(howMany, HYDRUINO_WIFISTREAM_BUFFER_SIZE - _bufferOffset);
+        memcpy(buffer, &_buffer[_bufferOffset], howMany);
         _readOffset += howMany;
         _bufferOffset += howMany;
-        outerOffset += howMany;
+        buffer += howMany;
         length -= howMany;
     }
 }
@@ -210,14 +208,13 @@ void HydroponicsWiFiStorageFileStream::flush()
 size_t HydroponicsWiFiStorageFileStream::write(const uint8_t *buffer, size_t size)
 {
     if (!_file || _writeOffset >= _endOffset) { return -1; }
-    size_t outerOffset = 0;
     while (size) {
         prepareWriteBuffer();
         size_t howMany = min(size, HYDRUINO_WIFISTREAM_BUFFER_SIZE - _bufferOffset);
-        memcpy(&_buffer[_bufferOffset], &buffer[outerOffset], howMany);
+        memcpy(&_buffer[_bufferOffset], buffer, howMany);
         _writeOffset += howMany;
         _bufferOffset += howMany;
-        outerOffset += howMany;
+        buffer += howMany;
         size -= howMany;
     }
 }
@@ -246,6 +243,7 @@ void HydroponicsWiFiStorageFileStream::prepareReadBuffer()
         _bufferDirection = ReadBuffer;
         _bufferFileOffset = _readOffset;
         _bufferOffset = 0;
+
         _file.seek(_bufferFileOffset);
         _file.read((void *)_buffer, HYDRUINO_WIFISTREAM_BUFFER_SIZE);
     }
