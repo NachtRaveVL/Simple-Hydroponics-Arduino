@@ -15,9 +15,9 @@ void handleInterrupt(pintype_t pin)
     if (Hydroponics::_activeInstance) {
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
             if (iter->second->isSensorType()) {
-                auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
+                auto sensor = hy_static_ptr_cast<HydroponicsSensor>(iter->second);
                 if (sensor->getInputPin() == pin && sensor->isBinaryClass()) {
-                    auto binarySensor = static_hyptr_cast<HydroponicsBinarySensor>(sensor);
+                    auto binarySensor = hy_static_ptr_cast<HydroponicsBinarySensor>(sensor);
                     if (binarySensor) { binarySensor->notifyISRTriggered(); }
                 }
             }
@@ -756,7 +756,7 @@ void dataLoop()
 
         for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
             if (iter->second->isSensorType()) {
-                auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
+                auto sensor = hy_static_ptr_cast<HydroponicsSensor>(iter->second);
                 if (sensor->needsPolling()) {
                     sensor->takeMeasurement(); // no force if already current for this frame #, we're just ensuring data for publisher
                 }
@@ -1335,14 +1335,14 @@ void Hydroponics::notifyDayChanged()
 {
     for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
         if (iter->second->isReservoirType()) {
-            auto reservoir = static_hyptr_cast<HydroponicsReservoir>(iter->second);
+            auto reservoir = hy_static_ptr_cast<HydroponicsReservoir>(iter->second);
 
             if (reservoir && reservoir->isFeedClass()) {
-                auto feedReservoir = static_hyptr_cast<HydroponicsFeedReservoir>(iter->second);
+                auto feedReservoir = hy_static_ptr_cast<HydroponicsFeedReservoir>(iter->second);
                 if (feedReservoir) {feedReservoir->notifyDayChanged(); }
             }
         } else if (iter->second->isCropType()) {
-            auto crop = static_hyptr_cast<HydroponicsCrop>(iter->second);
+            auto crop = hy_static_ptr_cast<HydroponicsCrop>(iter->second);
 
             if (crop) { crop->notifyDayChanged(); }
         }

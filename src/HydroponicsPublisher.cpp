@@ -253,7 +253,7 @@ void HydroponicsPublisher::performTabulation()
 
     for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
         if (iter->second->isSensorType()) {
-            auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
+            auto sensor = hy_static_ptr_cast<HydroponicsSensor>(iter->second);
             auto rowCount = getMeasurementRowCount(sensor->getLatestMeasurement());
 
             for (int rowIndex = 0; sameOrder && rowIndex < rowCount; ++rowIndex) {
@@ -280,7 +280,7 @@ void HydroponicsPublisher::performTabulation()
 
                 for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
                     if (iter->second->isSensorType()) {
-                        auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
+                        auto sensor = hy_static_ptr_cast<HydroponicsSensor>(iter->second);
                         auto measurement = sensor->getLatestMeasurement();
                         auto rowCount = getMeasurementRowCount(measurement);
 

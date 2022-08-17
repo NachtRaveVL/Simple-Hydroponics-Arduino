@@ -42,7 +42,7 @@ SharedPtr<HydroponicsObjInterface> HydroponicsDLinkObject::_getObject()
     if (_obj) { return _obj; }
     if (_key == (Hydroponics_KeyType)-1) { return nullptr; }
     if (Hydroponics::_activeInstance) {
-        _obj = static_hyptr_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
+        _obj = hy_static_ptr_cast<HydroponicsObjInterface>(Hydroponics::_activeInstance->_objects[_key]);
     }
     if (_obj && _keyStr) {
         free((void *)_keyStr); _keyStr = nullptr;

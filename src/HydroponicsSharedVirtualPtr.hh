@@ -379,27 +379,27 @@ namespace arx { namespace stdx
 
 }} // namespace arx::stdx
 
-template<class T, class U> inline SharedPtr<T> static_hyptr_cast(const SharedPtr<U>& r) { return static_vpointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> static_hyptr_cast(SharedPtr<U>&& r) { return static_vpointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> const_hyptr_cast(const SharedPtr<U>& r) { return const_vpointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> const_hyptr_cast(SharedPtr<U>&& r) { return const_vpointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> dynamic_hyptr_cast(const SharedPtr<U>& r) { return dynamic_vpointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> dynamic_hyptr_cast(SharedPtr<U>&& r) { return dynamic_vpointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> reinterpret_hyptr_cast(const SharedPtr<U>& r) { return reinterpret_vpointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> reinterpret_hyptr_cast(SharedPtr<U>&& r) { return reinterpret_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_static_ptr_cast(const SharedPtr<U>& r) { return static_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_static_ptr_cast(SharedPtr<U>&& r) { return static_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_const_ptr_cast(const SharedPtr<U>& r) { return const_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_const_ptr_cast(SharedPtr<U>&& r) { return const_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_dynamic_ptr_cast(const SharedPtr<U>& r) { return dynamic_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_dynamic_ptr_cast(SharedPtr<U>&& r) { return dynamic_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_reinterpret_ptr_cast(const SharedPtr<U>& r) { return reinterpret_vpointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_reinterpret_ptr_cast(SharedPtr<U>&& r) { return reinterpret_vpointer_cast<T,U>(r); }
 template<class T> inline SharedPtr<T> make_hyptr_shared() { return make_vshared<T>(); }
 template<class T, class... Args> inline SharedPtr<T> make_hyptr_shared(Args&&... args) { return make_vshared<T>(args...); }
 
 #else
 
-template<class T, class U> inline SharedPtr<T> static_hyptr_cast(const SharedPtr<U>& r) { return static_pointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> static_hyptr_cast(SharedPtr<U>&& r) { return static_pointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> const_hyptr_cast(const SharedPtr<U>& r) { return const_pointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> const_hyptr_cast(SharedPtr<U>&& r) { return const_pointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> dynamic_hyptr_cast(const SharedPtr<U>& r) { return dynamic_pointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> dynamic_hyptr_cast(SharedPtr<U>&& r) { return dynamic_pointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> reinterpret_hyptr_cast(const SharedPtr<U>& r) { return reinterpret_pointer_cast<T,U>(r); }
-template<class T, class U> inline SharedPtr<T> reinterpret_hyptr_cast(SharedPtr<U>&& r) { return reinterpret_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_static_ptr_cast(const SharedPtr<U>& r) { return static_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_static_ptr_cast(SharedPtr<U>&& r) { return static_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_const_ptr_cast(const SharedPtr<U>& r) { return const_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_const_ptr_cast(SharedPtr<U>&& r) { return const_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_dynamic_ptr_cast(const SharedPtr<U>& r) { return dynamic_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_dynamic_ptr_cast(SharedPtr<U>&& r) { return dynamic_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_reinterpret_ptr_cast(const SharedPtr<U>& r) { return reinterpret_pointer_cast<T,U>(r); }
+template<class T, class U> inline SharedPtr<T> hy_reinterpret_ptr_cast(SharedPtr<U>&& r) { return reinterpret_pointer_cast<T,U>(r); }
 template<class T> inline SharedPtr<T> make_hyptr_shared() { return arx::stdx::make_shared<T>(); }
 template<class T, class... Args> inline SharedPtr<T> make_hyptr_shared(Args&&... args) { return arx::stdx::make_shared<T>(args...); }
 

@@ -37,7 +37,7 @@ public:
     void unresolve();
 
     template<class U> inline void setObject(U obj) { (*this) = obj; }
-    template<class U = HydroponicsObjInterface> inline SharedPtr<U> getObject() { return reinterpret_hyptr_cast<U>(_getObject()); }
+    template<class U = HydroponicsObjInterface> inline SharedPtr<U> getObject() { return hy_reinterpret_ptr_cast<U>(_getObject()); }
     template<class U = HydroponicsObjInterface> inline U* get() { return getObject<U>().get(); }
 
     inline HydroponicsIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroponicsIdentity(_keyStr) : HydroponicsIdentity(_key)); }
