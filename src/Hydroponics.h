@@ -260,15 +260,15 @@ public:
     // Initializes system from SD card file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool initFromSDCard(bool jsonFormat = true);
-    // Initializes system from custom JSON-based stream, returning success flag
-    bool initFromJSONStream(Stream *streamIn);
-    // Initializes system from custom binary stream, returning success flag
-    bool initFromBinaryStream(Stream *streamIn);
 #ifdef HYDRUINO_USE_WIFI_STORAGE
     // Initializes system from a WiFiStorage file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool initFromWiFiStorage(bool jsonFormat = true);
 #endif
+    // Initializes system from custom JSON-based stream, returning success flag
+    bool initFromJSONStream(Stream *streamIn);
+    // Initializes system from custom binary stream, returning success flag
+    bool initFromBinaryStream(Stream *streamIn);
 
     // Saves current system setup to EEPROM save, returning success flag
     // Set system data address with setSystemEEPROMAddress
@@ -276,15 +276,15 @@ public:
     // Saves current system setup to SD card file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool saveToSDCard(bool jsonFormat = true);
-    // Saves current system setup to custom JSON-based stream, returning success flag
-    bool saveToJSONStream(Stream *streamOut, bool compact = true);
-    // Saves current system setup to custom binary stream, returning success flag
-    bool saveToBinaryStream(Stream *streamOut);
 #ifdef HYDRUINO_USE_WIFI_STORAGE
     // Saves current system setup to WiFiStorage file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool saveToWiFiStorage(bool jsonFormat = true);
 #endif
+    // Saves current system setup to custom JSON-based stream, returning success flag
+    bool saveToJSONStream(Stream *streamOut, bool compact = true);
+    // Saves current system setup to custom binary stream, returning success flag
+    bool saveToBinaryStream(Stream *streamOut);
 
     // System Operation.
 

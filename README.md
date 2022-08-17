@@ -130,10 +130,17 @@ From Hydroponics.h, in class Hydroponics:
               Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
 
-    // Initializes system from EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Initializes system from EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool initFromEEPROM(bool jsonFormat = false);
-    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFilename)
+    // Initializes system from SD card file save, returning success flag
+    // Set config file name with setSystemConfigFilename
     bool initFromSDCard(bool jsonFormat = true);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Initializes system from a WiFiStorage file save, returning success flag
+    // Set config file name with setSystemConfigFilename
+    bool initFromWiFiStorage(bool jsonFormat = true);
+#endif
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
@@ -144,10 +151,17 @@ The controller can also be initialized from a saved configuration, such as from 
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
-    // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Saves current system setup to EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool saveToEEPROM(bool jsonFormat = false);
-    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFilename)
+    // Saves current system setup to SD card file save, returning success flag
+    // Set config file name with setSystemConfigFilename
     bool saveToSDCard(bool jsonFormat = true);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Saves current system setup to WiFiStorage file save, returning success flag
+    // Set config file name with setSystemConfigFilename
+    bool saveToWiFiStorage(bool jsonFormat = true);
+#endif
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup to custom binary stream, returning success flag
