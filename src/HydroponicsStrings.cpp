@@ -22,6 +22,24 @@ void beginStringsFromSDCard(String dataFilePrefix)
     _strDataFilePrefix = dataFilePrefix;
 }
 
+static inline String getStringsFilename()
+{
+    String filename; filename.reserve(_strDataFilePrefix.length() + 12);
+    filename.concat(_strDataFilePrefix);
+    filename.concat('s'); // Cannot use SFP here so have to do it the long way
+    filename.concat('t');
+    filename.concat('r');
+    filename.concat('i');
+    filename.concat('n');
+    filename.concat('g');
+    filename.concat('s');
+    filename.concat('.');
+    filename.concat('d');
+    filename.concat('a');
+    filename.concat('t');
+    return filename;
+}
+
 String stringFromPGM(Hydroponics_String strNum)
 {    
     static Hydroponics_String _lookupStrNum = Hydroponics_Strings_Count; // Simple LRU cache reduces a lot of lookup access
@@ -44,8 +62,8 @@ String stringFromPGM(Hydroponics_String strNum)
 
                 while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
                     lookupOffset += HYDRUINO_STRING_BUFFER_SIZE;
-                    eeprom->readBlock(lookupOffset, (uint8_t *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
-                    if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
+                    bytesRead = eeprom->readBlock(lookupOffset, (uint8_t *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
+                    if (bytesRead) { retVal.concat(charsToString(buffer, bytesRead)); }
                 }
 
                 if (retVal.length()) {
@@ -60,25 +78,12 @@ String stringFromPGM(Hydroponics_String strNum)
     #endif
 
     if (_strDataFilePrefix.length()) {
-        auto sd = getHydroponicsInstance()->getSDCard();
+        static auto sd = getHydroponicsInstance()->getSDCard();
 
         if (sd) {
             String retVal;
-            String filename; filename.reserve(_strDataFilePrefix.length() + 12);
-            filename = _strDataFilePrefix;
-            filename.concat('s'); // Cannot use SFP here so have to do it the long way
-            filename.concat('t');
-            filename.concat('r');
-            filename.concat('i');
-            filename.concat('n');
-            filename.concat('g');
-            filename.concat('s');
-            filename.concat('.');
-            filename.concat('d');
-            filename.concat('a');
-            filename.concat('t');
+            static auto file = sd->open(getStringsFilename().c_str(), FILE_READ);
 
-            auto file = sd->open(filename.c_str(), FILE_READ);
             if (file) {
                 uint16_t lookupOffset = 0;
                 file.seek(sizeof(uint16_t) * (int)strNum);
@@ -90,19 +95,19 @@ String stringFromPGM(Hydroponics_String strNum)
 
                 {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
                     file.seek(lookupOffset);
-                    file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                    retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
+                    auto bytesRead = file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                    retVal.concat(charsToString(buffer, bytesRead));
 
                     while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
-                        file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                        if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
+                        bytesRead = file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                        if (bytesRead) { retVal.concat(charsToString(buffer, bytesRead)); }
                     }
                 }
 
-                file.close();
+                //file.close();
             }
 
-            getHydroponicsInstance()->endSDCard(sd);
+            //getHydroponicsInstance()->endSDCard(sd);
             if (retVal.length()) {
                 return (_lookupCachedRes = retVal);
             }
