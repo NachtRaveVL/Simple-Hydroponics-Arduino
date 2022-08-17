@@ -107,7 +107,7 @@ float HydroponicsRail::getRailVoltage() const
     return getRailVoltageFromType(_id.objTypeAs.railType);
 }
 
-Signal<HydroponicsRail *> &HydroponicsRail::getCapacitySignal()
+Signal<HydroponicsRail *, HYDRUINO_CAPACITY_STATE_SLOTS> &HydroponicsRail::getCapacitySignal()
 {
     return _capacitySignal;
 }

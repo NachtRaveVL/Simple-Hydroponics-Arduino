@@ -62,7 +62,7 @@ public:
     inline int getTotalGrowWeeks() const { return _totalGrowWeeks; }
     inline Hydroponics_CropPhase getCropPhase() const { return _cropPhase; }
 
-    Signal<HydroponicsCrop *> &getFeedingSignal();
+    Signal<HydroponicsCrop *, HYDRUINO_FEEDING_STATE_SLOTS> &getFeedingSignal();
 
     void notifyDayChanged();
 
@@ -76,7 +76,7 @@ protected:
     Hydroponics_CropPhase _cropPhase;                       // Current crop phase
     Hydroponics_TriggerState _feedingState;                 // Current feeding signal state
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)
-    Signal<HydroponicsCrop *> _feedingSignal;               // Feeding requested signal
+    Signal<HydroponicsCrop *, HYDRUINO_FEEDING_STATE_SLOTS> _feedingSignal; // Feeding requested signal
 
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;

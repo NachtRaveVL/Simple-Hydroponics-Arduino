@@ -192,9 +192,9 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Default_SystemName[] PROGMEM = {"Hydruino"};
             return flashStr_Default_SystemName;
         } break;
-        case HStr_Default_ConfigFile: {
-            static const char flashStr_Default_ConfigFile[] PROGMEM = {"hydruino.cfg"};
-            return flashStr_Default_ConfigFile;
+        case HStr_Default_ConfigFilename: {
+            static const char flashStr_Default_ConfigFilename[] PROGMEM = {"hydruino.cfg"};
+            return flashStr_Default_ConfigFilename;
         } break;
 
         case HStr_Err_AllocationFailure: {

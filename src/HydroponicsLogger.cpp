@@ -5,16 +5,31 @@
 
 #include "Hydroponics.h"
 
+HydroponicsLogEvent::HydroponicsLogEvent(Hydroponics_LogLevel levelIn, const String &prefixIn, const String &msgIn, const String &suffix1In, const String &suffix2In)
+    : level(levelIn), timestamp(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL)), prefix(prefixIn), msg(msgIn), suffix1(suffix1In), suffix2(suffix2In)
+{ ; }
+
+
 HydroponicsLogger::HydroponicsLogger()
-    : _logFileName(), _initDate(0), _lastSpaceCheck(0)
+    : _logFilename(), _initDate(0), _lastSpaceCheck(0)
 { ; }
 
 HydroponicsLogger::~HydroponicsLogger()
 {
     flush();
+
     #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-        if (_sd) { Hydroponics::_activeInstance->endSDCard(_sd); _sd = nullptr; }
-        if (_logFile) { _logFile->flush(); _logFile->close(); delete _logFile; _logFile = nullptr; }
+        if (_logFileSD) {
+            _logFileSD->close();
+            delete _logFileSD; _logFileSD = nullptr;
+            Hydroponics::_activeInstance->endSDCard();
+        }
+        #ifdef HYDRUINO_USE_WIFI_STORAGE
+            if (_logFileWS) {
+                _logFileWS->close();
+                delete _logFileWS; _logFileWS = nullptr;
+            }
+        #endif
     #endif
 }
 
@@ -22,20 +37,16 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
 {
     HYDRUINO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
 
-    if (hasLoggerData()) {
-        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-            auto &sd = _sd ? _sd : (_sd = Hydroponics::_activeInstance->getSDCard());
-        #else
-            auto sd = Hydroponics::_activeInstance->getSDCard();
-        #endif
+    if (hasLoggerData() && !loggerData()->logToSDCard) {
+        auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
-            String logFileName = getYYMMDDFilename(logFilePrefix, SFP(HStr_txt));
-            createDirectoryFor(sd, logFileName);
+            String logFilename = getYYMMDDFilename(logFilePrefix, SFP(HStr_txt));
+            createDirectoryFor(sd, logFilename);
             #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-                auto &logFile = _logFile ? *_logFile : *(_logFile = new SDFile(sd->open(logFileName.c_str(), FILE_WRITE)));
+                auto &logFile = _logFileSD ? *_logFileSD : *(_logFileSD = new SDFile(sd->open(logFilename.c_str(), FILE_WRITE)));
             #else
-                auto logFile = sd->open(logFileName.c_str(), FILE_WRITE);
+                auto logFile = sd->open(logFilename.c_str(), FILE_WRITE);
             #endif
 
             if (logFile) {
@@ -47,7 +58,7 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
                 Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
                 strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
                 loggerData()->logToSDCard = true;
-                _logFileName = logFileName;
+                _logFilename = logFilename;
 
                 return true;
             }
@@ -67,21 +78,25 @@ bool HydroponicsLogger::beginLoggingToWiFiStorage(String logFilePrefix)
 {
     HYDRUINO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
 
-    if (hasLoggerData()) {
-        if (Hydroponics::_activeInstance->getWiFi()) {
-            String logFileName = getYYMMDDFilename(logFilePrefix, SFP(HStr_txt));
-            auto logFile = WiFiStorage.open(logFileName.c_str());
+    if (hasLoggerData() && !loggerData()->logToWiFiStorage) {
+        String logFilename = getYYMMDDFilename(logFilePrefix, SFP(HStr_txt));
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            auto &logFile = _logFileWS ? *_logFileWS : *(_logFileWS = new WiFiStorageFile(WiFiStorage.open(logFilename.c_str())));
+        #else
+            auto logFile = WiFiStorage.open(logFilename.c_str());
+        #endif
 
-            if (logFile) {
+        if (logFile) {
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
                 logFile.close();
+            #endif
 
-                Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
-                strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
-                loggerData()->logToWiFiStorage = true;
-                _logFileName = logFileName;
+            Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+            strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
+            loggerData()->logToWiFiStorage = true;
+            _logFilename = logFilename;
 
-                return true;
-            }
+            return true;
         }
     }
 
@@ -101,59 +116,55 @@ void HydroponicsLogger::logSystemUptime()
 void HydroponicsLogger::logMessage(const String &msg, const String &suffix1, const String &suffix2)
 {
     if (hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logLevel <= Hydroponics_LogLevel_All) {
-        log(SFP(HStr_Log_Prefix_Info), msg, suffix1, suffix2);
+        log(HydroponicsLogEvent(Hydroponics_LogLevel_Info, SFP(HStr_Log_Prefix_Info), msg, suffix1, suffix2));
     }
 }
 
 void HydroponicsLogger::logWarning(const String &warn, const String &suffix1, const String &suffix2)
 {
     if (hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logLevel <= Hydroponics_LogLevel_Warnings) {
-        log(SFP(HStr_Log_Prefix_Warning), warn, suffix1, suffix2);
+        log(HydroponicsLogEvent(Hydroponics_LogLevel_Warnings, SFP(HStr_Log_Prefix_Warning), warn, suffix1, suffix2));
     }
 }
 
 void HydroponicsLogger::logError(const String &err, const String &suffix1, const String &suffix2)
 {
     if (hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logLevel <= Hydroponics_LogLevel_Errors) {
-        log(SFP(HStr_Log_Prefix_Error), err, suffix1, suffix2);
+        log(HydroponicsLogEvent(Hydroponics_LogLevel_Errors, SFP(HStr_Log_Prefix_Error), err, suffix1, suffix2));
     }
 }
 
-void HydroponicsLogger::log(const String &prefix, const String &msg, const String &suffix1, const String &suffix2)
+void HydroponicsLogger::log(const HydroponicsLogEvent &event)
 {
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         if (Serial) {
-            Serial.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
+            Serial.print(event.timestamp);
             Serial.print(' ');
-            Serial.print(prefix);
-            Serial.print(msg);
-            Serial.print(suffix1);
-            Serial.println(suffix2);
+            Serial.print(event.prefix);
+            Serial.print(event.msg);
+            Serial.print(event.suffix1);
+            Serial.println(event.suffix2);
         }
     #endif
 
     if (isLoggingToSDCard()) {
-        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-            auto &sd = _sd ? _sd : (_sd = Hydroponics::_activeInstance->getSDCard());
-        #else
-            auto sd = Hydroponics::_activeInstance->getSDCard();
-        #endif
+        auto sd = Hydroponics::_activeInstance->getSDCard(HYDRUINO_LOFS_BEGIN);
 
         if (sd) {
-            createDirectoryFor(sd, _logFileName);
             #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-                auto &logFile = _logFile ? *_logFile : *(_logFile = new SDFile(sd->open(_logFileName.c_str(), FILE_WRITE)));
+                auto &logFile = _logFileSD ? *_logFileSD : *(_logFileSD = new SDFile(sd->open(_logFilename.c_str(), FILE_WRITE)));
             #else
-                auto logFile = sd->open(_logFileName.c_str(), FILE_WRITE);
+                createDirectoryFor(sd, _logFilename);
+                auto logFile = sd->open(_logFilename.c_str(), FILE_WRITE);
             #endif
 
             if (logFile) {
-                logFile.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
+                logFile.print(event.timestamp);
                 logFile.print(' ');
-                logFile.print(prefix);
-                logFile.print(msg);
-                logFile.print(suffix1);
-                logFile.println(suffix2);
+                logFile.print(event.prefix);
+                logFile.print(event.msg);
+                logFile.print(event.suffix1);
+                logFile.println(event.suffix2);
 
                 #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
                     logFile.flush();
@@ -169,28 +180,46 @@ void HydroponicsLogger::log(const String &prefix, const String &msg, const Strin
 
 #ifdef HYDRUINO_USE_WIFI_STORAGE
 
-    if (isLoggingToWiFiStorage() && Hydroponics::_activeInstance->getWiFi()) {
-        auto logFile = WiFiStorage.open(_logFileName.c_str());
+    if (isLoggingToWiFiStorage()) {
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            auto &logFile = _logFileWS ? *_logFileWS : *(_logFileWS = new WiFiStorageFile(WiFiStorage.open(_logFilename.c_str())));
+        #else
+            auto logFile = WiFiStorage.open(_logFilename.c_str());
+        #endif
 
         if (logFile) {
             auto logFileStream = HydroponicsWiFiStorageFileStream(logFile, logFile.size());
 
-            logFileStream.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
+            logFileStream.print(event.timestamp);
             logFileStream.print(' ');
-            logFileStream.print(prefix);
-            logFileStream.print(msg);
-            logFileStream.print(suffix1);
-            logFileStream.println(suffix2);
+            logFileStream.print(event.prefix);
+            logFileStream.print(event.msg);
+            logFileStream.print(event.suffix1);
+            logFileStream.println(event.suffix2);
+
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                logFileStream.flush();
+                logFile.close();
+            #endif
         }
     }
 
 #endif
+
+    #ifndef HYDRUINO_DISABLE_MULTITASKING
+        scheduleSignalFireOnce<const HydroponicsLogEvent>(_logSignal, event);
+    #else
+        _logSignal.fire(event);
+    #endif
 }
 
 void HydroponicsLogger::flush()
 {
     #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
         if (Serial) { Serial.flush(); }
+    #endif
+    #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+        if(_logFileSD) { _logFileSD->flush(); }
     #endif
     yield();
 }
@@ -204,10 +233,15 @@ void HydroponicsLogger::setLogLevel(Hydroponics_LogLevel logLevel)
     }
 }
 
+Signal<const HydroponicsLogEvent, HYDRUINO_LOG_STATE_SLOTS> &HydroponicsLogger::getLogSignal()
+{
+    return _logSignal;
+}
+
 void HydroponicsLogger::notifyDayChanged()
 {
     if (isLoggingEnabled()) {
-        _logFileName = getYYMMDDFilename(charsToString(loggerData()->logFilePrefix, 16), SFP(HStr_txt));
+        _logFilename = getYYMMDDFilename(charsToString(loggerData()->logFilePrefix, 16), SFP(HStr_txt));
         cleanupOldestLogs();
     }
 }

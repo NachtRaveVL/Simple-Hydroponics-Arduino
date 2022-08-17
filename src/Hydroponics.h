@@ -258,7 +258,7 @@ public:
     // Set system data address with setSystemEEPROMAddress
     bool initFromEEPROM(bool jsonFormat = false);
     // Initializes system from SD card file save, returning success flag
-    // Set config file name with setSystemConfigFile
+    // Set config file name with setSystemConfigFilename
     bool initFromSDCard(bool jsonFormat = true);
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
@@ -266,7 +266,7 @@ public:
     bool initFromBinaryStream(Stream *streamIn);
 #ifdef HYDRUINO_USE_WIFI_STORAGE
     // Initializes system from a WiFiStorage file save, returning success flag
-    // Set config file name with setSystemConfigFile
+    // Set config file name with setSystemConfigFilename
     bool initFromWiFiStorage(bool jsonFormat = true);
 #endif
 
@@ -274,7 +274,7 @@ public:
     // Set system data address with setSystemEEPROMAddress
     bool saveToEEPROM(bool jsonFormat = false);
     // Saves current system setup to SD card file save, returning success flag
-    // Set config file name with setSystemConfigFile
+    // Set config file name with setSystemConfigFilename
     bool saveToSDCard(bool jsonFormat = true);
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
@@ -282,7 +282,7 @@ public:
     bool saveToBinaryStream(Stream *streamOut);
 #ifdef HYDRUINO_USE_WIFI_STORAGE
     // Saves current system setup to WiFiStorage file save, returning success flag
-    // Set remote URL with setSystemRemoteURL, and set config file name with setSystemConfigFile
+    // Set config file name with setSystemConfigFilename
     bool saveToWiFiStorage(bool jsonFormat = true);
 #endif
 
@@ -366,7 +366,7 @@ public:
     // Sets system autosave enable mode and optional fallback mode and interval, in minutes.
     void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, Hydroponics_Autosave autosaveFallback = Hydroponics_Autosave_Disabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
     // Sets system config file as used in init and save by SD Card.
-    inline void setSystemConfigFile(String configFileName) { _sysConfigFile = configFileName; }
+    inline void setSystemConfigFilename(String configFilename) { _sysConfigFilename = configFilename; }
     // Sets EEPROM system data address as used in init and save by EEPROM.
     inline void setSystemDataAddress(uint16_t sysDataAddress) { _sysDataAddress = sysDataAddress; }
 #ifdef HYDRUINO_USE_WIFI
@@ -425,7 +425,7 @@ public:
     // SD card instance (user code *must* call endSDCard(inst) to return interface, lazily instantiated, nullptr return -> failure/no device)
     SDClass *getSDCard(bool begin = true);
     // Ends SD card transaction with proper regards to platform once all instances returned (note: some instancing may be expected to never return)
-    void endSDCard(SDClass *sd);
+    void endSDCard(SDClass *sd = nullptr);
 #ifdef HYDRUINO_USE_WIFI
     // WiFi instance (nullptr return -> failure/no device, note: this method may block for up to a minute)
     inline WiFiClass *getWiFi(bool begin = true);
@@ -464,7 +464,7 @@ public:
     // Returns if system fallback autosaves are enabled or not
     bool isAutosaveFallbackEnabled() const;
     // System config file used in init and save by SD Card
-    inline String getSystemConfigFile() const { return _sysConfigFile; }
+    inline String getSystemConfigFile() const { return _sysConfigFilename; }
     // System data address used in init and save by EEPROM
     inline uint16_t getSystemDataAddress() const { return _sysDataAddress; }
 #ifdef HYDRUINO_USE_WIFI
@@ -527,7 +527,7 @@ protected:
     uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                         // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                           // Last date autosave was performed, if able (UTC)
-    String _sysConfigFile;                                          // System config filename used in serialization (default: "hydruino.cfg")
+    String _sysConfigFilename;                                      // System config filename used in serialization (default: "hydruino.cfg")
     uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
     Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity

@@ -273,7 +273,7 @@ bool HydroponicsBinarySensor::tryRegisterAsISR()
     return _usingISR;
 }
 
-Signal<bool> &HydroponicsBinarySensor::getStateSignal()
+Signal<bool, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> &HydroponicsBinarySensor::getStateSignal()
 {
     return _stateSignal;
 }

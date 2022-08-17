@@ -91,7 +91,7 @@ void HydroponicsCrop::setFeedingWeight(float weight)
     }
 }
 
-Signal<HydroponicsCrop *> &HydroponicsCrop::getFeedingSignal()
+Signal<HydroponicsCrop *, HYDRUINO_FEEDING_STATE_SLOTS> &HydroponicsCrop::getFeedingSignal()
 {
     return _feedingSignal;
 }

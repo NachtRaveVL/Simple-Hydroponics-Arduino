@@ -74,7 +74,7 @@ Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
       _systemData(nullptr), _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0),
-      _sysConfigFile(SFP(HStr_Default_ConfigFile)), _sysDataAddress(-1)
+      _sysConfigFilename(SFP(HStr_Default_ConfigFile)), _sysDataAddress(-1)
 {
     _activeInstance = this;
 }
@@ -224,10 +224,11 @@ bool Hydroponics::initFromSDCard(bool jsonFormat)
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(_sysConfigFile.c_str(), FILE_READ);
+            auto configFile = sd->open(_sysConfigFilename.c_str(), FILE_READ);
 
             if (configFile) {
                 retVal = jsonFormat ? initFromJSONStream(&configFile) : initFromBinaryStream(&configFile);
+
                 configFile.close();
             }
 
@@ -248,10 +249,11 @@ bool Hydroponics::saveToSDCard(bool jsonFormat)
 
         if (sd) {
             bool retVal = false;
-            auto configFile = sd->open(_sysConfigFile.c_str(), FILE_READ);
+            auto configFile = sd->open(_sysConfigFilename.c_str(), FILE_READ);
 
             if (configFile) {
                 retVal = jsonFormat ? saveToJSONStream(&configFile, false) : saveToBinaryStream(&configFile);
+
                 configFile.flush();
                 configFile.close();
             }
@@ -273,11 +275,13 @@ bool Hydroponics::initFromWiFiStorage(bool jsonFormat)
     if (!_systemData) {
         commonPreInit();
 
-        auto configFile = WiFiStorage.open(_sysConfigFile.c_str());
+        auto configFile = WiFiStorage.open(_sysConfigFilename.c_str());
 
         if (configFile) {
             auto configFileStream = HydroponicsWiFiStorageFileStream(configFile);
             return jsonFormat ? initFromJSONStream(&configFileStream) : initFromBinaryStream(&configFileStream);
+
+            configFile.close();
         }
     }
 
@@ -289,14 +293,17 @@ bool Hydroponics::saveToWiFiStorage(bool jsonFormat)
     HYDRUINO_HARD_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
 
     if (_systemData) {
-        if (WiFiStorage.exists(_sysConfigFile.c_str())) {
-            WiFiStorage.remove(_sysConfigFile.c_str());
+        if (WiFiStorage.exists(_sysConfigFilename.c_str())) {
+            WiFiStorage.remove(_sysConfigFilename.c_str());
         }
-        auto configFile = WiFiStorage.open(_sysConfigFile.c_str());
+        auto configFile = WiFiStorage.open(_sysConfigFilename.c_str());
 
         if (configFile) {
             auto configFileStream = HydroponicsWiFiStorageFileStream(configFile);
             return jsonFormat ? saveToJSONStream(&configFileStream, false) : saveToBinaryStream(&configFileStream);
+
+            configFileStream.flush();
+            configFile.close();
         }
     }
 
@@ -1165,7 +1172,6 @@ SDClass *Hydroponics::getSDCard(bool begin)
         return nullptr;
     }
 
-    if (_sd) { _sdOut++; }
     return _sd;
 }
 
@@ -1174,8 +1180,8 @@ void Hydroponics::endSDCard(SDClass *sd)
     #if defined(CORE_TEENSY)
         --_sdOut; // no delayed write on teensy's SD impl
     #else
-        if (--_sdOut == 0) {
-            sd->end();
+        if (--_sdOut == 0 && _sd) {
+            _sd->end();
         }
     #endif
 }

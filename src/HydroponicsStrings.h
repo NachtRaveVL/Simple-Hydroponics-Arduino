@@ -20,7 +20,7 @@ enum Hydroponics_String : unsigned short {
     HStr_null,
 
     HStr_Default_SystemName,
-    HStr_Default_ConfigFile,
+    HStr_Default_ConfigFilename,
 
     HStr_Err_AllocationFailure,
     HStr_Err_AlreadyInitialized,

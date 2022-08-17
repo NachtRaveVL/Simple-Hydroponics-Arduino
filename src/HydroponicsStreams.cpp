@@ -156,8 +156,6 @@ HydroponicsWiFiStorageFileStream::~HydroponicsWiFiStorageFileStream()
             _file.seek(_bufferFileOffset);
             _file.write((const void*)_buffer, _bufferOffset); _bufferOffset = 0;
         }
-        //_file.flush();
-        _file.close();
     }
 }
 
@@ -202,7 +200,6 @@ void HydroponicsWiFiStorageFileStream::flush()
         _file.seek(_bufferFileOffset);
         _file.write((const void*)_buffer, _bufferOffset); _bufferOffset = 0;
     }
-    //_file.flush();
 }
 
 size_t HydroponicsWiFiStorageFileStream::write(const uint8_t *buffer, size_t size)

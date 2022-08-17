@@ -15,6 +15,7 @@ HydroponicsBitResolution::HydroponicsBitResolution(uint8_t bitResIn)
 
 BasicArduinoInterruptAbstraction interruptImpl;
 
+
 ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
     : taskId(TASKMGR_INVALIDID), _actuator(actuator), _enableIntensity(enableIntensity), _enableTimeMillis(enableTimeMillis)
 { ; }

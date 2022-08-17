@@ -17,7 +17,25 @@ enum Hydroponics_LogLevel : signed char {
     Hydroponics_LogLevel_All,                               // All (info, warn, err)
     Hydroponics_LogLevel_Warnings,                          // Warnings & errors (warn, err)
     Hydroponics_LogLevel_Errors,                            // Just errors (err)
-    Hydroponics_LogLevel_None = -1                          // None / disabled
+    Hydroponics_LogLevel_None = -1,                         // None / disabled
+    Hydroponics_LogLevel_Info = Hydroponics_LogLevel_All    // Info alias
+};
+
+// Logging Events
+// Logging event structure that is used in signaling.
+struct HydroponicsLogEvent {
+    Hydroponics_LogLevel level;                             // Log level
+    String timestamp;                                       // Timestamp (generated)
+    String prefix;                                          // Prefix
+    String msg;                                             // Message
+    String suffix1;                                         // Suffix1 (optional)
+    String suffix2;                                         // Suffix2 (optional)
+
+    HydroponicsLogEvent(Hydroponics_LogLevel levelIn,
+                        const String &prefixIn,
+                        const String &msgIn,
+                        const String &suffix1In = String(),
+                        const String &suffix2In = String());
 };
 
 // Hydroponics Data Logger
@@ -60,16 +78,22 @@ public:
     inline bool isLoggingEnabled() const;
     inline time_t getSystemUptime() const { return unixNow() - (_initDate ?: SECONDS_FROM_1970_TO_2000); }
 
+    Signal<const HydroponicsLogEvent, HYDRUINO_LOG_STATE_SLOTS> &getLogSignal();
+
     void notifyDayChanged();
 
 protected:
 #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-    SDClass *_sd;                                           // SD instance (strong)
-    SDFile *_logFile;                                       // Log file instance (owned)
+    SDFile *_logFileSD;                                     // SD Card log file instance (owned)
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    WiFiStorageFile *_logFileWS;                            // WiFiStorageFile log file instance (owned)
 #endif
-    String _logFileName;                                    // Resolved log file name (based on day)
+#endif
+    String _logFilename;                                    // Resolved log file name (based on day)
     time_t _initDate;                                       // Init date (UTC)
     time_t _lastSpaceCheck;                                 // Last time enough space was checked (UTC)
+
+    Signal<const HydroponicsLogEvent, HYDRUINO_LOG_STATE_SLOTS> _logSignal; // Logging signal
 
     friend class Hydroponics;
 
@@ -77,7 +101,7 @@ protected:
     inline bool hasLoggerData() const;
 
     inline void updateInitTracking() { _initDate = unixNow(); }
-    void log(const String &prefix, const String &msg, const String &suffix1, const String &suffix2);
+    void log(const HydroponicsLogEvent &event);
     void cleanupOldestLogs(bool force = false);
 };
 

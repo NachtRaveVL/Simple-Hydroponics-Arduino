@@ -10,7 +10,7 @@ Created by NachtRaveVL, May 20th, 2022.
 
 **UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to local or remote data files, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
+This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to data files, and can be extended to work with other JSON-based Web APIs or Client-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
@@ -132,7 +132,7 @@ From Hydroponics.h, in class Hydroponics:
 
     // Initializes system from EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
     bool initFromEEPROM(bool jsonFormat = false);
-    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFilename)
     bool initFromSDCard(bool jsonFormat = true);
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
@@ -146,7 +146,7 @@ From Hydroponics.h, in class Hydroponics:
 ```Arduino
     // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
     bool saveToEEPROM(bool jsonFormat = false);
-    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFilename)
     bool saveToSDCard(bool jsonFormat = true);
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);

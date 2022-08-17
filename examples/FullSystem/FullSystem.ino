@@ -131,7 +131,7 @@ void setup() {
     // Sets system config name used in any of the following inits.
     #if (defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE != Disabled) || \
         (SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE != Disabled)
-        hydroController.setSystemConfigFile(F(SETUP_SAVES_CONFIG_FILE));
+        hydroController.setSystemConfigFilename(F(SETUP_SAVES_CONFIG_FILE));
     #endif
     // Sets the EEPROM memory address for system data.
     #if SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE != Disabled

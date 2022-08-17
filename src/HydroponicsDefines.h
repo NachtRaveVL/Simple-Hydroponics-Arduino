@@ -79,8 +79,13 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_WIFISTREAM_BUFFER_SIZE     128                     // Size in bytes of WiFi serialization buffers
 // The following slot sizes apply to all architectures
 #define HYDRUINO_SENSOR_MEASUREMENT_SLOTS   4                       // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
-#define HYDRUINO_TRIGGER_STATE_SLOTS        4                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
-#define HYDRUINO_BALANCER_STATE_SLOTS       4                       // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
+#define HYDRUINO_TRIGGER_STATE_SLOTS        2                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
+#define HYDRUINO_BALANCER_STATE_SLOTS       2                       // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
+#define HYDRUINO_LOG_STATE_SLOTS            2                       // Maximum number of logger slots for system log signal
+#define HYDRUINO_PUBLISH_STATE_SLOTS        2                       // Maximum number of publisher slots for data publish signal
+#define HYDRUINO_RESERVOIR_STATE_SLOTS      2                       // Maximum number of reservoir state slots for filled/empty signal
+#define HYDRUINO_FEEDING_STATE_SLOTS        2                       // Maximum number of feeding state slots for crop feed signal
+#define HYDRUINO_CAPACITY_STATE_SLOTS       8                       // Maximum number of capacity slots for rail capacity signal
 #define HYDRUINO_CROPS_LINKS_BASESIZE       1                       // Base array size for crop's linkage list
 #define HYDRUINO_FLUIDRES_LINKS_BASESIZE    1                       // Base array size for fluid reservoir's linkage list
 #define HYDRUINO_FEEDRES_LINKS_BASESIZE     4                       // Base array size for feed reservoir's linkage list
@@ -128,7 +133,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_SCH_FEED_FRACTION          0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRUINO_SCH_BALANCE_MINTIME        30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
-#define HYDRUINO_SCH_AERATORS_FEEDRUN       true                    // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
+#define HYDRUINO_SCH_AERATORS_FEEDRUN       ENABLED                 // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
@@ -143,9 +148,9 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
 #define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
-#define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   false                   // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
-#define HYDRUINO_SYS_MEM_LOGGING_ENABLE     false                   // If system will periodically log memory remaining messages (mainly used for debugging)
-#define HYDRUINO_SYS_DRY_RUN_ENABLE         false                   // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
+#define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   DISABLED                // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
+#define HYDRUINO_SYS_MEM_LOGGING_ENABLE     DISABLED                // If system will periodically log memory remaining messages (mainly used for debugging)
+#define HYDRUINO_SYS_DRY_RUN_ENABLE         DISABLED                // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
@@ -154,6 +159,12 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #endif
 #define HYDRUINO_FSPATH_SEPARATOR           '/'                     // Path separator for filesystem paths (SD card/WiFiStorage)
 #define HYDRUINO_URLPATH_SEPARATOR          '/'                     // Path separator for URL paths
+
+#if HYDRUINO_SYS_LEAVE_FILES_OPEN                                   // How subsequent getters should be called when file left open
+#define HYDRUINO_LOFS_BEGIN false
+#else
+#define HYDRUINO_LOFS_BEGIN true
+#endif
 
 
 // Crop Type

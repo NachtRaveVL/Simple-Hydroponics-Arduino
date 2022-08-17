@@ -46,18 +46,24 @@ public:
     inline bool isPublishingEnabled() const;
     Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
 
+    Signal<Pair<uint8_t, const HydroponicsDataColumn *>, HYDRUINO_PUBLISH_STATE_SLOTS> &getPublishSignal();
+
     void notifyDayChanged();
 
 protected:
 #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-    SDClass *_sd;                                           // SD instance (strong)
-    SDFile *_dataFile;                                      // Data file instance (owned)
+    SDFile *_dataFileSD;                                    // SD Card log file instance (owned)
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    WiFiStorageFile *_dataFileWS;                           // WiFiStorageFile log file instance (owned)
 #endif
-    String _dataFileName;                                   // Resolved data file name (based on day)
+#endif
+    String _dataFilename;                                   // Resolved data file name (based on day)
     uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
     bool _needsTabulation;                                  // Needs tabulation tracking flag
     uint8_t _columnCount;                                   // Data columns count
     HydroponicsDataColumn *_dataColumns;                    // Data columns (owned)
+
+    Signal<Pair<uint8_t, const HydroponicsDataColumn *>, HYDRUINO_PUBLISH_STATE_SLOTS> _publishSignal; // Data publishing signal
 
     friend class Hydroponics;
 
