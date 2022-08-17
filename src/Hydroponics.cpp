@@ -74,7 +74,7 @@ Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
       _systemData(nullptr), _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0),
-      _sysConfigFilename(SFP(HStr_Default_ConfigFile)), _sysDataAddress(-1)
+      _sysConfigFilename(SFP(HStr_Default_ConfigFilename)), _sysDataAddress(-1)
 {
     _activeInstance = this;
 }

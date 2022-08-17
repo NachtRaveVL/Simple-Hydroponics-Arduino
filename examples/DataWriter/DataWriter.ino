@@ -114,7 +114,10 @@ void setup() {
                     getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                     createDirectoryFor(sd, filename);
-                    auto file = sd->open(filename.c_str(), O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
+                    if (sd->exists(filename.c_str())) {
+                        sd->remove(filename.c_str());
+                    }
+                    auto file = sd->open(filename.c_str(), FILE_WRITE); // Creates/resets file for writing
                     if (file) {
                         StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
                         JsonObject jsonObject = doc.to<JsonObject>();
@@ -160,7 +163,10 @@ void setup() {
                 getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                 createDirectoryFor(sd, filename);
-                auto file = sd->open(filename.c_str(), O_WRITE | O_CREAT | O_TRUNC); // Creates/resets file for writing
+                if (sd->exists(filename.c_str())) {
+                    sd->remove(filename.c_str());
+                }
+                auto file = sd->open(filename.c_str(), FILE_WRITE);
                 if (file) { // Strings data goes into a single file as binary
                     uint16_t bytesWritten = 0;
 
@@ -169,7 +175,7 @@ void setup() {
 
                     for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {
                         String string = SFP((Hydroponics_String)stringNum);
-                        bytesWritten += file.write(string.c_str(), string.length() + 1); // +1 to also write out null terminator
+                        bytesWritten += file.write((const uint8_t *)string.c_str(), string.length() + 1); // +1 to also write out null terminator
                     }
 
                     if (bytesWritten) {
