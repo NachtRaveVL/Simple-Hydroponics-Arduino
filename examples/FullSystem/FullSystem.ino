@@ -114,7 +114,7 @@ void setup() {
         String wifiPassword = F(SETUP_WIFI_PASS);
         #ifdef HYDRUINO_ENABLE_ESP_WIFI
             Serial1.begin(HYDRUINO_SYS_ESPWIFI_SERIALBAUD);
-            HYDRUINO_SYS_WIFI_INSTANCE.init(Serial1); // Change to Serial instance of your choice, otherwise
+            WiFi.init(Serial1); // Change to Serial instance of your choice, otherwise
         #endif
     #endif
 

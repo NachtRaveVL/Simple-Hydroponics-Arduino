@@ -48,6 +48,10 @@
 #define ADC_RESOLUTION                      12
 #endif
 #endif
+#if defined(ARDUINO_ARCH_STM32)                                     // STM32 missing defs
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+#endif
 #ifndef F_SPD                                                       // F_CPU/F_BUS alias for default SPI device speeds
 #if defined(F_CPU)
 #define F_SPD F_CPU
@@ -124,11 +128,11 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
 
-#define HYDRUINO_SYS_WIFI_INSTANCE          WiFi                    // Default WiFi instance name
 #define HYDRUINO_SYS_AUTOSAVE_INTERVAL      120                     // Default autosave interval, in minutes
 #define HYDRUINO_SYS_I2CEEPROM_BASEADDR     0x50                    // Base address of I2C EEPROM (bitwise or'ed with passed address)
 #define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps
-#define HYDRUINO_SYS_URLHTTP_PORT           80                      // Which port to access when accessing URL HTTP resources
+#define HYDRUINO_SYS_URLHTTP_PORT           80                      // Which default port to access when accessing HTTP resources
+#define HYDRUINO_SYS_LEAVE_FILES_OPEN       !defined(__AVR__)       // If high access files should be left open to improve performance (true), or closed after use to reduce memory consumption (false)
 #define HYDRUINO_SYS_FREERAM_LOWBYTES       1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
 #define HYDRUINO_SYS_FREESPACE_INTERVAL     240                     // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
@@ -143,8 +147,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #else
 #define HYDRUINO_BLDPATH_SEPARATOR          '\\'                    // Path separator for win-based build machines
 #endif
-#define HYDRUINO_SDPATH_SEPARATOR           '/'                     // Path separator for SD card paths
-#define HYDRUINO_WIFIPATH_SEPARATOR         '/'                     // Path separator for WiFiStorage paths
+#define HYDRUINO_FSPATH_SEPARATOR           '/'                     // Path separator for filesystem paths (SD card/WiFiStorage)
+#define HYDRUINO_URLPATH_SEPARATOR          '/'                     // Path separator for URL paths
 
 
 // Crop Type

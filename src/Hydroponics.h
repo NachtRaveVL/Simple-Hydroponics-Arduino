@@ -84,6 +84,8 @@
 
 #ifdef ESP32
 typedef SDFileSystemClass SDClass;
+#else
+typedef File SDFile;
 #endif
 #ifdef ESP8266
 using namespace sdfat;
@@ -122,7 +124,7 @@ typedef uint8_t pintype_t;
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "I2C_eeprom.h"                 // i2c EEPROM library
-#ifdef ARDUINO_ARCH_STM32
+#if defined(ARDUINO_ARCH_STM32) && 1
 #include <OneWireSTM.h>                 // STM32 version of OneWire (via stm32duino)
 #else
 #include "OneWire.h"                    // OneWire library

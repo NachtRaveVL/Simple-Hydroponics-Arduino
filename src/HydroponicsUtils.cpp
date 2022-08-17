@@ -162,9 +162,9 @@ String getNNFilename(String prefix, unsigned int value, String ext)
 
 void createDirectoryFor(SDClass *sd, String filename)
 {
-    auto slashIndex = filename.indexOf(HYDRUINO_SDPATH_SEPARATOR);
+    auto slashIndex = filename.indexOf(HYDRUINO_FSPATH_SEPARATOR);
     String directory = slashIndex != -1 ? filename.substring(0, slashIndex) : String();
-    String dirWithSep = directory + String(HYDRUINO_SDPATH_SEPARATOR);
+    String dirWithSep = directory + String(HYDRUINO_FSPATH_SEPARATOR);
     if (directory.length() && !sd->exists(dirWithSep.c_str())) {
         sd->mkdir(directory.c_str());
     }

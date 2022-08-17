@@ -78,11 +78,17 @@ String stringFromPGM(Hydroponics_String strNum)
     #endif
 
     if (_strDataFilePrefix.length()) {
-        static auto sd = getHydroponicsInstance()->getSDCard();
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            static
+        #endif
+        auto sd = getHydroponicsInstance()->getSDCard();
 
         if (sd) {
             String retVal;
-            static auto file = sd->open(getStringsFilename().c_str(), FILE_READ);
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                static
+            #endif
+            auto file = sd->open(getStringsFilename().c_str(), FILE_READ);
 
             if (file) {
                 uint16_t lookupOffset = 0;
@@ -104,10 +110,14 @@ String stringFromPGM(Hydroponics_String strNum)
                     }
                 }
 
-                //file.close();
+                #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                    file.close();
+                #endif
             }
 
-            //getHydroponicsInstance()->endSDCard(sd);
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                getHydroponicsInstance()->endSDCard(sd);
+            #endif
             if (retVal.length()) {
                 return (_lookupCachedRes = retVal);
             }

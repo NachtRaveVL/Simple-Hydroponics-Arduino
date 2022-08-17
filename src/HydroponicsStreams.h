@@ -12,6 +12,12 @@ class HydroponicsPROGMEMStream;
 
 #include "Hydroponics.h"
 
+#ifdef ARDUINO_ARCH_SAM // Stream doesn't have availableForWrite
+#define HYDRUINO_STREAM_AVAIL4WRT_OVERRIDE
+#else
+#define HYDRUINO_STREAM_AVAIL4WRT_OVERRIDE override
+#endif
+
 // EEPROM Stream
 // Stream class for working with I2C_EEPROM data.
 class HydroponicsEEPROMStream : public Stream {
@@ -26,7 +32,7 @@ public:
     virtual void flush() override;
     virtual size_t write(const uint8_t *buffer, size_t size) override;
     virtual size_t write(uint8_t data) override;
-    virtual int availableForWrite() override;
+    virtual int availableForWrite() HYDRUINO_STREAM_AVAIL4WRT_OVERRIDE;
 
 protected:
     I2C_eeprom *_eeprom;
@@ -67,7 +73,7 @@ public:
     virtual void flush() override;
     virtual size_t write(const uint8_t *buffer, size_t size) override;
     virtual size_t write(uint8_t data) override;
-    virtual int availableForWrite() override;
+    virtual int availableForWrite() HYDRUINO_STREAM_AVAIL4WRT_OVERRIDE;
 
 protected:
     enum WiFiStorageFileDirection : signed char { ReadBuffer, WriteBuffer, None = -1 };

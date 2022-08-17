@@ -63,6 +63,10 @@ public:
     void notifyDayChanged();
 
 protected:
+#if HYDRUINO_SYS_LEAVE_FILES_OPEN
+    SDClass *_sd;                                           // SD instance (strong)
+    SDFile *_logFile;                                       // Log file instance (owned)
+#endif
     String _logFileName;                                    // Resolved log file name (based on day)
     time_t _initDate;                                       // Init date (UTC)
     time_t _lastSpaceCheck;                                 // Last time enough space was checked (UTC)

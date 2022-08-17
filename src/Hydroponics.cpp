@@ -1069,7 +1069,7 @@ void Hydroponics::setWiFiConnection(String ssid, String pass)
                 memset(_systemData->wifiPassword, '\0', HYDRUINO_NAME_MAXSIZE);
             }
 
-            if (_wifiBegan && (ssidChanged || passChanged)) { HYDRUINO_SYS_WIFI_INSTANCE.disconnect(); _wifiBegan = false; } // forces re-connect on next getWiFi
+            if (_wifiBegan && (ssidChanged || passChanged)) { WiFi.disconnect(); _wifiBegan = false; } // forces re-connect on next getWiFi
         }
     }
 }
@@ -1189,7 +1189,7 @@ void Hydroponics::endSDCard(SDClass *sd)
 
 WiFiClass *Hydroponics::getWiFi(String ssid, String pass, bool begin)
 {
-    int status = HYDRUINO_SYS_WIFI_INSTANCE.status();
+    int status = WiFi.status();
 
     if (begin && (!_wifiBegan || status != WL_CONNECTED)) {
         if (status == WL_CONNECTED) {
@@ -1198,19 +1198,19 @@ WiFiClass *Hydroponics::getWiFi(String ssid, String pass, bool begin)
             _wifiBegan = false;
         } else { // attempt connection
             #ifdef HYDRUINO_USE_SERIALWIFI
-                status = HYDRUINO_SYS_WIFI_INSTANCE.begin(ssid.c_str(), pass.c_str());
+                status = WiFi.begin(ssid.c_str(), pass.c_str());
             #else
-                status = pass.length() ? HYDRUINO_SYS_WIFI_INSTANCE.begin(const_cast<char *>(ssid.c_str()), pass.c_str())
-                                       : HYDRUINO_SYS_WIFI_INSTANCE.begin(const_cast<char *>(ssid.c_str()));
+                status = pass.length() ? WiFi.begin(const_cast<char *>(ssid.c_str()), pass.c_str())
+                                       : WiFi.begin(const_cast<char *>(ssid.c_str()));
             #endif
 
             _wifiBegan = (status == WL_CONNECTED);
         }
 
-        return _wifiBegan ? &HYDRUINO_SYS_WIFI_INSTANCE : nullptr;
+        return _wifiBegan ? &WiFi : nullptr;
     }
 
-    return &HYDRUINO_SYS_WIFI_INSTANCE;
+    return &WiFi;
 }
 
 #endif

@@ -12,6 +12,10 @@ HydroponicsLogger::HydroponicsLogger()
 HydroponicsLogger::~HydroponicsLogger()
 {
     flush();
+    #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+        if (_sd) { Hydroponics::_activeInstance->endSDCard(_sd); _sd = nullptr; }
+        if (_logFile) { _logFile->flush(); _logFile->close(); delete _logFile; _logFile = nullptr; }
+    #endif
 }
 
 bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
@@ -19,16 +23,26 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
     HYDRUINO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasLoggerData()) {
-        auto sd = Hydroponics::_activeInstance->getSDCard();
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            auto &sd = _sd ? _sd : (_sd = Hydroponics::_activeInstance->getSDCard());
+        #else
+            auto sd = Hydroponics::_activeInstance->getSDCard();
+        #endif
 
         if (sd) {
             String logFileName = getYYMMDDFilename(logFilePrefix, SFP(HStr_txt));
             createDirectoryFor(sd, logFileName);
-            auto logFile = sd->open(logFileName.c_str(), FILE_WRITE);
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                auto &logFile = _logFile ? *_logFile : *(_logFile = new SDFile(sd->open(logFileName.c_str(), FILE_WRITE)));
+            #else
+                auto logFile = sd->open(logFileName.c_str(), FILE_WRITE);
+            #endif
 
             if (logFile) {
-                logFile.close();
-                Hydroponics::_activeInstance->endSDCard(sd);
+                #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                    logFile.close();
+                    Hydroponics::_activeInstance->endSDCard(sd);
+                #endif
 
                 Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
                 strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
@@ -39,7 +53,9 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
             }
         }
 
-        if (sd) { Hydroponics::_activeInstance->endSDCard(sd); }
+        #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+            Hydroponics::_activeInstance->endSDCard(sd);
+        #endif
     }
 
     return false;
@@ -117,11 +133,19 @@ void HydroponicsLogger::log(const String &prefix, const String &msg, const Strin
     #endif
 
     if (isLoggingToSDCard()) {
-        auto sd = Hydroponics::_activeInstance->getSDCard();
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            auto &sd = _sd ? _sd : (_sd = Hydroponics::_activeInstance->getSDCard());
+        #else
+            auto sd = Hydroponics::_activeInstance->getSDCard();
+        #endif
 
         if (sd) {
             createDirectoryFor(sd, _logFileName);
-            auto logFile = sd->open(_logFileName.c_str(), FILE_WRITE);
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                auto &logFile = _logFile ? *_logFile : *(_logFile = new SDFile(sd->open(_logFileName.c_str(), FILE_WRITE)));
+            #else
+                auto logFile = sd->open(_logFileName.c_str(), FILE_WRITE);
+            #endif
 
             if (logFile) {
                 logFile.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
@@ -131,11 +155,15 @@ void HydroponicsLogger::log(const String &prefix, const String &msg, const Strin
                 logFile.print(suffix1);
                 logFile.println(suffix2);
 
-                logFile.flush();
-                logFile.close();
+                #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                    logFile.flush();
+                    logFile.close();
+                #endif
             }
 
-            Hydroponics::_activeInstance->endSDCard(sd);
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                Hydroponics::_activeInstance->endSDCard(sd);
+            #endif
         }
     }
 

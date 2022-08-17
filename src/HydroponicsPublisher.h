@@ -49,6 +49,10 @@ public:
     void notifyDayChanged();
 
 protected:
+#if HYDRUINO_SYS_LEAVE_FILES_OPEN
+    SDClass *_sd;                                           // SD instance (strong)
+    SDFile *_dataFile;                                      // Data file instance (owned)
+#endif
     String _dataFileName;                                   // Resolved data file name (based on day)
     uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
     bool _needsTabulation;                                  // Needs tabulation tracking flag
