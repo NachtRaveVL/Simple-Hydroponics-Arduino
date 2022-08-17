@@ -5,6 +5,11 @@
 
 #include "Hydroponics.h"
 
+inline void Hydroponics::returnPinLock(pintype_t pin)
+{
+    _pinLocks.erase(pin);
+}
+
 #ifdef HYDRUINO_USE_WIFI
 
 inline WiFiClass *Hydroponics::getWiFi(bool begin)

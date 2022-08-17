@@ -979,11 +979,6 @@ bool Hydroponics::tryGetPinLock(pintype_t pin, time_t waitMillis)
     }
 }
 
-void Hydroponics::returnPinLock(pintype_t pin)
-{
-    _pinLocks.erase(pin);
-}
-
 void Hydroponics::setSystemName(String systemName)
 {
     HYDRUINO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));

@@ -120,7 +120,10 @@ SharedPtr<HydroponicsRelayActuator> HydroponicsFactory::addFanExhaustRelay(pinty
 
 SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pintype_t outputPin,
 #ifdef ESP_PLATFORM
-                                                                             uint8_t pwmChannel, float pwmFrequency,
+#ifdef ESP32
+                                                                             uint8_t pwmChannel,
+#endif
+                                                                             float pwmFrequency,
 #endif
                                                                              uint8_t outputBitRes)
 {
@@ -135,7 +138,10 @@ SharedPtr<HydroponicsPWMActuator> HydroponicsFactory::addAnalogPWMFanExhaust(pin
             positionIndex,
             outputPin,
 #ifdef ESP_PLATFORM
-            pwmChannel, pwmFrequency,
+#ifdef ESP32
+            pwmChannel,
+#endif
+            pwmFrequency,
 #endif
             outputBitRes
         ));

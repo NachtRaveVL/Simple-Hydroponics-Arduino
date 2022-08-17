@@ -353,7 +353,7 @@ public:
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
     bool tryGetPinLock(pintype_t pin, time_t waitMillis = 150);
     // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
-    void returnPinLock(pintype_t pin);
+    inline void returnPinLock(pintype_t pin);
 
     // Mutators.
 

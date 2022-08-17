@@ -38,10 +38,12 @@ public:
     // PWM fan exhausts allow a graduated adaptive speed control to manage CO2 levels.
     SharedPtr<HydroponicsPWMActuator> addAnalogPWMFanExhaust(pintype_t outputPin,                   // PWM output pin this actuator sits on
 #ifdef ESP_PLATFORM
+#ifdef ESP32
                                                              uint8_t pwmChannel,                    // PWM output channel (0 reserved for buzzer)
+#endif
                                                              float pwmFrequency = 1000,             // PWM output frequency
 #endif
-                                                             uint8_t outputBitRes = 8) ;            // PWM output bit resolution to use
+                                                             uint8_t outputBitRes = DAC_RESOLUTION); // PWM output bit resolution to use
     // Adds a new peristaltic dosing pump relay to the system using the given parameters.
     // Peristaltic pumps allow proper dosing of nutrients and other additives.
     SharedPtr<HydroponicsPumpRelayActuator> addPeristalticPumpRelay(pintype_t outputPin);           // Digital output pin this actuator sits on
@@ -55,42 +57,42 @@ public:
     // Adds a new analog PH meter to the system using the given parameters.
     // pH meters are vital in ensuring the proper alkalinity level is used in feed water.
     SharedPtr<HydroponicsAnalogSensor> addAnalogPhMeter(pintype_t inputPin,                         // Analog input pin this sensor sits on
-                                                        uint8_t inputBitRes = 10);                  // ADC input bit resolution to use
+                                                        uint8_t inputBitRes = ADC_RESOLUTION);      // ADC input bit resolution to use
     // Adds a new analog TDS electrode to the system using the given parameters.
     // TDS electrodes are vital in ensuring the proper nutrition levels are used in feed water.
     SharedPtr<HydroponicsAnalogSensor> addAnalogTDSElectrode(pintype_t inputPin,                    // Analog input pin this sensor sits on
                                                              int ppmScale = 500,                    // PPM measurement scaling (default: 500, aka TDS/PPM500)
-                                                             uint8_t inputBitRes = 10);             // ADC input bit resolution to use
+                                                             uint8_t inputBitRes = ADC_RESOLUTION); // ADC input bit resolution to use
     // Adds a new analog temperature sensor to the system using the given parameters.
     // Temperature sensors can be used to ensure proper temperature conditions.
     SharedPtr<HydroponicsAnalogSensor> addAnalogTemperatureSensor(pintype_t inputPin,               // Analog input pin this sensor sits on
-                                                                  uint8_t inputBitRes = 10);        // ADC input bit resolution to use
+                                                                  uint8_t inputBitRes = ADC_RESOLUTION); // ADC input bit resolution to use
     // Adds a new analog CO2 sensor to the system using the given parameters.
     // CO2 sensors can be used to ensure proper CO2 levels.
     SharedPtr<HydroponicsAnalogSensor> addAnalogCO2Sensor(pintype_t inputPin,                       // Analog input pin this sensor sits on
-                                                          uint8_t inputBitRes = 10);                // ADC input bit resolution to use
+                                                          uint8_t inputBitRes = ADC_RESOLUTION);    // ADC input bit resolution to use
     // Adds a new analog moisture sensor to the system using the given parameters.
     // Soil moisture sensors can be used to drive feedings for crops.
     SharedPtr<HydroponicsAnalogSensor> addAnalogMoistureSensor(pintype_t inputPin,                  // Analog input pin this sensor sits on
-                                                               uint8_t inputBitRes = 10);           // ADC input bit resolution to use
+                                                               uint8_t inputBitRes = ADC_RESOLUTION); // ADC input bit resolution to use
     // Adds a new analog PWM-based pump flow sensor to the system using the given parameters.
     // Pump flow sensors can allow for more precise liquid volume pumping calculations.
     SharedPtr<HydroponicsAnalogSensor> addAnalogPWMPumpFlowSensor(pintype_t inputPin,               // Analog input pin this sensor sits on
-                                                                  uint8_t inputBitRes = 10);        // ADC input bit resolution to use
+                                                                  uint8_t inputBitRes = ADC_RESOLUTION); // ADC input bit resolution to use
     // Adds a new analog water height meter to the system using the given parameters.
     // Water height meters can be used to determine the volume of a container.
     SharedPtr<HydroponicsAnalogSensor> addAnalogWaterHeightMeter(pintype_t inputPin,                // Analog input pin this sensor sits on
-                                                                 uint8_t inputBitRes = 10);         // ADC input bit resolution to use
+                                                                 uint8_t inputBitRes = ADC_RESOLUTION); // ADC input bit resolution to use
     // Adds a new downward-facing analog ultrasonic distance sensor to the system using the given parameters.
     // Downward-facing ultrasonic distance sensors can be used to determine the volume of a container.
     // (Pro-tip: These widely available inexpensive sensors don't sit in the water and thus won't corrode as fast.)
     SharedPtr<HydroponicsAnalogSensor> addUltrasonicDistanceSensor(pintype_t inputPin,              // Analog input pin this sensor sits on
-                                                                   uint8_t inputBitRes = 10);       // ADC input bit resolution to use
+                                                                   uint8_t inputBitRes = ADC_RESOLUTION); // ADC input bit resolution to use
     // Adds a new analog power usage meter to the system using the given parameters.
     // Power usage meters can be used to determine and manage the energy demands of a power rail.
     SharedPtr<HydroponicsAnalogSensor> addPowerUsageMeter(pintype_t inputPin,                       // Analog input pin this sensor sits on
                                                           bool isWattageBased,                      // If power meter measures wattage (true) or amperage (false)
-                                                          uint8_t inputBitRes = 10);                // ADC input bit resolution to use
+                                                          uint8_t inputBitRes = ADC_RESOLUTION);    // ADC input bit resolution to use
 
     // Adds a new digital DHT* OneWire temperature & humidity sensor to the system using the given parameters.
     // Uses the DHT library. A very common digital sensor, included in most Arduino starter kits.

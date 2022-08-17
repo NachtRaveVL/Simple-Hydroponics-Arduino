@@ -530,7 +530,9 @@ HydroponicsPWMActuator::HydroponicsPWMActuator(Hydroponics_ActuatorType actuator
                                                Hydroponics_PositionIndex actuatorIndex,
                                                pintype_t outputPin,
 #ifdef ESP_PLATFORM
+#ifdef ESP32
                                                uint8_t pwmChannel,
+#endif
                                                float pwmFrequency,
 #endif
                                                uint8_t outputBitRes,
@@ -538,7 +540,10 @@ HydroponicsPWMActuator::HydroponicsPWMActuator(Hydroponics_ActuatorType actuator
     : HydroponicsActuator(actuatorType, actuatorIndex, outputPin, classType),
       _pwmAmount(0.0f), _pwmResolution(outputBitRes)
 #ifdef ESP_PLATFORM
-      , _pwmChannel(pwmChannel), _pwmFrequency(pwmFrequency)
+#ifdef ESP32
+      , _pwmChannel(pwmChannel)
+#endif
+      , _pwmFrequency(pwmFrequency)
 #endif
 {
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE

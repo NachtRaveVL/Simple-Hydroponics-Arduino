@@ -162,7 +162,9 @@ public:
                            Hydroponics_PositionIndex actuatorIndex,
                            pintype_t outputPin,
 #ifdef ESP_PLATFORM
+#ifdef ESP32
                            uint8_t pwmChannel,
+#endif
                            float pwmFrequency = 1000,
 #endif
                            uint8_t outputBitRes = 8,
@@ -184,7 +186,9 @@ public:
 protected:
     float _pwmAmount;                                       // Current set PWM amount
 #ifdef ESP_PLATFORM
+#ifdef ESP32
     uint8_t _pwmChannel;                                    // PWM output channel
+#endif
     float _pwmFrequency;                                    // PWM output frequency
 #endif
     HydroponicsBitResolution _pwmResolution;                // PWM output resolution

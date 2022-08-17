@@ -27,30 +27,35 @@
 #define ACTIVE_BELOW                        true                    // Active below (convenience)
 #define RAW                                 false                   // Raw mode (convenience)
 #define JSON                                true                    // JSON mode (convenience)
-#ifndef RANDOM_MAX
-#ifdef RAND_MAX
-#define RANDOM_MAX RAND_MAX                                         // Missing def
-#else
-#define RANDOM_MAX INTPTR_MAX
-#endif
-#endif
 #ifndef JOIN                                                        // Define joiner
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
-#if defined(ESP32) || defined(ESP8266)                              // ESP missing defs
-#ifndef ESP_PLATFORM
+#ifndef RANDOM_MAX                                                  // Missing random max
+#ifdef RAND_MAX
+#define RANDOM_MAX RAND_MAX
+#else
+#define RANDOM_MAX INTPTR_MAX
+#endif
+#endif
+#if (defined(ESP32) || defined(ESP8266)) && !defined(ESP_PLATFORM)  // Missing ESP_PLATFORM
 #define ESP_PLATFORM
 #endif
-#define min _min
-#define max _max
-#if defined(ESP32) && !defined(ADC_RESOLUTION)
-#define ADC_RESOLUTION                      12
-#endif
-#endif
-#if defined(ARDUINO_ARCH_STM32)                                     // STM32 missing defs
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32)            // Missing min/max
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
+#endif
+#if !defined(ADC_RESOLUTION) && defined(IOA_ANALOGIN_RES)           // Missing ADC resolution
+#define ADC_RESOLUTION IOA_ANALOGIN_RES
+#endif
+#if !defined(ADC_RESOLUTION)
+#define ADC_RESOLUTION 10
+#endif
+#if !defined(DAC_RESOLUTION) && defined(IOA_ANALOGOUT_RES)          // Missing DAC resolution
+#define DAC_RESOLUTION IOA_ANALOGOUT_RES
+#endif
+#if !defined(DAC_RESOLUTION)
+#define DAC_RESOLUTION 8
 #endif
 #ifndef F_SPD                                                       // F_CPU/F_BUS alias for default SPI device speeds
 #if defined(F_CPU)
