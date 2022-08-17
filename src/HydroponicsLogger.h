@@ -20,13 +20,14 @@ enum Hydroponics_LogLevel : signed char {
     Hydroponics_LogLevel_None = -1                          // None / disabled
 };
 
-// Hydroponics Logger
+// Hydroponics Data Logger
 // The Logger acts as the system's event monitor that collects and reports on the various
 // processes of interest inside of the system. It allows for different log levels to be
 // used that can help filter out unwanted noise, as well as attempts to be more optimized
 // for embedded systems by spreading string data out over multiple call parameters to
-// avoid large string concatenations that can crash constrained devices.
-// Logging to SD card .txt log files via SPI card reader is supported.
+// avoid large string concatenations that can overstress and crash constrained devices.
+// Logging to SD card .txt log files (via SPI card reader) is supported as is logging to
+// WiFiStorage .txt log files (via OS/OTA filesystem / WiFiNINA_Generic only).
 class HydroponicsLogger {
 public:
     HydroponicsLogger();
@@ -81,8 +82,8 @@ protected:
 struct HydroponicsLoggerSubData : public HydroponicsSubData {
     Hydroponics_LogLevel logLevel;                          // Log level filter (default: All)
     char logFilePrefix[16];                                 // Base log file name prefix / folder (default: "logs/hy")
-    bool logToSDCard;                                       // If publishing to SD card is enabled (default: false)
-    bool logToWiFiStorage;                                  // If publishing to WiFiStorageFile is enabled (default: false)
+    bool logToSDCard;                                       // If system logging to SD card is enabled (default: false)
+    bool logToWiFiStorage;                                  // If system logging to WiFiStorage is enabled (default: false)
 
     HydroponicsLoggerSubData();
     void toJSONObject(JsonObject &objectOut) const;

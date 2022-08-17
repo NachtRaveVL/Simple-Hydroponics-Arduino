@@ -252,29 +252,35 @@ public:
               Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
 
-    // Initializes system from EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Initializes system from EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool initFromEEPROM(bool jsonFormat = false);
-    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Initializes system from SD card file save, returning success flag
+    // Set config file name with setSystemConfigFile
     bool initFromSDCard(bool jsonFormat = true);
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
     bool initFromBinaryStream(Stream *streamIn);
 #ifdef HYDRUINO_USE_WIFI_STORAGE
-    // Initializes system from a WiFiStorageFile save using the SSID/pass combo, returning success flag
-    bool initFromWiFiStorage(String ssid, String pass, bool jsonFormat = true);
+    // Initializes system from a WiFiStorage file save, returning success flag
+    // Set config file name with setSystemConfigFile
+    bool initFromWiFiStorage(bool jsonFormat = true);
 #endif
 
-    // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Saves current system setup to EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool saveToEEPROM(bool jsonFormat = false);
-    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Saves current system setup to SD card file save, returning success flag
+    // Set config file name with setSystemConfigFile
     bool saveToSDCard(bool jsonFormat = true);
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup to custom binary stream, returning success flag
     bool saveToBinaryStream(Stream *streamOut);
 #ifdef HYDRUINO_USE_WIFI_STORAGE
-    // Saves current system setup to WiFiStorageFile save, returning success flag
+    // Saves current system setup to WiFiStorage file save, returning success flag
+    // Set remote URL with setSystemRemoteURL, and set config file name with setSystemConfigFile
     bool saveToWiFiStorage(bool jsonFormat = true);
 #endif
 
@@ -292,19 +298,19 @@ public:
 
     // System Logging.
 
-    // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
+    // Enables system logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToSDCard(String logFilePrefix) { return logger.beginLoggingToSDCard(logFilePrefix); }
 #ifdef HYDRUINO_USE_WIFI_STORAGE
-    // Enables data logging to a WiFiStorageFile. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
+    // Enables system logging to WiFiStorage. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToWiFiStorage(String logFilePrefix) { return logger.beginLoggingToWiFiStorage(logFilePrefix); }
 #endif
 
     // Data Publishing.
 
-    // Enables data publishing to the SD card. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
+    // Enables data publishing to the SD card. Data file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return publisher.beginPublishingToSDCard(dataFilePrefix); }
 #ifdef HYDRUINO_USE_WIFI_STORAGE
-    // Enable data publishing to a WiFiStorageFile. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
+    // Enable data publishing to WiFiStorage. Data file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToWiFiStorage(String dataFilePrefix) { return publisher.beginPublishingToWiFiStorage(dataFilePrefix); }
 #endif
     // TODO: MQTT data pub
@@ -355,8 +361,8 @@ public:
     void setTimeZoneOffset(int8_t timeZoneOffset);
     // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
     void setPollingInterval(uint16_t pollingInterval);
-    // Sets system autosave enable mode and optional autosave interval, in minutes.
-    void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
+    // Sets system autosave enable mode and optional fallback mode and interval, in minutes.
+    void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, Hydroponics_Autosave autosaveFallback = Hydroponics_Autosave_Disabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
     // Sets system config file as used in init and save by SD Card.
     inline void setSystemConfigFile(String configFileName) { _sysConfigFile = configFileName; }
     // Sets EEPROM system data address as used in init and save by EEPROM.
@@ -453,6 +459,8 @@ public:
     bool isPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
     // Returns if system autosaves are enabled or not
     bool isAutosaveEnabled() const;
+    // Returns if system fallback autosaves are enabled or not
+    bool isAutosaveFallbackEnabled() const;
     // System config file used in init and save by SD Card
     inline String getSystemConfigFile() const { return _sysConfigFile; }
     // System data address used in init and save by EEPROM
@@ -517,7 +525,7 @@ protected:
     uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                         // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                           // Last date autosave was performed, if able (UTC)
-    String _sysConfigFile;                                          // SD Card system config filename used in serialization (default: "hydruino.cfg")
+    String _sysConfigFile;                                          // System config filename used in serialization (default: "hydruino.cfg")
     uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
     Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity

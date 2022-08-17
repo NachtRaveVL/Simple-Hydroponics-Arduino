@@ -426,6 +426,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Key_AutosaveInterval[] PROGMEM = {"autosaveInterval"};
             return flashStr_Key_AutosaveInterval;
         } break;
+        case HStr_Key_AutosaveFallback: {
+            static const char flashStr_Key_AutosaveFallback[] PROGMEM = {"autosaveFallback"};
+            return flashStr_Key_AutosaveFallback;
+        } break;
         case HStr_Key_BaseFeedMultiplier: {
             static const char flashStr_Key_BaseFeedMultiplier[] PROGMEM = {"baseFeedMultiplier"};
             return flashStr_Key_BaseFeedMultiplier;
@@ -683,11 +687,11 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Key_Pruning;
         } break;
         case HStr_Key_PublishToSDCard: {
-            static const char flashStr_Key_PublishToSDCard[] PROGMEM = {"publishToSDCard"};
+            static const char flashStr_Key_PublishToSDCard[] PROGMEM = {"pubToSDCard"};
             return flashStr_Key_PublishToSDCard;
         } break;
         case HStr_Key_PublishToWiFiStorage: {
-            static const char flashStr_Key_PublishToWiFiStorage[] PROGMEM = {"publishToWiFiStorage"};
+            static const char flashStr_Key_PublishToWiFiStorage[] PROGMEM = {"pubToWiFiStorage"};
             return flashStr_Key_PublishToWiFiStorage;
         } break;
         case HStr_Key_Publisher: {

@@ -68,6 +68,7 @@ protected:
     Map<Hydroponics_KeyType, HydroponicsLighting *, HYDRUINO_SCH_FEEDRES_MAXSIZE> _lightings; // Lightings in progress
 
     friend class Hydroponics;
+    friend bool ::setCurrentTime(DateTime);
 
     inline HydroponicsSchedulerSubData *schedulerData() const;
     inline bool hasSchedulerData() const;

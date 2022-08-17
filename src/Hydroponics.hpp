@@ -82,21 +82,21 @@ inline bool HydroponicsPublisher::hasPublisherData() const
 
 inline bool HydroponicsPublisher::isPublishingToSDCard() const
 {
-    return hasPublisherData() && publisherData()->publishToSDCard;
+    return hasPublisherData() && publisherData()->pubToSDCard;
 }
 
 #ifdef HYDRUINO_USE_WIFI_STORAGE
 
 inline bool HydroponicsPublisher::isPublishingToWiFiStorage() const
 {
-    return hasPublisherData() && publisherData()->publishToWiFiStorage;
+    return hasPublisherData() && publisherData()->pubToWiFiStorage;
 }
 
 #endif
 
 inline bool HydroponicsPublisher::isPublishingEnabled() const
 {
-    return hasPublisherData() && (publisherData()->publishToSDCard || publisherData()->publishToWiFiStorage);
+    return hasPublisherData() && (publisherData()->pubToSDCard || publisherData()->pubToWiFiStorage);
 }
 
 inline void HydroponicsPublisher::setNeedsTabulation()

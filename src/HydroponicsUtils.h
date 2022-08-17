@@ -173,6 +173,8 @@ extern void publishData(HydroponicsSensor *sensor);
 inline DateTime getCurrentTime();
 // Returns the UTC seconds time that today started, accounting for time zone offset based on active hydroponics instance.
 inline time_t getCurrentDayStartTime();
+// Sets the global current time of the RTC, returning if update was successful, and additionally calls appropriate system time updaters.
+extern bool setCurrentTime(DateTime currTime);
 
 // Returns a proper filename for a storage monitoring file (log, data, etc) that uses YYMMDD as filename.
 extern String getYYMMDDFilename(String prefix, String ext);

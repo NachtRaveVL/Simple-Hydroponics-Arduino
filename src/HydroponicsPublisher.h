@@ -13,14 +13,16 @@ struct HydroponicsDataColumn;
 
 #include "Hydroponics.h"
 
-// Hydroponics Publisher
+// Hydroponics Data Publisher
 // The Publisher allows for data collection and publishing capabilities. The data output
 // is based on a simple table of time and measured value. Each time segment, called a
 // polling frame (and controlled by the polling rate interval), collects data from all
 // sensors into a data row, with the appropriate total number of columns. At time of
 // either all sensors having reported in for their frame #, or the frame # proceeding
-// to advance, the table's row is submitted to the publishing service initially set up.
-// Publishing to SD card .csv data files via SPI card reader is supported.
+// to advance (in which case the existing value is recycled), the table's row is
+// submitted to the publishing service initially set up.
+// Logging to SD card .csv data files (via SPI card reader) is supported as is logging to
+// WiFiStorage .csv data files (via OS/OTA filesystem / WiFiNINA_Generic only).
 class HydroponicsPublisher {
 public:
     HydroponicsPublisher();
@@ -82,8 +84,8 @@ struct HydroponicsDataColumn {
 // A part of HSYS system data.
 struct HydroponicsPublisherSubData : public HydroponicsSubData {
     char dataFilePrefix[16];                                // Base data file name prefix / folder (default: "data/hy")
-    bool publishToSDCard;                                   // If publishing to SD card is enabled (default: false)
-    bool publishToWiFiStorage;                              // If publishing to WiFiStorage is enabled (default: false)
+    bool pubToSDCard;                                       // If publishing sensor data to SD card is enabled (default: false)
+    bool pubToWiFiStorage;                                  // If publishing sensor data to WiFiStorage is enabled (default: false)
 
     HydroponicsPublisherSubData();
     void toJSONObject(JsonObject &objectOut) const;

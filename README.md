@@ -344,6 +344,10 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
 
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
+#define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
+#define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
+
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
@@ -354,21 +358,19 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
-// System Saves Settings                                (note: only one save mechanism may be enabled at a time)
-#define SETUP_SAVES_CONFIG_FILE         "hydruino.cfg"  // System config file name for SD Card saves
-#define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
-#define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
-#define SETUP_SAVES_WIFISTORE_ENABLE    false           // If saving/loading from WiFiStorage is enabled (WiFiNINA only)
-
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
-#define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
-#define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
+// System Saves Settings                                (note: only one primary and one fallback mechanism may be enabled at a time)
+#define SETUP_SAVES_CONFIG_FILE         "hydruino.cfg"  // System config file name for system saves
+#define SETUP_SAVES_SD_CARD_MODE        Disabled        // If saving/loading from SD card is enable (Primary, Fallback, Disabled)
+#define SETUP_SAVES_EEPROM_MODE         Disabled        // If saving/loading from EEPROM is enabled (Primary, Fallback, Disabled)
+#define SETUP_SAVES_WIFISTORAGE_MODE    Disabled        // If saving/loading from WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only) is enabled (Primary, Fallback, Disabled)
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
+#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
+#define SETUP_DATA_WIFISTORAGE_ENABLE   false           // If system data publishing is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
+#define SETUP_LOG_WIFISTORAGE_ENABLE    false           // If system logging is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
 
 // External Data Settings
 #define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)

@@ -86,6 +86,7 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_AlwaysFilled,
     HStr_Key_AutosaveEnabled,
     HStr_Key_AutosaveInterval,
+    HStr_Key_AutosaveFallback,
     HStr_Key_BaseFeedMultiplier,
     HStr_Key_CO2Levels,
     HStr_Key_CO2Sensor,

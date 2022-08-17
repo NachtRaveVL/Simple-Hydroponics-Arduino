@@ -114,6 +114,17 @@ void publishData(HydroponicsSensor *sensor)
     }
 }
 
+bool setCurrentTime(DateTime currTime)
+{
+    auto rtc = getHydroponicsInstance() ? getHydroponicsInstance()->getRealTimeClock() : nullptr;
+    if (rtc) {
+        rtc->adjust(currTime);
+        getSchedulerInstance()->broadcastDayChange();
+        return true;
+    }
+    return false;
+}
+
 String getYYMMDDFilename(String prefix, String ext)
 {
     DateTime currTime = getCurrentTime();
@@ -1717,6 +1728,21 @@ String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool exclu
     return String();
 }
 
+Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
+{
+    if (positionIndexStr == positionIndexToString(HYDRUINO_POS_MAXSIZE)) {
+        return HYDRUINO_POS_MAXSIZE;
+    } else if (positionIndexStr == positionIndexToString(-1)) {
+        return -1;
+    } else {
+        int8_t decode = positionIndexStr.toInt();
+        return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
+    }
+}
+
+
+// All remaining methods generated from minimum spanning trie
+
 Hydroponics_SystemMode systemModeFromString(String systemModeStr)
 {
     switch (systemModeStr.length() >= 1 ? systemModeStr[0] : '\0') {
@@ -2445,16 +2471,4 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             break;
     }
     return Hydroponics_UnitsType_Undefined;
-}
-
-Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
-{
-    if (positionIndexStr == positionIndexToString(HYDRUINO_POS_MAXSIZE)) {
-        return HYDRUINO_POS_MAXSIZE;
-    } else if (positionIndexStr == positionIndexToString(-1)) {
-        return -1;
-    } else {
-        int8_t decode = positionIndexStr.toInt();
-        return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
-    }
 }

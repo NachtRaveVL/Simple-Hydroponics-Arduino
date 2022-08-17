@@ -63,6 +63,7 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_NAME_MAXSIZE               24                      // Naming character maximum size (system name, crop name, etc.)
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
+#define HYDRUINO_URL_MAXSIZE                64                      // URL string maximum size (max url length)
 #define HYDRUINO_JSON_DOC_SYSSIZE           256                     // JSON document chunk data bytes for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           192                     // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRUINO_STRING_BUFFER_SIZE         32                      // Size in bytes of string serialization buffers
@@ -126,7 +127,8 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 #define HYDRUINO_SYS_WIFI_INSTANCE          WiFi                    // Default WiFi instance name
 #define HYDRUINO_SYS_AUTOSAVE_INTERVAL      120                     // Default autosave interval, in minutes
 #define HYDRUINO_SYS_I2CEEPROM_BASEADDR     0x50                    // Base address of I2C EEPROM (bitwise or'ed with passed address)
-#define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps (set to 9600 for the old blue boards)
+#define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps
+#define HYDRUINO_SYS_URLHTTP_PORT           80                      // Which port to access when accessing URL HTTP resources
 #define HYDRUINO_SYS_FREERAM_LOWBYTES       1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
 #define HYDRUINO_SYS_FREESPACE_INTERVAL     240                     // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first

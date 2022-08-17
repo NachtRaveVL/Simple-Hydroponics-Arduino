@@ -141,20 +141,18 @@ void HydroponicsLogger::log(const String &prefix, const String &msg, const Strin
 
 #ifdef HYDRUINO_USE_WIFI_STORAGE
 
-    if (isLoggingToWiFiStorage()) {
-        if (Hydroponics::_activeInstance->getWiFi()) {
-            auto logFile = WiFiStorage.open(_logFileName.c_str());
+    if (isLoggingToWiFiStorage() && Hydroponics::_activeInstance->getWiFi()) {
+        auto logFile = WiFiStorage.open(_logFileName.c_str());
 
-            if (logFile) {
-                auto logFileStream = HydroponicsWiFiStorageFileStream(logFile, logFile.size());
+        if (logFile) {
+            auto logFileStream = HydroponicsWiFiStorageFileStream(logFile, logFile.size());
 
-                logFileStream.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
-                logFileStream.print(' ');
-                logFileStream.print(prefix);
-                logFileStream.print(msg);
-                logFileStream.print(suffix1);
-                logFileStream.println(suffix2);
-            }
+            logFileStream.print(getCurrentTime().timestamp(DateTime::TIMESTAMP_FULL));
+            logFileStream.print(' ');
+            logFileStream.print(prefix);
+            logFileStream.print(msg);
+            logFileStream.print(suffix1);
+            logFileStream.println(suffix2);
         }
     }
 
