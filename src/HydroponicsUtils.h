@@ -242,7 +242,7 @@ extern void delayFine(time_t timeMillis);
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
 
-// This will return the time in unixtime (secs since 1970).
+// This will return the time in unixtime (secs since 1970). Uses rtc if available, otherwise time since turned on.
 inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
 
 // This will handle interrupts for task manager.

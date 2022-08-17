@@ -119,7 +119,7 @@ bool setCurrentTime(DateTime currTime)
     auto rtc = getHydroponicsInstance() ? getHydroponicsInstance()->getRealTimeClock() : nullptr;
     if (rtc) {
         rtc->adjust(currTime);
-        getSchedulerInstance()->broadcastDayChange();
+        getHydroponicsInstance()->notifyRTCTimeUpdated();
         return true;
     }
     return false;
