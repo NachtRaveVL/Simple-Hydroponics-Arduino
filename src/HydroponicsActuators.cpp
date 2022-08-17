@@ -652,6 +652,12 @@ void HydroponicsPWMActuator::saveToData(HydroponicsData *dataOut)
 {
     HydroponicsActuator::saveToData(dataOut);
 
+    #ifdef ESP_PLATFORM
+        #ifdef ESP32
+            ((HydroponicsPWMActuatorData *)dataOut)->pwmChannel = _pwmChannel;
+        #endif
+        ((HydroponicsPWMActuatorData *)dataOut)->pwmFrequency = _pwmFrequency;
+    #endif
     ((HydroponicsPWMActuatorData *)dataOut)->outputBitRes = _pwmResolution.bitRes;
 }
 
@@ -762,7 +768,10 @@ void HydroponicsPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 HydroponicsPWMActuatorData::HydroponicsPWMActuatorData()
     : HydroponicsActuatorData(), outputBitRes(10)
 #ifdef ESP_PLATFORM
-      , pwmChannel(0), pwmFrequency(0)
+#ifdef ESP32
+      , pwmChannel(0)
+#endif
+      , pwmFrequency(0)
 #endif
 {
     _size = sizeof(*this);
@@ -773,7 +782,9 @@ void HydroponicsPWMActuatorData::toJSONObject(JsonObject &objectOut) const
     HydroponicsActuatorData::toJSONObject(objectOut);
 
     #ifdef ESP_PLATFORM
-        if (pwmChannel) { objectOut[SFP(HStr_Key_PWMChannel)] = pwmChannel; }
+        #ifdef ESP32
+            if (pwmChannel) { objectOut[SFP(HStr_Key_PWMChannel)] = pwmChannel; }
+        #endif
         if (pwmFrequency > FLT_EPSILON) { objectOut[SFP(HStr_Key_PWMFrequency)] = pwmFrequency; }
     #endif
     if (outputBitRes != 10) { objectOut[SFP(HStr_Key_OutputBitRes)] = outputBitRes; }
@@ -784,7 +795,9 @@ void HydroponicsPWMActuatorData::fromJSONObject(JsonObjectConst &objectIn)
     HydroponicsActuatorData::fromJSONObject(objectIn);
 
     #ifdef ESP_PLATFORM
-        pwmChannel = objectIn[SFP(HStr_Key_PWMChannel)] | pwmChannel;
+        #ifdef ESP32
+            pwmChannel = objectIn[SFP(HStr_Key_PWMChannel)] | pwmChannel;
+        #endif
         pwmFrequency = objectIn[SFP(HStr_Key_PWMFrequency)] | pwmFrequency;
     #endif
     outputBitRes = objectIn[SFP(HStr_Key_OutputBitRes)] | outputBitRes;

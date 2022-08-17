@@ -233,7 +233,9 @@ struct HydroponicsPumpRelayActuatorData : public HydroponicsRelayActuatorData
 struct HydroponicsPWMActuatorData : public HydroponicsActuatorData
 {
 #ifdef ESP_PLATFORM
+#ifdef ESP32
     uint8_t pwmChannel;
+#endif
     float pwmFrequency;
 #endif
     uint8_t outputBitRes;
