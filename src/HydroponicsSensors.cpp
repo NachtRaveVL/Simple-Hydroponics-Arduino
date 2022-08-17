@@ -190,9 +190,9 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         #ifdef INPUT_PULLDOWN
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
         #else
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
         #endif
     }
 }
@@ -203,9 +203,9 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(const HydroponicsBinarySensorDa
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         #ifdef INPUT_PULLDOWN
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
         #else
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
         #endif
     }
     if (dataIn->usingISR) { tryRegisterAsISR(); }
@@ -224,7 +224,7 @@ bool HydroponicsBinarySensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
         bool stateBefore = _lastMeasurement.state;
 
-        bool state = (digitalRead(_inputPin) == (_activeLow ? LOW : HIGH));
+        bool state = (hy_bin_digitalRead(_inputPin) == (_activeLow ? LOW : HIGH));
         auto timestamp = unixNow();
 
         _lastMeasurement = HydroponicsBinaryMeasurement(state, timestamp);
@@ -276,11 +276,6 @@ bool HydroponicsBinarySensor::tryRegisterAsISR()
 Signal<bool> &HydroponicsBinarySensor::getStateSignal()
 {
     return _stateSignal;
-}
-
-void HydroponicsBinarySensor::notifyISRTriggered()
-{
-    takeMeasurement(true);
 }
 
 void HydroponicsBinarySensor::saveToData(HydroponicsData *dataOut)

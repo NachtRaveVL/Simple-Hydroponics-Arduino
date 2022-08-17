@@ -21,12 +21,6 @@ struct HydroponicsPWMActuatorData;
 // Creates actuator object from passed actuator data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorData *dataIn);
 
-// Function pointer to pinMode for binary actuators. Allows an intermediary, such as a port extender or multiplexer, to be used to enable/disable actuator relay pins. By default uses pinMode.
-extern void (*hy_act_pinMode)(pintype_t,uint8_t);
-
-// Function pointer to digitalWrite for binary actuators. Allows an intermediary, such as a port extender or multiplexer, to be used to enable/disable actuator relay pins. By default uses digitalWrite.
-extern void (*hy_act_digitalWrite)(pintype_t,uint8_t);
-
 
 // Hydroponics Actuator Base
 // This is the base class for all actuators, which defines how the actuator is identified,

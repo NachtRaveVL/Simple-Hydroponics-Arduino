@@ -112,7 +112,7 @@ public:
 
     Signal<bool> &getStateSignal();
 
-    void notifyISRTriggered();
+    inline void notifyISRTriggered() { takeMeasurement(true); }
 
 protected:
     bool _activeLow;                                        // Active when low flag
