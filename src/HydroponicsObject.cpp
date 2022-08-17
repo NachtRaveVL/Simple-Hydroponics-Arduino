@@ -242,7 +242,8 @@ String HydroponicsObject::getKeyString() const
 
 SharedPtr<HydroponicsObjInterface> HydroponicsObject::getSharedPtr() const
 {
-    return getHydroponicsInstance() ? hy_static_ptr_cast<HydroponicsObjInterface>(getHydroponicsInstance()->objectById(_id)) : nullptr;
+    return getHydroponicsInstance() ? hy_static_ptr_cast<HydroponicsObjInterface>(getHydroponicsInstance()->objectById(_id))
+                                    : SharedPtr<HydroponicsObjInterface>((HydroponicsObjInterface *)this);
 }
 
 #ifdef HYDRUINO_USE_VIRTMEM
