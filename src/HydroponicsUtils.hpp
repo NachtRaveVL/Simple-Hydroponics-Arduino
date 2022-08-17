@@ -207,7 +207,7 @@ template<size_t N>
 void linksResolveActuatorsByType(Vector<HydroponicsObject *, N> &actuatorsIn, Vector<SharedPtr<HydroponicsActuator>, N> &actuatorsOut, Hydroponics_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
-        auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
+        auto actuator = getSharedPtr<HydroponicsActuator>(*actIter);
         HYDRUINO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
             actuatorsOut.push_back(actuator);
@@ -219,7 +219,7 @@ template<size_t N>
 void linksResolveActuatorsPairRateByType(Vector<HydroponicsObject *, N> &actuatorsIn, float rateValue, Vector<Pair<SharedPtr<HydroponicsActuator>, float>, N> &actuatorsOut, Hydroponics_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
-        auto actuator = ::getSharedPtr<HydroponicsActuator>(*actIter);
+        auto actuator = getSharedPtr<HydroponicsActuator>(*actIter);
         HYDRUINO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
             auto pair = make_pair(actuator, rateValue);

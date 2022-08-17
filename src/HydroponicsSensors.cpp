@@ -317,7 +317,7 @@ bool HydroponicsAnalogSensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsAnalogSensor>(this), &HydroponicsAnalogSensor::_takeMeasurement) != TASKMGR_INVALIDID) {
+            if (isValidTask(scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsAnalogSensor>(this), &HydroponicsAnalogSensor::_takeMeasurement))) {
                 return true;
             } else {
                 HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
@@ -567,7 +567,7 @@ bool HydroponicsDHTTempHumiditySensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDHTTempHumiditySensor>(this), &HydroponicsDHTTempHumiditySensor::_takeMeasurement) != TASKMGR_INVALIDID) {
+            if (isValidTask(scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDHTTempHumiditySensor>(this), &HydroponicsDHTTempHumiditySensor::_takeMeasurement))) {
                 return true;
             } else {
                 HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
@@ -740,7 +740,7 @@ bool HydroponicsDSTemperatureSensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDSTemperatureSensor>(this), &HydroponicsDSTemperatureSensor::_takeMeasurement) != TASKMGR_INVALIDID) {
+            if (isValidTask(scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDSTemperatureSensor>(this), &HydroponicsDSTemperatureSensor::_takeMeasurement))) {
                 return true;
             } else {
                 HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));

@@ -809,17 +809,17 @@ void Hydroponics::launch()
     // Create/enable main runloops
     _suspend = false;
     #ifndef HYDRUINO_DISABLE_MULTITASKING
-        if (_controlTaskId == TASKMGR_INVALIDID) {
+        if (!isValidTask(_controlTaskId)) {
             _controlTaskId = taskManager.scheduleFixedRate(HYDRUINO_CONTROL_LOOP_INTERVAL, controlLoop);
         } else {
             taskManager.setTaskEnabled(_controlTaskId, true);
         }
-        if (_dataTaskId == TASKMGR_INVALIDID) {
+        if (!isValidTask(_dataTaskId)) {
             _dataTaskId = taskManager.scheduleFixedRate(getPollingInterval(), dataLoop);
         } else {
             taskManager.setTaskEnabled(_dataTaskId, true);
         }
-        if (_miscTaskId == TASKMGR_INVALIDID) {
+        if (!isValidTask(_miscTaskId)) {
             _miscTaskId = taskManager.scheduleFixedRate(HYDRUINO_MISC_LOOP_INTERVAL, miscLoop);
         } else {
             taskManager.setTaskEnabled(_miscTaskId, true);
@@ -835,13 +835,13 @@ void Hydroponics::suspend()
 {
     _suspend = true;
     #ifndef HYDRUINO_DISABLE_MULTITASKING
-        if (_controlTaskId != TASKMGR_INVALIDID) {
+        if (isValidTask(_controlTaskId)) {
             taskManager.setTaskEnabled(_controlTaskId, false);
         }
-        if (_dataTaskId != TASKMGR_INVALIDID) {
+        if (isValidTask(_dataTaskId)) {
             taskManager.setTaskEnabled(_dataTaskId, false);
         }
-        if (_miscTaskId != TASKMGR_INVALIDID) {
+        if (isValidTask(_miscTaskId)) {
             taskManager.setTaskEnabled(_miscTaskId, false);
         }
     #endif
@@ -1008,7 +1008,7 @@ void Hydroponics::setPollingInterval(uint16_t pollingInterval)
         _systemData->pollingInterval = pollingInterval;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (_dataTaskId != TASKMGR_INVALIDID) {
+            if (isValidTask(_dataTaskId)) {
                 auto dataTask = taskManager.getTask(_dataTaskId);
                 if (dataTask) {
                     bool enabled = dataTask->isEnabled();

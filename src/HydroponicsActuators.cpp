@@ -356,7 +356,7 @@ bool HydroponicsPumpRelayActuator::pump(time_t timeMillis)
 {
     if (getReservoir()) {
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis) != TASKMGR_INVALIDID) {
+            if (isValidTask(scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroponicsActuator>(this), timeMillis))) {
                 getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
                 if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
                 if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
