@@ -5,6 +5,19 @@
 
 #include "Hydroponics.h"
 
+static void hy_act_pinMode_def(pintype_t pin, uint8_t mode)
+{
+    pinMode(pin, mode);
+}
+
+static void hy_act_digitalWrite_def(pintype_t pin, uint8_t status)
+{
+    digitalWrite(pin, status);
+}
+
+void (*hy_act_pinMode)(pintype_t,uint8_t) = &hy_act_pinMode_def;
+void (*hy_act_digitalWrite)(pintype_t,uint8_t) = &hy_act_digitalWrite_def;
+
 HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorData *dataIn)
 {
     if (dataIn && dataIn->id.object.idType == -1) return nullptr;
@@ -36,7 +49,11 @@ HydroponicsActuator::HydroponicsActuator(Hydroponics_ActuatorType actuatorType,
     HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HStr_Err_InvalidPinOrType));
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE
         if (isValidPin(_outputPin)) {
-            pinMode(_outputPin, OUTPUT);
+            if (!isVariablePWMClass()) {
+                hy_act_pinMode(_outputPin, OUTPUT);
+            } else {
+                pinMode(_outputPin, OUTPUT);
+            }
         }
     #endif
 }
@@ -50,7 +67,11 @@ HydroponicsActuator::HydroponicsActuator(const HydroponicsActuatorData *dataIn)
     HYDRUINO_HARD_ASSERT(isValidPin(_outputPin), SFP(HStr_Err_InvalidPinOrType));
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE
         if (isValidPin(_outputPin)) {
-            pinMode(_outputPin, OUTPUT);
+            if (!isVariablePWMClass()) {
+                hy_act_pinMode(_outputPin, OUTPUT);
+            } else {
+                pinMode(_outputPin, OUTPUT);
+            }
         }
     #endif
     _rail.setObject(dataIn->railName);
@@ -147,7 +168,7 @@ HydroponicsRelayActuator::HydroponicsRelayActuator(Hydroponics_ActuatorType actu
 {
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE
         if (isValidPin(_outputPin)) {
-            digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+            hy_act_digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
         }
     #endif
 }
@@ -157,7 +178,7 @@ HydroponicsRelayActuator::HydroponicsRelayActuator(const HydroponicsRelayActuato
 {
     #if !HYDRUINO_SYS_DRY_RUN_ENABLE
         if (isValidPin(_outputPin)) {
-            digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+            hy_act_digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
         }
     #endif
 }
@@ -168,7 +189,7 @@ HydroponicsRelayActuator::~HydroponicsRelayActuator()
         _enabled = false;
         #if !HYDRUINO_SYS_DRY_RUN_ENABLE
             if (isValidPin(_outputPin)) {
-                digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+                hy_act_digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
             }
         #endif
     }
@@ -182,7 +203,7 @@ bool HydroponicsRelayActuator::enableActuator(float intensity, bool force)
         if (!_enabled && (force || getCanEnable())) {
             _enabled = true;
             #if !HYDRUINO_SYS_DRY_RUN_ENABLE
-                digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
+                hy_act_digitalWrite(_outputPin, _activeLow ? LOW : HIGH);
             #endif
         }
 
@@ -208,7 +229,7 @@ void HydroponicsRelayActuator::disableActuator()
         if (_enabled) {
             _enabled = false;
             #if !HYDRUINO_SYS_DRY_RUN_ENABLE
-                digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
+                hy_act_digitalWrite(_outputPin, _activeLow ? HIGH : LOW);
             #endif
         }
 
