@@ -420,14 +420,14 @@ public:
     I2C_eeprom *getEEPROM(bool begin = true);
     // Real time clock instance (lazily instantiated, nullptr return -> failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);
-    // SD card instance (if began user code *must* call endSDCard(inst) to free interface, lazily instantiated, nullptr return -> failure/no device)
+    // SD card instance (user code *must* call endSDCard(inst) to return interface, lazily instantiated, nullptr return -> failure/no device)
     SDClass *getSDCard(bool begin = true);
-    // Ends SD card transaction with proper regards to platform
+    // Ends SD card transaction with proper regards to platform once all instances returned (note: some instancing may be expected to never return)
     void endSDCard(SDClass *sd);
 #ifdef HYDRUINO_USE_WIFI
     // WiFi instance (nullptr return -> failure/no device, note: this method may block for up to a minute)
     inline WiFiClass *getWiFi(bool begin = true);
-    // WiFi instance from specific ssid/pass combo (nullptr return -> failure/no device, note: this method may block for up to a minute)
+    // WiFi instance with fallback ssid/pass combo (nullptr return -> failure/no device, note: this method may block for up to a minute)
     WiFiClass *getWiFi(String ssid, String pass, bool begin = true);
 #endif
     // OneWire instance for given pin (lazily instantiated)

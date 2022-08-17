@@ -1161,7 +1161,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
             #endif
         }
 
-        if (!_sdBegan) { deallocateSD(); }
+        if (!_sdBegan && _sdOut == 0) { deallocateSD(); }
 
         if (_sd && _sdBegan) {
             _sdOut++;
@@ -1170,6 +1170,7 @@ SDClass *Hydroponics::getSDCard(bool begin)
         return nullptr;
     }
 
+    if (_sd) { _sdOut++; }
     return _sd;
 }
 

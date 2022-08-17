@@ -93,7 +93,7 @@ String stringFromPGM(Hydroponics_String strNum)
                     file.readBytes((uint8_t *)&lookupOffset, sizeof(lookupOffset));
                 #endif
 
-                {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+                {   char buffer[HYDRUINO_STRING_BUFFER_SIZE];
                     file.seek(lookupOffset);
                     auto bytesRead = file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
                     retVal.concat(charsToString(buffer, bytesRead));
