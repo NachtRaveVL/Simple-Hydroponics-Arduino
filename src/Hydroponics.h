@@ -44,6 +44,9 @@
 // Uncomment or -D this define to enable usage of the external serial ESP AT WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_ESP_WIFI                  // https://github.com/jandrassy/WiFiEspAT
 
+// Uncomment or -D this define to enable usage of the Arduino MQTT library, which enables IoT data publishing capabilities.
+//#define HYDRUINO_ENABLE_MQTT                      // https://github.com/256dpi/arduino-mqtt
+
 // Uncomment or -D this define to enable usage of SD card based virtual memory, which extends available RAM.
 //#define HYDRUINO_ENABLE_SD_VIRTMEM                // https://github.com/NachtRaveVL/virtmem-continued
 
@@ -79,6 +82,9 @@
 #include <WiFiNINA_Generic.h>                       // https://github.com/khoih-prog/WiFiNINA_Generic
 #define HYDRUINO_USE_WIFI_STORAGE
 #endif
+#define HYDRUINO_USE_WIFI
+#endif
+#ifdef HYDRUINO_ENABLE_ESP_WIFI
 #define HYDRUINO_USE_WIFI
 #endif
 
@@ -175,9 +181,6 @@ template <typename T> using VirtualPtr = VPtr<T, SPIRAMVAlloc>;
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<VirtualPtr<T>>;
 #else
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
-#endif
-#ifdef HYDRUINO_ENABLE_ESP_WIFI
-#define HYDRUINO_USE_WIFI
 #endif
 
 extern time_t unixNow();
