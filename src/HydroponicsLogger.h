@@ -84,7 +84,7 @@ public:
 
 protected:
 #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-    SDFile *_logFileSD;                                     // SD Card log file instance (owned)
+    File *_logFileSD;                                       // SD Card log file instance (owned)
 #ifdef HYDRUINO_USE_WIFI_STORAGE
     WiFiStorageFile *_logFileWS;                            // WiFiStorageFile log file instance (owned)
 #endif

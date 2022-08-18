@@ -84,8 +84,6 @@
 
 #ifdef ESP32
 typedef SDFileSystemClass SDClass;
-#else
-typedef File SDFile;
 #endif
 #ifdef ESP8266
 using namespace sdfat;

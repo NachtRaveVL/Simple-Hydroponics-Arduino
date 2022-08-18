@@ -44,7 +44,7 @@ bool HydroponicsLogger::beginLoggingToSDCard(String logFilePrefix)
             String logFilename = getYYMMDDFilename(logFilePrefix, SFP(HStr_txt));
             createDirectoryFor(sd, logFilename);
             #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-                auto &logFile = _logFileSD ? *_logFileSD : *(_logFileSD = new SDFile(sd->open(logFilename.c_str(), FILE_WRITE)));
+                auto &logFile = _logFileSD ? *_logFileSD : *(_logFileSD = new File(sd->open(logFilename.c_str(), FILE_WRITE)));
             #else
                 auto logFile = sd->open(logFilename.c_str(), FILE_WRITE);
             #endif
@@ -152,7 +152,7 @@ void HydroponicsLogger::log(const HydroponicsLogEvent &event)
 
         if (sd) {
             #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-                auto &logFile = _logFileSD ? *_logFileSD : *(_logFileSD = new SDFile(sd->open(_logFilename.c_str(), FILE_WRITE)));
+                auto &logFile = _logFileSD ? *_logFileSD : *(_logFileSD = new File(sd->open(_logFilename.c_str(), FILE_WRITE)));
             #else
                 createDirectoryFor(sd, _logFilename);
                 auto logFile = sd->open(_logFilename.c_str(), FILE_WRITE);

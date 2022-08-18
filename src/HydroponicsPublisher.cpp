@@ -40,7 +40,7 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
             String dataFilename = getYYMMDDFilename(dataFilePrefix, SFP(HStr_csv));
             createDirectoryFor(sd, dataFilename);
             #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new SDFile(sd->open(dataFilename.c_str(), FILE_WRITE)));
+                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new File(sd->open(dataFilename.c_str(), FILE_WRITE)));
             #else
                 auto dataFile = sd->open(dataFilename.c_str(), FILE_WRITE);
             #endif
@@ -198,7 +198,7 @@ void HydroponicsPublisher::publish(time_t timestamp)
 
         if (sd) {
             #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new SDFile(sd->open(_dataFilename.c_str(), FILE_WRITE)));
+                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new File(sd->open(_dataFilename.c_str(), FILE_WRITE)));
             #else
                 createDirectoryFor(sd, _dataFilename);
                 auto dataFile = sd->open(_dataFilename.c_str(), FILE_WRITE);
@@ -330,7 +330,7 @@ void HydroponicsPublisher::resetDataFile()
                 sd->remove(_dataFilename.c_str());
             }
             #if HYDRUINO_SYS_LEAVE_FILES_OPEN
-                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new SDFile(sd->open(_dataFilename.c_str(), FILE_WRITE)));
+                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new File(sd->open(_dataFilename.c_str(), FILE_WRITE)));
             #else
                 createDirectoryFor(sd, _dataFilename);
                 auto dataFile = sd->open(_dataFilename.c_str(), FILE_WRITE);
