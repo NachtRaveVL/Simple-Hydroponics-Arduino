@@ -38,6 +38,11 @@ public:
     inline bool isPublishingToWiFiStorage() const;
 #endif
 
+#ifdef HYDRUINO_ENABLE_MQTT
+    bool beginPublishingToMQTTClient(MQTTClient &client);
+    inline bool isPublishingToMQTTClient() const;
+#endif
+
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
 
     inline void setNeedsTabulation();
@@ -56,6 +61,9 @@ protected:
 #ifdef HYDRUINO_USE_WIFI_STORAGE
     WiFiStorageFile *_dataFileWS;                           // WiFiStorageFile log file instance (owned)
 #endif
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+    MQTTClient *_mqttClient;                                // MQTT client object (strong)
 #endif
     String _dataFilename;                                   // Resolved data file name (based on day)
     uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to

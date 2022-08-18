@@ -128,6 +128,9 @@ typedef uint8_t pintype_t;
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "I2C_eeprom.h"                 // i2c EEPROM library
+#ifdef HYDRUINO_ENABLE_MQTT
+#include "MQTT.h"                       // MQTT library
+#endif
 #if defined(ARDUINO_ARCH_STM32) && 1
 #include <OneWireSTM.h>                 // STM32 version of OneWire (via stm32duino)
 #else
@@ -313,13 +316,13 @@ public:
     // Enables data publishing to the SD card. Data file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return publisher.beginPublishingToSDCard(dataFilePrefix); }
 #ifdef HYDRUINO_USE_WIFI_STORAGE
-    // Enable data publishing to WiFiStorage. Data file names will append YYMMDD.csv to the specified prefix. Returns success flag.
+    // Enables data publishing to WiFiStorage. Data file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToWiFiStorage(String dataFilePrefix) { return publisher.beginPublishingToWiFiStorage(dataFilePrefix); }
 #endif
-    // TODO: MQTT data pub
-    //bool enableDataPublishingToMQTT(mqttBrokerTODO, deviceDataTODO);
-    // TODO: Web API data pub
-    //bool enableDataPublishingToWebAPI(urlDataTODO, apiInterfaceTODO);
+#ifdef HYDRUINO_ENABLE_MQTT
+    // Enables data publishing to MQTT broker. Client is expected to be began (with proper broker address/net client) *before* calling this method. Returns success flag.
+    inline bool enableDataPublishingToMQTTClient(MQTTClient &client) { return publisher.beginPublishingToMQTTClient(client); }
+#endif
 
     // User Interface.
 

@@ -7,6 +7,15 @@
 
 HydroponicsPublisher::HydroponicsPublisher()
     : _dataFilename(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnCount(0)
+#if HYDRUINO_SYS_LEAVE_FILES_OPEN
+      , _dataFileSD(nullptr)
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+      , _dataFileWS(nullptr)
+#endif
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+    , _mqttClient(nullptr)
+#endif
 { ; }
 
 HydroponicsPublisher::~HydroponicsPublisher()
@@ -98,6 +107,24 @@ bool HydroponicsPublisher::beginPublishingToWiFiStorage(String dataFilePrefix)
 
             return true;
         }
+    }
+
+    return false;
+}
+
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+
+bool HydroponicsPublisher::beginPublishingToMQTTClient(MQTTClient &client)
+{
+    HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
+
+    if (hasPublisherData() && !_mqttClient) {
+        _mqttClient = &client;
+
+        setNeedsTabulation();
+
+        return true;
     }
 
     return false;
@@ -248,6 +275,20 @@ void HydroponicsPublisher::publish(time_t timestamp)
             #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
                 dataFile.close();
             #endif
+        }
+    }
+
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+
+    if (isPublishingToMQTTClient()) {
+        for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+            auto sensor = (HydroponicsSensor *)(Hydroponics::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
+            if (sensor) {
+                String topic = sensor->getKeyString();
+                String payload = String(_dataColumns[columnIndex].measurement.value); // skipping units/rounding/etc to allow MQTT broker full value data
+                _mqttClient->publish(topic.c_str(), payload.c_str());
+            }
         }
     }
 

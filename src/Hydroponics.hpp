@@ -98,10 +98,22 @@ inline bool HydroponicsPublisher::isPublishingToWiFiStorage() const
 }
 
 #endif
+#ifdef HYDRUINO_ENABLE_MQTT
+
+inline bool HydroponicsPublisher::isPublishingToMQTTClient() const
+{
+    return hasPublisherData() && _mqttClient;
+}
+
+#endif
 
 inline bool HydroponicsPublisher::isPublishingEnabled() const
 {
-    return hasPublisherData() && (publisherData()->pubToSDCard || publisherData()->pubToWiFiStorage);
+    return hasPublisherData() && (publisherData()->pubToSDCard || publisherData()->pubToWiFiStorage
+        #ifdef HYDRUINO_ENABLE_MQTT
+            || _mqttClient
+        #endif
+        );
 }
 
 inline void HydroponicsPublisher::setNeedsTabulation()
