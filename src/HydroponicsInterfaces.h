@@ -8,6 +8,9 @@
 
 struct HydroponicsJSONSerializableInterface;
 
+class HydroponicsObjInterface;
+class HydroponicsUIInterface;
+
 class HydroponicsActuatorAttachmentInterface;
 class HydroponicsSensorAttachmentInterface;
 class HydroponicsCropAttachmentInterface;
@@ -58,6 +61,14 @@ public:
 
     virtual bool addLinkage(HydroponicsObject *obj) = 0;
     virtual bool removeLinkage(HydroponicsObject *obj) = 0;
+};
+
+// Hydroponics UI Interface
+class HydroponicsUIInterface {
+public:
+    virtual void begin() = 0;
+
+    virtual void setNeedsLayout() = 0;
 };
 
 

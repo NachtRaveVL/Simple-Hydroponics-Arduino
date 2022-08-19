@@ -44,6 +44,9 @@ Hydroponics::Hydroponics(pintype_t piezoBuzzerPin,
                          TwoWire &i2cWire,
                          uint32_t i2cSpeed)
     : _i2cWire(&i2cWire), _i2cSpeed(i2cSpeed),
+#ifndef HYDRUINO_DISABLE_GUI
+      _activeUIInstance(nullptr),
+#endif
 #ifndef HYDRUINO_ENABLE_SD_VIRTMEM
 #ifndef CORE_TEENSY
       _sdCardSpeed(sdCardSpeed),
@@ -88,6 +91,7 @@ Hydroponics::~Hydroponics()
     deallocateRTC();
     deallocateSD();
     _i2cWire = nullptr;
+    if (_activeUIInstance) { delete _activeUIInstance; _activeUIInstance = nullptr; }
     if (this == _activeInstance) { _activeInstance = nullptr; }
     if (_systemData) { delete _systemData; _systemData = nullptr; }
 }
@@ -648,10 +652,6 @@ void Hydroponics::commonPostInit()
         }
     #endif
 
-    #ifndef HYDRUINO_DISABLE_GUI
-        // TODO: tcMenu setup
-    #endif
-
     #ifdef HYDRUINO_USE_VERBOSE_OUTPUT
         #if 1 // set to 0 if you just want this gone
             Serial.print(F("Hydroponics::commonPostInit piezoBuzzerPin: "));
@@ -892,7 +892,14 @@ bool Hydroponics::unregisterObject(SharedPtr<HydroponicsObject> obj)
     auto iter = _objects.find(obj->getKey());
     if (iter != _objects.end()) {
         _objects.erase(iter);
-        scheduler.setNeedsScheduling();
+
+        if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
+            scheduler.setNeedsScheduling();
+        }
+        if (obj->isSensorType()) {
+            publisher.setNeedsTabulation();
+        }
+
         return true;
     }
     return false;
@@ -992,7 +999,7 @@ void Hydroponics::setSystemName(String systemName)
     if (_systemData && !systemName.equals(getSystemName())) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRUINO_NAME_MAXSIZE);
-        // TODO: notify UI to update
+        if (_activeUIInstance) { _activeUIInstance->setNeedsLayout(); }
     }
 }
 
@@ -1002,8 +1009,8 @@ void Hydroponics::setTimeZoneOffset(int8_t timeZoneOffset)
     if (_systemData && _systemData->timeZoneOffset != timeZoneOffset) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
-        // TODO: notify UI to update
         scheduler.setNeedsScheduling();
+        if (_activeUIInstance) { _activeUIInstance->setNeedsLayout(); }
     }
 }
 

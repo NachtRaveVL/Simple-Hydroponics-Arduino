@@ -320,19 +320,18 @@ public:
     inline bool enableDataPublishingToWiFiStorage(String dataFilePrefix) { return publisher.beginPublishingToWiFiStorage(dataFilePrefix); }
 #endif
 #ifdef HYDRUINO_ENABLE_MQTT
-    // Enables data publishing to MQTT broker. Client is expected to be began (with proper broker address/net client) *before* calling this method. Returns success flag.
+    // Enables data publishing to MQTT broker. Client is expected to be began/connected (with proper broker address/net client) *before* calling this method. Returns success flag.
     inline bool enableDataPublishingToMQTTClient(MQTTClient &client) { return publisher.beginPublishingToMQTTClient(client); }
 #endif
 
     // User Interface.
 
 #ifndef HYDRUINO_DISABLE_GUI
-    // Enables UI to run in minimal mode. This mode only allows the user to edit existing objects, not create nor delete them.
-    // NOTE: Be sure to manually include minimal UI system header file (i.e. #include "min/HydroponicsUI.h") in Arduino sketch.
-    inline bool enableMinimalUI() { return false; } // TODO: impl and remove stub
-    // Enables UI to run in full mode. This mode allows the user to add/remove system objects, customize features, change settings, etc.
-    // NOTE: Be sure to manually include full UI system header file (i.e. #include "full/HydroponicsUI.h") in Arduino sketch.
-    inline bool enableFullUI() { return false; } // TODO: impl and remove stub
+    // Enables UI to run with passed instance.
+    // Minimal mode only allows the user to edit existing objects, not create nor delete them.
+    // Full mode allows the user to add/remove system objects, customize features, change settings, etc.
+    // Note: Be sure to manually include the UI system header file (e.g. #include "min/HydroponicsUI.h") in Arduino sketch.
+    inline bool enableUI(HydroponicsUIInterface *ui) { _activeUIInstance = ui; ui->begin(); }
 #endif
 
     // Object Registration.
@@ -488,6 +487,9 @@ public:
 
 protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init, weak)
+#ifndef HYDRUINO_DISABLE_GUI
+    HydroponicsUIInterface *_activeUIInstance;                      // Current active UI instance (owned)
+#endif
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
     const pintype_t _piezoBuzzerPin;                                // Piezo buzzer pin (default: Disabled)
@@ -544,6 +546,9 @@ protected:
     friend HydroponicsPublisher *::getPublisherInstance();
 #ifdef HYDRUINO_USE_VIRTMEM
     friend BaseVAlloc *::getVirtualAllocator();
+#endif
+#ifndef HYDRUINO_DISABLE_GUI
+    friend HydroponicsUIInterface *::getUIInstance();
 #endif
     friend class HydroponicsCalibrationsStore;
     friend class HydroponicsCropsLibrary;

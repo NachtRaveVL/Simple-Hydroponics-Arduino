@@ -165,6 +165,10 @@ inline HydroponicsPublisher *getPublisherInstance();
 // Returns the active virtual allocator instance. Not guaranteed to be non-null.
 inline BaseVAlloc *getVirtualAllocator();
 #endif
+#ifndef HYDRUINO_DISABLE_GUI
+// Returns the active UI instance. Not guaranteed to be non-null.
+inline HydroponicsUIInterface *getUIInstance();
+#endif
 
 // Publishes latest data from sensor to Publisher output.
 extern void publishData(HydroponicsSensor *sensor);

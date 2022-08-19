@@ -202,8 +202,8 @@ void setup() {
         // No further setup is necessary, as system is assumed to be built/managed via UI.
     }
 
-    #if !defined(HYDRUINO_DISABLE_MULTITASKING) && SETUP_LCD_OUT_MODE != Disabled
-        hydroController.enableFullUI();
+    #if !defined(HYDRUINO_DISABLE_GUI) && SETUP_LCD_OUT_MODE != Disabled
+        hydroController.enableUI(new HydroponicsFullUI());
     #endif
 
     // Launches controller into main operation.

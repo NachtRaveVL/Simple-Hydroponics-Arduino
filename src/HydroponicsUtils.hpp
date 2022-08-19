@@ -257,6 +257,14 @@ inline BaseVAlloc *getVirtualAllocator()
 }
 
 #endif
+#ifndef HYDRUINO_DISABLE_GUI
+
+inline HydroponicsUIInterface *getUIInstance()
+{
+    return Hydroponics::_activeInstance ? Hydroponics::_activeInstance->_activeUIInstance : nullptr;
+}
+
+#endif
 
 inline DateTime getCurrentTime()
 {
