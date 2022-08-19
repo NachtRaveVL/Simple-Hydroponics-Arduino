@@ -867,6 +867,10 @@ void Hydroponics::update()
         dataLoop();
         miscLoop();
     #endif
+
+    #ifdef HYDRUINO_ENABLE_MQTT
+        if (publisher._mqttClient) { publisher._mqttClient->loop(); }
+    #endif
 }
 
 bool Hydroponics::registerObject(SharedPtr<HydroponicsObject> obj)

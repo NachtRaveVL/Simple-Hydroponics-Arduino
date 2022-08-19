@@ -328,9 +328,9 @@ public:
 
 #ifndef HYDRUINO_DISABLE_GUI
     // Enables UI to run with passed instance.
-    // Minimal mode only allows the user to edit existing objects, not create nor delete them.
-    // Full mode allows the user to add/remove system objects, customize features, change settings, etc.
-    // Note: Be sure to manually include the UI system header file (e.g. #include "min/HydroponicsUI.h") in Arduino sketch.
+    // Minimal UI only allows the user to edit existing objects, not create nor delete them.
+    // Full UI allows the user to add/remove system objects, customize features, change settings, etc.
+    // Note: Be sure to manually include the appropriate UI system header file (e.g. #include "min/HydroponicsUI.h") in Arduino sketch.
     inline bool enableUI(HydroponicsUIInterface *ui) { _activeUIInstance = ui; ui->begin(); }
 #endif
 
