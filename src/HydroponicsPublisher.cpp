@@ -27,6 +27,12 @@ HydroponicsPublisher::~HydroponicsPublisher()
             if (_dataFileWS) { _dataFileWS->close(); delete _dataFileWS; _dataFileWS = nullptr; }
         #endif
     #endif
+    #ifdef HYDRUINO_ENABLE_MQTT
+        if (_mqttClient) {
+            if (_mqttClient->connected()) { _mqttClient->disconnect(); }
+            delete _mqttClient; _mqttClient = nullptr;
+        }
+    #endif
 }
 
 void HydroponicsPublisher::update()
@@ -115,12 +121,23 @@ bool HydroponicsPublisher::beginPublishingToWiFiStorage(String dataFilePrefix)
 #endif
 #ifdef HYDRUINO_ENABLE_MQTT
 
+static uint32_t mqttNow()
+{
+    return unixNow();
+}
+
 bool HydroponicsPublisher::beginPublishingToMQTTClient(MQTTClient &client)
 {
     HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasPublisherData() && !_mqttClient) {
         _mqttClient = &client;
+        _mqttClient->setClockSource(&mqttNow);
+        if (!_mqttClient->connected()) {
+            String unPw = String(F("public"));
+            _mqttClient->connect(Hydroponics::_activeInstance->getSystemName().c_str(),
+                                 unPw.c_str(), unPw.c_str());
+        }
 
         setNeedsTabulation();
 
@@ -282,11 +299,15 @@ void HydroponicsPublisher::publish(time_t timestamp)
 #ifdef HYDRUINO_ENABLE_MQTT
 
     if (isPublishingToMQTTClient()) {
+        String systemName = Hydroponics::_activeInstance->getSystemName();
         for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
             auto sensor = (HydroponicsSensor *)(Hydroponics::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
             if (sensor) {
-                String topic = sensor->getKeyString();
-                String payload = String(_dataColumns[columnIndex].measurement.value); // skipping units/rounding/etc to allow MQTT broker full value data
+                String topic; topic.reserve(systemName.length() + 1 + sensor->getKeyString().length() + 1);
+                topic.concat(systemName);
+                topic.concat('/');
+                topic.concat(sensor->getKeyString());
+                String payload = String(_dataColumns[columnIndex].measurement.value, 6); // skipping units/rounding/etc to allow MQTT broker full value data
                 _mqttClient->publish(topic.c_str(), payload.c_str());
             }
         }

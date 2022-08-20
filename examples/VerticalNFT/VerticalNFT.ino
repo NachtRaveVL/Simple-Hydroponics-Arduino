@@ -21,10 +21,16 @@
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
+#define SETUP_NET_CLIENT                WiFi            // Network client instance (WiFi, Ethernet)
 
 // WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
+
+// Ethernet Settings                                    (note: define HYDRUINO_ENABLE_ETHERNET to enable Ethernet)
+#define SETUP_ETHERNET_MAC              { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED } // Ethernet MAC address
+#define SETUP_ETHERNET_IPADDR           { 192, 168, 1, 2 } // Ethernet IP address
+#define SETUP_ETHERNET_CS_PIN           -1              // Ethernet CS pin, else -1
 
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
@@ -49,6 +55,12 @@
 #define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
 #define SETUP_DATA_WIFISTORAGE_ENABLE   false           // If system data publishing is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
 #define SETUP_LOG_WIFISTORAGE_ENABLE    false           // If system logging is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
+
+// MQTT Settings                                        (note: define HYDRUINO_ENABLE_MQTT to enable MQTT)
+#define SETUP_MQTT_BROKER_CONNECT_BY    Hostname        // Which style of address broker uses (Hostname, IPAddress)
+#define SETUP_MQTT_BROKER_HOSTNAME      "hostname"      // Hostname that MQTT broker exists at
+#define SETUP_MQTT_BROKER_IPADDR        { 192, 168, 1, 2 } // IP address that MQTT broker exists at
+#define SETUP_MQTT_BROKER_PORT          1883            // Port number that MQTT broker exists at
 
 // External Data Settings
 #define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)
@@ -119,6 +131,16 @@ typedef HydroponicsFullUI HydroponicsUI;
 #endif
 #endif
 
+#ifdef HYDRUINO_ENABLE_MQTT
+#if SETUP_NET_CLIENT == WiFi && defined(HYDRUINO_USE_WIFI)
+WiFiClient netClient;
+#elif SETUP_NET_CLIENT == Ethernet && !defined(HYDRUINO_USE_WIFI) && SETUP_ETHERNET_CS_PIN >= 0
+#include <Ethernet.h>
+EthernetClient netClient;
+#endif
+MQTTClient mqttClient;
+#endif
+
 // Pre-init checks
 #if (SETUP_SAVES_WIFISTORAGE_MODE != Disabled || SETUP_DATA_WIFISTORAGE_ENABLE || SETUP_LOG_WIFISTORAGE_ENABLE) && !defined(HYDRUINO_USE_WIFI_STORAGE)
 #warning The HYDRUINO_ENABLE_WIFI flag is expected to be defined as well as WiFiNINA_Generic.h included in order to run this sketch with WiFiStorage features enabled
@@ -177,7 +199,7 @@ void setup() {
             WiFi.init(Serial1); // Change to Serial instance of your choice, otherwise
         #endif
     #endif
-
+    
     // Begin external data storage devices for crop, strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
@@ -239,6 +261,35 @@ void setup() {
         #endif
         #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_DATA_WIFISTORAGE_ENABLE
             hydroController.enableDataPublishingToWiFiStorage(F(SETUP_DATA_FILE_PREFIX));
+        #endif
+        #if defined(HYDRUINO_ENABLE_MQTT)
+            bool netBegan = false;
+            #if SETUP_NET_CLIENT == WiFi && defined(HYDRUINO_USE_WIFI)
+                netBegan = hydroController.getWiFi();
+            {   SETUP_NET_CLIENT.begin(wifiSSID.c_str(), wifiPassword.c_str());
+
+            }
+            #elif SETUP_NET_CLIENT == Ethernet && !defined(HYDRUINO_USE_WIFI) && SETUP_ETHERNET_CS_PIN >= 0
+            {   uint8_t mac[] = SETUP_ETHERNET_MAC;
+                uint8_t ipAddr[4] = SETUP_ETHERNET_IPADDR;
+                IPAddress ip(ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
+                SETUP_NET_CLIENT.init(SETUP_ETHERNET_CS_PIN);
+                netBegan = SETUP_NET_CLIENT.begin(mac, ip);
+            }
+            #endif
+
+            if (netBegan) {
+                #if SETUP_MQTT_BROKER_CONNECT_BY == Hostname
+                    mqttClient.begin(String(F(SETUP_MQTT_BROKER_HOSTNAME)).c_str(), SETUP_MQTT_BROKER_PORT, netClient);
+                #elif SETUP_MQTT_BROKER_CONNECT_BY == IPAddress
+                {   uint8_t ipAddr[4] = SETUP_MQTT_BROKER_IPADDR;
+                    IPAddress ip(ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
+                    mqttClient.begin(ip, SETUP_MQTT_BROKER_PORT, netClient);
+                }
+                #endif
+
+                hydroController.enableDataPublishingToMQTTClient(mqttClient);
+            }
         #endif
         #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
             hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToWiFiStorageJson
