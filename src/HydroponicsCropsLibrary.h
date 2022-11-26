@@ -20,7 +20,7 @@ struct HydroponicsCropsLibraryBook;
 // instance is guaranteed to stay unique for as long as it is allocated.
 // Unless the HYDRUINO_DISABLE_BUILTIN_DATA define is defined, all crop data is
 // internally stored as JSON strings in the Flash PROGMEM memory space. See the Data
-// Writer Example sketch on how to program an EEPROM or SD Card with such data.
+// Writer Example sketch on how to program an EEPROM or SD card with such data.
 class HydroponicsCropsLibrary {
 public:
     // Begins crops library from external SD card library, with specified file prefix and data format.
@@ -50,8 +50,8 @@ protected:
     Map<Hydroponics_CropType, HydroponicsCropsLibraryBook *, HYDRUINO_CROPSLIB_CROPS_MAXSIZE> _cropsData; // Loaded crops library data
     bool _hasUserCrops = false;                             // Has user crops flag
 
-    String _libSDCropPrefix;                                // Library data files prefix for SD Card, else "" if unused
-    bool _libSDJSONFormat = false;                          // Library SD Card data files JSON format tracking flag
+    String _libSDCropPrefix;                                // Library data files prefix for SD card, else "" if unused
+    bool _libSDJSONFormat = false;                          // Library SD card data files JSON format tracking flag
     size_t _libEEPROMDataAddress = (size_t)-1;              // Library EEPROM data begin address, else -1 if unused
     bool _libEEPROMJSONFormat = false;                      // Library EEPROM data JSON format tracking flag
 

@@ -1,12 +1,12 @@
 // Simple-Hydroponics-Arduino Data Writer Example
-// In this example we program an SD Card or EEPROM to hold onto the various data items
+// In this example we program an SD card or EEPROM to hold onto the various data items
 // that normally are built into the produced binary. However, this isn't possible on
 // memory constrained devices (e.g. ATMega2560), thus offloading the data is needed.
 // Since dead code is stripped out of the final binary on most Arduino-like build
 // processes, we can take advantage of that fact to create an "empty" system that only
-// does one thing: programs the SD Card or EEPROM attached to it. This sketch can be
+// does one thing: programs the SD card or EEPROM attached to it. This sketch can be
 // easily compiled to such constrained device to "prep" said storage, and thus we can
-// offload any program constant data, like Crops Library and Strings data. Endianness
+// offload any program constant data, like Crops Library and strings data. Endianness
 // is also not a concern this way since the same device does both writing & reading.
 //
 // For EEPROM device writing, keep track of the produced output that defines the various
@@ -21,8 +21,8 @@
 //
 // In Hydroponics.h:
 // 
-// // Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
-// // #define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
+// // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
+// // #define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
 // 
 // // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
 // #define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -56,7 +56,7 @@
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
 
 // External Data Settings
-#define SETUP_EXTDATA_SD_ENABLE         true            // If data should be written to an external SD Card
+#define SETUP_EXTDATA_SD_ENABLE         true            // If data should be written to an external SD card
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be written to an external EEPROM
 #define SETUP_EXTDATA_EEPROM_BEG_ADDR   0               // Start data address for data to be written to EEPROM
@@ -103,7 +103,7 @@ void setup() {
     {   auto sd = getHydroponicsInstance()->getSDCard();
 
         if (sd) {
-            getLoggerInstance()->logMessage(F("=== Writing Crops Library data to SD Card ==="));
+            getLoggerInstance()->logMessage(F("=== Writing Crops Library data to SD card ==="));
 
             for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
                 auto cropData = hydroCropsLib.checkoutCropsData((Hydroponics_CropType)cropType);
@@ -144,7 +144,7 @@ void setup() {
                 yield();
             }
 
-            {   getLoggerInstance()->logMessage(F("=== Writing String data to SD Card ==="));
+            {   getLoggerInstance()->logMessage(F("=== Writing string data to SD card ==="));
 
                 uint16_t lookupTable[Hydroponics_Strings_Count];
 
@@ -195,7 +195,7 @@ void setup() {
 
             getHydroponicsInstance()->endSDCard(sd);
         } else {
-            getLoggerInstance()->logWarning(F("Could not find SD Card device. Check that you have it set up properly."));
+            getLoggerInstance()->logWarning(F("Could not find SD card device. Check that you have it set up properly."));
         }
 
         getLoggerInstance()->flush();
@@ -259,7 +259,7 @@ void setup() {
                 }
             }
 
-            {   getLoggerInstance()->logMessage(F("=== Writing String data to EEPROM ==="));
+            {   getLoggerInstance()->logMessage(F("=== Writing strings data to EEPROM ==="));
 
                 // Similar to above, same deal with a lookup table.
                 uint16_t writeAddr = stringsBegAddr + ((Hydroponics_Strings_Count + 1) * sizeof(uint16_t));

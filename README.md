@@ -30,15 +30,17 @@ Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like
 
 ## Controller Setup
 
-### Requirements
+### MCU Requirements
 
-Minimum MCU: 256kB Flash, 16kB SRAM, 16 MHz  
+Minimum MCU: 256~512kB Flash, 16~24kB SRAM, 8~16 MHz  
 Recommended: 1+MB Flash, 32+kB SRAM, 32+ MHz
 
-Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32, Pico, etc.  
-Won't work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2-, etc.
+Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32 (properly sized), Pico, etc.  
+Won't work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2-, STM8, STM32 (improperly sized), etc.
 
-Devices that _may_ work, but only with custom tweaking/limited build: ATMega2560, Genuino 101
+Devices that _may_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101
+
+Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRAM size configurations. Some configurations may not be supported, others may limit total system size (i.e. object count, library support, and/or other features).
 
 ### Installation
 
@@ -72,8 +74,8 @@ From Hydroponics.h:
 // Uncomment or -D this define to enable usage of SPI RAM based virtual memory, which extends available RAM.
 //#define HYDRUINO_ENABLE_SPIRAM_VIRTMEM            // https://github.com/NachtRaveVL/virtmem-continued
 
-// Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
+// Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
+//#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -91,7 +93,7 @@ There are several initialization mode settings exposed through this controller t
 
 #### Class Instantiation
 
-The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD Card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, and i2c clock speed. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, and SPI speeds set to same as processor speed (/0 divider, else 50MHz if undetected).
+The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, and i2c clock speed. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, and SPI speeds set to same as processor speed (/0 divider, else 50MHz if undetected).
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
@@ -147,7 +149,7 @@ From Hydroponics.h, in class Hydroponics:
     bool initFromBinaryStream(Stream *streamIn);
 ```
 
-The controller can also be initialized from a saved configuration, such as from an EEPROM or SD Card, or other JSON or Binary stream. A saved configuration of the system can be made via the controller class object's `saveTo…(…)` methods, or called automatically on timer by setting an Autosave mode/interval.
+The controller can also be initialized from a saved configuration, such as from an EEPROM or SD card, or other JSON or Binary stream. A saved configuration of the system can be made via the controller class object's `saveTo…(…)` methods, or called automatically on timer by setting an Autosave mode/interval.
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
@@ -257,11 +259,11 @@ We also ask that our users report any broken sensors (outside of bad calibration
 ## Memory Callouts
 
 * The total number of objects and different kinds of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 500 bytes or more depending on settings and object type, with the base Flash memory usage ranging from 100kB to 300kB+ depending on settings.
-  * For our target microcontroller range, on the low end we have older devices with 256kB of Flash and at least 8kB of RAM, while on the upper end we have more modern devices with 2+MB of Flash and 256+kB of RAM. Devices with < 32kB of RAM may struggle with system builds and may be limited to specific system setups (such as no WiFi, no data publishing, no built-in crop data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
+  * For our target microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with MB+ of Flash and 32kB+ of SRAM. Devices with < 32kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in crop data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
 * For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller uses.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
-* To further save on code size cost, see the Data Writer Example to see how to externalize controller data onto an SD Card or EEPROM.
+* To further save on code size cost, see the Data Writer Example to see how to externalize controller data onto an SD card or EEPROM.
   * Note: Upgrading between versions or changing custom/user data may require you rebuild and redeploy to such external devices.
 
 ## Example Usage
@@ -332,11 +334,13 @@ void loop()
 
 ### Main System Examples
 
+There are two main system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. The Vertical NFT example is the recommended starting point for most system builds, and is perfect for those with only intermediate programming knowledge.
+
 The Vertical NFT Example sketch is the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code. This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
 
-The Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for more modern MCUs that have plenty of storage space to use such as the ESP32, Raspberry Pi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where UI interaction will be used to create the objects (or also done in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
+The Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for modern MCUs that have plenty of storage space to use such as ESP32, RasPi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where a GUI will be primarily used to create objects with (or done similarly in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
 
-Included below is the default system setup defines of the Vertical NFT example to illustrate a variety of the controller features. This is not an exhaustive list of course, as there are many more things the controller is capable of, as documented in its main header file include and elsewhere.
+Included below is the default system setup defines of the Vertical NFT example (of which a smaller similar version is used for the Full System example) to illustrate a variety of the controller features. This is not an exhaustive list of course, as there are many more things the controller is capable of, as documented in its main header file include, GitHub Project Wiki, and elsewhere.
 
 ```Arduino
 #include <Hydroponics.h>
@@ -387,14 +391,14 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_LOG_WIFISTORAGE_ENABLE    false           // If system logging is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
 
 // External Data Settings
-#define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)
+#define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD card (searched first for crops lib data)
 #define SETUP_EXTDATA_SD_LIB_PREFIX     "lib/"          // Library data folder/data file prefix (appended with {type}##.dat)
 #define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
 #define SETUP_EEPROM_SYSDATA_ADDR       0x2e50          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for Strings data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for strings data (from Data Writer output)
 
 // Device Setup
 #define SETUP_PH_METER_PIN              -1              // pH meter sensor pin (analog), else -1
@@ -443,7 +447,7 @@ Included below is the default system setup defines of the Vertical NFT example t
 
 ### Data Writer Example
 
-The Data Writer Example sketch can be used to write the Crops Library and Strings data onto an SD Card or EEPROM so that storage constrained devices can still build at least something like the Vertical NFT system. This Example doesn't actually run the controller in full, but a code stripped version of it that will more easily compile down onto storage constrained devices. You can also program in any custom data you want made available later if you choose to change the default library data, such as custom crops data.
+The Data Writer Example can be used on the same system setup to offload all exportable data, such as crop and string data, onto a connected external SD card or EEPROM storage device to help storage constrained MCUs compile system builds. This Example doesn't actually run the Hydruino controller in full, but a code stripped version of it that easily compiles with all extra data built-in. The compiled binary in this Example will include all exportable data stored as compact JSON string text, and typically easily fits in under 256kB compilation size. This data can further be exported into smaller binary chunks with native endianness for EEPROM storage, or into expanded pretty print JSON text files for SD card storage. You can also further customize default and/or extend library data (such as adding custom crops) that will be included in data export.
 
 Inside of the Data Writer's `setup()` function:
 ```Arduino
@@ -456,7 +460,7 @@ Inside of the Data Writer's `setup()` function:
     //hydroCropsLib.setUserCropData(&customCrop1);
 ```
 
-In particular, after setting up the settings defines similarly to that of the Vertical NFT or Full System sketch, running the Data Writer sketch will produce the EEPROM configuration setup defines to then use. You typically won't need to copy these over unless you are planning to utilize an external EEPROM storage device and have made any custom data modifications, as these defines are updated by the dev team prior to release. If however you do have custom data modifications and are using an external EEPROM device, do copy these values over into your Main System sketch.
+If you are planning to utilize an external EEPROM storage device and have made any custom data modifications, you will have to update your system's sketch to include the proper offsets that the output of the Data Writer sketch produces. These defines can be copied over and overwrite the existing ones in the main system examples.
 
 In serial monitor (near end):
 ```
