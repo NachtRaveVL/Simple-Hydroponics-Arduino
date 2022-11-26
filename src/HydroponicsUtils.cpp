@@ -15,6 +15,7 @@ HydroponicsBitResolution::HydroponicsBitResolution(uint8_t bitResIn)
 
 BasicArduinoInterruptAbstraction interruptImpl;
 
+
 ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroponicsActuator> actuator, float enableIntensity, time_t enableTimeMillis)
     : taskId(TASKMGR_INVALIDID), _actuator(actuator), _enableIntensity(enableIntensity), _enableTimeMillis(enableTimeMillis)
 { ; }
@@ -114,6 +115,17 @@ void publishData(HydroponicsSensor *sensor)
     }
 }
 
+bool setCurrentTime(DateTime currTime)
+{
+    auto rtc = getHydroponicsInstance() ? getHydroponicsInstance()->getRealTimeClock() : nullptr;
+    if (rtc) {
+        rtc->adjust(currTime);
+        getHydroponicsInstance()->notifyRTCTimeUpdated();
+        return true;
+    }
+    return false;
+}
+
 String getYYMMDDFilename(String prefix, String ext)
 {
     DateTime currTime = getCurrentTime();
@@ -151,9 +163,9 @@ String getNNFilename(String prefix, unsigned int value, String ext)
 
 void createDirectoryFor(SDClass *sd, String filename)
 {
-    auto slashIndex = filename.indexOf(HYDRUINO_SDCPATH_SEPARATOR);
+    auto slashIndex = filename.indexOf(HYDRUINO_FSPATH_SEPARATOR);
     String directory = slashIndex != -1 ? filename.substring(0, slashIndex) : String();
-    String dirWithSep = directory + String(HYDRUINO_SDCPATH_SEPARATOR);
+    String dirWithSep = directory + String(HYDRUINO_FSPATH_SEPARATOR);
     if (directory.length() && !sd->exists(dirWithSep.c_str())) {
         sd->mkdir(directory.c_str());
     }
@@ -462,6 +474,25 @@ void delayFine(time_t timeMillis) {
         }
     }
 }
+
+static void hy_bin_pinMode_def(pintype_t pin, uint8_t mode)
+{
+    pinMode(pin, mode);
+}
+
+static void hy_bin_digitalWrite_def(pintype_t pin, uint8_t status)
+{
+    digitalWrite(pin, status);
+}
+
+static uint8_t hy_bin_digitalRead_def(pintype_t pin)
+{
+    return digitalRead(pin);
+}
+
+void (*hy_bin_pinMode)(pintype_t,uint8_t) = &hy_bin_pinMode_def;
+void (*hy_bin_digitalWrite)(pintype_t,uint8_t) = &hy_bin_digitalWrite_def;
+uint8_t (*hy_bin_digitalRead)(pintype_t) = &hy_bin_digitalRead_def;
 
 bool tryConvertUnits(float valueIn, Hydroponics_UnitsType unitsIn, float *valueOut, Hydroponics_UnitsType unitsOut, float convertParam)
 {
@@ -1717,6 +1748,21 @@ String positionIndexToString(Hydroponics_PositionIndex positionIndex, bool exclu
     return String();
 }
 
+Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
+{
+    if (positionIndexStr == positionIndexToString(HYDRUINO_POS_MAXSIZE)) {
+        return HYDRUINO_POS_MAXSIZE;
+    } else if (positionIndexStr == positionIndexToString(-1)) {
+        return -1;
+    } else {
+        int8_t decode = positionIndexStr.toInt();
+        return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
+    }
+}
+
+
+// All remaining methods generated from minimum spanning trie
+
 Hydroponics_SystemMode systemModeFromString(String systemModeStr)
 {
     switch (systemModeStr.length() >= 1 ? systemModeStr[0] : '\0') {
@@ -2445,16 +2491,4 @@ Hydroponics_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             break;
     }
     return Hydroponics_UnitsType_Undefined;
-}
-
-Hydroponics_PositionIndex positionIndexFromString(String positionIndexStr)
-{
-    if (positionIndexStr == positionIndexToString(HYDRUINO_POS_MAXSIZE)) {
-        return HYDRUINO_POS_MAXSIZE;
-    } else if (positionIndexStr == positionIndexToString(-1)) {
-        return -1;
-    } else {
-        int8_t decode = positionIndexStr.toInt();
-        return decode >= 0 && decode < HYDRUINO_POS_MAXSIZE ? decode : -1;
-    }
 }

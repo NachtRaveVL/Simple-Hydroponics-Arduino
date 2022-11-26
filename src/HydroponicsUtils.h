@@ -165,6 +165,10 @@ inline HydroponicsPublisher *getPublisherInstance();
 // Returns the active virtual allocator instance. Not guaranteed to be non-null.
 inline BaseVAlloc *getVirtualAllocator();
 #endif
+#ifndef HYDRUINO_DISABLE_GUI
+// Returns the active UI instance. Not guaranteed to be non-null.
+inline HydroponicsUIInterface *getUIInstance();
+#endif
 
 // Publishes latest data from sensor to Publisher output.
 extern void publishData(HydroponicsSensor *sensor);
@@ -173,6 +177,8 @@ extern void publishData(HydroponicsSensor *sensor);
 inline DateTime getCurrentTime();
 // Returns the UTC seconds time that today started, accounting for time zone offset based on active hydroponics instance.
 inline time_t getCurrentDayStartTime();
+// Sets the global current time of the RTC, returning if update was successful, and additionally calls appropriate system time updaters.
+extern bool setCurrentTime(DateTime currTime);
 
 // Returns a proper filename for a storage monitoring file (log, data, etc) that uses YYMMDD as filename.
 extern String getYYMMDDFilename(String prefix, String ext);
@@ -240,11 +246,18 @@ extern void delayFine(time_t timeMillis);
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
 
-// This will return the time in unixtime (secs since 1970).
+// This will return the time in unixtime (secs since 1970). Uses rtc if available, otherwise time since turned on.
 inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
 
 // This will handle interrupts for task manager.
 extern void handleInterrupt(pintype_t pin);
+
+// Function pointer to pinMode for binary actuators and sensors. Allows an intermediary, such as a port extender or multiplexer, to be used. By default uses pinMode.
+extern void (*hy_bin_pinMode)(pintype_t,uint8_t);
+// Function pointer to digitalWrite for binary actuators. Allows an intermediary, such as a port extender or multiplexer, to be used. By default uses digitalWrite.
+extern void (*hy_bin_digitalWrite)(pintype_t,uint8_t);
+// Function pointer to digitalRead for binary sensors. Allows an intermediary, such as a port extender or multiplexer, to be used. By default uses digitalRead.
+extern uint8_t (*hy_bin_digitalRead)(pintype_t);
 
 // This is used to force debug statements through to serial monitor.
 inline void flushYield() {

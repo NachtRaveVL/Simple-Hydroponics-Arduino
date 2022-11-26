@@ -25,26 +25,37 @@
 #define ACTIVE_ABOVE                        false                   // Active above (convenience)
 #define ACTIVE_LOW                          true                    // Active low (convenience)
 #define ACTIVE_BELOW                        true                    // Active below (convenience)
-#ifndef RANDOM_MAX
-#ifdef RAND_MAX
-#define RANDOM_MAX RAND_MAX                                         // Missing def
-#else
-#define RANDOM_MAX INTPTR_MAX
-#endif
-#endif
+#define RAW                                 false                   // Raw mode (convenience)
+#define JSON                                true                    // JSON mode (convenience)
 #ifndef JOIN                                                        // Define joiner
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
-#if defined(ESP32) || defined(ESP8266)                              // ESP missing defs
-#ifndef ESP_PLATFORM
+#ifndef RANDOM_MAX                                                  // Missing random max
+#ifdef RAND_MAX
+#define RANDOM_MAX RAND_MAX
+#else
+#define RANDOM_MAX INTPTR_MAX
+#endif
+#endif
+#if (defined(ESP32) || defined(ESP8266)) && !defined(ESP_PLATFORM)  // Missing ESP_PLATFORM
 #define ESP_PLATFORM
 #endif
-#define min _min
-#define max _max
-#if defined(ESP32) && !defined(ADC_RESOLUTION)
-#define ADC_RESOLUTION                      12
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32)            // Missing min/max
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
 #endif
+#if !defined(ADC_RESOLUTION) && defined(IOA_ANALOGIN_RES)           // Missing ADC resolution
+#define ADC_RESOLUTION IOA_ANALOGIN_RES
+#endif
+#if !defined(ADC_RESOLUTION)
+#define ADC_RESOLUTION 10
+#endif
+#if !defined(DAC_RESOLUTION) && defined(IOA_ANALOGOUT_RES)          // Missing DAC resolution
+#define DAC_RESOLUTION IOA_ANALOGOUT_RES
+#endif
+#if !defined(DAC_RESOLUTION)
+#define DAC_RESOLUTION 8
 #endif
 #ifndef F_SPD                                                       // F_CPU/F_BUS alias for default SPI device speeds
 #if defined(F_CPU)
@@ -61,13 +72,20 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_NAME_MAXSIZE               24                      // Naming character maximum size (system name, crop name, etc.)
 #define HYDRUINO_POS_MAXSIZE                32                      // Position indicies maximum size (max # of objs of same type)
+#define HYDRUINO_URL_MAXSIZE                64                      // URL string maximum size (max url length)
 #define HYDRUINO_JSON_DOC_SYSSIZE           256                     // JSON document chunk data bytes for reading in main system data (serialization buffer size)
 #define HYDRUINO_JSON_DOC_DEFSIZE           192                     // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRUINO_STRING_BUFFER_SIZE         32                      // Size in bytes of string serialization buffers
+#define HYDRUINO_WIFISTREAM_BUFFER_SIZE     128                     // Size in bytes of WiFi serialization buffers
 // The following slot sizes apply to all architectures
 #define HYDRUINO_SENSOR_MEASUREMENT_SLOTS   4                       // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
-#define HYDRUINO_TRIGGER_STATE_SLOTS        4                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
-#define HYDRUINO_BALANCER_STATE_SLOTS       4                       // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
+#define HYDRUINO_TRIGGER_STATE_SLOTS        2                       // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
+#define HYDRUINO_BALANCER_STATE_SLOTS       2                       // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
+#define HYDRUINO_LOG_STATE_SLOTS            2                       // Maximum number of logger slots for system log signal
+#define HYDRUINO_PUBLISH_STATE_SLOTS        2                       // Maximum number of publisher slots for data publish signal
+#define HYDRUINO_RESERVOIR_STATE_SLOTS      2                       // Maximum number of reservoir state slots for filled/empty signal
+#define HYDRUINO_FEEDING_STATE_SLOTS        2                       // Maximum number of feeding state slots for crop feed signal
+#define HYDRUINO_CAPACITY_STATE_SLOTS       8                       // Maximum number of capacity slots for rail capacity signal
 #define HYDRUINO_CROPS_LINKS_BASESIZE       1                       // Base array size for crop's linkage list
 #define HYDRUINO_FLUIDRES_LINKS_BASESIZE    1                       // Base array size for fluid reservoir's linkage list
 #define HYDRUINO_FEEDRES_LINKS_BASESIZE     4                       // Base array size for feed reservoir's linkage list
@@ -115,30 +133,38 @@ typedef uint32_t Hydroponics_KeyType;                               // Key type,
 
 #define HYDRUINO_SCH_FEED_FRACTION          0.8f                    // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRUINO_SCH_BALANCE_MINTIME        30                      // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
-#define HYDRUINO_SCH_AERATORS_FEEDRUN       true                    // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
+#define HYDRUINO_SCH_AERATORS_FEEDRUN       ENABLED                 // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
 #define HYDRUINO_SENSOR_ANALOGREAD_SAMPLES  5                       // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRUINO_SENSOR_ANALOGREAD_DELAY    0                       // Delay time between samples, or 0 to disable delay
 
-#define HYDRUINO_SYS_WIFI_INSTANCE          WiFi                    // Default WiFi instance name
 #define HYDRUINO_SYS_AUTOSAVE_INTERVAL      120                     // Default autosave interval, in minutes
 #define HYDRUINO_SYS_I2CEEPROM_BASEADDR     0x50                    // Base address of I2C EEPROM (bitwise or'ed with passed address)
-#define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps (set to 9600 for the old blue boards)
+#define HYDRUINO_SYS_ESPWIFI_SERIALBAUD     115200                  // Serial baud rate of ESP8266 WiFi, in bps
+#define HYDRUINO_SYS_URLHTTP_PORT           80                      // Which default port to access when accessing HTTP resources
+#define HYDRUINO_SYS_LEAVE_FILES_OPEN       !defined(__AVR__)       // If high access files should be left open to improve performance (true), or closed after use to reduce memory consumption (false)
 #define HYDRUINO_SYS_FREERAM_LOWBYTES       1024                    // How many bytes of free memory left spawns a handle low mem call to all objects
 #define HYDRUINO_SYS_FREESPACE_INTERVAL     240                     // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRUINO_SYS_FREESPACE_LOWSPACE     256                     // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRUINO_SYS_FREESPACE_DAYSBACK     180                     // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
 #define HYDRUINO_SYS_DELAYFINE_SPINMILLIS   20                      // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
-#define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   false                   // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
-#define HYDRUINO_SYS_MEM_LOGGING_ENABLE     false                   // If system will periodically log memory remaining messages (mainly used for debugging)
-#define HYDRUINO_SYS_DRY_RUN_ENABLE         false                   // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
+#define HYDRUINO_SYS_DEBUGOUT_FLUSH_YIELD   DISABLED                // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
+#define HYDRUINO_SYS_MEM_LOGGING_ENABLE     DISABLED                // If system will periodically log memory remaining messages (mainly used for debugging)
+#define HYDRUINO_SYS_DRY_RUN_ENABLE         DISABLED                // Disables actuators from actually enabling in order to simply simulate (mainly used for debugging)
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRUINO_BLDPATH_SEPARATOR          '/'                     // Path separator for nix-based build machines
 #else
 #define HYDRUINO_BLDPATH_SEPARATOR          '\\'                    // Path separator for win-based build machines
 #endif
-#define HYDRUINO_SDCPATH_SEPARATOR          '/'                     // Path separator for SD card paths
+#define HYDRUINO_FSPATH_SEPARATOR           '/'                     // Path separator for filesystem paths (SD card/WiFiStorage)
+#define HYDRUINO_URLPATH_SEPARATOR          '/'                     // Path separator for URL paths
+
+#if HYDRUINO_SYS_LEAVE_FILES_OPEN                                   // How subsequent getters should be called when file left open
+#define HYDRUINO_LOFS_BEGIN false
+#else
+#define HYDRUINO_LOFS_BEGIN true
+#endif
 
 
 // Crop Type

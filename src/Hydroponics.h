@@ -22,7 +22,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
 
-    Simple-Hydroponics-Arduino - Version 0.4
+    Simple-Hydroponics-Arduino - Version 0.5
 */
 
 #ifndef Hydroponics_H
@@ -43,6 +43,9 @@
 
 // Uncomment or -D this define to enable usage of the external serial ESP AT WiFi library, which enables networking capabilities.
 //#define HYDRUINO_ENABLE_ESP_WIFI                  // https://github.com/jandrassy/WiFiEspAT
+
+// Uncomment or -D this define to enable usage of the Arduino MQTT library, which enables IoT data publishing capabilities.
+//#define HYDRUINO_ENABLE_MQTT                      // https://github.com/256dpi/arduino-mqtt
 
 // Uncomment or -D this define to enable usage of SD card based virtual memory, which extends available RAM.
 //#define HYDRUINO_ENABLE_SD_VIRTMEM                // https://github.com/NachtRaveVL/virtmem-continued
@@ -73,13 +76,15 @@
 #include <Wire.h>
 
 #ifdef HYDRUINO_ENABLE_WIFI
-#if defined(ARDUINO_SAMD_MKRWIFI1010) || defined(ARDUINO_SAMD_MKRVIDOR4000) || defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_AVR_UNO_WIFI_REV2)
-#include <WiFiNINA.h>                               // https://github.com/arduino-libraries/WiFiNINA
-#elif defined(ARDUINO_SAMD_MKR1000)
+#if defined(ARDUINO_SAMD_MKR1000)
 #include <WiFi101.h>                                // https://github.com/arduino-libraries/WiFi101
 #else
-#include <WiFi.h>
+#include <WiFiNINA_Generic.h>                       // https://github.com/khoih-prog/WiFiNINA_Generic
+#define HYDRUINO_USE_WIFI_STORAGE
 #endif
+#define HYDRUINO_USE_WIFI
+#endif
+#ifdef HYDRUINO_ENABLE_ESP_WIFI
 #define HYDRUINO_USE_WIFI
 #endif
 
@@ -123,7 +128,10 @@ typedef uint8_t pintype_t;
 #include "DallasTemperature.h"          // DS18* submersible water temp probe
 #include "DHT.h"                        // DHT* air temp/humidity probe
 #include "I2C_eeprom.h"                 // i2c EEPROM library
-#ifdef ARDUINO_ARCH_STM32
+#ifdef HYDRUINO_ENABLE_MQTT
+#include "MQTT.h"                       // MQTT library
+#endif
+#if defined(ARDUINO_ARCH_STM32) && 1
 #include <OneWireSTM.h>                 // STM32 version of OneWire (via stm32duino)
 #else
 #include "OneWire.h"                    // OneWire library
@@ -176,9 +184,6 @@ template <typename T> using VirtualPtr = VPtr<T, SPIRAMVAlloc>;
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<VirtualPtr<T>>;
 #else
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
-#endif
-#ifdef HYDRUINO_ENABLE_ESP_WIFI
-#define HYDRUINO_USE_WIFI
 #endif
 
 extern time_t unixNow();
@@ -253,31 +258,37 @@ public:
               Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
 
-    // Initializes system from EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Initializes system from EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool initFromEEPROM(bool jsonFormat = false);
-    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Initializes system from SD card file save, returning success flag
+    // Set config file name with setSystemConfigFilename
     bool initFromSDCard(bool jsonFormat = true);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Initializes system from a WiFiStorage file save, returning success flag
+    // Set config file name with setSystemConfigFilename
+    bool initFromWiFiStorage(bool jsonFormat = true);
+#endif
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
     bool initFromBinaryStream(Stream *streamIn);
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL init
-    //bool initFromNetworkURL(urlDataTODO);
-#endif
 
-    // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Saves current system setup to EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool saveToEEPROM(bool jsonFormat = false);
-    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Saves current system setup to SD card file save, returning success flag
+    // Set config file name with setSystemConfigFilename
     bool saveToSDCard(bool jsonFormat = true);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Saves current system setup to WiFiStorage file save, returning success flag
+    // Set config file name with setSystemConfigFilename
+    bool saveToWiFiStorage(bool jsonFormat = true);
+#endif
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup to custom binary stream, returning success flag
     bool saveToBinaryStream(Stream *streamOut);
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL save
-    //bool saveToNetworkURL(urlDataTODO);
-#endif
 
     // System Operation.
 
@@ -293,35 +304,34 @@ public:
 
     // System Logging.
 
-    // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
+    // Enables system logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToSDCard(String logFilePrefix) { return logger.beginLoggingToSDCard(logFilePrefix); }
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL sys logging
-    //bool enableSysLoggingToNetworkURL(urlDataTODO, String logFilePrefix);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Enables system logging to WiFiStorage. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
+    inline bool enableSysLoggingToWiFiStorage(String logFilePrefix) { return logger.beginLoggingToWiFiStorage(logFilePrefix); }
 #endif
 
     // Data Publishing.
 
-    // Enables data publishing to the SD card. Log file names will append YYMMDD.csv to the specified prefix. Returns success flag.
+    // Enables data publishing to the SD card. Data file names will append YYMMDD.csv to the specified prefix. Returns success flag.
     inline bool enableDataPublishingToSDCard(String dataFilePrefix) { return publisher.beginPublishingToSDCard(dataFilePrefix); }
-#ifdef HYDRUINO_USE_WIFI
-    // TODO: Network URL data pub
-    //bool enableDataPublishingToNetworkURL(urlDataTODO, String dataFilePrefix);
-    // TODO: MQTT data pub
-    //bool enableDataPublishingToMQTT(mqttBrokerTODO, deviceDataTODO);
-    // TODO: Web API data pub
-    //bool enableDataPublishingToWebAPI(urlDataTODO, apiInterfaceTODO);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Enables data publishing to WiFiStorage. Data file names will append YYMMDD.csv to the specified prefix. Returns success flag.
+    inline bool enableDataPublishingToWiFiStorage(String dataFilePrefix) { return publisher.beginPublishingToWiFiStorage(dataFilePrefix); }
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+    // Enables data publishing to MQTT broker. Client is expected to be began/connected (with proper broker address/net client) *before* calling this method. Returns success flag.
+    inline bool enableDataPublishingToMQTTClient(MQTTClient &client) { return publisher.beginPublishingToMQTTClient(client); }
 #endif
 
     // User Interface.
 
 #ifndef HYDRUINO_DISABLE_GUI
-    // Enables UI to run in minimal mode. This mode only allows the user to edit existing objects, not create nor delete them.
-    // NOTE: Be sure to manually include minimal UI system header file (i.e. #include "min/HydroponicsUI.h") in Arduino sketch.
-    inline bool enableMinimalUI() { return false; } // TODO: impl and remove stub
-    // Enables UI to run in full mode. This mode allows the user to add/remove system objects, customize features, change settings, etc.
-    // NOTE: Be sure to manually include full UI system header file (i.e. #include "full/HydroponicsUI.h") in Arduino sketch.
-    inline bool enableFullUI() { return false; } // TODO: impl and remove stub
+    // Enables UI to run with passed instance.
+    // Minimal UI only allows the user to edit existing objects, not create nor delete them.
+    // Full UI allows the user to add/remove system objects, customize features, change settings, etc.
+    // Note: Be sure to manually include the appropriate UI system header file (e.g. #include "min/HydroponicsUI.h") in Arduino sketch.
+    inline bool enableUI(HydroponicsUIInterface *ui) { _activeUIInstance = ui; ui->begin(); }
 #endif
 
     // Object Registration.
@@ -346,7 +356,7 @@ public:
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
     bool tryGetPinLock(pintype_t pin, time_t waitMillis = 150);
     // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
-    void returnPinLock(pintype_t pin);
+    inline void returnPinLock(pintype_t pin);
 
     // Mutators.
 
@@ -356,15 +366,15 @@ public:
     void setTimeZoneOffset(int8_t timeZoneOffset);
     // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
     void setPollingInterval(uint16_t pollingInterval);
-    // Sets system autosave enable mode and optional autosave interval, in minutes.
-    void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
+    // Sets system autosave enable mode and optional fallback mode and interval, in minutes.
+    void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, Hydroponics_Autosave autosaveFallback = Hydroponics_Autosave_Disabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
     // Sets system config file as used in init and save by SD Card.
-    inline void setSystemConfigFile(String configFileName) { _sysConfigFile = configFileName; }
+    inline void setSystemConfigFilename(String configFilename) { _sysConfigFilename = configFilename; }
     // Sets EEPROM system data address as used in init and save by EEPROM.
     inline void setSystemDataAddress(uint16_t sysDataAddress) { _sysDataAddress = sysDataAddress; }
 #ifdef HYDRUINO_USE_WIFI
-    // Sets WiFi connection's SSID and password (note: password is stored encrypted, but is not hack-proof)
-    void setWiFiConnection(String ssid, String password);
+    // Sets WiFi connection's SSID/pass combo (note: password is stored encrypted, but is not hack-proof)
+    void setWiFiConnection(String ssid, String pass);
 #endif
 
     // Sets the RTC's time to the passed time, with respect to set timezone. Will trigger significant time event.
@@ -415,13 +425,15 @@ public:
     I2C_eeprom *getEEPROM(bool begin = true);
     // Real time clock instance (lazily instantiated, nullptr return -> failure/no device)
     RTC_DS3231 *getRealTimeClock(bool begin = true);
-    // SD card instance (if began user code *must* call endSDCard(inst) to free interface, lazily instantiated, nullptr return -> failure/no device)
+    // SD card instance (user code *must* call endSDCard(inst) to return interface, lazily instantiated, nullptr return -> failure/no device)
     SDClass *getSDCard(bool begin = true);
-    // Ends SD card transaction with proper regards to platform
-    void endSDCard(SDClass *sd);
+    // Ends SD card transaction with proper regards to platform once all instances returned (note: some instancing may be expected to never return)
+    void endSDCard(SDClass *sd = nullptr);
 #ifdef HYDRUINO_USE_WIFI
     // WiFi instance (nullptr return -> failure/no device, note: this method may block for up to a minute)
-    WiFiClass *getWiFi(bool begin = true);
+    inline WiFiClass *getWiFi(bool begin = true);
+    // WiFi instance with fallback ssid/pass combo (nullptr return -> failure/no device, note: this method may block for up to a minute)
+    WiFiClass *getWiFi(String ssid, String pass, bool begin = true);
 #endif
     // OneWire instance for given pin (lazily instantiated)
     OneWire *getOneWireForPin(pintype_t pin);
@@ -452,8 +464,10 @@ public:
     bool isPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
     // Returns if system autosaves are enabled or not
     bool isAutosaveEnabled() const;
+    // Returns if system fallback autosaves are enabled or not
+    bool isAutosaveFallbackEnabled() const;
     // System config file used in init and save by SD Card
-    inline String getSystemConfigFile() const { return _sysConfigFile; }
+    inline String getSystemConfigFile() const { return _sysConfigFilename; }
     // System data address used in init and save by EEPROM
     inline uint16_t getSystemDataAddress() const { return _sysDataAddress; }
 #ifdef HYDRUINO_USE_WIFI
@@ -473,6 +487,9 @@ public:
 
 protected:
     static Hydroponics *_activeInstance;                            // Current active instance (set after init, weak)
+#ifndef HYDRUINO_DISABLE_GUI
+    HydroponicsUIInterface *_activeUIInstance;                      // Current active UI instance (owned)
+#endif
     HydroponicsSystemData *_systemData;                             // System data (owned, saved to storage)
 
     const pintype_t _piezoBuzzerPin;                                // Piezo buzzer pin (default: Disabled)
@@ -493,6 +510,7 @@ protected:
     I2C_eeprom *_eeprom;                                            // EEPROM instance (owned, lazy)
     RTC_DS3231 *_rtc;                                               // Real time clock instance (owned, lazy)
     SDClass *_sd;                                                   // SD card instance (owned/unowned, lazy)
+    int8_t _sdOut;                                                  // Number of SD card instances out
 #if defined(HYDRUINO_ENABLE_SD_VIRTMEM)
     SDVAlloc _vAlloc;                                               // SD card virtual memory allocator
 #elif defined(HYDRUINO_ENABLE_SPIRAM_VIRTMEM)
@@ -501,6 +519,7 @@ protected:
     bool _eepromBegan;                                              // Status of EEPROM begin() call
     bool _rtcBegan;                                                 // Status of RTC begin() call
     bool _rtcBattFail;                                              // Status of RTC battery failure flag
+    bool _sdBegan;                                                  // Status of SD begin() call
 #ifdef HYDRUINO_USE_WIFI
     bool _wifiBegan;                                                // Status of WiFi begin() call
 #endif
@@ -514,7 +533,7 @@ protected:
     uint16_t _pollingFrame;                                         // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                         // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                           // Last date autosave was performed, if able (UTC)
-    String _sysConfigFile;                                          // SD Card system config filename used in serialization (default: "hydruino.cfg")
+    String _sysConfigFilename;                                      // System config filename used in serialization (default: "hydruino.cfg")
     uint16_t _sysDataAddress;                                       // EEPROM system data address used in serialization (default: -1/disabled)
 
     Map<Hydroponics_KeyType, SharedPtr<HydroponicsObject>, HYDRUINO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroponicsIdentity
@@ -527,6 +546,9 @@ protected:
     friend HydroponicsPublisher *::getPublisherInstance();
 #ifdef HYDRUINO_USE_VIRTMEM
     friend BaseVAlloc *::getVirtualAllocator();
+#endif
+#ifndef HYDRUINO_DISABLE_GUI
+    friend HydroponicsUIInterface *::getUIInstance();
 #endif
     friend class HydroponicsCalibrationsStore;
     friend class HydroponicsCropsLibrary;

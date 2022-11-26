@@ -22,6 +22,24 @@ void beginStringsFromSDCard(String dataFilePrefix)
     _strDataFilePrefix = dataFilePrefix;
 }
 
+static inline String getStringsFilename()
+{
+    String filename; filename.reserve(_strDataFilePrefix.length() + 12);
+    filename.concat(_strDataFilePrefix);
+    filename.concat('s'); // Cannot use SFP here so have to do it the long way
+    filename.concat('t');
+    filename.concat('r');
+    filename.concat('i');
+    filename.concat('n');
+    filename.concat('g');
+    filename.concat('s');
+    filename.concat('.');
+    filename.concat('d');
+    filename.concat('a');
+    filename.concat('t');
+    return filename;
+}
+
 String stringFromPGM(Hydroponics_String strNum)
 {    
     static Hydroponics_String _lookupStrNum = Hydroponics_Strings_Count; // Simple LRU cache reduces a lot of lookup access
@@ -44,8 +62,8 @@ String stringFromPGM(Hydroponics_String strNum)
 
                 while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
                     lookupOffset += HYDRUINO_STRING_BUFFER_SIZE;
-                    eeprom->readBlock(lookupOffset, (uint8_t *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
-                    if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
+                    bytesRead = eeprom->readBlock(lookupOffset, (uint8_t *)&buffer[0], HYDRUINO_STRING_BUFFER_SIZE);
+                    if (bytesRead) { retVal.concat(charsToString(buffer, bytesRead)); }
                 }
 
                 if (retVal.length()) {
@@ -60,25 +78,18 @@ String stringFromPGM(Hydroponics_String strNum)
     #endif
 
     if (_strDataFilePrefix.length()) {
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            static
+        #endif
         auto sd = getHydroponicsInstance()->getSDCard();
 
         if (sd) {
             String retVal;
-            String filename; filename.reserve(_strDataFilePrefix.length() + 12);
-            filename = _strDataFilePrefix;
-            filename.concat('s'); // Cannot use SFP here so have to do it the long way
-            filename.concat('t');
-            filename.concat('r');
-            filename.concat('i');
-            filename.concat('n');
-            filename.concat('g');
-            filename.concat('s');
-            filename.concat('.');
-            filename.concat('d');
-            filename.concat('a');
-            filename.concat('t');
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                static
+            #endif
+            auto file = sd->open(getStringsFilename().c_str(), FILE_READ);
 
-            auto file = sd->open(filename.c_str(), FILE_READ);
             if (file) {
                 uint16_t lookupOffset = 0;
                 file.seek(sizeof(uint16_t) * (int)strNum);
@@ -88,21 +99,25 @@ String stringFromPGM(Hydroponics_String strNum)
                     file.readBytes((uint8_t *)&lookupOffset, sizeof(lookupOffset));
                 #endif
 
-                {   char buffer[HYDRUINO_STRING_BUFFER_SIZE] = {0};
+                {   char buffer[HYDRUINO_STRING_BUFFER_SIZE];
                     file.seek(lookupOffset);
-                    file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                    retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE));
+                    auto bytesRead = file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                    retVal.concat(charsToString(buffer, bytesRead));
 
                     while (strnlen(buffer, HYDRUINO_STRING_BUFFER_SIZE) == HYDRUINO_STRING_BUFFER_SIZE) {
-                        file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
-                        if (buffer[0]) { retVal.concat(charsToString(buffer, HYDRUINO_STRING_BUFFER_SIZE)); }
+                        bytesRead = file.readBytesUntil('\0', buffer, HYDRUINO_STRING_BUFFER_SIZE);
+                        if (bytesRead) { retVal.concat(charsToString(buffer, bytesRead)); }
                     }
                 }
 
-                file.close();
+                #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                    file.close();
+                #endif
             }
 
-            getHydroponicsInstance()->endSDCard(sd);
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                getHydroponicsInstance()->endSDCard(sd);
+            #endif
             if (retVal.length()) {
                 return (_lookupCachedRes = retVal);
             }
@@ -177,9 +192,9 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Default_SystemName[] PROGMEM = {"Hydruino"};
             return flashStr_Default_SystemName;
         } break;
-        case HStr_Default_ConfigFile: {
-            static const char flashStr_Default_ConfigFile[] PROGMEM = {"hydruino.cfg"};
-            return flashStr_Default_ConfigFile;
+        case HStr_Default_ConfigFilename: {
+            static const char flashStr_Default_ConfigFilename[] PROGMEM = {"hydruino.cfg"};
+            return flashStr_Default_ConfigFilename;
         } break;
 
         case HStr_Err_AllocationFailure: {
@@ -426,6 +441,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Key_AutosaveInterval[] PROGMEM = {"autosaveInterval"};
             return flashStr_Key_AutosaveInterval;
         } break;
+        case HStr_Key_AutosaveFallback: {
+            static const char flashStr_Key_AutosaveFallback[] PROGMEM = {"autosaveFallback"};
+            return flashStr_Key_AutosaveFallback;
+        } break;
         case HStr_Key_BaseFeedMultiplier: {
             static const char flashStr_Key_BaseFeedMultiplier[] PROGMEM = {"baseFeedMultiplier"};
             return flashStr_Key_BaseFeedMultiplier;
@@ -574,6 +593,10 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             static const char flashStr_Key_LogToSDCard[] PROGMEM = {"logToSDCard"};
             return flashStr_Key_LogToSDCard;
         } break;
+        case HStr_Key_LogToWiFiStorage: {
+            static const char flashStr_Key_LogToWiFiStorage[] PROGMEM = {"logToWiFiStorage"};
+            return flashStr_Key_LogToWiFiStorage;
+        } break;
         case HStr_Key_Logger: {
             static const char flashStr_Key_Logger[] PROGMEM = {"logger"};
             return flashStr_Key_Logger;
@@ -679,8 +702,12 @@ const char *pgmAddrForStr(Hydroponics_String strNum)
             return flashStr_Key_Pruning;
         } break;
         case HStr_Key_PublishToSDCard: {
-            static const char flashStr_Key_PublishToSDCard[] PROGMEM = {"publishToSDCard"};
+            static const char flashStr_Key_PublishToSDCard[] PROGMEM = {"pubToSDCard"};
             return flashStr_Key_PublishToSDCard;
+        } break;
+        case HStr_Key_PublishToWiFiStorage: {
+            static const char flashStr_Key_PublishToWiFiStorage[] PROGMEM = {"pubToWiFiStorage"};
+            return flashStr_Key_PublishToWiFiStorage;
         } break;
         case HStr_Key_Publisher: {
             static const char flashStr_Key_Publisher[] PROGMEM = {"publisher"};

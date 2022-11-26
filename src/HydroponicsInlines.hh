@@ -11,6 +11,8 @@
 static inline bool isValidPin(pintype_t pin) { return pin != (pintype_t)-1; }
 // Checks if measurement row is valid or not.
 static inline bool isValidRow(uint8_t row) { return row != (uint8_t)-1; }
+// Checks if taskId is valid or not.
+static inline bool isValidTask(unsigned int taskId) { return taskId != 0xffffU; }
 
 // Checks if two single-precision floating point values are equal with respect to defined error epsilon.
 static inline bool isFPEqual(float lhs, float rhs) { return fabsf(rhs - lhs) <= FLT_EPSILON; }

@@ -6,12 +6,33 @@
 #include "Hydroponics.h"
 
 HydroponicsPublisher::HydroponicsPublisher()
-    : _dataFileName(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnCount(0)
+    : _dataFilename(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnCount(0)
+#if HYDRUINO_SYS_LEAVE_FILES_OPEN
+      , _dataFileSD(nullptr)
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+      , _dataFileWS(nullptr)
+#endif
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+    , _mqttClient(nullptr)
+#endif
 { ; }
 
 HydroponicsPublisher::~HydroponicsPublisher()
 {
     if (_dataColumns) { delete [] _dataColumns; _dataColumns = nullptr; }
+    #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+        if (_dataFileSD) { _dataFileSD->flush(); _dataFileSD->close(); delete _dataFileSD; _dataFileSD = nullptr; }
+        #ifdef HYDRUINO_USE_WIFI_STORAGE
+            if (_dataFileWS) { _dataFileWS->close(); delete _dataFileWS; _dataFileWS = nullptr; }
+        #endif
+    #endif
+    #ifdef HYDRUINO_ENABLE_MQTT
+        if (_mqttClient) {
+            if (_mqttClient->connected()) { _mqttClient->disconnect(); }
+            delete _mqttClient; _mqttClient = nullptr;
+        }
+    #endif
 }
 
 void HydroponicsPublisher::update()
@@ -27,33 +48,106 @@ bool HydroponicsPublisher::beginPublishingToSDCard(String dataFilePrefix)
 {
     HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
 
-    if (hasPublisherData()) {
+    if (hasPublisherData() && !publisherData()->pubToSDCard) {
         auto sd = Hydroponics::_activeInstance->getSDCard();
 
         if (sd) {
-            String dataFileName = getYYMMDDFilename(dataFilePrefix, SFP(HStr_csv));
-            createDirectoryFor(sd, dataFileName);
-            auto dataFile = sd->open(dataFileName.c_str(), FILE_WRITE);
+            String dataFilename = getYYMMDDFilename(dataFilePrefix, SFP(HStr_csv));
+            createDirectoryFor(sd, dataFilename);
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new File(sd->open(dataFilename.c_str(), FILE_WRITE)));
+            #else
+                auto dataFile = sd->open(dataFilename.c_str(), FILE_WRITE);
+            #endif
 
             if (dataFile) {
-                dataFile.close();
-                Hydroponics::_activeInstance->endSDCard(sd);
+                #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                    dataFile.close();
+                    Hydroponics::_activeInstance->endSDCard(sd);
+                #endif
 
                 Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
                 strncpy(publisherData()->dataFilePrefix, dataFilePrefix.c_str(), 16);
-                publisherData()->publishToSDCard = true;
-                _dataFileName = dataFileName;
+                publisherData()->pubToSDCard = true;
+                _dataFilename = dataFilename;
 
                 setNeedsTabulation();
 
                 return true;
             }
 
-            Hydroponics::_activeInstance->endSDCard(sd);
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                Hydroponics::_activeInstance->endSDCard(sd);
+            #endif
         }
     }
+
     return false;
 }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+bool HydroponicsPublisher::beginPublishingToWiFiStorage(String dataFilePrefix)
+{
+    HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
+
+    if (hasPublisherData() && !publisherData()->pubToWiFiStorage) {
+        String dataFilename = getYYMMDDFilename(dataFilePrefix, SFP(HStr_csv));
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            auto &dataFile = _dataFileWS ? *_dataFileWS : *(_dataFileWS = new WiFiStorageFile(WiFiStorage.open(dataFilename.c_str())));
+        #else
+            auto dataFile = WiFiStorage.open(dataFilename.c_str());
+        #endif
+
+        if (dataFile) {
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                dataFile.close();
+            #endif
+
+            Hydroponics::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+            strncpy(publisherData()->dataFilePrefix, dataFilePrefix.c_str(), 16);
+            publisherData()->pubToWiFiStorage = true;
+            _dataFilename = dataFilename;
+
+            setNeedsTabulation();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+
+static uint32_t mqttNow()
+{
+    return unixNow();
+}
+
+bool HydroponicsPublisher::beginPublishingToMQTTClient(MQTTClient &client)
+{
+    HYDRUINO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
+
+    if (hasPublisherData() && !_mqttClient) {
+        _mqttClient = &client;
+        _mqttClient->setClockSource(&mqttNow);
+        if (!_mqttClient->connected()) {
+            String unPw = String(F("public"));
+            _mqttClient->connect(Hydroponics::_activeInstance->getSystemName().c_str(),
+                                 unPw.c_str(), unPw.c_str());
+        }
+
+        setNeedsTabulation();
+
+        return true;
+    }
+
+    return false;
+}
+
+#endif
 
 void HydroponicsPublisher::publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement)
 {
@@ -77,10 +171,15 @@ Hydroponics_PositionIndex HydroponicsPublisher::getColumnIndexStart(Hydroponics_
     return (Hydroponics_PositionIndex)-1;
 }
 
+Signal<Pair<uint8_t, const HydroponicsDataColumn *>, HYDRUINO_PUBLISH_STATE_SLOTS> &HydroponicsPublisher::getPublishSignal()
+{
+    return _publishSignal;
+}
+
 void HydroponicsPublisher::notifyDayChanged()
 {
     if (isPublishingEnabled()) {
-        _dataFileName = getYYMMDDFilename(charsToString(publisherData()->dataFilePrefix, 16), SFP(HStr_csv));
+        _dataFilename = getYYMMDDFilename(charsToString(publisherData()->dataFilePrefix, 16), SFP(HStr_csv));
         cleanupOldestData();
     }
 }
@@ -139,11 +238,15 @@ void HydroponicsPublisher::checkCanPublish()
 void HydroponicsPublisher::publish(time_t timestamp)
 {
     if (isPublishingToSDCard()) {
-        auto sd = Hydroponics::_activeInstance->getSDCard();
+        auto sd = Hydroponics::_activeInstance->getSDCard(HYDRUINO_LOFS_BEGIN);
 
         if (sd) {
-            createDirectoryFor(sd, _dataFileName);
-            auto dataFile = sd->open(_dataFileName.c_str(), FILE_WRITE);
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new File(sd->open(_dataFilename.c_str(), FILE_WRITE)));
+            #else
+                createDirectoryFor(sd, _dataFilename);
+                auto dataFile = sd->open(_dataFilename.c_str(), FILE_WRITE);
+            #endif
 
             if (dataFile) {
                 dataFile.print(timestamp);
@@ -154,12 +257,69 @@ void HydroponicsPublisher::publish(time_t timestamp)
                 }
 
                 dataFile.println();
-                dataFile.close();
+
+                #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                    dataFile.flush();
+                    dataFile.close();
+                #endif
             }
 
-            Hydroponics::_activeInstance->endSDCard(sd);
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                Hydroponics::_activeInstance->endSDCard(sd);
+            #endif
         }
     }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+    if (isPublishingToWiFiStorage()) {
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            auto &dataFile = _dataFileWS ? *_dataFileWS : *(_dataFileWS = new WiFiStorageFile(WiFiStorage.open(_dataFilename.c_str())));
+        #else
+            auto dataFile = WiFiStorage.open(_dataFilename.c_str());
+        #endif
+
+        if (dataFile) {
+            auto dataFileStream = HydroponicsWiFiStorageFileStream(dataFile, dataFile.size());
+            dataFileStream.print(timestamp);
+
+            for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+                dataFileStream.print(',');
+                dataFileStream.print(_dataColumns[columnIndex].measurement.value);
+            }
+
+            dataFileStream.println();
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                dataFile.close();
+            #endif
+        }
+    }
+
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+
+    if (isPublishingToMQTTClient()) {
+        String systemName = Hydroponics::_activeInstance->getSystemName();
+        for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+            auto sensor = (HydroponicsSensor *)(Hydroponics::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
+            if (sensor) {
+                String topic; topic.reserve(systemName.length() + 1 + sensor->getKeyString().length() + 1);
+                topic.concat(systemName);
+                topic.concat('/');
+                topic.concat(sensor->getKeyString());
+                String payload = String(_dataColumns[columnIndex].measurement.value, 6); // skipping units/rounding/etc to allow MQTT broker full value data
+                _mqttClient->publish(topic.c_str(), payload.c_str());
+            }
+        }
+    }
+
+#endif
+
+    #ifndef HYDRUINO_DISABLE_MULTITASKING
+        scheduleSignalFireOnce<Pair<uint8_t, const HydroponicsDataColumn *>>(_publishSignal, make_pair(_columnCount, &_dataColumns[0]));
+    #else
+        _publishSignal.fire(make_pair(_columnCount, &_dataColumns[0]));
+    #endif
 }
 
 void HydroponicsPublisher::performTabulation()
@@ -171,7 +331,7 @@ void HydroponicsPublisher::performTabulation()
 
     for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
         if (iter->second->isSensorType()) {
-            auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
+            auto sensor = hy_static_ptr_cast<HydroponicsSensor>(iter->second);
             auto rowCount = getMeasurementRowCount(sensor->getLatestMeasurement());
 
             for (int rowIndex = 0; sameOrder && rowIndex < rowCount; ++rowIndex) {
@@ -198,7 +358,7 @@ void HydroponicsPublisher::performTabulation()
 
                 for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
                     if (iter->second->isSensorType()) {
-                        auto sensor = static_hyptr_cast<HydroponicsSensor>(iter->second);
+                        auto sensor = hy_static_ptr_cast<HydroponicsSensor>(iter->second);
                         auto measurement = sensor->getLatestMeasurement();
                         auto rowCount = getMeasurementRowCount(measurement);
 
@@ -222,14 +382,21 @@ void HydroponicsPublisher::performTabulation()
 void HydroponicsPublisher::resetDataFile()
 {
     if (isPublishingToSDCard()) {
-        auto sd = Hydroponics::_activeInstance->getSDCard();
+        auto sd = Hydroponics::_activeInstance->getSDCard(HYDRUINO_LOFS_BEGIN);
 
         if (sd) {
-            if (sd->exists(_dataFileName.c_str())) {
-                sd->remove(_dataFileName.c_str());
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                if (_dataFileSD) { _dataFileSD->flush(); _dataFileSD->close(); delete _dataFileSD; _dataFileSD = nullptr; }
+            #endif
+            if (sd->exists(_dataFilename.c_str())) {
+                sd->remove(_dataFilename.c_str());
             }
-            createDirectoryFor(sd, _dataFileName);
-            auto dataFile = sd->open(_dataFileName.c_str(), FILE_WRITE);
+            #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+                auto &dataFile = _dataFileSD ? *_dataFileSD : *(_dataFileSD = new File(sd->open(_dataFilename.c_str(), FILE_WRITE)));
+            #else
+                createDirectoryFor(sd, _dataFilename);
+                auto dataFile = sd->open(_dataFilename.c_str(), FILE_WRITE);
+            #endif
 
             if (dataFile) {
                 HydroponicsSensor *lastSensor = nullptr;
@@ -256,12 +423,66 @@ void HydroponicsPublisher::resetDataFile()
                     }
                 }
 
-                dataFile.close();
+                dataFile.println();
+
+                #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                    dataFile.flush();
+                    dataFile.close();
+                #endif
             }
 
-            Hydroponics::_activeInstance->endSDCard(sd);
+            #if !HYDRUINO_SYS_LEAVE_FILES_OPEN
+                Hydroponics::_activeInstance->endSDCard(sd);
+            #endif
         }
     }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+    if (isPublishingToWiFiStorage()) {
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            if (_dataFileWS) { _dataFileWS->close(); delete _dataFileWS; _dataFileWS = nullptr; }
+        #endif
+        if (WiFiStorage.exists(_dataFilename.c_str())) {
+            WiFiStorage.remove(_dataFilename.c_str());
+        }
+        #if HYDRUINO_SYS_LEAVE_FILES_OPEN
+            auto &dataFile = _dataFileWS ? *_dataFileWS : *(_dataFileWS = new WiFiStorageFile(WiFiStorage.open(_dataFilename.c_str())));
+        #else
+            auto dataFile = WiFiStorage.open(_dataFilename.c_str());
+        #endif
+
+        if (dataFile) {
+            auto dataFileStream = HydroponicsWiFiStorageFileStream(dataFile);
+            HydroponicsSensor *lastSensor = nullptr;
+            uint8_t measurementRow = 0;
+
+            dataFileStream.print(SFP(HStr_Key_Timestamp));
+
+            for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+                dataFileStream.print(',');
+
+                auto sensor = (HydroponicsSensor *)(Hydroponics::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
+                if (sensor && sensor == lastSensor) { ++measurementRow; }
+                else { measurementRow = 0; lastSensor = sensor; }
+
+                if (sensor) {
+                    dataFileStream.print(sensor->getKeyString());
+                    dataFileStream.print('_');
+                    dataFileStream.print(unitsCategoryToString(defaultMeasureCategoryForSensorType(sensor->getSensorType(), measurementRow)));
+                    dataFileStream.print('_');
+                    dataFileStream.print(unitsTypeToSymbol(getMeasurementUnits(sensor->getLatestMeasurement(), measurementRow)));
+                } else {
+                    HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
+                    dataFileStream.print(SFP(HStr_Undefined));
+                }
+            }
+
+            dataFileStream.println();
+        }
+    }
+
+#endif
 }
 
 void HydroponicsPublisher::cleanupOldestData(bool force)
@@ -271,7 +492,7 @@ void HydroponicsPublisher::cleanupOldestData(bool force)
 
 
 HydroponicsPublisherSubData::HydroponicsPublisherSubData()
-    : HydroponicsSubData(), dataFilePrefix{0}, publishToSDCard(false)
+    : HydroponicsSubData(), dataFilePrefix{0}, pubToSDCard(false), pubToWiFiStorage(false)
 {
     type = 0; // no type differentiation
 }
@@ -281,7 +502,8 @@ void HydroponicsPublisherSubData::toJSONObject(JsonObject &objectOut) const
     //HydroponicsSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
     if (dataFilePrefix[0]) { objectOut[SFP(HStr_Key_DataFilePrefix)] = charsToString(dataFilePrefix, 16); }
-    if (publishToSDCard != false) { objectOut[SFP(HStr_Key_PublishToSDCard)] = publishToSDCard; }
+    if (pubToSDCard != false) { objectOut[SFP(HStr_Key_PublishToSDCard)] = pubToSDCard; }
+    if (pubToWiFiStorage != false) { objectOut[SFP(HStr_Key_PublishToWiFiStorage)] = pubToWiFiStorage; }
 }
 
 void HydroponicsPublisherSubData::fromJSONObject(JsonObjectConst &objectIn)
@@ -290,5 +512,6 @@ void HydroponicsPublisherSubData::fromJSONObject(JsonObjectConst &objectIn)
 
     const char *dataFilePrefixStr = objectIn[SFP(HStr_Key_DataFilePrefix)];
     if (dataFilePrefixStr && dataFilePrefixStr[0]) { strncpy(dataFilePrefix, dataFilePrefixStr, 16); }
-    publishToSDCard = objectIn[SFP(HStr_Key_PublishToSDCard)] | publishToSDCard;
+    pubToSDCard = objectIn[SFP(HStr_Key_PublishToSDCard)] | pubToSDCard;
+    pubToWiFiStorage = objectIn[SFP(HStr_Key_PublishToWiFiStorage)] | pubToWiFiStorage;
 }

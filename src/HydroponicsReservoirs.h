@@ -55,8 +55,8 @@ public:
     inline Hydroponics_ReservoirType getReservoirType() const { return _id.objTypeAs.reservoirType; }
     inline Hydroponics_PositionIndex getReservoirIndex() const { return _id.posIndex; }
 
-    Signal<HydroponicsReservoir *> &getFilledSignal();
-    Signal<HydroponicsReservoir *> &getEmptySignal();
+    Signal<HydroponicsReservoir *, HYDRUINO_RESERVOIR_STATE_SLOTS> &getFilledSignal();
+    Signal<HydroponicsReservoir *, HYDRUINO_RESERVOIR_STATE_SLOTS> &getEmptySignal();
 
 protected:
     Hydroponics_UnitsType _volumeUnits;                     // Volume units preferred
@@ -64,8 +64,8 @@ protected:
     Hydroponics_TriggerState _filledState;                  // Current filled state
     Hydroponics_TriggerState _emptyState;                   // Current empty state
 
-    Signal<HydroponicsReservoir *> _filledSignal;           // Filled state signal
-    Signal<HydroponicsReservoir *> _emptySignal;            // Empty state signal
+    Signal<HydroponicsReservoir *, HYDRUINO_RESERVOIR_STATE_SLOTS> _filledSignal; // Filled state signal
+    Signal<HydroponicsReservoir *, HYDRUINO_RESERVOIR_STATE_SLOTS> _emptySignal; // Empty state signal
 
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;

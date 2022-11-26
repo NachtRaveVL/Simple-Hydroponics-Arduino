@@ -5,6 +5,21 @@
 
 #include "Hydroponics.h"
 
+inline void Hydroponics::returnPinLock(pintype_t pin)
+{
+    _pinLocks.erase(pin);
+}
+
+#ifdef HYDRUINO_USE_WIFI
+
+inline WiFiClass *Hydroponics::getWiFi(bool begin)
+{
+    return getWiFi(getWiFiSSID(), getWiFiPassword(), begin);
+}
+
+#endif
+
+
 inline HydroponicsLoggerSubData *HydroponicsLogger::loggerData() const
 {
     return &Hydroponics::_activeInstance->_systemData->logger;
@@ -19,6 +34,15 @@ inline bool HydroponicsLogger::isLoggingToSDCard() const
 {
     return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logToSDCard;
 }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+inline bool HydroponicsLogger::isLoggingToWiFiStorage() const
+{
+    return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && loggerData()->logToWiFiStorage;
+}
+
+#endif
 
 inline void HydroponicsLogger::logActivation(const HydroponicsActuator *actuator)
 {
@@ -47,7 +71,7 @@ inline Hydroponics_LogLevel HydroponicsLogger::getLogLevel() const
 
 inline bool HydroponicsLogger::isLoggingEnabled() const
 {
-    return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && (loggerData()->logToSDCard);
+    return hasLoggerData() && loggerData()->logLevel != Hydroponics_LogLevel_None && (loggerData()->logToSDCard || loggerData()->logToWiFiStorage);
 }
 
 
@@ -63,12 +87,33 @@ inline bool HydroponicsPublisher::hasPublisherData() const
 
 inline bool HydroponicsPublisher::isPublishingToSDCard() const
 {
-    return hasPublisherData() && publisherData()->publishToSDCard;
+    return hasPublisherData() && publisherData()->pubToSDCard;
 }
+
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+
+inline bool HydroponicsPublisher::isPublishingToWiFiStorage() const
+{
+    return hasPublisherData() && publisherData()->pubToWiFiStorage;
+}
+
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+
+inline bool HydroponicsPublisher::isPublishingToMQTTClient() const
+{
+    return hasPublisherData() && _mqttClient;
+}
+
+#endif
 
 inline bool HydroponicsPublisher::isPublishingEnabled() const
 {
-    return hasPublisherData() && (publisherData()->publishToSDCard);
+    return hasPublisherData() && (publisherData()->pubToSDCard || publisherData()->pubToWiFiStorage
+        #ifdef HYDRUINO_ENABLE_MQTT
+            || _mqttClient
+        #endif
+        );
 }
 
 inline void HydroponicsPublisher::setNeedsTabulation()

@@ -51,14 +51,14 @@ public:
     inline Hydroponics_PositionIndex getRailIndex() const { return _id.posIndex; }
     virtual float getRailVoltage() const override;
 
-    Signal<HydroponicsRail *> &getCapacitySignal();
+    Signal<HydroponicsRail *, HYDRUINO_CAPACITY_STATE_SLOTS> &getCapacitySignal();
 
 protected:
     Hydroponics_UnitsType _powerUnits;                      // Power units preferred
 
     Hydroponics_TriggerState _limitState;                   // Current limit state
 
-    Signal<HydroponicsRail *> _capacitySignal;              // Capacity changed signal
+    Signal<HydroponicsRail *, HYDRUINO_CAPACITY_STATE_SLOTS> _capacitySignal; // Capacity changed signal
 
     virtual HydroponicsData *allocateData() const override;
     virtual void saveToData(HydroponicsData *dataOut) override;

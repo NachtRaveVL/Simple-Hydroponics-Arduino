@@ -1,7 +1,7 @@
 # Hydruino
 Hydruino: Simple Hydroponics Automation Controller.
 
-**Simple-Hydroponics-Arduino v0.4**
+**Simple-Hydroponics-Arduino v0.5**
 
 Simple automation controller for hydroponic grow systems using an Arduino board.  
 Licensed under the non-restrictive MIT license.
@@ -10,11 +10,11 @@ Created by NachtRaveVL, May 20th, 2022.
 
 **UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to local or remote data files, and can be extended to work with other JSON-based Web APIs or WiFiServer-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
+This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to data files, and can be extended to work with other JSON-based Web APIs or Client-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFiNINA (33IoT/MKR1010/MKR4000), WiFi101 (MKR1000), WiFi (platform), or WiFiEspAT (ext serial).
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFi101 (MKR1000), WiFiNINA_Generic, or WiFiEspAT (external serial AT).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -130,10 +130,17 @@ From Hydroponics.h, in class Hydroponics:
               Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
               Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
 
-    // Initializes system from EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Initializes system from EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool initFromEEPROM(bool jsonFormat = false);
-    // Initializes system from SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Initializes system from SD card file save, returning success flag
+    // Set config file name with setSystemConfigFilename
     bool initFromSDCard(bool jsonFormat = true);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Initializes system from a WiFiStorage file save, returning success flag
+    // Set config file name with setSystemConfigFilename
+    bool initFromWiFiStorage(bool jsonFormat = true);
+#endif
     // Initializes system from custom JSON-based stream, returning success flag
     bool initFromJSONStream(Stream *streamIn);
     // Initializes system from custom binary stream, returning success flag
@@ -144,10 +151,17 @@ The controller can also be initialized from a saved configuration, such as from 
 
 From Hydroponics.h, in class Hydroponics:
 ```Arduino
-    // Saves current system setup to EEPROM save, returning success flag (set system data address with setSystemEEPROMAddress)
+    // Saves current system setup to EEPROM save, returning success flag
+    // Set system data address with setSystemEEPROMAddress
     bool saveToEEPROM(bool jsonFormat = false);
-    // Saves current system setup to SD card file save, returning success flag (set config file name with setSystemConfigFile)
+    // Saves current system setup to SD card file save, returning success flag
+    // Set config file name with setSystemConfigFilename
     bool saveToSDCard(bool jsonFormat = true);
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    // Saves current system setup to WiFiStorage file save, returning success flag
+    // Set config file name with setSystemConfigFilename
+    bool saveToWiFiStorage(bool jsonFormat = true);
+#endif
     // Saves current system setup to custom JSON-based stream, returning success flag
     bool saveToJSONStream(Stream *streamOut, bool compact = true);
     // Saves current system setup to custom binary stream, returning success flag
@@ -344,31 +358,33 @@ Included below is the default system setup defines of the Vertical NFT example t
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
 
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
+#define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
+#define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
+
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
 #define SETUP_LCD_OUT_MODE              Disabled        // System LCD output mode (Disabled, 20x4LCD, 20x4LCD_Swapped, 16x2LCD, 16x2LCD_Swapped)
 #define SETUP_CTRL_IN_MODE              Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
-#define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Minimal, Full)
+#define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
-// System Saves Settings                                (note: only one save mechanism may be enabled at a time)
-#define SETUP_SYS_AUTOSAVE_ENABLE       false           // If autosaving system out is enabled or not
-#define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
-#define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
-#define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled 
-
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
-#define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
-#define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
+// System Saves Settings                                (note: only one primary and one fallback mechanism may be enabled at a time)
+#define SETUP_SAVES_CONFIG_FILE         "hydruino.cfg"  // System config file name for system saves
+#define SETUP_SAVES_SD_CARD_MODE        Disabled        // If saving/loading from SD card is enable (Primary, Fallback, Disabled)
+#define SETUP_SAVES_EEPROM_MODE         Disabled        // If saving/loading from EEPROM is enabled (Primary, Fallback, Disabled)
+#define SETUP_SAVES_WIFISTORAGE_MODE    Disabled        // If saving/loading from WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only) is enabled (Primary, Fallback, Disabled)
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
+#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
+#define SETUP_DATA_WIFISTORAGE_ENABLE   false           // If system data publishing is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
+#define SETUP_LOG_WIFISTORAGE_ENABLE    false           // If system logging is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
 
 // External Data Settings
 #define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)

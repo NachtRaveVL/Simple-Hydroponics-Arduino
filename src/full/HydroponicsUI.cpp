@@ -3,15 +3,11 @@
     Hydroponics Full UI
 */
 
-class HydroponicsFullUI;
-
 #include "Hydroponics.h"
+#include "HydroponicsUI.h"
 
-class HydroponicsFullUI : HydroponicsUIInterface {
-public:
-    virtual void begin() override;
+void HydroponicsFullUI::begin()
+{ }
 
-    virtual void setNeedsLayout() override;
-
-protected:
-};
+void HydroponicsFullUI::setNeedsLayout()
+{ }

@@ -104,7 +104,8 @@ HydroponicsSystemData::HydroponicsSystemData()
     : HydroponicsData('H','S','Y','S', 1),
       systemMode(Hydroponics_SystemMode_Undefined), measureMode(Hydroponics_MeasurementMode_Undefined),
       dispOutMode(Hydroponics_DisplayOutputMode_Undefined), ctrlInMode(Hydroponics_ControlInputMode_Undefined),
-      systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL), autosaveEnabled(Hydroponics_Autosave_Disabled), autosaveInterval(HYDRUINO_SYS_AUTOSAVE_INTERVAL),
+      systemName{0}, timeZoneOffset(0), pollingInterval(HYDRUINO_DATA_LOOP_INTERVAL),
+      autosaveEnabled(Hydroponics_Autosave_Disabled), autosaveFallback(Hydroponics_Autosave_Disabled), autosaveInterval(HYDRUINO_SYS_AUTOSAVE_INTERVAL),
       wifiSSID{0}, wifiPassword{0}, wifiPasswordSeed(0)
 {
     _size = sizeof(*this);
@@ -129,6 +130,7 @@ void HydroponicsSystemData::toJSONObject(JsonObject &objectOut) const
     if (timeZoneOffset != 0) { objectOut[SFP(HStr_Key_TimeZoneOffset)] = timeZoneOffset; }
     if (pollingInterval && pollingInterval != HYDRUINO_DATA_LOOP_INTERVAL) { objectOut[SFP(HStr_Key_PollingInterval)] = pollingInterval; }
     if (autosaveEnabled != Hydroponics_Autosave_Disabled) { objectOut[SFP(HStr_Key_AutosaveEnabled)] = autosaveEnabled; }
+    if (autosaveFallback != Hydroponics_Autosave_Disabled) { objectOut[SFP(HStr_Key_AutosaveFallback)] = autosaveFallback; }
     if (autosaveInterval && autosaveInterval != HYDRUINO_SYS_AUTOSAVE_INTERVAL) { objectOut[SFP(HStr_Key_AutosaveInterval)] = autosaveInterval; }
     if (wifiSSID[0]) { objectOut[SFP(HStr_Key_WiFiSSID)] = charsToString(wifiSSID, HYDRUINO_NAME_MAXSIZE); }
     if (wifiPasswordSeed) {
@@ -164,6 +166,7 @@ void HydroponicsSystemData::fromJSONObject(JsonObjectConst &objectIn)
     timeZoneOffset = objectIn[SFP(HStr_Key_TimeZoneOffset)] | timeZoneOffset;
     pollingInterval = objectIn[SFP(HStr_Key_PollingInterval)] | pollingInterval;
     autosaveEnabled = objectIn[SFP(HStr_Key_AutosaveEnabled)] | autosaveEnabled;
+    autosaveFallback = objectIn[SFP(HStr_Key_AutosaveFallback)] | autosaveFallback;
     autosaveInterval = objectIn[SFP(HStr_Key_AutosaveInterval)] | autosaveInterval;
     const char *wifiSSIDStr = objectIn[SFP(HStr_Key_WiFiSSID)];
     if (wifiSSIDStr && wifiSSIDStr[0]) { strncpy(wifiSSID, wifiSSIDStr, HYDRUINO_NAME_MAXSIZE); }

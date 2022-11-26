@@ -20,7 +20,7 @@ enum Hydroponics_String : unsigned short {
     HStr_null,
 
     HStr_Default_SystemName,
-    HStr_Default_ConfigFile,
+    HStr_Default_ConfigFilename,
 
     HStr_Err_AllocationFailure,
     HStr_Err_AlreadyInitialized,
@@ -86,6 +86,7 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_AlwaysFilled,
     HStr_Key_AutosaveEnabled,
     HStr_Key_AutosaveInterval,
+    HStr_Key_AutosaveFallback,
     HStr_Key_BaseFeedMultiplier,
     HStr_Key_CO2Levels,
     HStr_Key_CO2Sensor,
@@ -123,6 +124,7 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_LogFilePrefix,
     HStr_Key_LogLevel,
     HStr_Key_LogToSDCard,
+    HStr_Key_LogToWiFiStorage,
     HStr_Key_Logger,
     HStr_Key_MaxActiveAtOnce,
     HStr_Key_MaxPower,
@@ -150,6 +152,7 @@ enum Hydroponics_String : unsigned short {
     HStr_Key_PreLightSprayMins,
     HStr_Key_Pruning,
     HStr_Key_PublishToSDCard,
+    HStr_Key_PublishToWiFiStorage,
     HStr_Key_Publisher,
     HStr_Key_PullupPin,
 #ifdef ESP_PLATFORM

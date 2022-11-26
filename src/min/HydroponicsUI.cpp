@@ -3,15 +3,11 @@
     Hydroponics Minimal UI
 */
 
-class HydroponicsMinUI;
-
 #include "Hydroponics.h"
+#include "HydroponicsUI.h"
 
-class HydroponicsMinUI : HydroponicsUIInterface {
-public:
-    virtual void begin() override;
+void HydroponicsMinUI::begin()
+{ }
 
-    virtual void setNeedsLayout() override;
-
-protected:
-};
+void HydroponicsMinUI::setNeedsLayout()
+{ }

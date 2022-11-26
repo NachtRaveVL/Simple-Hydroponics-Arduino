@@ -73,12 +73,12 @@ void HydroponicsReservoir::setVolumeUnits(Hydroponics_UnitsType volumeUnits)
     }
 }
 
-Signal<HydroponicsReservoir *> &HydroponicsReservoir::getFilledSignal()
+Signal<HydroponicsReservoir *, HYDRUINO_RESERVOIR_STATE_SLOTS> &HydroponicsReservoir::getFilledSignal()
 {
     return _filledSignal;
 }
 
-Signal<HydroponicsReservoir *> &HydroponicsReservoir::getEmptySignal()
+Signal<HydroponicsReservoir *, HYDRUINO_RESERVOIR_STATE_SLOTS> &HydroponicsReservoir::getEmptySignal()
 {
     return _emptySignal;
 }

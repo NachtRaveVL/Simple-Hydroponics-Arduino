@@ -110,15 +110,15 @@ public:
 
     inline bool getActiveLow() const { return _activeLow; }
 
-    Signal<bool> &getStateSignal();
+    Signal<bool, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> &getStateSignal();
 
-    void notifyISRTriggered();
+    inline void notifyISRTriggered() { takeMeasurement(true); }
 
 protected:
     bool _activeLow;                                        // Active when low flag
     bool _usingISR;                                         // Using ISR flag
     HydroponicsBinaryMeasurement _lastMeasurement;          // Latest successful measurement
-    Signal<bool> _stateSignal;                              // State changed signal
+    Signal<bool, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> _stateSignal; // State changed signal
 
     virtual void saveToData(HydroponicsData *dataOut) override;
 };

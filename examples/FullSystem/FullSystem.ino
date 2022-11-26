@@ -29,6 +29,10 @@
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
 
+// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
+#define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
+#define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
+
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
@@ -38,21 +42,19 @@
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
-// System Saves Settings                                (note: only one save mechanism may be enabled at a time)
-#define SETUP_SYS_AUTOSAVE_ENABLE       false           // If autosaving system out is enabled or not
-#define SETUP_SAVES_SD_CARD_ENABLE      false           // If saving/loading from SD card is enable
-#define SETUP_SD_CARD_CONFIG_FILE       "hydruino.cfg"  // System config file name for SD Card saves
-#define SETUP_SAVES_EEPROM_ENABLE       false           // If saving/loading from EEPROM is enabled
-
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
-#define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
-#define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi password
+// System Saves Settings                                (note: only one primary and one fallback mechanism may be enabled at a time)
+#define SETUP_SAVES_CONFIG_FILE         "hydruino.cfg"  // System config file name for system saves
+#define SETUP_SAVES_SD_CARD_MODE        Disabled        // If saving/loading from SD card is enable (Primary, Fallback, Disabled)
+#define SETUP_SAVES_EEPROM_MODE         Disabled        // If saving/loading from EEPROM is enabled (Primary, Fallback, Disabled)
+#define SETUP_SAVES_WIFISTORAGE_MODE    Disabled        // If saving/loading from WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only only) is enabled (Primary, Fallback, Disabled)
 
 // Logging & Data Publishing Settings
-#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
 #define SETUP_LOG_FILE_PREFIX           "logs/hy"       // System logs file prefix (appended with YYMMDD.txt)
-#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
 #define SETUP_DATA_FILE_PREFIX          "data/hy"       // System data publishing files prefix (appended with YYMMDD.csv)
+#define SETUP_DATA_SD_ENABLE            false           // If system data publishing is enabled to SD card
+#define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
+#define SETUP_DATA_WIFISTORAGE_ENABLE   false           // If system data publishing is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only only)
+#define SETUP_LOG_WIFISTORAGE_ENABLE    false           // If system logging is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only only)
 
 // External Data Settings
 #define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD Card (searched first for crops lib data)
@@ -68,6 +70,17 @@
 #if defined(HYDRUINO_ENABLE_ESP_WIFI) && !(defined(SERIAL_PORT_HARDWARE1) || defined(Serial1))
 #include "SoftwareSerial.h"
 SoftwareSerial Serial1(RX, TX);                         // Replace with Rx/Tx pins of your choice
+#endif
+
+// Pre-init checks
+#if (SETUP_SAVES_WIFISTORAGE_MODE != Disabled || SETUP_DATA_WIFISTORAGE_ENABLE || SETUP_LOG_WIFISTORAGE_ENABLE) && !defined(HYDRUINO_USE_WIFI_STORAGE)
+#warning The HYDRUINO_ENABLE_WIFI flag is expected to be defined as well as WiFiNINA_Generic.h included in order to run this sketch with WiFiStorage features enabled
+#endif
+#if (SETUP_SAVES_SD_CARD_MODE != Disabled || SETUP_DATA_SD_ENABLE || SETUP_LOG_SD_ENABLE || SETUP_EXTDATA_SD_ENABLE) && SETUP_SD_CARD_CS_PIN == -1
+#warning The SETUP_SD_CARD_CS_PIN define is expected to be set to a valid pin in order to run this sketch with SD card features enabled
+#endif
+#if (SETUP_SAVES_EEPROM_MODE != Disabled || SETUP_EXTDATA_EEPROM_ENABLE) && SETUP_EEPROM_DEVICE_SIZE == 0
+#warning The SETUP_EEPROM_DEVICE_SIZE define is expected to be set to a valid size in order to run this sketch with EEPROM features enabled
 #endif
 
 pintype_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -101,7 +114,7 @@ void setup() {
         String wifiPassword = F(SETUP_WIFI_PASS);
         #ifdef HYDRUINO_ENABLE_ESP_WIFI
             Serial1.begin(HYDRUINO_SYS_ESPWIFI_SERIALBAUD);
-            HYDRUINO_SYS_WIFI_INSTANCE.init(Serial1); // Change to Serial instance of your choice, otherwise
+            WiFi.init(Serial1); // Change to Serial instance of your choice, otherwise
         #endif
     #endif
 
@@ -116,22 +129,29 @@ void setup() {
     #endif
 
     // Sets system config name used in any of the following inits.
-    #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
-        hydroController.setSystemConfigFile(F(SETUP_SD_CARD_CONFIG_FILE));
+    #if (defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE != Disabled) || \
+        (SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE != Disabled)
+        hydroController.setSystemConfigFilename(F(SETUP_SAVES_CONFIG_FILE));
     #endif
     // Sets the EEPROM memory address for system data.
-    #if SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
+    #if SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE != Disabled
         hydroController.setSystemDataAddress(SETUP_EEPROM_SYSDATA_ADDR);
     #endif
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false
-        //#if defined(HYDRUINO_USE_WIFI) && SETUP_SAVES_NETURL_ENABLE
-            //|| hydroController.initFromURL(wifiSSID, wifiPassword, urlDataTODO)
-        //#endif
-        #if SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
+        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
+            || hydroController.initFromWiFiStorage()
+        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
             || hydroController.initFromSDCard()
-        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
+        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Primary
+            || hydroController.initFromEEPROM()
+        #endif
+        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
+            || hydroController.initFromWiFiStorage()
+        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
+            || hydroController.initFromSDCard()
+        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Fallback
             || hydroController.initFromEEPROM()
         #endif
         )) {
@@ -144,6 +164,9 @@ void setup() {
         // Set Settings
         hydroController.setSystemName(F(SETUP_SYS_NAME));
         hydroController.setTimeZoneOffset(SETUP_SYS_TIMEZONE);
+        #ifdef HYDRUINO_USE_WIFI
+            hydroController.setWiFiConnection(wifiSSID, wifiPassword); wifiSSID = wifiPassword = String();
+        #endif
         getLoggerInstance()->setLogLevel(JOIN(Hydroponics_LogLevel,SETUP_SYS_LOGLEVEL));
         #if SETUP_LOG_SD_ENABLE
             hydroController.enableSysLoggingToSDCard(F(SETUP_LOG_FILE_PREFIX));
@@ -151,25 +174,36 @@ void setup() {
         #if SETUP_DATA_SD_ENABLE
             hydroController.enableDataPublishingToSDCard(F(SETUP_DATA_FILE_PREFIX));
         #endif
-        #ifdef HYDRUINO_USE_WIFI
-            hydroController.setWiFiConnection(wifiSSID, wifiPassword);
-            hydroController.getWiFi();      // Forces start, may block for a while
+        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_LOG_WIFISTORAGE_ENABLE
+            hydroController.enableSysLoggingToWiFiStorage(F(SETUP_LOG_FILE_PREFIX));
         #endif
-        #if SETUP_SYS_AUTOSAVE_ENABLE && SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_ENABLE
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson);
-        #elif SETUP_SYS_AUTOSAVE_ENABLE && SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_ENABLE
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToEEPROMRaw);
+        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_DATA_WIFISTORAGE_ENABLE
+            hydroController.enableDataPublishingToWiFiStorage(F(SETUP_DATA_FILE_PREFIX));
+        #endif
+        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToWiFiStorageJson
+        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson
+        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Primary
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToEEPROMRaw
+        #else
+            hydroController.setAutosaveEnabled(Hydroponics_Autosave_Disabled
+        #endif
+        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
+            , Hydroponics_Autosave_EnabledToWiFiStorageJson);
+        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
+            , Hydroponics_Autosave_EnabledToSDCardJson);
+        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Fallback
+            , Hydroponics_Autosave_EnabledToEEPROMRaw);
+        #else
+            );
         #endif
 
         // No further setup is necessary, as system is assumed to be built/managed via UI.
     }
 
-    #ifdef HYDRUINO_USE_WIFI
-        wifiSSID = wifiPassword = String(); // no longer needed
-    #endif
-
-    #if !defined(HYDRUINO_DISABLE_MULTITASKING) && SETUP_LCD_OUT_MODE != Disabled
-        hydroController.enableFullUI();
+    #if !defined(HYDRUINO_DISABLE_GUI) && SETUP_LCD_OUT_MODE != Disabled
+        hydroController.enableUI(new HydroponicsFullUI());
     #endif
 
     // Launches controller into main operation.

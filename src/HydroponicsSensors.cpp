@@ -190,9 +190,9 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(Hydroponics_SensorType sensorTy
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         #ifdef INPUT_PULLDOWN
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
         #else
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
         #endif
     }
 }
@@ -203,9 +203,9 @@ HydroponicsBinarySensor::HydroponicsBinarySensor(const HydroponicsBinarySensorDa
     HYDRUINO_HARD_ASSERT(isValidPin(_inputPin), SFP(HStr_Err_InvalidPinOrType));
     if (isValidPin(_inputPin)) {
         #ifdef INPUT_PULLDOWN
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT_PULLDOWN);
         #else
-            pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
+            hy_bin_pinMode(_inputPin, _activeLow ? INPUT_PULLUP : INPUT);
         #endif
     }
     if (dataIn->usingISR) { tryRegisterAsISR(); }
@@ -224,7 +224,7 @@ bool HydroponicsBinarySensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
         bool stateBefore = _lastMeasurement.state;
 
-        bool state = (digitalRead(_inputPin) == (_activeLow ? LOW : HIGH));
+        bool state = (hy_bin_digitalRead(_inputPin) == (_activeLow ? LOW : HIGH));
         auto timestamp = unixNow();
 
         _lastMeasurement = HydroponicsBinaryMeasurement(state, timestamp);
@@ -273,14 +273,9 @@ bool HydroponicsBinarySensor::tryRegisterAsISR()
     return _usingISR;
 }
 
-Signal<bool> &HydroponicsBinarySensor::getStateSignal()
+Signal<bool, HYDRUINO_SENSOR_MEASUREMENT_SLOTS> &HydroponicsBinarySensor::getStateSignal()
 {
     return _stateSignal;
-}
-
-void HydroponicsBinarySensor::notifyISRTriggered()
-{
-    takeMeasurement(true);
 }
 
 void HydroponicsBinarySensor::saveToData(HydroponicsData *dataOut)
@@ -322,7 +317,7 @@ bool HydroponicsAnalogSensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsAnalogSensor>(this), &HydroponicsAnalogSensor::_takeMeasurement) != TASKMGR_INVALIDID) {
+            if (isValidTask(scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsAnalogSensor>(this), &HydroponicsAnalogSensor::_takeMeasurement))) {
                 return true;
             } else {
                 HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
@@ -572,7 +567,7 @@ bool HydroponicsDHTTempHumiditySensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDHTTempHumiditySensor>(this), &HydroponicsDHTTempHumiditySensor::_takeMeasurement) != TASKMGR_INVALIDID) {
+            if (isValidTask(scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDHTTempHumiditySensor>(this), &HydroponicsDHTTempHumiditySensor::_takeMeasurement))) {
                 return true;
             } else {
                 HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
@@ -745,7 +740,7 @@ bool HydroponicsDSTemperatureSensor::takeMeasurement(bool force)
         _isTakingMeasure = true;
 
         #ifndef HYDRUINO_DISABLE_MULTITASKING
-            if (scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDSTemperatureSensor>(this), &HydroponicsDSTemperatureSensor::_takeMeasurement) != TASKMGR_INVALIDID) {
+            if (isValidTask(scheduleObjectMethodCallWithTaskIdOnce(::getSharedPtr<HydroponicsDSTemperatureSensor>(this), &HydroponicsDSTemperatureSensor::_takeMeasurement))) {
                 return true;
             } else {
                 HYDRUINO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));

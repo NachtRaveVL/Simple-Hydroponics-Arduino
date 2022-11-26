@@ -115,7 +115,7 @@ inline void HydroponicsFlowSensorAttachmentInterface::setFlowRateSensor(U sensor
 template <class U>
 inline SharedPtr<U> HydroponicsFlowSensorAttachmentInterface::getFlowRateSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getFlowRate(poll).getObject());
+    return hy_static_ptr_cast<U>(getFlowRate(poll).getObject());
 }
 
 template <class U>
@@ -127,7 +127,7 @@ inline void HydroponicsVolumeSensorAttachmentInterface::setWaterVolumeSensor(U s
 template <class U>
 inline SharedPtr<U> HydroponicsVolumeSensorAttachmentInterface::getWaterVolumeSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getWaterVolume(poll).getObject());
+    return hy_static_ptr_cast<U>(getWaterVolume(poll).getObject());
 }
 
 template <class U>
@@ -139,7 +139,7 @@ inline void HydroponicsPowerSensorAttachmentInterface::setPowerUsageSensor(U sen
 template <class U>
 inline SharedPtr<U> HydroponicsPowerSensorAttachmentInterface::getPowerUsageSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getPowerUsage(poll).getObject());
+    return hy_static_ptr_cast<U>(getPowerUsage(poll).getObject());
 }
 
 template <class U>
@@ -151,7 +151,7 @@ inline void HydroponicsWaterTemperatureSensorAttachmentInterface::setWaterTemper
 template <class U>
 inline SharedPtr<U> HydroponicsWaterTemperatureSensorAttachmentInterface::getWaterTemperatureSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getWaterTemperature(poll).getObject());
+    return hy_static_ptr_cast<U>(getWaterTemperature(poll).getObject());
 }
 
 template <class U>
@@ -163,7 +163,7 @@ inline void HydroponicsWaterPHSensorAttachmentInterface::setWaterPHSensor(U sens
 template <class U>
 inline SharedPtr<U> HydroponicsWaterPHSensorAttachmentInterface::getWaterPHSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getWaterPH(poll).getObject());
+    return hy_static_ptr_cast<U>(getWaterPH(poll).getObject());
 }
 
 template <class U>
@@ -175,7 +175,7 @@ inline void HydroponicsWaterTDSSensorAttachmentInterface::setWaterTDSSensor(U se
 template <class U>
 inline SharedPtr<U> HydroponicsWaterTDSSensorAttachmentInterface::getWaterTDSSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getWaterTDS(poll).getObject());
+    return hy_static_ptr_cast<U>(getWaterTDS(poll).getObject());
 }
 
 template <class U>
@@ -187,7 +187,7 @@ inline void HydroponicsSoilMoistureSensorAttachmentInterface::setSoilMoistureSen
 template <class U>
 inline SharedPtr<U> HydroponicsSoilMoistureSensorAttachmentInterface::getSoilMoistureSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getSoilMoisture(poll).getObject());
+    return hy_static_ptr_cast<U>(getSoilMoisture(poll).getObject());
 }
 
 template <class U>
@@ -199,7 +199,7 @@ inline void HydroponicsAirTemperatureSensorAttachmentInterface::setAirTemperatur
 template <class U>
 inline SharedPtr<U> HydroponicsAirTemperatureSensorAttachmentInterface::getAirTemperatureSensor(bool poll)
 {
-    return static_hyptr_cast<U>(getAirTemperature(poll).getObject());
+    return hy_static_ptr_cast<U>(getAirTemperature(poll).getObject());
 }
 
 template <class U>
@@ -211,7 +211,7 @@ inline void HydroponicsAirHumiditySensorAttachmentInterface::setAirHumiditySenso
 template <class U>
 inline SharedPtr<U> HydroponicsAirHumiditySensorAttachmentInterface::getAirHumiditySensor(bool poll)
 {
-    return static_hyptr_cast<U>(getAirHumidity(poll).getObject());
+    return hy_static_ptr_cast<U>(getAirHumidity(poll).getObject());
 }
 
 template <class U>
@@ -223,5 +223,5 @@ inline void HydroponicsAirCO2SensorAttachmentInterface::setAirCO2Sensor(U sensor
 template <class U>
 inline SharedPtr<U> HydroponicsAirCO2SensorAttachmentInterface::getAirCO2Sensor(bool poll)
 {
-    return static_hyptr_cast<U>(getAirCO2(poll).getObject());
+    return hy_static_ptr_cast<U>(getAirCO2(poll).getObject());
 }

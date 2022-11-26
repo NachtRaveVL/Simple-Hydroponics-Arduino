@@ -13,14 +13,16 @@ struct HydroponicsDataColumn;
 
 #include "Hydroponics.h"
 
-// Hydroponics Publisher
+// Hydroponics Data Publisher
 // The Publisher allows for data collection and publishing capabilities. The data output
 // is based on a simple table of time and measured value. Each time segment, called a
 // polling frame (and controlled by the polling rate interval), collects data from all
 // sensors into a data row, with the appropriate total number of columns. At time of
 // either all sensors having reported in for their frame #, or the frame # proceeding
-// to advance, the table's row is submitted to the publishing service initially set up.
-// Publishing to SD card .csv data files via SPI card reader is supported.
+// to advance (in which case the existing value is recycled), the table's row is
+// submitted to the publishing service initially set up.
+// Logging to SD card .csv data files (via SPI card reader) is supported as is logging to
+// WiFiStorage .csv data files (via OS/OTA filesystem / WiFiNINA_Generic only).
 class HydroponicsPublisher {
 public:
     HydroponicsPublisher();
@@ -31,6 +33,16 @@ public:
     bool beginPublishingToSDCard(String dataFilePrefix);
     inline bool isPublishingToSDCard() const;
 
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    bool beginPublishingToWiFiStorage(String dataFilePrefix);
+    inline bool isPublishingToWiFiStorage() const;
+#endif
+
+#ifdef HYDRUINO_ENABLE_MQTT
+    bool beginPublishingToMQTTClient(MQTTClient &client);
+    inline bool isPublishingToMQTTClient() const;
+#endif
+
     void publishData(Hydroponics_PositionIndex columnIndex, HydroponicsSingleMeasurement measurement);
 
     inline void setNeedsTabulation();
@@ -39,14 +51,27 @@ public:
     inline bool isPublishingEnabled() const;
     Hydroponics_PositionIndex getColumnIndexStart(Hydroponics_KeyType sensorKey);
 
+    Signal<Pair<uint8_t, const HydroponicsDataColumn *>, HYDRUINO_PUBLISH_STATE_SLOTS> &getPublishSignal();
+
     void notifyDayChanged();
 
 protected:
-    String _dataFileName;                                   // Resolved data file name (based on day)
+#if HYDRUINO_SYS_LEAVE_FILES_OPEN
+    File *_dataFileSD;                                      // SD Card log file instance (owned)
+#ifdef HYDRUINO_USE_WIFI_STORAGE
+    WiFiStorageFile *_dataFileWS;                           // WiFiStorageFile log file instance (owned)
+#endif
+#endif
+#ifdef HYDRUINO_ENABLE_MQTT
+    MQTTClient *_mqttClient;                                // MQTT client object (strong)
+#endif
+    String _dataFilename;                                   // Resolved data file name (based on day)
     uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
     bool _needsTabulation;                                  // Needs tabulation tracking flag
     uint8_t _columnCount;                                   // Data columns count
     HydroponicsDataColumn *_dataColumns;                    // Data columns (owned)
+
+    Signal<Pair<uint8_t, const HydroponicsDataColumn *>, HYDRUINO_PUBLISH_STATE_SLOTS> _publishSignal; // Data publishing signal
 
     friend class Hydroponics;
 
@@ -77,7 +102,8 @@ struct HydroponicsDataColumn {
 // A part of HSYS system data.
 struct HydroponicsPublisherSubData : public HydroponicsSubData {
     char dataFilePrefix[16];                                // Base data file name prefix / folder (default: "data/hy")
-    bool publishToSDCard;                                   // If publishing to SD card is enabled (default: false)
+    bool pubToSDCard;                                       // If publishing sensor data to SD card is enabled (default: false)
+    bool pubToWiFiStorage;                                  // If publishing sensor data to WiFiStorage is enabled (default: false)
 
     HydroponicsPublisherSubData();
     void toJSONObject(JsonObject &objectOut) const;

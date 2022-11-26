@@ -36,7 +36,10 @@ void HydroponicsScheduler::update()
             if (_inDaytimeMode != daytimeMode) {
                 _inDaytimeMode = daytimeMode;
                 setNeedsScheduling();
-                // TODO: UI update notify on day/night transition
+
+                if (Hydroponics::_activeInstance->_activeUIInstance) {
+                    Hydroponics::_activeInstance->_activeUIInstance->setNeedsLayout();
+                }
             }
 
             if (_lastDayNum != currTime.day()) {
@@ -445,8 +448,12 @@ void HydroponicsScheduler::updateDayTracking()
     auto currTime = getCurrentTime();
     _lastDayNum = currTime.day();
     _inDaytimeMode = currTime.hour() >= HYDRUINO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRUINO_CROP_NIGHT_BEGINHR;
+
     setNeedsScheduling();
-    // TODO: UI update notify on major time event
+
+    if (Hydroponics::_activeInstance->_activeUIInstance) {
+        Hydroponics::_activeInstance->_activeUIInstance->setNeedsLayout();
+    }
 }
 
 void HydroponicsScheduler::performScheduling()
@@ -455,7 +462,7 @@ void HydroponicsScheduler::performScheduling()
 
     for (auto iter = Hydroponics::_activeInstance->_objects.begin(); iter != Hydroponics::_activeInstance->_objects.end(); ++iter) {
         if (iter->second->isReservoirType() && ((HydroponicsReservoir *)(iter->second.get()))->isFeedClass()) {
-            auto feedReservoir = static_hyptr_cast<HydroponicsFeedReservoir>(iter->second);
+            auto feedReservoir = hy_static_ptr_cast<HydroponicsFeedReservoir>(iter->second);
 
             {   auto feedingIter = _feedings.find(feedReservoir->getKey());
 
@@ -902,7 +909,7 @@ void HydroponicsFeeding::update()
                     getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Aerator_Duration), String(getSchedulerInstance()->getPreFeedAeratorMins()), String('m'));
                 }
                 if (feedRes->getWaterPHBalancer() || feedRes->getWaterTDSBalancer()) {
-                    auto balancer = static_hyptr_cast<HydroponicsTimedDosingBalancer>(feedRes->getWaterPHBalancer() ? feedRes->getWaterPHBalancer() : feedRes->getWaterTDSBalancer());
+                    auto balancer = hy_static_ptr_cast<HydroponicsTimedDosingBalancer>(feedRes->getWaterPHBalancer() ? feedRes->getWaterPHBalancer() : feedRes->getWaterTDSBalancer());
                     if (balancer) {
                         getLoggerInstance()->logMessage(SFP(HStr_Log_Field_MixTime_Duration), timeSpanToString(TimeSpan(balancer->getMixTime())));
                     }

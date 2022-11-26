@@ -21,6 +21,7 @@ struct HydroponicsPWMActuatorData;
 // Creates actuator object from passed actuator data (return ownership transfer - user code *must* delete returned object)
 extern HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorData *dataIn);
 
+
 // Hydroponics Actuator Base
 // This is the base class for all actuators, which defines how the actuator is identified,
 // where it lives, and what it's attached to.
@@ -155,7 +156,9 @@ public:
                            Hydroponics_PositionIndex actuatorIndex,
                            pintype_t outputPin,
 #ifdef ESP_PLATFORM
+#ifdef ESP32
                            uint8_t pwmChannel,
+#endif
                            float pwmFrequency = 1000,
 #endif
                            uint8_t outputBitRes = 8,
@@ -177,7 +180,9 @@ public:
 protected:
     float _pwmAmount;                                       // Current set PWM amount
 #ifdef ESP_PLATFORM
+#ifdef ESP32
     uint8_t _pwmChannel;                                    // PWM output channel
+#endif
     float _pwmFrequency;                                    // PWM output frequency
 #endif
     HydroponicsBitResolution _pwmResolution;                // PWM output resolution
@@ -228,7 +233,9 @@ struct HydroponicsPumpRelayActuatorData : public HydroponicsRelayActuatorData
 struct HydroponicsPWMActuatorData : public HydroponicsActuatorData
 {
 #ifdef ESP_PLATFORM
+#ifdef ESP32
     uint8_t pwmChannel;
+#endif
     float pwmFrequency;
 #endif
     uint8_t outputBitRes;

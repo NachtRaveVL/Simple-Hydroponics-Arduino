@@ -23,6 +23,8 @@ enum Hydroponics_Autosave : signed char {
     Hydroponics_Autosave_EnabledToSDCardRaw,                    // Autosave to SD Card in binary
     Hydroponics_Autosave_EnabledToEEPROMJson,                   // Autosave to EEPROM in Json
     Hydroponics_Autosave_EnabledToEEPROMRaw,                    // Autosave to EEPROM in binary
+    Hydroponics_Autosave_EnabledToWiFiStorageJson,              // Autosave to WiFiStorage in Json
+    Hydroponics_Autosave_EnabledToWiFiStorageRaw,               // Autosave to WiFiStorage in binary
     Hydroponics_Autosave_Disabled = -1                          // Autosave disabled
 };
 
@@ -37,6 +39,7 @@ struct HydroponicsSystemData : public HydroponicsData {
     int8_t timeZoneOffset;                                      // Timezone offset
     uint16_t pollingInterval;                                   // Sensor polling interval, in milliseconds
     Hydroponics_Autosave autosaveEnabled;                       // Autosave enabled
+    Hydroponics_Autosave autosaveFallback;                      // Autosave fallback
     uint16_t autosaveInterval;                                  // Autosave interval, in minutes
     char wifiSSID[HYDRUINO_NAME_MAXSIZE];                       // WiFi SSID
     uint8_t wifiPassword[HYDRUINO_NAME_MAXSIZE];                // WiFi password (xor encrypted)
@@ -126,6 +129,7 @@ struct HydroponicsCalibrationData : public HydroponicsData {
     // This will map 0v to 0 and 5v (or MCU max voltage) to scale value.
     inline void setFromScale(float scale) { setFromRange(0.0, scale); }
 };
+
 
 // Crops Data Flags
 enum Hydroponics_CropsDataFlag : unsigned short {
