@@ -36,11 +36,11 @@ Minimum MCU: 256~512kB Flash, 16~24kB SRAM, 8~16 MHz
 Recommended: 1+MB Flash, 32+kB SRAM, 32+ MHz
 
 Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32 (properly sized), Pico, etc.  
-Won't work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2-, STM8, STM32 (improperly sized), etc.
+Won't work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2-, STM8, etc.
 
-Devices that _may_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101
+Devices that _may_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101, STM32 (improperly sized)
 
-Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRAM size configurations. Some configurations may not be supported, others may limit total system size (i.e. object count, library support, and/or other features).
+Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRAM size configurations. Some configurations may not be supported, others may limit total system size (i.e. object count, library support, features, etc.). Bigger is always better until you get a better idea of your specific use case's size requirements.
 
 ### Installation
 
