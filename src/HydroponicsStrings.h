@@ -403,7 +403,7 @@ String stringFromPGMAddr(const char *flashStr);
 // Makes Strings lookup go through EEPROM, with specified data begin address.
 extern void beginStringsFromEEPROM(uint16_t dataAddress);
 
-// Makes Strings lookup go through SD Card strings file at file prefix.
+// Makes Strings lookup go through SD card strings file at file prefix.
 extern void beginStringsFromSDCard(String dataFilePrefix);
 
 #endif // /ifndef HydroponicsStrings_H

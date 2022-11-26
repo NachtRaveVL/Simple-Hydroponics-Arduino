@@ -53,8 +53,8 @@
 // Uncomment or -D this define to enable usage of SPI RAM based virtual memory, which extends available RAM.
 //#define HYDRUINO_ENABLE_SPIRAM_VIRTMEM            // https://github.com/NachtRaveVL/virtmem-continued
 
-// Uncomment or -D this define to enable external data storage (SD Card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and String data, instead relying solely on external device.
+// Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
+//#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRUINO_ENABLE_DEBUG_OUTPUT
@@ -368,7 +368,7 @@ public:
     void setPollingInterval(uint16_t pollingInterval);
     // Sets system autosave enable mode and optional fallback mode and interval, in minutes.
     void setAutosaveEnabled(Hydroponics_Autosave autosaveEnabled, Hydroponics_Autosave autosaveFallback = Hydroponics_Autosave_Disabled, uint16_t autosaveInterval = HYDRUINO_SYS_AUTOSAVE_INTERVAL);
-    // Sets system config file as used in init and save by SD Card.
+    // Sets system config file as used in init and save by SD card.
     inline void setSystemConfigFilename(String configFilename) { _sysConfigFilename = configFilename; }
     // Sets EEPROM system data address as used in init and save by EEPROM.
     inline void setSystemDataAddress(uint16_t sysDataAddress) { _sysDataAddress = sysDataAddress; }
@@ -466,7 +466,7 @@ public:
     bool isAutosaveEnabled() const;
     // Returns if system fallback autosaves are enabled or not
     bool isAutosaveFallbackEnabled() const;
-    // System config file used in init and save by SD Card
+    // System config file used in init and save by SD card
     inline String getSystemConfigFile() const { return _sysConfigFilename; }
     // System data address used in init and save by EEPROM
     inline uint16_t getSystemDataAddress() const { return _sysDataAddress; }
