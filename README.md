@@ -3,14 +3,16 @@ Hydruino: Simple Hydroponics Automation Controller.
 
 **Simple-Hydroponics-Arduino v0.6**
 
-Simple automation controller for hydroponic grow systems using an Arduino board.  
+Simple automation controller for hydroponic grow systems.  
 Licensed under the non-restrictive MIT license.
 
 Created by NachtRaveVL, May 20th, 2022.
 
 **UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
 
-This controller allows one to set up an entire system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available. Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to data files, and can be extended to work with other JSON-based Web APIs or Client-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
+This controller allows one to set up a system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available.
+
+Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium equipment and hobbyist sensors. Supports sensor data publishing and logging to data files and/or MQTT, and can be extended to work with other JSON-based Web APIs or Client-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
 
 Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
@@ -22,11 +24,11 @@ Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRa
 
 ## About
 
-We want to make Hydroponics more accessible by utilizing the widely available IoT and IoT-like microcontrollers (MCUs) of both today and yesterday.
+We want to make Hydroponics more accessible to DIY'ers by utilizing the widely-available low-cost IoT and IoT-like microcontrollers (MCUs) of today.
 
-With the advances in technology bringing us even more compact MCUs at even lower costs, it becomes a lot more possible to simply use one of these small devices to do what amounts to turning a bunch of relays on and off in the right order. Hydroponics is a perfect application for these devices, especially as a data logger, feed balancer, and more.
+With the advances in miniaturization technology bringing us even more compact MCUs at even lower costs, it becomes a lot more possible to simply use one of these small devices to do what amounts to turning a bunch of relays on and off in the right order as the day goes by. Hydroponics is a perfect application for these devices, especially as a data logger, process monitor, and more. Professional controller systems like this can cost hundreds to even thousands of dollars, but DIY systems can wind up being a fraction of that cost.
 
-Hydruino is an MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors from the hobby store, some aquarium pumps from the pet store, and other widely available low-cost hardware to build a working functional hydroponics controller system. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the door for more people to get involved in reducing their carbon footprint, becoming more knowledgeable about their food, and learning some basic electronics.
+Hydruino is a MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors and relays, some aquarium pumps, maybe some fancy lights, and other widely available low-cost hardware to build a functional DIY hydroponics controller system. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the door for more people to get involved in reducing their carbon footprint, becoming more knowledgeable about their food and where it comes from, and hopefully learning some basic electronics/coding along the way.
 
 ## Controller Setup
 
@@ -202,8 +204,8 @@ Serial UART uses individual communication lines for each device, with the receiv
 
 * When wiring up modules that use Serial UART, make sure to flip `RX`/`TX` lines.
   * 3.3v devices that are not 5v tolerant (such as external [serial-based ESP WiFi modules](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/)) will require a bi-directional logic level converter/shifter to access on 5v MCUs.
-    * We have included a small breakout PCB ([gerbers in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up such common WiFi and level shifter modules alongside one another.
-    * Alternatively, hack a 10kΩ voltage dividing resistor between the MCU's TX pin and module's RX pin.
+    * We have included a small breakout PCB ([gerbers here](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up such common 3v3 WiFi and level shifter modules alongside 5v MCUs.
+    * Alternatively, hack a single 10kΩ resistor ([preferably two of any 1:2 ratio](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/)) between the MCU's TX pin and module's RX pin.
 
 Serial UART Devices Supported: ESP8266 WiFi module (3.3v only)
 
@@ -254,7 +256,7 @@ We also ask that our users report any broken sensors (outside of bad calibration
 ### WiFi
 
 * Devices with built-in WiFi can enable such through header defines while other devices can utilize an external [serial-based ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/).
-  * Again, we have included a small breakout PCB ([gerbers in extra folder](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up these common WiFi modules alongside a level shifter, which will be needed if using a 5v MCU.
+  * Again, we have included a small breakout PCB ([gerbers here](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up these common WiFi modules alongside a level shifter if using a 5v MCU.
 
 ## Memory Callouts
 
