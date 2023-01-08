@@ -12,9 +12,9 @@ HydroponicsRail *newRailObjectFromData(const HydroponicsRailData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case 0: // Simple
+            case (int8_t)HydroponicsRail::Simple:
                 return new HydroponicsSimpleRail((const HydroponicsSimpleRailData *)dataIn);
-            case 1: // Regulated
+            case (int8_t)HydroponicsRail::Regulated:
                 return new HydroponicsRegulatedRail((const HydroponicsRegulatedRailData *)dataIn);
             default: break;
         }

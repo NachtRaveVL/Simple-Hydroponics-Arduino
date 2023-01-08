@@ -12,15 +12,15 @@ HydroponicsObject *newObjectFromData(const HydroponicsData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.idType) {
-            case 0: // Actuator
+            case (int8_t)HydroponicsIdentity::Actuator:
                 return newActuatorObjectFromData((HydroponicsActuatorData *)dataIn);
-            case 1: // Sensor
+            case (int8_t)HydroponicsIdentity::Sensor:
                 return newSensorObjectFromData((HydroponicsSensorData *)dataIn);
-            case 2: // Crop
+            case (int8_t)HydroponicsIdentity::Crop:
                 return newCropObjectFromData((HydroponicsCropData *)dataIn);
-            case 3: // Reservoir
+            case (int8_t)HydroponicsIdentity::Reservoir:
                 return newReservoirObjectFromData((HydroponicsReservoirData *)dataIn);
-            case 4: // Rail
+            case (int8_t)HydroponicsIdentity::Rail:
                 return newRailObjectFromData((HydroponicsRailData *)dataIn);
             default: // Unable
                 return nullptr;

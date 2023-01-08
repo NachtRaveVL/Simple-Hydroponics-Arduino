@@ -12,11 +12,11 @@ HydroponicsActuator *newActuatorObjectFromData(const HydroponicsActuatorData *da
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case 0: // Relay
+            case (int8_t)HydroponicsActuator::Relay:
                 return new HydroponicsRelayActuator((const HydroponicsRelayActuatorData *)dataIn);
-            case 1: // RelayPump
+            case (int8_t)HydroponicsActuator::RelayPump:
                 return new HydroponicsPumpRelayActuator((const HydroponicsPumpRelayActuatorData *)dataIn);
-            case 2: // PWM
+            case (int8_t)HydroponicsActuator::VariablePWM:
                 return new HydroponicsPWMActuator((const HydroponicsPWMActuatorData *)dataIn);
             default: break;
         }

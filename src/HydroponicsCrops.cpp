@@ -12,9 +12,9 @@ HydroponicsCrop *newCropObjectFromData(const HydroponicsCropData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case 0: // Timed
+            case (int8_t)HydroponicsCrop::Timed:
                 return new HydroponicsTimedCrop((const HydroponicsTimedCropData *)dataIn);
-            case 1: // Adaptive
+            case (int8_t)HydroponicsCrop::Adaptive:
                 return new HydroponicsAdaptiveCrop((const HydroponicsAdaptiveCropData *)dataIn);
             default: break;
         }
