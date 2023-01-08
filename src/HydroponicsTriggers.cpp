@@ -13,9 +13,9 @@ HydroponicsTrigger *newTriggerObjectFromSubData(const HydroponicsTriggerSubData 
 
     if (dataIn) {
         switch (dataIn->type) {
-            case 0: // MeasureValue
+            case (int8_t)HydroponicsTrigger::MeasureValue:
                 return new HydroponicsMeasurementValueTrigger(dataIn);
-            case 1: // MeasureRange
+            case (int8_t)HydroponicsTrigger::MeasureRange:
                 return new HydroponicsMeasurementRangeTrigger(dataIn);
             default: break;
         }
@@ -239,11 +239,11 @@ void HydroponicsTriggerSubData::toJSONObject(JsonObject &objectOut) const
     if (sensorName[0]) { objectOut[SFP(HStr_Key_SensorName)] = charsToString(sensorName, HYDRUINO_NAME_MAXSIZE); }
     if (measurementRow > 0) { objectOut[SFP(HStr_Key_MeasurementRow)] = measurementRow; }
     switch (type) {
-        case 0: // MeasureValue
+        case (int8_t)HydroponicsTrigger::MeasureValue:
             objectOut[SFP(HStr_Key_Tolerance)] = dataAs.measureValue.tolerance;
             objectOut[SFP(HStr_Key_TriggerBelow)] = dataAs.measureValue.triggerBelow;
             break;
-        case 1: // MeasureRange
+        case (int8_t)HydroponicsTrigger::MeasureRange:
             objectOut[SFP(HStr_Key_ToleranceLow)] = dataAs.measureRange.toleranceLow;
             objectOut[SFP(HStr_Key_ToleranceHigh)] = dataAs.measureRange.toleranceHigh;
             objectOut[SFP(HStr_Key_TriggerOutside)] = dataAs.measureRange.triggerOutside;
@@ -262,11 +262,11 @@ void HydroponicsTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
     if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRUINO_NAME_MAXSIZE); }
     measurementRow = objectIn[SFP(HStr_Key_MeasurementRow)] | measurementRow;
     switch (type) {
-        case 0: // MeasureValue
+        case (int8_t)HydroponicsTrigger::MeasureValue:
             dataAs.measureValue.tolerance = objectIn[SFP(HStr_Key_Tolerance)] | dataAs.measureValue.tolerance;
             dataAs.measureValue.triggerBelow = objectIn[SFP(HStr_Key_TriggerBelow)] | dataAs.measureValue.triggerBelow;
             break;
-        case 1: // MeasureRange
+        case (int8_t)HydroponicsTrigger::MeasureRange:
             dataAs.measureRange.toleranceLow = objectIn[SFP(HStr_Key_ToleranceLow)] | dataAs.measureRange.toleranceLow;
             dataAs.measureRange.toleranceHigh = objectIn[SFP(HStr_Key_ToleranceHigh)] | dataAs.measureRange.toleranceHigh;
             dataAs.measureRange.triggerOutside = objectIn[SFP(HStr_Key_TriggerOutside)] | dataAs.measureRange.triggerOutside;

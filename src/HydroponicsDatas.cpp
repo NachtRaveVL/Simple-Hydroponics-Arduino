@@ -36,59 +36,60 @@ HydroponicsData *_allocateDataFromBaseDecode(const HydroponicsData &baseDecode)
 HydroponicsData *_allocateDataForObjType(int8_t idType, int8_t classType)
 {
     switch (idType) {
-        case 0: // Actuator
+        case (int8_t)HydroponicsIdentity::Actuator:
             switch (classType) {
-                case 0: // Relay
+                case (int8_t)HydroponicsActuator::Relay:
                     return new HydroponicsRelayActuatorData();
-                case 1: // Pump Relay
+                case (int8_t)HydroponicsActuator::RelayPump:
                     return new HydroponicsPumpRelayActuatorData();
-                case 2: // PWM
+                case (int8_t)HydroponicsActuator::VariablePWM:
                     return new HydroponicsPWMActuatorData();
                 default: break;
             }
             break;
 
-        case 1: // Sensor
+        case (int8_t)HydroponicsIdentity::Sensor:
             switch (classType) {
-                case 0: // Binary
+                case (int8_t)HydroponicsSensor::Binary:
                     return new HydroponicsBinarySensorData();
-                case 1: // Analog
+                case (int8_t)HydroponicsSensor::Analog:
                     return new HydroponicsAnalogSensorData();
-                case 3: // DHT
+                //case 2: // Digital (not instance-able)
+                case (int8_t)HydroponicsSensor::DHT1W:
                     return new HydroponicsDHTTempHumiditySensorData();
-                case 4: // DS
+                case (int8_t)HydroponicsSensor::DS1W:
                     return new HydroponicsDSTemperatureSensorData();
                 default: break;
             }
             break;
 
-        case 2: // Crop
+        case (int8_t)HydroponicsIdentity::Crop:
             switch (classType) {
-                case 0: // Timed
+                case (int8_t)HydroponicsCrop::Timed:
                     return new HydroponicsTimedCropData();
-                case 1: // Adaptive
+                case (int8_t)HydroponicsCrop::Adaptive:
                     return new HydroponicsAdaptiveCropData();
                 default: break;
             }
             break;
 
-        case 3: // Reservoir
+        case (int8_t)HydroponicsIdentity::Reservoir:
             switch (classType) {
-                case 0: // Fluid
+                case (int8_t)HydroponicsReservoir::Fluid:
                     return new HydroponicsFluidReservoirData();
-                case 1: // Feed
+                case (int8_t)HydroponicsReservoir::Feed:
                     return new HydroponicsFeedReservoirData();
-                case 2: // Pipe
+                case (int8_t)HydroponicsReservoir::Pipe:
                     return new HydroponicsInfiniteReservoirData();
                 default: break;
             }
             break;
 
-        case 4: // Rail
+        case (int8_t)HydroponicsIdentity::Rail:
             switch (classType) {
-                case 0: // Simple
+                case (int8_t)HydroponicsRail::Simple:
                     return new HydroponicsSimpleRailData();
-                case 1: // Regulated
+                case (int8_t)HydroponicsRail::Regulated:
                     return new HydroponicsRegulatedRailData();
                 default: break;
             }

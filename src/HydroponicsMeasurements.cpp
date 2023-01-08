@@ -12,13 +12,13 @@ HydroponicsMeasurement *newMeasurementObjectFromSubData(const HydroponicsMeasure
 
     if (dataIn) {
         switch (dataIn->type) {
-            case 0: // Binary
+            case (int8_t)HydroponicsMeasurement::Binary:
                 return new HydroponicsBinaryMeasurement(dataIn);
-            case 1: // Single
+            case (int8_t)HydroponicsMeasurement::Single:
                 return new HydroponicsSingleMeasurement(dataIn);
-            case 2: // Double
+            case (int8_t)HydroponicsMeasurement::Double:
                 return new HydroponicsDoubleMeasurement(dataIn);
-            case 3: // Triple
+            case (int8_t)HydroponicsMeasurement::Triple:
                 return new HydroponicsTripleMeasurement(dataIn);
             default: break;
         }
@@ -31,13 +31,13 @@ float getMeasurementValue(const HydroponicsMeasurement *measurement, uint8_t mea
 {
     if (measurement) {
         switch (measurement->type) {
-            case 0: // Binary
+            case HydroponicsMeasurement::Binary:
                 return ((HydroponicsBinaryMeasurement *)measurement)->state ? binTrue : 0.0f;
-            case 1: // Single
+            case HydroponicsMeasurement::Single:
                 return ((HydroponicsSingleMeasurement *)measurement)->value;
-            case 2: // Double
+            case HydroponicsMeasurement::Double:
                 return ((HydroponicsDoubleMeasurement *)measurement)->value[measurementRow];
-            case 3: // Triple
+            case HydroponicsMeasurement::Triple:
                 return ((HydroponicsTripleMeasurement *)measurement)->value[measurementRow];
             default: break;
         }
@@ -49,13 +49,13 @@ Hydroponics_UnitsType getMeasurementUnits(const HydroponicsMeasurement *measurem
 {
     if (measurement) {
         switch (measurement->type) {
-            case 0: // Binary
+            case HydroponicsMeasurement::Binary:
                 return binUnits;
-            case 1: // Single
+            case HydroponicsMeasurement::Single:
                 return ((HydroponicsSingleMeasurement *)measurement)->units;
-            case 2: // Double
+            case HydroponicsMeasurement::Double:
                 return ((HydroponicsDoubleMeasurement *)measurement)->units[measurementRow];
-            case 3: // Triple
+            case HydroponicsMeasurement::Triple:
                 return ((HydroponicsTripleMeasurement *)measurement)->units[measurementRow];
             default: break;
         }
@@ -72,13 +72,13 @@ HydroponicsSingleMeasurement getAsSingleMeasurement(const HydroponicsMeasurement
 {
     if (measurement) {
         switch (measurement->type) {
-            case 0: // Binary
+            case HydroponicsMeasurement::Binary:
                 return ((HydroponicsBinaryMeasurement *)measurement)->getAsSingleMeasurement(binTrue, binUnits);
-            case 1: // Single
+            case HydroponicsMeasurement::Single:
                 return *((const HydroponicsSingleMeasurement *)measurement);
-            case 2: // Double
+            case HydroponicsMeasurement::Double:
                 return ((HydroponicsDoubleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow);
-            case 3: // Triple
+            case HydroponicsMeasurement::Triple:
                 return ((HydroponicsTripleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow);
             default: break;
         }

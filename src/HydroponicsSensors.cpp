@@ -12,14 +12,14 @@ HydroponicsSensor *newSensorObjectFromData(const HydroponicsSensorData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case 0: // Binary
+            case (int8_t)HydroponicsSensor::Binary:
                 return new HydroponicsBinarySensor((const HydroponicsBinarySensorData *)dataIn);
-            case 1: // Analog
+            case (int8_t)HydroponicsSensor::Analog:
                 return new HydroponicsAnalogSensor((const HydroponicsAnalogSensorData *)dataIn);
             //case 2: // Digital (not instance-able)
-            case 3: // DHT1W
+            case (int8_t)HydroponicsSensor::DHT1W:
                 return new HydroponicsDHTTempHumiditySensor((const HydroponicsDHTTempHumiditySensorData *)dataIn);
-            case 4: // DS1W
+            case (int8_t)HydroponicsSensor::DS1W:
                 return new HydroponicsDSTemperatureSensor((const HydroponicsDSTemperatureSensorData *)dataIn);
             default: break;
         }

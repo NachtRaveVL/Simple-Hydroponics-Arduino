@@ -12,11 +12,11 @@ HydroponicsReservoir *newReservoirObjectFromData(const HydroponicsReservoirData 
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case 0: // Fluid
+            case (int8_t)HydroponicsReservoir::Fluid:
                 return new HydroponicsFluidReservoir((const HydroponicsFluidReservoirData *)dataIn);
-            case 1: // Feed
+            case (int8_t)HydroponicsReservoir::Feed:
                 return new HydroponicsFeedReservoir((const HydroponicsFeedReservoirData *)dataIn);
-            case 2: // Pipe
+            case (int8_t)HydroponicsReservoir::Pipe:
                 return new HydroponicsInfiniteReservoir((const HydroponicsInfiniteReservoirData *)dataIn);
             default: break;
         }
