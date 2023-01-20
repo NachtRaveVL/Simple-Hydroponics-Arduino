@@ -122,6 +122,7 @@ typedef uint8_t pintype_t;
 #define HYDRUINO_HARD_ASSERT(cond,msg)  ((void)0)
 #endif
 
+#include "Adafruit_GPS.h"               // GPS library
 #include "ArduinoJson.h"                // JSON library
 #include "ArxContainer.h"               // STL-like container library
 #include "ArxSmartPtr.h"                // Shared pointer library
@@ -137,6 +138,7 @@ typedef uint8_t pintype_t;
 #include "OneWire.h"                    // OneWire library
 #endif
 #include "RTClib.h"                     // i2c RTC library
+#include "SolarCalculator.h"            // Solar calculator library
 #ifndef HYDRUINO_DISABLE_MULTITASKING
 #include "TaskManagerIO.h"              // Task Manager library
 #endif
