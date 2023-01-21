@@ -8,15 +8,17 @@ Licensed under the non-restrictive MIT license.
 
 Created by NachtRaveVL, May 20th, 2022.
 
-**UNDER ACTIVE DEVELOPMENT BUT DON'T EXPECT ANY MIRACLES**
+**UNDER ACTIVE DEVELOPMENT -- WORK IN PROGRESS**
 
-This controller allows one to set up a system of sensors, pumps, relays, probes, and other things useful in automating the lighting, feeding, watering, and sensor data monitoring & collection process involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. It contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases with the hardware you have available.
+This controller allows one to set up a system of reservoirs, pumps, probes, relays, and other things useful in automating the daily lighting, feed dosing, watering, and data monitoring & collection processes involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. Works with a large variety of widely-available aquarium/hobbyist equipment, including popular GPS, RTC, EEPROM, SD card, WiFi, and other modules compatible with Arduino. Contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases for the system configured, along with fully customizable weekly feed/additive amounts and daily feeding/lighting scheduling. With the right setup Hydruino can automatically do things like: enable grow lights for the needed period each day, drive water pumps and auto-dosers during feedings, spray leafy plants in the morning before lights/sunrise, heat cold water to a specific temp for tropical plants, use CO2 sensors to manage air circulation fans to maintain optimal grow tent parameters, or even use soil moisture sensing to dynamically determine watering schedule.
 
-Crop library data can be built into onboard Flash, or alongside config and user calibration data on an external SD card or EEPROM device. Works with a large variety of common aquarium/hobbyist equipment/sensors. Supports sensor data logging to SD card data files and data publishing via MQTT, and can be extended to work with other JSON-based Web APIs or Client-like derivatives. Hydruino also comes with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu). We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
+Can optionally be used with external serial GPS and i2c RTC modules for accurate sunrise/sunset and feed timings, or through enabled WiFi from on-board or external serial ESP-AT modules. Configured system can be saved/loaded to/from external EEPROM, SD card, or WiFiStorage device in JSON or binary, along with auto-save/recovery/cleanup, and can even use a piezo buzzer for audible system alerts. Library string and crop data can be built into onboard MCU Flash or alongside config and user calibration on external storage. Supports sensor data logging to external storage and publishing to MQTT, and can be extended to work with other JSON-based Web APIs or Client-like derivatives. Actuator and sensor I/O pins can be multiplexed for pin-limited MCUs. UI support pending, but will include system setup/configuration and monitoring abilities with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu).
 
-Made primarily for Arduino microcontrollers, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
+We even made some [custom stuff](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/wiki/Extra-Goodies-Supplied) along with some other goodies like a 3D printed project enclosure case and some printable PCBs.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit GPS Library, Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), SolarCalculator, TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, virtmem-continued (optional), and a WiFi-like library (optional): WiFi101 (MKR1000), WiFiNINA_Generic, or WiFiEspAT (external serial AT).
+Made primarily for Arduino microcontrollers/build environment, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
+
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit GPS Library, Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), SolarCalculator, TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like library (optional): WiFi101 (MKR1000), WiFiNINA_Generic, or WiFiEspAT (external serial AT).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -56,37 +58,31 @@ There are several defines inside of the controller's main header file that allow
 
 Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=602603.0> on how to define custom build flags manually via modifying the platform[.local].txt file. Note that editing such directly will affect all other projects compiled on your system using those modified platform framework files, but at least you keep those changes to the same place.
 
-From Hydroponics.h:
+From Hydruino.h:
 ```Arduino
 // Uncomment or -D this define to completely disable usage of any multitasking commands and libraries. Not recommended.
-//#define HYDRUINO_DISABLE_MULTITASKING             // https://github.com/davetcc/TaskManagerIO
+//#define HYDRO_DISABLE_MULTITASKING             // https://github.com/davetcc/TaskManagerIO
 
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
-//#define HYDRUINO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
+//#define HYDRO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable usage of the platform WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_WIFI                      // Library used depends on your device architecture.
+//#define HYDRO_ENABLE_WIFI                      // Library used depends on your device architecture.
 
 // Uncomment or -D this define to enable usage of the external serial ESP AT WiFi library, which enables networking capabilities.
-//#define HYDRUINO_ENABLE_ESP_WIFI                  // https://github.com/jandrassy/WiFiEspAT
-
-// Uncomment or -D this define to enable usage of SD card based virtual memory, which extends available RAM.
-//#define HYDRUINO_ENABLE_SD_VIRTMEM                // https://github.com/NachtRaveVL/virtmem-continued
-
-// Uncomment or -D this define to enable usage of SPI RAM based virtual memory, which extends available RAM.
-//#define HYDRUINO_ENABLE_SPIRAM_VIRTMEM            // https://github.com/NachtRaveVL/virtmem-continued
+//#define HYDRO_ENABLE_ESP_WIFI                  // https://github.com/jandrassy/WiFiEspAT
 
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
+//#define HYDRO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
-//#define HYDRUINO_ENABLE_DEBUG_OUTPUT
+//#define HYDRO_ENABLE_DEBUG_OUTPUT
 
 // Uncomment or -D this define to enable verbose debug output (note: adds considerable size to compiled sketch).
-//#define HYDRUINO_ENABLE_VERBOSE_DEBUG
+//#define HYDRO_ENABLE_VERBOSE_DEBUG
 
 // Uncomment or -D this define to enable debug assertions (note: adds significant size to compiled sketch).
-//#define HYDRUINO_ENABLE_DEBUG_ASSERTIONS
+//#define HYDRO_ENABLE_DEBUG_ASSERTIONS
 ```
 
 ### Controller Initialization
@@ -97,42 +93,37 @@ There are several initialization mode settings exposed through this controller t
 
 The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, and i2c clock speed. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, and SPI speeds set to same as processor speed (/0 divider, else 50MHz if undetected).
 
-From Hydroponics.h, in class Hydroponics:
+From Hydruino.h, in class Hydro:
 ```Arduino
     // Controller constructor. Typically called during class instantiation, before setup().
-    Hydroponics(pintype_t piezoBuzzerPin = -1,              // Piezo buzzer pin, else -1
-                uint32_t eepromDeviceSize = 0,              // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-                uint8_t eepromI2CAddress = B000,            // EEPROM i2c address
-                uint8_t rtcI2CAddress = B000,               // RTC i2c address (only B000 can be used atm)
-                pintype_t sdCardCSPin = -1,                 // SD card CS pin, else -1
-                uint32_t sdCardSpeed = F_SPD,               // SD card SPI speed, in Hz (ignored on Teensy)
-#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
-                uint32_t spiRAMDeviceSize = 0,              // SPI RAM device size, else 0
-                pintype_t spiRAMCSPin = -1,                 // SPI RAM CS pin, else -1
-                uint32_t spiRAMSpeed = F_SPD,               // SPI RAM SPI speed, in Hz
-#endif
-                pintype_t *ctrlInputPinMap = nullptr,       // Control input pin map, else nullptr
-                uint8_t lcdI2CAddress = B000,               // LCD i2c address
+    Hydruino(pintype_t piezoBuzzerPin = -1,                 // Piezo buzzer pin, else -1
+             uint32_t eepromDeviceSize = 0,                 // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
+             uint8_t eepromI2CAddress = B000,               // EEPROM i2c address
+             uint8_t rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
+             pintype_t sdCardCSPin = -1,                    // SD card CS pin, else -1
+             uint32_t sdCardSpeed = F_SPD,                  // SD card SPI speed, in Hz (ignored on Teensy)
+             pintype_t *ctrlInputPinMap = nullptr,          // Control input pin map, else nullptr
+             uint8_t lcdI2CAddress = B000,                  // LCD i2c address
 #if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TWOWIRE)) || defined(Wire)
-                TwoWire &i2cWire = Wire,                    // I2C wire class instance
+             TwoWire &i2cWire = Wire,                       // I2C wire class instance
 #else
-                TwoWire &i2cWire = new TwoWire(),           // I2C wire class instance
+             TwoWire &i2cWire = new TwoWire(),              // I2C wire class instance
 #endif
-                uint32_t i2cSpeed = 400000U);               // I2C speed, in Hz
+             uint32_t i2cSpeed = 400000U);                  // I2C speed, in Hz
 ```
 
 #### Controller Initialization
 
 Additionally, a call is expected to be provided to the controller class object's `init[From…](…)` method, commonly called inside of the sketch's `setup()` function. This allows one to set the controller's system type (Recycling or DrainToWaste), units of measurement (Metric, Imperial, or Scientific), control input mode, and display output mode. The default mode of the controller, if left unspecified, is a Recycling system set to Metric units, without any input control or output display.
 
-From Hydroponics.h, in class Hydroponics:
+From Hydruino.h, in class Hydro:
 ```Arduino
     // Initializes default empty system. Typically called near top of setup().
     // See individual enums for more info.
-    void init(Hydroponics_SystemMode systemMode = Hydroponics_SystemMode_Recycling,                 // What system of crop feeding is performed
-              Hydroponics_MeasurementMode measureMode = Hydroponics_MeasurementMode_Default,        // What units of measurement should be used
-              Hydroponics_DisplayOutputMode dispOutMode = Hydroponics_DisplayOutputMode_Disabled,   // What display output mode should be used
-              Hydroponics_ControlInputMode ctrlInMode = Hydroponics_ControlInputMode_Disabled);     // What control input mode should be used
+    void init(Hydro_SystemMode systemMode = Hydro_SystemMode_Recycling,                 // What system of crop feeding is performed
+              Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Default,        // What units of measurement should be used
+              Hydro_DisplayOutputMode dispOutMode = Hydro_DisplayOutputMode_Disabled,   // What display output mode should be used
+              Hydro_ControlInputMode ctrlInMode = Hydro_ControlInputMode_Disabled);     // What control input mode should be used
 
     // Initializes system from EEPROM save, returning success flag
     // Set system data address with setSystemEEPROMAddress
@@ -140,7 +131,7 @@ From Hydroponics.h, in class Hydroponics:
     // Initializes system from SD card file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool initFromSDCard(bool jsonFormat = true);
-#ifdef HYDRUINO_USE_WIFI_STORAGE
+#ifdef HYDRO_USE_WIFI_STORAGE
     // Initializes system from a WiFiStorage file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool initFromWiFiStorage(bool jsonFormat = true);
@@ -153,7 +144,7 @@ From Hydroponics.h, in class Hydroponics:
 
 The controller can also be initialized from a saved configuration, such as from an EEPROM or SD card, or other JSON or Binary stream. A saved configuration of the system can be made via the controller class object's `saveTo…(…)` methods, or called automatically on timer by setting an Autosave mode/interval.
 
-From Hydroponics.h, in class Hydroponics:
+From Hydruino.h, in class Hydro:
 ```Arduino
     // Saves current system setup to EEPROM save, returning success flag
     // Set system data address with setSystemEEPROMAddress
@@ -161,7 +152,7 @@ From Hydroponics.h, in class Hydroponics:
     // Saves current system setup to SD card file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool saveToSDCard(bool jsonFormat = true);
-#ifdef HYDRUINO_USE_WIFI_STORAGE
+#ifdef HYDRO_USE_WIFI_STORAGE
     // Saves current system setup to WiFiStorage file save, returning success flag
     // Set config file name with setSystemConfigFilename
     bool saveToWiFiStorage(bool jsonFormat = true);
@@ -176,11 +167,11 @@ From Hydroponics.h, in class Hydroponics:
 
 The controller can, after initialization, be set to produce logs and data files that can be further used by other applications. Log entries are timestamped and can keep track of when feedings are performed, when devices enable/disable, etc., while data files can be read into plotting applications or exported to a database for further processing. The passed file prefix is typically the subfolder that such files should reside under and is appended with the year, month, and date (in YYMMDD format).
 
-Note: You can also get the same logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.
+Note: You can also get the same logging output sent to the Serial device by defining `HYDRO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.
 
 Note: Files on FAT32-based SD cards are limited to 8 character file/folder names and a 3 character extension.
 
-From Hydroponics.h, in class Hydroponics:
+From Hydruino.h, in class Hydro:
 ```Arduino
     // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy");
@@ -262,7 +253,7 @@ We also ask that our users report any broken sensors (outside of bad calibration
 
 * The total number of objects and different kinds of objects (sensors, pumps, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 500 bytes or more depending on settings and object type, with the base Flash memory usage ranging from 100kB to 300kB+ depending on settings.
   * For our target microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with MB+ of Flash and 32kB+ of SRAM. Devices with < 32kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in crop data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
-* For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroponicsDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller uses.
+* For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller uses.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
 * To further save on code size cost, see the Data Writer Example to see how to externalize controller data onto an SD card or EEPROM.
@@ -279,7 +270,7 @@ DWC setups are great for beginners and for crops that do not flower, and has the
 The Simple DWC Example sketch shows how a simple Hydruino system can be setup using the most minimal of work. In this sketch only that which you actually use is built into the final compiled binary, making it an ideal lean choice for those who don't need anything fancy. This sketch has no UI or input control, but with a simple buzzer and some additional sensors the system can alert you to when the feed is low and more is needed, or when pH is too high, etc.
 
 ```Arduino
-#include <Hydroponics.h>
+#include <Hydruino.h>
 
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_GROW_LIGHTS_PIN           8               // Grow lights relay pin (digital)
@@ -291,7 +282,7 @@ The Simple DWC Example sketch shows how a simple Hydruino system can be setup us
 #define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate
 #define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted
 
-Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
+Hydruino hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
 
 void setup() {
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else.
@@ -301,7 +292,7 @@ void setup() {
     hydroController.scheduler.setBaseFeedMultiplier(0.5);
 
     // Adds a simple relay power rail using standard AC. This will manage how many active devices can be turned on at the same time.
-    auto relayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
+    auto relayPower = hydroController.addSimplePowerRail(JOIN(Hydro_RailType,SETUP_AC_POWER_RAIL_TYPE));
 
     // Adds a main water reservoir of SETUP_FEED_RESERVOIR_SIZE size, treated as already being filled with water.
     auto feedReservoir = hydroController.addFeedWaterReservoir(SETUP_FEED_RESERVOIR_SIZE, true);
@@ -317,8 +308,8 @@ void setup() {
     lights->setReservoir(feedReservoir);
 
     // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
-    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
-                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+    auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
+                                                JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
                                                 SETUP_CROP_SOW_DATE);
     crop->setFeedReservoir(feedReservoir);
 
@@ -345,7 +336,7 @@ The Full System Example sketch will build an empty system with all object and sy
 Included below is the default system setup defines of the Vertical NFT example (of which a smaller similar version is used for the Full System example) to illustrate a variety of the controller features. This is not an exhaustive list of course, as there are many more things the controller is capable of, as documented in its main header file include, GitHub Project Wiki, and elsewhere.
 
 ```Arduino
-#include <Hydroponics.h>
+#include <Hydruino.h>
 
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
@@ -354,9 +345,6 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
 #define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_SPIRAM_DEVICE_SIZE        0               // SPI serial RAM device size, in bytes, else 0 (note: define HYDRUINO_ENABLE_SPIRAM_VIRTMEM to enable SPIRAM)
-#define SETUP_SPIRAM_CS_PIN             -1              // SPI serial RAM CS pin, else -1
-#define SETUP_SPIRAM_SPI_SPEED          F_SPD           // SPI serial RAM SPI speed, in Hz
 #define SETUP_LCD_I2C_ADDR              B000            // LCD i2c address
 #define SETUP_CTRL_INPUT_PINS           {-1}            // Control input pin ribbon, else {-1}
 #define SETUP_I2C_WIRE_INST             Wire            // I2C wire class instance
@@ -364,7 +352,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
 
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
+// WiFi Settings                                        (note: define HYDRO_ENABLE_WIFI or HYDRO_ENABLE_ESP_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
 
@@ -457,8 +445,8 @@ Inside of the Data Writer's `setup()` function:
     hydroController.init();
 
     // Right here would be the place to program in any custom crop data that you want made available for later.
-    //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
-    //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
+    //HydroCropsLibData customCrop1(Hydro_CropType_CustomCrop1);
+    //strncpy(customCrop1.cropName, "Custom name", HYDRO_NAME_MAXSIZE);
     //hydroCropsLib.setUserCropData(&customCrop1);
 ```
 
@@ -480,4 +468,4 @@ In serial monitor (near end):
 2022-08-07T04:24:27 [INFO] Done!
 ```
 
-Note: Again, you can get logging output sent to the Serial device by defining `HYDRUINO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.
+Note: Again, you can get logging output sent to the Serial device by defining `HYDRO_ENABLE_DEBUG_OUTPUT`, described above in Header Defines.
