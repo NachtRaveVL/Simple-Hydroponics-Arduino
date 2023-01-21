@@ -39,7 +39,8 @@ Hydruino is a MCU-based solution primarily written for Arduino and Arduino-like 
 Minimum MCU: 256-512kB Flash, 16-24kB SRAM, 8-16MHz  
 Recommended: 1MB+ Flash, 32kB+ SRAM, 32MHz+
 
-Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32 (properly sized), Pico, etc.  
+Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32 (properly sized), Pico, etc.
+
 Won't work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2-, STM8, etc.
 
 Devices that _may_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101, STM32 (improperly sized)
@@ -198,7 +199,7 @@ Serial UART uses individual communication lines for each device, with the receiv
     * We have included a small breakout PCB ([gerbers here](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/tree/main/extra)) to assist with hooking up such common 3v3 WiFi and level shifter modules alongside 5v MCUs.
     * Alternatively, hack a single 10kΩ resistor ([preferably two of any 1:2 ratio](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/)) between the MCU's TX pin and module's RX pin.
 
-Serial UART Devices Supported: ESP8266 WiFi module (3.3v only)
+Serial UART Devices Supported: AT WiFi modules, NEMA GPS modules
 
 ### SPI Bus
 
