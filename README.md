@@ -93,7 +93,7 @@ There are several initialization mode settings exposed through this controller t
 
 The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, and i2c clock speed. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, and SPI speeds set to same as processor speed (/0 divider, else 50MHz if undetected).
 
-From Hydruino.h, in class Hydro:
+From Hydruino.h, in class Hydruino:
 ```Arduino
     // Controller constructor. Typically called during class instantiation, before setup().
     Hydruino(pintype_t piezoBuzzerPin = -1,                 // Piezo buzzer pin, else -1
@@ -116,7 +116,7 @@ From Hydruino.h, in class Hydro:
 
 Additionally, a call is expected to be provided to the controller class object's `init[From…](…)` method, commonly called inside of the sketch's `setup()` function. This allows one to set the controller's system type (Recycling or DrainToWaste), units of measurement (Metric, Imperial, or Scientific), control input mode, and display output mode. The default mode of the controller, if left unspecified, is a Recycling system set to Metric units, without any input control or output display.
 
-From Hydruino.h, in class Hydro:
+From Hydruino.h, in class Hydruino:
 ```Arduino
     // Initializes default empty system. Typically called near top of setup().
     // See individual enums for more info.
@@ -144,7 +144,7 @@ From Hydruino.h, in class Hydro:
 
 The controller can also be initialized from a saved configuration, such as from an EEPROM or SD card, or other JSON or Binary stream. A saved configuration of the system can be made via the controller class object's `saveTo…(…)` methods, or called automatically on timer by setting an Autosave mode/interval.
 
-From Hydruino.h, in class Hydro:
+From Hydruino.h, in class Hydruino:
 ```Arduino
     // Saves current system setup to EEPROM save, returning success flag
     // Set system data address with setSystemEEPROMAddress
@@ -171,7 +171,7 @@ Note: You can also get the same logging output sent to the Serial device by defi
 
 Note: Files on FAT32-based SD cards are limited to 8 character file/folder names and a 3 character extension.
 
-From Hydruino.h, in class Hydro:
+From Hydruino.h, in class Hydruino:
 ```Arduino
     // Enables data logging to the SD card. Log file names will append YYMMDD.txt to the specified prefix. Returns success flag.
     inline bool enableSysLoggingToSDCard(String logFilePrefix = "logs/hy");
@@ -217,7 +217,7 @@ I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same sh
 * When more than one I2C device of the same kind is to be used on the same data line, each device must be set to use a different address. This is accomplished via the A0-A2 (sometimes A0-A5) pins/pads on the physical device that must be set either open or closed (typically via a de-solderable resistor, or by shorting a pin/pad). Check your specific breakout's datasheet for details.
 * Note that not all the I2C libraries used support multi-addressable I2C devices at this time. Currently, this restriction applies to RTC devices (read as: may only use one).
 
-I2C Devices Supported: DS3231 RTC modules, AT24C* EEPROM modules, 16x2/20x4 LCD modules
+I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, 16x2/20x4 LCD modules
 
 ### OneWire Bus
 
@@ -226,12 +226,14 @@ OneWire devices can be chained together on the same shared data lines (no flippi
 * Typically, sensors are limited to 20 devices along a maximum 100m of wire.
 * When more than one OneWire device is on the same data data line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
 
+OneWire Devices Supported: DHT* modules
+
 ### Analog IO
 
 * All analog sensors will need to have the same operational voltage range. Many analog sensors are set to use 0v to 5v by default, but some can go -5v to +5v, some even up to 5.5v.
 * The `AREF` pin, by default, is the same voltage as the MCU. Analog sensors must not exceed this voltage limit.
   * 5v analog sensor signals **must** be [level converted](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/) in order to connect to 3.3v MCUs.
-* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) as well as the RasPi Pico and others support different bit resolutions for analog/PWM pins, but also may limit how many pins are able to use these higher resolutions. See the datasheet of your MCU for details.
+* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) as well as the RasPi Pico and others support different bit resolutions for analog/PWM pins, but may also impose other limits. See the datasheet of your MCU for details.
 
 ### Sensors
 
