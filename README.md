@@ -227,7 +227,7 @@ OneWire devices can be chained together on the same shared data lines (no flippi
 * Typically, sensors are limited to 20 devices along a maximum 100m of wire.
 * When more than one OneWire device is on the same data data line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
 
-OneWire Devices Supported: DHT* modules
+OneWire Devices Supported: DHT* Temp modules, DS* Temp modules
 
 ### Analog IO
 
