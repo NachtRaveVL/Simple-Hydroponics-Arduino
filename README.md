@@ -12,7 +12,7 @@ Created by NachtRaveVL, May 20th, 2022.
 
 This controller allows one to set up a system of reservoirs, pumps, probes, relays, and other objects useful in automating the daily lighting, feed dosing, watering, and data monitoring & collection processes involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. Works with a large variety of widely-available aquarium/hobbyist equipment, including popular GPS, RTC, EEPROM, SD card, WiFi, and other modules compatible with Arduino. Contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases for the system configured, along with fully customizable weekly feed/additive amounts and daily feeding/lighting scheduling. With the right setup Hydruino can automatically do things like: enable grow lights for the needed period each day, drive water pumps and auto-dosers during feedings, spray leafy plants in the morning before lights/sunrise, heat cold water to a specific temp for tropical plants, use CO2 sensors to manage air circulation fans to maintain optimal grow tent parameters, or even use soil moisture sensing to dynamically determine watering schedule.
 
-Can be used with GPS and RTC modules for accurate sunrise/sunset and feed timings, or through enabled WiFi from on-board or external serial AT module. Configured system can be saved/loaded to/from external EEPROM, SD card, or WiFiStorage-like device in JSON or binary, along with auto-save, recovery, and cleanup functionality, and can even use a piezo buzzer for audible system alerts. Actuator and sensor I/O pins can be multiplexed for pin-limited environments. Library data can be built into onboard MCU Flash or exported alongside system/user data on external storage. Supports sensor data and system event logging/publishing to external storage and MQTT, and can be extended to work with other JSON based Web APIs or Client-like derivatives. UI support pending, but will include system setup/configuration and monitoring abilities with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu).
+Can be used with GPS and RTC modules for accurate sunrise/sunset and feed timings, or through enabled WiFi/Ethernet from on-board or external ESP8266 WiFi module. Configured system can be saved/loaded to/from external EEPROM, SD card, or WiFiStorage-like device in JSON or binary, along with auto-save, recovery, and cleanup functionality, and can even use a piezo buzzer for audible system alerts. Actuator and sensor I/O pins can be multiplexed for pin-limited environments. Library data can be built into onboard Flash or exported alongside system/user data onto external storage. Supports sensor data and system event logging/publishing to external storage and MQTT, and can be extended to work with other JSON based Web APIs or Client-like derivatives. UI support pending, but will include system setup/configuration and monitoring abilities with basic LCD support via LiquidCrystal, or with advanced LCD and input controller support similar in operation to low-cost 3D printers [via tcMenu](https://github.com/davetcc/tcMenu).
 
 Made primarily for Arduino microcontrollers / build environments, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
@@ -28,7 +28,7 @@ We want to make hydroponics more accessible to DIY'ers by utilizing the widely-a
 
 With the advances in miniaturization technology bringing us even more compact MCUs at even lower costs, it becomes a lot more possible to simply use one of these small devices to do what amounts to turning a bunch of relays on and off in the right order as the day goes by. Hydroponics is a perfect application for these devices, especially as a data logger, process monitor, and more. Professional controller systems like this can cost hundreds to even thousands of dollars, but DIY systems can wind up being a fraction of that cost.
 
-Hydruino is a MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors and relays, some aquarium pumps, maybe some fancy lights, and other widely available low-cost hardware to build a functional DIY hydroponics controller system. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the door for more people to get involved in reducing their carbon footprint, becoming more knowledgeable about their food and where it comes from, and hopefully learning some basic electronics/coding along the way.
+Hydruino is a MCU-based solution primarily written for Arduino and Arduino-like MCU devices. It allows one to throw together a bunch of hobbyist sensors and relays, some aquarium pumps, maybe some fancy lights, and other widely available low-cost hardware to build a functional DIY hydroponics controller system. Be it made with PVC from the hardware store or 3D printed at home, Hydruino opens the door for more people to get involved in reducing their carbon footprint, becoming more knowledgeable about their food and where it comes from - and hey, hopefully learning some basic electronics/coding along the way.
 
 ## Controller Setup
 
@@ -60,19 +60,22 @@ Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=6
 From Hydruino.h:
 ```Arduino
 // Uncomment or -D this define to completely disable usage of any multitasking commands and libraries. Not recommended.
-//#define HYDRO_DISABLE_MULTITASKING             // https://github.com/davetcc/TaskManagerIO
+//#define HYDRO_DISABLE_MULTITASKING              // https://github.com/davetcc/TaskManagerIO
 
 // Uncomment or -D this define to disable usage of tcMenu library, which will disable all GUI control. Not recommended.
-//#define HYDRO_DISABLE_GUI                      // https://github.com/davetcc/tcMenu
+//#define HYDRO_DISABLE_GUI                       // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable usage of the platform WiFi library, which enables networking capabilities.
-//#define HYDRO_ENABLE_WIFI                      // Library used depends on your device architecture.
+//#define HYDRO_ENABLE_WIFI                       // Library used depends on your device architecture.
 
-// Uncomment or -D this define to enable usage of the external serial ESP AT WiFi library, which enables networking capabilities.
-//#define HYDRO_ENABLE_ESP_WIFI                  // https://github.com/jandrassy/WiFiEspAT
+// Uncomment or -D this define to enable usage of the external serial AT WiFi library, which enables networking capabilities.
+//#define HYDRO_ENABLE_AT_WIFI                    // https://github.com/jandrassy/WiFiEspAT
+
+// Uncomment or -D this define to enable usage of the Arduino MQTT library, which enables IoT data publishing capabilities.
+//#define HYDRO_ENABLE_MQTT                       // https://github.com/256dpi/arduino-mqtt
 
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
+//#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, instead relying solely on external storage.
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRO_ENABLE_DEBUG_OUTPUT
@@ -210,7 +213,7 @@ SPI Devices Supported: SD card modules
 
 ### I2C Bus
 
-I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same shared data lines (no flipping of wires), which are typically labeled `SCL` and `SDA`. Only different kinds of I2C devices can be used on the same data line together using factory default settings, otherwise manual addressing must be done. I2C runs at mid to high KHz speeds and is useful for advanced device control.
+I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same shared data lines (no flipping of wires), which are typically labeled `SCL` and `SDA`. Only different kinds of I2C devices can be used on the same data line together using factory default settings, otherwise manual addressing must be done. I2C runs at mid to high kHz speeds and is useful for advanced device control.
 
 * When more than one I2C device of the same kind is to be used on the same data line, each device must be set to use a different address. This is accomplished via the A0-A2 (sometimes A0-A5) pins/pads on the physical device that must be set either open or closed (typically via a de-solderable resistor, or by shorting a pin/pad). Check your specific breakout's datasheet for details.
 * Note that not all the I2C libraries used support multi-addressable I2C devices at this time. Currently, this restriction applies to RTC devices (read as: may only use one).
@@ -351,7 +354,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
 
-// WiFi Settings                                        (note: define HYDRO_ENABLE_WIFI or HYDRO_ENABLE_ESP_WIFI to enable WiFi)
+// WiFi Settings                                        (note: define HYDRO_ENABLE_WIFI or HYDRO_ENABLE_AT_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
 
