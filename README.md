@@ -353,10 +353,17 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
+#define SETUP_NET_CLIENT                WiFi            // Network client instance (WiFi, Ethernet)
 
 // WiFi Settings                                        (note: define HYDRO_ENABLE_WIFI or HYDRO_ENABLE_AT_WIFI to enable WiFi)
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
+#define SETUP_WIFI_SERIAL_INST          Serial1         // WiFi serial class instance, if using ext AT WIFI
+
+// Ethernet Settings                                    (note: define HYDRO_ENABLE_ETHERNET to enable Ethernet)
+#define SETUP_ETHERNET_MAC              { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED } // Ethernet MAC address
+#define SETUP_ETHERNET_IPADDR           { 192, 168, 1, 2 } // Ethernet IP address
+#define SETUP_ETHERNET_CS_PIN           -1              // Ethernet CS pin, else -1
 
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
@@ -381,6 +388,12 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_LOG_SD_ENABLE             false           // If system logging is enabled to SD card
 #define SETUP_DATA_WIFISTORAGE_ENABLE   false           // If system data publishing is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
 #define SETUP_LOG_WIFISTORAGE_ENABLE    false           // If system logging is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
+
+// MQTT Settings                                        (note: define HYDRO_ENABLE_MQTT to enable MQTT)
+#define SETUP_MQTT_BROKER_CONNECT_BY    Hostname        // Which style of address broker uses (Hostname, IPAddress)
+#define SETUP_MQTT_BROKER_HOSTNAME      "hostname"      // Hostname that MQTT broker exists at
+#define SETUP_MQTT_BROKER_IPADDR        { 192, 168, 1, 2 } // IP address that MQTT broker exists at
+#define SETUP_MQTT_BROKER_PORT          1883            // Port number that MQTT broker exists at
 
 // External Data Settings
 #define SETUP_EXTDATA_SD_ENABLE         false           // If data should be read from an external SD card (searched first for crops lib data)
