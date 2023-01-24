@@ -146,7 +146,6 @@ typedef typeof(LOW) Arduino_PinStatusType;                  // Arduino pin statu
 #define HYDRO_SYS_ATWIFI_SERIALBAUD     115200              // Data baud rate for serial AT WiFi, in bps (older modules may need 9600)
 #define HYDRO_SYS_ATWIFI_SERIALMODE     SERIAL_8N1          // Data transfer mode for serial AT WiFi (see SERIAL_* defines)
 #define HYDRO_SYS_NMEAGPS_SERIALBAUD    9600                // Data baud rate for serial NMEA GPS, in bps (older modules may need 4800)
-#define HYDRO_SYS_NMEAGPS_SERIALMODE    SERIAL_8N1          // Data transfer mode for serial NMEA GPS (see SERIAL_* defines)
 #define HYDRO_SYS_URLHTTP_PORT          80                  // Which default port to access when accessing HTTP resources
 #define HYDRO_SYS_LEAVE_FILES_OPEN      !defined(__AVR__)   // If high access files should be left open to improve performance (true), or closed after use to reduce memory consumption (false)
 #define HYDRO_SYS_FREERAM_LOWBYTES      1024                // How many bytes of free memory left spawns a handle low mem call to all objects
