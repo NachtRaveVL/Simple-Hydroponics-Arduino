@@ -138,7 +138,7 @@ void publishData(HydroSensor *sensor)
 
 bool setCurrentTime(DateTime currTime)
 {
-    auto rtc = getHydroInstance() ? getHydroInstance()->getRealTimeClock() : nullptr;
+    auto rtc = getHydroInstance() ? getHydroInstance()->getRTC() : nullptr;
     if (rtc) {
         rtc->adjust(currTime);
         getHydroInstance()->notifyRTCTimeUpdated();
