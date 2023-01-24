@@ -748,7 +748,7 @@ static void printDeviceSetup(String prefix, const DeviceSetup &devSetup)
 
 void Hydruino::commonPostInit()
 {
-    if ((_rtcSyncProvider = getRealTimeClock())) {
+    if ((_rtcSyncProvider = getRTC())) {
         setSyncProvider(rtcNow);
     }
 
@@ -890,6 +890,13 @@ void miscLoop()
 
         Hydruino::_activeInstance->publisher.update();
 
+        #ifdef HYDRO_USE_GPS // FIXME: This may get removed if it doesn't work right, but it's probably close.
+            if (Hydruino::_gps && Hydruino::_gps->newNMEAreceived()) {
+                Hydruino::_gps->parse(Hydruino::_gps->lastNMEA());
+                // TODO: Update lat/long of controller (trigger possible event change, possibly back behind a frequency timer).
+            }
+        #endif
+
         #if HYDRO_SYS_MEM_LOGGING_ENABLE
         {   static time_t _lastMemLog = unixNow();
             if (unixNow() >= _lastMemLog + 15) {
@@ -969,6 +976,9 @@ void Hydruino::update()
 
     #ifdef HYDRO_USE_MQTT
         if (publisher._mqttClient) { publisher._mqttClient->loop(); }
+    #endif
+    #ifdef HYDRO_USE_GPS // FIXME: This may get removed if it doesn't work right.
+        if (_gps) { while(_gps->available()) { _gps->read(); } }
     #endif
 }
 
@@ -1185,6 +1195,15 @@ void Hydruino::setAutosaveEnabled(Hydro_Autosave autosaveEnabled, Hydro_Autosave
     }
 }
 
+void Hydruino::setRTCTime(DateTime time)
+{
+    auto rtc = getRTC();
+    if (rtc) {
+        rtc->adjust(DateTime((uint32_t)(time.unixtime() + (-getTimeZoneOffset() * SECS_PER_HOUR))));
+        notifyRTCTimeUpdated();
+    }
+}
+
 #ifdef HYDRO_USE_WIFI
 
 void Hydruino::setWiFiConnection(String ssid, String pass)
@@ -1242,15 +1261,6 @@ void Hydruino::setEthernetConnection(const uint8_t *macAddress)
 
 #endif
 
-void Hydruino::setRealTimeClockTime(DateTime time)
-{
-    auto rtc = getRealTimeClock();
-    if (rtc) {
-        rtc->adjust(DateTime((uint32_t)(time.unixtime() + (-getTimeZoneOffset() * SECS_PER_HOUR))));
-        notifyRTCTimeUpdated();
-    }
-}
-
 int Hydruino::getControlInputRibbonPinCount() const
 {
     switch (getControlInputMode()) {
@@ -1288,7 +1298,7 @@ I2C_eeprom *Hydruino::getEEPROM(bool begin)
     return (!begin || _eepromBegan) ? _eeprom : nullptr;
 }
 
-HydroRTCInterface *Hydruino::getRealTimeClock(bool begin)
+HydroRTCInterface *Hydruino::getRTC(bool begin)
 {
     if (!_rtc) { allocateRTC(); }
 

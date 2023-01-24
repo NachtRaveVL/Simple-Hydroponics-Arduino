@@ -307,7 +307,7 @@ void setup() {
             }
         #endif
         #ifdef HYDRO_USE_GPS
-            hydroController.getGPS();
+            hydroController.getGPS()->sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
         #endif
         #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
             hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToWiFiStorageJson
