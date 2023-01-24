@@ -1,19 +1,19 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
-    Hydruino Calibrations Store
+    Hydruino Calibrations
 */
 
-#ifndef HydroCalibrationsStore_H
-#define HydroCalibrationsStore_H
+#ifndef HydroCalibrations_H
+#define HydroCalibrations_H
 
-class HydroCalibrationsStore;
+class HydroCalibrations;
 
 #include "Hydruino.h"
 
-// Calibrations Store
-// The Calibrations Store stores user calibration data, which calibrates the various
-// sensors output to a usable input value.
-class HydroCalibrationsStore {
+// Calibrations Storage
+// Stores user calibration data, which calibrates the various sensors output to
+// an usable input value.
+class HydroCalibrations {
 public:
     // Adds/updates user calibration data to the store, returning success flag
     bool setUserCalibrationData(const HydroCalibrationData *calibrationData);
@@ -33,6 +33,6 @@ protected:
     friend class Hydruino;
 };
 
-extern HydroCalibrationsStore hydroCalibrations;
+extern HydroCalibrations hydroCalibrations;
 
-#endif // /ifndef HydroCalibrationsStore_H
+#endif // /ifndef HydroCalibrations_H

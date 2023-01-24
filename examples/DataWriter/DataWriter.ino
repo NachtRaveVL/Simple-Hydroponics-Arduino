@@ -22,9 +22,9 @@
 // In Hydruino.h:
 // 
 // // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
-// // #define HYDRO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
+// //#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, instead relying solely on external storage.
 // 
-// // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
+// // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 // #define HYDRO_ENABLE_DEBUG_OUTPUT
 //
 // Alternatively, in platform[.local].txt:

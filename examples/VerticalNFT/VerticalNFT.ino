@@ -169,7 +169,7 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
                          I2CDeviceSetup((uint8_t)SETUP_RTC_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
                          SPIDeviceSetup((pintype_t)SETUP_SD_CARD_SPI_CS, &SETUP_SD_CARD_SPI, SETUP_SD_CARD_SPI_SPEED),
 #if defined(HYDRO_USE_AT_WIFI)
-                         TTLDeviceSetup(&SETUP_WIFI_SERIAL, HYDRO_SYS_ATWIFI_SERIALBAUD),
+                         UARTDeviceSetup(&SETUP_WIFI_SERIAL, HYDRO_SYS_ATWIFI_SERIALBAUD),
 #elif defined(HYDRO_USE_WIFI)
                          SPIDeviceSetup((pintype_t)SETUP_WIFI_SPI_CS, &SETUP_WIFI_SPI),
 #elif defined(HYDRO_USE_ETHERNET)
@@ -178,7 +178,7 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
                          DeviceSetup(),
 #endif
 #if defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == Serial
-                         TTLDeviceSetup(&SETUP_GPS_SERIAL, HYDRO_SYS_NMEAGPS_SERIALBAUD),
+                         UARTDeviceSetup(&SETUP_GPS_SERIAL, HYDRO_SYS_NMEAGPS_SERIALBAUD),
 #elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == I2C
                          I2CDeviceSetup(SETUP_GPS_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
 #elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == SPI

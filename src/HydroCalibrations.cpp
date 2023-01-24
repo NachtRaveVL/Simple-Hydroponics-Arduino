@@ -1,13 +1,13 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
-    Hydruino Calibrations Store
+    Hydruino Calibrations
 */
 
 #include "Hydruino.h"
 
-HydroCalibrationsStore hydroCalibrations;
+HydroCalibrations hydroCalibrations;
 
-const HydroCalibrationData *HydroCalibrationsStore::getUserCalibrationData(Hydro_KeyType key) const
+const HydroCalibrationData *HydroCalibrations::getUserCalibrationData(Hydro_KeyType key) const
 {
     auto iter = _calibrationData.find(key);
     if (iter != _calibrationData.end()) {
@@ -16,7 +16,7 @@ const HydroCalibrationData *HydroCalibrationsStore::getUserCalibrationData(Hydro
     return nullptr;
 }
 
-bool HydroCalibrationsStore::setUserCalibrationData(const HydroCalibrationData *calibrationData)
+bool HydroCalibrations::setUserCalibrationData(const HydroCalibrationData *calibrationData)
 {
     HYDRO_SOFT_ASSERT(calibrationData, SFP(HStr_Err_InvalidParameter));
 
@@ -44,7 +44,7 @@ bool HydroCalibrationsStore::setUserCalibrationData(const HydroCalibrationData *
     return false;
 }
 
-bool HydroCalibrationsStore::dropUserCalibrationData(const HydroCalibrationData *calibrationData)
+bool HydroCalibrations::dropUserCalibrationData(const HydroCalibrationData *calibrationData)
 {
     HYDRO_HARD_ASSERT(calibrationData, SFP(HStr_Err_InvalidParameter));
     Hydro_KeyType key = stringHash(calibrationData->sensorName);
