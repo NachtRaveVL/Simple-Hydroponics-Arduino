@@ -88,6 +88,9 @@ typedef SDFileSystemClass SDClass;
 #endif
 #ifdef ESP8266
 using namespace sdfat;
+typedef SerialConfig uartmode_t;
+#else
+typedef int uartmode_t;
 #endif
 
 #ifdef HYDRO_ENABLE_WIFI

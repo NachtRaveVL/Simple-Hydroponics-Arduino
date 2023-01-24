@@ -699,7 +699,7 @@ void Hydruino::commonPreInit()
             #endif
         } else if (_netSetup.cfgType == DeviceSetup::UARTSetup) {
             if (began.find((uintptr_t)_netSetup.cfgAs.uart.serial) == began.end() || _netSetup.cfgAs.uart.baud < began[(uintptr_t)_netSetup.cfgAs.uart.serial]) {
-                _netSetup.cfgAs.uart.serial->begin((began[(uintptr_t)_netSetup.cfgAs.uart.serial] = _netSetup.cfgAs.uart.baud), (uint16_t)HYDRO_SYS_ATWIFI_SERIALMODE);
+                _netSetup.cfgAs.uart.serial->begin((began[(uintptr_t)_netSetup.cfgAs.uart.serial] = _netSetup.cfgAs.uart.baud), (uartmode_t)HYDRO_SYS_ATWIFI_SERIALMODE);
             }
             #ifdef HYDRO_USE_AT_WIFI
                 WiFi.init(_netSetup.cfgAs.uart.serial);
