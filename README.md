@@ -113,7 +113,6 @@ From Hydruino.h, in class Hydruino:
              DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/ttl)
              pintype_t *ctrlInputPins = nullptr,                    // Control input pins, else nullptr
              DeviceSetup lcdSetup = DeviceSetup());                 // LCD device setup (i2c only)
-
 ```
 
 #### Controller Initialization
@@ -289,6 +288,12 @@ The Simple DWC Example sketch shows how a simple Hydruino system can be setup us
 Hydruino hydroController(SETUP_PIEZO_BUZZER_PIN);       // Controller using default setup aside from buzzer pin, if defined
 
 void setup() {
+    // Setup base interfaces
+    #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+        Serial.begin(115200);           // Begin USB Serial interface
+        while (!Serial) { ; }           // Wait for USB Serial to connect
+    #endif
+
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else.
     hydroController.init();
 
