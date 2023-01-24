@@ -1,8 +1,8 @@
 // JSON export tests
 
-#include <Hydroponics.h>
+#include <Hydruino.h>
 
-Hydroponics hydroController;
+Hydruino hydroController;
 
 #define JSONDocSize 256
 
@@ -10,11 +10,11 @@ void testActuators()
 {
     Serial.println(); Serial.println("-- Actuators --");
 
-    {   auto relay = SharedPtr<HydroponicsRelayActuator>(new HydroponicsRelayActuator(Hydroponics_ActuatorType_GrowLights, 0, 7));
-        relay->setRail(HydroponicsIdentity(String(F("ASDF"))));
-        relay->setReservoir(HydroponicsIdentity(String(F("JKL"))));
+    {   auto relay = SharedPtr<HydroRelayActuator>(new HydroRelayActuator(Hydro_ActuatorType_GrowLights, 0, HydroDigitalPin(7, OUTPUT)));
+        relay->setRail(HydroIdentity(String(F("ASDF"))));
+        relay->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsRelayActuatorData *)(relay->newSaveData());
+        auto data = (HydroActuatorData *)(relay->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -27,11 +27,11 @@ void testActuators()
         Serial.println(); flushYield();
     }
 
-    {   auto pumpRelay = SharedPtr<HydroponicsPumpRelayActuator>(new HydroponicsPumpRelayActuator(Hydroponics_ActuatorType_WaterPump, 0, 7));
-        pumpRelay->setRail(HydroponicsIdentity(String(F("ASDF"))));
-        pumpRelay->setReservoir(HydroponicsIdentity(String(F("JKL"))));
+    {   auto pumpRelay = SharedPtr<HydroPumpRelayActuator>(new HydroPumpRelayActuator(Hydro_ActuatorType_WaterPump, 0, HydroDigitalPin(7, OUTPUT)));
+        pumpRelay->setRail(HydroIdentity(String(F("ASDF"))));
+        pumpRelay->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsPumpRelayActuatorData *)(pumpRelay->newSaveData());
+        auto data = (HydroPumpRelayActuatorData *)(pumpRelay->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -44,11 +44,11 @@ void testActuators()
         Serial.println(); flushYield();
     }
 
-    {   auto pwmFan = SharedPtr<HydroponicsPWMActuator>(new HydroponicsPWMActuator(Hydroponics_ActuatorType_FanExhaust, 0, 7));
-        pwmFan->setRail(HydroponicsIdentity(String(F("ASDF"))));
-        pwmFan->setReservoir(HydroponicsIdentity(String(F("JKL"))));
+    {   auto pwmFan = SharedPtr<HydroPWMActuator>(new HydroPWMActuator(Hydro_ActuatorType_FanExhaust, 0, HydroAnalogPin(7, OUTPUT)));
+        pwmFan->setRail(HydroIdentity(String(F("ASDF"))));
+        pwmFan->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsPWMActuatorData *)(pwmFan->newSaveData());
+        auto data = (HydroActuatorData *)(pwmFan->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -66,11 +66,11 @@ void testSensors()
 {
     Serial.println(); Serial.println("-- Sensors --");
 
-    {   auto binarySensor = SharedPtr<HydroponicsBinarySensor>(new HydroponicsBinarySensor(Hydroponics_SensorType_WaterLevelIndicator, 0, 0));
-        binarySensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
-        binarySensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
+    {   auto binarySensor = SharedPtr<HydroBinarySensor>(new HydroBinarySensor(Hydro_SensorType_WaterLevelIndicator, 0, 0));
+        binarySensor->setCrop(HydroIdentity(String(F("ASDF"))));
+        binarySensor->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsBinarySensorData *)(binarySensor->newSaveData());
+        auto data = (HydroBinarySensorData *)(binarySensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -83,11 +83,11 @@ void testSensors()
         Serial.println(); flushYield();
     }
 
-    {   auto analogSensor = SharedPtr<HydroponicsAnalogSensor>(new HydroponicsAnalogSensor(Hydroponics_SensorType_WaterHeightMeter, 0, 0));
-        analogSensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
-        analogSensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
+    {   auto analogSensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(Hydro_SensorType_WaterHeightMeter, 0, 0));
+        analogSensor->setCrop(HydroIdentity(String(F("ASDF"))));
+        analogSensor->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsAnalogSensorData *)(analogSensor->newSaveData());
+        auto data = (HydroAnalogSensorData *)(analogSensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -100,11 +100,11 @@ void testSensors()
         Serial.println(); flushYield();
     }
 
-    {   auto dhtSensor = SharedPtr<HydroponicsDHTTempHumiditySensor>(new HydroponicsDHTTempHumiditySensor(0, 0));
-        dhtSensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
-        dhtSensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
+    {   auto dhtSensor = SharedPtr<HydroDHTTempHumiditySensor>(new HydroDHTTempHumiditySensor(0, 0, Hydro_DHTType_DHT12));
+        dhtSensor->setCrop(HydroIdentity(String(F("ASDF"))));
+        dhtSensor->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsDHTTempHumiditySensorData *)(dhtSensor->newSaveData());
+        auto data = (HydroDHTTempHumiditySensorData *)(dhtSensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -117,11 +117,11 @@ void testSensors()
         Serial.println(); flushYield();
     }
 
-    {   auto dsSensor = SharedPtr<HydroponicsDSTemperatureSensor>(new HydroponicsDSTemperatureSensor(0, 0));
-        dsSensor->setCrop(HydroponicsIdentity(String(F("ASDF"))));
-        dsSensor->setReservoir(HydroponicsIdentity(String(F("JKL"))));
+    {   auto dsSensor = SharedPtr<HydroDSTemperatureSensor>(new HydroDSTemperatureSensor(0, 0));
+        dsSensor->setCrop(HydroIdentity(String(F("ASDF"))));
+        dsSensor->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsDSTemperatureSensorData *)(dsSensor->newSaveData());
+        auto data = (HydroDSTemperatureSensorData *)(dsSensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -139,10 +139,10 @@ void testCrops()
 {
     Serial.println(); Serial.println("-- Crops --");
 
-    {   auto timedCrop = SharedPtr<HydroponicsTimedCrop>(new HydroponicsTimedCrop(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime()));
-        timedCrop->setFeedReservoir(HydroponicsIdentity(String(F("ASDF"))));
+    {   auto timedCrop = SharedPtr<HydroTimedCrop>(new HydroTimedCrop(Hydro_CropType_Lettuce, 0, Hydro_SubstrateType_ClayPebbles, DateTime()));
+        timedCrop->setFeedReservoir(HydroIdentity(String(F("ASDF"))));
 
-        auto data = (HydroponicsTimedCropData *)(timedCrop->newSaveData());
+        auto data = (HydroTimedCropData *)(timedCrop->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -155,11 +155,11 @@ void testCrops()
         Serial.println(); flushYield();
     }
 
-    {   auto adaptiveCrop = SharedPtr<HydroponicsAdaptiveCrop>(new HydroponicsAdaptiveCrop(Hydroponics_CropType_Lettuce, 0, Hydroponics_SubstrateType_ClayPebbles, DateTime()));
-        adaptiveCrop->setFeedReservoir(HydroponicsIdentity(String(F("ASDF"))));
-        adaptiveCrop->setSoilMoistureSensor(HydroponicsIdentity(String(F("JKL"))));
+    {   auto adaptiveCrop = SharedPtr<HydroAdaptiveCrop>(new HydroAdaptiveCrop(Hydro_CropType_Lettuce, 0, Hydro_SubstrateType_ClayPebbles, DateTime()));
+        adaptiveCrop->setFeedReservoir(HydroIdentity(String(F("ASDF"))));
+        adaptiveCrop->setSoilMoistureSensor(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroponicsAdaptiveCropData *)(adaptiveCrop->newSaveData());
+        auto data = (HydroAdaptiveCropData *)(adaptiveCrop->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -177,10 +177,10 @@ void testReservoirs()
 {
     Serial.println(); Serial.println("-- Reservoirs --");
 
-    {   auto fluidRes = SharedPtr<HydroponicsFluidReservoir>(new HydroponicsFluidReservoir(Hydroponics_ReservoirType_NutrientPremix, 0, 5));
-        fluidRes->setWaterVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
+    {   auto fluidRes = SharedPtr<HydroFluidReservoir>(new HydroFluidReservoir(Hydro_ReservoirType_NutrientPremix, 0, 5));
+        fluidRes->setWaterVolumeSensor(HydroIdentity(String(F("ASDF"))));
 
-        auto data = (HydroponicsFluidReservoirData *)(fluidRes->newSaveData());
+        auto data = (HydroFluidReservoirData *)(fluidRes->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -193,15 +193,15 @@ void testReservoirs()
         Serial.println(); flushYield();
     }
 
-    {   auto feedRes = SharedPtr<HydroponicsFeedReservoir>(new HydroponicsFeedReservoir(0, 5));
-        feedRes->setWaterVolumeSensor(HydroponicsIdentity(String(F("ASDF"))));
-        feedRes->setWaterPHSensor(HydroponicsIdentity(String(F("JKL"))));
-        feedRes->setWaterTDSSensor(HydroponicsIdentity(String(F("QWER"))));
-        feedRes->setWaterTemperatureSensor(HydroponicsIdentity(String(F("UIOP"))));
-        feedRes->setAirTemperatureSensor(HydroponicsIdentity(String(F("ZXCV"))));
-        feedRes->setAirCO2Sensor(HydroponicsIdentity(String(F("BNM"))));
+    {   auto feedRes = SharedPtr<HydroFeedReservoir>(new HydroFeedReservoir(0, 5));
+        feedRes->setWaterVolumeSensor(HydroIdentity(String(F("ASDF"))));
+        feedRes->setWaterPHSensor(HydroIdentity(String(F("JKL"))));
+        feedRes->setWaterTDSSensor(HydroIdentity(String(F("QWER"))));
+        feedRes->setWaterTemperatureSensor(HydroIdentity(String(F("UIOP"))));
+        feedRes->setAirTemperatureSensor(HydroIdentity(String(F("ZXCV"))));
+        feedRes->setAirCO2Sensor(HydroIdentity(String(F("BNM"))));
 
-        auto data = (HydroponicsFeedReservoirData *)(feedRes->newSaveData());
+        auto data = (HydroFeedReservoirData *)(feedRes->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -214,9 +214,9 @@ void testReservoirs()
         Serial.println(); flushYield();
     }
 
-    {   auto pipeRes = SharedPtr<HydroponicsInfiniteReservoir>(new HydroponicsInfiniteReservoir(Hydroponics_ReservoirType_DrainageWater, 0));
+    {   auto pipeRes = SharedPtr<HydroInfiniteReservoir>(new HydroInfiniteReservoir(Hydro_ReservoirType_DrainageWater, 0));
 
-        auto data = (HydroponicsInfiniteReservoirData *)(pipeRes->newSaveData());
+        auto data = (HydroInfiniteReservoirData *)(pipeRes->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -234,9 +234,9 @@ void testRails()
 {
     Serial.println(); Serial.println("-- Rails --");
 
-    {   auto rail = SharedPtr<HydroponicsSimpleRail>(new HydroponicsSimpleRail(Hydroponics_RailType_AC110V, 0));
+    {   auto rail = SharedPtr<HydroSimpleRail>(new HydroSimpleRail(Hydro_RailType_AC110V, 0));
 
-        auto data = (HydroponicsSimpleRailData *)(rail->newSaveData());
+        auto data = (HydroSimpleRailData *)(rail->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -249,10 +249,10 @@ void testRails()
         Serial.println(); flushYield();
     }
 
-    {   auto regRail = SharedPtr<HydroponicsRegulatedRail>(new HydroponicsRegulatedRail(Hydroponics_RailType_AC110V, 0, 15));
-        regRail->setPowerUsageSensor(HydroponicsIdentity(String(F("ASDF"))));
+    {   auto regRail = SharedPtr<HydroRegulatedRail>(new HydroRegulatedRail(Hydro_RailType_AC110V, 0, 15));
+        regRail->setPowerUsageSensor(HydroIdentity(String(F("ASDF"))));
 
-        auto data = (HydroponicsRegulatedRailData *)(regRail->newSaveData());
+        auto data = (HydroRegulatedRailData *)(regRail->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);
@@ -267,9 +267,8 @@ void testRails()
 }
 
 void setup() {
-    Serial.begin(115200);
-    while (!Serial) { ; }
-    Wire.setClock(hydroController.getI2CSpeed());
+    Serial.begin(115200);           // Begin USB Serial interface
+    while (!Serial) { ; }           // Wait for USB Serial to connect
 
     hydroController.init();
 

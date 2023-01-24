@@ -3,34 +3,49 @@
 // controller enclosure and for most vertical towers that will be used. It can be
 // easily extended to include other functionality if desired.
 
-#include <Hydroponics.h>
+#ifdef USE_SW_SERIAL
+#include "SoftwareSerial.h"
+SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pins of your choice
+#define Serial1 SWSerial
+#endif
 
-// Pins & Class Instances
+#include <Hydruino.h>
+
+/// Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_SIZE        0               // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
-#define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
+#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
+#define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM i2c address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
-#define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
+#define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
+#define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
+#define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_SPIRAM_DEVICE_SIZE        0               // SPI serial RAM device size, in bytes, else 0 (note: define HYDRUINO_ENABLE_SPIRAM_VIRTMEM to enable SPIRAM)
-#define SETUP_SPIRAM_CS_PIN             -1              // SPI serial RAM CS pin, else -1
-#define SETUP_SPIRAM_SPI_SPEED          F_SPD           // SPI serial RAM SPI speed, in Hz
 #define SETUP_LCD_I2C_ADDR              B000            // LCD i2c address
 #define SETUP_CTRL_INPUT_PINS           {-1}            // Control input pin ribbon, else {-1}
-#define SETUP_I2C_WIRE_INST             Wire            // I2C wire class instance
+#define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
-#define SETUP_NET_CLIENT                WiFi            // Network client instance (WiFi, Ethernet)
 
-// WiFi Settings                                        (note: define HYDRUINO_ENABLE_WIFI or HYDRUINO_ENABLE_ESP_WIFI to enable WiFi)
+// WiFi Settings                                        (note: define HYDRO_ENABLE_WIFI or HYDRO_ENABLE_AT_WIFI to enable WiFi)
+// #include "secrets.h"                                 // Pro-tip: Put sensitive password information into a custom secrets.h
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
+#define SETUP_WIFI_SPI                  SPIWIFI         // WiFi SPI class instance, if using spi
+#define SETUP_WIFI_SPI_CS               SPIWIFI_SS      // WiFi CS pin, if using spi
+#define SETUP_WIFI_SERIAL               Serial1         // WiFi serial class instance, if using serial
 
-// Ethernet Settings                                    (note: define HYDRUINO_ENABLE_ETHERNET to enable Ethernet)
+// Ethernet Settings                                    (note: define HYDRO_ENABLE_ETHERNET to enable Ethernet)
 #define SETUP_ETHERNET_MAC              { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED } // Ethernet MAC address
-#define SETUP_ETHERNET_IPADDR           { 192, 168, 1, 2 } // Ethernet IP address
-#define SETUP_ETHERNET_CS_PIN           -1              // Ethernet CS pin, else -1
+#define SETUP_ETHERNET_SPI              SPI1            // Ethernet SPI class instance
+#define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
+
+// GPS Settings                                         (note: defined HYDRO_ENABLE_GPS to enable GPS)
+#define SETUP_GPS_TYPE                  Serial          // Type of GPS (Serial, I2C, SPI)
+#define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
+#define SETUP_GPS_I2C_ADDR              B000            // GPS i2c address, if using i2c
+#define SETUP_GPS_SPI                   SPI             // GPS SPI class instance, if using spi
+#define SETUP_GPS_SPI_CS                SS              // GPS CS pin, if using spi
 
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
@@ -56,7 +71,7 @@
 #define SETUP_DATA_WIFISTORAGE_ENABLE   false           // If system data publishing is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
 #define SETUP_LOG_WIFISTORAGE_ENABLE    false           // If system logging is enabled to WiFiStorage (OS/OTA filesystem / WiFiNINA_Generic only)
 
-// MQTT Settings                                        (note: define HYDRUINO_ENABLE_MQTT to enable MQTT)
+// MQTT Settings                                        (note: define HYDRO_ENABLE_MQTT to enable MQTT)
 #define SETUP_MQTT_BROKER_CONNECT_BY    Hostname        // Which style of address broker uses (Hostname, IPAddress)
 #define SETUP_MQTT_BROKER_HOSTNAME      "hostname"      // Hostname that MQTT broker exists at
 #define SETUP_MQTT_BROKER_IPADDR        { 192, 168, 1, 2 } // IP address that MQTT broker exists at
@@ -81,7 +96,7 @@
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
 #define SETUP_DS18_WATER_TEMP_PIN       -1              // DS18* water temp sensor data pin (digital), else -1
 #define SETUP_DHT_AIR_TEMP_HUMID_PIN    -1              // DHT* air temp sensor data pin (digital), else -1
-#define SETUP_DHT_SENSOR_TYPE           DHT12           // DHT sensor type enum (use DHT* defines)
+#define SETUP_DHT_SENSOR_TYPE           None            // DHT sensor type enum (DHT11, DHT12, DHT21, DHT22, AM2301, None)
 #define SETUP_VOL_FILLED_PIN            -1              // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
 #define SETUP_VOL_INDICATOR_TYPE        ACTIVE_HIGH     // Water level indicator type/active level (ACTIVE_HIGH, ACTIVE_LOW)
@@ -116,58 +131,61 @@
 #define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted at
 #define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
 
-
-#if defined(HYDRUINO_ENABLE_ESP_WIFI) && !(defined(SERIAL_PORT_HARDWARE1) || defined(Serial1))
-//#include "SoftwareSerial.h"
-//SoftwareSerial Serial1(RX, TX);                       // Replace with Rx/Tx pins of your choice
-#endif
-#if !defined(HYDRUINO_DISABLE_GUI) && SETUP_LCD_OUT_MODE != Disabled
-#if SETUP_SYS_UI_MODE == Minimal
-#include "min/HydroponicsUI.h"
-typedef HydroponicsMinUI HydroponicsUI;
-#elif SETUP_SYS_UI_MODE == Full
-#include "full/HydroponicsUI.h"
-typedef HydroponicsFullUI HydroponicsUI;
-#endif
-#endif
-
-#ifdef HYDRUINO_ENABLE_MQTT
-#if SETUP_NET_CLIENT == WiFi && defined(HYDRUINO_USE_WIFI)
+#if defined(HYDRO_USE_WIFI)
 WiFiClient netClient;
-#elif SETUP_NET_CLIENT == Ethernet && !defined(HYDRUINO_USE_WIFI) && SETUP_ETHERNET_CS_PIN >= 0
-#include <Ethernet.h>
+#elif defined(HYDRO_USE_ETHERNET)
 EthernetClient netClient;
 #endif
+#ifdef HYDRO_USE_MQTT
 MQTTClient mqttClient;
 #endif
 
-// Pre-init checks
-#if (SETUP_SAVES_WIFISTORAGE_MODE != Disabled || SETUP_DATA_WIFISTORAGE_ENABLE || SETUP_LOG_WIFISTORAGE_ENABLE) && !defined(HYDRUINO_USE_WIFI_STORAGE)
-#warning The HYDRUINO_ENABLE_WIFI flag is expected to be defined as well as WiFiNINA_Generic.h included in order to run this sketch with WiFiStorage features enabled
+#if defined(HYDRO_USE_GUI) && SETUP_LCD_OUT_MODE != Disabled
+#if SETUP_SYS_UI_MODE == Minimal
+#include "min/HydruinoUI.h"
+typedef HydruinoMinUI HydruinoUI;
+#elif SETUP_SYS_UI_MODE == Full
+#include "full/HydruinoUI.h"
+typedef HydruinoFullUI HydruinoUI;
 #endif
-#if (SETUP_SAVES_SD_CARD_MODE != Disabled || SETUP_DATA_SD_ENABLE || SETUP_LOG_SD_ENABLE || SETUP_EXTDATA_SD_ENABLE) && SETUP_SD_CARD_CS_PIN == -1
-#warning The SETUP_SD_CARD_CS_PIN define is expected to be set to a valid pin in order to run this sketch with SD card features enabled
+#endif
+
+// Pre-init checks
+#if (SETUP_SAVES_WIFISTORAGE_MODE != Disabled || SETUP_DATA_WIFISTORAGE_ENABLE || SETUP_LOG_WIFISTORAGE_ENABLE) && !defined(HYDRO_USE_WIFI_STORAGE)
+#warning The HYDRO_ENABLE_WIFI flag is expected to be defined as well as WiFiNINA_Generic.h included in order to run this sketch with WiFiStorage features enabled
+#endif
+#if (SETUP_SAVES_SD_CARD_MODE != Disabled || SETUP_DATA_SD_ENABLE || SETUP_LOG_SD_ENABLE || SETUP_EXTDATA_SD_ENABLE) && SETUP_SD_CARD_SPI_CS == -1
+#warning The SETUP_SD_CARD_SPI_CS define is expected to be set to a valid pin in order to run this sketch with SD card features enabled
 #endif
 #if (SETUP_SAVES_EEPROM_MODE != Disabled || SETUP_EXTDATA_EEPROM_ENABLE) && SETUP_EEPROM_DEVICE_SIZE == 0
 #warning The SETUP_EEPROM_DEVICE_SIZE define is expected to be set to a valid size in order to run this sketch with EEPROM features enabled
 #endif
 
 pintype_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
-Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
-                            SETUP_EEPROM_DEVICE_SIZE,
-                            SETUP_EEPROM_I2C_ADDR,
-                            SETUP_RTC_I2C_ADDR,
-                            SETUP_SD_CARD_CS_PIN,
-                            SETUP_SD_CARD_SPI_SPEED,
-#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
-                            SETUP_SPIRAM_DEVICE_SIZE,
-                            SETUP_SPIRAM_CS_PIN,
-                            SETUP_SPIRAM_SPI_SPEED,
+Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
+                         JOIN(Hydro_EEPROMType,SETUP_EEPROM_DEVICE_TYPE),
+                         I2CDeviceSetup((uint8_t)SETUP_EEPROM_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         JOIN(Hydro_RTCType,SETUP_RTC_DEVICE_TYPE),
+                         I2CDeviceSetup((uint8_t)SETUP_RTC_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         SPIDeviceSetup((pintype_t)SETUP_SD_CARD_SPI_CS, &SETUP_SD_CARD_SPI, SETUP_SD_CARD_SPI_SPEED),
+#if defined(HYDRO_USE_AT_WIFI)
+                         TTLDeviceSetup(&SETUP_WIFI_SERIAL, HYDRO_SYS_ATWIFI_SERIALBAUD),
+#elif defined(HYDRO_USE_WIFI)
+                         SPIDeviceSetup((pintype_t)SETUP_WIFI_SPI_CS, &SETUP_WIFI_SPI),
+#elif defined(HYDRO_USE_ETHERNET)
+                         SPIDeviceSetup((pintype_t)SETUP_ETHERNET_SPI_CS, &SETUP_ETHERNET_SPI),
+#else
+                         DeviceSetup(),
 #endif
-                            _SETUP_CTRL_INPUT_PINS,
-                            SETUP_LCD_I2C_ADDR,
-                            SETUP_I2C_WIRE_INST,
-                            SETUP_I2C_SPEED);
+// #if defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == Serial
+//                          TTLDeviceSetup(&SETUP_GPS_SERIAL, HYDRO_SYS_NMEAGPS_SERIALBAUD),
+// #elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == I2C
+//                          I2CDeviceSetup(SETUP_GPS_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+// #elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == SPI
+//                          SPIDeviceSetup(SETUP_GPS_SPI_CS, &SETUP_GPS_SPI),
+// #endif
+                         _SETUP_CTRL_INPUT_PINS,
+                         I2CDeviceSetup((uint8_t)SETUP_LCD_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED));
 
 #if SETUP_GROW_LIGHTS_PIN >= 0 || SETUP_WATER_AERATOR_PIN >= 0 ||  SETUP_FEED_PUMP_PIN >= 0 || SETUP_WATER_HEATER_PIN >= 0 || SETUP_WATER_SPRAYER_PIN >= 0 || SETUP_FAN_EXHAUST_PIN >= 0
 #define SETUP_USE_AC_RAIL
@@ -184,22 +202,22 @@ Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
 
 void setup() {
     // Setup base interfaces
-    #ifdef HYDRUINO_ENABLE_DEBUG_OUTPUT
+    #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
         Serial.begin(115200);           // Begin USB Serial interface
         while (!Serial) { ; }           // Wait for USB Serial to connect
     #endif
     #if defined(ESP_PLATFORM)
-        SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
+        SETUP_I2C_WIRE.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
-    #ifdef HYDRUINO_USE_WIFI
+    #ifdef HYDRO_USE_WIFI
         String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
-        #ifdef HYDRUINO_ENABLE_ESP_WIFI
-            Serial1.begin(HYDRUINO_SYS_ESPWIFI_SERIALBAUD);
-            WiFi.init(Serial1); // Change to Serial instance of your choice, otherwise
+        #ifdef HYDRO_USE_AT_WIFI
+            SETUP_WIFI_SERIAL.begin(HYDRO_SYS_ATWIFI_SERIALBAUD);
+            WiFi.init(SETUP_WIFI_SERIAL);
         #endif
     #endif
-    
+
     // Begin external data storage devices for crop, strings, and other data.
     #if SETUP_EXTDATA_EEPROM_ENABLE
         beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
@@ -211,8 +229,8 @@ void setup() {
     #endif
 
     // Sets system config name used in any of the following inits.
-    #if (defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE != Disabled) || \
-        (SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE != Disabled)
+    #if (defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE != Disabled) || \
+        (SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE != Disabled)
         hydroController.setSystemConfigFilename(F(SETUP_SAVES_CONFIG_FILE));
     #endif
     // Sets the EEPROM memory address for system data.
@@ -222,62 +240,58 @@ void setup() {
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false
-        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
+        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
             || hydroController.initFromWiFiStorage()
-        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
             || hydroController.initFromSDCard()
         #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Primary
             || hydroController.initFromEEPROM()
         #endif
-        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
+        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
             || hydroController.initFromWiFiStorage()
-        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
             || hydroController.initFromSDCard()
         #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Fallback
             || hydroController.initFromEEPROM()
         #endif
         )) {
         // First time running controller, set up default initial empty environment.
-        hydroController.init(JOIN(Hydroponics_SystemMode,SETUP_SYSTEM_MODE),
-                             JOIN(Hydroponics_MeasurementMode,SETUP_MEASURE_MODE),
-                             JOIN(Hydroponics_DisplayOutputMode,SETUP_LCD_OUT_MODE),
-                             JOIN(Hydroponics_ControlInputMode,SETUP_CTRL_IN_MODE));
+        hydroController.init(JOIN(Hydro_SystemMode,SETUP_SYSTEM_MODE),
+                             JOIN(Hydro_MeasurementMode,SETUP_MEASURE_MODE),
+                             JOIN(Hydro_DisplayOutputMode,SETUP_LCD_OUT_MODE),
+                             JOIN(Hydro_ControlInputMode,SETUP_CTRL_IN_MODE));
 
         // Set Settings
         hydroController.setSystemName(F(SETUP_SYS_NAME));
         hydroController.setTimeZoneOffset(SETUP_SYS_TIMEZONE);
-        #ifdef HYDRUINO_USE_WIFI
+        #ifdef HYDRO_USE_WIFI
             hydroController.setWiFiConnection(wifiSSID, wifiPassword); wifiSSID = wifiPassword = String();
         #endif
-        getLoggerInstance()->setLogLevel(JOIN(Hydroponics_LogLevel,SETUP_SYS_LOGLEVEL));
+        #ifdef HYDRO_USE_ETHERNET
+        {   uint8_t _SETUP_ETHERNET_MAC[] = SETUP_ETHERNET_MAC;
+            hydroController.setEthernetConnection(_SETUP_ETHERNET_MAC);
+        }
+        #endif
+        getLoggerInstance()->setLogLevel(JOIN(Hydro_LogLevel,SETUP_SYS_LOGLEVEL));
         #if SETUP_LOG_SD_ENABLE
             hydroController.enableSysLoggingToSDCard(F(SETUP_LOG_FILE_PREFIX));
         #endif
         #if SETUP_DATA_SD_ENABLE
             hydroController.enableDataPublishingToSDCard(F(SETUP_DATA_FILE_PREFIX));
         #endif
-        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_LOG_WIFISTORAGE_ENABLE
+        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_LOG_WIFISTORAGE_ENABLE
             hydroController.enableSysLoggingToWiFiStorage(F(SETUP_LOG_FILE_PREFIX));
         #endif
-        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_DATA_WIFISTORAGE_ENABLE
+        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_DATA_WIFISTORAGE_ENABLE
             hydroController.enableDataPublishingToWiFiStorage(F(SETUP_DATA_FILE_PREFIX));
         #endif
-        #if defined(HYDRUINO_ENABLE_MQTT)
+        #ifdef HYDRO_USE_MQTT
             bool netBegan = false;
-            #if SETUP_NET_CLIENT == WiFi && defined(HYDRUINO_USE_WIFI)
+            #if defined(HYDRO_USE_WIFI)
                 netBegan = hydroController.getWiFi();
-            {   SETUP_NET_CLIENT.begin(wifiSSID.c_str(), wifiPassword.c_str());
-
-            }
-            #elif SETUP_NET_CLIENT == Ethernet && !defined(HYDRUINO_USE_WIFI) && SETUP_ETHERNET_CS_PIN >= 0
-            {   uint8_t mac[] = SETUP_ETHERNET_MAC;
-                uint8_t ipAddr[4] = SETUP_ETHERNET_IPADDR;
-                IPAddress ip(ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
-                SETUP_NET_CLIENT.init(SETUP_ETHERNET_CS_PIN);
-                netBegan = SETUP_NET_CLIENT.begin(mac, ip);
-            }
+            #elif defined(HYDRO_USE_ETHERNET)
+                netBegan = hydroController.getEthernet();
             #endif
-
             if (netBegan) {
                 #if SETUP_MQTT_BROKER_CONNECT_BY == Hostname
                     mqttClient.begin(String(F(SETUP_MQTT_BROKER_HOSTNAME)).c_str(), SETUP_MQTT_BROKER_PORT, netClient);
@@ -287,25 +301,24 @@ void setup() {
                     mqttClient.begin(ip, SETUP_MQTT_BROKER_PORT, netClient);
                 }
                 #endif
-
                 hydroController.enableDataPublishingToMQTTClient(mqttClient);
             }
         #endif
-        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToWiFiStorageJson
-        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToSDCardJson
+        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
+            hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToWiFiStorageJson
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
+            hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToSDCardJson
         #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Primary
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_EnabledToEEPROMRaw
+            hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToEEPROMRaw
         #else
-            hydroController.setAutosaveEnabled(Hydroponics_Autosave_Disabled
+            hydroController.setAutosaveEnabled(Hydro_Autosave_Disabled
         #endif
-        #if defined(HYDRUINO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
-            , Hydroponics_Autosave_EnabledToWiFiStorageJson);
-        #elif SETUP_SD_CARD_CS_PIN >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
-            , Hydroponics_Autosave_EnabledToSDCardJson);
+        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
+            , Hydro_Autosave_EnabledToWiFiStorageJson);
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
+            , Hydro_Autosave_EnabledToSDCardJson);
         #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Fallback
-            , Hydroponics_Autosave_EnabledToEEPROMRaw);
+            , Hydro_Autosave_EnabledToEEPROMRaw);
         #else
             );
         #endif
@@ -313,44 +326,44 @@ void setup() {
         // Base Objects
         #ifdef SETUP_USE_AC_RAIL
             #if SETUP_AC_SUPPLY_POWER
-                auto acRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE),SETUP_AC_SUPPLY_POWER);
+                auto acRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydro_RailType,SETUP_AC_POWER_RAIL_TYPE),SETUP_AC_SUPPLY_POWER);
                 #if SETUP_AC_POWER_SENSOR_PIN >= 0
                 {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_AC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
                     acRelayPower->setPowerSensor(powerMeter);
                 }
                 #endif
             #else
-                auto acRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
+                auto acRelayPower = hydroController.addSimplePowerRail(JOIN(Hydro_RailType,SETUP_AC_POWER_RAIL_TYPE));
             #endif
         #endif
         #ifdef SETUP_USE_DC_RAIL
             #if SETUP_DC_SUPPLY_POWER
-                auto dcRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE),SETUP_DC_SUPPLY_POWER);
+                auto dcRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydro_RailType,SETUP_DC_POWER_RAIL_TYPE),SETUP_DC_SUPPLY_POWER);
                 #if SETUP_DC_POWER_SENSOR_PIN >= 0
                 {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_DC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
                     dcRelayPower->setPowerSensor(powerMeter);
                 }
                 #endif
             #else
-                auto dcRelayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_DC_POWER_RAIL_TYPE));
+                auto dcRelayPower = hydroController.addSimplePowerRail(JOIN(Hydro_RailType,SETUP_DC_POWER_RAIL_TYPE));
             #endif
         #endif
-        auto feedReservoir = hydroController.addFeedWaterReservoir(SETUP_FEED_RESERVOIR_SIZE, hydroController.getSystemMode() != Hydroponics_SystemMode_DrainToWaste);
-        auto drainagePipe = hydroController.getSystemMode() == Hydroponics_SystemMode_DrainToWaste ? hydroController.addDrainagePipe() : SharedPtr<HydroponicsInfiniteReservoir>();
+        auto feedReservoir = hydroController.addFeedWaterReservoir(SETUP_FEED_RESERVOIR_SIZE, hydroController.getSystemMode() != Hydro_SystemMode_DrainToWaste);
+        auto drainagePipe = hydroController.getSystemMode() == Hydro_SystemMode_DrainToWaste ? hydroController.addDrainagePipe() : SharedPtr<HydroInfiniteReservoir>();
 
         // Crop
-        {   auto cropType = JOIN(Hydroponics_CropType,SETUP_CROP_TYPE);
-            if (cropType != Hydroponics_CropType_Undefined) {
+        {   auto cropType = JOIN(Hydro_CropType,SETUP_CROP_TYPE);
+            if (cropType != Hydro_CropType_Undefined) {
                 #if SETUP_CROP_SOILM_PIN >= 0
                     auto moistureSensor = hydroController.addAnalogMoistureSensor(SETUP_CROP_SOILM_PIN, SETUP_USE_ANALOG_BITRES);
-                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
-                                                                   JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+                    auto crop = hydroController.addAdaptiveFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
+                                                                   JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
                                                                    SETUP_CROP_SOW_DATE);
                     moistureSensor->setCrop(crop);
                     crop->setSoilMoistureSensor(moistureSensor);
                 #else
-                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
-                                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+                    auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
+                                                                JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
                                                                 SETUP_CROP_SOW_DATE,
                                                                 SETUP_CROP_ON_TIME,
                                                                 SETUP_CROP_OFF_TIME);
@@ -394,7 +407,7 @@ void setup() {
         }
         #endif
         #if SETUP_DHT_AIR_TEMP_HUMID_PIN >= 0
-        {   auto dhtTemperatureSensor = hydroController.addDHTTempHumiditySensor(SETUP_DHT_AIR_TEMP_HUMID_PIN, SETUP_DHT_SENSOR_TYPE);
+        {   auto dhtTemperatureSensor = hydroController.addDHTTempHumiditySensor(SETUP_DHT_AIR_TEMP_HUMID_PIN, JOIN(Hydro_DHTType,SETUP_DHT_SENSOR_TYPE));
             dhtTemperatureSensor->setReservoir(feedReservoir);
             feedReservoir->setAirTemperatureSensor(dhtTemperatureSensor);
         }
@@ -404,13 +417,13 @@ void setup() {
         #if SETUP_VOL_FILLED_PIN >= 0
         {   auto filledIndicator = hydroController.addLevelIndicator(SETUP_VOL_FILLED_PIN);
             filledIndicator->setReservoir(feedReservoir);
-            feedReservoir->setFilledTrigger(new HydroponicsMeasurementValueTrigger(filledIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
+            feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(filledIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
         }
         #endif
         #if SETUP_VOL_EMPTY_PIN >= 0
         {   auto emptyIndicator = hydroController.addLevelIndicator(SETUP_VOL_EMPTY_PIN);
             emptyIndicator->setReservoir(feedReservoir);
-            feedReservoir->setEmptyTrigger(new HydroponicsMeasurementValueTrigger(emptyIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
+            feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(emptyIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
         }
         #endif
 
@@ -421,10 +434,10 @@ void setup() {
                 distanceSensor->setReservoir(feedReservoir);
                 feedReservoir->setWaterVolumeSensor(distanceSensor);
                 #if SETUP_VOL_FILLED_PIN < 0
-                    feedReservoir->setFilledTrigger(new HydroponicsMeasurementValueTrigger(distanceSensor, HYDRUINO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
+                    feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(distanceSensor, HYDRO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
                 #endif
                 #if SETUP_VOL_EMPTY_PIN < 0
-                    feedReservoir->setEmptyTrigger(new HydroponicsMeasurementValueTrigger(distanceSensor, HYDRUINO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
+                    feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(distanceSensor, HYDRO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
                 #endif
             }
             #elif SETUP_VOL_LEVEL_TYPE == AnalogHeight
@@ -432,10 +445,10 @@ void setup() {
                 heightMeter->setReservoir(feedReservoir);
                 feedReservoir->setWaterVolumeSensor(heightMeter);
                 #if SETUP_VOL_FILLED_PIN < 0
-                    feedReservoir->setFilledTrigger(new HydroponicsMeasurementValueTrigger(heightMeter, HYDRUINO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
+                    feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(heightMeter, HYDRO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
                 #endif
                 #if SETUP_VOL_EMPTY_PIN < 0
-                    feedReservoir->setEmptyTrigger(new HydroponicsMeasurementValueTrigger(heightMeter, HYDRUINO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
+                    feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(heightMeter, HYDRO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
                 #endif
             }
             #endif
@@ -459,14 +472,14 @@ void setup() {
             feedPump->setRail(acRelayPower);
             feedPump->setInputReservoir(feedReservoir);
             #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
-                feedPump->setFlowRateSensor(HydroponicsIdentity(Hydroponics_SensorType_WaterPumpFlowSensor, 1)); // delayed ref (auto-resolves on launch)
+                feedPump->setFlowRateSensor(HydroIdentity(Hydro_SensorType_WaterPumpFlowSensor, 1)); // delayed ref (auto-resolves on launch)
             #endif
-            if (hydroController.getSystemMode() == Hydroponics_SystemMode_DrainToWaste) {
+            if (hydroController.getSystemMode() == Hydro_SystemMode_DrainToWaste) {
                 feedPump->setOutputReservoir(drainagePipe);
             } else {
                 feedPump->setOutputReservoir(feedReservoir);
             }
-            feedPump->setContinuousFlowRate(SETUP_FEED_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
+            feedPump->setContinuousFlowRate(SETUP_FEED_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_WATER_HEATER_PIN >= 0
@@ -495,45 +508,45 @@ void setup() {
 
         // DC-Based Peristaltic Pumps
         #if SETUP_NUTRIENT_MIX_PIN >= 0
-        {   auto nutrientMix = hydroController.addFluidReservoir(Hydroponics_ReservoirType_NutrientPremix, 1, true);
+        {   auto nutrientMix = hydroController.addFluidReservoir(Hydro_ReservoirType_NutrientPremix, 1, true);
             auto nutrientPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             nutrientPump->setRail(dcRelayPower);
             nutrientPump->setInputReservoir(nutrientMix);
             nutrientPump->setOutputReservoir(feedReservoir);
-            nutrientPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
+            nutrientPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_FRESH_WATER_PIN >= 0
-        {   auto freshWater = hydroController.addFluidReservoir(Hydroponics_ReservoirType_FreshWater, 1, true);
+        {   auto freshWater = hydroController.addFluidReservoir(Hydro_ReservoirType_FreshWater, 1, true);
             auto dilutionPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             dilutionPump->setRail(dcRelayPower);
             dilutionPump->setInputReservoir(freshWater);
             dilutionPump->setOutputReservoir(feedReservoir);
-            dilutionPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
+            dilutionPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_PH_UP_PIN >= 0
-        {   auto phUpSolution = hydroController.addFluidReservoir(Hydroponics_ReservoirType_PhUpSolution, 1, true);
+        {   auto phUpSolution = hydroController.addFluidReservoir(Hydro_ReservoirType_PhUpSolution, 1, true);
             auto pHUpPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             pHUpPump->setRail(dcRelayPower);
             pHUpPump->setInputReservoir(phUpSolution);
             pHUpPump->setOutputReservoir(feedReservoir);
-            pHUpPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
+            pHUpPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
         #if SETUP_PH_DOWN_PIN >= 0
-        {   auto phDownSolution = hydroController.addFluidReservoir(Hydroponics_ReservoirType_PhDownSolution, 1, true);
+        {   auto phDownSolution = hydroController.addFluidReservoir(Hydro_ReservoirType_PhDownSolution, 1, true);
             auto pHDownPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             pHDownPump->setRail(dcRelayPower);
             pHDownPump->setInputReservoir(phDownSolution);
             pHDownPump->setOutputReservoir(feedReservoir);
-            pHDownPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydroponics_UnitsType_LiqFlowRate_LitersPerMin);
+            pHDownPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
         #endif
     }
 
-    #if !defined(HYDRUINO_DISABLE_GUI) && SETUP_LCD_OUT_MODE != Disabled && SETUP_SYS_UI_MODE != Disabled
-        hydroController.enableUI(new HydroponicsUI());
+    #if defined(HYDRO_USE_GUI) && SETUP_LCD_OUT_MODE != Disabled && SETUP_SYS_UI_MODE != Disabled
+        hydroController.enableUI(new HydruinoUI());
     #endif
 
     // Launches controller into main operation.

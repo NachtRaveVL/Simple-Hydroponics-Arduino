@@ -16,7 +16,7 @@ Can be used with GPS and RTC modules for accurate sunrise/sunset and feed timing
 
 Made primarily for Arduino microcontrollers / build environments, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
-Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit GPS Library (ext serial NEMA), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), SolarCalculator, TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like library (optional): WiFi101 (MKR1000), WiFiNINA_Generic, WiFiEspAT (ext serial AT), or Ethernet.
+Dependencies include: Adafruit BusIO (dep of RTClib), Adafruit GPS Library (ext serial NMEA, optional), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer, ArxSmartPtr, DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManager), LiquidCrystalIO (dep of TaskManager), OneWire (or OneWireSTM), RTClib, SimpleCollections (dep of TaskManager), SolarCalculator, TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like library (optional): WiFi101 (MKR1000), WiFiNINA_Generic, WiFiEspAT (ext serial AT), or Ethernet.
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -66,13 +66,19 @@ From Hydruino.h:
 //#define HYDRO_DISABLE_GUI                       // https://github.com/davetcc/tcMenu
 
 // Uncomment or -D this define to enable usage of the platform WiFi library, which enables networking capabilities.
-//#define HYDRO_ENABLE_WIFI                       // Library used depends on your device architecture.
+//#define HYDRO_ENABLE_WIFI                       // https://reference.arduino.cc/reference/en/libraries/wifi/
 
 // Uncomment or -D this define to enable usage of the external serial AT WiFi library, which enables networking capabilities.
 //#define HYDRO_ENABLE_AT_WIFI                    // https://github.com/jandrassy/WiFiEspAT
 
+// Uncomment or -D this define to enable usage of the platform Ethernet library, which enables networking capabilities.
+//#define HYDRO_ENABLE_ETHERNET                   // https://reference.arduino.cc/reference/en/libraries/ethernet/
+
 // Uncomment or -D this define to enable usage of the Arduino MQTT library, which enables IoT data publishing capabilities.
 //#define HYDRO_ENABLE_MQTT                       // https://github.com/256dpi/arduino-mqtt
+
+// Uncomment or -D this define to enable usage of the Adafruit GPS library, which enables GPS capabilities.
+//#define HYDRO_ENABLE_GPS                        // https://github.com/adafruit/Adafruit_GPS
 
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, instead relying solely on external storage.
@@ -93,25 +99,21 @@ There are several initialization mode settings exposed through this controller t
 
 #### Class Instantiation
 
-The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's piezo buzzer pin, EEPROM device size, SD card CS pin and SPI speed (hard-wired to `25M`Hz on Teensy), if enabled SPI RAM device size, CS pin, and SPI speed, control input ribbon pin mapping, EEPROM i2c address, RTC i2c address, LCD i2c address, i2c Wire class instance, and i2c clock speed. The default constructor values of the controller, if left unspecified, has no pins or device sizes set, zeroed i2c addresses, i2c Wire class instance `Wire` @`400k`Hz, and SPI speeds set to same as processor speed (/0 divider, else 50MHz if undetected).
+The controller's class object must first be instantiated, commonly at the top of the sketch where pin setups are defined (or exposed through some other mechanism), which makes a call to the controller's class constructor. The constructor allows one to set the module's various devices and how they are connected, with defaults providing no device specified.
 
 From Hydruino.h, in class Hydruino:
 ```Arduino
     // Controller constructor. Typically called during class instantiation, before setup().
-    Hydruino(pintype_t piezoBuzzerPin = -1,                 // Piezo buzzer pin, else -1
-             uint32_t eepromDeviceSize = 0,                 // EEPROM bit storage size (use I2C_DEVICESIZE_* defines), else 0
-             uint8_t eepromI2CAddress = B000,               // EEPROM i2c address
-             uint8_t rtcI2CAddress = B000,                  // RTC i2c address (only B000 can be used atm)
-             pintype_t sdCardCSPin = -1,                    // SD card CS pin, else -1
-             uint32_t sdCardSpeed = F_SPD,                  // SD card SPI speed, in Hz (ignored on Teensy)
-             pintype_t *ctrlInputPinMap = nullptr,          // Control input pin map, else nullptr
-             uint8_t lcdI2CAddress = B000,                  // LCD i2c address
-#if (!defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TWOWIRE)) || defined(Wire)
-             TwoWire &i2cWire = Wire,                       // I2C wire class instance
-#else
-             TwoWire &i2cWire = new TwoWire(),              // I2C wire class instance
-#endif
-             uint32_t i2cSpeed = 400000U);                  // I2C speed, in Hz
+    Hydruino(pintype_t piezoBuzzerPin = -1,                         // Piezo buzzer pin, else -1
+             Hydro_EEPROMType eepromType = Hydro_EEPROMType_None,   // EEPROM device type/size, else None
+             DeviceSetup eepromSetup = DeviceSetup(),               // EEPROM device setup (i2c only)
+             Hydro_RTCType rtcType = Hydro_RTCType_None,            // RTC device type, else None
+             DeviceSetup rtcSetup = DeviceSetup(),                  // RTC device setup (i2c only)
+             DeviceSetup sdSetup = DeviceSetup(),                   // SD card device setup (spi only)
+             DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/ttl)
+             pintype_t *ctrlInputPins = nullptr,                    // Control input pins, else nullptr
+             DeviceSetup lcdSetup = DeviceSetup());                 // LCD device setup (i2c only)
+
 ```
 
 #### Controller Initialization
@@ -199,7 +201,7 @@ Serial UART uses individual communication lines for each device, with the receiv
   * 5v devices interacting with 3.3v devices that are not 5v tolerant (such as [serial ESP WiFi modules](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/)) will require a bi-directional logic level converter/shifter to utilize.
     * Alternatively, hack a single 10kΩ resistor ([but preferably two of any 1:2 ratio](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/)) between the 5v module's TX pin and 3.3v module's RX pin.
 
-Serial UART Devices Supported: AT WiFi modules, NEMA GPS modules
+Serial UART Devices Supported: AT WiFi modules, NMEA GPS modules
 
 ### SPI Bus
 
@@ -340,30 +342,41 @@ Included below is the default system setup defines of the Vertical NFT example (
 ```Arduino
 #include <Hydruino.h>
 
-// Pins & Class Instances
+/// Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_SIZE        0               // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
-#define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
+#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
+#define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM i2c address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
-#define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
+#define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
+#define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
+#define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
 #define SETUP_LCD_I2C_ADDR              B000            // LCD i2c address
 #define SETUP_CTRL_INPUT_PINS           {-1}            // Control input pin ribbon, else {-1}
-#define SETUP_I2C_WIRE_INST             Wire            // I2C wire class instance
+#define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
-#define SETUP_NET_CLIENT                WiFi            // Network client instance (WiFi, Ethernet)
 
 // WiFi Settings                                        (note: define HYDRO_ENABLE_WIFI or HYDRO_ENABLE_AT_WIFI to enable WiFi)
+// #include "secrets.h"                                 // Pro-tip: Put sensitive password information into a custom secrets.h
 #define SETUP_WIFI_SSID                 "CHANGE_ME"     // WiFi SSID
 #define SETUP_WIFI_PASS                 "CHANGE_ME"     // WiFi passphrase
-#define SETUP_WIFI_SERIAL_INST          Serial1         // WiFi serial class instance, if using ext AT WIFI
+#define SETUP_WIFI_SPI                  SPIWIFI         // WiFi SPI class instance, if using spi
+#define SETUP_WIFI_SPI_CS               SPIWIFI_SS      // WiFi CS pin, if using spi
+#define SETUP_WIFI_SERIAL               Serial1         // WiFi serial class instance, if using serial
 
 // Ethernet Settings                                    (note: define HYDRO_ENABLE_ETHERNET to enable Ethernet)
 #define SETUP_ETHERNET_MAC              { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED } // Ethernet MAC address
-#define SETUP_ETHERNET_IPADDR           { 192, 168, 1, 2 } // Ethernet IP address
-#define SETUP_ETHERNET_CS_PIN           -1              // Ethernet CS pin, else -1
+#define SETUP_ETHERNET_SPI              SPI1            // Ethernet SPI class instance
+#define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
+
+// GPS Settings                                         (note: defined HYDRO_ENABLE_GPS to enable GPS)
+#define SETUP_GPS_TYPE                  Serial          // Type of GPS (Serial, I2C, SPI)
+#define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
+#define SETUP_GPS_I2C_ADDR              B000            // GPS i2c address, if using i2c
+#define SETUP_GPS_SPI                   SPI             // GPS SPI class instance, if using spi
+#define SETUP_GPS_SPI_CS                SS              // GPS CS pin, if using spi
 
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
@@ -414,7 +427,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_FLOW_RATE_SENSOR_PIN      -1              // Main feed pump flow rate sensor pin (analog/PWM), else -1
 #define SETUP_DS18_WATER_TEMP_PIN       -1              // DS18* water temp sensor data pin (digital), else -1
 #define SETUP_DHT_AIR_TEMP_HUMID_PIN    -1              // DHT* air temp sensor data pin (digital), else -1
-#define SETUP_DHT_SENSOR_TYPE           DHT12           // DHT sensor type enum (use DHT* defines)
+#define SETUP_DHT_SENSOR_TYPE           None            // DHT sensor type enum (DHT11, DHT12, DHT21, DHT22, AM2301, None)
 #define SETUP_VOL_FILLED_PIN            -1              // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
 #define SETUP_VOL_INDICATOR_TYPE        ACTIVE_HIGH     // Water level indicator type/active level (ACTIVE_HIGH, ACTIVE_LOW)

@@ -9,7 +9,7 @@
 // advantage of being able to be built out of commonly available plastic containers.
 // Aeration is important in this setup to oxygenate the non-circulating water.
 
-#include <Hydroponics.h>
+#include <Hydruino.h>
 
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_GROW_LIGHTS_PIN           8               // Grow lights relay pin (digital)
@@ -21,9 +21,15 @@
 #define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate
 #define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted
 
-Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
+Hydruino hydroController(SETUP_PIEZO_BUZZER_PIN);    // Controller using default setup aside from buzzer pin, if defined
 
 void setup() {
+    // Setup base interfaces
+    #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+        Serial.begin(115200);           // Begin USB Serial interface
+        while (!Serial) { ; }           // Wait for USB Serial to connect
+    #endif
+
     // Initializes controller with default environment, no logging, eeprom, SD, or anything else.
     hydroController.init();
 
@@ -31,7 +37,7 @@ void setup() {
     hydroController.scheduler.setBaseFeedMultiplier(0.5);
 
     // Adds a simple relay power rail using standard AC. This will manage how many active devices can be turned on at the same time.
-    auto relayPower = hydroController.addSimplePowerRail(JOIN(Hydroponics_RailType,SETUP_AC_POWER_RAIL_TYPE));
+    auto relayPower = hydroController.addSimplePowerRail(JOIN(Hydro_RailType,SETUP_AC_POWER_RAIL_TYPE));
 
     // Adds a main water reservoir of SETUP_FEED_RESERVOIR_SIZE size, treated as already being filled with water.
     auto feedReservoir = hydroController.addFeedWaterReservoir(SETUP_FEED_RESERVOIR_SIZE, true);
@@ -47,8 +53,8 @@ void setup() {
     lights->setReservoir(feedReservoir);
 
     // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
-    auto crop = hydroController.addTimerFedCrop(JOIN(Hydroponics_CropType,SETUP_CROP_TYPE),
-                                                JOIN(Hydroponics_SubstrateType,SETUP_CROP_SUBSTRATE),
+    auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
+                                                JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
                                                 SETUP_CROP_SOW_DATE);
     crop->setFeedReservoir(feedReservoir);
 

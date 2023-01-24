@@ -14,43 +14,39 @@
 // the various data address locations (e.g. CROP_ADDR, STR_ADDR, etc.).
 //
 // Make sure that any EEPROM Write-Protect jumpers are disabled, and that you have not
-// defined HYDRUINO_DISABLE_BUILTIN_DATA so that the full data is built into the onboard
-// Flash. You may also enable Serial log output by defining HYDRUINO_ENABLE_DEBUG_OUTPUT.
+// defined HYDRO_DISABLE_BUILTIN_DATA so that the full data is built into the onboard
+// Flash. You may also enable Serial log output by defining HYDRO_ENABLE_DEBUG_OUTPUT.
 // You may refer to: https://forum.arduino.cc/index.php?topic=602603.0 on how to define
 // custom build flags manually via modifying platform[.local].txt.
 //
-// In Hydroponics.h:
+// In Hydruino.h:
 // 
 // // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
-// // #define HYDRUINO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
+// // #define HYDRO_DISABLE_BUILTIN_DATA             // Disables built-in Crops Lib and string data, instead relying solely on external device.
 // 
 // // Uncomment or -D this define to enable debug output (treats Serial as attached to serial monitor).
-// #define HYDRUINO_ENABLE_DEBUG_OUTPUT
+// #define HYDRO_ENABLE_DEBUG_OUTPUT
 //
 // Alternatively, in platform[.local].txt:
-// build.extra_flags=-DHYDRUINO_ENABLE_DEBUG_OUTPUT
+// build.extra_flags=-DHYDRO_ENABLE_DEBUG_OUTPUT
 
-#include <Hydroponics.h>
+#include <Hydruino.h>
 
 // Compiler flag checks
-#ifdef HYDRUINO_DISABLE_BUILTIN_DATA
-#error The HYDRUINO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
-#endif
-#ifdef HYDRUINO_ENABLE_SD_VIRTMEM
-#error The HYDRUINO_ENABLE_SD_VIRTMEM flag is expected to be undefined in order to run this sketch
-#endif
-#ifdef HYDRUINO_ENABLE_SPIRAM_VIRTMEM
-#error The HYDRUINO_ENABLE_SPIRAM_VIRTMEM flag is expected to be undefined in order to run this sketch
+#ifdef HYDRO_DISABLE_BUILTIN_DATA
+#error The HYDRO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
 #endif
 
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256 // EEPROM bit storage size, in bytes (use I2C_DEVICESIZE_* defines), else 0
-#define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM address
+#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
+#define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM i2c address
 #define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
-#define SETUP_SD_CARD_CS_PIN            SS              // SD card CS pin, else -1
+#define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
+#define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
+#define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_I2C_WIRE_INST             Wire            // I2C wire class instance
+#define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
 #define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
@@ -61,16 +57,12 @@
 #define SETUP_EXTDATA_EEPROM_ENABLE     true            // If data should be written to an external EEPROM
 #define SETUP_EXTDATA_EEPROM_BEG_ADDR   0               // Start data address for data to be written to EEPROM
 
-Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
-                            SETUP_EEPROM_DEVICE_SIZE,
-                            SETUP_EEPROM_I2C_ADDR,
-                            SETUP_RTC_I2C_ADDR,
-                            SETUP_SD_CARD_CS_PIN,
-                            SETUP_SD_CARD_SPI_SPEED,
-                            nullptr,
-                            0,
-                            SETUP_I2C_WIRE_INST,
-                            SETUP_I2C_SPEED);
+Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
+                         JOIN(Hydro_EEPROMType,SETUP_EEPROM_DEVICE_TYPE),
+                         I2CDeviceSetup((uint8_t)SETUP_EEPROM_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         JOIN(Hydro_RTCType,SETUP_RTC_DEVICE_TYPE),
+                         I2CDeviceSetup((uint8_t)SETUP_RTC_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         SPIDeviceSetup((pintype_t)SETUP_SD_CARD_SPI_CS, &SETUP_SD_CARD_SPI, SETUP_SD_CARD_SPI_SPEED));
 
 // Wraps a formatted address as appended pseudo alt text, e.g. " (0xADDR)"
 String altAddressToString(uint16_t addr)
@@ -83,34 +75,37 @@ String altAddressToString(uint16_t addr)
 }
 
 void setup() {
-    Serial.begin(115200);               // Begin USB Serial interface
-    while (!Serial) { ; }               // Wait for USB Serial to connect
+    // Setup base interfaces
+    #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+        Serial.begin(115200);           // Begin USB Serial interface
+        while (!Serial) { ; }           // Wait for USB Serial to connect
+    #endif
     #if defined(ESP_PLATFORM)
-        SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
+        SETUP_I2C_WIRE.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
 
     // Just a lone initializer is all that's needed since we won't actually be using the full controller.
     hydroController.init();
 
     // Right here would be the place to program in any custom crop data that you want made available for later.
-    //HydroponicsCropsLibData customCrop1(Hydroponics_CropType_CustomCrop1);
-    //strncpy(customCrop1.cropName, "Custom name", HYDRUINO_NAME_MAXSIZE);
+    //HydroCropsLibData customCrop1(Hydro_CropType_CustomCrop1);
+    //strncpy(customCrop1.cropName, "Custom name", HYDRO_NAME_MAXSIZE);
     //hydroCropsLib.setUserCropData(&customCrop1);
 
     getLoggerInstance()->logMessage(F("Writing external data..."));
 
     #if SETUP_EXTDATA_SD_ENABLE
-    {   auto sd = getHydroponicsInstance()->getSDCard();
+    {   auto sd = getHydroInstance()->getSDCard();
 
         if (sd) {
             getLoggerInstance()->logMessage(F("=== Writing Crops Library data to SD card ==="));
 
-            for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
-                auto cropData = hydroCropsLib.checkoutCropsData((Hydroponics_CropType)cropType);
+            for (int cropType = 0; cropType < Hydro_CropType_Count; ++cropType) {
+                auto cropData = hydroCropsLib.checkoutCropsData((Hydro_CropType)cropType);
                 String filename = getNNFilename(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")), cropType, SFP(HStr_dat));
 
                 if (cropData && cropData->cropName[0]) {
-                    getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
+                    getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRO_NAME_MAXSIZE));
                     getLoggerInstance()->logMessage(F("... to file: "), filename);
 
                     createDirectoryFor(sd, filename);
@@ -119,7 +114,7 @@ void setup() {
                     }
                     auto file = sd->open(filename.c_str(), FILE_WRITE); // Creates/resets file for writing
                     if (file) {
-                        StaticJsonDocument<HYDRUINO_JSON_DOC_DEFSIZE> doc;
+                        StaticJsonDocument<HYDRO_JSON_DOC_DEFSIZE> doc;
                         JsonObject jsonObject = doc.to<JsonObject>();
                         cropData->toJSONObject(jsonObject);
                         uint16_t bytesWritten = serializeJsonPretty(jsonObject, file); // Could also write out in binary but we have acres of cheap SD storage
@@ -146,13 +141,13 @@ void setup() {
 
             {   getLoggerInstance()->logMessage(F("=== Writing string data to SD card ==="));
 
-                uint16_t lookupTable[Hydroponics_Strings_Count];
+                uint16_t lookupTable[Hydro_Strings_Count];
 
                 // Initializes lookup table with proper locations
                 {   uint16_t writeAddr = sizeof(lookupTable);
 
-                    for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {
-                        String string = SFP((Hydroponics_String)stringNum);
+                    for (int stringNum = 0; stringNum < Hydro_Strings_Count; ++stringNum) {
+                        String string = SFP((Hydro_String)stringNum);
                         lookupTable[stringNum] = writeAddr;
                         writeAddr += string.length() + 1;
                     }
@@ -173,8 +168,8 @@ void setup() {
                     // Lookup table constructed first to avoid random seeking
                     bytesWritten += file.write((const uint8_t *)lookupTable, sizeof(lookupTable));
 
-                    for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {
-                        String string = SFP((Hydroponics_String)stringNum);
+                    for (int stringNum = 0; stringNum < Hydro_Strings_Count; ++stringNum) {
+                        String string = SFP((Hydro_String)stringNum);
                         bytesWritten += file.write((const uint8_t *)string.c_str(), string.length() + 1); // +1 to also write out null terminator
                     }
 
@@ -193,7 +188,7 @@ void setup() {
                 yield();
             }
 
-            getHydroponicsInstance()->endSDCard(sd);
+            getHydroInstance()->endSDCard(sd);
         } else {
             getLoggerInstance()->logWarning(F("Could not find SD card device. Check that you have it set up properly."));
         }
@@ -203,7 +198,7 @@ void setup() {
     #endif
 
     #if SETUP_EXTDATA_EEPROM_ENABLE
-    {   auto eeprom = getHydroponicsInstance()->getEEPROM();
+    {   auto eeprom = getHydroInstance()->getEEPROM();
 
         if (eeprom) {
             uint16_t cropsLibBegAddr = SETUP_EXTDATA_EEPROM_BEG_ADDR;
@@ -212,19 +207,19 @@ void setup() {
 
             {   getLoggerInstance()->logMessage(F("=== Writing Crops Library data to EEPROM ==="));
 
-                // A lookup table similar to uint16_t lookupTable[Hydroponics_Strings_Count] is created
+                // A lookup table similar to uint16_t lookupTable[Hydro_Strings_Count] is created
                 // manually here, which is used for crop data lookup. The first uint16_t value will be
                 // reserved for the total chunk size (hence the +1).
-                uint16_t writeAddr = cropsLibBegAddr + ((Hydroponics_CropType_Count + 1) * sizeof(uint16_t));
+                uint16_t writeAddr = cropsLibBegAddr + ((Hydro_CropType_Count + 1) * sizeof(uint16_t));
 
-                for (int cropType = 0; cropType < Hydroponics_CropType_Count; ++cropType) {
-                    auto cropData = hydroCropsLib.checkoutCropsData((Hydroponics_CropType)cropType);
+                for (int cropType = 0; cropType < Hydro_CropType_Count; ++cropType) {
+                    auto cropData = hydroCropsLib.checkoutCropsData((Hydro_CropType)cropType);
 
                     if (cropData && cropData->cropName[0]) {
-                        getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRUINO_NAME_MAXSIZE));
+                        getLoggerInstance()->logMessage(F("Writing Crop: "), charsToString(cropData->cropName, HYDRO_NAME_MAXSIZE));
                         getLoggerInstance()->logMessage(F("... to byte offset: "), String(writeAddr), altAddressToString(writeAddr));
 
-                        auto eepromStream = HydroponicsEEPROMStream(writeAddr, sizeof(HydroponicsCropsLibData));
+                        auto eepromStream = HydroEEPROMStream(writeAddr, sizeof(HydroCropsLibData));
                         size_t bytesWritten = serializeDataToBinaryStream(cropData, &eepromStream); // Could also write out in JSON, but is space inefficient
 
                         // After writing data out, write location out to lookup table
@@ -247,7 +242,7 @@ void setup() {
 
                 // Write out total crops lib size to first position, as long as something was at least written out
                 stringsBegAddr = cropsLibBegAddr;
-                if (writeAddr > cropsLibBegAddr + ((Hydroponics_CropType_Count + 1) * sizeof(uint16_t))) {
+                if (writeAddr > cropsLibBegAddr + ((Hydro_CropType_Count + 1) * sizeof(uint16_t))) {
                     uint16_t totalBytesWritten = writeAddr - cropsLibBegAddr;
 
                     if (eeprom->updateBlockVerify(cropsLibBegAddr, (const uint8_t *)&totalBytesWritten, sizeof(uint16_t))) {
@@ -262,10 +257,10 @@ void setup() {
             {   getLoggerInstance()->logMessage(F("=== Writing strings data to EEPROM ==="));
 
                 // Similar to above, same deal with a lookup table.
-                uint16_t writeAddr = stringsBegAddr + ((Hydroponics_Strings_Count + 1) * sizeof(uint16_t));
+                uint16_t writeAddr = stringsBegAddr + ((Hydro_Strings_Count + 1) * sizeof(uint16_t));
 
-                for (int stringNum = 0; stringNum < Hydroponics_Strings_Count; ++stringNum) {
-                    String string = SFP((Hydroponics_String)stringNum);
+                for (int stringNum = 0; stringNum < Hydro_Strings_Count; ++stringNum) {
+                    String string = SFP((Hydro_String)stringNum);
 
                     getLoggerInstance()->logMessage(F("Writing String: #"), String(stringNum) + String(F(" \"")), string + String(F("\"")));
                     getLoggerInstance()->logMessage(F("... to byte offset: "), String(writeAddr), altAddressToString(writeAddr));
@@ -283,7 +278,7 @@ void setup() {
                 }
 
                 sysDataBegAddr = stringsBegAddr;
-                if (writeAddr > stringsBegAddr + ((Hydroponics_Strings_Count + 1) * sizeof(uint16_t))) {
+                if (writeAddr > stringsBegAddr + ((Hydro_Strings_Count + 1) * sizeof(uint16_t))) {
                     uint16_t totalBytesWritten = writeAddr - stringsBegAddr;
 
                     if (eeprom->updateBlockVerify(stringsBegAddr, (const uint8_t *)&totalBytesWritten, sizeof(uint16_t))) {
