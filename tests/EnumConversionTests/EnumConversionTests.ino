@@ -1,37 +1,36 @@
 // Crops Lib to CPP export script - mainly for dev purposes
 
-#include <Hydroponics.h>
+#include <Hydruino.h>
 
-#ifdef HYDRUINO_DISABLE_BUILTIN_DATA
-#error The HYDRUINO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
+#ifdef HYDRO_DISABLE_BUILTIN_DATA
+#error The HYDRO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
 #endif
 
-#define SETUP_PIEZO_BUZZER_PIN          -1
-#define SETUP_EEPROM_DEVICE_SIZE        I2C_DEVICESIZE_24LC256
-#define SETUP_SD_CARD_CS_PIN            SS
-#define SETUP_EEPROM_I2C_ADDR           B000
-#define SETUP_RTC_I2C_ADDR              B000
-#define SETUP_I2C_WIRE_INST             Wire
-#define SETUP_I2C_SPEED                 400000U
-#define SETUP_ESP_I2C_SDA               SDA
-#define SETUP_ESP_I2C_SCL               SCL
-#define SETUP_SD_CARD_SPI_SPEED         4000000U
+/// Pins & Class Instances
+#define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
+#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
+#define SETUP_EEPROM_I2C_ADDR           B000            // EEPROM i2c address
+#define SETUP_RTC_I2C_ADDR              B000            // RTC i2c address (only B000 can be used atm)
+#define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
+#define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
+#define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
+#define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
+#define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
+#define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
+#define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
+#define SETUP_ESP_I2C_SCL               SCL             // I2C SCL pin, if on ESP
 
-Hydroponics hydroController(SETUP_PIEZO_BUZZER_PIN,
-                            SETUP_EEPROM_DEVICE_SIZE,
-                            SETUP_EEPROM_I2C_ADDR,
-                            SETUP_RTC_I2C_ADDR,
-                            SETUP_SD_CARD_CS_PIN,
-                            SETUP_SD_CARD_SPI_SPEED,
-                            nullptr,
-                            0,
-                            SETUP_I2C_WIRE_INST,
-                            SETUP_I2C_SPEED);
+Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
+                         JOIN(Hydro_EEPROMType,SETUP_EEPROM_DEVICE_TYPE),
+                         I2CDeviceSetup((uint8_t)SETUP_EEPROM_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         JOIN(Hydro_RTCType,SETUP_RTC_DEVICE_TYPE),
+                         I2CDeviceSetup((uint8_t)SETUP_RTC_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         SPIDeviceSetup((pintype_t)SETUP_SD_CARD_SPI_CS, &SETUP_SD_CARD_SPI, SETUP_SD_CARD_SPI_SPEED));
 
 void testSystemModeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_SystemMode_Count; ++typeIndex) {
-        String typeString = systemModeToString((Hydroponics_SystemMode)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_SystemMode_Count; ++typeIndex) {
+        String typeString = systemModeToString((Hydro_SystemMode)typeIndex);
         int retTypeIndex = (int)systemModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testSystemModeEnums: Conversion failure: "), String(typeIndex));
@@ -42,8 +41,8 @@ void testSystemModeEnums()
 
 void testMeasurementModeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_MeasurementMode_Count; ++typeIndex) {
-        String typeString = measurementModeToString((Hydroponics_MeasurementMode)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_MeasurementMode_Count; ++typeIndex) {
+        String typeString = measurementModeToString((Hydro_MeasurementMode)typeIndex);
         int retTypeIndex = (int)measurementModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testMeasurementModeEnums: Conversion failure: "), String(typeIndex));
@@ -54,8 +53,8 @@ void testMeasurementModeEnums()
 
 void testDisplayOutputModeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_DisplayOutputMode_Count; ++typeIndex) {
-        String typeString = displayOutputModeToString((Hydroponics_DisplayOutputMode)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_DisplayOutputMode_Count; ++typeIndex) {
+        String typeString = displayOutputModeToString((Hydro_DisplayOutputMode)typeIndex);
         int retTypeIndex = (int)displayOutputModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testDisplayOutputModeEnums: Conversion failure: "), String(typeIndex));
@@ -66,8 +65,8 @@ void testDisplayOutputModeEnums()
 
 void testControlInputModeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_ControlInputMode_Count; ++typeIndex) {
-        String typeString = controlInputModeToString((Hydroponics_ControlInputMode)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_ControlInputMode_Count; ++typeIndex) {
+        String typeString = controlInputModeToString((Hydro_ControlInputMode)typeIndex);
         int retTypeIndex = (int)controlInputModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testControlInputModeEnums: Conversion failure: "), String(typeIndex));
@@ -78,8 +77,8 @@ void testControlInputModeEnums()
 
 void testActuatorTypeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_ActuatorType_Count; ++typeIndex) {
-        String typeString = actuatorTypeToString((Hydroponics_ActuatorType)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_ActuatorType_Count; ++typeIndex) {
+        String typeString = actuatorTypeToString((Hydro_ActuatorType)typeIndex);
         int retTypeIndex = (int)actuatorTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testActuatorTypeEnums: Conversion failure: "), String(typeIndex));
@@ -90,8 +89,8 @@ void testActuatorTypeEnums()
 
 void testSensorTypeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_SensorType_Count; ++typeIndex) {
-        String typeString = sensorTypeToString((Hydroponics_SensorType)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_SensorType_Count; ++typeIndex) {
+        String typeString = sensorTypeToString((Hydro_SensorType)typeIndex);
         int retTypeIndex = (int)sensorTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testSensorTypeEnums: Conversion failure: "), String(typeIndex));
@@ -102,8 +101,8 @@ void testSensorTypeEnums()
 
 void testCropTypeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_CropType_Count; ++typeIndex) {
-        String typeString = cropTypeToString((Hydroponics_CropType)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_CropType_Count; ++typeIndex) {
+        String typeString = cropTypeToString((Hydro_CropType)typeIndex);
         int retTypeIndex = (int)cropTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testCropTypeEnums: Conversion failure: "), String(typeIndex));
@@ -114,8 +113,8 @@ void testCropTypeEnums()
 
 void testSubstrateTypeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_SubstrateType_Count; ++typeIndex) {
-        String typeString = substrateTypeToString((Hydroponics_SubstrateType)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_SubstrateType_Count; ++typeIndex) {
+        String typeString = substrateTypeToString((Hydro_SubstrateType)typeIndex);
         int retTypeIndex = (int)substrateTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testSubstrateTypeEnums: Conversion failure: "), String(typeIndex));
@@ -126,8 +125,8 @@ void testSubstrateTypeEnums()
 
 void testReservoirTypeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_ReservoirType_Count; ++typeIndex) {
-        String typeString = reservoirTypeToString((Hydroponics_ReservoirType)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_ReservoirType_Count; ++typeIndex) {
+        String typeString = reservoirTypeToString((Hydro_ReservoirType)typeIndex);
         int retTypeIndex = (int)reservoirTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testReservoirTypeEnums: Conversion failure: "), String(typeIndex));
@@ -138,8 +137,8 @@ void testReservoirTypeEnums()
 
 void testRailTypeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_RailType_Count; ++typeIndex) {
-        String typeString = railTypeToString((Hydroponics_RailType)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_RailType_Count; ++typeIndex) {
+        String typeString = railTypeToString((Hydro_RailType)typeIndex);
         int retTypeIndex = (int)railTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testRailTypeEnums: Conversion failure: "), String(typeIndex));
@@ -150,8 +149,8 @@ void testRailTypeEnums()
 
 void testUnitsCategoryEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_UnitsCategory_Count; ++typeIndex) {
-        String typeString = unitsCategoryToString((Hydroponics_UnitsCategory)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_UnitsCategory_Count; ++typeIndex) {
+        String typeString = unitsCategoryToString((Hydro_UnitsCategory)typeIndex);
         int retTypeIndex = (int)unitsCategoryFromString(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testUnitsCategoryEnums: Conversion failure: "), String(typeIndex));
@@ -162,8 +161,8 @@ void testUnitsCategoryEnums()
 
 void testUnitsTypeEnums()
 {
-    for (int typeIndex = -1; typeIndex <= Hydroponics_UnitsType_Count; ++typeIndex) {
-        String typeString = unitsTypeToSymbol((Hydroponics_UnitsType)typeIndex);
+    for (int typeIndex = -1; typeIndex <= Hydro_UnitsType_Count; ++typeIndex) {
+        String typeString = unitsTypeToSymbol((Hydro_UnitsType)typeIndex);
         int retTypeIndex = (int)unitsTypeFromSymbol(typeString);
         if (typeIndex != retTypeIndex) {
             getLoggerInstance()->logError(F("testUnitsTypeEnums: Conversion failure: "), String(typeIndex));
@@ -173,10 +172,13 @@ void testUnitsTypeEnums()
 }
 
 void setup() {
-    Serial.begin(115200);
-    while (!Serial) { ; }
+    // Setup base interfaces
+    #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+        Serial.begin(115200);           // Begin USB Serial interface
+        while (!Serial) { ; }           // Wait for USB Serial to connect
+    #endif
     #if defined(ESP_PLATFORM)
-        SETUP_I2C_WIRE_INST.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL);
+        SETUP_I2C_WIRE.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
     #endif
 
     hydroController.init();
