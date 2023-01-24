@@ -75,6 +75,21 @@
 #include <SPI.h>
 #include <Wire.h>
 
+#if !defined(USE_SW_SERIAL)
+typedef HardwareSerial SerialClass;
+#else
+#include <SoftwareSerial.h>             // https://www.arduino.cc/en/Reference/softwareSerial
+#define HYDRO_USE_SOFTWARE_SERIAL
+typedef SoftwareSerial SerialClass;
+#endif
+
+#ifdef ESP32
+typedef SDFileSystemClass SDClass;
+#endif
+#ifdef ESP8266
+using namespace sdfat;
+#endif
+
 #ifdef HYDRO_ENABLE_WIFI
 #if defined(ARDUINO_SAMD_MKR1000)
 #include <WiFi101.h>                    // https://github.com/arduino-libraries/WiFi101
@@ -112,20 +127,6 @@ typedef uint8_t pintype_t;
 #endif
 #endif
 
-#ifdef ESP32
-typedef SDFileSystemClass SDClass;
-#endif
-#ifdef ESP8266
-using namespace sdfat;
-#endif
-
-#if !defined(USE_SW_SERIAL)
-typedef HardwareSerial SerialClass;
-#else
-#define HYDRO_USE_SOFTWARE_SERIAL
-typedef SoftwareSerial SerialClass;
-#endif
-
 #if defined(NDEBUG) && defined(HYDRO_ENABLE_DEBUG_OUTPUT)
 #undef HYDRO_ENABLE_DEBUG_OUTPUT
 #endif
@@ -144,7 +145,7 @@ typedef SoftwareSerial SerialClass;
 #ifdef HYDRO_ENABLE_GPS
 #include "Adafruit_GPS.h"               // GPS library
 #define HYDRO_USE_GPS
-typedef GPSClass Adafruit_GPS;
+typedef Adafruit_GPS GPSClass;
 #endif
 #include "ArduinoJson.h"                // JSON library
 #include "ArxContainer.h"               // STL-like container library
@@ -220,8 +221,8 @@ extern void miscLoop();
 #include "HydroUtils.h"
 #include "HydroDatas.h"
 #include "HydroCropsLibrary.h"
-#include "HydroCalibrationsStore.h"
-#include "HydroAdditivesMarket.h"
+#include "HydroCalibrations.h"
+#include "HydroAdditives.h"
 #include "HydroStreams.h"
 #include "HydroTriggers.h"
 #include "HydroBalancers.h"
@@ -242,12 +243,12 @@ struct I2CDeviceSetup {
     uint32_t speed;                     // I2C max data speed (Hz)
     uint8_t address;                    // I2C device address
 
-    inline I2CDeviceSetup(TwoWire *i2cWire = HYDRO_USE_WIRE, uint32_t i2cSpeed = 400000U, uint8_t i2cAddress = B000) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(TwoWire *i2cWire, uint8_t i2cAddress, uint32_t i2cSpeed = 400000U) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
+    inline I2CDeviceSetup(TwoWire *i2cWire = HYDRO_USE_WIRE, uint32_t i2cSpeed = 100000U, uint8_t i2cAddress = B000) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
+    inline I2CDeviceSetup(TwoWire *i2cWire, uint8_t i2cAddress, uint32_t i2cSpeed = 100000U) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
     inline I2CDeviceSetup(uint32_t i2cSpeed, TwoWire *i2cWire, uint8_t i2cAddress = B000) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
     inline I2CDeviceSetup(uint32_t i2cSpeed, uint8_t i2cAddress = B000, TwoWire *i2cWire = HYDRO_USE_WIRE) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(uint8_t i2cAddress, TwoWire *i2cWire, uint32_t i2cSpeed = 400000U) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(uint8_t i2cAddress, uint32_t i2cSpeed = 400000U, TwoWire *i2cWire = HYDRO_USE_WIRE) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
+    inline I2CDeviceSetup(uint8_t i2cAddress, TwoWire *i2cWire, uint32_t i2cSpeed = 100000U) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
+    inline I2CDeviceSetup(uint8_t i2cAddress, uint32_t i2cSpeed = 100000U, TwoWire *i2cWire = HYDRO_USE_WIRE) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
 };
 
 // SPI Device Setup
@@ -265,30 +266,30 @@ struct SPIDeviceSetup {
     inline SPIDeviceSetup(pintype_t spiCS, uint32_t spiSpeed = F_SPD, SPIClass *spiClass = HYDRO_USE_SPI) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
 };
 
-// TTL Device Setup
+// UART Device Setup
 // A quick and easy structure for storing serial device connection settings.
-struct TTLDeviceSetup {
-    SerialClass *serial;                // TTL class instance
-    uint32_t baud;                      // TTL baud rate (bps)
+struct UARTDeviceSetup {
+    SerialClass *serial;                // UART class instance
+    uint32_t baud;                      // UART baud rate (bps)
 
-    inline TTLDeviceSetup(SerialClass *serialClass = HYDRO_USE_SERIAL1, uint32_t serialBaud = 9600U) : serial(serialClass), baud(serialBaud) { ; }
-    inline TTLDeviceSetup(uint32_t serialBaud, SerialClass *serialClass = HYDRO_USE_SERIAL1) : serial(serialClass), baud(serialBaud) { ; }
+    inline UARTDeviceSetup(SerialClass *serialClass = HYDRO_USE_SERIAL1, uint32_t serialBaud = 9600U) : serial(serialClass), baud(serialBaud) { ; }
+    inline UARTDeviceSetup(uint32_t serialBaud, SerialClass *serialClass = HYDRO_USE_SERIAL1) : serial(serialClass), baud(serialBaud) { ; }
 };
 
 // Combined Device Setup
 // A union of the various device setup structures, to assist with user device settings.
 struct DeviceSetup {
-    enum : signed char { None, I2CSetup, SPISetup, TTLSetup } cfgType; // Config type
+    enum : signed char { None, I2CSetup, SPISetup, UARTSetup } cfgType; // Config type
     union {
         I2CDeviceSetup i2c;             // I2C config
         SPIDeviceSetup spi;             // SPI config
-        TTLDeviceSetup ttl;             // TTL config
+        UARTDeviceSetup uart;           // UART config
     } cfgAs;                            // Config data
 
     inline DeviceSetup() : cfgType(None), cfgAs{.i2c=I2CDeviceSetup(nullptr)} { ; }
     inline DeviceSetup(I2CDeviceSetup i2cSetup) : cfgType(I2CSetup), cfgAs{.i2c=i2cSetup} { ; }
     inline DeviceSetup(SPIDeviceSetup spiSetup) : cfgType(SPISetup), cfgAs{.spi=spiSetup} { ; }
-    inline DeviceSetup(TTLDeviceSetup ttlSetup) : cfgType(TTLSetup), cfgAs{.ttl=ttlSetup} { ; }
+    inline DeviceSetup(UARTDeviceSetup uartSetup) : cfgType(UARTSetup), cfgAs{.uart=uartSetup} { ; }
 };
 
 // Hydruino Controller
@@ -306,8 +307,8 @@ public:
              Hydro_RTCType rtcType = Hydro_RTCType_None,            // RTC device type, else None
              DeviceSetup rtcSetup = DeviceSetup(),                  // RTC device setup (i2c only)
              DeviceSetup sdSetup = DeviceSetup(),                   // SD card device setup (spi only)
-             DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/ttl)
-             DeviceSetup gpsSetup = DeviceSetup(),                  // GPS device setup (ttl/i2c/spi)
+             DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/uart)
+             DeviceSetup gpsSetup = DeviceSetup(),                  // GPS device setup (uart/i2c/spi)
              pintype_t *ctrlInputPins = nullptr,                    // Control input pins, else nullptr
              DeviceSetup lcdSetup = DeviceSetup());                 // LCD device setup (i2c only)
     // Library destructor. Just in case.
@@ -413,14 +414,12 @@ public:
     // Finds first position open, given the id type
     inline Hydro_PositionIndex firstPositionOpen(HydroIdentity id) { return firstPosition(id, false); }
 
-    // Pin Locks.
+    // Pin Handlers.
 
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
     bool tryGetPinLock(pintype_t pin, time_t waitMillis = 150);
     // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
     inline void returnPinLock(pintype_t pin);
-
-    // Pin Muxers.
 
     // Sets pin muxer for pin #.
     inline void setPinMuxer(pintype_t pin, SharedPtr<HydroPinMuxer> pinMuxer);
@@ -428,8 +427,6 @@ public:
     inline SharedPtr<HydroPinMuxer> getPinMuxer(pintype_t pin);
     // Disables/deselects all pin muxers.
     void deselectPinMuxers();
-
-    // Pin OneWires.
 
     // OneWire instance for given pin (lazily instantiated)
     OneWire *getOneWireForPin(pintype_t pin);
@@ -468,25 +465,25 @@ public:
     // EEPROM device size, in bytes (default: 0)
     inline uint32_t getEEPROMSize() const { return _eepromType != Hydro_EEPROMType_None ? (((int)_eepromType) << 7) : 0; }
     // EEPROM device setup configuration
-    inline const DeviceSetup *getEEPROMSetup() const { return &_eepromSetup; }
+    inline const DeviceSetup &getEEPROMSetup() const { return _eepromSetup; }
     // RTC device setup configuration
-    inline const DeviceSetup *getRTCSetup() const { return &_rtcSetup; }
+    inline const DeviceSetup &getRTCSetup() const { return _rtcSetup; }
     // SD card device setup configuration
-    inline const DeviceSetup *getSDCardSetup() const { return &_sdSetup; }
+    inline const DeviceSetup &getSDCardSetup() const { return _sdSetup; }
 #ifdef HYDRO_USE_NET
     // Network device setup configuration
-    inline const DeviceSetup *getNetworkSetup() const { return &_netSetup; }
+    inline const DeviceSetup &getNetworkSetup() const { return _netSetup; }
 #endif
 #ifdef HYDRO_USE_GPS
     // GPS device setup configuration
-    inline const DeviceSetup *getGPSSetup() const { return &_gpsSetup; }
+    inline const DeviceSetup &getGPSSetup() const { return _gpsSetup; }
 #endif
 #ifdef HYDRO_USE_GUI
-    inline const DeviceSetup *getLCDSetup() const { return &_lcdSetup; }
-
-    // Total number of pins being used for the current control input ribbon mode
-    int getControlInputRibbonPinCount() const;
-    // Control input pin mapped to ribbon pin index, or -1 (255) if not used
+    // LCD output device setup configuration
+    inline const DeviceSetup &getLCDSetup() const { return _lcdSetup; }
+    // Total number of pins being used for the current control input ribbon
+    int getControlInputPins() const;
+    // Control input pin mapped to ribbon pin index, or -1 if not used
     pintype_t getControlInputPin(int ribbonPinIndex) const;
 #endif
 
@@ -624,19 +621,6 @@ protected:
     Map<pintype_t, pintype_t, HYDRO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
     Map<pintype_t, SharedPtr<HydroPinMuxer>, HYDRO_SYS_PINMUXERS_MAXSIZE> _pinMuxers; // Pin muxers mapping
 
-    friend Hydruino *::getHydroInstance();
-    friend HydroScheduler *::getSchedulerInstance();
-    friend HydroLogger *::getLoggerInstance();
-    friend HydroPublisher *::getPublisherInstance();
-#ifdef HYDRO_USE_GUI
-    friend HydruinoUIInterface *::getUIInstance();
-#endif
-    friend class HydroCalibrationsStore;
-    friend class HydroCropsLibrary;
-    friend class HydroScheduler;
-    friend class HydroLogger;
-    friend class HydroPublisher;
-
     void allocateEEPROM();
     void deallocateEEPROM();
     void allocateRTC();
@@ -663,6 +647,19 @@ protected:
     void broadcastLowMemory();
     void checkFreeSpace();
     void checkAutosave();
+
+    friend Hydruino *::getHydroInstance();
+    friend HydroScheduler *::getSchedulerInstance();
+    friend HydroLogger *::getLoggerInstance();
+    friend HydroPublisher *::getPublisherInstance();
+#ifdef HYDRO_USE_GUI
+    friend HydruinoUIInterface *::getUIInstance();
+#endif
+    friend class HydroCalibrations;
+    friend class HydroCropsLibrary;
+    friend class HydroScheduler;
+    friend class HydroLogger;
+    friend class HydroPublisher;
 };
 
 // Template implementations

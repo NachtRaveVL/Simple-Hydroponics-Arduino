@@ -110,8 +110,8 @@ From Hydruino.h, in class Hydruino:
              Hydro_RTCType rtcType = Hydro_RTCType_None,            // RTC device type, else None
              DeviceSetup rtcSetup = DeviceSetup(),                  // RTC device setup (i2c only)
              DeviceSetup sdSetup = DeviceSetup(),                   // SD card device setup (spi only)
-             DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/ttl)
-             DeviceSetup gpsSetup = DeviceSetup(),                  // GPS device setup (ttl/i2c/spi)
+             DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/uart)
+             DeviceSetup gpsSetup = DeviceSetup(),                  // GPS device setup (uart/i2c/spi)
              pintype_t *ctrlInputPins = nullptr,                    // Control input pins, else nullptr
              DeviceSetup lcdSetup = DeviceSetup());                 // LCD device setup (i2c only)
 ```

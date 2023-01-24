@@ -160,8 +160,8 @@ void Hydruino::allocateGPS()
 {
     if (!_gps && _gpsSetup.cfgType != DeviceSetup::None) {
         switch (_gpsSetup.cfgType) {
-            case DeviceSetup::TTLSetup:
-                _gps = new GPSClass(_gpsSetup.cfgAs.ttl.serial);
+            case DeviceSetup::UARTSetup:
+                _gps = new GPSClass(_gpsSetup.cfgAs.uart.serial);
                 break;
             case DeviceSetup::I2CSetup:
                 _gps = new GPSClass(_gpsSetup.cfgAs.i2c.wire);
@@ -697,12 +697,12 @@ void Hydruino::commonPreInit()
             #ifdef HYDRO_USE_ETHERNET
                 Ethernet.init(_netSetup.cfgAs.spi.cs);
             #endif
-        } else if (_netSetup.cfgType == DeviceSetup::TTLSetup) {
-            if (began.find((uintptr_t)_netSetup.cfgAs.ttl.serial) == began.end() || _netSetup.cfgAs.ttl.baud < began[(uintptr_t)_netSetup.cfgAs.ttl.serial]) {
-                _netSetup.cfgAs.ttl.serial->begin((began[(uintptr_t)_netSetup.cfgAs.ttl.serial] = _netSetup.cfgAs.ttl.baud), (uint16_t)HYDRO_SYS_ATWIFI_SERIALMODE);
+        } else if (_netSetup.cfgType == DeviceSetup::UARTSetup) {
+            if (began.find((uintptr_t)_netSetup.cfgAs.uart.serial) == began.end() || _netSetup.cfgAs.uart.baud < began[(uintptr_t)_netSetup.cfgAs.uart.serial]) {
+                _netSetup.cfgAs.uart.serial->begin((began[(uintptr_t)_netSetup.cfgAs.uart.serial] = _netSetup.cfgAs.uart.baud), (uint16_t)HYDRO_SYS_ATWIFI_SERIALMODE);
             }
             #ifdef HYDRO_USE_AT_WIFI
-                WiFi.init(_netSetup.cfgAs.ttl.serial);
+                WiFi.init(_netSetup.cfgAs.uart.serial);
             #endif
         }
     #endif
@@ -733,9 +733,9 @@ static void printDeviceSetup(String prefix, const DeviceSetup &devSetup)
             Serial.print(roundf(devSetup.cfgAs.spi.speed / 1000000.0f)); Serial.print(F("MHz"));
             break;
 
-        case DeviceSetup::TTLSetup:
-            Serial.print(','); Serial.print(' '); Serial.print(prefix); Serial.print(F("TTLBaud: "));
-            Serial.print(devSetup.cfgAs.ttl.baud); Serial.print(F("bps"));
+        case DeviceSetup::UARTSetup:
+            Serial.print(','); Serial.print(' '); Serial.print(prefix); Serial.print(F("UARTBaud: "));
+            Serial.print(devSetup.cfgAs.uart.baud); Serial.print(F("bps"));
             break;
 
         default:
@@ -781,9 +781,9 @@ void Hydruino::commonPostInit()
             #endif
             #ifdef HYDRO_USE_GUI
                 Serial.print(F(", controlInputPins: "));
-                if (getControlInputRibbonPinCount() && _ctrlInputPins && isValidPin(_ctrlInputPins[0])) {
+                if (getControlInputPins() && _ctrlInputPins && isValidPin(_ctrlInputPins[0])) {
                     Serial.print('{');
-                    for (int i = 0; i < getControlInputRibbonPinCount(); ++i) {
+                    for (int i = 0; i < getControlInputPins(); ++i) {
                         if (i) { Serial.print(','); }
                         Serial.print(_ctrlInputPins[i]);
                     }
@@ -1260,8 +1260,9 @@ void Hydruino::setEthernetConnection(const uint8_t *macAddress)
 }
 
 #endif
+#ifdef HYDRO_USE_GUI
 
-int Hydruino::getControlInputRibbonPinCount() const
+int Hydruino::getControlInputPins() const
 {
     switch (getControlInputMode()) {
         case Hydro_ControlInputMode_2x2Matrix:
@@ -1278,12 +1279,14 @@ int Hydruino::getControlInputRibbonPinCount() const
 
 pintype_t Hydruino::getControlInputPin(int ribbonPinIndex) const
 {
-    int ctrlInPinCount = getControlInputRibbonPinCount();
+    int ctrlInPinCount = getControlInputPins();
     HYDRO_SOFT_ASSERT(ctrlInPinCount > 0, SFP(HStr_Err_UnsupportedOperation));
     HYDRO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), SFP(HStr_Err_InvalidParameter));
 
     return ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInputPins[ribbonPinIndex] : -1;
 }
+
+#endif
 
 I2C_eeprom *Hydruino::getEEPROM(bool begin)
 {
@@ -1408,8 +1411,8 @@ GPSClass *Hydruino::getGPS(bool begin)
 
     if (_gps && begin && !_gpsBegan) {
         switch (_gpsSetup.cfgType) {
-            case DeviceSetup::TTLSetup:
-                _gpsBegan = _gps->begin(_gpsSetup.cfgAs.ttl.baud);
+            case DeviceSetup::UARTSetup:
+                _gpsBegan = _gps->begin(_gpsSetup.cfgAs.uart.baud);
             case DeviceSetup::I2CSetup:
                 _gpsBegan = _gps->begin(_gpsSetup.cfgAs.i2c.speed);
             case DeviceSetup::SPISetup:

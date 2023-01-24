@@ -1,19 +1,19 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
-    Hydruino Additives Market
+    Hydruino Additives
 */
 
-#ifndef HydroAdditivesMarket_H
-#define HydroAdditivesMarket_H
+#ifndef HydroAdditives_H
+#define HydroAdditives_H
 
-class HydroAdditivesMarket;
+class HydroAdditives;
 
 #include "Hydruino.h"
 
-// Additives
-// The Additive Market stores custom user additive data, which is used to define feed
-// nutrient dosing levels through the growing cycle.
-class HydroAdditivesMarket {
+// Additives Storage
+// Stores custom user additive data, which is used to define feed nutrient dosing levels
+// through the growing cycle.
+class HydroAdditives {
 public:
     // Sets custom additive data, returning success flag.
     bool setCustomAdditiveData(const HydroCustomAdditiveData *customAdditiveData);
@@ -34,9 +34,9 @@ protected:
     friend class HydroScheduler;
 };
 
-extern HydroAdditivesMarket hydroAdditives;
+extern HydroAdditives hydroAdditives;
 
-#endif // /ifndef HydroAdditivesMarket_H
+#endif // /ifndef HydroAdditives_H
 
 
 

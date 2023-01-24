@@ -1,13 +1,13 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
-    Hydruino Additives Market
+    Hydruino Additives
 */
 
 #include "Hydruino.h"
 
-HydroAdditivesMarket hydroAdditives;
+HydroAdditives hydroAdditives;
 
-bool HydroAdditivesMarket::setCustomAdditiveData(const HydroCustomAdditiveData *customAdditiveData)
+bool HydroAdditives::setCustomAdditiveData(const HydroCustomAdditiveData *customAdditiveData)
 {
     HYDRO_SOFT_ASSERT(customAdditiveData, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydro_ReservoirType_CustomAdditive1 &&
@@ -42,7 +42,7 @@ bool HydroAdditivesMarket::setCustomAdditiveData(const HydroCustomAdditiveData *
     return false;
 }
 
-bool HydroAdditivesMarket::dropCustomAdditiveData(const HydroCustomAdditiveData *customAdditiveData)
+bool HydroAdditives::dropCustomAdditiveData(const HydroCustomAdditiveData *customAdditiveData)
 {
     HYDRO_HARD_ASSERT(customAdditiveData, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(!customAdditiveData || (customAdditiveData->reservoirType >= Hydro_ReservoirType_CustomAdditive1 &&
@@ -69,7 +69,7 @@ bool HydroAdditivesMarket::dropCustomAdditiveData(const HydroCustomAdditiveData 
     return false;
 }
 
-const HydroCustomAdditiveData *HydroAdditivesMarket::getCustomAdditiveData(Hydro_ReservoirType reservoirType) const
+const HydroCustomAdditiveData *HydroAdditives::getCustomAdditiveData(Hydro_ReservoirType reservoirType) const
 {
     HYDRO_SOFT_ASSERT(reservoirType >= Hydro_ReservoirType_CustomAdditive1 &&
                          reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount, SFP(HStr_Err_InvalidParameter));
