@@ -11,17 +11,23 @@ struct HydroJSONSerializableInterface;
 class HydroObjInterface;
 class HydruinoUIInterface;
 
+struct HydroDigitalInputPinInterface;
+struct HydroDigitalOutputPinInterface;
+struct HydroAnalogInputPinInterface;
+struct HydroAnalogOutputPinInterface;
+class HydroRTCInterface;
+
 class HydroActuatorAttachmentInterface;
 class HydroSensorAttachmentInterface;
 class HydroCropAttachmentInterface;
-class HydroRailAttachmentInterface;
 class HydroReservoirAttachmentInterface;
+class HydroRailAttachmentInterface;
 
 class HydroActuatorObjectInterface;
 class HydroSensorObjectInterface;
 class HydroCropObjectInterface;
-class HydroRailObjectInterface;
 class HydroReservoirObjectInterface;
+class HydroRailObjectInterface;
 
 class HydroTriggerObjectInterface;
 class HydroPumpObjectInterface;
