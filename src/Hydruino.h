@@ -25,8 +25,8 @@
     Simple-Hydroponics-Arduino - Version 0.6
 */
 
-#ifndef Hydro_H
-#define Hydro_H
+#ifndef Hydruino_H
+#define Hydruino_H
 
 // Library Setup
 
@@ -144,6 +144,7 @@ typedef SoftwareSerial SerialClass;
 #ifdef HYDRO_ENABLE_GPS
 #include "Adafruit_GPS.h"               // GPS library
 #define HYDRO_USE_GPS
+typedef GPSClass Adafruit_GPS;
 #endif
 #include "ArduinoJson.h"                // JSON library
 #include "ArxContainer.h"               // STL-like container library
@@ -306,6 +307,7 @@ public:
              DeviceSetup rtcSetup = DeviceSetup(),                  // RTC device setup (i2c only)
              DeviceSetup sdSetup = DeviceSetup(),                   // SD card device setup (spi only)
              DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/ttl)
+             DeviceSetup gpsSetup = DeviceSetup(),                  // GPS device setup (ttl/i2c/spi)
              pintype_t *ctrlInputPins = nullptr,                    // Control input pins, else nullptr
              DeviceSetup lcdSetup = DeviceSetup());                 // LCD device setup (i2c only)
     // Library destructor. Just in case.
@@ -465,16 +467,20 @@ public:
     // Currently active Hydruino instance
     static inline Hydruino *getActiveInstance() { return _activeInstance; }
     // EEPROM device size, in bytes (default: 0)
-    inline uint32_t getEEPROMDeviceSize() const { return _eepromType != Hydro_EEPROMType_None ? (((int)_eepromType) << 7) : 0; }
+    inline uint32_t getEEPROMSize() const { return _eepromType != Hydro_EEPROMType_None ? (((int)_eepromType) << 7) : 0; }
     // EEPROM device setup configuration
-    inline const DeviceSetup *getEEPROMDeviceSetup() const { return &_eepromSetup; }
+    inline const DeviceSetup *getEEPROMSetup() const { return &_eepromSetup; }
     // RTC device setup configuration
-    inline const DeviceSetup *getRTCDeviceSetup() const { return &_rtcSetup; }
+    inline const DeviceSetup *getRTCSetup() const { return &_rtcSetup; }
     // SD card device setup configuration
     inline const DeviceSetup *getSDCardSetup() const { return &_sdSetup; }
 #ifdef HYDRO_USE_NET
     // Network device setup configuration
     inline const DeviceSetup *getNetworkSetup() const { return &_netSetup; }
+#endif
+#ifdef HYDRO_USE_GPS
+    // GPS device setup configuration
+    inline const DeviceSetup *getGPSSetup() const { return &_gpsSetup; }
 #endif
 #ifdef HYDRO_USE_GUI
     inline const DeviceSetup *getLCDSetup() const { return &_lcdSetup; }
@@ -504,6 +510,10 @@ public:
     inline EthernetClass *getEthernet(bool begin = true);
     // Ethernet instance with fallback MAC address (nullptr return -> failure/no device, note: this method may block for up to a minute)
     EthernetClass *getEthernet(const uint8_t *macAddress, bool begin = true);
+#endif
+#ifdef HYDRO_USE_GPS
+    // GPS instance (nullptr return -> failure/no device)
+    GPSClass *getGPS(bool begin = true);
 #endif
 
     // Whenever the system is in operational mode (has been launched), or not
@@ -571,6 +581,9 @@ protected:
 #ifdef HYDRO_USE_NET
     const DeviceSetup _netSetup;                            // Network device setup
 #endif
+#ifdef HYDRO_USE_GPS
+    const DeviceSetup _gpsSetup;                            // GPS device setup
+#endif
 #ifdef HYDRO_USE_GUI
     const pintype_t *_ctrlInputPins;                        // Control input pin mapping (weak, default: Disabled/nullptr)
     const DeviceSetup _lcdSetup;                            // LCD device setup
@@ -580,6 +593,9 @@ protected:
     HydroRTCInterface *_rtc;                                // Real time clock instance (owned, lazy)
     SDClass *_sd;                                           // SD card instance (owned/strong, lazy/supplied, default: SD)
     int8_t _sdOut;                                          // Number of SD card instances out
+#ifdef HYDRO_USE_GPS
+    GPSClass *_gps;                                         // GPS instance (owned, lazy)
+#endif
 
     bool _eepromBegan;                                      // Status of EEPROM begin() call
     bool _rtcBegan;                                         // Status of RTC begin() call
@@ -587,6 +603,9 @@ protected:
     bool _sdBegan;                                          // Status of SD begin() call
 #ifdef HYDRO_USE_NET
     bool _netBegan;                                         // Status of WiFi/Ethernet begin() call
+#endif
+#ifdef HYDRO_USE_GPS
+    bool _gpsBegan;                                         // Status of GPS begin() call
 #endif
 
 #ifdef HYDRO_USE_MULTITASKING
@@ -625,10 +644,10 @@ protected:
     void deallocateRTC();
     void allocateSD();
     void deallocateSD();
-    void allocateSPI();
-    void deallocateSPI();
-    void allocateWire();
-    void deallocateWire();
+#ifdef HYDRO_USE_GPS
+    void allocateGPS();
+    void deallocateGPS();
+#endif
 
     void commonPreInit();
     void commonPostInit();
@@ -653,4 +672,4 @@ protected:
 #include "HydroAttachments.hpp"
 #include "HydroUtils.hpp"
 
-#endif // /ifndef Hydro_H
+#endif // /ifndef Hydruino_H

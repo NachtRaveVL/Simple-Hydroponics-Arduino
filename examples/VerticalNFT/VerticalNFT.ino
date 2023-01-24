@@ -41,7 +41,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
 // GPS Settings                                         (note: defined HYDRO_ENABLE_GPS to enable GPS)
-#define SETUP_GPS_TYPE                  Serial          // Type of GPS (Serial, I2C, SPI)
+#define SETUP_GPS_TYPE                  None            // Type of GPS (Serial, I2C, SPI, None)
 #define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
 #define SETUP_GPS_I2C_ADDR              B000            // GPS i2c address, if using i2c
 #define SETUP_GPS_SPI                   SPI             // GPS SPI class instance, if using spi
@@ -177,13 +177,15 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
 #else
                          DeviceSetup(),
 #endif
-// #if defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == Serial
-//                          TTLDeviceSetup(&SETUP_GPS_SERIAL, HYDRO_SYS_NMEAGPS_SERIALBAUD),
-// #elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == I2C
-//                          I2CDeviceSetup(SETUP_GPS_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
-// #elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == SPI
-//                          SPIDeviceSetup(SETUP_GPS_SPI_CS, &SETUP_GPS_SPI),
-// #endif
+#if defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == Serial
+                         TTLDeviceSetup(&SETUP_GPS_SERIAL, HYDRO_SYS_NMEAGPS_SERIALBAUD),
+#elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == I2C
+                         I2CDeviceSetup(SETUP_GPS_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+#elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == SPI
+                         SPIDeviceSetup(SETUP_GPS_SPI_CS, &SETUP_GPS_SPI),
+#else
+                         DeviceSetup(),
+#endif
                          _SETUP_CTRL_INPUT_PINS,
                          I2CDeviceSetup((uint8_t)SETUP_LCD_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED));
 
@@ -303,6 +305,9 @@ void setup() {
                 #endif
                 hydroController.enableDataPublishingToMQTTClient(mqttClient);
             }
+        #endif
+        #ifdef HYDRO_USE_GPS
+            hydroController.getGPS();
         #endif
         #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
             hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToWiFiStorageJson

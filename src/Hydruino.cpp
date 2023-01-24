@@ -29,25 +29,26 @@ void handleInterrupt(pintype_t pin)
 Hydruino *Hydruino::_activeInstance = nullptr;
 
 Hydruino::Hydruino(pintype_t piezoBuzzerPin,
-                   Hydro_EEPROMType eepromType,
-                   DeviceSetup eepromSetup,
-                   Hydro_RTCType rtcType,
-                   DeviceSetup rtcSetup,
+                   Hydro_EEPROMType eepromType, DeviceSetup eepromSetup,
+                   Hydro_RTCType rtcType, DeviceSetup rtcSetup,
                    DeviceSetup sdSetup,
                    DeviceSetup netSetup,
+                   DeviceSetup gpsSetup,
                    pintype_t *ctrlInputPins,
                    DeviceSetup lcdSetup)
-    :
-#ifdef HYDRO_USE_GUI
-      _activeUIInstance(nullptr), _ctrlInputPins(ctrlInputPins), _lcdSetup(lcdSetup),
-#endif
-#ifdef HYDRO_USE_NET
-      _netSetup(netSetup), _netBegan(false),
-#endif
-      _piezoBuzzerPin(piezoBuzzerPin),
+    : _piezoBuzzerPin(piezoBuzzerPin),
       _eepromType(eepromType), _eepromSetup(eepromSetup), _eeprom(nullptr), _eepromBegan(false),
       _rtcType(rtcType), _rtcSetup(rtcSetup), _rtc(nullptr), _rtcBegan(false), _rtcBattFail(false),
       _sdSetup(sdSetup), _sd(nullptr), _sdBegan(false), _sdOut(0),
+#ifdef HYDRO_USE_NET
+      _netSetup(netSetup), _netBegan(false),
+#endif
+#ifdef HYDRO_USE_GPS
+      _gpsSetup(gpsSetup), _gps(nullptr), _gpsBegan(false),
+#endif
+#ifdef HYDRO_USE_GUI
+      _activeUIInstance(nullptr), _ctrlInputPins(ctrlInputPins), _lcdSetup(lcdSetup),
+#endif
 #ifdef HYDRO_USE_MULTITASKING
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
@@ -70,6 +71,9 @@ Hydruino::~Hydruino()
     deallocateEEPROM();
     deallocateRTC();
     deallocateSD();
+#ifdef HYDRO_USE_GPS
+    deallocateGPS();
+#endif
     if (this == _activeInstance) { _activeInstance = nullptr; }
     if (_systemData) { delete _systemData; _systemData = nullptr; }
 }
@@ -78,7 +82,7 @@ void Hydruino::allocateEEPROM()
 {
     if (!_eeprom && _eepromType != Hydro_EEPROMType_None && _eepromSetup.cfgType == DeviceSetup::I2CSetup) {
         _eeprom = new I2C_eeprom(_eepromSetup.cfgAs.i2c.address | HYDRO_SYS_I2CEEPROM_BASEADDR,
-                                 getEEPROMDeviceSize(), _eepromSetup.cfgAs.i2c.wire);
+                                 getEEPROMSize(), _eepromSetup.cfgAs.i2c.wire);
         _eepromBegan = false;
         HYDRO_SOFT_ASSERT(_eeprom, SFP(HStr_Err_AllocationFailure));
     }
@@ -127,7 +131,7 @@ void Hydruino::deallocateRTC()
 
 void Hydruino::allocateSD()
 {
-    if (!_sd) {
+    if (!_sd && _sdSetup.cfgType == DeviceSetup::SPISetup) {
         #if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SD))
             _sd = &SD;
         #else
@@ -149,6 +153,38 @@ void Hydruino::deallocateSD()
         _sdBegan = false;
     }
 }
+
+#ifdef HYDRO_USE_GPS
+
+void Hydruino::allocateGPS()
+{
+    if (!_gps && _gpsSetup.cfgType != DeviceSetup::None) {
+        switch (_gpsSetup.cfgType) {
+            case DeviceSetup::TTLSetup:
+                _gps = new GPSClass(_gpsSetup.cfgAs.ttl.serial);
+                break;
+            case DeviceSetup::I2CSetup:
+                _gps = new GPSClass(_gpsSetup.cfgAs.i2c.wire);
+                break;
+            case DeviceSetup::SPISetup:
+                _gps = new GPSClass(_gpsSetup.cfgAs.spi.spi, _gpsSetup.cfgAs.spi.cs);
+                break;
+            default: break;
+        }
+        _gpsBegan = false;
+        HYDRO_SOFT_ASSERT(_gps, SFP(HStr_Err_AllocationFailure));
+    }
+}
+
+void Hydruino::deallocateGPS()
+{
+    if (_gps) {
+        delete _gps; _gps = nullptr;
+        _gpsBegan = false;
+    }
+}
+
+#endif
 
 void Hydruino::init(Hydro_SystemMode systemMode,
                     Hydro_MeasurementMode measureMode,
@@ -194,7 +230,7 @@ bool Hydruino::initFromEEPROM(bool jsonFormat)
         commonPreInit();
 
         if (getEEPROM() && _eepromBegan && _sysDataAddress != -1) {
-            HydroEEPROMStream eepromStream(_sysDataAddress, getEEPROMDeviceSize() - _sysDataAddress);
+            HydroEEPROMStream eepromStream(_sysDataAddress, getEEPROMSize() - _sysDataAddress);
             return jsonFormat ? initFromJSONStream(&eepromStream) : initFromBinaryStream(&eepromStream);
         }
     }
@@ -208,7 +244,7 @@ bool Hydruino::saveToEEPROM(bool jsonFormat)
 
     if (_systemData) {
         if (getEEPROM() && _eepromBegan && _sysDataAddress != -1) {
-            HydroEEPROMStream eepromStream(_sysDataAddress, getEEPROMDeviceSize() - _sysDataAddress);
+            HydroEEPROMStream eepromStream(_sysDataAddress, getEEPROMSize() - _sysDataAddress);
             return jsonFormat ? saveToJSONStream(&eepromStream) : saveToBinaryStream(&eepromStream);
         }
     }
@@ -732,7 +768,7 @@ void Hydruino::commonPostInit()
             if (isValidPin(_piezoBuzzerPin)) { Serial.print(_piezoBuzzerPin); }
             else { Serial.print(SFP(HStr_Disabled)); }
             Serial.print(F(", eepromSize: "));
-            if (getEEPROMDeviceSize()) { Serial.print(getEEPROMDeviceSize()); }
+            if (getEEPROMSize()) { Serial.print(getEEPROMSize()); }
             else { Serial.print(SFP(HStr_Disabled)); }
             printDeviceSetup(F("eeprom"), _eepromSetup);
             Serial.print(F(", rtcType: "));
@@ -1249,7 +1285,7 @@ I2C_eeprom *Hydruino::getEEPROM(bool begin)
         if (!_eepromBegan) { deallocateEEPROM(); }
     }
 
-    return _eeprom && (!begin || _eepromBegan) ? _eeprom : nullptr;
+    return (!begin || _eepromBegan) ? _eeprom : nullptr;
 }
 
 HydroRTCInterface *Hydruino::getRealTimeClock(bool begin)
@@ -1268,7 +1304,7 @@ HydroRTCInterface *Hydruino::getRealTimeClock(bool begin)
         } else { deallocateRTC(); }
     }
 
-    return _rtc && (!begin || _rtcBegan) ? _rtc : nullptr;
+    return (!begin || _rtcBegan) ? _rtc : nullptr;
 }
 
 SDClass *Hydruino::getSDCard(bool begin)
@@ -1288,14 +1324,10 @@ SDClass *Hydruino::getSDCard(bool begin)
 
         if (!_sdBegan && _sdOut == 0) { deallocateSD(); }
 
-        if (_sd && _sdBegan) {
-            _sdOut++;
-            return _sd;
-        }
-        return nullptr;
+        if (_sd && _sdBegan) { _sdOut++; }
     }
 
-    return _sd;
+    return (!begin || _sdBegan) ? _sd : nullptr;
 }
 
 void Hydruino::endSDCard(SDClass *sd)
@@ -1330,11 +1362,9 @@ WiFiClass *Hydruino::getWiFi(String ssid, String pass, bool begin)
 
             _netBegan = (status == WL_CONNECTED);
         }
-
-        return _netBegan ? &WiFi : nullptr;
     }
 
-    return &WiFi;
+    return (!begin || _netBegan) ? &WiFi : nullptr;
 }
 
 #endif
@@ -1342,24 +1372,44 @@ WiFiClass *Hydruino::getWiFi(String ssid, String pass, bool begin)
 
 EthernetClass *Hydruino::getEthernet(const uint8_t *macAddress, bool begin)
 {
-    int lnStatus = Ethernet.linkStatus();
-    int hwStatus = Ethernet.hardwareStatus();
+    int status = Ethernet.linkStatus();
 
-    if (begin && (!_netBegan || lnStatus != LinkON)) {
-        if (lnStatus == LinkON) {
+    if (begin && (!_netBegan || status != LinkON)) {
+        if (status == LinkON) {
             _netBegan = true;
-        } else if (hwStatus == EthernetNoHardware) {
+        } else if (Ethernet.hardwareStatus() == EthernetNoHardware) {
             _netBegan = false;
         } else { // attempt connection
-            lnStatus = Ethernet.begin(const_cast<uint8_t *>(getMACAddress()));
+            status = Ethernet.begin(const_cast<uint8_t *>(getMACAddress()));
 
-            _netBegan = (lnStatus == LinkON);
+            _netBegan = (status == LinkON);
         }
-
-        return _netBegan ? &Ethernet : nullptr;
     }
 
-    return &Ethernet;
+    return (!begin || _netBegan) ? &Ethernet : nullptr;
+}
+
+#endif
+#ifdef HYDRO_USE_GPS
+
+GPSClass *Hydruino::getGPS(bool begin)
+{
+    if (!_gps) { allocateGPS(); }
+
+    if (_gps && begin && !_gpsBegan) {
+        switch (_gpsSetup.cfgType) {
+            case DeviceSetup::TTLSetup:
+                _gpsBegan = _gps->begin(_gpsSetup.cfgAs.ttl.baud);
+            case DeviceSetup::I2CSetup:
+                _gpsBegan = _gps->begin(_gpsSetup.cfgAs.i2c.speed);
+            case DeviceSetup::SPISetup:
+                _gpsBegan = _gps->begin(_gpsSetup.cfgAs.spi.speed);
+            default: break;
+        }
+        if (!_gpsBegan) { deallocateGPS(); }
+    }
+
+    return (!begin || _gpsBegan) ? _gps : nullptr;
 }
 
 #endif

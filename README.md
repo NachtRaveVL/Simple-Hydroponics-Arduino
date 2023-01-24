@@ -111,6 +111,7 @@ From Hydruino.h, in class Hydruino:
              DeviceSetup rtcSetup = DeviceSetup(),                  // RTC device setup (i2c only)
              DeviceSetup sdSetup = DeviceSetup(),                   // SD card device setup (spi only)
              DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/ttl)
+             DeviceSetup gpsSetup = DeviceSetup(),                  // GPS device setup (ttl/i2c/spi)
              pintype_t *ctrlInputPins = nullptr,                    // Control input pins, else nullptr
              DeviceSetup lcdSetup = DeviceSetup());                 // LCD device setup (i2c only)
 ```
@@ -377,7 +378,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
 // GPS Settings                                         (note: defined HYDRO_ENABLE_GPS to enable GPS)
-#define SETUP_GPS_TYPE                  Serial          // Type of GPS (Serial, I2C, SPI)
+#define SETUP_GPS_TYPE                  None            // Type of GPS (Serial, I2C, SPI, None)
 #define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
 #define SETUP_GPS_I2C_ADDR              B000            // GPS i2c address, if using i2c
 #define SETUP_GPS_SPI                   SPI             // GPS SPI class instance, if using spi
