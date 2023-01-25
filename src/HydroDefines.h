@@ -423,12 +423,12 @@ enum Hydro_SensorType : signed char {
     Hydro_SensorType_TotalDissolvedSolids,                  // TDS salts electrode sensor (analog/digital, feed reservoir only)
     Hydro_SensorType_SoilMoisture,                          // Soil moisture sensor (analog/digital)
     Hydro_SensorType_WaterTemperature,                      // Submersible water sensor (analog/digital)
-    Hydro_SensorType_WaterPumpFlowSensor,                   // Water pump flow hall sensor (analog(PWM))
-    Hydro_SensorType_WaterLevelIndicator,                   // Water level indicator (binary)
-    Hydro_SensorType_WaterHeightMeter,                      // Water height meter (analog)
+    Hydro_SensorType_PumpFlow,                              // Water pump flow hall sensor (analog(PWM))
+    Hydro_SensorType_WaterLevel,                            // Water level indicator (binary)
+    Hydro_SensorType_WaterHeight,                           // Water height meter (analog)
     Hydro_SensorType_AirTempHumidity,                       // Air temperature and humidity sensor (digital)
     Hydro_SensorType_AirCarbonDioxide,                      // Air CO2 sensor (analog/digital)
-    Hydro_SensorType_PowerUsageMeter,                       // Power usage meter (analog)
+    Hydro_SensorType_PowerUsage,                            // Power usage meter (analog)
 
     Hydro_SensorType_Count,                                 // Internal use only
     Hydro_SensorType_Undefined = -1                         // Internal use only

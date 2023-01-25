@@ -1367,18 +1367,18 @@ String sensorTypeToString(Hydro_SensorType sensorType, bool excludeSpecial)
             return SFP(HStr_Enum_SoilMoisture);
         case Hydro_SensorType_WaterTemperature:
             return SFP(HStr_Enum_WaterTemperature);
-        case Hydro_SensorType_WaterPumpFlowSensor:
-            return SFP(HStr_Enum_WaterPumpFlowSensor);
-        case Hydro_SensorType_WaterLevelIndicator:
-            return SFP(HStr_Enum_WaterLevelIndicator);
-        case Hydro_SensorType_WaterHeightMeter:
-            return SFP(HStr_Enum_WaterHeightMeter);
+        case Hydro_SensorType_PumpFlow:
+            return SFP(HStr_Enum_PumpFlow);
+        case Hydro_SensorType_WaterLevel:
+            return SFP(HStr_Enum_WaterLevel);
+        case Hydro_SensorType_WaterHeight:
+            return SFP(HStr_Enum_WaterHeight);
         case Hydro_SensorType_AirTempHumidity:
             return SFP(HStr_Enum_AirTemperatureHumidity);
         case Hydro_SensorType_AirCarbonDioxide:
             return SFP(HStr_Enum_AirCarbonDioxide);
-        case Hydro_SensorType_PowerUsageMeter:
-            return SFP(HStr_Enum_PowerUsageMeter);
+        case Hydro_SensorType_PowerUsage:
+            return SFP(HStr_Enum_PowerUsage);
         case Hydro_SensorType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_SensorType_Undefined:

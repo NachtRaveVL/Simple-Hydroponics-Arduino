@@ -66,7 +66,7 @@ void testSensors()
 {
     Serial.println(); Serial.println("-- Sensors --");
 
-    {   auto binarySensor = SharedPtr<HydroBinarySensor>(new HydroBinarySensor(Hydro_SensorType_WaterLevelIndicator, 0, 0));
+    {   auto binarySensor = SharedPtr<HydroBinarySensor>(new HydroBinarySensor(Hydro_SensorType_WaterLevel, 0, 0));
         binarySensor->setCrop(HydroIdentity(String(F("ASDF"))));
         binarySensor->setReservoir(HydroIdentity(String(F("JKL"))));
 
@@ -83,7 +83,7 @@ void testSensors()
         Serial.println(); flushYield();
     }
 
-    {   auto analogSensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(Hydro_SensorType_WaterHeightMeter, 0, 0));
+    {   auto analogSensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(Hydro_SensorType_WaterHeight, 0, 0));
         analogSensor->setCrop(HydroIdentity(String(F("ASDF"))));
         analogSensor->setReservoir(HydroIdentity(String(F("JKL"))));
 
