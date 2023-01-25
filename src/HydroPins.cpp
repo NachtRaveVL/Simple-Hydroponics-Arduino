@@ -43,7 +43,7 @@ HydroPin::operator HydroDigitalPin() const
 
 HydroPin::operator HydroAnalogPin() const
 {
-    return (isAnalogType() || isAnalog() || (!isUnknownType() && !isDigital())) ? HydroAnalogPin(pin, mode, channel) : HydroAnalogPin();
+    return (isAnalogType() || isAnalog() || (!isUnknownType() && !isDigital())) ? HydroAnalogPin(pin, mode, isOutput() ? DAC_RESOLUTION : ADC_RESOLUTION, channel) : HydroAnalogPin();
 }
 
 void HydroPin::saveToData(HydroPinData *dataOut) const
@@ -185,7 +185,7 @@ HydroAnalogPin::HydroAnalogPin(pintype_t pinNumber, Arduino_PinModeType pinMode,
 #endif
                                uint8_t muxChannel)
     : HydroPin(Analog, pinNumber, pinMode != OUTPUT ? Hydro_PinMode_Analog_Input : Hydro_PinMode_Analog_Output, muxChannel),
-      bitRes(analogBitRes ? analogBitRes : (pinMode != OUTPUT ? ADC_RESOLUTION : DAC_RESOLUTION))
+      bitRes(analogBitRes ? analogBitRes : (pinMode == OUTPUT ? DAC_RESOLUTION : ADC_RESOLUTION))
 #ifdef ESP32
       , pwmChannel(pinPWMChannel)
 #endif
@@ -203,7 +203,7 @@ HydroAnalogPin::HydroAnalogPin(pintype_t pinNumber, Hydro_PinMode pinMode, uint8
 #endif
                                uint8_t muxChannel)
     : HydroPin(Analog, pinNumber, pinMode, muxChannel),
-      bitRes(analogBitRes ? analogBitRes : (pinMode != Hydro_PinMode_Analog_Output ? ADC_RESOLUTION : DAC_RESOLUTION))
+      bitRes(analogBitRes ? analogBitRes : (pinMode == Hydro_PinMode_Analog_Output ? DAC_RESOLUTION : ADC_RESOLUTION))
 #ifdef ESP32
       , pwmChannel(pinPWMChannel)
 #endif

@@ -1410,9 +1410,13 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Power[] PROGMEM = {"Power"};
             return flashStr_Enum_Power;
         } break;
-        case HStr_Enum_PowerUsageMeter: {
-            static const char flashStr_Enum_PowerUsageMeter[] PROGMEM = {"PowerUsage"};
-            return flashStr_Enum_PowerUsageMeter;
+        case HStr_Enum_PowerUsage: {
+            static const char flashStr_Enum_PowerUsage[] PROGMEM = {"PowerUsage"};
+            return flashStr_Enum_PowerUsage;
+        } break;
+        case HStr_Enum_PumpFlow: {
+            static const char flashStr_Enum_PumpFlow[] PROGMEM = {"PumpFlow"};
+            return flashStr_Enum_PumpFlow;
         } break;
         case HStr_Enum_Pumpkin: {
             static const char flashStr_Enum_Pumpkin[] PROGMEM = {"Pumpkin"};
@@ -1506,13 +1510,13 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_WaterHeater[] PROGMEM = {"WaterHeater"};
             return flashStr_Enum_WaterHeater;
         } break;
-        case HStr_Enum_WaterHeightMeter: {
-            static const char flashStr_Enum_WaterHeightMeter[] PROGMEM = {"WaterHeight"};
-            return flashStr_Enum_WaterHeightMeter;
+        case HStr_Enum_WaterHeight: {
+            static const char flashStr_Enum_WaterHeight[] PROGMEM = {"WaterHeight"};
+            return flashStr_Enum_WaterHeight;
         } break;
-        case HStr_Enum_WaterLevelIndicator: {
-            static const char flashStr_Enum_WaterLevelIndicator[] PROGMEM = {"LevelIndicator"};
-            return flashStr_Enum_WaterLevelIndicator;
+        case HStr_Enum_WaterLevel: {
+            static const char flashStr_Enum_WaterLevel[] PROGMEM = {"LevelIndicator"};
+            return flashStr_Enum_WaterLevel;
         } break;
         case HStr_Enum_WaterPH: {
             static const char flashStr_Enum_WaterPH[] PROGMEM = {"WaterPH"};
@@ -1521,10 +1525,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_WaterPump: {
             static const char flashStr_Enum_WaterPump[] PROGMEM = {"WaterPump"};
             return flashStr_Enum_WaterPump;
-        } break;
-        case HStr_Enum_WaterPumpFlowSensor: {
-            static const char flashStr_Enum_WaterPumpFlowSensor[] PROGMEM = {"PumpFlow"};
-            return flashStr_Enum_WaterPumpFlowSensor;
         } break;
         case HStr_Enum_WaterSprayer: {
             static const char flashStr_Enum_WaterSprayer[] PROGMEM = {"WaterSprayer"};

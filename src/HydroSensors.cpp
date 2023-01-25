@@ -45,12 +45,12 @@ Hydro_UnitsType defaultMeasureUnitsForSensorType(Hydro_SensorType sensorType, ui
             return defaultTemperatureUnits(measureMode);
         case Hydro_SensorType_AirCarbonDioxide:
             return Hydro_UnitsType_Concentration_PPM;
-        case Hydro_SensorType_WaterPumpFlowSensor:
+        case Hydro_SensorType_PumpFlow:
             return defaultLiquidFlowUnits(measureMode);
-        case Hydro_SensorType_WaterLevelIndicator:
-        case Hydro_SensorType_WaterHeightMeter:
+        case Hydro_SensorType_WaterLevel:
+        case Hydro_SensorType_WaterHeight:
             return defaultDistanceUnits(measureMode);
-        case Hydro_SensorType_PowerUsageMeter:
+        case Hydro_SensorType_PowerUsage:
             return Hydro_UnitsType_Power_Wattage;
         default:
             return Hydro_UnitsType_Undefined;
@@ -68,10 +68,10 @@ Hydro_UnitsCategory defaultMeasureCategoryForSensorType(Hydro_SensorType sensorT
             return Hydro_UnitsCategory_SoilMoisture;
         case Hydro_SensorType_WaterTemperature:
             return Hydro_UnitsCategory_LiqTemperature;
-        case Hydro_SensorType_WaterPumpFlowSensor:
+        case Hydro_SensorType_PumpFlow:
             return Hydro_UnitsCategory_LiqFlowRate;
-        case Hydro_SensorType_WaterLevelIndicator:
-        case Hydro_SensorType_WaterHeightMeter:
+        case Hydro_SensorType_WaterLevel:
+        case Hydro_SensorType_WaterHeight:
             return Hydro_UnitsCategory_LiqVolume;
         case Hydro_SensorType_AirTempHumidity:
             switch (measurementRow) {
@@ -82,7 +82,7 @@ Hydro_UnitsCategory defaultMeasureCategoryForSensorType(Hydro_SensorType sensorT
             }
         case Hydro_SensorType_AirCarbonDioxide:
             return Hydro_UnitsCategory_AirConcentration;
-        case Hydro_SensorType_PowerUsageMeter:
+        case Hydro_SensorType_PowerUsage:
             return Hydro_UnitsCategory_Power;
         default: break;
     }

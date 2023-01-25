@@ -477,7 +477,7 @@ void setup() {
             feedPump->setRail(acRelayPower);
             feedPump->setInputReservoir(feedReservoir);
             #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
-                feedPump->setFlowRateSensor(HydroIdentity(Hydro_SensorType_WaterPumpFlowSensor, 1)); // delayed ref (auto-resolves on launch)
+                feedPump->setFlowRateSensor(HydroIdentity(Hydro_SensorType_PumpFlow, 1)); // delayed ref (auto-resolves on launch)
             #endif
             if (hydroController.getSystemMode() == Hydro_SystemMode_DrainToWaste) {
                 feedPump->setOutputReservoir(drainagePipe);

@@ -172,13 +172,13 @@ SharedPtr<HydroPumpRelayActuator> HydroFactory::addPeristalticPumpRelay(pintype_
 SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterLevelIndicator));
+    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterLevel));
     HYDRO_HARD_ASSERT(inputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsDigital && positionIndex != -1) {
         auto sensor = SharedPtr<HydroBinarySensor>(new HydroBinarySensor(
-            Hydro_SensorType_WaterLevelIndicator,
+            Hydro_SensorType_WaterLevel,
             positionIndex,
             HydroDigitalPin(inputPin, INPUT_PULLUP)
         ));
@@ -297,13 +297,13 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inp
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPWMPumpFlowSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterPumpFlowSensor));
+    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PumpFlow));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
-            Hydro_SensorType_WaterPumpFlowSensor,
+            Hydro_SensorType_PumpFlow,
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
@@ -316,13 +316,13 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPWMPumpFlowSensor(pintype_t 
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeightMeter));
+    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
-            Hydro_SensorType_WaterHeightMeter,
+            Hydro_SensorType_WaterHeight,
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
@@ -335,13 +335,13 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t i
 SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeightMeter));
+    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
-            Hydro_SensorType_WaterHeightMeter,
+            Hydro_SensorType_WaterHeight,
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes),
             true
@@ -355,13 +355,13 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t
 SharedPtr<HydroAnalogSensor> HydroFactory::addPowerUsageMeter(pintype_t inputPin, bool isWattageBased, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PowerUsageMeter));
+    Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PowerUsage));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && positionIndex != -1) {
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
-            Hydro_SensorType_PowerUsageMeter,
+            Hydro_SensorType_PowerUsage,
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
