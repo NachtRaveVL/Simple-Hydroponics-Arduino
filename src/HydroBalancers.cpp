@@ -166,7 +166,7 @@ void HydroLinearEdgeBalancer::update()
 }
 
 
-HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, time_t baseDosingMillis, time_t mixTime, uint8_t measurementRow)
+HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, millis_t baseDosingMillis, time_t mixTime, uint8_t measurementRow)
     : HydroBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
       _lastDosingTime(0), _lastDosingValue(0.0f), _dosingMillis(0), _dosingDir(Hydro_BalancerState_Undefined), _dosingActIndex(-1),
       _baseDosingMillis(baseDosingMillis), _mixTime(mixTime)
@@ -252,7 +252,7 @@ void HydroTimedDosingBalancer::performDosing()
         auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosingMillis;
         dosingMillis = (_targetSetpoint - dosingValue) * dosingRatePerMs;
         dosingMillis = constrain(dosingMillis, _baseDosingMillis * HYDRO_DOSETIME_FRACTION_MIN,
-                                                _baseDosingMillis * HYDRO_DOSETIME_FRACTION_MAX);
+                                               _baseDosingMillis * HYDRO_DOSETIME_FRACTION_MAX);
     }
 
     _lastDosingValue = dosingValue;
@@ -263,7 +263,7 @@ void HydroTimedDosingBalancer::performDosing()
     _lastDosingTime = unixNow();
 }
 
-void HydroTimedDosingBalancer::performDosing(SharedPtr<HydroActuator> &actuator, time_t timeMillis)
+void HydroTimedDosingBalancer::performDosing(SharedPtr<HydroActuator> &actuator, millis_t timeMillis)
 {
     if (actuator->isRelayPumpClass()) {
         static_pointer_cast<HydroPumpRelayActuator>(actuator)->pump(timeMillis); // pumps have nice logging output

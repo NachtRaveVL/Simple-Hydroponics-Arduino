@@ -67,8 +67,10 @@
 #endif
 #endif
 
+typedef typeof(millis()) millis_t;                          // Millis type
 typedef int8_t Hydro_PositionIndex;                         // Position indexing type
 typedef uint32_t Hydro_KeyType;                             // Key type, for hashing
+typedef uint16_t Hydro_PollingFrame;                        // Polling frame type, for sync
 typedef typeof(INPUT) Arduino_PinModeType;                  // Arduino pin mode type alias
 typedef typeof(LOW) Arduino_PinStatusType;                  // Arduino pin status type alias
 
@@ -370,7 +372,7 @@ enum Hydro_MeasurementMode : signed char {
 
     Hydro_MeasurementMode_Count,                            // Internal use only
     Hydro_MeasurementMode_Undefined = -1,                   // Internal use only
-    Hydro_MeasurementMode_Default = Hydro_MeasurementMode_Metric // Default system measurement mode (feel free to change)
+    Hydro_MeasurementMode_Default = Hydro_MeasurementMode_Metric // Default system measurement mode
 };
 
 // LCD/Display Output Mode
@@ -517,6 +519,34 @@ enum Hydro_BalancerState : signed char {
     Hydro_BalancerState_Undefined = -1                      // Internal use only
 };
 
+// Enable Mode
+// Actuator intensity/enablement calculation mode. Specifies how multiple activations get used together.
+enum Hydro_EnableMode : signed char {
+    Hydro_EnableMode_Highest,                               // Parallel activation using highest drive intensity
+    Hydro_EnableMode_Lowest,                                // Parallel activation using lowest drive intensity
+    Hydro_EnableMode_Average,                               // Parallel activation using averaged drive intensities
+    Hydro_EnableMode_Multiply,                              // Parallel activation using multiplied drive intensities
+
+    Hydro_EnableMode_InOrder,                               // Serial activation using in-order/fifo-queue drive intensities
+    Hydro_EnableMode_RevOrder,                              // Serial activation using reverse-order/lifo-stack drive intensities
+    Hydro_EnableMode_DesOrder,                              // Serial activation using highest-to-lowest/descending-order drive intensities
+    Hydro_EnableMode_AscOrder,                              // Serial activation using lowest-to-highest/ascending-order drive intensities
+
+    Hydro_EnableMode_Count,                                 // Internal use only
+    Hydro_EnableMode_Undefined = -1                         // Internal use only
+};
+
+// Direction Mode
+// Actuator intensity application mode. Specifies activation directionality and enablement.
+enum Hydro_DirectionMode : signed char {
+    Hydro_DirectionMode_Forward,                            // Standard/forward direction mode
+    Hydro_DirectionMode_Reverse,                            // Opposite/reverse direction mode
+    Hydro_DirectionMode_Stop,                               // Stationary/braking direction mode
+
+    Hydro_DirectionMode_Count,                              // Internal use only
+    Hydro_DirectionMode_Undefined = -1                      // Internal use only
+};
+
 // Units Category
 // Unit of measurement category. Specifies the kind of unit.
 enum Hydro_UnitsCategory : signed char {
@@ -595,6 +625,7 @@ class HydroAttachment;
 class HydroSensorAttachment;
 class HydroTriggerAttachment;
 class HydroBalancerAttachment;
+struct HydroActivationHandle;
 class HydroActuator;
 class HydroSensor;
 class HydroCrop;

@@ -106,6 +106,7 @@ enum Hydro_String : unsigned short {
     HStr_Key_DetriggerTol,
     HStr_Key_DispOutMode,
     HStr_Key_EmptyTrigger,
+    HStr_Key_EnableMode,
     HStr_Key_FeedReservoir,
     HStr_Key_FeedTimingMins,
     HStr_Key_FeedingTrigger,

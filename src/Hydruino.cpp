@@ -1092,9 +1092,9 @@ Hydro_PositionIndex Hydruino::firstPosition(HydroIdentity id, bool taken)
     return -1;
 }
 
-bool Hydruino::tryGetPinLock(pintype_t pin, time_t waitMillis)
+bool Hydruino::tryGetPinLock(pintype_t pin, millis_t waitMillis)
 {
-    time_t startMillis = millis();
+    millis_t startMillis = millis();
     while (1) {
         auto iter = _pinLocks.find(pin);
         if (iter == _pinLocks.end()) {
@@ -1465,7 +1465,7 @@ uint16_t Hydruino::getPollingInterval() const
     return _systemData ? _systemData->pollingInterval : 0;
 }
 
-bool Hydruino::isPollingFrameOld(unsigned int frame, unsigned int allowance) const
+bool Hydruino::isPollingFrameOld(Hydro_PollingFrame frame, Hydro_PollingFrame allowance) const
 {
     return _pollingFrame - frame > allowance;
 }

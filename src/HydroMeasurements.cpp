@@ -89,19 +89,11 @@ HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measuremen
 }
 
 
-HydroMeasurement::HydroMeasurement()
-    : type(Unknown), frame(0), timestamp(unixNow())
-{ ; }
-
-HydroMeasurement::HydroMeasurement(int typeIn, time_t timestampIn)
-    : type((typeof(type))typeIn), timestamp(timestampIn)
+HydroMeasurement::HydroMeasurement(int classType, time_t timestampIn)
+    : type((typeof(type))classType), timestamp(timestampIn)
 {
     updateFrame();
 }
-
-HydroMeasurement::HydroMeasurement(int typeIn, time_t timestampIn, uint16_t frameIn)
-    : type((typeof(type))typeIn), timestamp(timestampIn), frame(frameIn)
-{ ; }
 
 HydroMeasurement::HydroMeasurement(const HydroMeasurementData *dataIn)
     : type((typeof(type))(dataIn->type)), timestamp(dataIn->timestamp)
@@ -116,7 +108,7 @@ void HydroMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measure
     dataOut->timestamp = timestamp;
 }
 
-void HydroMeasurement::updateFrame(unsigned int minFrame)
+void HydroMeasurement::updateFrame(Hydro_PollingFrame minFrame)
 {
     frame = max(minFrame, getHydroInstance() ? getHydroInstance()->getPollingFrame() : 0);
 }
@@ -130,7 +122,7 @@ HydroBinaryMeasurement::HydroBinaryMeasurement(bool stateIn, time_t timestamp)
     : HydroMeasurement((int)Binary, timestamp), state(stateIn)
 { ; }
 
-HydroBinaryMeasurement::HydroBinaryMeasurement(bool stateIn, time_t timestamp, uint16_t frame)
+HydroBinaryMeasurement::HydroBinaryMeasurement(bool stateIn, time_t timestamp, Hydro_PollingFrame frame)
     : HydroMeasurement((int)Binary, timestamp, frame), state(stateIn)
 { ; }
 
@@ -156,7 +148,7 @@ HydroSingleMeasurement::HydroSingleMeasurement(float valueIn, Hydro_UnitsType un
     : HydroMeasurement((int)Single, timestamp), value(valueIn), units(unitsIn)
 { ; }
 
-HydroSingleMeasurement::HydroSingleMeasurement(float valueIn, Hydro_UnitsType unitsIn, time_t timestamp, uint16_t frame)
+HydroSingleMeasurement::HydroSingleMeasurement(float valueIn, Hydro_UnitsType unitsIn, time_t timestamp, Hydro_PollingFrame frame)
     : HydroMeasurement((int)Single, timestamp, frame), value(valueIn), units(unitsIn)
 { ; }
 
@@ -180,14 +172,14 @@ HydroDoubleMeasurement::HydroDoubleMeasurement()
 { ; }
 
 HydroDoubleMeasurement::HydroDoubleMeasurement(float value1, Hydro_UnitsType units1,
-                                                           float value2, Hydro_UnitsType units2,
-                                                           time_t timestamp)
+                                               float value2, Hydro_UnitsType units2,
+                                               time_t timestamp)
     : HydroMeasurement((int)Double, timestamp), value{value1,value2}, units{units1,units2}
 { ; }
 
 HydroDoubleMeasurement::HydroDoubleMeasurement(float value1, Hydro_UnitsType units1,
-                                                           float value2, Hydro_UnitsType units2,
-                                                           time_t timestamp, uint16_t frame)
+                                               float value2, Hydro_UnitsType units2,
+                                               time_t timestamp, Hydro_PollingFrame frame)
     : HydroMeasurement((int)Double, timestamp, frame), value{value1,value2}, units{units1,units2}
 { ; }
 
@@ -215,16 +207,16 @@ HydroTripleMeasurement::HydroTripleMeasurement()
 { ; }
 
 HydroTripleMeasurement::HydroTripleMeasurement(float value1, Hydro_UnitsType units1,
-                                                           float value2, Hydro_UnitsType units2,
-                                                           float value3, Hydro_UnitsType units3,
-                                                           time_t timestamp)
+                                               float value2, Hydro_UnitsType units2,
+                                               float value3, Hydro_UnitsType units3,
+                                               time_t timestamp)
     : HydroMeasurement((int)Triple, timestamp), value{value1,value2,value3}, units{units1,units2,units3}
 { ; }
 
 HydroTripleMeasurement::HydroTripleMeasurement(float value1, Hydro_UnitsType units1,
-                                                           float value2, Hydro_UnitsType units2,
-                                                           float value3, Hydro_UnitsType units3,
-                                                           time_t timestamp, uint16_t frame)
+                                               float value2, Hydro_UnitsType units2,
+                                               float value3, Hydro_UnitsType units3,
+                                               time_t timestamp, Hydro_PollingFrame frame)
     : HydroMeasurement((int)Triple, timestamp, frame), value{value1,value2,value3}, units{units1,units2,units3}
 { ; }
 
