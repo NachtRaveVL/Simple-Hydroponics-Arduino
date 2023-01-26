@@ -166,14 +166,16 @@ public:
 // Actuator Object Interface
 class HydroActuatorObjectInterface {
 public:
-    virtual bool enableActuator(float intensity = 1.0f, bool force = false) = 0;
-    virtual void disableActuator() = 0;
     virtual bool getCanEnable() = 0;
     virtual bool isEnabled(float tolerance = 0.0f) const = 0;
 
     virtual void setContinuousPowerUsage(float contPowerUsage, Hydro_UnitsType contPowerUsageUnits = Hydro_UnitsType_Undefined) = 0;
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) = 0;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() = 0;
+
+protected:
+    virtual bool _enableActuator(float intensity = 1.0) = 0;
+    virtual void _disableActuator() = 0;
 };
 
 // Sensor Object Interface
@@ -235,8 +237,8 @@ class HydroPumpObjectInterface {
 public:
     virtual bool canPump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) = 0;
     virtual bool pump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) = 0;
-    virtual bool canPump(time_t timeMillis) = 0;
-    virtual bool pump(time_t timeMillis) = 0;
+    virtual bool canPump(millis_t timeMillis) = 0;
+    virtual bool pump(millis_t timeMillis) = 0;
 
     virtual void setFlowRateUnits(Hydro_UnitsType flowRateUnits) = 0;
     virtual Hydro_UnitsType getFlowRateUnits() const = 0;

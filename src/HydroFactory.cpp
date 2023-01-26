@@ -118,7 +118,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputP
     return nullptr;
 }
 
-SharedPtr<HydroPWMActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t outputPin, uint8_t outputBitRes
+SharedPtr<HydroVariableActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t outputPin, uint8_t outputBitRes
 #ifdef ESP32
                                                                  , uint8_t pwmChannel
 #endif
@@ -133,7 +133,7 @@ SharedPtr<HydroPWMActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t outpu
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsPWM && positionIndex != -1) {
-        auto actuator = SharedPtr<HydroPWMActuator>(new HydroPWMActuator(
+        auto actuator = SharedPtr<HydroVariableActuator>(new HydroVariableActuator(
             Hydro_ActuatorType_FanExhaust,
             positionIndex,
             HydroAnalogPin(outputPin, OUTPUT, outputBitRes

@@ -156,7 +156,7 @@ public:
 private:
     SharedPtr<HydroActuator> _actuator;
     float _enableIntensity;
-    time_t _enableTimeMillis;
+    millis_t _enableTimeMillis;
 };
 
 
@@ -262,7 +262,7 @@ template<typename T> inline T mapValue(T value, T inMin, T inMax, T outMin, T ou
 extern unsigned int freeMemory();
 
 // This delays a finely timed amount, with spin loop nearer to end. Used in finely timed dispensers.
-extern void delayFine(time_t timeMillis);
+extern void delayFine(millis_t timeMillis);
 
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();

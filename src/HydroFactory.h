@@ -36,13 +36,13 @@ public:
     SharedPtr<HydroRelayActuator> addFanExhaustRelay(pintype_t outputPin);                  // Digital output pin this actuator sits on
     // Adds a new analog PWM-based fan exhaust to the system using the given parameters.
     // PWM fan exhausts allow a graduated adaptive speed control to manage CO2 levels.
-    SharedPtr<HydroPWMActuator> addAnalogPWMFanExhaust(pintype_t outputPin,                 // PWM output pin this actuator sits on
-                                                       uint8_t outputBitRes = DAC_RESOLUTION // PWM output bit resolution to use
+    SharedPtr<HydroVariableActuator> addAnalogPWMFanExhaust(pintype_t outputPin,            // PWM output pin this actuator sits on
+                                                            uint8_t outputBitRes = DAC_RESOLUTION // PWM output bit resolution to use
 #ifdef ESP32
-                                                       , uint8_t pwmChannel = 1             // PWM output channel (0 reserved for buzzer)
+                                                            , uint8_t pwmChannel = 1        // PWM output channel (0 reserved for buzzer)
 #endif
 #ifdef ESP_PLATFORM
-                                                       , float pwmFrequency = 1000          // PWM output frequency
+                                                            , float pwmFrequency = 1000     // PWM output frequency
 #endif
     );
     // Adds a new peristaltic dosing pump relay to the system using the given parameters.

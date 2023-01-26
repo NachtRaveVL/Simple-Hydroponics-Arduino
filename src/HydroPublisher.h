@@ -67,7 +67,7 @@ protected:
     MQTTClient *_mqttClient;                                // MQTT client object (strong)
 #endif
     String _dataFilename;                                   // Resolved data file name (based on day)
-    uint16_t _pollingFrame;                                 // Polling frame that publishing is caught up to
+    Hydro_PollingFrame _pollingFrame;                       // Polling frame that publishing is caught up to
     bool _needsTabulation;                                  // Needs tabulation tracking flag
     uint8_t _columnCount;                                   // Data columns count
     HydroDataColumn *_dataColumns;                          // Data columns (owned)

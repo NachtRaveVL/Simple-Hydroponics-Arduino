@@ -42,7 +42,7 @@ HydroData *_allocateDataForObjType(int8_t idType, int8_t classType)
                     return new HydroActuatorData();
                 case (int8_t)HydroActuator::RelayPump:
                     return new HydroPumpRelayActuatorData();
-                case (int8_t)HydroActuator::VariablePWM:
+                case (int8_t)HydroActuator::Variable:
                     return new HydroActuatorData();
                 default: break;
             }

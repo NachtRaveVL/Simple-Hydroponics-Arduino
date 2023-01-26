@@ -521,6 +521,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_EmptyTrigger[] PROGMEM = {"emptyTrigger"};
             return flashStr_Key_EmptyTrigger;
         } break;
+        case HStr_Key_EnableMode: {
+            static const char flashStr_Key_EnableMode[] PROGMEM = {"enableMode"};
+            return flashStr_Key_EnableMode;
+        } break;
         case HStr_Key_FeedReservoir: {
             static const char flashStr_Key_FeedReservoir[] PROGMEM = {"feedReservoir"};
             return flashStr_Key_FeedReservoir;

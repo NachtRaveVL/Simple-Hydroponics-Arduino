@@ -420,7 +420,7 @@ public:
     // Pin Handlers.
 
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
-    bool tryGetPinLock(pintype_t pin, time_t waitMillis = 150);
+    bool tryGetPinLock(pintype_t pin, millis_t waitMillis = 150);
     // Returns a locked pin lock for the given pin. Only call if pin lock was successfully locked.
     inline void returnPinLock(pintype_t pin);
 
@@ -534,9 +534,9 @@ public:
     // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRO_DATA_LOOP_INTERVAL)
     uint16_t getPollingInterval() const;
     // System polling frame number for sensor frame tracking
-    inline uint16_t getPollingFrame() const { return _pollingFrame; }
+    inline Hydro_PollingFrame getPollingFrame() const { return _pollingFrame; }
     // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
-    bool isPollingFrameOld(unsigned int frame, unsigned int allowance = 0) const;
+    bool isPollingFrameOld(Hydro_PollingFrame frame, Hydro_PollingFrame allowance = 0) const;
     // Returns if system autosaves are enabled or not
     bool isAutosaveEnabled() const;
     // Returns if system fallback autosaves are enabled or not
@@ -613,7 +613,7 @@ protected:
     taskid_t _miscTaskId;                                   // Misc task Id if created, else TASKMGR_INVALIDID
 #endif
     bool _suspend;                                          // If system is currently suspended from operation
-    uint16_t _pollingFrame;                                 // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
+    Hydro_PollingFrame _pollingFrame;                       // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                 // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                   // Last date autosave was performed, if able (UTC)
     String _sysConfigFilename;                              // System config filename used in serialization (default: "hydruino.cfg")

@@ -44,7 +44,7 @@ void testActuators()
         Serial.println(); flushYield();
     }
 
-    {   auto pwmFan = SharedPtr<HydroPWMActuator>(new HydroPWMActuator(Hydro_ActuatorType_FanExhaust, 0, HydroAnalogPin(7, OUTPUT)));
+    {   auto pwmFan = SharedPtr<HydroVariableActuator>(new HydroVariableActuator(Hydro_ActuatorType_FanExhaust, 0, HydroAnalogPin(7, OUTPUT)));
         pwmFan->setRail(HydroIdentity(String(F("ASDF"))));
         pwmFan->setReservoir(HydroIdentity(String(F("JKL"))));
 
