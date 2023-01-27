@@ -155,7 +155,7 @@ void HydroActuator::update()
                 break;
         }
 
-        _enableActuator(constrain(drivingIntensity, -1.0f, 1.0f));
+        _enableActuator(drivingIntensity);
         _needsUpdate = false;
     }
 }
@@ -295,11 +295,13 @@ bool HydroRelayActuator::isEnabled(float tolerance) const
 
 bool HydroRelayActuator::_enableActuator(float intensity)
 {
+    bool wasEnabled = _enabled;
+
     if (_outputPin.isValid() && !_enabled) {
         if (!isFPEqual(intensity, 0.0f)) {
             _enabled = true;
             _outputPin.activate();
-            handleActivation();
+            if (!wasEnabled) { handleActivation(); }
         } else {
             _outputPin.deactivate();
         }
@@ -379,6 +381,7 @@ bool HydroRelayPumpActuator::getCanEnable()
 void HydroRelayPumpActuator::handleActivation()
 {
     millis_t time = millis();
+    HydroActuator::handleActivation();
 
     if (_enabled) {
         _pumpVolumeAccum = 0;
@@ -602,6 +605,7 @@ bool HydroVariableActuator::isEnabled(float tolerance) const
 
 bool HydroVariableActuator::_enableActuator(float intensity)
 {
+    bool wasEnabled = _enabled;
     intensity = constrain(intensity, 0.0f, 1.0f);
 
     if (_outputPin.isValid() && (!_enabled || !isFPEqual(_intensity, intensity))) {
@@ -609,7 +613,7 @@ bool HydroVariableActuator::_enableActuator(float intensity)
         if (!isFPEqual(_intensity, 0.0f)) {
             _enabled = true;
             _outputPin.analogWrite(_intensity);
-            handleActivation();
+            if (!wasEnabled) { handleActivation(); }
         } else {
             _outputPin.analogWrite_raw(0);
         }
