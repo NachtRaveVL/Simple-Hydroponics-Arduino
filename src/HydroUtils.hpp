@@ -168,8 +168,8 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReserv
         if (links.second[linksIndex].first->isActuatorType()) {
             auto actuator = static_cast<HydroActuator *>(links.second[linksIndex].first);
 
-            if (actuator->isRelayPumpClass() && static_cast<HydroPumpRelayActuator *>(actuator)->getInputReservoir().get() == srcReservoir) {
-                auto outputReservoir = static_cast<HydroPumpRelayActuator *>(actuator)->getOutputReservoir().get();
+            if (actuator->isRelayPumpClass() && static_cast<HydroRelayPumpActuator *>(actuator)->getInputReservoir().get() == srcReservoir) {
+                auto outputReservoir = static_cast<HydroRelayPumpActuator *>(actuator)->getOutputReservoir().get();
 
                 if (outputReservoir && outputReservoir->getReservoirType() == destReservoirType) {
                     retVal.push_back(links.second[linksIndex].first);
@@ -190,8 +190,8 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReserv
         if (links.second[linksIndex].first->isActuatorType()) {
             auto actuator = static_cast<HydroActuator *>(links.second[linksIndex].first);
 
-            if (actuator->isRelayPumpClass() && static_cast<HydroPumpRelayActuator *>(actuator)->getOutputReservoir().get() == destReservoir) {
-                auto inputReservoir = static_cast<HydroPumpRelayActuator *>(actuator)->getInputReservoir().get();
+            if (actuator->isRelayPumpClass() && static_cast<HydroRelayPumpActuator *>(actuator)->getOutputReservoir().get() == destReservoir) {
+                auto inputReservoir = static_cast<HydroRelayPumpActuator *>(actuator)->getInputReservoir().get();
 
                 if (inputReservoir && inputReservoir->getReservoirType() == srcReservoirType) {
                     retVal.push_back(links.second[linksIndex].first);

@@ -23,7 +23,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputP
     return nullptr;
 }
 
-SharedPtr<HydroPumpRelayActuator> HydroFactory::addWaterPumpRelay(pintype_t outputPin)
+SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterPump));
@@ -31,7 +31,7 @@ SharedPtr<HydroPumpRelayActuator> HydroFactory::addWaterPumpRelay(pintype_t outp
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = SharedPtr<HydroPumpRelayActuator>(new HydroPumpRelayActuator(
+        auto actuator = SharedPtr<HydroRelayPumpActuator>(new HydroRelayPumpActuator(
             Hydro_ActuatorType_WaterPump,
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
@@ -150,7 +150,7 @@ SharedPtr<HydroVariableActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t 
     return nullptr;
 }
 
-SharedPtr<HydroPumpRelayActuator> HydroFactory::addPeristalticPumpRelay(pintype_t outputPin)
+SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     Hydro_PositionIndex positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_PeristalticPump));
@@ -158,7 +158,7 @@ SharedPtr<HydroPumpRelayActuator> HydroFactory::addPeristalticPumpRelay(pintype_
     HYDRO_SOFT_ASSERT(positionIndex != -1, SFP(HStr_Err_NoPositionsAvailable));
 
     if (outputPinIsDigital && positionIndex != -1) {
-        auto actuator = SharedPtr<HydroPumpRelayActuator>(new HydroPumpRelayActuator(
+        auto actuator = SharedPtr<HydroRelayPumpActuator>(new HydroRelayPumpActuator(
             Hydro_ActuatorType_PeristalticPump,
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)

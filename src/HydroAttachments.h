@@ -161,8 +161,8 @@ public:
 
     inline void updateIfNeeded(bool poll = false);
 
-    void setMeasurement(float value, Hydro_UnitsType units = Hydro_UnitsType_Undefined);
     void setMeasurement(HydroSingleMeasurement measurement);
+    inline void setMeasurement(float value, Hydro_UnitsType units = Hydro_UnitsType_Undefined) { setMeasurement(HydroSingleMeasurement(value, units)); }
     void setMeasurementRow(uint8_t measurementRow);
     void setMeasurementUnits(Hydro_UnitsType units, float convertParam = FLT_UNDEF);
 

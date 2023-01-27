@@ -10,12 +10,12 @@ struct HydroJSONSerializableInterface;
 
 class HydroObjInterface;
 class HydruinoUIInterface;
+class HydroRTCInterface;
 
 struct HydroDigitalInputPinInterface;
 struct HydroDigitalOutputPinInterface;
 struct HydroAnalogInputPinInterface;
 struct HydroAnalogOutputPinInterface;
-class HydroRTCInterface;
 
 class HydroActuatorAttachmentInterface;
 class HydroSensorAttachmentInterface;
@@ -35,7 +35,7 @@ class HydroPumpObjectInterface;
 class HydroFeedReservoirAttachmentInterface;
 class HydroFlowSensorAttachmentInterface;
 class HydroVolumeSensorAttachmentInterface;
-class HydroPowerSensorAttachmentInterface;
+class HydroPowerUsageSensorAttachmentInterface;
 class HydroWaterTemperatureSensorAttachmentInterface;
 class HydroWaterPHSensorAttachmentInterface;
 class HydroWaterTDSSensorAttachmentInterface;
@@ -77,6 +77,15 @@ public:
     virtual void setNeedsLayout() = 0;
 };
 
+// RTC Module Interface
+class HydroRTCInterface {
+public:
+    virtual bool begin(TwoWire *wireInstance) = 0;
+    virtual void adjust(const DateTime &dt) = 0;
+    virtual bool lostPower(void) = 0;
+    virtual DateTime now() = 0;
+};
+
 
 // Digital Input Pin Interface
 struct HydroDigitalInputPinInterface {
@@ -104,16 +113,6 @@ struct HydroAnalogOutputPinInterface {
     virtual void analogWrite_raw(int amount) = 0;
     inline void set(float amount) { analogWrite(amount); }
     inline void set_raw(int amount) { analogWrite_raw(amount); }
-};
-
-
-// RTC Module Interface
-class HydroRTCInterface {
-public:
-    virtual bool begin(TwoWire *wireInstance) = 0;
-    virtual void adjust(const DateTime &dt) = 0;
-    virtual bool lostPower(void) = 0;
-    virtual DateTime now() = 0;
 };
 
 
@@ -169,13 +168,14 @@ public:
     virtual bool getCanEnable() = 0;
     virtual bool isEnabled(float tolerance = 0.0f) const = 0;
 
-    virtual void setContinuousPowerUsage(float contPowerUsage, Hydro_UnitsType contPowerUsageUnits = Hydro_UnitsType_Undefined) = 0;
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) = 0;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() = 0;
+    inline void setContinuousPowerUsage(float contPowerUsage, Hydro_UnitsType contPowerUsageUnits = Hydro_UnitsType_Undefined);
 
 protected:
     virtual bool _enableActuator(float intensity = 1.0) = 0;
     virtual void _disableActuator() = 0;
+    virtual void handleActivation() = 0;
 };
 
 // Sensor Object Interface
@@ -185,12 +185,15 @@ public:
     virtual const HydroMeasurement *getLatestMeasurement() const = 0;
     virtual bool isTakingMeasurement() const = 0;
     virtual bool needsPolling(uint32_t allowance = 0) const = 0;
+
+protected:
+    //virtual void handleMeasurement() = 0;
 };
 
 // Crop Object Interface
 class HydroCropObjectInterface {
 public:
-    virtual bool needsFeeding() = 0;
+    virtual bool getNeedsFeeding() = 0;
     virtual void notifyFeedingBegan() = 0;
     virtual void notifyFeedingEnded() = 0;
 };
@@ -236,9 +239,9 @@ public:
 class HydroPumpObjectInterface {
 public:
     virtual bool canPump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) = 0;
-    virtual bool pump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) = 0;
-    virtual bool canPump(millis_t timeMillis) = 0;
-    virtual bool pump(millis_t timeMillis) = 0;
+    virtual HydroActivationHandle pump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) = 0;
+    virtual bool canPump(millis_t time) = 0;
+    virtual HydroActivationHandle pump(millis_t time) = 0;
 
     virtual void setFlowRateUnits(Hydro_UnitsType flowRateUnits) = 0;
     virtual Hydro_UnitsType getFlowRateUnits() const = 0;
@@ -251,9 +254,13 @@ public:
     template<class U> inline void setOutputReservoir(U reservoir);
     template<class U = HydroReservoir> inline SharedPtr<U> getOutputReservoir(bool resolve = true);
 
-    virtual void setContinuousFlowRate(float contFlowRate, Hydro_UnitsType contFlowRateUnits = Hydro_UnitsType_Undefined) = 0;
     virtual void setContinuousFlowRate(HydroSingleMeasurement contFlowRate) = 0;
     virtual const HydroSingleMeasurement &getContinuousFlowRate() = 0;
+    inline void setContinuousFlowRate(float contFlowRate, Hydro_UnitsType contFlowRateUnits = Hydro_UnitsType_Undefined);
+
+protected:
+    virtual void pollPumpingSensors() = 0;
+    virtual void handlePumpTime(millis_t time) = 0;
 };
 
 
@@ -284,8 +291,8 @@ public:
     template<class U = HydroSensor> inline SharedPtr<U> getWaterVolumeSensor(bool poll = false);
 };
 
-// Power Aware Interface
-class HydroPowerSensorAttachmentInterface {
+// Power Usage Aware Interface
+class HydroPowerUsageSensorAttachmentInterface {
 public:
     virtual HydroSensorAttachment &getPowerUsage(bool poll = false) = 0;
 

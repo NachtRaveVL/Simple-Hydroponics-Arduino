@@ -27,11 +27,11 @@ void testActuators()
         Serial.println(); flushYield();
     }
 
-    {   auto pumpRelay = SharedPtr<HydroPumpRelayActuator>(new HydroPumpRelayActuator(Hydro_ActuatorType_WaterPump, 0, HydroDigitalPin(7, OUTPUT)));
+    {   auto pumpRelay = SharedPtr<HydroRelayPumpActuator>(new HydroRelayPumpActuator(Hydro_ActuatorType_WaterPump, 0, HydroDigitalPin(7, OUTPUT)));
         pumpRelay->setRail(HydroIdentity(String(F("ASDF"))));
         pumpRelay->setReservoir(HydroIdentity(String(F("JKL"))));
 
-        auto data = (HydroPumpRelayActuatorData *)(pumpRelay->newSaveData());
+        auto data = (HydroPumpActuatorData *)(pumpRelay->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
         JsonObject json = doc.to<JsonObject>();
         data->toJSONObject(json);

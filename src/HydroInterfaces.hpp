@@ -65,6 +65,12 @@ inline SharedPtr<U> HydroRailAttachmentInterface::getRail(bool resolve)
     return getParentRail(resolve).template getObject<U>();
 }
 
+
+inline void HydroActuatorObjectInterface::setContinuousPowerUsage(float contPowerUsage, Hydro_UnitsType contPowerUsageUnits)
+{
+    setContinuousPowerUsage(HydroSingleMeasurement(contPowerUsage, contPowerUsageUnits));
+}
+
 inline bool HydroBalancerObjectInterface::isBalanced() const
 {
     return getBalancerState() == Hydro_BalancerState_Balanced;
@@ -93,6 +99,12 @@ inline SharedPtr<U> HydroPumpObjectInterface::getOutputReservoir(bool resolve)
 {
     return getDestinationReservoir(resolve).template getObject<U>();
 }
+
+inline void HydroPumpObjectInterface::setContinuousFlowRate(float contFlowRate, Hydro_UnitsType contFlowRateUnits)
+{
+    setContinuousFlowRate(HydroSingleMeasurement(contFlowRate, contFlowRateUnits));
+}
+
 
 template <class U>
 inline void HydroFeedReservoirAttachmentInterface::setFeedReservoir(U reservoir)
@@ -131,13 +143,13 @@ inline SharedPtr<U> HydroVolumeSensorAttachmentInterface::getWaterVolumeSensor(b
 }
 
 template <class U>
-inline void HydroPowerSensorAttachmentInterface::setPowerUsageSensor(U sensor)
+inline void HydroPowerUsageSensorAttachmentInterface::setPowerUsageSensor(U sensor)
 {
     getPowerUsage(false).setObject(sensor);
 }
 
 template <class U>
-inline SharedPtr<U> HydroPowerSensorAttachmentInterface::getPowerUsageSensor(bool poll)
+inline SharedPtr<U> HydroPowerUsageSensorAttachmentInterface::getPowerUsageSensor(bool poll)
 {
     return static_pointer_cast<U>(getPowerUsage(poll).getObject());
 }

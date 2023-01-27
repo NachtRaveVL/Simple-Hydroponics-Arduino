@@ -41,7 +41,7 @@ HydroData *_allocateDataForObjType(int8_t idType, int8_t classType)
                 case (int8_t)HydroActuator::Relay:
                     return new HydroActuatorData();
                 case (int8_t)HydroActuator::RelayPump:
-                    return new HydroPumpRelayActuatorData();
+                    return new HydroPumpActuatorData();
                 case (int8_t)HydroActuator::Variable:
                     return new HydroActuatorData();
                 default: break;
@@ -193,22 +193,22 @@ void HydroSystemData::fromJSONObject(JsonObjectConst &objectIn)
 
 HydroCalibrationData::HydroCalibrationData()
     : HydroData('H','C','A','L', 1),
-      sensorName{0}, calibUnits(Hydro_UnitsType_Undefined),
+      ownerName{0}, calibUnits(Hydro_UnitsType_Undefined),
       multiplier(1.0f), offset(0.0f)
 {
     _size = sizeof(*this);
     HYDRO_HARD_ASSERT(isCalibrationData(), SFP(HStr_Err_OperationFailure));
 }
 
-HydroCalibrationData::HydroCalibrationData(HydroIdentity sensorId, Hydro_UnitsType calibUnitsIn)
+HydroCalibrationData::HydroCalibrationData(HydroIdentity ownerId, Hydro_UnitsType calibUnitsIn)
     : HydroData('H','C','A','L', 1),
-      sensorName{0}, calibUnits(calibUnitsIn),
+      ownerName{0}, calibUnits(calibUnitsIn),
       multiplier(1.0f), offset(0.0f)
 {
     _size = sizeof(*this);
     HYDRO_HARD_ASSERT(isCalibrationData(), SFP(HStr_Err_OperationFailure));
-    if (sensorId) {
-        strncpy(sensorName, sensorId.keyString.c_str(), HYDRO_NAME_MAXSIZE);
+    if (ownerId) {
+        strncpy(ownerName, ownerId.keyString.c_str(), HYDRO_NAME_MAXSIZE);
     }
 }
 
@@ -216,7 +216,7 @@ void HydroCalibrationData::toJSONObject(JsonObject &objectOut) const
 {
     HydroData::toJSONObject(objectOut);
 
-    if (sensorName[0]) { objectOut[SFP(HStr_Key_SensorName)] = charsToString(sensorName, HYDRO_NAME_MAXSIZE); }
+    if (ownerName[0]) { objectOut[SFP(HStr_Key_SensorName)] = charsToString(ownerName, HYDRO_NAME_MAXSIZE); }
     if (calibUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_CalibUnits)] = unitsTypeToSymbol(calibUnits); }
     objectOut[SFP(HStr_Key_Multiplier)] = multiplier;
     objectOut[SFP(HStr_Key_Offset)] = offset;
@@ -226,8 +226,8 @@ void HydroCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroData::fromJSONObject(objectIn);
 
-    const char *sensorNameStr = objectIn[SFP(HStr_Key_SensorName)];
-    if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRO_NAME_MAXSIZE); }
+    const char *ownerNameStr = objectIn[SFP(HStr_Key_SensorName)];
+    if (ownerNameStr && ownerNameStr[0]) { strncpy(ownerName, ownerNameStr, HYDRO_NAME_MAXSIZE); }
     calibUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_CalibUnits)]);
     multiplier = objectIn[SFP(HStr_Key_Multiplier)] | multiplier;
     offset = objectIn[SFP(HStr_Key_Offset)] | offset;

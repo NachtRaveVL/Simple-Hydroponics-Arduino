@@ -15,7 +15,7 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
             case (int8_t)HydroActuator::Relay:
                 return new HydroRelayActuator((const HydroActuatorData *)dataIn);
             case (int8_t)HydroActuator::RelayPump:
-                return new HydroPumpRelayActuator((const HydroPumpRelayActuatorData *)dataIn);
+                return new HydroRelayPumpActuator((const HydroPumpActuatorData *)dataIn);
             case (int8_t)HydroActuator::Variable:
                 return new HydroVariableActuator((const HydroActuatorData *)dataIn);
             default: break;
@@ -26,52 +26,50 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 }
 
 
-HydroActivationHandle::HydroActivationHandle(HydroActuator *actuator, Hydro_DirectionMode directionIn, float intensityIn, millis_t forMillis, bool force)
-    : actuator(actuator), direction(directionIn), intensity(constrain(intensityIn, 0.0f, 1.0f)), startMillis(0), durationMillis(forMillis), forced(force)
+HydroActivationHandle::HydroActivationHandle(HydroActuator *actuator, Hydro_DirectionMode directionIn, float intensityIn, millis_t duration, bool force)
+    : actuator(actuator), direction(directionIn), intensity(constrain(intensityIn, 0.0f, 1.0f)), start(0), duration(duration), forced(force)
 {
     if (actuator) { actuator->_handles.push_back(this); actuator->_needsUpdate = true; }
 }
 
 HydroActivationHandle::HydroActivationHandle(const HydroActivationHandle &handle)
     : actuator(handle.actuator), direction(handle.direction), intensity(constrain(handle.intensity, 0.0f, 1.0f)), forced(handle.forced),
-      startMillis(handle.startMillis), durationMillis(handle.durationMillis)
+      start(handle.start), duration(handle.duration)
 {
-    if (actuator) { actuator->_handles.push_back(this); }
+    if (actuator) { actuator->_handles.push_back(this); actuator->_needsUpdate = true; }
 }
 
 HydroActivationHandle::~HydroActivationHandle()
 {
-    if (actuator) { actuator->_needsUpdate = true;
-        for (auto handleIter = actuator->_handles.end() - 1; handleIter != actuator->_handles.begin() - 1; --handleIter) {
-            if ((*handleIter) == this) {
-                actuator->_handles.erase(handleIter);
-                break;
-            }
-        }
-        actuator = nullptr;
-    }
+    unset();
 }
 
 HydroActivationHandle &HydroActivationHandle::operator=(const HydroActivationHandle &handle)
 {
     if (handle.actuator != actuator) {
-        if (actuator) { actuator->_needsUpdate = true;
-            for (auto handleIter = actuator->_handles.end() - 1; handleIter != actuator->_handles.begin() - 1; --handleIter) {
-                if ((*handleIter) == this) {
-                    actuator->_handles.erase(handleIter);
-                    break;
-                }
-            }
-        }
+        unset();
         actuator = handle.actuator;
         if (actuator) { actuator->_handles.push_back(this); actuator->_needsUpdate = true; }
-    }
+    } else { start = 0; }
     direction = handle.direction;
     intensity = constrain(handle.intensity, 0.0f, 1.0f);
-    startMillis = 0;
-    durationMillis = handle.durationMillis;
+    duration = handle.duration;
     forced = handle.forced;
     return *this;
+}
+
+void HydroActivationHandle::unset()
+{
+    if (actuator) {
+        for (auto handleIter = actuator->_handles.end() - 1; handleIter != actuator->_handles.begin() - 1; --handleIter) {
+            if ((*handleIter) == this) {
+                actuator->_handles.erase(handleIter); actuator->_needsUpdate = true;
+                break;
+            }
+        }
+        actuator = nullptr;
+    }
+    start = duration = 0;
 }
 
 
@@ -169,14 +167,6 @@ bool HydroActuator::getCanEnable()
     return true;
 }
 
-void HydroActuator::setContinuousPowerUsage(float contPowerUsage, Hydro_UnitsType contPowerUsageUnits)
-{
-    _contPowerUsage.value = contPowerUsage;
-    _contPowerUsage.units = contPowerUsageUnits;
-    _contPowerUsage.updateTimestamp();
-    _contPowerUsage.updateFrame(1);
-}
-
 void HydroActuator::setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage)
 {
     _contPowerUsage = contPowerUsage;
@@ -227,6 +217,43 @@ void HydroActuator::saveToData(HydroData *dataOut)
     ((HydroActuatorData *)dataOut)->enableMode = _enableMode;
 }
 
+void HydroActuator::handleActivation()
+{
+    millis_t time = millis();
+
+    if (_enabled) {
+        for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
+            if ((*handleIter)->start == 0) {
+                (*handleIter)->start = max(1, time);
+            }
+        }
+
+        getLoggerInstance()->logActivation(this);
+    } else {
+        for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
+            if ((*handleIter)->duration) {
+                millis_t duration = time - (*handleIter)->start;
+
+                if (duration >= (*handleIter)->duration) {
+                    (*handleIter)->duration = 0;
+                    (*handleIter)->actuator = nullptr;
+                    handleIter = _handles.erase(handleIter) - 1;
+                } else {
+                    (*handleIter)->duration -= duration;
+                }
+            }
+        }
+
+        getLoggerInstance()->logDeactivation(this);
+    }
+
+    #ifdef HYDRO_USE_MULTITASKING
+        scheduleSignalFireOnce<HydroActuator *>(getSharedPtr(), _activateSignal, this);
+    #else
+        _activateSignal.fire(this);
+    #endif
+}
+
 
 HydroRelayActuator::HydroRelayActuator(Hydro_ActuatorType actuatorType,
                                        Hydro_PositionIndex actuatorIndex,
@@ -256,31 +283,25 @@ HydroRelayActuator::~HydroRelayActuator()
     }
 }
 
+bool HydroRelayActuator::getCanEnable()
+{
+    return _outputPin.isValid() && HydroActuator::getCanEnable();
+}
+
+bool HydroRelayActuator::isEnabled(float tolerance) const
+{
+    return _enabled;
+}
+
 bool HydroRelayActuator::_enableActuator(float intensity)
 {
-    if (_outputPin.isValid()) {
-        bool enabledBefore = _enabled;
-
-        if (!_enabled && !isFPEqual(intensity, 0.0f)) {
+    if (_outputPin.isValid() && !_enabled) {
+        if (!isFPEqual(intensity, 0.0f)) {
             _enabled = true;
             _outputPin.activate();
-        }
-
-        if (_enabled && !enabledBefore) {
-            millis_t timeMillis = max(1, millis());
-            for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
-                if ((*handleIter) && (*handleIter)->startMillis == 0) {
-                    (*handleIter)->startMillis = timeMillis;
-                }
-            }
-
-            getLoggerInstance()->logActivation(this);
-
-            #ifdef HYDRO_USE_MULTITASKING
-                scheduleSignalFireOnce<HydroActuator *>(getSharedPtr(), _activateSignal, this);
-            #else
-                _activateSignal.fire(this);
-            #endif
+            handleActivation();
+        } else {
+            _outputPin.deactivate();
         }
     }
 
@@ -289,51 +310,11 @@ bool HydroRelayActuator::_enableActuator(float intensity)
 
 void HydroRelayActuator::_disableActuator()
 {
-    if (_outputPin.isValid()) {
-        bool enabledBefore = _enabled;
-
-        if (_enabled) {
-            _enabled = false;
-            _outputPin.deactivate();
-        }
-
-        if (!_enabled && enabledBefore) {
-            millis_t timeMillis = millis();
-            for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
-                if ((*handleIter) && (*handleIter)->durationMillis) {
-                    millis_t durationMillis = timeMillis - (*handleIter)->startMillis;
-                    if (durationMillis >= (*handleIter)->durationMillis) {
-                        (*handleIter)->durationMillis = 0;
-                        (*handleIter)->actuator = nullptr;
-                        handleIter = _handles.erase(handleIter) - 1;
-                    } else {
-                        (*handleIter)->durationMillis -= durationMillis;
-                    }
-                }
-            }
-
-            getLoggerInstance()->logDeactivation(this);
-
-            #ifdef HYDRO_USE_MULTITASKING
-                scheduleSignalFireOnce<HydroActuator *>(getSharedPtr(), _activateSignal, this);
-            #else
-                _activateSignal.fire(this);
-            #endif
-        }
+    if (_outputPin.isValid() && _enabled) {
+        _enabled = false;
+        _outputPin.deactivate();
+        handleActivation();
     }
-}
-
-bool HydroRelayActuator::getCanEnable()
-{
-    if (HydroActuator::getCanEnable()) {
-        return !getActuatorInWaterFromType(_id.objTypeAs.actuatorType) || !getReservoir() || !getReservoir()->isEmpty();
-    }
-    return false;
-}
-
-bool HydroRelayActuator::isEnabled(float tolerance) const
-{
-    return _enabled;
 }
 
 void HydroRelayActuator::saveToData(HydroData *dataOut)
@@ -344,18 +325,19 @@ void HydroRelayActuator::saveToData(HydroData *dataOut)
 }
 
 
-HydroPumpRelayActuator::HydroPumpRelayActuator(Hydro_ActuatorType actuatorType,
+HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
                                                Hydro_PositionIndex actuatorIndex,
                                                HydroDigitalPin outputPin,
                                                int classType)
     :  HydroRelayActuator(actuatorType, actuatorIndex, outputPin, classType),
-       _flowRateUnits(defaultLiquidFlowUnits()), _flowRate(this), _destReservoir(this), _pumpVolumeAcc(0.0f), _pumpTimeBegMillis(0), _pumpTimeAccMillis(0)
+       _flowRateUnits(defaultLiquidFlowUnits()), _flowRate(this), _destReservoir(this),
+       _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0)
 {
     _flowRate.setMeasurementUnits(getFlowRateUnits());
 }
 
-HydroPumpRelayActuator::HydroPumpRelayActuator(const HydroPumpRelayActuatorData *dataIn)
-    : HydroRelayActuator(dataIn), _pumpVolumeAcc(0.0f), _pumpTimeBegMillis(0), _pumpTimeAccMillis(0),
+HydroRelayPumpActuator::HydroRelayPumpActuator(const HydroPumpActuatorData *dataIn)
+    : HydroRelayActuator(dataIn), _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0),
       _flowRateUnits(definedUnitsElse(dataIn->flowRateUnits, defaultLiquidFlowUnits())),
       _contFlowRate(&(dataIn->contFlowRate)),
       _flowRate(this), _destReservoir(this)
@@ -365,7 +347,7 @@ HydroPumpRelayActuator::HydroPumpRelayActuator(const HydroPumpRelayActuatorData 
     _flowRate.setObject(dataIn->flowRateSensor);
 }
 
-void HydroPumpRelayActuator::update()
+void HydroRelayPumpActuator::update()
 {
     HydroActuator::update();
 
@@ -373,66 +355,50 @@ void HydroPumpRelayActuator::update()
 
     _flowRate.updateIfNeeded(true);
 
-    if (_pumpTimeAccMillis) {
-        millis_t timeMillis = millis();
-        millis_t pumpMillis = timeMillis - _pumpTimeAccMillis;
-        if (pumpMillis >= HYDRO_ACT_PUMPCALC_MINWRTMILLIS) {
-            handlePumpTime(pumpMillis);
-            _pumpTimeAccMillis = max(1, timeMillis);
+    if (_pumpTimeAccum) {
+        millis_t time = millis();
+        millis_t pump = time - _pumpTimeAccum;
+        if (pump >= HYDRO_ACT_PUMPCALC_MINWRTMILLIS) {
+            handlePumpTime(pump);
+            _pumpTimeAccum = max(1, time);
         }
     }
 
     if (_enabled) { pollPumpingSensors(); }
 }
 
-bool HydroPumpRelayActuator::getCanEnable()
+bool HydroRelayPumpActuator::getCanEnable()
 {
     if (HydroRelayActuator::getCanEnable()) {
-        auto sourceRes = getInputReservoir();
-        auto destRes = getOutputReservoir();
-        return (!sourceRes || !sourceRes->isEmpty()) && (!destRes || !destRes->isFilled());
+        if (getOutputReservoir() && !getOutputReservoir()->canActivate(this)) { return false; }
+        return true;
     }
     return false;
 }
 
-bool HydroPumpRelayActuator::_enableActuator(float intensity)
+void HydroRelayPumpActuator::handleActivation()
 {
-    bool enabledBefore = _enabled;
-    millis_t timeMillis = millis();
+    millis_t time = millis();
 
-    HydroRelayActuator::_enableActuator(intensity);
-
-    if (_enabled && !enabledBefore) {
-        _pumpVolumeAcc = 0;
-        _pumpTimeBegMillis = _pumpTimeAccMillis = max(1, timeMillis);
-    }
-
-    return _enabled;
-}
-
-void HydroPumpRelayActuator::_disableActuator()
-{
-    bool enabledBefore = _enabled;
-    millis_t timeMillis = millis();
-
-    HydroRelayActuator::_disableActuator();
-
-    if (!_enabled && enabledBefore) {
-        millis_t pumpMillis = timeMillis - _pumpTimeAccMillis;
-        if (pumpMillis) { handlePumpTime(pumpMillis); }
-        _pumpTimeAccMillis = 0;
-        pumpMillis = timeMillis - _pumpTimeBegMillis;
+    if (_enabled) {
+        _pumpVolumeAccum = 0;
+        _pumpTimeStart = _pumpTimeAccum = max(1, time);
+    } else {
+        millis_t duration = time - _pumpTimeAccum;
+        if (duration) { handlePumpTime(duration); }
+        _pumpTimeAccum = 0;
+        duration = time - _pumpTimeStart;
         uint8_t addDecPlaces = getActuatorType() == Hydro_ActuatorType_PeristalticPump ? 2 : 1;
 
         getLoggerInstance()->logStatus(this, SFP(HStr_Log_MeasuredPumping));
         if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
         if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
-        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAcc, baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
-        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(pumpMillis / 1000.0f, 1), String('s'));
+        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAccum, baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
+        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(duration / 1000.0f, 1), String('s'));
     }
 }
 
-bool HydroPumpRelayActuator::canPump(float volume, Hydro_UnitsType volumeUnits)
+bool HydroRelayPumpActuator::canPump(float volume, Hydro_UnitsType volumeUnits)
 {
     if (getReservoir() && _contFlowRate.value > FLT_EPSILON) {
         auto waterVolume = getReservoir()->getWaterVolume().getMeasurement();
@@ -442,68 +408,62 @@ bool HydroPumpRelayActuator::canPump(float volume, Hydro_UnitsType volumeUnits)
     return false;
 }
 
-bool HydroPumpRelayActuator::pump(float volume, Hydro_UnitsType volumeUnits)
+HydroActivationHandle HydroRelayPumpActuator::pump(float volume, Hydro_UnitsType volumeUnits)
 {
     if (getReservoir() && _contFlowRate.value > FLT_EPSILON) {
         convertUnits(&volume, &volumeUnits, baseUnitsFromRate(getFlowRateUnits()));
         return pump((millis_t)((volume / _contFlowRate.value) * secondsToMillis(SECS_PER_MIN)));
     }
-    return false;
+    return HydroActivationHandle();
 }
 
-bool HydroPumpRelayActuator::canPump(millis_t timeMillis)
+bool HydroRelayPumpActuator::canPump(millis_t time)
 {
     if (getReservoir() && _contFlowRate.value > FLT_EPSILON) {
-        return canPump(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()));
+        return canPump(_contFlowRate.value * (time / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()));
     }
     return false;
 }
 
-bool HydroPumpRelayActuator::pump(millis_t timeMillis)
+HydroActivationHandle HydroRelayPumpActuator::pump(millis_t time)
 {
     if (getReservoir()) {
         #ifdef HYDRO_USE_MULTITASKING
-            if (isValidTask(scheduleActuatorTimedEnableOnce(::getSharedPtr<HydroActuator>(this), timeMillis))) {
-                getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
-                if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
-                if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
-                if (_contFlowRate.value > FLT_EPSILON) {
-                    uint8_t addDecPlaces = getActuatorType() == Hydro_ActuatorType_PeristalticPump ? 2 : 1;
-                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
-                }
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
-                return true;
+            getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
+            if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
+            if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
+            if (_contFlowRate.value > FLT_EPSILON) {
+                uint8_t addDecPlaces = getActuatorType() == Hydro_ActuatorType_PeristalticPump ? 2 : 1;
+                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (time / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
             }
+            getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(time / 1000.0f, 1), String('s'));
+            return enableActuator(time);
         #else
             getLoggerInstance()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
             if (getInputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getInputReservoir()->getKeyString()); }
             if (getOutputReservoir()) { getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
             if (_contFlowRate.value > FLT_EPSILON) {
                 uint8_t addDecPlaces = getActuatorType() == Hydro_ActuatorType_PeristalticPump ? 2 : 1;
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (timeMillis / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
+                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (time / (float)secondsToMillis(SECS_PER_MIN)), baseUnitsFromRate(getFlowRateUnits()), addDecPlaces));
             }
-            getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(timeMillis / 1000.0f, 1), String('s'));
-            enableActuator();
-            delayFine(timeMillis);
-            disableActuator();
-            return true;
+            getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Calculated), roundToString(time / 1000.0f, 1), String('s'));
+            return enableActuator(time);
         #endif
     }
-    return false;
 }
 
-HydroAttachment &HydroPumpRelayActuator::getParentReservoir(bool resolve)
+HydroAttachment &HydroRelayPumpActuator::getParentReservoir(bool resolve)
 {
     return HydroActuator::getParentReservoir(resolve);
 }
 
-HydroAttachment &HydroPumpRelayActuator::getDestinationReservoir(bool resolve)
+HydroAttachment &HydroRelayPumpActuator::getDestinationReservoir(bool resolve)
 {
     if (resolve) { _destReservoir.resolve(); }
     return _destReservoir;
 }
 
-void HydroPumpRelayActuator::setFlowRateUnits(Hydro_UnitsType flowRateUnits)
+void HydroRelayPumpActuator::setFlowRateUnits(Hydro_UnitsType flowRateUnits)
 {
     if (_flowRateUnits != flowRateUnits) {
         _flowRateUnits = flowRateUnits;
@@ -513,22 +473,12 @@ void HydroPumpRelayActuator::setFlowRateUnits(Hydro_UnitsType flowRateUnits)
     }
 }
 
-Hydro_UnitsType HydroPumpRelayActuator::getFlowRateUnits() const
+Hydro_UnitsType HydroRelayPumpActuator::getFlowRateUnits() const
 {
     return definedUnitsElse(_flowRateUnits, defaultLiquidFlowUnits());
 }
 
-void HydroPumpRelayActuator::setContinuousFlowRate(float contFlowRate, Hydro_UnitsType contFlowRateUnits)
-{
-    _contFlowRate.value = contFlowRate;
-    _contFlowRate.units = contFlowRateUnits;
-    _contFlowRate.updateTimestamp();
-    _contFlowRate.updateFrame(1);
-
-    convertUnits(&_contFlowRate, getFlowRateUnits());
-}
-
-void HydroPumpRelayActuator::setContinuousFlowRate(HydroSingleMeasurement contFlowRate)
+void HydroRelayPumpActuator::setContinuousFlowRate(HydroSingleMeasurement contFlowRate)
 {
     _contFlowRate = contFlowRate;
     _contFlowRate.setMinFrame(1);
@@ -536,34 +486,34 @@ void HydroPumpRelayActuator::setContinuousFlowRate(HydroSingleMeasurement contFl
     convertUnits(&_contFlowRate, getFlowRateUnits());
 }
 
-const HydroSingleMeasurement &HydroPumpRelayActuator::getContinuousFlowRate()
+const HydroSingleMeasurement &HydroRelayPumpActuator::getContinuousFlowRate()
 {
     return _contFlowRate;
 }
 
-HydroSensorAttachment &HydroPumpRelayActuator::getFlowRate(bool poll)
+HydroSensorAttachment &HydroRelayPumpActuator::getFlowRate(bool poll)
 {
     _flowRate.updateIfNeeded(poll);
     return _flowRate;
 }
 
-void HydroPumpRelayActuator::saveToData(HydroData *dataOut)
+void HydroRelayPumpActuator::saveToData(HydroData *dataOut)
 {
     HydroRelayActuator::saveToData(dataOut);
 
-    ((HydroPumpRelayActuatorData *)dataOut)->flowRateUnits = _flowRateUnits;
+    ((HydroPumpActuatorData *)dataOut)->flowRateUnits = _flowRateUnits;
     if (_contFlowRate.frame) {
-        _contFlowRate.saveToData(&(((HydroPumpRelayActuatorData *)dataOut)->contFlowRate));
+        _contFlowRate.saveToData(&(((HydroPumpActuatorData *)dataOut)->contFlowRate));
     }
     if (_destReservoir.getId()) {
-        strncpy(((HydroPumpRelayActuatorData *)dataOut)->destReservoir, _destReservoir.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
+        strncpy(((HydroPumpActuatorData *)dataOut)->destReservoir, _destReservoir.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
     if (_flowRate.getId()) {
-        strncpy(((HydroPumpRelayActuatorData *)dataOut)->flowRateSensor, _flowRate.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
+        strncpy(((HydroPumpActuatorData *)dataOut)->flowRateSensor, _flowRate.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
 }
 
-void HydroPumpRelayActuator::pollPumpingSensors()
+void HydroRelayPumpActuator::pollPumpingSensors()
 {
     if (getFlowRateSensor()) {
         _flowRate->takeMeasurement(true);
@@ -581,13 +531,13 @@ void HydroPumpRelayActuator::pollPumpingSensors()
     }
 }
 
-void HydroPumpRelayActuator::handlePumpTime(millis_t timeMillis)
+void HydroRelayPumpActuator::handlePumpTime(millis_t time)
 {
     if (getInputReservoir() != getOutputReservoir()) {
         float flowRateVal = _flowRate.getMeasurementFrame() && getFlowRateSensor() && !_flowRate->needsPolling(HYDRO_ACT_PUMPCALC_MAXFRAMEDIFF) &&
                             _flowRate.getMeasurementValue() >= (_contFlowRate.value * HYDRO_ACT_PUMPCALC_MINFLOWRATE) - FLT_EPSILON ? _flowRate.getMeasurementValue() : _contFlowRate.value;
-        float volumePumped = flowRateVal * (timeMillis / (float)secondsToMillis(SECS_PER_MIN));
-        _pumpVolumeAcc += volumePumped;
+        float volumePumped = flowRateVal * (time / (float)secondsToMillis(SECS_PER_MIN));
+        _pumpVolumeAccum += volumePumped;
 
         if (getInputReservoir() && _reservoir.get<HydroReservoir>()->isAnyFluidClass()) {
             auto sourceFluidRes = getInputReservoir<HydroFluidReservoir>();
@@ -616,7 +566,7 @@ HydroVariableActuator::HydroVariableActuator(Hydro_ActuatorType actuatorType,
                                              HydroAnalogPin outputPin,
                                              int classType)
     : HydroActuator(actuatorType, actuatorIndex, classType),
-      _outputPin(outputPin), _pwmAmount(0.0f)
+      _outputPin(outputPin), _intensity(0.0f)
 {
     HYDRO_HARD_ASSERT(_outputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
     _outputPin.init();
@@ -625,7 +575,7 @@ HydroVariableActuator::HydroVariableActuator(Hydro_ActuatorType actuatorType,
 
 HydroVariableActuator::HydroVariableActuator(const HydroActuatorData *dataIn)
     : HydroActuator(dataIn),
-      _outputPin(&dataIn->outputPin), _pwmAmount(0.0f)
+      _outputPin(&dataIn->outputPin), _intensity(0.0f)
 {
     HYDRO_HARD_ASSERT(_outputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
     _outputPin.init();
@@ -640,25 +590,28 @@ HydroVariableActuator::~HydroVariableActuator()
     }
 }
 
+bool HydroVariableActuator::getCanEnable()
+{
+    return _outputPin.isValid() && HydroActuator::getCanEnable();
+}
+
+bool HydroVariableActuator::isEnabled(float tolerance) const
+{
+    return _enabled && _intensity >= tolerance - FLT_EPSILON;
+}
+
 bool HydroVariableActuator::_enableActuator(float intensity)
 {
-    if (_outputPin.isValid()) {
-        bool enabledBefore = _enabled;
+    intensity = constrain(intensity, 0.0f, 1.0f);
 
-        if (!_enabled || (_enabled && !isFPEqual(_pwmAmount, intensity))) {
+    if (_outputPin.isValid() && (!_enabled || !isFPEqual(_intensity, intensity))) {
+        _intensity = intensity;
+        if (!isFPEqual(_intensity, 0.0f)) {
             _enabled = true;
-            _pwmAmount = constrain(intensity, 0.0f, 1.0f);
-            _outputPin.analogWrite(_pwmAmount);
-        }
-
-        if (_enabled && !enabledBefore) {
-            getLoggerInstance()->logActivation(this);
-
-            #ifdef HYDRO_USE_MULTITASKING
-                scheduleSignalFireOnce<HydroActuator *>(getSharedPtr(), _activateSignal, this);
-            #else
-                _activateSignal.fire(this);
-            #endif
+            _outputPin.analogWrite(_intensity);
+            handleActivation();
+        } else {
+            _outputPin.analogWrite_raw(0);
         }
     }
 
@@ -667,48 +620,11 @@ bool HydroVariableActuator::_enableActuator(float intensity)
 
 void HydroVariableActuator::_disableActuator()
 {
-    if (_outputPin.isValid()) {
-        bool enabledBefore = _enabled;
-
-        if (_enabled) {
-            _enabled = false;
-            _outputPin.analogWrite_raw(0);
-        }
-
-        if (!_enabled && enabledBefore) {
-            getLoggerInstance()->logDeactivation(this);
-
-            #ifdef HYDRO_USE_MULTITASKING
-                scheduleSignalFireOnce<HydroActuator *>(getSharedPtr(), _activateSignal, this);
-            #else
-                _activateSignal.fire(this);
-            #endif
-        }
+    if (_outputPin.isValid() && _enabled) {
+        _enabled = false;
+        _outputPin.analogWrite_raw(0);
+        handleActivation();
     }
-}
-
-bool HydroVariableActuator::isEnabled(float tolerance) const
-{
-    return _enabled && _pwmAmount >= tolerance - FLT_EPSILON;
-}
-
-int HydroVariableActuator::getPWMAmount(int) const
-{
-    return _outputPin.bitRes.inverseTransform(_pwmAmount);
-}
-
-void HydroVariableActuator::setPWMAmount(float amount)
-{
-    _pwmAmount = constrain(amount, 0.0f, 1.0f);
-
-    if (_enabled) { _outputPin.analogWrite(_pwmAmount); }
-}
-
-void HydroVariableActuator::setPWMAmount(int amount)
-{
-    _pwmAmount = _outputPin.bitRes.transform(amount);
-
-    if (_enabled) { _outputPin.analogWrite(_pwmAmount); }
 }
 
 void HydroVariableActuator::saveToData(HydroData *dataOut)
@@ -720,7 +636,7 @@ void HydroVariableActuator::saveToData(HydroData *dataOut)
 
 
 HydroActuatorData::HydroActuatorData()
-    : HydroObjectData(), outputPin(), contPowerUsage(), railName{0}, reservoirName{0}, enableMode(Hydro_EnableMode_Undefined)
+    : HydroObjectData(), outputPin(), enableMode(Hydro_EnableMode_Undefined), contPowerUsage(), railName{0}, reservoirName{0}
 {
     _size = sizeof(*this);
 }
@@ -733,13 +649,13 @@ void HydroActuatorData::toJSONObject(JsonObject &objectOut) const
         JsonObject outputPinObj = objectOut.createNestedObject(SFP(HStr_Key_OutputPin));
         outputPin.toJSONObject(outputPinObj);
     }
+    if (enableMode != Hydro_EnableMode_Undefined) { objectOut[SFP(HStr_Key_EnableMode)] = enableMode; }
     if (contPowerUsage.value > FLT_EPSILON) {
-        JsonObject contPowerUsageObj = objectOut.createNestedObject(SFP(HStr_Key_ContPowerUsage));
+        JsonObject contPowerUsageObj = objectOut.createNestedObject(SFP(HStr_Key_ContinousPowerUsage));
         contPowerUsage.toJSONObject(contPowerUsageObj);
     }
     if (railName[0]) { objectOut[SFP(HStr_Key_RailName)] = charsToString(railName, HYDRO_NAME_MAXSIZE); }
     if (reservoirName[0]) { objectOut[SFP(HStr_Key_ReservoirName)] = charsToString(reservoirName, HYDRO_NAME_MAXSIZE); }
-    if (enableMode != Hydro_EnableMode_Undefined) { objectOut[SFP(HStr_Key_EnableMode)] = enableMode; }
 }
 
 void HydroActuatorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -748,40 +664,40 @@ void HydroActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 
     JsonObjectConst outputPinObj = objectIn[SFP(HStr_Key_OutputPin)];
     if (!outputPinObj.isNull()) { outputPin.fromJSONObject(outputPinObj); }
-    JsonVariantConst contPowerUsageVar = objectIn[SFP(HStr_Key_ContPowerUsage)];
+    enableMode = objectIn[SFP(HStr_Key_EnableMode)] | enableMode;
+    JsonVariantConst contPowerUsageVar = objectIn[SFP(HStr_Key_ContinousPowerUsage)];
     if (!contPowerUsageVar.isNull()) { contPowerUsage.fromJSONVariant(contPowerUsageVar); }
     const char *railNameStr = objectIn[SFP(HStr_Key_RailName)];
     if (railNameStr && railNameStr[0]) { strncpy(railName, railNameStr, HYDRO_NAME_MAXSIZE); }
     const char *reservoirNameStr = objectIn[SFP(HStr_Key_ReservoirName)];
     if (reservoirNameStr && reservoirNameStr[0]) { strncpy(reservoirName, reservoirNameStr, HYDRO_NAME_MAXSIZE); }
-    enableMode = objectIn[SFP(HStr_Key_EnableMode)] | enableMode;
 }
 
-HydroPumpRelayActuatorData::HydroPumpRelayActuatorData()
+HydroPumpActuatorData::HydroPumpActuatorData()
     : HydroActuatorData(), flowRateUnits(Hydro_UnitsType_Undefined), contFlowRate(), destReservoir{0}, flowRateSensor{0}
 {
     _size = sizeof(*this);
 }
 
-void HydroPumpRelayActuatorData::toJSONObject(JsonObject &objectOut) const
+void HydroPumpActuatorData::toJSONObject(JsonObject &objectOut) const
 {
     HydroActuatorData::toJSONObject(objectOut);
 
     if (flowRateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_FlowRateUnits)] = unitsTypeToSymbol(flowRateUnits); }
     if (contFlowRate.value > FLT_EPSILON) {
-        JsonObject contFlowRateObj = objectOut.createNestedObject(SFP(HStr_Key_ContFlowRate));
+        JsonObject contFlowRateObj = objectOut.createNestedObject(SFP(HStr_Key_ContinousFlowRate));
         contFlowRate.toJSONObject(contFlowRateObj);
     }
     if (destReservoir[0]) { objectOut[SFP(HStr_Key_OutputReservoir)] = charsToString(destReservoir, HYDRO_NAME_MAXSIZE); }
     if (flowRateSensor[0]) { objectOut[SFP(HStr_Key_FlowRateSensor)] = charsToString(flowRateSensor, HYDRO_NAME_MAXSIZE); }
 }
 
-void HydroPumpRelayActuatorData::fromJSONObject(JsonObjectConst &objectIn)
+void HydroPumpActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroActuatorData::fromJSONObject(objectIn);
 
     flowRateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_FlowRateUnits)]);
-    JsonVariantConst contFlowRateVar = objectIn[SFP(HStr_Key_ContFlowRate)];
+    JsonVariantConst contFlowRateVar = objectIn[SFP(HStr_Key_ContinousFlowRate)];
     if (!contFlowRateVar.isNull()) { contFlowRate.fromJSONVariant(contFlowRateVar); }
     const char *destReservoirStr = objectIn[SFP(HStr_Key_OutputReservoir)];
     if (destReservoirStr && destReservoirStr[0]) { strncpy(destReservoir, destReservoirStr, HYDRO_NAME_MAXSIZE); }

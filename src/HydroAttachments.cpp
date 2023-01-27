@@ -99,18 +99,6 @@ void HydroSensorAttachment::detachObject()
     setNeedsMeasurement();
 }
 
-void HydroSensorAttachment::setMeasurement(float value, Hydro_UnitsType units)
-{
-    auto outUnits = definedUnitsElse(getMeasurementUnits(), units);
-    _measurement.value = value;
-    _measurement.units = units;
-    _measurement.updateTimestamp();
-    _measurement.updateFrame(1);
-
-    convertUnits(&_measurement, outUnits, _convertParam);
-    _needsMeasurement = false;
-}
-
 void HydroSensorAttachment::setMeasurement(HydroSingleMeasurement measurement)
 {
     auto outUnits = definedUnitsElse(getMeasurementUnits(), measurement.units);

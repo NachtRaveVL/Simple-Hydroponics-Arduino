@@ -481,13 +481,13 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_ComputeHeatIndex[] PROGMEM = {"computeHeatIndex"};
             return flashStr_Key_ComputeHeatIndex;
         } break;
-        case HStr_Key_ContFlowRate: {
-            static const char flashStr_Key_ContFlowRate[] PROGMEM = {"contFlowRate"};
-            return flashStr_Key_ContFlowRate;
+        case HStr_Key_ContinousFlowRate: {
+            static const char flashStr_Key_ContinousFlowRate[] PROGMEM = {"contFlowRate"};
+            return flashStr_Key_ContinousFlowRate;
         } break;
-        case HStr_Key_ContPowerUsage: {
-            static const char flashStr_Key_ContPowerUsage[] PROGMEM = {"contPowerUsage"};
-            return flashStr_Key_ContPowerUsage;
+        case HStr_Key_ContinousPowerUsage: {
+            static const char flashStr_Key_ContinousPowerUsage[] PROGMEM = {"contPowerUsage"};
+            return flashStr_Key_ContinousPowerUsage;
         } break;
         case HStr_Key_CropName: {
             static const char flashStr_Key_CropName[] PROGMEM = {"cropName"};
@@ -1592,7 +1592,7 @@ const char *pgmAddrForStr(Hydro_String strNum)
             return flashStr_Unit_GallonsPerMin;
         } break;
         case HStr_Unit_JoulesPerSecond: {
-            static const char flashStr_Unit_JoulesPerSecond[] PROGMEM = {"J/s"};
+            static const char flashStr_Unit_JoulesPerSecond[] PROGMEM = {"J/sec"};
             return flashStr_Unit_JoulesPerSecond;
         } break;
         case HStr_Unit_Kelvin: {
@@ -1608,7 +1608,7 @@ const char *pgmAddrForStr(Hydro_String strNum)
             return flashStr_Unit_Liters;
         } break;
         case HStr_Unit_LitersPerMin: {
-            static const char flashStr_Unit_LitersPerMin[] PROGMEM = {"L/m"};
+            static const char flashStr_Unit_LitersPerMin[] PROGMEM = {"L/min"};
             return flashStr_Unit_LitersPerMin;
         } break;
         case HStr_Unit_Meters: {

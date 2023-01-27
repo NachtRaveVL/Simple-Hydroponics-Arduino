@@ -70,11 +70,11 @@ extern BasicArduinoInterruptAbstraction interruptImpl;
 
 // This will schedule an actuator to enable on the next TaskManagerIO runloop using the given intensity and enable time millis.
 // Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, float enableIntensity, time_t enableTimeMillis);
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, float intensity, time_t enableTime);
 
 // This will schedule an actuator to enable on the next TaskManagerIO runloop using the given enable time millis.
 // Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, time_t enableTimeMillis);
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, time_t enableTime);
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter.
 // Object is captured, if not nullptr. Returns taskId or TASKMGR_INVALIDID on error.
@@ -149,14 +149,14 @@ class ActuatorTimedEnableTask : public Executable {
 public:
     taskid_t taskId;
     ActuatorTimedEnableTask(SharedPtr<HydroActuator> actuator,
-                            float enableIntensity,
-                            time_t enableTimeMillis);
+                            float intensity,
+                            millis_t duration);
 
     virtual void exec() override;
 private:
     SharedPtr<HydroActuator> _actuator;
-    float _enableIntensity;
-    millis_t _enableTimeMillis;
+    float _intensity;
+    millis_t _duration;
 };
 
 
@@ -262,7 +262,7 @@ template<typename T> inline T mapValue(T value, T inMin, T inMax, T outMin, T ou
 extern unsigned int freeMemory();
 
 // This delays a finely timed amount, with spin loop nearer to end. Used in finely timed dispensers.
-extern void delayFine(millis_t timeMillis);
+extern void delayFine(millis_t time);
 
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
@@ -312,7 +312,7 @@ inline bool convertUnits(const HydroSingleMeasurement *measureIn, HydroSingleMea
 // Returns the base units from a rate unit (e.g. L/min -> L).
 extern Hydro_UnitsType baseUnitsFromRate(Hydro_UnitsType units);
 // Returns the base units from a dilution unit (e.g. mL/L -> L).
-Hydro_UnitsType baseUnitsFromDilution(Hydro_UnitsType units);
+Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units);
 
 // Returns default temperature units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
 extern Hydro_UnitsType defaultTemperatureUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);

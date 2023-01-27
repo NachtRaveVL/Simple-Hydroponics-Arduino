@@ -37,33 +37,33 @@ DateTime HydroRTCWrapper<RTC_DS1307>::now()
 BasicArduinoInterruptAbstraction interruptImpl;
 
 
-ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroActuator> actuator, float enableIntensity, time_t enableTimeMillis)
-    : taskId(TASKMGR_INVALIDID), _actuator(actuator), _enableIntensity(enableIntensity), _enableTimeMillis(enableTimeMillis)
+ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroActuator> actuator, float intensity, millis_t duration)
+    : taskId(TASKMGR_INVALIDID), _actuator(actuator), _intensity(intensity), _duration(duration)
 { ; }
 
 void ActuatorTimedEnableTask::exec()
 {
-    HydroActivationHandle handle(_actuator.get(), _enableIntensity, _enableTimeMillis);
+    HydroActivationHandle handle(_actuator.get(), _intensity, _duration);
 
     while (handle.actuator) {
-        if (handle.startMillis > 0 && handle.durationMillis > 0) {
+        if (handle.start > 0 && handle.duration > 0) {
             // todo
         }
         yield();
     }
 }
 
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, float enableIntensity, time_t enableTimeMillis)
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, float intensity, time_t enableTime)
 {
-    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, enableIntensity, enableTimeMillis) : nullptr;
+    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, intensity, enableTime) : nullptr;
     HYDRO_SOFT_ASSERT(!actuator || enableTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (enableTask ? (enableTask->taskId = retVal) : retVal);
 }
 
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, time_t enableTimeMillis)
+taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, time_t enableTime)
 {
-    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, 1.0f, enableTimeMillis) : nullptr;
+    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, 1.0f, enableTime) : nullptr;
     HYDRO_SOFT_ASSERT(!actuator || enableTask, SFP(HStr_Err_AllocationFailure));
     taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
     return (enableTask ? (enableTask->taskId = retVal) : retVal);
@@ -482,18 +482,18 @@ unsigned int freeMemory() {
     #endif
 }
 
-void delayFine(millis_t timeMillis) {
-    millis_t startMillis = millis();
-    time_t endMillis = startMillis + timeMillis;
+void delayFine(millis_t time) {
+    millis_t start = millis();
+    time_t end = start + time;
 
-    {   time_t delayMillis = max(0, timeMillis - HYDRO_SYS_DELAYFINE_SPINMILLIS);
-        if (delayMillis > 0) { delay(delayMillis); }
+    {   time_t left = max(0, time - HYDRO_SYS_DELAYFINE_SPINMILLIS);
+        if (left > 0) { delay(left); }
     }
 
-    {   millis_t timeMillis = millis();
-        while ((endMillis >= startMillis && (timeMillis < endMillis)) ||
-                (endMillis < startMillis && (timeMillis >= startMillis || timeMillis < endMillis))) {
-            timeMillis = millis();
+    {   millis_t time = millis();
+        while ((end >= start && (time < end)) ||
+               (end < start && (time >= start || time < end))) {
+            time = millis();
         }
     }
 }
@@ -825,7 +825,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Distance_Feet:
             switch (unitsOut) {
                 case Hydro_UnitsType_Distance_Meters:
-                    *valueOut = valueIn * 0.3048;
+                    *valueOut = valueIn * 0.3048f;
                     return true;
 
                 default:
@@ -919,7 +919,7 @@ Hydro_UnitsType baseUnitsFromRate(Hydro_UnitsType units)
     return Hydro_UnitsType_Undefined;
 }
 
-Hydro_UnitsType baseUnitsFromDilution(Hydro_UnitsType units)
+Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units)
 {
     switch (units) {
         case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
@@ -958,7 +958,7 @@ Hydro_UnitsType defaultDistanceUnits(Hydro_MeasurementMode measureMode)
 
     switch (measureMode) {
         case Hydro_MeasurementMode_Imperial:
-            return Hydro_UnitsType_Distance_Meters;
+            return Hydro_UnitsType_Distance_Feet;
         case Hydro_MeasurementMode_Metric:
         case Hydro_MeasurementMode_Scientific:
             return Hydro_UnitsType_Distance_Meters;
