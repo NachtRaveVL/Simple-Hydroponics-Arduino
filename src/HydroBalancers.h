@@ -111,7 +111,7 @@ public:
     HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor,
                              float targetSetpoint,
                              float targetRange,
-                             millis_t baseDosingMillis,
+                             millis_t baseDosing,
                              time_t mixTime,
                              uint8_t measurementRow = 0);
     HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor,
@@ -123,21 +123,21 @@ public:
 
     virtual void update() override;
 
-    inline millis_t getBaseDosingMillis() const { return _baseDosingMillis; }
+    inline millis_t getBaseDosing() const { return _baseDosing; }
     inline unsigned int getMixTime() const { return _mixTime; }
 
 protected:
     time_t _mixTime;                                        // Time allowance for mixing, in seconds
-    millis_t _baseDosingMillis;                             // Base dosing time, in milliseconds
+    millis_t _baseDosing;                                   // Base dosing time, in milliseconds
 
     time_t _lastDosingTime;                                 // Date dosing was last performed (UTC)
     float _lastDosingValue;                                 // Last used dosing value
-    millis_t _dosingMillis;                                 // Dosing millis for next runs
+    millis_t _dosing;                                       // Dosing millis for next runs
     Hydro_BalancerState _dosingDir;                         // Dosing direction for next runs
     int8_t _dosingActIndex;                                 // Next dosing actuator to run
 
     void performDosing();
-    void performDosing(SharedPtr<HydroActuator> &actuator, millis_t timeMillis);
+    void performDosing(SharedPtr<HydroActuator> &actuator, millis_t time);
 };
 
 #endif // /ifndef HydroBalancers_H

@@ -43,7 +43,7 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool needsFeeding() = 0;
+    virtual bool getNeedsFeeding() = 0;
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 
@@ -106,7 +106,7 @@ public:
                    int classType = Timed);
     HydroTimedCrop(const HydroTimedCropData *dataIn);
 
-    virtual bool needsFeeding() override;
+    virtual bool getNeedsFeeding() override;
     virtual void notifyFeedingBegan() override;
 
     void setFeedTimeOn(TimeSpan timeOn);
@@ -137,7 +137,7 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool needsFeeding() override;
+    virtual bool getNeedsFeeding() override;
 
     void setMoistureUnits(Hydro_UnitsType moistureUnits);
     Hydro_UnitsType getMoistureUnits() const;

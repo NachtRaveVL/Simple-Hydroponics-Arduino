@@ -10,11 +10,12 @@ struct HydroActivationHandle;
 
 class HydroActuator;
 class HydroRelayActuator;
-class HydroPumpRelayActuator;
+class HydroRelayPumpActuator;
 class HydroVariableActuator;
+//class HydroVariablePumpActuator;
 
 struct HydroActuatorData;
-struct HydroPumpRelayActuatorData;
+struct HydroPumpActuatorData;
 
 #include "Hydruino.h"
 
@@ -28,30 +29,33 @@ extern HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 // Handles set an intensity value that may be ranged [0,1] or [-1,1] depending on the
 // capabilities of the attached actuator. Handles do not guarantee activation unless their
 // forced flag is set (also see Actuator activation signal), but can be set up to ensure
-// actuators are enabled for a specified duration, which is able to be updated asyncly.
+// actuators are enabled for a specified duration, which is able to be async updated.
 // Finely timed activations should instead consider utilizing ActuatorTimedEnableTask.
 struct HydroActivationHandle {
     HydroActuator *actuator;            // Actuator owner (strong)
     float intensity;                    // Intensity (normalized [0.0,1.0])
     Hydro_DirectionMode direction;      // Direction setting
-    millis_t startMillis;               // Enablement start timestamp, in milliseconds, else 0
-    millis_t durationMillis;            // Duration time requested/remaining, in milliseconds, else 0 for unlimited/no expiry
+    millis_t start;                     // Enablement start timestamp, in milliseconds, else 0
+    millis_t duration;                  // Duration time requested/remaining, in milliseconds, else 0 for unlimited/no expiry
     bool forced;                        // If activation should force enable and ignore cursory canEnable checks
 
     // Default constructor for empty handles
-    inline HydroActivationHandle() : actuator(nullptr), intensity(0.0f), direction(Hydro_DirectionMode_Undefined), startMillis(0), durationMillis(0), forced(false) { ; }
+    inline HydroActivationHandle() : actuator(nullptr), intensity(0.0f), direction(Hydro_DirectionMode_Undefined), start(0), duration(0), forced(false) { ; }
     // Handle constructor that specifies a normalized enablement, ranged: normalized [0.0,1.0] for specified direction
-    HydroActivationHandle(HydroActuator *actuator, Hydro_DirectionMode direction, float intensity = 1.0f, millis_t forMillis = 0, bool force = false);
+    HydroActivationHandle(HydroActuator *actuator, Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = 0, bool force = false);
     // Handle constructor that specifies a binary enablement, ranged: (=0=,!0!) for disable/enable or (<=-1,=0=,>=1) for reverse/stop/forward
-    inline HydroActivationHandle(HydroActuator *actuator, int isEnabled, millis_t forMillis = 0, bool force = false)
-        : HydroActivationHandle(actuator, (isEnabled > 0 ? Hydro_DirectionMode_Forward : isEnabled < 0 ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop), (isEnabled ? 1.0f : 0.0f), forMillis, force) { ; }
+    inline HydroActivationHandle(HydroActuator *actuator, int enabled, millis_t duration = 0, bool force = false)
+        : HydroActivationHandle(actuator, (enabled > 0 ? Hydro_DirectionMode_Forward : enabled < 0 ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop), (enabled ? 1.0f : 0.0f), duration, force) { ; }
     // Handle constructor that specifies a variable intensity enablement, ranged: [=0.0=,<=1.0] for disable/enable or [-1.0=>,=0.0=,<=1.0] for reverse/stop/forward
-    inline HydroActivationHandle(HydroActuator *actuator, float atIntensity, millis_t forMillis = 0, bool force = false)
-        : HydroActivationHandle(actuator, (atIntensity > FLT_EPSILON ? Hydro_DirectionMode_Forward : atIntensity < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop), fabsf(atIntensity), forMillis, force)  { ; }
+    inline HydroActivationHandle(HydroActuator *actuator, float intensity, millis_t duration = 0, bool force = false)
+        : HydroActivationHandle(actuator, (intensity > FLT_EPSILON ? Hydro_DirectionMode_Forward : intensity < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop), fabsf(intensity), duration, force)  { ; }
 
     HydroActivationHandle(const HydroActivationHandle &handle);
     ~HydroActivationHandle();
     HydroActivationHandle &operator=(const HydroActivationHandle &handle);
+    inline HydroActivationHandle &operator=(HydroActuator *actuator) { return operator=(actuator->enableActuator()); }
+
+    void unset();                       // For disconnecting from an actuator
 
     // Driving intensity value ([-1,1] non-normalized, [0,1] normalized)
     inline float getDriveIntensity(bool normalized = false) const { return direction == Hydro_DirectionMode_Forward ? intensity :
@@ -64,7 +68,7 @@ struct HydroActivationHandle {
 // where it lives, and what it's attached to.
 class HydroActuator : public HydroObject, public HydroActuatorObjectInterface, public HydroRailAttachmentInterface, public HydroReservoirAttachmentInterface {
 public:
-    const enum : signed char { Relay, RelayPump, Variable, Unknown = -1 } classType; // Actuator class type (custom RTTI)
+    const enum : signed char { Relay, RelayPump, Variable, VariablePump, Unknown = -1 } classType; // Actuator class type (custom RTTI)
     inline bool isRelayClass() const { return classType == Relay; }
     inline bool isRelayPumpClass() const { return classType == RelayPump; }
     inline bool isVariableClass() const { return classType == Variable; }
@@ -77,20 +81,19 @@ public:
 
     virtual void update() override;
 
-    inline HydroActivationHandle enableActuator(Hydro_DirectionMode direction, float normIntensity = 1.0f, millis_t forMillis = 0, bool force = false) { return HydroActivationHandle(this, direction, normIntensity, forMillis, force); }
-    inline HydroActivationHandle enableActuator(float driveIntensity = 1.0f, millis_t forMillis = 0, bool force = false) { return HydroActivationHandle(this, driveIntensity, forMillis, force); }
-    inline HydroActivationHandle enableActuator(float driveIntensity, millis_t forMillis = 0) { return HydroActivationHandle(this, driveIntensity, forMillis); }
-    inline HydroActivationHandle enableActuator(float driveIntensity) { return HydroActivationHandle(this, driveIntensity); }
-    inline HydroActivationHandle enableActuator(millis_t forMillis, bool force = false) { return HydroActivationHandle(this, 1.0f, forMillis, force); }
-    inline HydroActivationHandle enableActuator(bool force, millis_t forMillis = 0) { return HydroActivationHandle(this, 1.0f, forMillis, force); }
-
     virtual bool getCanEnable() override;
     virtual bool isEnabled(float tolerance = 0.0f) const = 0;
+
+    inline HydroActivationHandle enableActuator(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = 0, bool force = false) { return HydroActivationHandle(this, direction, intensity, duration, force); }
+    inline HydroActivationHandle enableActuator(float intensity = 1.0f, millis_t duration = 0, bool force = false) { return HydroActivationHandle(this, intensity, duration, force); }
+    inline HydroActivationHandle enableActuator(float intensity, millis_t duration = 0) { return HydroActivationHandle(this, intensity, duration); }
+    inline HydroActivationHandle enableActuator(float intensity) { return HydroActivationHandle(this, intensity); }
+    inline HydroActivationHandle enableActuator(millis_t duration, bool force = false) { return HydroActivationHandle(this, 1.0f, duration, force); }
+    inline HydroActivationHandle enableActuator(bool force, millis_t duration = 0) { return HydroActivationHandle(this, 1.0f, duration, force); }
 
     inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; _needsUpdate = true; }
     inline Hydro_EnableMode getEnableMode() { return _enableMode; }
 
-    virtual void setContinuousPowerUsage(float contPowerUsage, Hydro_UnitsType contPowerUsageUnits = Hydro_UnitsType_Undefined) override;
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) override;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() override;
 
@@ -115,11 +118,13 @@ protected:
     virtual HydroData *allocateData() const override;
     virtual void saveToData(HydroData *dataOut) override;
 
+    virtual void handleActivation() override;
+
     friend struct HydroActivationHandle;
 };
 
 
-// Relay-based Binary Actuator
+// Binary Relay Actuator
 // This actuator acts as a standard on/off switch, typically paired with a variety of
 // different equipment from pumps to grow lights and heaters.
 class HydroRelayActuator : public HydroActuator {
@@ -143,27 +148,31 @@ protected:
 
     virtual bool _enableActuator(float intensity = 1.0) override;
     virtual void _disableActuator() override;
+
+    virtual void handleActivation() override;
 };
 
 
-// Pump-based Relay Actuator
-// This actuator acts as a water pump, and as such can attach to reservoirs
-class HydroPumpRelayActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
+// Relay Pump Actuator
+// This actuator acts as a water pump and attaches to both an input and output reservoir.
+// Pumps using this class are either on/off and do not contain any variable flow control,
+// but can be paired with a flow sensor for more precise pumping calculations.
+class HydroRelayPumpActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
 public:
-    HydroPumpRelayActuator(Hydro_ActuatorType actuatorType,
+    HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
                            Hydro_PositionIndex actuatorIndex,
                            HydroDigitalPin outputPin,
                            int classType = RelayPump);
-    HydroPumpRelayActuator(const HydroPumpRelayActuatorData *dataIn);
+    HydroRelayPumpActuator(const HydroPumpActuatorData *dataIn);
 
     virtual void update() override;
 
     virtual bool getCanEnable() override;
 
     virtual bool canPump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) override;
-    virtual bool pump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) override;
-    virtual bool canPump(millis_t timeMillis) override;
-    virtual bool pump(millis_t timeMillis) override;
+    virtual HydroActivationHandle pump(float volume, Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) override;
+    virtual bool canPump(millis_t time) override;
+    virtual HydroActivationHandle pump(millis_t time) override;
 
     virtual void setFlowRateUnits(Hydro_UnitsType flowRateUnits) override;
     virtual Hydro_UnitsType getFlowRateUnits() const override;
@@ -171,34 +180,32 @@ public:
     virtual HydroAttachment &getParentReservoir(bool resolve = true) override;
     virtual HydroAttachment &getDestinationReservoir(bool resolve = true) override;
 
-    virtual void setContinuousFlowRate(float contFlowRate, Hydro_UnitsType contFlowRateUnits = Hydro_UnitsType_Undefined) override;
     virtual void setContinuousFlowRate(HydroSingleMeasurement contFlowRate) override;
     virtual const HydroSingleMeasurement &getContinuousFlowRate() override;
 
-    virtual HydroSensorAttachment &getFlowRate(bool poll) override;
+    virtual HydroSensorAttachment &getFlowRate(bool poll = false) override;
 
 protected:
     Hydro_UnitsType _flowRateUnits;                         // Flow rate units preferred
     HydroSingleMeasurement _contFlowRate;                   // Continuous flow rate
     HydroSensorAttachment _flowRate;                        // Flow rate sensor attachment
     HydroAttachment _destReservoir;                         // Destination output reservoir
-    float _pumpVolumeAcc;                                   // Accumulator for total volume of fluid pumped
-    millis_t _pumpTimeBegMillis;                            // Time millis pump was activated at
-    millis_t _pumpTimeAccMillis;                            // Time millis pump has been accumulated up to
+    float _pumpVolumeAccum;                                 // Accumulator for total volume of fluid pumped
+    millis_t _pumpTimeStart;                                // Time millis pump was activated at
+    millis_t _pumpTimeAccum;                                // Time millis pump has been accumulated up to
 
     virtual void saveToData(HydroData *dataOut) override;
 
-    virtual bool _enableActuator(float intensity = 1.0) override;
-    virtual void _disableActuator() override;
+    virtual void handleActivation() override;
 
-    void pollPumpingSensors();
-    void handlePumpTime(millis_t timeMillis);
+    virtual void pollPumpingSensors() override;
+    virtual void handlePumpTime(millis_t time) override;
 };
 
 
 // Variable Actuator
-// This actuator acts as a variable range dial, typically paired with a device that supports
-// throttling of some kind, such as a powered exhaust fan, or variable level LEDs.
+// This actuator acts as a simple variable ranged dial, typically paired with a variety of
+// different equipment that allows analog throttle or position control.
 class HydroVariableActuator : public HydroActuator {
 public:
     HydroVariableActuator(Hydro_ActuatorType actuatorType,
@@ -208,49 +215,58 @@ public:
     HydroVariableActuator(const HydroActuatorData *dataIn);
     virtual ~HydroVariableActuator();
 
+    virtual bool getCanEnable() override;
     virtual bool isEnabled(float tolerance = 0.0f) const override;
 
-    inline float getPWMAmount() const { return _pwmAmount; }
-    int getPWMAmount(int) const;
-    void setPWMAmount(float amount);
-    void setPWMAmount(int amount);
+    inline float getIntensity() const { return _intensity; }
+    inline int getIntensity_raw() const { return _outputPin.bitRes.inverseTransform(_intensity); }
 
     inline const HydroAnalogPin &getOutputPin() const { return _outputPin; }
 
 protected:
     HydroAnalogPin _outputPin;                              // Analog output pin
-    float _pwmAmount;                                       // Current set PWM amount
+    float _intensity;                                       // Current set intensity
 
     virtual void saveToData(HydroData *dataOut) override;
 
     virtual bool _enableActuator(float intensity = 1.0) override;
     virtual void _disableActuator() override;
+    virtual void handleActivation() override;
 };
+
+
+// Throttled Pump Actuator
+// This actuator acts as a throttleable water pump and attaches to both an input and output
+// reservoir. Pumps using this class have variable flow control but also can be paired with
+// a flow sensor for more precise pumping calculations.
+//class HydroThrottledPumpActuator : public HydroVariableActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
+// TODO
+//};
 
 
 // Actuator Serialization Data
 struct HydroActuatorData : public HydroObjectData
 {
     HydroPinData outputPin;
+    Hydro_EnableMode enableMode;
     HydroMeasurementData contPowerUsage;
     char railName[HYDRO_NAME_MAXSIZE];
     char reservoirName[HYDRO_NAME_MAXSIZE];
-    Hydro_EnableMode enableMode;
 
     HydroActuatorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
-// Pump Relay Actuator Serialization Data
-struct HydroPumpRelayActuatorData : public HydroActuatorData
+// Pump Actuator Serialization Data
+struct HydroPumpActuatorData : public HydroActuatorData
 {
     Hydro_UnitsType flowRateUnits;
     HydroMeasurementData contFlowRate;
     char destReservoir[HYDRO_NAME_MAXSIZE];
     char flowRateSensor[HYDRO_NAME_MAXSIZE];
 
-    HydroPumpRelayActuatorData();
+    HydroPumpActuatorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };

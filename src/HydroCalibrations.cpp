@@ -21,7 +21,7 @@ bool HydroCalibrations::setUserCalibrationData(const HydroCalibrationData *calib
     HYDRO_SOFT_ASSERT(calibrationData, SFP(HStr_Err_InvalidParameter));
 
     if (calibrationData) {
-        Hydro_KeyType key = stringHash(calibrationData->sensorName);
+        Hydro_KeyType key = stringHash(calibrationData->ownerName);
         auto iter = _calibrationData.find(key);
         bool retVal = false;
 
@@ -47,7 +47,7 @@ bool HydroCalibrations::setUserCalibrationData(const HydroCalibrationData *calib
 bool HydroCalibrations::dropUserCalibrationData(const HydroCalibrationData *calibrationData)
 {
     HYDRO_HARD_ASSERT(calibrationData, SFP(HStr_Err_InvalidParameter));
-    Hydro_KeyType key = stringHash(calibrationData->sensorName);
+    Hydro_KeyType key = stringHash(calibrationData->ownerName);
     auto iter = _calibrationData.find(key);
 
     if (iter != _calibrationData.end()) {

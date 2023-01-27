@@ -883,7 +883,7 @@ void HydroFeeding::update()
                 {   auto crops = linksFilterCrops(feedRes->getLinkages());
                     cropsCount = crops.size();
                     for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                        if (((HydroCrop *)(*cropIter))->needsFeeding()) { cropsHungry++; }
+                        if (((HydroCrop *)(*cropIter))->getNeedsFeeding()) { cropsHungry++; }
                     }
                 }
 
@@ -949,7 +949,7 @@ void HydroFeeding::update()
             {   auto crops = linksFilterCrops(feedRes->getLinkages());
                 cropsCount = crops.size();
                 for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                    if (!((HydroCrop *)(*cropIter))->needsFeeding()) { cropsFed++; }
+                    if (!((HydroCrop *)(*cropIter))->getNeedsFeeding()) { cropsFed++; }
                 }
             }
 

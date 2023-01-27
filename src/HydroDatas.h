@@ -29,7 +29,7 @@ enum Hydro_Autosave : signed char {
 };
 
 // User System Setup Data
-// id: HSYS. Hydroponic user system setup data.
+// id: HSYS. Hydruino user system setup data.
 struct HydroSystemData : public HydroData {
     Hydro_SystemMode systemMode;                            // System type mode
     Hydro_MeasurementMode measureMode;                      // System measurement mode
@@ -56,20 +56,19 @@ struct HydroSystemData : public HydroData {
 };
 
 
-// Sensor Calibration Data
-// id: HCAL. Hydroponic sensor calibration data.
-// This class essentially controls a custom unit conversion mapping, and is used in
-// converting raw sensor data to more useful value and units for doing science with.
-// To convert from raw values to calibrated values, use transform(). To convert back to
-// raw values from calibrated values, use inverseTransform(). The setFrom* methods
-// allow you to easily set calibrated data in various formats.
+// Calibration Data
+// id: HCAL. Hydruino linear calibration data.
+// This class essentially controls a simple Ax+B linear transformation mapping, and is
+// used to 'convert' values from one coordinate system into another, or in our case used
+// for storing custom user curve/offset correction data.
+// See setFrom* methods to set calibrated data in various formats.
 struct HydroCalibrationData : public HydroData {
-    char sensorName[HYDRO_NAME_MAXSIZE];                    // Sensor name this calibration belongs to
+    char ownerName[HYDRO_NAME_MAXSIZE];                     // Owner object name this calibration belongs to
     Hydro_UnitsType calibUnits;                             // Calibration output units
     float multiplier, offset;                               // Ax + B value transform coefficients
 
     HydroCalibrationData();
-    HydroCalibrationData(HydroIdentity sensorId,
+    HydroCalibrationData(HydroIdentity ownerId,
                          Hydro_UnitsType calibUnits = Hydro_UnitsType_Undefined);
 
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -120,15 +119,20 @@ struct HydroCalibrationData : public HydroData {
     }
 
     // Sets linear calibration curvature from known output range.
-    // Wrapper to setFromTwoPoints, used when the sensor uses the entire voltage range
-    // with a known min/max value at each end. This will map 0v (aka 0.0) to min value
+    // Wrapper to setFromTwoPoints, used when data uses the entire intensity range
+    // with a known min/max value at each end. E.g. will map 0v (aka 0.0) to min value
     // and 5v (aka 1.0, or MCU max voltage) to max value.
     inline void setFromRange(float min, float max) { setFromTwoPoints(0.0, min, 1.0, max); }
 
     // Sets linear calibration curvature from known output scale.
-    // Similar to setFromTwoPoints, but when the sensor has a known max scale.
-    // This will map 0v to 0 and 5v (or MCU max voltage) to scale value.
+    // Similar to setFromTwoPoints, but when data has a known max intensity.
+    // E.g. will map 0v to 0 and 5v (or MCU max voltage) to scale value.
     inline void setFromScale(float scale) { setFromRange(0.0, scale); }
+
+    // Sets linear calibration curvature to typical servo ranges.
+    // Wrapper to setFromTwoPoints, used for specifying servo degree operation ranges
+    // using the typical 2.5% and 12.5% phase lengths that hobbyist servos operate at.
+    inline void setFromServo(float minDegrees, float maxDegrees) { setFromTwoPoints(0.025f, minDegrees, 0.125f, maxDegrees); }
 };
 
 
@@ -144,7 +148,7 @@ enum Hydro_CropsDataFlag : unsigned short {
 };
 
 // Crops Library Data
-// id: HCLD. Hydroponic crops library data.
+// id: HCLD. Hydruino crops library data.
 struct HydroCropsLibData : public HydroData {
     Hydro_CropType cropType;                                // Crop type
     char cropName[HYDRO_NAME_MAXSIZE];                      // Name of crop
@@ -176,7 +180,7 @@ struct HydroCropsLibData : public HydroData {
 
 
 // Custom Additive Data
-// id: HADD. Hydroponic custom additive data.
+// id: HADD. Hydruino custom additive data.
 struct HydroCustomAdditiveData : public HydroData {
     Hydro_ReservoirType reservoirType;                      // Reservoir type (must be CustomAdditive*)
     char additiveName[HYDRO_NAME_MAXSIZE];                  // Name of additive

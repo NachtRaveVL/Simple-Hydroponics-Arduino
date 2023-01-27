@@ -97,7 +97,7 @@ protected:
 // Regulated Power Rail
 // Power rail that has a max power rating and power sensor that can track power
 // usage, with limit trigger for over-power state limiting actuator activation.
-class HydroRegulatedRail : public HydroRail, public HydroPowerSensorAttachmentInterface {
+class HydroRegulatedRail : public HydroRail, public HydroPowerUsageSensorAttachmentInterface {
 public:
     HydroRegulatedRail(Hydro_RailType railType,
                        Hydro_PositionIndex railIndex,

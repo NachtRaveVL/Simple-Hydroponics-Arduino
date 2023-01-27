@@ -561,7 +561,7 @@ enum Hydro_UnitsCategory : signed char {
     Hydro_UnitsCategory_AirHumidity,                        // Air humidity based unit
     Hydro_UnitsCategory_AirHeatIndex,                       // Air heat index based unit
     Hydro_UnitsCategory_AirConcentration,                   // Air particle concentration based unit
-    Hydro_UnitsCategory_Distance,                           // Distance based unit
+    Hydro_UnitsCategory_Distance,                           // Distance/position based unit
     Hydro_UnitsCategory_Weight,                             // Weight based unit
     Hydro_UnitsCategory_Power,                              // Power based unit
 

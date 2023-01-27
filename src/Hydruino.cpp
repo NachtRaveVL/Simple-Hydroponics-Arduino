@@ -1092,16 +1092,16 @@ Hydro_PositionIndex Hydruino::firstPosition(HydroIdentity id, bool taken)
     return -1;
 }
 
-bool Hydruino::tryGetPinLock(pintype_t pin, millis_t waitMillis)
+bool Hydruino::tryGetPinLock(pintype_t pin, millis_t wait)
 {
-    millis_t startMillis = millis();
+    millis_t start = millis();
     while (1) {
         auto iter = _pinLocks.find(pin);
         if (iter == _pinLocks.end()) {
             _pinLocks[pin] = true;
             return (_pinLocks.find(pin) != _pinLocks.end());
         }
-        else if (millis() - startMillis >= waitMillis) { return false; }
+        else if (millis() - start >= wait) { return false; }
         else { yield(); }
     }
 }

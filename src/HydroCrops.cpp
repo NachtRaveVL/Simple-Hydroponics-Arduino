@@ -60,7 +60,7 @@ void HydroCrop::update()
 
     _feedReservoir.resolve();
 
-    handleFeeding(triggerStateFromBool(needsFeeding()));
+    handleFeeding(triggerStateFromBool(getNeedsFeeding()));
 }
 
 void HydroCrop::handleLowMemory()
@@ -197,7 +197,7 @@ HydroTimedCrop::HydroTimedCrop(const HydroTimedCropData *dataIn)
       _feedTimingMins{dataIn->feedTimingMins[0], dataIn->feedTimingMins[1]}
 { ; }
 
-bool HydroTimedCrop::needsFeeding()
+bool HydroTimedCrop::getNeedsFeeding()
 {
     return unixNow() >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
            unixNow() < _lastFeedingDate + (_feedTimingMins[0] * SECS_PER_MIN);
@@ -271,7 +271,7 @@ void HydroAdaptiveCrop::handleLowMemory()
     if (_feedingTrigger) { _feedingTrigger->handleLowMemory(); }
 }
 
-bool HydroAdaptiveCrop::needsFeeding()
+bool HydroAdaptiveCrop::getNeedsFeeding()
 {
     return _feedingTrigger.resolve() && triggerStateToBool(_feedingTrigger.getTriggerState());
 }

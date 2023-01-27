@@ -166,21 +166,21 @@ void HydroLinearEdgeBalancer::update()
 }
 
 
-HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, millis_t baseDosingMillis, time_t mixTime, uint8_t measurementRow)
+HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, millis_t baseDosing, time_t mixTime, uint8_t measurementRow)
     : HydroBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
-      _lastDosingTime(0), _lastDosingValue(0.0f), _dosingMillis(0), _dosingDir(Hydro_BalancerState_Undefined), _dosingActIndex(-1),
-      _baseDosingMillis(baseDosingMillis), _mixTime(mixTime)
+      _lastDosingTime(0), _lastDosingValue(0.0f), _dosing(0), _dosingDir(Hydro_BalancerState_Undefined), _dosingActIndex(-1),
+      _baseDosing(baseDosing), _mixTime(mixTime)
 { ; }
 
 HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydro_UnitsType volumeUnits, uint8_t measurementRow)
     : HydroBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
-      _lastDosingTime(0), _lastDosingValue(0.0f), _dosingMillis(0), _dosingDir(Hydro_BalancerState_Undefined), _dosingActIndex(-1)
+      _lastDosingTime(0), _lastDosingValue(0.0f), _dosing(0), _dosingDir(Hydro_BalancerState_Undefined), _dosingActIndex(-1)
 {
     if (volumeUnits != Hydro_UnitsType_LiqVolume_Gallons) {
         convertUnits(&reservoirVolume, &volumeUnits, Hydro_UnitsType_LiqVolume_Gallons);
     }
     // TODO: Verify these values work
-    _baseDosingMillis = mapValue<float>(reservoirVolume, 5, 30, 500, 3000);
+    _baseDosing = mapValue<float>(reservoirVolume, 5, 30, 500, 3000);
     _mixTime = mapValue<float>(reservoirVolume, 30, 200, (10 * SECS_PER_MIN), (30 * SECS_PER_MIN));
 }
 
@@ -202,7 +202,7 @@ void HydroTimedDosingBalancer::update()
                     for (int actuatorIndex = 0; actuatorIter != _incActuators.end() && actuatorIndex < _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
 
                     if (actuatorIter != _incActuators.end()) {
-                        performDosing(actuatorIter->first, actuatorIter->second * _dosingMillis);
+                        performDosing(actuatorIter->first, actuatorIter->second * _dosing);
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif
@@ -219,7 +219,7 @@ void HydroTimedDosingBalancer::update()
                     for (int actuatorIndex = 0; actuatorIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
 
                     if (actuatorIter != _decActuators.end()) {
-                        performDosing(actuatorIter->first, actuatorIter->second * _dosingMillis);
+                        performDosing(actuatorIter->first, actuatorIter->second * _dosing);
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif
@@ -240,40 +240,39 @@ void HydroTimedDosingBalancer::update()
 void HydroTimedDosingBalancer::performDosing()
 {
     if (_dosingDir != _balancerState) { // reset dir control on dir change
-        _dosingMillis = 0;
+        _dosing = 0;
         _dosingActIndex = 0;
         _dosingDir = Hydro_BalancerState_Undefined;
         disableAllActuators();
     }
 
-    float dosingMillis = _baseDosingMillis;
+    float dosing = _baseDosing;
     auto dosingValue = getMeasurementValue(_sensor->getLatestMeasurement(), _sensor.getMeasurementRow());
-    if (_dosingMillis) {
-        auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosingMillis;
-        dosingMillis = (_targetSetpoint - dosingValue) * dosingRatePerMs;
-        dosingMillis = constrain(dosingMillis, _baseDosingMillis * HYDRO_DOSETIME_FRACTION_MIN,
-                                               _baseDosingMillis * HYDRO_DOSETIME_FRACTION_MAX);
+    if (_dosing) {
+        auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosing;
+        dosing = (_targetSetpoint - dosingValue) * dosingRatePerMs;
+        dosing = constrain(dosing, _baseDosing * HYDRO_DOSETIME_FRACTION_MIN,
+                                               _baseDosing * HYDRO_DOSETIME_FRACTION_MAX);
     }
 
     _lastDosingValue = dosingValue;
-    _dosingMillis = dosingMillis;
+    _dosing = dosing;
     _dosingActIndex = 0;
     _dosingDir = _balancerState;
 
     _lastDosingTime = unixNow();
 }
 
-void HydroTimedDosingBalancer::performDosing(SharedPtr<HydroActuator> &actuator, millis_t timeMillis)
+void HydroTimedDosingBalancer::performDosing(SharedPtr<HydroActuator> &actuator, millis_t time)
 {
     if (actuator->isRelayPumpClass()) {
-        static_pointer_cast<HydroPumpRelayActuator>(actuator)->pump(timeMillis); // pumps have nice logging output
+        static_pointer_cast<HydroRelayPumpActuator>(actuator)->pump(time); // pumps have nice logging output
     } else {
         #ifdef HYDRO_USE_MULTITASKING
-            scheduleActuatorTimedEnableOnce(actuator, timeMillis);
+            scheduleActuatorTimedEnableOnce(actuator, time);
         #else
-            actuator->enableActuator();
-            delayFine(timeMillis);
-            actuator->disableActuator();
+            HydroActivationHandle handle(actuator->enableActuator(time));
+            while (handle.actuator && handle.duration) { handle.actuator->update(); delay(1); }
         #endif
     }
     _dosingActIndex++;

@@ -21,7 +21,7 @@ public:
     SharedPtr<HydroRelayActuator> addGrowLightsRelay(pintype_t outputPin);                  // Digital output pin this actuator sits on
     // Adds a new water pump relay to the system using the given parameters.
     // Water pumps are used to feed crops and move liquids around from one reservoir to another.
-    SharedPtr<HydroPumpRelayActuator> addWaterPumpRelay(pintype_t outputPin);               // Digital output pin this actuator sits on
+    SharedPtr<HydroRelayPumpActuator> addWaterPumpRelay(pintype_t outputPin);               // Digital output pin this actuator sits on
     // Adds a new water heater relay to the system using the given parameters.
     // Water heaters can keep feed water heated during colder months and save off root damage.
     SharedPtr<HydroRelayActuator> addWaterHeaterRelay(pintype_t outputPin);                 // Digital output pin this actuator sits on
@@ -47,7 +47,7 @@ public:
     );
     // Adds a new peristaltic dosing pump relay to the system using the given parameters.
     // Peristaltic pumps allow proper dosing of nutrients and other additives.
-    SharedPtr<HydroPumpRelayActuator> addPeristalticPumpRelay(pintype_t outputPin);         // Digital output pin this actuator sits on
+    SharedPtr<HydroRelayPumpActuator> addPeristalticPumpRelay(pintype_t outputPin);         // Digital output pin this actuator sits on
 
     // Convenience builders for common sensors (shared, nullptr return -> failure).
 
