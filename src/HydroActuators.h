@@ -148,8 +148,6 @@ protected:
 
     virtual bool _enableActuator(float intensity = 1.0) override;
     virtual void _disableActuator() override;
-
-    virtual void handleActivation() override;
 };
 
 
