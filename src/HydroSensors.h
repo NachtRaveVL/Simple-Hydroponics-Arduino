@@ -56,7 +56,7 @@ public:
     virtual bool takeMeasurement(bool force = false) = 0;
     virtual const HydroMeasurement *getLatestMeasurement() const = 0;
     virtual bool isTakingMeasurement() const override;
-    virtual bool needsPolling(uint32_t allowance = 0) const override;
+    virtual bool getNeedsPolling(uint32_t allowance = 0) const override;
 
     virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) = 0;
     virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const = 0;

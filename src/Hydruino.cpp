@@ -863,7 +863,7 @@ void dataLoop()
         for (auto iter = Hydruino::_activeInstance->_objects.begin(); iter != Hydruino::_activeInstance->_objects.end(); ++iter) {
             if (iter->second->isSensorType()) {
                 auto sensor = static_pointer_cast<HydroSensor>(iter->second);
-                if (sensor->needsPolling()) {
+                if (sensor->getNeedsPolling()) {
                     sensor->takeMeasurement(); // no force if already current for this frame #, we're just ensuring data for publisher
                 }
             }

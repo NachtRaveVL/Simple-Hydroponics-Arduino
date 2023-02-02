@@ -112,9 +112,8 @@ typedef typeof(LOW) Arduino_PinStatusType;                  // Arduino pin statu
 #define HYDRO_DATA_LOOP_INTERVAL        2000                // Default run interval of data loop, in milliseconds (customizable later)
 #define HYDRO_MISC_LOOP_INTERVAL        250                 // Run interval of misc loop, in milliseconds
 
-#define HYDRO_ACT_PUMPCALC_MINWRTMILLIS 250                 // Minimum time millis needing to pass before a pump reports/writes changed volume to reservoir (reduces error accumulation)
+#define HYDRO_ACT_PUMPCALC_UPDATEMS     250                 // Minimum time millis needing to pass before a pump reports/writes changed volume to reservoir (reduces error accumulation)
 #define HYDRO_ACT_PUMPCALC_MINFLOWRATE  0.05f               // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
-#define HYDRO_ACT_PUMPCALC_MAXFRAMEDIFF 5                   // Maximum polling frames # away an instantaneous flow rate can be for it to be used in pump/volume calculations (so it uses only recent measurements)
 
 #define HYDRO_CROP_NIGHT_BEGINHR        22                  // Hour of the day night begins (for night feeding multiplier)
 #define HYDRO_CROP_NIGHT_ENDHR          6                   // Hour of the day night ends (for night feeding multiplier)

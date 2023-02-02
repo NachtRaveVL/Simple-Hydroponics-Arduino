@@ -126,7 +126,7 @@ bool HydroSensor::isTakingMeasurement() const
     return _isTakingMeasure;
 }
 
-bool HydroSensor::needsPolling(uint32_t allowance) const
+bool HydroSensor::getNeedsPolling(uint32_t allowance) const
 {
     auto latestMeasurement = getLatestMeasurement();
     return getHydroInstance() && latestMeasurement ? getHydroInstance()->isPollingFrameOld(latestMeasurement->frame, allowance) : false;
@@ -205,7 +205,7 @@ HydroBinarySensor::~HydroBinarySensor()
 
 bool HydroBinarySensor::takeMeasurement(bool force)
 {
-    if (_inputPin.isValid() && (force || needsPolling()) && !_isTakingMeasure) {
+    if (_inputPin.isValid() && (force || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
         bool stateBefore = _lastMeasurement.state;
 
@@ -295,7 +295,7 @@ HydroAnalogSensor::HydroAnalogSensor(const HydroAnalogSensorData *dataIn)
 
 bool HydroAnalogSensor::takeMeasurement(bool force)
 {
-    if (_inputPin.isValid() && (force || needsPolling()) && !_isTakingMeasure) {
+    if (_inputPin.isValid() && (force || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
         #ifdef HYDRO_USE_MULTITASKING
@@ -541,7 +541,7 @@ HydroDHTTempHumiditySensor::~HydroDHTTempHumiditySensor()
 
 bool HydroDHTTempHumiditySensor::takeMeasurement(bool force)
 {
-    if (getHydroInstance() && _dht && (force || needsPolling()) && !_isTakingMeasure) {
+    if (getHydroInstance() && _dht && (force || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
         #ifdef HYDRO_USE_MULTITASKING
@@ -715,7 +715,7 @@ bool HydroDSTemperatureSensor::takeMeasurement(bool force)
 {
     if (!(_wirePosIndex >= 0)) { resolveDeviceAddress(); }
 
-    if (_dt && _wirePosIndex >= 0 && (force || needsPolling()) && !_isTakingMeasure) {
+    if (_dt && _wirePosIndex >= 0 && (force || getNeedsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
 
         #ifdef HYDRO_USE_MULTITASKING
