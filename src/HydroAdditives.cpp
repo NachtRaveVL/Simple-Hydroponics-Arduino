@@ -5,8 +5,6 @@
 
 #include "Hydruino.h"
 
-HydroAdditives hydroAdditives;
-
 bool HydroAdditives::setCustomAdditiveData(const HydroCustomAdditiveData *customAdditiveData)
 {
     HYDRO_SOFT_ASSERT(customAdditiveData, SFP(HStr_Err_InvalidParameter));

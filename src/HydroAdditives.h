@@ -29,12 +29,7 @@ public:
 
 protected:
     Map<Hydro_ReservoirType, HydroCustomAdditiveData *, Hydro_ReservoirType_CustomAdditiveCount> _additives; // Loaded custom additives data
-
-    friend class Hydruino;
-    friend class HydroScheduler;
 };
-
-extern HydroAdditives hydroAdditives;
 
 #endif // /ifndef HydroAdditives_H
 

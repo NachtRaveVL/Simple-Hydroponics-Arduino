@@ -5,8 +5,6 @@
 
 #include "Hydruino.h"
 
-HydroCalibrations hydroCalibrations;
-
 const HydroCalibrationData *HydroCalibrations::getUserCalibrationData(hkey_t key) const
 {
     auto iter = _calibrationData.find(key);

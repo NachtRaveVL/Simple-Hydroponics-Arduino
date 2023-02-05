@@ -204,30 +204,29 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReserv
 }
 
 template<size_t N>
-void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<HydroActuatorAttachment, N> &actuatorsOut, Hydro_ActuatorType actuatorType)
+void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = getSharedPtr<HydroActuator>(*actIter);
         HYDRO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
-            HydroActuatorAttachment activation(nullptr);
-            activation = actuator;
-            actuatorsOut.push_back(activation);
+            activationsOut.push_back(HydroActuatorAttachment(nullptr));
+            activationsOut.back().setObject(actuator);
         }
     }
 }
 
 template<size_t N>
-void linksResolveActuatorsPairRateByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &actuatorsOut, Hydro_ActuatorType actuatorType)
+void linksResolveActuatorsWithRateByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = getSharedPtr<HydroActuator>(*actIter);
         HYDRO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
-            HydroActuatorAttachment activation(parent);
-            activation = actuator;
-            activation.setRateMultiplier(rateMultiplier);
-            actuatorsOut.push_back(activation)
+            activationsOut.push_back(HydroActuatorAttachment(nullptr));
+            activationsOut.back().setParent(parent);
+            activationsOut.back().setRateMultiplier(rateMultiplier);
+            activationsOut.back().setObject(actuator);
         }
     }
 }
