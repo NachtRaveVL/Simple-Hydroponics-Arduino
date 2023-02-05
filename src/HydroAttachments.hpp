@@ -98,22 +98,18 @@ SharedPtr<U> HydroAttachment::getObject()
 template<class ParameterType, int Slots> template<class U>
 HydroSignalAttachment<ParameterType,Slots>::HydroSignalAttachment(HydroObjInterface *parent, Signal<ParameterType,Slots> &(U::*signalGetter)(void))
     : HydroAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleSlot(nullptr)
-{
-    HYDRO_HARD_ASSERT(_signalGetter, SFP(HStr_Err_InvalidParameter));
-}
+{ ; }
 
 template<class ParameterType, int Slots>
 HydroSignalAttachment<ParameterType,Slots>::HydroSignalAttachment(const HydroSignalAttachment<ParameterType,Slots> &attachment)
     : HydroAttachment(attachment), _signalGetter((SignalGetterPtr)attachment._signalGetter),
       _handleSlot(attachment._handleSlot ? attachment._handleSlot->clone() : nullptr)
-{
-    HYDRO_HARD_ASSERT(_signalGetter, SFP(HStr_Err_InvalidParameter));
-}
+{ ; }
 
 template<class ParameterType, int Slots>
 HydroSignalAttachment<ParameterType,Slots>::~HydroSignalAttachment()
 {
-    if (isResolved() && _handleSlot) {
+    if (isResolved() && _handleSlot && _signalGetter) {
         (get()->*_signalGetter)().detach(*_handleSlot);
     }
     if (_handleSlot) {
@@ -126,7 +122,7 @@ void HydroSignalAttachment<ParameterType,Slots>::attachObject()
 {
     HydroAttachment::attachObject();
 
-    if (_handleSlot) {
+    if (isResolved() && _handleSlot && _signalGetter) {
         (get()->*_signalGetter)().attach(*_handleSlot);
     }
 }
@@ -134,23 +130,35 @@ void HydroSignalAttachment<ParameterType,Slots>::attachObject()
 template<class ParameterType, int Slots>
 void HydroSignalAttachment<ParameterType,Slots>::detachObject()
 {
-    if (isResolved() && _handleSlot) {
+    if (isResolved() && _handleSlot && _signalGetter) {
         (get()->*_signalGetter)().detach(*_handleSlot);
     }
 
     HydroAttachment::detachObject();
 }
 
+template<class ParameterType, int Slots> template<class U>
+void HydroSignalAttachment<ParameterType,Slots>::setSignalGetter(Signal<ParameterType,Slots> &(U::*signalGetter)(void))
+{
+    if (_signalGetter != signalGetter) {
+        if (isResolved() && _handleSlot && _signalGetter) { (get()->*_signalGetter)().detach(*_handleSlot); }
+
+        _signalGetter = signalGetter;
+
+        if (isResolved() && _handleSlot && _signalGetter) { (get()->*_signalGetter)().attach(*_handleSlot); }
+    }
+}
+
 template<class ParameterType, int Slots>
 void HydroSignalAttachment<ParameterType,Slots>::setHandleSlot(const Slot<ParameterType> &handleSlot)
 {
     if (!_handleSlot || !_handleSlot->operator==(&handleSlot)) {
-        if (isResolved() && _handleSlot) { (get()->*_signalGetter)().detach(*_handleSlot); }
+        if (isResolved() && _handleSlot && _signalGetter) { (get()->*_signalGetter)().detach(*_handleSlot); }
 
         if (_handleSlot) { delete _handleSlot; _handleSlot = nullptr; }
         _handleSlot = handleSlot.clone();
 
-        if (isResolved() && _handleSlot) { (get()->*_signalGetter)().attach(*_handleSlot); }
+        if (isResolved() && _handleSlot && _signalGetter) { (get()->*_signalGetter)().attach(*_handleSlot); }
     }
 }
 

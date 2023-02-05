@@ -66,7 +66,7 @@ HydroAttachment::HydroAttachment(const HydroAttachment &attachment)
 
 HydroAttachment::~HydroAttachment()
 {
-    if (_parent && isResolved()) {
+    if (isResolved() && _parent) {
         _obj->removeLinkage((HydroObject *)_parent);
     }
 }
@@ -80,7 +80,7 @@ void HydroAttachment::attachObject()
 
 void HydroAttachment::detachObject()
 {
-    if (_parent && isResolved()) {
+    if (isResolved() && _parent) {
         _obj->removeLinkage((HydroObject *)_parent);
     }
     // note: used to set _obj to nullptr here, but found that it's best not to -> avoids additional operator= calls during typical detach scenarios
@@ -95,15 +95,16 @@ void HydroAttachment::setParent(HydroObjInterface *parent)
 {
     if (_parent != parent) {
         if (isResolved() && _parent) { _obj->removeLinkage((HydroObject *)_parent); }
+
         _parent = parent;
+
         if (isResolved() && _parent) { _obj->addLinkage((HydroObject *)_parent); }
     }
 }
 
 
 HydroActuatorAttachment::HydroActuatorAttachment(HydroObjInterface *parent)
-    :  HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(
-        parent, &HydroActuator::getActivationSignal),
+    :  HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(parent, &HydroActuator::getActivationSignal),
        _actuatorHandle(), _updateSlot(nullptr), _rateMultiplier(1.0f)
 { ; }
 
@@ -138,8 +139,7 @@ void HydroActuatorAttachment::setUpdateSlot(const Slot<HydroActivationHandle *> 
 
 
 HydroSensorAttachment::HydroSensorAttachment(HydroObjInterface *parent, uint8_t measurementRow)
-    : HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS>(
-          parent, &HydroSensor::getMeasurementSignal),
+    : HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS>(parent, &HydroSensor::getMeasurementSignal),
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
 {
     setHandleMethod(&HydroSensorAttachment::handleMeasurement);
@@ -219,8 +219,7 @@ void HydroSensorAttachment::handleMeasurement(const HydroMeasurement *measuremen
 
 
 HydroTriggerAttachment::HydroTriggerAttachment(HydroObjInterface *parent)
-    : HydroSignalAttachment<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS>(
-        parent, &HydroTrigger::getTriggerSignal)
+    : HydroSignalAttachment<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS>(parent, &HydroTrigger::getTriggerSignal)
 { ; }
 
 HydroTriggerAttachment::HydroTriggerAttachment(const HydroTriggerAttachment &attachment)
@@ -237,8 +236,7 @@ void HydroTriggerAttachment::updateIfNeeded(bool poll)
 
 
 HydroBalancerAttachment::HydroBalancerAttachment(HydroObjInterface *parent)
-    : HydroSignalAttachment<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS>(
-        parent, &HydroBalancer::getBalancingSignal)
+    : HydroSignalAttachment<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS>(parent, &HydroBalancer::getBalancingSignal)
 { ; }
 
 HydroBalancerAttachment::HydroBalancerAttachment(const HydroBalancerAttachment &attachment)
