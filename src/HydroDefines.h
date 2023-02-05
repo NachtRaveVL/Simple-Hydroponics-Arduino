@@ -74,7 +74,7 @@ typedef uint16_t hframe_t;                                  // Polling frame typ
 typedef typeof(INPUT) ard_pinmode_t;                        // Arduino pin mode type alias
 typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin status type alias
 
-#define HYDRO_NAME_MAXSIZE              24                  // Naming character maximum size (system name, crop name, etc.)
+#define HYDRO_NAME_MAXSIZE              32                  // Naming character maximum size (system name, crop name, etc.)
 #define HYDRO_URL_MAXSIZE               64                  // URL string maximum size (max url length)
 #define HYDRO_POS_MAXSIZE               32                  // Position indicies maximum size (max # of objs of same type)
 #define HYDRO_JSON_DOC_SYSSIZE          256                 // JSON document chunk data bytes for reading in main system data (serialization buffer size)
@@ -83,8 +83,8 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_WIFISTREAM_BUFFER_SIZE    128                 // Size in bytes of WiFi serialization buffers
 // The following slot sizes apply to all architectures
 #define HYDRO_ACTUATOR_SIGNAL_SLOTS     4                   // Maximum number of slots for actuator's activation signal
-#define HYDRO_SENSOR_SIGNAL_SLOTS       4                   // Maximum number of slots for sensor's measurement signal
-#define HYDRO_TRIGGER_SIGNAL_SLOTS      2                   // Maximum number of slots for trigger's state signal
+#define HYDRO_SENSOR_SIGNAL_SLOTS       6                   // Maximum number of slots for sensor's measurement signal
+#define HYDRO_TRIGGER_SIGNAL_SLOTS      4                   // Maximum number of slots for trigger's state signal
 #define HYDRO_BALANCER_SIGNAL_SLOTS     2                   // Maximum number of slots for balancer's state signal
 #define HYDRO_LOG_SIGNAL_SLOTS          2                   // Maximum number of slots for system log signal
 #define HYDRO_PUBLISH_SIGNAL_SLOTS      2                   // Maximum number of slots for data publish signal
@@ -97,8 +97,8 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_RAILS_LINKS_BASESIZE      4                   // Base array size for rail's linkage list
 // The following max sizes only matter for architectures that do not have STL support
 #define HYDRO_SYS_OBJECTS_MAXSIZE       16                  // Maximum array size for system objects (max # of objects in system)
-#define HYDRO_CROPSLIB_CROPS_MAXSIZE    8                   // Maximum array size for crops library objects (max # of different kinds of crops)
-#define HYDRO_CALSTORE_CALIBS_MAXSIZE   8                   // Maximum array size for calibration store objects (max # of different custom calibrations)
+#define HYDRO_CROPS_CROPSLIB_MAXSIZE    8                   // Maximum array size for crops library objects (max # of different kinds of crops)
+#define HYDRO_CAL_CALIBSTORE_MAXSIZE    8                   // Maximum array size for calibration store objects (max # of different custom calibrations)
 #define HYDRO_OBJ_LINKS_MAXSIZE         8                   // Maximum array size for object linkage list, per obj (max # of linked objects)
 #define HYDRO_OBJ_LINKSFILTER_DEFSIZE   8                   // Default array size for object linkage filtering
 #define HYDRO_BAL_ACTUATORS_MAXSIZE     8                   // Maximum array size for balancer actuators list (max # of actuators used)
@@ -115,10 +115,10 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_ACT_PUMPCALC_UPDATEMS     250                 // Minimum time millis needing to pass before a pump reports/writes changed volume to reservoir (reduces error accumulation)
 #define HYDRO_ACT_PUMPCALC_MINFLOWRATE  0.05f               // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
 
-#define HYDRO_CROP_NIGHT_BEGINHR        22                  // Hour of the day night begins (for night feeding multiplier)
-#define HYDRO_CROP_NIGHT_ENDHR          6                   // Hour of the day night ends (for night feeding multiplier)
-#define HYDRO_CROP_GROWWEEKS_MAX        16                  // Maximum grow weeks to support scheduling up to
-#define HYDRO_CROP_GROWWEEKS_MIN        8                   // Minimum grow weeks to support scheduling up to
+#define HYDRO_CROPS_NIGHT_BEGINHR       22                  // Hour of the day night begins (for night feeding multiplier)
+#define HYDRO_CROPS_NIGHT_ENDHR         6                   // Hour of the day night ends (for night feeding multiplier)
+#define HYDRO_CROPS_GROWWEEKS_MAX       16                  // Maximum grow weeks to support scheduling up to
+#define HYDRO_CROPS_GROWWEEKS_MIN       8                   // Minimum grow weeks to support scheduling up to
 
 #define HYDRO_DOSETIME_FRACTION_MIN     0.5f                // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
 #define HYDRO_DOSETIME_FRACTION_MAX     1.5f                // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
@@ -510,12 +510,12 @@ enum Hydro_TriggerState : signed char {
 // Balancing State
 // Common balancing states. Specifies balance or which direction of imbalance.
 enum Hydro_BalancingState : signed char {
-    Hydro_BalancingState_TooLow,                             // Too low / needs incremented state
-    Hydro_BalancingState_Balanced,                           // Balanced state
-    Hydro_BalancingState_TooHigh,                            // Too high / needs decremented state
+    Hydro_BalancingState_TooLow,                            // Too low / needs to go higher
+    Hydro_BalancingState_Balanced,                          // Balanced state
+    Hydro_BalancingState_TooHigh,                           // Too high / needs to go lower
 
-    Hydro_BalancingState_Count,                              // Internal use only
-    Hydro_BalancingState_Undefined = -1                      // Internal use only
+    Hydro_BalancingState_Count,                             // Internal use only
+    Hydro_BalancingState_Undefined = -1                     // Internal use only
 };
 
 // Enable Mode
@@ -602,30 +602,31 @@ enum Hydro_UnitsType : signed char {
     Hydro_UnitsType_Undefined = -1                          // Internal use only
 };
 
-// Forward decls
+// Common forward decls
 class Hydruino;
 class HydroScheduler;
 class HydroLogger;
 class HydroPublisher;
 struct HydroIdentity;
-class HydroObject;
-class HydroSubObject;
 struct HydroData;
 struct HydroSubData;
-struct HydroObjectData;
-struct HydroMeasurement;
-struct HydroSingleMeasurement;
+struct HydroObjectData;;
 struct HydroPin;
 struct HydroDigitalPin;
 struct HydroAnalogPin;
-class HydroTrigger;
-class HydroBalancer;
+struct HydroActivationHandle;
+struct HydroMeasurement;
+struct HydroSingleMeasurement;
+class HydroObject;
+class HydroSubObject;
 class HydroDLinkObject;
 class HydroAttachment;
+class HydroActuatorAttachment;
 class HydroSensorAttachment;
 class HydroTriggerAttachment;
 class HydroBalancerAttachment;
-struct HydroActivationHandle;
+class HydroTrigger;
+class HydroBalancer;
 class HydroActuator;
 class HydroSensor;
 class HydroCrop;

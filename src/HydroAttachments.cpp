@@ -101,6 +101,42 @@ void HydroAttachment::setParent(HydroObjInterface *parent)
 }
 
 
+HydroActuatorAttachment::HydroActuatorAttachment(HydroObjInterface *parent)
+    :  HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(
+        parent, &HydroActuator::getActivationSignal),
+       _actuatorHandle(), _updateSlot(nullptr), _rateMultiplier(1.0f)
+{ ; }
+
+HydroActuatorAttachment::HydroActuatorAttachment(const HydroActuatorAttachment &attachment)
+    : HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(attachment),
+      _updateSlot(attachment._updateSlot ? attachment._updateSlot->clone() : nullptr),
+      _actuatorHandle(attachment._actuatorHandle), _rateMultiplier(attachment._rateMultiplier)
+{ ; }
+
+HydroActuatorAttachment::~HydroActuatorAttachment()
+{
+    if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
+}
+
+void HydroActuatorAttachment::updateIfNeeded(bool poll = false)
+{
+    if (isEnabled()) {
+        _actuatorHandle.elapseBy(millis() - _actuatorHandle.checkTime);
+        if (_updateSlot) {
+            _updateSlot->operator()(&_actuatorHandle);
+        }
+    }
+}
+
+void HydroActuatorAttachment::setUpdateSlot(const Slot<HydroActivationHandle *> &updateSlot)
+{
+    if (!_updateSlot || !_updateSlot->operator==(&updateSlot)) {
+        if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
+        _updateSlot = updateSlot.clone();
+    }
+}
+
+
 HydroSensorAttachment::HydroSensorAttachment(HydroObjInterface *parent, uint8_t measurementRow)
     : HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS>(
           parent, &HydroSensor::getMeasurementSignal),
@@ -215,40 +251,4 @@ HydroBalancerAttachment::~HydroBalancerAttachment()
 void HydroBalancerAttachment::updateIfNeeded(bool poll)
 {
     if (resolve()) { get()->update(); }
-}
-
-
-HydroActuatorAttachment::HydroActuatorAttachment(HydroObjInterface *parent)
-    :  HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(
-        parent, &HydroActuator::getActivationSignal),
-       _actuatorHandle(), _updateSlot(nullptr), _rateMultiplier(1.0f)
-{ ; }
-
-HydroActuatorAttachment::HydroActuatorAttachment(const HydroActuatorAttachment &attachment)
-    : HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(attachment),
-      _updateSlot(attachment._updateSlot ? attachment._updateSlot->clone() : nullptr),
-      _actuatorHandle(attachment._actuatorHandle), _rateMultiplier(attachment._rateMultiplier)
-{ ; }
-
-HydroActuatorAttachment::~HydroActuatorAttachment()
-{
-    if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
-}
-
-void HydroActuatorAttachment::updateIfNeeded(bool poll = false)
-{
-    if (isEnabled()) {
-        _actuatorHandle.elapseBy(millis() - _actuatorHandle.checkTime);
-        if (_updateSlot) {
-            _updateSlot->operator()(&_actuatorHandle);
-        }
-    }
-}
-
-void HydroActuatorAttachment::setUpdateSlot(const Slot<HydroActivationHandle *> &updateSlot)
-{
-    if (!_updateSlot || !_updateSlot->operator==(&updateSlot)) {
-        if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
-        _updateSlot = updateSlot.clone();
-    }
 }

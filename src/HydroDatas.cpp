@@ -456,8 +456,8 @@ void HydroCustomAdditiveData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[SFP(HStr_Key_Id)] = reservoirTypeToString(reservoirType);
     if (additiveName[0]) { objectOut[SFP(HStr_Key_AdditiveName)] = charsToString(additiveName, HYDRO_NAME_MAXSIZE); }
-    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRO_CROP_GROWWEEKS_MAX, 0.0f);
-    if (hasWeeklyDosings) { objectOut[SFP(HStr_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRO_CROP_GROWWEEKS_MAX); }
+    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX, 0.0f);
+    if (hasWeeklyDosings) { objectOut[SFP(HStr_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX); }
 }
 
 void HydroCustomAdditiveData::fromJSONObject(JsonObjectConst &objectIn)
@@ -468,5 +468,5 @@ void HydroCustomAdditiveData::fromJSONObject(JsonObjectConst &objectIn)
     const char *additiveStr = objectIn[SFP(HStr_Key_AdditiveName)];
     if (additiveStr && additiveStr[0]) { strncpy(additiveName, additiveStr, HYDRO_NAME_MAXSIZE); }
     JsonVariantConst weeklyDosingRatesVar = objectIn[SFP(HStr_Key_WeeklyDosingRates)];
-    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRO_CROP_GROWWEEKS_MAX);
+    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX);
 }
