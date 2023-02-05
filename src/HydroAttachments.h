@@ -12,17 +12,19 @@ template<class ParameterType, int Slots> class HydroSignalAttachment;
 class HydroSensorAttachment;
 class HydroTriggerAttachment;
 class HydroBalancerAttachment;
+class HydroActuatorAttachment;
 
 #include "Hydruino.h"
 #include "HydroObject.h"
 #include "HydroMeasurements.h"
+#include "HydroActuators.h"
 
 // forward decls
 extern Hydro_KeyType stringHash(String);
 extern String addressToString(uintptr_t);
 
 // Delay/Dynamic Loaded/Linked Object Reference
-// Simple class for delay loading objects that get references to others during system
+// Simple class for delay loading objects that get references to others during object
 // load. T should be a derived class of HydroObjInterface, with getId() method.
 class HydroDLinkObject {
 public:
@@ -51,6 +53,7 @@ public:
     inline HydroDLinkObject &operator=(const char *rhs);
     template<class U> inline HydroDLinkObject &operator=(SharedPtr<U> &rhs);
     inline HydroDLinkObject &operator=(const HydroObjInterface *rhs);
+    inline HydroDLinkObject &operator=(const HydroAttachment *rhs);
     inline HydroDLinkObject &operator=(nullptr_t) { return this->operator=((HydroObjInterface *)nullptr); }
 
     inline bool operator==(const HydroIdentity &rhs) const { return _key == rhs.key; }
@@ -72,14 +75,20 @@ private:
 
 // Simple Attachment Point Base
 // This attachment registers the parent object with the linked object's linkages upon
-// dereference, and unregisters the parent object at time of destruction or reassignment.
+// dereference / unregisters the parent object at time of destruction or reassignment.
 class HydroAttachment : public HydroSubObject {
 public:
     HydroAttachment(HydroObjInterface *parent);
+    HydroAttachment(const HydroAttachment &attachment);
     virtual ~HydroAttachment();
 
+    // Attaches object and any relevant signaling mechanisms. Derived classes should call base class's method first.
     virtual void attachObject();
+    // Detaches object from any relevant signaling mechanism. Derived classes should call base class's method last.
     virtual void detachObject();
+
+    // Attachment updater. Overridden by derived classes. May only update owned sub-objects (main objects are owned/updated by run system).
+    virtual void updateIfNeeded(bool poll = false);
 
     inline bool isUnresolved() const { return !_obj; }
     inline bool isResolved() const { return (bool)_obj; }
@@ -89,6 +98,9 @@ public:
     template<class U> void setObject(U obj);
     template<class U = HydroObjInterface> SharedPtr<U> getObject();
     template<class U = HydroObjInterface> inline U* get() { return getObject<U>().get(); }
+
+    void setParent(HydroObjInterface *parent);
+    inline HydroObjInterface *getParent() const { return _parent; }
 
     inline HydroIdentity getId() const { return _obj.getId(); }
     inline Hydro_KeyType getKey() const { return _obj.getKey(); }
@@ -115,14 +127,12 @@ protected:
 
 // Signal Attachment Point
 // This attachment registers the parent object with a Signal getter off the linked object
-// upon dereference, and unregisters the parent object from the Signal at time of
+// upon dereference / unregisters the parent object from the Signal at time of
 // destruction or reassignment.
 template<class ParameterType, int Slots = 8>
 class HydroSignalAttachment : public HydroAttachment {
 public:
     typedef Signal<ParameterType,Slots> &(HydroObjInterface::*SignalGetterPtr)(void);
-    typedef void (HydroObjInterface::*HandleMethodPtr)(ParameterType);
-    typedef MethodSlot<HydroObjInterface,ParameterType> *HandleMethodSlotPtr;
 
     template<class U> HydroSignalAttachment(HydroObjInterface *parent, Signal<ParameterType,Slots> &(U::*signalGetter)(void));
     HydroSignalAttachment(const HydroSignalAttachment<ParameterType,Slots> &attachment);
@@ -131,8 +141,10 @@ public:
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    template<class U> void setHandleMethod(MethodSlot<U,ParameterType> handleMethod);
-    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType)) { setHandleMethod<U>(MethodSlot<U,ParameterType>(reinterpret_cast<U *>(_parent), handleMethodPtr)); }
+    // Sets a handle slot to run when attached signal fires
+    void setHandleSlot(const Slot<ParameterType> &handleSlot);
+    inline void setHandleFunction(void (*handleFunctionPtr)(ParameterType)) { setHandleSlot(FunctionSlot<ParameterType>(handleFunctionPtr)); }
+    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType), U *handleClassInst = nullptr) { setUpdateSlot(MethodSlot<U,ParameterType>(handleClassInst ? handleClassInst : reinterpret_cast<U *>(_parent), handleMethodPtr)); }
 
     inline HydroSignalAttachment<ParameterType,Slots> &operator=(const HydroIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroSignalAttachment<ParameterType,Slots> &operator=(const char *rhs) { setObject(HydroIdentity(rhs)); return *this; }
@@ -141,26 +153,28 @@ public:
 
 protected:
     SignalGetterPtr _signalGetter;                          // Signal getter method ptr (weak)
-    HandleMethodSlotPtr _handleMethod;                      // Handler method slot (owned)
+    Slot<ParameterType> *_handleSlot;                       // Handle slot (owned)
 };
 
 
 // Sensor Measurement Attachment Point
 // This attachment registers the parent object with a Sensor's new measurement Signal
-// upon dereference, and unregisters the parent object from the Sensor at time of
+// upon dereference / unregisters the parent object from the Sensor at time of
 // destruction or reassignment.
-// Custom handle method will require a call into setMeasurement.
-class HydroSensorAttachment : public HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_MEASUREMENT_SLOTS> {
+// Custom handle method is responsible for calling setMeasurement() to update measurement.
+class HydroSensorAttachment : public HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> {
 public:
-    typedef void (HydroObjInterface::*HandleMethodPtr)(const HydroMeasurement *);
-
     HydroSensorAttachment(HydroObjInterface *parent, uint8_t measurementRow = 0);
+    HydroSensorAttachment(const HydroSensorAttachment &attachment);
+    virtual ~HydroSensorAttachment();
 
     virtual void attachObject() override;
     virtual void detachObject() override;
 
-    inline void updateIfNeeded(bool poll = false);
+    // Updates measurement attachment with sensor. Does not call sensor's update() (handled by system).
+    virtual void updateIfNeeded(bool poll = false) override;
 
+    // Sets the current measurement associated with this process. Required to be called by custom handlers.
     void setMeasurement(HydroSingleMeasurement measurement);
     inline void setMeasurement(float value, Hydro_UnitsType units = Hydro_UnitsType_Undefined) { setMeasurement(HydroSingleMeasurement(value, units)); }
     void setMeasurementRow(uint8_t measurementRow);
@@ -200,15 +214,16 @@ protected:
 
 // Trigger State Attachment Point
 // This attachment registers the parent object with a Triggers's trigger Signal
-// upon dereference, and unregisters the parent object from the Trigger at time of
+// upon dereference / unregisters the parent object from the Trigger at time of
 // destruction or reassignment.
-class HydroTriggerAttachment  : public HydroSignalAttachment<Hydro_TriggerState, HYDRO_TRIGGER_STATE_SLOTS> {
+class HydroTriggerAttachment  : public HydroSignalAttachment<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> {
 public:
-    typedef void (HydroObjInterface::*HandleMethodPtr)(Hydro_TriggerState);
-
     HydroTriggerAttachment(HydroObjInterface *parent);
+    HydroTriggerAttachment(const HydroTriggerAttachment &attachment);
+    virtual ~HydroTriggerAttachment();
 
-    inline void updateIfNeeded();
+    // Updates owned trigger attachment.
+    virtual void updateIfNeeded(bool poll = false) override;
 
     inline Hydro_TriggerState getTriggerState();
 
@@ -225,30 +240,88 @@ public:
 };
 
 
-// Balancer State Attachment Point
-// This attachment registers the parent object with a Balancer's balance Signal
-// upon dereference, and unregisters the parent object from the Balancer at time of
+// Balancer Attachment Point
+// This attachment registers the parent object with a Balancer's balancing Signal
+// upon dereference / unregisters the parent object from the Balancer at time of
 // destruction or reassignment.
-class HydroBalancerAttachment : public HydroSignalAttachment<Hydro_BalancerState, HYDRO_BALANCER_STATE_SLOTS> {
+class HydroBalancerAttachment : public HydroSignalAttachment<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> {
 public:
-    typedef void (HydroObjInterface::*HandleMethodPtr)(Hydro_BalancerState);
-
     HydroBalancerAttachment(HydroObjInterface *parent);
+    HydroBalancerAttachment(const HydroBalancerAttachment &attachment);
+    virtual ~HydroBalancerAttachment();
 
-    inline void updateIfNeeded();
+    // Updates owned balancer attachment.
+    virtual void updateIfNeeded(bool poll = false) override;
 
-    inline Hydro_BalancerState getBalancerState();
+    inline Hydro_BalancingState getBalancingState();
 
     inline SharedPtr<HydroBalancer> getObject() { return HydroAttachment::getObject<HydroBalancer>(); }
     inline HydroBalancer *get() { return HydroAttachment::get<HydroBalancer>(); }
 
-    inline HydroBalancer &operator*() { return *HydroAttachment::getObject<HydroBalancer>().get(); }
-    inline HydroBalancer *operator->() { return HydroAttachment::getObject<HydroBalancer>().get(); }
+    inline HydroBalancer &operator*() { return *HydroAttachment::get<HydroBalancer>(); }
+    inline HydroBalancer *operator->() { return HydroAttachment::get<HydroBalancer>(); }
 
     inline HydroBalancerAttachment &operator=(const HydroIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroBalancerAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroBalancerAttachment &operator=(SharedPtr<U> rhs) { setObject(rhs); return *this; }
     template<class U> inline HydroBalancerAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
+};
+
+// Actuator Attachment Point
+// This attachment interfaces with actuator activation handles for actuator control, and
+// registers the parent object with an Actuator upon dereference / unregisters the parent
+// object from the Actuator at time of destruction or reassignment.
+class HydroActuatorAttachment : public HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS> {
+public:
+    HydroActuatorAttachment(HydroObjInterface *parent);
+    HydroActuatorAttachment(const HydroActuatorAttachment &attachment);
+    virtual ~HydroActuatorAttachment();
+
+    // Updates with actuator activation handle. Does not call actuator's update() (handled by system).
+    virtual void updateIfNeeded(bool poll = false) override;
+
+    // A rate multiplier is used to adjust either the intensity or duration of activations,
+    // which depends on whenever they operate in binary mode (on/off) or variably (ranged).
+    inline void setRateMultiplier(float rateMultiplier) { _rateMultiplier = rateMultiplier; }
+    inline float getRateMultiplier() const { return _rateMultiplier; }
+
+    // Activations are set up first by calling one of these methods. This configures the
+    // direction as well as intensity that the actuator will operate upon, once enabled.
+    inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { _actuatorHandle = HydroActivationHandle(_actuatorHandle.actuator, direction, intensity, duration, force); }
+    inline void setupActivation(float intensity, millis_t duration = -1, bool force = false) { _actuatorHandle = HydroActivationHandle(_actuatorHandle.actuator, intensity, duration, force); }
+    inline void setupActivation(millis_t duration, bool force = false) { _actuatorHandle = HydroActivationHandle(_actuatorHandle.actuator, 1, duration, force); }
+    inline void setupActivation(bool force, millis_t duration = -1) { _actuatorHandle = HydroActivationHandle(_actuatorHandle.actuator, 1, duration, force); }
+
+    // Enables activation handle with current setup, if not already active.
+    inline void enableActivation() { if (!_actuatorHandle.actuator) { _actuatorHandle = HydroAttachment::getObject<HydroActuator>(); } }
+    // Disables activation handle, if not already inactive.
+    inline void disableActivation() { _actuatorHandle.unset(); }
+
+    inline bool isActuatorEnabled(float tolerance = 0.0f) { return resolve() && HydroAttachment::get<HydroActuator>()->isEnabled(tolerance); }
+    inline bool isActivationEnabled() { return _actuatorHandle.isActive(); }
+    inline bool isEnabled(float tolerance = 0.0f) { return isActuatorEnabled(tolerance) && isActivationEnabled(); }
+
+    // Sets an update slot to run during execution of actuator that can further refine duration value.
+    // Useful for rate-based or variable activations. Slot receives activation handle pointer as parameter.
+    void setUpdateSlot(const Slot<HydroActivationHandle *> &updateSlot);
+    inline void setUpdateFunction(void (*updateFunctionPtr)(HydroActivationHandle *)) { setUpdateSlot(FunctionSlot<HydroActivationHandle *>(updateFunctionPtr)); }
+    template<class U> inline void setUpdateMethod(void (U::*updateMethodPtr)(HydroActivationHandle *), U *updateClassInst = nullptr) { setUpdateSlot(MethodSlot<U,HydroActivationHandle *>(updateClassInst ? updateClassInst : reinterpret_cast<U *>(_parent), updateMethodPtr)); }
+
+    inline SharedPtr<HydroActuator> getObject() { return HydroAttachment::getObject<HydroActuator>(); }
+    inline HydroActuator *get() { return HydroAttachment::get<HydroActuator>(); }
+
+    inline HydroActuator &operator*() { return *HydroAttachment::get<HydroActuator>(); }
+    inline HydroActuator *operator->() { return HydroAttachment::get<HydroActuator>(); }
+
+    inline HydroActuatorAttachment &operator=(const HydroIdentity &rhs) { setObject(rhs); return *this; }
+    inline HydroActuatorAttachment &operator=(const char *rhs) { setObject(rhs); return *this; }
+    template<class U> inline HydroActuatorAttachment &operator=(SharedPtr<U> rhs) { setObject(rhs); return *this; }
+    template<class U> inline HydroActuatorAttachment &operator=(const U *rhs) { setObject(rhs); return *this; }
+
+protected:
+    HydroActivationHandle _actuatorHandle;                  // Actuator activation handle (double ref to object when active)
+    Slot<HydroActivationHandle *> *_updateSlot;             // Update slot (owned)
+    float _rateMultiplier;                                  // Rate multiplier
 };
 
 #endif // /ifndef HydroAttachments_H

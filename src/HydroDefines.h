@@ -75,21 +75,22 @@ typedef typeof(INPUT) Arduino_PinModeType;                  // Arduino pin mode 
 typedef typeof(LOW) Arduino_PinStatusType;                  // Arduino pin status type alias
 
 #define HYDRO_NAME_MAXSIZE              24                  // Naming character maximum size (system name, crop name, etc.)
-#define HYDRO_POS_MAXSIZE               32                  // Position indicies maximum size (max # of objs of same type)
 #define HYDRO_URL_MAXSIZE               64                  // URL string maximum size (max url length)
+#define HYDRO_POS_MAXSIZE               32                  // Position indicies maximum size (max # of objs of same type)
 #define HYDRO_JSON_DOC_SYSSIZE          256                 // JSON document chunk data bytes for reading in main system data (serialization buffer size)
 #define HYDRO_JSON_DOC_DEFSIZE          192                 // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRO_STRING_BUFFER_SIZE        32                  // Size in bytes of string serialization buffers
 #define HYDRO_WIFISTREAM_BUFFER_SIZE    128                 // Size in bytes of WiFi serialization buffers
 // The following slot sizes apply to all architectures
-#define HYDRO_SENSOR_MEASUREMENT_SLOTS  4                   // Maximum number of measurement slots for sensor's measurement signal (max # of attachments)
-#define HYDRO_TRIGGER_STATE_SLOTS       2                   // Maximum number of trigger state slots for trigger's state signal (max # of attachments)
-#define HYDRO_BALANCER_STATE_SLOTS      2                   // Maximum number of balancer state slots for trigger's state signal (max # of attachments)
-#define HYDRO_LOG_STATE_SLOTS           2                   // Maximum number of logger slots for system log signal
-#define HYDRO_PUBLISH_STATE_SLOTS       2                   // Maximum number of publisher slots for data publish signal
-#define HYDRO_RESERVOIR_STATE_SLOTS     2                   // Maximum number of reservoir state slots for filled/empty signal
-#define HYDRO_FEEDING_STATE_SLOTS       2                   // Maximum number of feeding state slots for crop feed signal
-#define HYDRO_CAPACITY_STATE_SLOTS      8                   // Maximum number of capacity slots for rail capacity signal
+#define HYDRO_ACTUATOR_SIGNAL_SLOTS     4                   // Maximum number of slots for actuator's activation signal
+#define HYDRO_SENSOR_SIGNAL_SLOTS       4                   // Maximum number of slots for sensor's measurement signal
+#define HYDRO_TRIGGER_SIGNAL_SLOTS      2                   // Maximum number of slots for trigger's state signal
+#define HYDRO_BALANCER_SIGNAL_SLOTS     2                   // Maximum number of slots for balancer's state signal
+#define HYDRO_LOG_SIGNAL_SLOTS          2                   // Maximum number of slots for system log signal
+#define HYDRO_PUBLISH_SIGNAL_SLOTS      2                   // Maximum number of slots for data publish signal
+#define HYDRO_RESERVOIR_SIGNAL_SLOTS    2                   // Maximum number of slots for filled/empty signal
+#define HYDRO_FEEDING_SIGNAL_SLOTS      2                   // Maximum number of slots for crop feed signal
+#define HYDRO_CAPACITY_SIGNAL_SLOTS     8                   // Maximum number of slots for rail capacity signal
 #define HYDRO_CROPS_LINKS_BASESIZE      1                   // Base array size for crop's linkage list
 #define HYDRO_FLUIDRES_LINKS_BASESIZE   1                   // Base array size for fluid reservoir's linkage list
 #define HYDRO_FEEDRES_LINKS_BASESIZE    4                   // Base array size for feed reservoir's linkage list
@@ -100,8 +101,7 @@ typedef typeof(LOW) Arduino_PinStatusType;                  // Arduino pin statu
 #define HYDRO_CALSTORE_CALIBS_MAXSIZE   8                   // Maximum array size for calibration store objects (max # of different custom calibrations)
 #define HYDRO_OBJ_LINKS_MAXSIZE         8                   // Maximum array size for object linkage list, per obj (max # of linked objects)
 #define HYDRO_OBJ_LINKSFILTER_DEFSIZE   8                   // Default array size for object linkage filtering
-#define HYDRO_BAL_INCACTUATORS_MAXSIZE  8                   // Maximum array size for balancer increment actuators list (max # of increment autodosers/actuators used during balancing)
-#define HYDRO_BAL_DECACTUATORS_MAXSIZE  2                   // Maximum array size for balancer decrement actuators list (max # of decrement autodosers/actuators used during balancing)
+#define HYDRO_BAL_ACTUATORS_MAXSIZE     8                   // Maximum array size for balancer actuators list (max # of actuators used)
 #define HYDRO_SCH_REQACTUATORS_MAXSIZE  4                   // Maximum array size for scheduler required actuators list (max # of actuators active per process stage)
 #define HYDRO_SCH_FEEDRES_MAXSIZE       2                   // Maximum array size for scheduler feeding/lighting process lists (max # of feed reservoirs)
 #define HYDRO_SYS_ONEWIRE_MAXSIZE       2                   // Maximum array size for pin OneWire list (max # of OneWire comm pins)
@@ -187,27 +187,27 @@ enum Hydro_EEPROMType : signed short {
     Hydro_EEPROMType_24LC512 = I2C_DEVICESIZE_24LC512 >> 7, // 24LC512 (512K bits, 65536 bytes), 16-bit address space
     Hydro_EEPROMType_None = -1,                             // No EEPROM
 
-    Hydro_EEPROMType_1KBITS = Hydro_EEPROMType_24LC01,      // 1K bits (alias of 24LC01)
-    Hydro_EEPROMType_2KBITS = Hydro_EEPROMType_24LC02,      // 2K bits (alias of 24LC02)
-    Hydro_EEPROMType_4KBITS = Hydro_EEPROMType_24LC04,      // 4K bits (alias of 24LC04)
-    Hydro_EEPROMType_8KBITS = Hydro_EEPROMType_24LC08,      // 8K bits (alias of 24LC08)
-    Hydro_EEPROMType_16KBITS = Hydro_EEPROMType_24LC16,     // 16K bits (alias of 24LC16)
-    Hydro_EEPROMType_32KBITS = Hydro_EEPROMType_24LC32,     // 32K bits (alias of 24LC32)
-    Hydro_EEPROMType_64KBITS = Hydro_EEPROMType_24LC64,     // 64K bits (alias of 24LC64)
-    Hydro_EEPROMType_128KBITS = Hydro_EEPROMType_24LC128,   // 128K bits (alias of 24LC128)
-    Hydro_EEPROMType_256KBITS = Hydro_EEPROMType_24LC256,   // 256K bits (alias of 24LC256)
-    Hydro_EEPROMType_512KBITS = Hydro_EEPROMType_24LC512,   // 512K bits (alias of 24LC512)
+    Hydro_EEPROMType_1K_Bits = Hydro_EEPROMType_24LC01,     // 1K bits (alias of 24LC01)
+    Hydro_EEPROMType_2K_Bits = Hydro_EEPROMType_24LC02,     // 2K bits (alias of 24LC02)
+    Hydro_EEPROMType_4K_Bits = Hydro_EEPROMType_24LC04,     // 4K bits (alias of 24LC04)
+    Hydro_EEPROMType_8K_Bits = Hydro_EEPROMType_24LC08,     // 8K bits (alias of 24LC08)
+    Hydro_EEPROMType_16K_Bits = Hydro_EEPROMType_24LC16,    // 16K bits (alias of 24LC16)
+    Hydro_EEPROMType_32K_Bits = Hydro_EEPROMType_24LC32,    // 32K bits (alias of 24LC32)
+    Hydro_EEPROMType_64K_Bits = Hydro_EEPROMType_24LC64,    // 64K bits (alias of 24LC64)
+    Hydro_EEPROMType_128K_Bits = Hydro_EEPROMType_24LC128,  // 128K bits (alias of 24LC128)
+    Hydro_EEPROMType_256K_Bits = Hydro_EEPROMType_24LC256,  // 256K bits (alias of 24LC256)
+    Hydro_EEPROMType_512K_Bits = Hydro_EEPROMType_24LC512,  // 512K bits (alias of 24LC512)
 
-    Hydro_EEPROMType_128BYTES = Hydro_EEPROMType_24LC01,    // 128 bytes (alias of 24LC01)
-    Hydro_EEPROMType_256BYTES = Hydro_EEPROMType_24LC02,    // 256 bytes (alias of 24LC02)
-    Hydro_EEPROMType_512BYTES = Hydro_EEPROMType_24LC04,    // 512 bytes (alias of 24LC04)
-    Hydro_EEPROMType_1024BYTES = Hydro_EEPROMType_24LC08,   // 1024 bytes (alias of 24LC08)
-    Hydro_EEPROMType_2048BYTES = Hydro_EEPROMType_24LC16,   // 2048 bytes (alias of 24LC16)
-    Hydro_EEPROMType_4096BYTES = Hydro_EEPROMType_24LC32,   // 4096 bytes (alias of 24LC32)
-    Hydro_EEPROMType_8192BYTES = Hydro_EEPROMType_24LC64,   // 8192 bytes (alias of 24LC64)
-    Hydro_EEPROMType_16384BYTES = Hydro_EEPROMType_24LC128, // 16384 bytes (alias of 24LC128)
-    Hydro_EEPROMType_32768BYTES = Hydro_EEPROMType_24LC256, // 32768 bytes (alias of 24LC256)
-    Hydro_EEPROMType_65536BYTES = Hydro_EEPROMType_24LC512  // 65536 bytes (alias of 24LC512)
+    Hydro_EEPROMType_128_Bytes = Hydro_EEPROMType_24LC01,   // 128 bytes (alias of 24LC01)
+    Hydro_EEPROMType_256_Bytes = Hydro_EEPROMType_24LC02,   // 256 bytes (alias of 24LC02)
+    Hydro_EEPROMType_512_Bytes = Hydro_EEPROMType_24LC04,   // 512 bytes (alias of 24LC04)
+    Hydro_EEPROMType_1024_Bytes = Hydro_EEPROMType_24LC08,  // 1024 bytes (alias of 24LC08)
+    Hydro_EEPROMType_2048_Bytes = Hydro_EEPROMType_24LC16,  // 2048 bytes (alias of 24LC16)
+    Hydro_EEPROMType_4096_Bytes = Hydro_EEPROMType_24LC32,  // 4096 bytes (alias of 24LC32)
+    Hydro_EEPROMType_8192_Bytes = Hydro_EEPROMType_24LC64,  // 8192 bytes (alias of 24LC64)
+    Hydro_EEPROMType_16384_Bytes = Hydro_EEPROMType_24LC128,// 16384 bytes (alias of 24LC128)
+    Hydro_EEPROMType_32768_Bytes = Hydro_EEPROMType_24LC256,// 32768 bytes (alias of 24LC256)
+    Hydro_EEPROMType_65536_Bytes = Hydro_EEPROMType_24LC512 // 65536 bytes (alias of 24LC512)
 };
 
 // RTC Device Type Enumeration
@@ -509,13 +509,13 @@ enum Hydro_TriggerState : signed char {
 
 // Balancing State
 // Common balancing states. Specifies balance or which direction of imbalance.
-enum Hydro_BalancerState : signed char {
-    Hydro_BalancerState_TooLow,                             // Too low / needs incremented state
-    Hydro_BalancerState_Balanced,                           // Balanced state
-    Hydro_BalancerState_TooHigh,                            // Too high / needs decremented state
+enum Hydro_BalancingState : signed char {
+    Hydro_BalancingState_TooLow,                             // Too low / needs incremented state
+    Hydro_BalancingState_Balanced,                           // Balanced state
+    Hydro_BalancingState_TooHigh,                            // Too high / needs decremented state
 
-    Hydro_BalancerState_Count,                              // Internal use only
-    Hydro_BalancerState_Undefined = -1                      // Internal use only
+    Hydro_BalancingState_Count,                              // Internal use only
+    Hydro_BalancingState_Undefined = -1                      // Internal use only
 };
 
 // Enable Mode
@@ -532,7 +532,8 @@ enum Hydro_EnableMode : signed char {
     Hydro_EnableMode_AscOrder,                              // Serial activation using lowest-to-highest/ascending-order drive intensities
 
     Hydro_EnableMode_Count,                                 // Internal use only
-    Hydro_EnableMode_Undefined = -1                         // Internal use only
+    Hydro_EnableMode_Undefined = -1,                        // Internal use only
+    Hydro_EnableMode_Serial = Hydro_EnableMode_InOrder      // Serial (alias for in-order)
 };
 
 // Direction Mode

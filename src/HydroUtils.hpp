@@ -204,26 +204,30 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReserv
 }
 
 template<size_t N>
-void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<SharedPtr<HydroActuator>, N> &actuatorsOut, Hydro_ActuatorType actuatorType)
+void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<HydroActuatorAttachment, N> &actuatorsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = getSharedPtr<HydroActuator>(*actIter);
         HYDRO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
-            actuatorsOut.push_back(actuator);
+            HydroActuatorAttachment activation(nullptr);
+            activation = actuator;
+            actuatorsOut.push_back(activation);
         }
     }
 }
 
 template<size_t N>
-void linksResolveActuatorsPairRateByType(Vector<HydroObject *, N> &actuatorsIn, float rateValue, Vector<Pair<SharedPtr<HydroActuator>, float>, N> &actuatorsOut, Hydro_ActuatorType actuatorType)
+void linksResolveActuatorsPairRateByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &actuatorsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = getSharedPtr<HydroActuator>(*actIter);
         HYDRO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
-            auto pair = make_pair(actuator, rateValue);
-            actuatorsOut.push_back(pair);
+            HydroActuatorAttachment activation(parent);
+            activation = actuator;
+            activation.setRateMultiplier(rateMultiplier);
+            actuatorsOut.push_back(activation)
         }
     }
 }

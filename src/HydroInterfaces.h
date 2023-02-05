@@ -226,7 +226,7 @@ public:
 class HydroBalancerObjectInterface {
 public:
     virtual void setTargetSetpoint(float targetSetpoint) = 0;
-    virtual Hydro_BalancerState getBalancerState() const = 0;
+    virtual Hydro_BalancingState getBalancingState() const = 0;
     inline bool isBalanced() const;
 };
 

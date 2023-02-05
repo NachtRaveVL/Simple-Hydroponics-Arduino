@@ -6,8 +6,8 @@
 #include "Hydruino.h"
 
 HydroBalancer::HydroBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, uint8_t measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false),
-      _sensor(this), _balancerState(Hydro_BalancerState_Undefined)
+    : type((typeof(type))typeIn), _targetSetpoint(targetSetpoint), _targetRange(targetRange),
+      _sensor(this), _balancingState(Hydro_BalancingState_Undefined), _enabled(false)
 {
     _sensor.setMeasurementRow(measurementRow);
     _sensor.setHandleMethod(&HydroBalancer::handleMeasurement);
@@ -17,7 +17,7 @@ HydroBalancer::HydroBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint
 HydroBalancer::~HydroBalancer()
 {
     _enabled = false;
-    disableAllActuators();
+    disableAllActivations();
 }
 
 void HydroBalancer::update()
@@ -34,82 +34,82 @@ void HydroBalancer::setTargetSetpoint(float targetSetpoint)
     }
 }
 
-Hydro_BalancerState HydroBalancer::getBalancerState() const
+Hydro_BalancingState HydroBalancer::getBalancingState() const
 {
-    return _balancerState;
+    return _balancingState;
 }
 
-void HydroBalancer::setIncrementActuators(const Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_INCACTUATORS_MAXSIZE> &incActuators)
+void HydroBalancer::setIncrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &incActuators)
 {
-    for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
+    for (auto activationIter = _incActuators.begin(); activationIter != _incActuators.end(); ++activationIter) {
         bool found = false;
-        auto key = actuatorIter->first->getKey();
+        auto key = activationIter->getKey();
 
-        for (auto actuatorInIter = incActuators.begin(); actuatorInIter != incActuators.end(); ++actuatorInIter) {
-            if (key == actuatorInIter->first->getKey()) {
+        for (auto activationInIter = incActuators.begin(); activationInIter != incActuators.end(); ++activationInIter) {
+            if (key == activationInIter->getKey()) {
                 found = true;
                 break;
             }
         }
 
-        if (!found && actuatorIter->first->isEnabled()) { // disables actuators not found in new list, prevents same used actuators from prev cycle from turning off/on on cycle switch
-            actuatorIter->first->disableActuator();
+        if (!found) { // disables activations not found in new list, prevents same used actuators from prev cycle from turning off/on on cycle switch
+            activationIter->disableActivation();
         }
     }
 
     {   _incActuators.clear();
-        for (auto actuatorInIter = incActuators.begin(); actuatorInIter != incActuators.end(); ++actuatorInIter) {
-            auto actuator = (*actuatorInIter);
-            _incActuators.push_back(actuator);
+        for (auto activationInIter = incActuators.begin(); activationInIter != incActuators.end(); ++activationInIter) {
+            auto activation = (*activationInIter);
+            _incActuators.push_back(activation);
         }
     }
 }
 
-void HydroBalancer::setDecrementActuators(const Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_DECACTUATORS_MAXSIZE> &decActuators)
+void HydroBalancer::setDecrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &decActuators)
 {
-    for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
+    for (auto activationIter = _decActuators.begin(); activationIter != _decActuators.end(); ++activationIter) {
         bool found = false;
-        auto key = actuatorIter->first->getKey();
+        auto key = activationIter->getKey();
 
-        for (auto actuatorInIter = decActuators.begin(); actuatorInIter != decActuators.end(); ++actuatorInIter) {
-            if (key == actuatorInIter->first->getKey()) {
+        for (auto activationInIter = decActuators.begin(); activationInIter != decActuators.end(); ++activationInIter) {
+            if (key == activationInIter->getKey()) {
                 found = true;
                 break;
             }
         }
 
-        if (!found && actuatorIter->first->isEnabled()) { // disables actuators not found in new list
-            actuatorIter->first->disableActuator();
+        if (!found) { // disables activations not found in new list
+            activationIter->disableActivation();
         }
     }
 
     {   _decActuators.clear();
-        for (auto actuatorInIter = decActuators.begin(); actuatorInIter != decActuators.end(); ++actuatorInIter) {
-            auto actuator = (*actuatorInIter);
-            _decActuators.push_back(actuator);
+        for (auto activationInIter = decActuators.begin(); activationInIter != decActuators.end(); ++activationInIter) {
+            auto activation = (*activationInIter);
+            _decActuators.push_back(activation);
         }
     }
 }
 
-Signal<Hydro_BalancerState, HYDRO_BALANCER_STATE_SLOTS> &HydroBalancer::getBalancerSignal()
+Signal<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> &HydroBalancer::getBalancingSignal()
 {
-    return _balancerSignal;
+    return _balancingSignal;
 }
 
-void HydroBalancer::disableAllActuators()
+void HydroBalancer::disableAllActivations()
 {
-    for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
-        actuatorIter->first->disableActuator();
+    for (auto activationIter = _incActuators.begin(); activationIter != _incActuators.end(); ++activationIter) {
+        activationIter->disableActivation();
     }
-    for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
-        actuatorIter->first->disableActuator();
+    for (auto activationIter = _decActuators.begin(); activationIter != _decActuators.end(); ++activationIter) {
+        activationIter->disableActivation();
     }
 }
 
 void HydroBalancer::handleMeasurement(const HydroMeasurement *measurement)
 {
     if (measurement && measurement->frame) {
-        auto balancerStateBefore = _balancerState;
+        auto balancingStateBefore = _balancingState;
 
         auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasurementRow());
         convertUnits(&measure, getTargetUnits(), _sensor.getMeasurementConvertParam());
@@ -119,16 +119,16 @@ void HydroBalancer::handleMeasurement(const HydroMeasurement *measurement)
             float halfTargetRange = _targetRange * 0.5f;
             if (measure.value > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
                 measure.value < _targetSetpoint + halfTargetRange - FLT_EPSILON) {
-                _balancerState = Hydro_BalancerState_Balanced;
+                _balancingState = Hydro_BalancingState_Balanced;
             } else {
-                _balancerState = measure.value > _targetSetpoint ? Hydro_BalancerState_TooHigh : Hydro_BalancerState_TooLow;
+                _balancingState = measure.value > _targetSetpoint ? Hydro_BalancingState_TooHigh : Hydro_BalancingState_TooLow;
             }
 
-            if (_balancerState != balancerStateBefore) {
+            if (_balancingState != balancingStateBefore) {
                 #ifdef HYDRO_USE_MULTITASKING
-                    scheduleSignalFireOnce<Hydro_BalancerState>(_balancerSignal, _balancerState);
+                    scheduleSignalFireOnce<Hydro_BalancingState>(_balancingSignal, _balancingState);
                 #else
-                    _balancerSignal.fire(_balancerState);
+                    _balancingSignal.fire(_balancingState);
                 #endif
             }
         }
@@ -145,21 +145,23 @@ void HydroLinearEdgeBalancer::update()
     HydroBalancer::update();
     if (!_enabled || !_sensor) { return; }
 
-    if (_balancerState != Hydro_BalancerState_Balanced && _balancerState != Hydro_BalancerState_Undefined) {
+    if (_balancingState != Hydro_BalancingState_Balanced && _balancingState != Hydro_BalancingState_Undefined) {
         auto measure = _sensor.getMeasurement(true);
 
         float x = fabsf(measure.value - _targetSetpoint);
         float val = _edgeLength > FLT_EPSILON ? mapValue<float>(x, _edgeOffset, _edgeOffset + _edgeLength, 0.0f, 1.0f)
-                                                : (x >= _edgeOffset - FLT_EPSILON ? 1.0 : 0.0f);
+                                              : (x >= _edgeOffset - FLT_EPSILON ? 1.0 : 0.0f);
         val = constrain(val, 0.0f, 1.0f);
 
-        if (_balancerState == Hydro_BalancerState_TooLow) {
-            for (auto actuatorIter = _incActuators.begin(); actuatorIter != _incActuators.end(); ++actuatorIter) {
-                actuatorIter->first->enableActuator(val * actuatorIter->second);
+        if (_balancingState == Hydro_BalancingState_TooLow) {
+            for (auto activationIter = _incActuators.begin(); activationIter != _incActuators.end(); ++activationIter) {
+                activationIter->setupActivation(val * activationIter->getRateMultiplier());
+                activationIter->enableActivation();
             }
         } else {
-            for (auto actuatorIter = _decActuators.begin(); actuatorIter != _decActuators.end(); ++actuatorIter) {
-                actuatorIter->first->enableActuator(val * actuatorIter->second);
+            for (auto activationIter = _decActuators.begin(); activationIter != _decActuators.end(); ++activationIter) {
+                activationIter->setupActivation(val * activationIter->getRateMultiplier());
+                activationIter->enableActivation();
             }
         }
     }
@@ -168,13 +170,13 @@ void HydroLinearEdgeBalancer::update()
 
 HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, millis_t baseDosing, time_t mixTime, uint8_t measurementRow)
     : HydroBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
-      _lastDosingTime(0), _lastDosingValue(0.0f), _dosing(0), _dosingDir(Hydro_BalancerState_Undefined), _dosingActIndex(-1),
+      _lastDosingTime(0), _lastDosingValue(0.0f), _dosing(0), _dosingDir(Hydro_BalancingState_Undefined), _dosingActIndex(-1),
       _baseDosing(baseDosing), _mixTime(mixTime)
 { ; }
 
 HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydro_UnitsType volumeUnits, uint8_t measurementRow)
     : HydroBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
-      _lastDosingTime(0), _lastDosingValue(0.0f), _dosing(0), _dosingDir(Hydro_BalancerState_Undefined), _dosingActIndex(-1)
+      _lastDosingTime(0), _lastDosingValue(0.0f), _dosing(0), _dosingDir(Hydro_BalancingState_Undefined), _dosingActIndex(-1)
 {
     if (volumeUnits != Hydro_UnitsType_LiqVolume_Gallons) {
         convertUnits(&reservoirVolume, &volumeUnits, Hydro_UnitsType_LiqVolume_Gallons);
@@ -189,20 +191,46 @@ void HydroTimedDosingBalancer::update()
     HydroBalancer::update();
     if (!_enabled || !_sensor) { return; }
 
-    if (_balancerState != Hydro_BalancerState_Balanced && _balancerState != Hydro_BalancerState_Undefined &&
+    if (_balancingState != Hydro_BalancingState_Balanced && _balancingState != Hydro_BalancingState_Undefined &&
         (!_lastDosingTime || unixNow() > _lastDosingTime + _mixTime)) {
-        performDosing();
+        if (_dosingDir != _balancingState) { // reset dir control on dir change
+            _dosing = 0;
+            _dosingActIndex = 0;
+            _dosingDir = Hydro_BalancingState_Undefined;
+            disableAllActivations();
+        }
+
+        float dosing = _baseDosing;
+        auto dosingValue = getMeasurementValue(_sensor->getLatestMeasurement(), _sensor.getMeasurementRow());
+        if (_dosing) {
+            auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosing;
+            dosing = (_targetSetpoint - dosingValue) * dosingRatePerMs;
+            dosing = constrain(dosing, _baseDosing * HYDRO_DOSETIME_FRACTION_MIN,
+                                       _baseDosing * HYDRO_DOSETIME_FRACTION_MAX);
+        }
+
+        _lastDosingValue = dosingValue;
+        _dosing = dosing;
+        _dosingActIndex = 0;
+        _dosingDir = _balancingState;
+
+        _lastDosingTime = unixNow();
     }
 
     if (_dosingActIndex >= 0) { // has dosing that needs performed
         switch (_dosingDir) {
-            case Hydro_BalancerState_TooLow:
+            case Hydro_BalancingState_TooLow:
                 while (_dosingActIndex < _incActuators.size()) {
-                    auto actuatorIter = _incActuators.begin(); // advance iter to index
-                    for (int actuatorIndex = 0; actuatorIter != _incActuators.end() && actuatorIndex < _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
+                    auto activationIter = _incActuators.begin(); // advance iter to index
+                    for (int actuatorIndex = 0; activationIter != _incActuators.end() && actuatorIndex < _dosingActIndex; ++activationIter, ++actuatorIndex) { ; }
 
-                    if (actuatorIter != _incActuators.end()) {
-                        performDosing(actuatorIter->first, actuatorIter->second * _dosing);
+                    if (activationIter != _incActuators.end()) {
+                        if (activationIter->get()->isAnyBinaryClass()) {
+                            activationIter->setupActivation(1.0f, activationIter->getRateMultiplier() * _dosing);
+                        } else {
+                            activationIter->setupActivation(activationIter->getRateMultiplier(), _dosing);
+                        }
+                        activationIter->enableActivation();
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif
@@ -213,13 +241,18 @@ void HydroTimedDosingBalancer::update()
                 }
                 break;
 
-            case Hydro_BalancerState_TooHigh:
+            case Hydro_BalancingState_TooHigh:
                 while (_dosingActIndex < _decActuators.size()) {
-                    auto actuatorIter = _decActuators.begin();  // advance iter to index
-                    for (int actuatorIndex = 0; actuatorIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++actuatorIter, ++actuatorIndex) { ; }
+                    auto activationIter = _decActuators.begin();  // advance iter to index
+                    for (int actuatorIndex = 0; activationIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++activationIter, ++actuatorIndex) { ; }
 
-                    if (actuatorIter != _decActuators.end()) {
-                        performDosing(actuatorIter->first, actuatorIter->second * _dosing);
+                    if (activationIter != _decActuators.end()) {
+                        if (activationIter->get()->isAnyBinaryClass()) {
+                            activationIter->setupActivation(1.0f, activationIter->getRateMultiplier() * _dosing);
+                        } else {
+                            activationIter->setupActivation(activationIter->getRateMultiplier(), _dosing);
+                        }
+                        activationIter->enableActivation();
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif
@@ -235,45 +268,4 @@ void HydroTimedDosingBalancer::update()
                 break;
         }
     }
-}
-
-void HydroTimedDosingBalancer::performDosing()
-{
-    if (_dosingDir != _balancerState) { // reset dir control on dir change
-        _dosing = 0;
-        _dosingActIndex = 0;
-        _dosingDir = Hydro_BalancerState_Undefined;
-        disableAllActuators();
-    }
-
-    float dosing = _baseDosing;
-    auto dosingValue = getMeasurementValue(_sensor->getLatestMeasurement(), _sensor.getMeasurementRow());
-    if (_dosing) {
-        auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosing;
-        dosing = (_targetSetpoint - dosingValue) * dosingRatePerMs;
-        dosing = constrain(dosing, _baseDosing * HYDRO_DOSETIME_FRACTION_MIN,
-                                               _baseDosing * HYDRO_DOSETIME_FRACTION_MAX);
-    }
-
-    _lastDosingValue = dosingValue;
-    _dosing = dosing;
-    _dosingActIndex = 0;
-    _dosingDir = _balancerState;
-
-    _lastDosingTime = unixNow();
-}
-
-void HydroTimedDosingBalancer::performDosing(SharedPtr<HydroActuator> &actuator, millis_t time)
-{
-    if (actuator->isRelayPumpClass()) {
-        static_pointer_cast<HydroRelayPumpActuator>(actuator)->pump(time); // pumps have nice logging output
-    } else {
-        #ifdef HYDRO_USE_MULTITASKING
-            scheduleActuatorTimedEnableOnce(actuator, time);
-        #else
-            HydroActivationHandle handle(actuator->enableActuator(time));
-            while (handle.actuator && handle.duration) { handle.actuator->update(); delay(1); }
-        #endif
-    }
-    _dosingActIndex++;
 }

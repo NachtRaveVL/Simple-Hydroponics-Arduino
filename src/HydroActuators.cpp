@@ -26,43 +26,42 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 }
 
 
-HydroActivationHandle::HydroActivationHandle(HydroActuator *actuator, Hydro_DirectionMode directionIn, float intensityIn, millis_t duration, bool force)
-    : actuator(actuator), update(nullptr), direction(directionIn), intensity(constrain(intensityIn, 0.0f, 1.0f)), start(0), duration(duration), forced(force)
+HydroActivationHandle::HydroActivationHandle(SharedPtr<HydroActuator> actuatorIn, Hydro_DirectionMode directionIn, float intensityIn, millis_t durationIn, bool force)
+    : actuator(nullptr), direction(directionIn), intensity(constrain(intensityIn, 0.0f, 1.0f)),
+      checkTime(0), duration(durationIn), elapsed(0), forced(force)
 {
-    if (actuator) { actuator->_handles.push_back(this); actuator->_needsUpdate = true; }
+    operator=(actuatorIn);
 }
 
 HydroActivationHandle::HydroActivationHandle(const HydroActivationHandle &handle)
-    : actuator(handle.actuator), update(nullptr), direction(handle.direction), intensity(constrain(handle.intensity, 0.0f, 1.0f)),
-      start(0), duration(handle.duration), forced(handle.forced)
+    : actuator(nullptr), direction(handle.direction), intensity(handle.intensity),
+      checkTime(0), duration(handle.duration), elapsed(0), forced(handle.forced)
 {
-    if (actuator) { actuator->_handles.push_back(this); actuator->_needsUpdate = true; }
+    operator=(handle.actuator);
 }
 
 HydroActivationHandle::~HydroActivationHandle()
 {
     unset();
-    if (update) { delete update; update = nullptr; }
 }
 
 HydroActivationHandle &HydroActivationHandle::operator=(const HydroActivationHandle &handle)
 {
-    if (handle.actuator != actuator) {
-        unset();
-        actuator = handle.actuator;
-        if (actuator) { actuator->_handles.push_back(this); actuator->_needsUpdate = true; }
-    } else { start = 0; }
     direction = handle.direction;
-    intensity = constrain(handle.intensity, 0.0f, 1.0f);
+    intensity = handle.intensity;
     duration = handle.duration;
     forced = handle.forced;
-    return *this;
+    return operator=(handle.actuator);
 }
 
-void HydroActivationHandle::setUpdate(Slot<millis_t> &slot)
+HydroActivationHandle &HydroActivationHandle::operator=(SharedPtr<HydroActuator> actuatorIn)
 {
-    if (update) { delete update; }
-    update = slot.clone();
+    if (actuator != actuatorIn) {
+        unset();
+        actuator = actuatorIn;
+        if (actuator) { actuator->_handles.push_back(this); actuator->setNeedsUpdate(); }
+    }
+    return *this;
 }
 
 void HydroActivationHandle::unset()
@@ -70,13 +69,25 @@ void HydroActivationHandle::unset()
     if (actuator) {
         for (auto handleIter = actuator->_handles.end() - 1; handleIter != actuator->_handles.begin() - 1; --handleIter) {
             if ((*handleIter) == this) {
-                actuator->_handles.erase(handleIter); actuator->_needsUpdate = true;
+                actuator->_handles.erase(handleIter); actuator->setNeedsUpdate();
                 break;
             }
         }
         actuator = nullptr;
     }
-    start = 0;
+    checkTime = 0;
+}
+
+void HydroActivationHandle::elapseBy(millis_t delta)
+{
+    if (delta && isActive()) {
+        if (!isInfinite()) {
+            if (delta < duration) { duration -= delta; }
+            else { delta = duration; duration = 0; }
+        }
+        checkTime += delta;
+        elapsed += delta;
+    }
 }
 
 
@@ -165,53 +176,14 @@ void HydroActuator::update()
         _enableActuator(drivingIntensity);
     }
 
-    // Don't worry about updating if just began, give some time for things to run before update
+    // Update running handles and elapse them as needed
     if (_enabled && wasEnabled) {
         millis_t time = millis();
-
-        switch (_enableMode) {
-            case Hydro_EnableMode_Highest:
-            case Hydro_EnableMode_Lowest:
-            case Hydro_EnableMode_Average:
-            case Hydro_EnableMode_Multiply: {
-                // Parallel actuators all run in unison
-                for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
-                    if ((*handleIter)->update) {
-                        (*handleIter)->update->operator()(time - (*handleIter)->start);
-                    }
-                }
-            } break;
-
-            case Hydro_EnableMode_InOrder: {
-                auto handleIter = _handles.begin();
-                if ((*handleIter)->update) {
-                    (*handleIter)->update->operator()(time - (*handleIter)->start);
-                }
-            } break;
-
-            case Hydro_EnableMode_RevOrder: {
-                auto handleIter = _handles.end() - 1;
-                if ((*handleIter)->update) {
-                    (*handleIter)->update->operator()(time - (*handleIter)->start);
-                }
-            } break;
-
-            case Hydro_EnableMode_DesOrder:
-            case Hydro_EnableMode_AscOrder: {
-                float drivingIntensity = getDriveIntensity();
-
-                for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
-                    if (isFPEqual((*handleIter)->intensity, drivingIntensity)) {
-                        if ((*handleIter)->update) {
-                            (*handleIter)->update->operator()(time - (*handleIter)->start);
-                        }
-                        break;
-                    }
-                }
-            } break;
-
-            default:
-                break;
+        for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
+            if ((*handleIter)->isActive()) {
+                (*handleIter)->elapseBy(time - (*handleIter)->checkTime);
+                if (getActuatorIsSerialFromMode(_enableMode)) { break; }
+            }
         }
     }
 
@@ -248,7 +220,7 @@ HydroAttachment &HydroActuator::getParentReservoir(bool resolve)
     return _reservoir;
 }
 
-Signal<HydroActuator *> &HydroActuator::getActivationSignal()
+Signal<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS> &HydroActuator::getActivationSignal()
 {
     return _activateSignal;
 }
@@ -280,34 +252,37 @@ void HydroActuator::handleActivation()
     millis_t time = millis();
 
     if (_enabled) {
-        for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
-            if ((*handleIter)->actuator.get() == this && (*handleIter)->start == 0) {
-                (*handleIter)->start = max(1, time);
-            }
+        switch (_enableMode) {
+            case Hydro_EnableMode_InOrder:
+                (*_handles.begin())->checkTime = max(1, time);
+                break;
+            case Hydro_EnableMode_RevOrder:
+                (*(_handles.end() - 1))->checkTime = max(1, time);
+                break;
+            default: {
+                bool isSerial = getActuatorIsSerialFromMode(_enableMode);
+                for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
+                    if ((*handleIter)->checkTime == 0 && (!isSerial || isFPEqual((*handleIter)->intensity, getDriveIntensity()))) {
+                        (*handleIter)->checkTime = max(1, time);
+                        if (isSerial) { break; }
+                    }
+                }
+            } break;
         }
 
         getLoggerInstance()->logActivation(this);
     } else {
         for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
-            if ((*handleIter)->duration) {
-                millis_t duration = time - (*handleIter)->start;
+            if ((*handleIter)->isActive()) {
+                (*handleIter)->elapseBy(time - (*handleIter)->checkTime);
+                (*handleIter)->checkTime = 0;
 
-                if (duration >= (*handleIter)->duration) {
-                    duration = (*handleIter)->duration; (*handleIter)->duration = 0;
-                    if ((*handleIter)->update) {
-                        (*handleIter)->update->operator()(duration);
-                    }
-                    (*handleIter)->start = 0;
-                    (*handleIter)->actuator = nullptr;
+                if ((*handleIter)->isDone()) {
+                    (*handleIter)->actuator = nullptr; // purposeful no-call to unset, handled here
                     handleIter = _handles.erase(handleIter) - 1;
-                } else {
-                    (*handleIter)->duration -= duration;
-                    if ((*handleIter)->update) {
-                        (*handleIter)->update->operator()(duration);
-                    }
-                    (*handleIter)->start = 0;
                 }
             }
+            if (getActuatorIsSerialFromMode(_enableMode)) { break; }
         }
 
         getLoggerInstance()->logDeactivation(this);

@@ -78,7 +78,7 @@ public:
     inline bool isLoggingEnabled() const;
     inline time_t getSystemUptime() const { return unixNow() - (_initDate ?: SECONDS_FROM_1970_TO_2000); }
 
-    Signal<const HydroLogEvent, HYDRO_LOG_STATE_SLOTS> &getLogSignal();
+    Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> &getLogSignal();
 
     void notifyDayChanged();
 
@@ -93,7 +93,7 @@ protected:
     time_t _initDate;                                       // Init date (UTC)
     time_t _lastSpaceCheck;                                 // Last time enough space was checked (UTC)
 
-    Signal<const HydroLogEvent, HYDRO_LOG_STATE_SLOTS> _logSignal; // Logging signal
+    Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> _logSignal; // Logging signal
 
     friend class Hydruino;
 

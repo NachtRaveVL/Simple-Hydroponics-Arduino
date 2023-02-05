@@ -51,12 +51,12 @@ public:
     inline SharedPtr<HydroSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
     inline uint8_t getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
-    Signal<Hydro_TriggerState, HYDRO_TRIGGER_STATE_SLOTS> &getTriggerSignal();
+    Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> &getTriggerSignal();
 
 protected:
     HydroSensorAttachment _sensor;                    // Sensor attachment
     Hydro_TriggerState _triggerState;                 // Current trigger state
-    Signal<Hydro_TriggerState, HYDRO_TRIGGER_STATE_SLOTS> _triggerSignal; // Trigger signal
+    Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> _triggerSignal; // Trigger signal
 
     virtual void handleMeasurement(const HydroMeasurement *measurement) = 0;
 };

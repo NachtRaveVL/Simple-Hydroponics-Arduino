@@ -43,10 +43,10 @@ ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroActuator> actuat
 
 void ActuatorTimedEnableTask::exec()
 {
-    HydroActivationHandle handle(_actuator.get(), _intensity, _duration);
+    HydroActivationHandle handle(_actuator, _intensity, _duration);
 
     while (handle.actuator) {
-        if (handle.start > 0 && handle.duration > 0) {
+        if (handle.checkTime > 0 && handle.duration > 0) {
             // todo
         }
         yield();
@@ -482,11 +482,11 @@ unsigned int freeMemory() {
     #endif
 }
 
-void delayFine(millis_t time) {
+void delayFine(millis_t duration) {
     millis_t start = millis();
-    time_t end = start + time;
+    millis_t end = start + duration;
 
-    {   time_t left = max(0, time - HYDRO_SYS_DELAYFINE_SPINMILLIS);
+    {   millis_t left = max(0, duration - HYDRO_SYS_DELAYFINE_SPINMILLIS);
         if (left > 0) { delay(left); }
     }
 
@@ -1030,6 +1030,23 @@ Hydro_UnitsType defaultLiquidDilutionUnits(Hydro_MeasurementMode measureMode)
         case Hydro_MeasurementMode_Metric:
         case Hydro_MeasurementMode_Scientific:
             return Hydro_UnitsType_LiqDilution_MilliLiterPerLiter;
+        default:
+            return Hydro_UnitsType_Undefined;
+    }
+}
+
+Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined)
+{
+    if (measureMode == Hydro_MeasurementMode_Undefined) {
+        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
+    }
+
+    switch (measureMode) {
+        case Hydro_MeasurementMode_Imperial:
+        case Hydro_MeasurementMode_Metric:
+            return Hydro_UnitsType_Power_Wattage;
+        case Hydro_MeasurementMode_Scientific:
+            return Hydro_UnitsType_Power_JoulesPerSecond;
         default:
             return Hydro_UnitsType_Undefined;
     }

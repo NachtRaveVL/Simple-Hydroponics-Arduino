@@ -70,14 +70,14 @@ public:
     inline Hydro_SensorType getSensorType() const { return _id.objTypeAs.sensorType; }
     inline Hydro_PositionIndex getSensorIndex() const { return _id.posIndex; }
 
-    Signal<const HydroMeasurement *, HYDRO_SENSOR_MEASUREMENT_SLOTS> &getMeasurementSignal();
+    Signal<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> &getMeasurementSignal();
 
 protected:
     bool _isTakingMeasure;                                  // Taking measurement flag
     HydroAttachment _crop;                                  // Crop attachment
     HydroAttachment _reservoir;                             // Reservoir attachment
     const HydroCalibrationData *_calibrationData;           // Calibration data
-    Signal<const HydroMeasurement *, HYDRO_SENSOR_MEASUREMENT_SLOTS> _measureSignal; // New measurement signal
+    Signal<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> _measureSignal; // New measurement signal
 
     virtual HydroData *allocateData() const override;
     virtual void saveToData(HydroData *dataOut) override;
@@ -106,7 +106,7 @@ public:
 
     inline const HydroDigitalPin &getInputPin() const { return _inputPin; }
 
-    Signal<bool, HYDRO_SENSOR_MEASUREMENT_SLOTS> &getStateSignal();
+    Signal<bool, HYDRO_SENSOR_SIGNAL_SLOTS> &getStateSignal();
 
     inline void notifyISRTriggered() { takeMeasurement(true); }
 
@@ -114,7 +114,7 @@ protected:
     HydroDigitalPin _inputPin;                              // Digital input pin
     bool _usingISR;                                         // Using ISR flag
     HydroBinaryMeasurement _lastMeasurement;                // Latest successful measurement
-    Signal<bool, HYDRO_SENSOR_MEASUREMENT_SLOTS> _stateSignal; // State changed signal
+    Signal<bool, HYDRO_SENSOR_SIGNAL_SLOTS> _stateSignal; // State changed signal
 
     virtual void saveToData(HydroData *dataOut) override;
 };

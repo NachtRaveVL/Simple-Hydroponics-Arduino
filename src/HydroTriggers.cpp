@@ -69,7 +69,7 @@ Hydro_TriggerState HydroTrigger::getTriggerState() const
     return _triggerState;
 }
 
-Signal<Hydro_TriggerState, HYDRO_TRIGGER_STATE_SLOTS> &HydroTrigger::getTriggerSignal()
+Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> &HydroTrigger::getTriggerSignal()
 {
     return _triggerSignal;
 }
