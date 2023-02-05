@@ -9,6 +9,8 @@ inline HydroDLinkObject &HydroDLinkObject::operator=(HydroIdentity rhs)
 {
     _key = rhs.key;
     _obj = nullptr;
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+
     auto len = rhs.keyString.length();
     if (len) {
         _keyStr = (const char *)malloc(len + 1);
@@ -21,6 +23,8 @@ inline HydroDLinkObject &HydroDLinkObject::operator=(const char *rhs)
 {
     _key = stringHash(rhs);
     _obj = nullptr;
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+
     auto len = strnlen(rhs, HYDRO_NAME_MAXSIZE);
     if (len) {
         _keyStr = (const char *)malloc(len + 1);
@@ -34,6 +38,24 @@ inline HydroDLinkObject &HydroDLinkObject::operator=(const HydroObjInterface *rh
     _key = rhs ? rhs->getKey() : (Hydro_KeyType)-1;
     _obj = rhs ? getSharedPtr<HydroObjInterface>(rhs) : nullptr;
     if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+
+    return *this;
+}
+
+inline HydroDLinkObject &HydroDLinkObject::operator=(const HydroAttachment *rhs)
+{
+    _key = rhs ? rhs->getKey() : (Hydro_KeyType)-1;
+    _obj = rhs && rhs->isResolved() ? rhs->getSharedPtr() : nullptr;
+    if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+
+    if (rhs && !rhs->isResolved()) {
+        String keyString = rhs->getKeyString();
+        auto len = keyString.length();
+        if (len) {
+            _keyStr = (const char *)malloc(len + 1);
+            strncpy((char *)_keyStr, keyString.c_str(), len + 1);
+        }
+    }
     return *this;
 }
 
@@ -43,6 +65,7 @@ inline HydroDLinkObject &HydroDLinkObject::operator=(SharedPtr<U> &rhs)
     _key = rhs ? rhs->getKey() : (Hydro_KeyType)-1;
     _obj = rhs ? reinterpret_pointer_cast<HydroObjInterface>(rhs) : nullptr;
     if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+
     return *this;
 }
 
@@ -74,14 +97,15 @@ SharedPtr<U> HydroAttachment::getObject()
 
 template<class ParameterType, int Slots> template<class U>
 HydroSignalAttachment<ParameterType,Slots>::HydroSignalAttachment(HydroObjInterface *parent, Signal<ParameterType,Slots> &(U::*signalGetter)(void))
-    : HydroAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleMethod(nullptr)
+    : HydroAttachment(parent), _signalGetter((SignalGetterPtr)signalGetter), _handleSlot(nullptr)
 {
     HYDRO_HARD_ASSERT(_signalGetter, SFP(HStr_Err_InvalidParameter));
 }
 
 template<class ParameterType, int Slots>
 HydroSignalAttachment<ParameterType,Slots>::HydroSignalAttachment(const HydroSignalAttachment<ParameterType,Slots> &attachment)
-    : HydroAttachment(attachment._parent), _signalGetter((SignalGetterPtr)attachment._signalGetter), _handleMethod((HandleMethodSlotPtr)(attachment._handleMethod ? attachment._handleMethod->clone() : nullptr))
+    : HydroAttachment(attachment), _signalGetter((SignalGetterPtr)attachment._signalGetter),
+      _handleSlot(attachment._handleSlot ? attachment._handleSlot->clone() : nullptr)
 {
     HYDRO_HARD_ASSERT(_signalGetter, SFP(HStr_Err_InvalidParameter));
 }
@@ -89,8 +113,11 @@ HydroSignalAttachment<ParameterType,Slots>::HydroSignalAttachment(const HydroSig
 template<class ParameterType, int Slots>
 HydroSignalAttachment<ParameterType,Slots>::~HydroSignalAttachment()
 {
-    if (isResolved() && _handleMethod) {
-        (get()->*_signalGetter)().detach(*_handleMethod);
+    if (isResolved() && _handleSlot) {
+        (get()->*_signalGetter)().detach(*_handleSlot);
+    }
+    if (_handleSlot) {
+        delete _handleSlot; _handleSlot = nullptr;
     }
 }
 
@@ -99,41 +126,31 @@ void HydroSignalAttachment<ParameterType,Slots>::attachObject()
 {
     HydroAttachment::attachObject();
 
-    if (_handleMethod) {
-        (get()->*_signalGetter)().attach(*_handleMethod);
+    if (_handleSlot) {
+        (get()->*_signalGetter)().attach(*_handleSlot);
     }
 }
 
 template<class ParameterType, int Slots>
 void HydroSignalAttachment<ParameterType,Slots>::detachObject()
 {
-    if (isResolved() && _handleMethod) {
-        (get()->*_signalGetter)().detach(*_handleMethod);
+    if (isResolved() && _handleSlot) {
+        (get()->*_signalGetter)().detach(*_handleSlot);
     }
 
     HydroAttachment::detachObject();
 }
 
-template<class ParameterType, int Slots> template<class U>
-void HydroSignalAttachment<ParameterType,Slots>::setHandleMethod(MethodSlot<U,ParameterType> handleMethod)
+template<class ParameterType, int Slots>
+void HydroSignalAttachment<ParameterType,Slots>::setHandleSlot(const Slot<ParameterType> &handleSlot)
 {
-    if (!_handleMethod || (*_handleMethod == handleMethod)) {
-        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().detach(*_handleMethod); }
+    if (!_handleSlot || !_handleSlot->operator==(&handleSlot)) {
+        if (isResolved() && _handleSlot) { (get()->*_signalGetter)().detach(*_handleSlot); }
 
-        if (_handleMethod) { delete _handleMethod; _handleMethod = nullptr; }
-        _handleMethod = (HandleMethodSlotPtr)handleMethod.clone();
+        if (_handleSlot) { delete _handleSlot; _handleSlot = nullptr; }
+        _handleSlot = handleSlot.clone();
 
-        if (isResolved() && _handleMethod) { (get()->*_signalGetter)().attach(*_handleMethod); }
-    }
-}
-
-inline void HydroSensorAttachment::updateIfNeeded(bool poll)
-{
-    if (resolve() && (_needsMeasurement || poll)) {
-        if (_handleMethod) { _handleMethod->operator()(get()->getLatestMeasurement()); }
-        else { handleMeasurement(get()->getLatestMeasurement()); }
-
-        get()->takeMeasurement((_needsMeasurement || poll));
+        if (isResolved() && _handleSlot) { (get()->*_signalGetter)().attach(*_handleSlot); }
     }
 }
 
@@ -143,18 +160,8 @@ inline Hydro_TriggerState HydroTriggerAttachment::getTriggerState()
     return resolve() ? get()->getTriggerState() : Hydro_TriggerState_Undefined;
 }
 
-inline void HydroTriggerAttachment::updateIfNeeded()
-{
-    if (resolve()) { get()->update(); }
-}
 
-
-inline Hydro_BalancerState HydroBalancerAttachment::getBalancerState()
+inline Hydro_BalancingState HydroBalancerAttachment::getBalancingState()
 {
-    return resolve() ? get()->getBalancerState() : Hydro_BalancerState_Undefined;
-}
-
-inline void HydroBalancerAttachment::updateIfNeeded()
-{
-    if (resolve()) { get()->update(); }
+    return resolve() ? get()->getBalancingState() : Hydro_BalancingState_Undefined;
 }

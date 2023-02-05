@@ -26,7 +26,7 @@ HydroRail *newRailObjectFromData(const HydroRailData *dataIn)
 
 HydroRail::HydroRail(Hydro_RailType railType, Hydro_PositionIndex railIndex, int classTypeIn)
     : HydroObject(HydroIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
-      _powerUnits(Hydro_UnitsType_Power_Wattage), _limitState(Hydro_TriggerState_Undefined)
+      _powerUnits(defaultPowerUnits()), _limitState(Hydro_TriggerState_Undefined)
 {
     allocateLinkages(HYDRO_RAILS_LINKS_BASESIZE);
 }
@@ -34,7 +34,7 @@ HydroRail::HydroRail(Hydro_RailType railType, Hydro_PositionIndex railIndex, int
 HydroRail::HydroRail(const HydroRailData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
       _limitState(Hydro_TriggerState_Undefined),
-      _powerUnits(definedUnitsElse(dataIn->powerUnits, Hydro_UnitsType_Power_Wattage))
+      _powerUnits(definedUnitsElse(dataIn->powerUnits, defaultPowerUnits()))
 {
     allocateLinkages(HYDRO_RAILS_LINKS_BASESIZE);
 }
@@ -99,7 +99,7 @@ void HydroRail::setPowerUnits(Hydro_UnitsType powerUnits)
 
 Hydro_UnitsType HydroRail::getPowerUnits() const
 {
-    return definedUnitsElse(_powerUnits, Hydro_UnitsType_Power_Wattage);
+    return definedUnitsElse(_powerUnits, defaultPowerUnits());
 }
 
 float HydroRail::getRailVoltage() const
@@ -107,7 +107,7 @@ float HydroRail::getRailVoltage() const
     return getRailVoltageFromType(_id.objTypeAs.railType);
 }
 
-Signal<HydroRail *, HYDRO_CAPACITY_STATE_SLOTS> &HydroRail::getCapacitySignal()
+Signal<HydroRail *, HYDRO_CAPACITY_SIGNAL_SLOTS> &HydroRail::getCapacitySignal()
 {
     return _capacitySignal;
 }

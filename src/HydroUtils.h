@@ -326,6 +326,8 @@ extern Hydro_UnitsType defaultLiquidVolumeUnits(Hydro_MeasurementMode measureMod
 extern Hydro_UnitsType defaultLiquidFlowUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
 // Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
 extern Hydro_UnitsType defaultLiquidDilutionUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
+// Returns default power units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
+extern Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
 // Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
 extern int defaultDecimalPlaces(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
 
@@ -354,9 +356,9 @@ int linksCountCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links);
 int linksCountActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType);
 
 // Recombines filtered object list back into SharedPtr actuator list.
-template<size_t N> void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<SharedPtr<HydroActuator>, N> &actuatorsOut, Hydro_ActuatorType actuatorType);
+template<size_t N> void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, Vector<HydroActuatorAttachment, N> &actuatorsOut, Hydro_ActuatorType actuatorType);
 // Recombines filtered object list back into SharedPtr actuator list paired with rate value.
-template<size_t N> void linksResolveActuatorsPairRateByType(Vector<HydroObject *, N> &actuatorsIn, float rateValue, Vector<Pair<SharedPtr<HydroActuator>, float>, N> &actuatorsOut, Hydro_ActuatorType actuatorType);
+template<size_t N> void linksResolveActuatorsPairRateByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &actuatorsOut, Hydro_ActuatorType actuatorType);
 
 // Pins & Checks
 
@@ -402,6 +404,8 @@ extern Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr
 extern bool getActuatorInWaterFromType(Hydro_ActuatorType actuatorType);
 // Returns true for actuators that pump liquid (thus must do empty/filled checks) as derived from actuator type enumeration.
 extern bool getActuatorIsPumpFromType(Hydro_ActuatorType actuatorType);
+// Returns true for actuators that operate activation handles serially (as opposed to in-parallel) as derived from enabled mode enumeration.
+inline bool getActuatorIsSerialFromMode(Hydro_EnableMode actuatorMode) { return actuatorMode >= Hydro_EnableMode_Serial; }
 
 // Converts from actuator type enum to string, with optional exclude for special types (instead returning "").
 extern String actuatorTypeToString(Hydro_ActuatorType actuatorType, bool excludeSpecial = false);

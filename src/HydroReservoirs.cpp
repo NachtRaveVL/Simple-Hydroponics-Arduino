@@ -73,12 +73,12 @@ void HydroReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
     }
 }
 
-Signal<HydroReservoir *, HYDRO_RESERVOIR_STATE_SLOTS> &HydroReservoir::getFilledSignal()
+Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &HydroReservoir::getFilledSignal()
 {
     return _filledSignal;
 }
 
-Signal<HydroReservoir *, HYDRO_RESERVOIR_STATE_SLOTS> &HydroReservoir::getEmptySignal()
+Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &HydroReservoir::getEmptySignal()
 {
     return _emptySignal;
 }

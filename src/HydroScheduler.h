@@ -97,14 +97,14 @@ enum HydroFeedingBroadcastType : signed char {
 // sequences necessary for crops to grow.
 struct HydroProcess {
     SharedPtr<HydroFeedReservoir> feedRes;                  // Feed reservoir
-    Vector<SharedPtr<HydroActuator>, HYDRO_SCH_REQACTUATORS_MAXSIZE> actuatorReqs; // Actuators required for this stage (keep-enabled list)
+    Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> actuatorReqs; // Actuators required for this stage (keep-enabled list)
 
     time_t stageStart;                                      // Stage start time
 
     HydroProcess(SharedPtr<HydroFeedReservoir> feedRes);
 
     void clearActuatorReqs();
-    void setActuatorReqs(const Vector<SharedPtr<HydroActuator>, HYDRO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn);
+    void setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn);
 };
 
 // Scheduler Feeding Process

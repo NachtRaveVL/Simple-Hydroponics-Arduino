@@ -153,7 +153,7 @@ void HydroSensor::setUserCalibrationData(HydroCalibrationData *userCalibrationDa
     }
 }
 
-Signal<const HydroMeasurement *, HYDRO_SENSOR_MEASUREMENT_SLOTS> &HydroSensor::getMeasurementSignal()
+Signal<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> &HydroSensor::getMeasurementSignal()
 {
     return _measureSignal;
 }
@@ -258,7 +258,7 @@ bool HydroBinarySensor::tryRegisterAsISR()
     return _usingISR;
 }
 
-Signal<bool, HYDRO_SENSOR_MEASUREMENT_SLOTS> &HydroBinarySensor::getStateSignal()
+Signal<bool, HYDRO_SENSOR_SIGNAL_SLOTS> &HydroBinarySensor::getStateSignal()
 {
     return _stateSignal;
 }

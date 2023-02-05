@@ -233,7 +233,7 @@ void HydroLogger::setLogLevel(Hydro_LogLevel logLevel)
     }
 }
 
-Signal<const HydroLogEvent, HYDRO_LOG_STATE_SLOTS> &HydroLogger::getLogSignal()
+Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> &HydroLogger::getLogSignal()
 {
     return _logSignal;
 }

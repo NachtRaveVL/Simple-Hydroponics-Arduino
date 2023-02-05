@@ -52,7 +52,7 @@ public:
     inline bool isPublishingEnabled() const;
     Hydro_PositionIndex getColumnIndexStart(Hydro_KeyType sensorKey);
 
-    Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_STATE_SLOTS> &getPublishSignal();
+    Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_SIGNAL_SLOTS> &getPublishSignal();
 
     void notifyDayChanged();
 
@@ -72,7 +72,7 @@ protected:
     uint8_t _columnCount;                                   // Data columns count
     HydroDataColumn *_dataColumns;                          // Data columns (owned)
 
-    Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_STATE_SLOTS> _publishSignal; // Data publishing signal
+    Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_SIGNAL_SLOTS> _publishSignal; // Data publishing signal
 
     friend class Hydruino;
 

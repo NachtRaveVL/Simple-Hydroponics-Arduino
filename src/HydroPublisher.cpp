@@ -171,7 +171,7 @@ Hydro_PositionIndex HydroPublisher::getColumnIndexStart(Hydro_KeyType sensorKey)
     return (Hydro_PositionIndex)-1;
 }
 
-Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_STATE_SLOTS> &HydroPublisher::getPublishSignal()
+Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_SIGNAL_SLOTS> &HydroPublisher::getPublishSignal()
 {
     return _publishSignal;
 }

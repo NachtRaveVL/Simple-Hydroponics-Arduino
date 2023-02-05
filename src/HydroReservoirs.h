@@ -55,8 +55,8 @@ public:
     inline Hydro_ReservoirType getReservoirType() const { return _id.objTypeAs.reservoirType; }
     inline Hydro_PositionIndex getReservoirIndex() const { return _id.posIndex; }
 
-    Signal<HydroReservoir *, HYDRO_RESERVOIR_STATE_SLOTS> &getFilledSignal();
-    Signal<HydroReservoir *, HYDRO_RESERVOIR_STATE_SLOTS> &getEmptySignal();
+    Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &getFilledSignal();
+    Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &getEmptySignal();
 
 protected:
     Hydro_UnitsType _volumeUnits;                           // Volume units preferred
@@ -64,8 +64,8 @@ protected:
     Hydro_TriggerState _filledState;                        // Current filled state
     Hydro_TriggerState _emptyState;                         // Current empty state
 
-    Signal<HydroReservoir *, HYDRO_RESERVOIR_STATE_SLOTS> _filledSignal; // Filled state signal
-    Signal<HydroReservoir *, HYDRO_RESERVOIR_STATE_SLOTS> _emptySignal; // Empty state signal
+    Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> _filledSignal; // Filled state signal
+    Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> _emptySignal; // Empty state signal
 
     virtual HydroData *allocateData() const override;
     virtual void saveToData(HydroData *dataOut) override;

@@ -73,7 +73,7 @@ inline void HydroActuatorObjectInterface::setContinuousPowerUsage(float contPowe
 
 inline bool HydroBalancerObjectInterface::isBalanced() const
 {
-    return getBalancerState() == Hydro_BalancerState_Balanced;
+    return getBalancingState() == Hydro_BalancingState_Balanced;
 }
 
 template <class U>

@@ -91,7 +91,7 @@ void HydroCrop::setFeedingWeight(float weight)
     }
 }
 
-Signal<HydroCrop *, HYDRO_FEEDING_STATE_SLOTS> &HydroCrop::getFeedingSignal()
+Signal<HydroCrop *, HYDRO_FEEDING_SIGNAL_SLOTS> &HydroCrop::getFeedingSignal()
 {
     return _feedingSignal;
 }

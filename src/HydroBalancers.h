@@ -16,9 +16,10 @@ class HydroTimedDosingBalancer;
 #include "HydroTriggers.h"
 
 // Balancer Base
-// This is the base class for all balancers, which are used to modify the external
-// environment via increment / decrement actuators that can increase or decrease a
-// measured value. Balancers allow for a setpoint to be used to drive such devices.
+// This is the base class for all balancer objects, which are used to modify the external
+// environment via a set of actuators that can affect a measured value. Balancers allow
+// for a set-point to be used to drive such tasks, with different balancers specializing
+// the manner in which they operate.
 class HydroBalancer : public HydroSubObject, public HydroBalancerObjectInterface {
 public:
     const enum : signed char { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
@@ -36,15 +37,16 @@ public:
     virtual void update();
 
     virtual void setTargetSetpoint(float targetSetpoint) override;
-    virtual Hydro_BalancerState getBalancerState() const override;
+    virtual Hydro_BalancingState getBalancingState() const override;
 
-    void setTargetUnits(Hydro_UnitsType targetUnits) { _sensor.setMeasurementUnits(targetUnits); }
+    inline void setTargetUnits(Hydro_UnitsType targetUnits) { _sensor.setMeasurementUnits(targetUnits); }
     inline Hydro_UnitsType getTargetUnits() const { return _sensor.getMeasurementUnits(); }
 
-    void setIncrementActuators(const Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_INCACTUATORS_MAXSIZE> &incActuators);
-    void setDecrementActuators(const Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_DECACTUATORS_MAXSIZE> &decActuators);
-    inline const Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_INCACTUATORS_MAXSIZE> &getIncrementActuators() { return _incActuators; }
-    inline const Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_DECACTUATORS_MAXSIZE> &getDecrementActuators() { return _decActuators; }
+    void setIncrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &incActuators);
+    inline const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &getIncrementActuators() { return _incActuators; }
+
+    void setDecrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &decActuators);
+    inline const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &getDecrementActuators() { return _decActuators; }
 
     inline void setEnabled(bool enabled) { _enabled = enabled; }
     inline bool isEnabled() const { return _enabled; }
@@ -55,21 +57,21 @@ public:
     inline SharedPtr<HydroSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
     inline uint8_t getMeasurementRow() const { return _sensor.getMeasurementRow(); }
 
-    Signal<Hydro_BalancerState, HYDRO_BALANCER_STATE_SLOTS> &getBalancerSignal();
+    Signal<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> &getBalancingSignal();
 
 protected:
     HydroSensorAttachment _sensor;                          // Sensor attachment
-    Hydro_BalancerState _balancerState;                     // Current balancer state
-    float _targetSetpoint;                                  // Target setpoint value
+    Hydro_BalancingState _balancingState;                   // Current balancing state
+    float _targetSetpoint;                                  // Target set-point value
     float _targetRange;                                     // Target range value
     bool _enabled;                                          // Enabled flag
 
-    Signal<Hydro_BalancerState, HYDRO_BALANCER_STATE_SLOTS> _balancerSignal; // Balancer signal
+    Signal<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> _balancingSignal; // Balancing signal
 
-    Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_INCACTUATORS_MAXSIZE> _incActuators; // Increment actuators
-    Vector<Pair<SharedPtr<HydroActuator>, float>, HYDRO_BAL_DECACTUATORS_MAXSIZE> _decActuators; // Decrement actuators
+    Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> _incActuators; // Increment actuator attachments
+    Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> _decActuators; // Decrement actuator attachments
 
-    void disableAllActuators();
+    void disableAllActivations();
 
     void handleMeasurement(const HydroMeasurement *measurement);
 };
@@ -133,11 +135,8 @@ protected:
     time_t _lastDosingTime;                                 // Date dosing was last performed (UTC)
     float _lastDosingValue;                                 // Last used dosing value
     millis_t _dosing;                                       // Dosing millis for next runs
-    Hydro_BalancerState _dosingDir;                         // Dosing direction for next runs
+    Hydro_BalancingState _dosingDir;                        // Dosing direction for next runs
     int8_t _dosingActIndex;                                 // Next dosing actuator to run
-
-    void performDosing();
-    void performDosing(SharedPtr<HydroActuator> &actuator, millis_t time);
 };
 
 #endif // /ifndef HydroBalancers_H
