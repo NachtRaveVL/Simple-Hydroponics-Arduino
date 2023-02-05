@@ -9,6 +9,7 @@
 
 class HydroScheduler;
 struct HydroSchedulerSubData;
+struct HydroProcess;
 struct HydroFeeding;
 struct HydroLighting;
 

@@ -29,10 +29,6 @@ public:
 
 protected:
     Map<hkey_t, HydroCalibrationData *, HYDRO_CAL_CALIBSTORE_MAXSIZE> _calibrationData; // Loaded user calibration data
-
-    friend class Hydruino;
 };
-
-extern HydroCalibrations hydroCalibrations;
 
 #endif // /ifndef HydroCalibrations_H

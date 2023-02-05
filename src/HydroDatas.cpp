@@ -443,7 +443,7 @@ HydroCustomAdditiveData::HydroCustomAdditiveData(Hydro_ReservoirType reservoirTy
     _size = sizeof(*this);
     HYDRO_HARD_ASSERT(isCalibrationData(), SFP(HStr_Err_OperationFailure));
 
-    {   auto additiveData = hydroAdditives.getCustomAdditiveData(reservoirType);
+    {   auto additiveData = getHydroInstance() ? getHydroInstance()->getCustomAdditiveData(reservoirType) : nullptr;
         if (additiveData && this != additiveData) {
             *this = *additiveData;
         }

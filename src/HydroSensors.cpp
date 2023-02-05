@@ -96,14 +96,14 @@ HydroSensor::HydroSensor(Hydro_SensorType sensorType,
     : HydroObject(HydroIdentity(sensorType, sensorIndex)), classType((typeof(classType))classTypeIn),
       _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
-    _calibrationData = hydroCalibrations.getUserCalibrationData(_id.key);
+    _calibrationData = getHydroInstance() ? getHydroInstance()->getUserCalibrationData(_id.key) : nullptr;
 }
 
 HydroSensor::HydroSensor(const HydroSensorData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
       _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
-    _calibrationData = hydroCalibrations.getUserCalibrationData(_id.key);
+    _calibrationData = getHydroInstance() ? getHydroInstance()->getUserCalibrationData(_id.key) : nullptr;
     _crop.setObject(dataIn->cropName);
     _reservoir.setObject(dataIn->reservoirName);
 }
@@ -146,10 +146,14 @@ HydroAttachment &HydroSensor::getParentReservoir(bool resolve)
 
 void HydroSensor::setUserCalibrationData(HydroCalibrationData *userCalibrationData)
 {
-    if (userCalibrationData && hydroCalibrations.setUserCalibrationData(userCalibrationData)) {
-        _calibrationData = hydroCalibrations.getUserCalibrationData(_id.key);
-    } else if (!userCalibrationData && _calibrationData && hydroCalibrations.dropUserCalibrationData(_calibrationData)) {
-        _calibrationData = nullptr;
+    if (getHydroInstance()) {
+        if (userCalibrationData && getHydroInstance()->setUserCalibrationData(userCalibrationData)) {
+            _calibrationData = getHydroInstance()->getUserCalibrationData(_id.key);
+        } else if (!userCalibrationData && _calibrationData && getHydroInstance()->dropUserCalibrationData(_calibrationData)) {
+            _calibrationData = nullptr;
+        }
+    } else {
+        _calibrationData = userCalibrationData;
     }
 }
 

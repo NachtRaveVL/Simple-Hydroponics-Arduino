@@ -381,11 +381,11 @@ bool Hydruino::initFromJSONStream(Stream *streamIn)
                 HYDRO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HStr_Err_ImportFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
-                        hydroCalibrations.setUserCalibrationData((HydroCalibrationData *)data);
+                        setUserCalibrationData((HydroCalibrationData *)data);
                     } else if (data->isCropsLibData()) {
                         hydroCropsLib.setUserCropData((HydroCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
-                        hydroAdditives.setCustomAdditiveData((HydroCustomAdditiveData *)data);
+                        setCustomAdditiveData((HydroCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
                 } else if (data && data->isObjectData()) {
@@ -433,8 +433,8 @@ bool Hydruino::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
-        if (hydroCalibrations.hasUserCalibrations()) {
-            for (auto iter = hydroCalibrations._calibrationData.begin(); iter != hydroCalibrations._calibrationData.end(); ++iter) {
+        if (hasUserCalibrations()) {
+            for (auto iter = _calibrationData.begin(); iter != _calibrationData.end(); ++iter) {
                 StaticJsonDocument<HYDRO_JSON_DOC_DEFSIZE> doc;
 
                 JsonObject calibDataObj = doc.to<JsonObject>();
@@ -463,8 +463,8 @@ bool Hydruino::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
-        if (hydroAdditives.hasCustomAdditives()) {
-            for (auto iter = hydroAdditives._additives.begin(); iter != hydroAdditives._additives.end(); ++iter) {
+        if (hasCustomAdditives()) {
+            for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
                 StaticJsonDocument<HYDRO_JSON_DOC_DEFSIZE> doc;
 
                 JsonObject additiveDataObj = doc.to<JsonObject>();
@@ -532,11 +532,11 @@ bool Hydruino::initFromBinaryStream(Stream *streamIn)
                 HYDRO_SOFT_ASSERT(data && (data->isStandardData() || data->isObjectData()), SFP(HStr_Err_AllocationFailure));
                 if (data && data->isStandardData()) {
                     if (data->isCalibrationData()) {
-                        hydroCalibrations.setUserCalibrationData((HydroCalibrationData *)data);
+                        setUserCalibrationData((HydroCalibrationData *)data);
                     } else if (data->isCropsLibData()) {
                         hydroCropsLib.setUserCropData((HydroCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
-                        hydroAdditives.setCustomAdditiveData((HydroCustomAdditiveData *)data);
+                        setCustomAdditiveData((HydroCustomAdditiveData *)data);
                     }
                     delete data; data = nullptr;
                 } else if (data && data->isObjectData()) {
@@ -579,10 +579,10 @@ bool Hydruino::saveToBinaryStream(Stream *streamOut)
             if (!bytesWritten) { return false; }
         }
 
-        if (hydroCalibrations.hasUserCalibrations()) {
+        if (hasUserCalibrations()) {
             size_t bytesWritten = 0;
 
-            for (auto iter = hydroCalibrations._calibrationData.begin(); iter != hydroCalibrations._calibrationData.end(); ++iter) {
+            for (auto iter = _calibrationData.begin(); iter != _calibrationData.end(); ++iter) {
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
@@ -603,10 +603,10 @@ bool Hydruino::saveToBinaryStream(Stream *streamOut)
             if (!bytesWritten) { return false; }
         }
 
-        if (hydroAdditives.hasCustomAdditives()) {
+        if (hasCustomAdditives()) {
             size_t bytesWritten = 0;
 
-            for (auto iter = hydroAdditives._additives.begin(); iter != hydroAdditives._additives.end(); ++iter) {
+            for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
 
@@ -809,8 +809,8 @@ void Hydruino::commonPostSave()
 {
     logger.logSystemSave();
 
-    if (hydroCalibrations.hasUserCalibrations()) {
-        for (auto iter = hydroCalibrations._calibrationData.begin(); iter != hydroCalibrations._calibrationData.end(); ++iter) {
+    if (hasUserCalibrations()) {
+        for (auto iter = _calibrationData.begin(); iter != _calibrationData.end(); ++iter) {
             iter->second->_unsetModded();
         }
     }
@@ -823,8 +823,8 @@ void Hydruino::commonPostSave()
         }
     }
 
-    if (hydroAdditives.hasCustomAdditives()) {
-        for (auto iter = hydroAdditives._additives.begin(); iter != hydroAdditives._additives.end(); ++iter) {
+    if (hasCustomAdditives()) {
+        for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
             iter->second->_unsetModded();
         }
     }

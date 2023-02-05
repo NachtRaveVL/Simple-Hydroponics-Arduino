@@ -73,9 +73,9 @@ void HydroScheduler::setupWaterPHBalancer(HydroReservoir *reservoir, SharedPtr<H
             auto phUpPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_PhUpSolution);
             float dosingRate = getCombinedDosingRate(reservoir, Hydro_ReservoirType_PhUpSolution);
 
-            linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phUpPumps, waterPHBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
+            linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phUpPumps, waterPHBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
             if (!incActuators.size()) { // prefer peristaltic, else use full pump
-                linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phUpPumps, waterPHBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_WaterPump);
+                linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phUpPumps, waterPHBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_WaterPump);
             }
 
             waterPHBalancer->setIncrementActuators(incActuators);
@@ -85,9 +85,9 @@ void HydroScheduler::setupWaterPHBalancer(HydroReservoir *reservoir, SharedPtr<H
             auto phDownPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_PhDownSolution);
             float dosingRate = getCombinedDosingRate(reservoir, Hydro_ReservoirType_PhDownSolution);
 
-            linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phDownPumps, waterPHBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_PeristalticPump);
+            linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phDownPumps, waterPHBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_PeristalticPump);
             if (!decActuators.size()) { // prefer peristaltic, else use full pump
-                linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phDownPumps, waterPHBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_WaterPump);
+                linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phDownPumps, waterPHBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_WaterPump);
             }
 
             waterPHBalancer->setDecrementActuators(decActuators);
@@ -104,25 +104,25 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
             if (dosingRate > FLT_EPSILON) {
                 auto nutrientPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_NutrientPremix);
 
-                linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
+                linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
                 if (!incActuators.size()) { // prefer peristaltic, else use full pump
-                    linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_WaterPump);
+                    linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_WaterPump);
                 }
             }
 
-            if (hydroAdditives.hasCustomAdditives()) {
+            if (getHydroInstance()->hasCustomAdditives()) {
                 int prevIncSize = incActuators.size();
 
                 for (int reservoirType = Hydro_ReservoirType_CustomAdditive1; reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount; ++reservoirType) {
-                    if (hydroAdditives.getCustomAdditiveData((Hydro_ReservoirType)reservoirType)) {
+                    if (getHydroInstance()->getCustomAdditiveData((Hydro_ReservoirType)reservoirType)) {
                         dosingRate = getCombinedDosingRate(reservoir, (Hydro_ReservoirType)reservoirType);
 
                         if (dosingRate > FLT_EPSILON) {
                             auto nutrientPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, (Hydro_ReservoirType)reservoirType);
 
-                            linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
+                            linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
                             if (incActuators.size() == prevIncSize) { // prefer peristaltic, else use full pump
-                                linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_WaterPump);
+                                linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_WaterPump);
                             }
                         }
 
@@ -140,9 +140,9 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
             if (dosingRate > FLT_EPSILON) {
                 auto dilutionPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_NutrientPremix);
 
-                linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(dilutionPumps, waterTDSBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_PeristalticPump);
+                linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(dilutionPumps, waterTDSBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_PeristalticPump);
                 if (!decActuators.size()) { // prefer peristaltic, else use full pump
-                    linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(dilutionPumps, waterTDSBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_WaterPump);
+                    linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(dilutionPumps, waterTDSBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_WaterPump);
                 }
             }
 
@@ -157,7 +157,7 @@ void HydroScheduler::setupWaterTemperatureBalancer(HydroReservoir *reservoir, Sh
         {   Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> incActuators;
             auto heaters = linksFilterActuatorsByReservoirAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ActuatorType_WaterHeater);
 
-            linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(heaters, waterTempBalancer.get(), 1.0f, incActuators, Hydro_ActuatorType_WaterHeater);
+            linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(heaters, waterTempBalancer.get(), 1.0f, incActuators, Hydro_ActuatorType_WaterHeater);
 
             waterTempBalancer->setIncrementActuators(incActuators);
         }
@@ -178,7 +178,7 @@ void HydroScheduler::setupAirTemperatureBalancer(HydroReservoir *reservoir, Shar
         {   Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> decActuators;
             auto fans = linksFilterActuatorsByReservoirAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ActuatorType_FanExhaust);
 
-            linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(fans, airTempBalancer.get(), 1.0f, decActuators, Hydro_ActuatorType_FanExhaust);
+            linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(fans, airTempBalancer.get(), 1.0f, decActuators, Hydro_ActuatorType_FanExhaust);
 
             airTempBalancer->setDecrementActuators(decActuators);
         }
@@ -191,7 +191,7 @@ void HydroScheduler::setupAirCO2Balancer(HydroReservoir *reservoir, SharedPtr<Hy
         {   Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> incActuators;
             auto fans = linksFilterActuatorsByReservoirAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ActuatorType_FanExhaust);
 
-            linksResolveActuatorsPairRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(fans, airCO2Balancer.get(), 1.0f, incActuators, Hydro_ActuatorType_FanExhaust);
+            linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(fans, airCO2Balancer.get(), 1.0f, incActuators, Hydro_ActuatorType_FanExhaust);
 
             airCO2Balancer->setIncrementActuators(incActuators);
         }
@@ -228,7 +228,7 @@ void HydroScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, Hydro_
             HydroCustomAdditiveData newAdditiveData(reservoirType);
             newAdditiveData._bumpRevIfNotAlreadyModded();
             newAdditiveData.weeklyDosingRates[weekIndex] = dosingRate;
-            hydroAdditives.setCustomAdditiveData(&newAdditiveData);
+            getHydroInstance()->setCustomAdditiveData(&newAdditiveData);
 
             setNeedsScheduling();
         } else {
@@ -270,12 +270,12 @@ void HydroScheduler::setFlushWeek(int weekIndex)
         for (Hydro_ReservoirType reservoirType = Hydro_ReservoirType_CustomAdditive1;
              reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount;
              reservoirType = (Hydro_ReservoirType)((int)reservoirType + 1)) {
-            auto additiveData = hydroAdditives.getCustomAdditiveData(reservoirType);
+            auto additiveData = getHydroInstance()->getCustomAdditiveData(reservoirType);
             if (additiveData) {
                 HydroCustomAdditiveData newAdditiveData = *additiveData;
                 newAdditiveData._bumpRevIfNotAlreadyModded();
                 newAdditiveData.weeklyDosingRates[weekIndex] = 0;
-                hydroAdditives.setCustomAdditiveData(&newAdditiveData);
+                getHydroInstance()->setCustomAdditiveData(&newAdditiveData);
             }
         }
 
@@ -353,7 +353,7 @@ float HydroScheduler::getCombinedDosingRate(HydroReservoir *reservoir, Hydro_Res
                     totalWeights += crop->getFeedingWeight();
                     totalDosing += schedulerData()->stdDosingRates[reservoirType - Hydro_ReservoirType_FreshWater];
                 } else {
-                    auto additiveData = hydroAdditives.getCustomAdditiveData(reservoirType);
+                    auto additiveData = getHydroInstance()->getCustomAdditiveData(reservoirType);
                     if (additiveData) {
                         totalWeights += crop->getFeedingWeight();
                         totalDosing += additiveData->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1)];
@@ -387,7 +387,7 @@ float HydroScheduler::getWeeklyDosingRate(int weekIndex, Hydro_ReservoirType res
         if (reservoirType == Hydro_ReservoirType_NutrientPremix) {
             return schedulerData()->weeklyDosingRates[weekIndex];
         } else if (reservoirType >= Hydro_ReservoirType_CustomAdditive1 && reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount) {
-            auto additiveDate = hydroAdditives.getCustomAdditiveData(reservoirType);
+            auto additiveDate = getHydroInstance()->getCustomAdditiveData(reservoirType);
             return additiveDate ? additiveDate->weeklyDosingRates[weekIndex] : 0.0f;
         } else {
             HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
@@ -566,33 +566,32 @@ HydroProcess::HydroProcess(SharedPtr<HydroFeedReservoir> feedResIn)
 void HydroProcess::clearActuatorReqs()
 {
     while (actuatorReqs.size()) {
-        actuatorReqs.begin()->get()->disableActuator();
         actuatorReqs.erase(actuatorReqs.begin());
     }
 }
 
 void HydroProcess::setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn)
 {
-    for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
+    for (auto activationIter = actuatorReqs.begin(); activationIter != actuatorReqs.end(); ++activationIter) {
         bool found = false;
-        auto key = (*actuatorIter)->getKey();
+        auto key = activationIter->getKey();
     
-        for (auto actuatorInIter = actuatorReqsIn.begin(); actuatorInIter != actuatorReqsIn.end(); ++actuatorInIter) {
-            if (key == (*actuatorInIter)->getKey()) {
+        for (auto activationInIter = actuatorReqsIn.begin(); activationInIter != actuatorReqsIn.end(); ++activationInIter) {
+            if (key == activationInIter->getKey()) {
                 found = true;
                 break;
             }
         }
     
-        if (!found && (*actuatorIter)->isEnabled()) { // disables actuators not found in new list
-            (*actuatorIter)->disableActuator();
+        if (!found) { // disables actuators not found in new list
+            activationIter->disableActivation();
         }
     }
 
     {   actuatorReqs.clear();
-        for (auto actuatorInIter = actuatorReqsIn.begin(); actuatorInIter != actuatorReqsIn.end(); ++actuatorInIter) {
-            auto actuator = (*actuatorInIter);
-            actuatorReqs.push_back(actuator);
+        for (auto activationInIter = actuatorReqsIn.begin(); activationInIter != actuatorReqsIn.end(); ++activationInIter) {
+            actuatorReqs.push_back(*activationInIter);
+            actuatorReqs.back().setParent(nullptr);
         }
     }  
 }
@@ -983,11 +982,8 @@ void HydroFeeding::update()
     }
 
     if (actuatorReqs.size()) {
-        for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
-            auto actuator = (*actuatorIter);
-            if (!actuator->isEnabled() && !actuator->enableActuator()) {
-                // TODO: Something clever to track stalled actuators
-            }
+        for (auto activationIter = actuatorReqs.begin(); activationIter != actuatorReqs.end(); ++activationIter) {
+            activationIter->enableActivation();
         }
     }
 
@@ -1261,11 +1257,8 @@ void HydroLighting::update()
     }
 
     if (actuatorReqs.size()) {
-        for (auto actuatorIter = actuatorReqs.begin(); actuatorIter != actuatorReqs.end(); ++actuatorIter) {
-            auto actuator = (*actuatorIter);
-            if (!actuator->isEnabled() && !actuator->enableActuator()) {
-                // TODO: Something clever to track stalled actuators
-            }
+        for (auto activationIter = actuatorReqs.begin(); activationIter != actuatorReqs.end(); ++activationIter) {
+            activationIter->enableActivation();
         }
     }
 
