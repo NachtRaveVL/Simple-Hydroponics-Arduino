@@ -60,7 +60,7 @@ struct HydroSystemData : public HydroData {
 // id: HCAL. Hydruino linear calibration data.
 // This class essentially controls a simple Ax+B linear transformation mapping, and is
 // used to 'convert' values from one coordinate system into another, or in our case used
-// for storing custom user curve/offset correction data.
+// for storing custom user curve/offset correction/mapping data.
 // See setFrom* methods to set calibrated data in various formats.
 struct HydroCalibrationData : public HydroData {
     char ownerName[HYDRO_NAME_MAXSIZE];                     // Owner object name this calibration belongs to
@@ -184,7 +184,7 @@ struct HydroCropsLibData : public HydroData {
 struct HydroCustomAdditiveData : public HydroData {
     Hydro_ReservoirType reservoirType;                      // Reservoir type (must be CustomAdditive*)
     char additiveName[HYDRO_NAME_MAXSIZE];                  // Name of additive
-    float weeklyDosingRates[HYDRO_CROP_GROWWEEKS_MAX];      // Weekly dosing rate percentages (default: 0)
+    float weeklyDosingRates[HYDRO_CROPS_GROWWEEKS_MAX];     // Weekly dosing rate percentages (default: 0)
 
     HydroCustomAdditiveData();
     HydroCustomAdditiveData(Hydro_ReservoirType reservoirType); // Convenience constructor, copies data from Hydruino system then returns, good for temporary objects.

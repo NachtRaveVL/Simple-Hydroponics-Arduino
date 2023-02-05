@@ -31,7 +31,7 @@ void HydroScheduler::update()
         #endif
 
         {   DateTime currTime = getCurrentTime();
-            bool daytimeMode = currTime.hour() >= HYDRO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRO_CROP_NIGHT_BEGINHR;
+            bool daytimeMode = currTime.hour() >= HYDRO_CROPS_NIGHT_ENDHR && currTime.hour() < HYDRO_CROPS_NIGHT_BEGINHR;
 
             if (_inDaytimeMode != daytimeMode) {
                 _inDaytimeMode = daytimeMode;
@@ -216,9 +216,9 @@ void HydroScheduler::setBaseFeedMultiplier(float baseFeedMultiplier)
 void HydroScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, Hydro_ReservoirType reservoirType)
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
-    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
 
-    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX) {
+    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX) {
         if (reservoirType == Hydro_ReservoirType_NutrientPremix) {
             Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
             schedulerData()->weeklyDosingRates[weekIndex] = dosingRate;
@@ -262,9 +262,9 @@ void HydroScheduler::setLastWeekAsFlush(Hydro_CropType cropType)
 void HydroScheduler::setFlushWeek(int weekIndex)
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
-    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
 
-    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX) {
+    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX) {
         schedulerData()->weeklyDosingRates[weekIndex] = 0;
 
         for (Hydro_ReservoirType reservoirType = Hydro_ReservoirType_CustomAdditive1;
@@ -381,9 +381,9 @@ float HydroScheduler::getBaseFeedMultiplier() const
 float HydroScheduler::getWeeklyDosingRate(int weekIndex, Hydro_ReservoirType reservoirType) const
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
-    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
 
-    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX) {
+    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX) {
         if (reservoirType == Hydro_ReservoirType_NutrientPremix) {
             return schedulerData()->weeklyDosingRates[weekIndex];
         } else if (reservoirType >= Hydro_ReservoirType_CustomAdditive1 && reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount) {
@@ -412,9 +412,9 @@ float HydroScheduler::getStandardDosingRate(Hydro_ReservoirType reservoirType) c
 bool HydroScheduler::isFlushWeek(int weekIndex)
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
-    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(!hasSchedulerData() || (weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX), SFP(HStr_Err_InvalidParameter));
 
-    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROP_GROWWEEKS_MAX) {
+    if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX) {
         return isFPEqual(schedulerData()->weeklyDosingRates[weekIndex], 0.0f);
     }
 
@@ -449,7 +449,7 @@ void HydroScheduler::updateDayTracking()
 {
     auto currTime = getCurrentTime();
     _lastDayNum = currTime.day();
-    _inDaytimeMode = currTime.hour() >= HYDRO_CROP_NIGHT_ENDHR && currTime.hour() < HYDRO_CROP_NIGHT_BEGINHR;
+    _inDaytimeMode = currTime.hour() >= HYDRO_CROPS_NIGHT_ENDHR && currTime.hour() < HYDRO_CROPS_NIGHT_BEGINHR;
 
     setNeedsScheduling();
 
@@ -1288,8 +1288,8 @@ void HydroSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     //HydroSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
     if (!isFPEqual(baseFeedMultiplier, 1.0f)) { objectOut[SFP(HStr_Key_BaseFeedMultiplier)] = baseFeedMultiplier; }
-    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRO_CROP_GROWWEEKS_MAX, 1.0f);
-    if (hasWeeklyDosings) { objectOut[SFP(HStr_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRO_CROP_GROWWEEKS_MAX); }
+    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX, 1.0f);
+    if (hasWeeklyDosings) { objectOut[SFP(HStr_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX); }
     bool hasStandardDosings = !isFPEqual(stdDosingRates[0], 1.0f) || !isFPEqual(stdDosingRates[1], 0.5f) || !isFPEqual(stdDosingRates[2], 0.5f);
     if (hasStandardDosings) { objectOut[SFP(HStr_Key_StdDosingRates)] = commaStringFromArray(stdDosingRates, 3); }
     if (totalFeedingsDay > 0) { objectOut[SFP(HStr_Key_TotalFeedingsDay)] = totalFeedingsDay; }
@@ -1304,7 +1304,7 @@ void HydroSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
 
     baseFeedMultiplier = objectIn[SFP(HStr_Key_BaseFeedMultiplier)] | baseFeedMultiplier;
     JsonVariantConst weeklyDosingRatesVar = objectIn[SFP(HStr_Key_WeeklyDosingRates)];
-    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRO_CROP_GROWWEEKS_MAX);
+    commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX);
     JsonVariantConst stdDosingRatesVar = objectIn[SFP(HStr_Key_StdDosingRates)];
     commaStringToArray(stdDosingRatesVar, stdDosingRates, 3);
     totalFeedingsDay = objectIn[SFP(HStr_Key_TotalFeedingsDay)] | totalFeedingsDay;

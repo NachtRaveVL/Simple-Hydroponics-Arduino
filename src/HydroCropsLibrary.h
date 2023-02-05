@@ -47,7 +47,7 @@ public:
     inline bool hasUserCrops() const { return _hasUserCrops; }
 
 protected:
-    Map<Hydro_CropType, HydroCropsLibraryBook *, HYDRO_CROPSLIB_CROPS_MAXSIZE> _cropsData; // Loaded crops library data
+    Map<Hydro_CropType, HydroCropsLibraryBook *, HYDRO_CROPS_CROPSLIB_MAXSIZE> _cropsData; // Loaded crops library data
     bool _hasUserCrops = false;                             // Has user crops flag
 
     String _libSDCropPrefix;                                // Library data files prefix for SD card, else "" if unused
