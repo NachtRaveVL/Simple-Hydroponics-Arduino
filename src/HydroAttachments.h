@@ -63,7 +63,7 @@ public:
     inline bool operator==(nullptr_t) const { return _key == (hkey_t)-1; }
 
 protected:
-    hkey_t _key;                                     // Object key
+    hkey_t _key;                                            // Object key
     SharedPtr<HydroObjInterface> _obj;                      // Shared pointer to object
     const char *_keyStr;                                    // Copy of id.keyString (if not resolved, or unresolved)
 
@@ -78,7 +78,7 @@ private:
 // dereference / unregisters the parent object at time of destruction or reassignment.
 class HydroAttachment : public HydroSubObject {
 public:
-    HydroAttachment(HydroObjInterface *parent);
+    HydroAttachment(HydroObjInterface *parent = nullptr);
     HydroAttachment(const HydroAttachment &attachment);
     virtual ~HydroAttachment();
 
@@ -134,12 +134,15 @@ class HydroSignalAttachment : public HydroAttachment {
 public:
     typedef Signal<ParameterType,Slots> &(HydroObjInterface::*SignalGetterPtr)(void);
 
-    template<class U> HydroSignalAttachment(HydroObjInterface *parent, Signal<ParameterType,Slots> &(U::*signalGetter)(void));
+    template<class U> HydroSignalAttachment(HydroObjInterface *parent = nullptr, Signal<ParameterType,Slots> &(U::*signalGetter)(void) = nullptr);
     HydroSignalAttachment(const HydroSignalAttachment<ParameterType,Slots> &attachment);
     virtual ~HydroSignalAttachment();
 
     virtual void attachObject() override;
     virtual void detachObject() override;
+
+    // Sets the signal handler getter method to use
+    template<class U> void setSignalGetter(Signal<ParameterType,Slots> &(U::*signalGetter)(void));
 
     // Sets a handle slot to run when attached signal fires
     void setHandleSlot(const Slot<ParameterType> &handleSlot);
@@ -163,7 +166,7 @@ protected:
 // object from the Actuator at time of destruction or reassignment.
 class HydroActuatorAttachment : public HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS> {
 public:
-    HydroActuatorAttachment(HydroObjInterface *parent);
+    HydroActuatorAttachment(HydroObjInterface *parent = nullptr);
     HydroActuatorAttachment(const HydroActuatorAttachment &attachment);
     virtual ~HydroActuatorAttachment();
 
@@ -222,7 +225,7 @@ protected:
 // Custom handle method is responsible for calling setMeasurement() to update measurement.
 class HydroSensorAttachment : public HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> {
 public:
-    HydroSensorAttachment(HydroObjInterface *parent, uint8_t measurementRow = 0);
+    HydroSensorAttachment(HydroObjInterface *parent = nullptr, uint8_t measurementRow = 0);
     HydroSensorAttachment(const HydroSensorAttachment &attachment);
     virtual ~HydroSensorAttachment();
 
@@ -276,7 +279,7 @@ protected:
 // destruction or reassignment.
 class HydroTriggerAttachment  : public HydroSignalAttachment<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> {
 public:
-    HydroTriggerAttachment(HydroObjInterface *parent);
+    HydroTriggerAttachment(HydroObjInterface *parent = nullptr);
     HydroTriggerAttachment(const HydroTriggerAttachment &attachment);
     virtual ~HydroTriggerAttachment();
 
@@ -304,7 +307,7 @@ public:
 // destruction or reassignment.
 class HydroBalancerAttachment : public HydroSignalAttachment<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> {
 public:
-    HydroBalancerAttachment(HydroObjInterface *parent);
+    HydroBalancerAttachment(HydroObjInterface *parent = nullptr);
     HydroBalancerAttachment(const HydroBalancerAttachment &attachment);
     virtual ~HydroBalancerAttachment();
 

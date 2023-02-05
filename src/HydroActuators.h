@@ -101,6 +101,7 @@ public:
 
     inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; setNeedsUpdate(); }
     inline Hydro_EnableMode getEnableMode() { return _enableMode; }
+    inline bool isSerialMode() { return getActuatorIsSerialFromMode(getEnableMode()); }
 
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) override;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() override;
