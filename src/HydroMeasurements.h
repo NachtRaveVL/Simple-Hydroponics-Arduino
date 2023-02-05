@@ -39,18 +39,18 @@ struct HydroMeasurement {
     inline bool isUnknownType() const { return type <= Unknown; }
 
     time_t timestamp;                                       // Time event recorded (UTC)
-    Hydro_PollingFrame frame;                               // Polling frame # measurement taken on, or 0 if not-set else 1 if user-set
+    hframe_t frame;                               // Polling frame # measurement taken on, or 0 if not-set else 1 if user-set
 
     inline HydroMeasurement() : type(Unknown), frame(0), timestamp(unixNow()) { ; }
-    inline HydroMeasurement(int classType, time_t timestampIn, Hydro_PollingFrame frameIn) : type((typeof(type))classType), timestamp(timestampIn), frame(frameIn) { ; }
+    inline HydroMeasurement(int classType, time_t timestampIn, hframe_t frameIn) : type((typeof(type))classType), timestamp(timestampIn), frame(frameIn) { ; }
     HydroMeasurement(int classType, time_t timestamp = 0);
     HydroMeasurement(const HydroMeasurementData *dataIn);
 
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
     inline void updateTimestamp() { timestamp = unixNow(); }
-    void updateFrame(Hydro_PollingFrame minFrame = 0);
-    inline void setMinFrame(Hydro_PollingFrame minFrame = 0) { frame = max(minFrame, frame); }
+    void updateFrame(hframe_t minFrame = 0);
+    inline void setMinFrame(hframe_t minFrame = 0) { frame = max(minFrame, frame); }
 };
 
 // Single Value Sensor Data Measurement
@@ -60,7 +60,7 @@ struct HydroSingleMeasurement : public HydroMeasurement {
 
     HydroSingleMeasurement();
     HydroSingleMeasurement(float value, Hydro_UnitsType units, time_t timestamp = unixNow());
-    HydroSingleMeasurement(float value, Hydro_UnitsType units, time_t timestamp, Hydro_PollingFrame frame);
+    HydroSingleMeasurement(float value, Hydro_UnitsType units, time_t timestamp, hframe_t frame);
     HydroSingleMeasurement(const HydroMeasurementData *dataIn);
 
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
@@ -72,7 +72,7 @@ struct HydroBinaryMeasurement : public HydroMeasurement {
 
     HydroBinaryMeasurement();
     HydroBinaryMeasurement(bool state, time_t timestamp = unixNow());
-    HydroBinaryMeasurement(bool state, time_t timestamp, Hydro_PollingFrame frame);
+    HydroBinaryMeasurement(bool state, time_t timestamp, hframe_t frame);
     HydroBinaryMeasurement(const HydroMeasurementData *dataIn);
 
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
@@ -91,7 +91,7 @@ struct HydroDoubleMeasurement : public HydroMeasurement {
                            time_t timestamp = unixNow());
     HydroDoubleMeasurement(float value1, Hydro_UnitsType units1, 
                            float value2, Hydro_UnitsType units2, 
-                           time_t timestamp, Hydro_PollingFrame frame);
+                           time_t timestamp, hframe_t frame);
     HydroDoubleMeasurement(const HydroMeasurementData *dataIn);
 
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
@@ -112,7 +112,7 @@ struct HydroTripleMeasurement : public HydroMeasurement {
     HydroTripleMeasurement(float value1, Hydro_UnitsType units1, 
                            float value2, Hydro_UnitsType units2, 
                            float value3, Hydro_UnitsType units3,
-                           time_t timestamp, Hydro_PollingFrame frame);
+                           time_t timestamp, hframe_t frame);
     HydroTripleMeasurement(const HydroMeasurementData *dataIn);
 
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;

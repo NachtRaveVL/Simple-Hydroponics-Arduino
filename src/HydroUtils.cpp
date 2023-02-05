@@ -127,8 +127,8 @@ void publishData(HydroSensor *sensor)
 
     if (getPublisherInstance()) {
         auto measurement = sensor->getLatestMeasurement();
-        Hydro_PositionIndex rows = getMeasurementRowCount(measurement);
-        Hydro_PositionIndex columnIndexStart = getPublisherInstance()->getColumnIndexStart(sensor->getKey());
+        hposi_t rows = getMeasurementRowCount(measurement);
+        hposi_t columnIndexStart = getPublisherInstance()->getColumnIndexStart(sensor->getKey());
 
         if (columnIndexStart >= 0) {
             for (uint8_t measurementRow = 0; measurementRow < rows; ++measurementRow) {
@@ -194,13 +194,13 @@ void createDirectoryFor(SDClass *sd, String filename)
     }
 }
 
-Hydro_KeyType stringHash(String string)
+hkey_t stringHash(String string)
 {
-    Hydro_KeyType hash = 5381;
+    hkey_t hash = 5381;
     for(int index = 0; index < string.length(); ++index) {
-        hash = ((hash << 5) + hash) + (Hydro_KeyType)string[index]; // Good 'ol DJB2
+        hash = ((hash << 5) + hash) + (hkey_t)string[index]; // Good 'ol DJB2
     }
-    return hash != (Hydro_KeyType)-1 ? hash : 5381;
+    return hash != (hkey_t)-1 ? hash : 5381;
 }
 
 String addressToString(uintptr_t addr)
@@ -1788,7 +1788,7 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
     return !excludeSpecial ? SFP(HStr_Unit_Undefined) : String();
 }
 
-String positionIndexToString(Hydro_PositionIndex positionIndex, bool excludeSpecial)
+String positionIndexToString(hposi_t positionIndex, bool excludeSpecial)
 {
     if (positionIndex >= 0 && positionIndex < HYDRO_POS_MAXSIZE) {
         return String(positionIndex + HYDRO_POS_EXPORT_BEGFROM);
@@ -1802,7 +1802,7 @@ String positionIndexToString(Hydro_PositionIndex positionIndex, bool excludeSpec
     return String();
 }
 
-Hydro_PositionIndex positionIndexFromString(String positionIndexStr)
+hposi_t positionIndexFromString(String positionIndexStr)
 {
     if (positionIndexStr == positionIndexToString(HYDRO_POS_MAXSIZE)) {
         return HYDRO_POS_MAXSIZE;

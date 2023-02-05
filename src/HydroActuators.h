@@ -86,7 +86,7 @@ public:
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroActuator(Hydro_ActuatorType actuatorType,
-                  Hydro_PositionIndex actuatorIndex,
+                  hposi_t actuatorIndex,
                   int classType = Unknown);
     HydroActuator(const HydroActuatorData *dataIn);
 
@@ -109,7 +109,7 @@ public:
     virtual HydroAttachment &getParentReservoir(bool resolve = true) override;
 
     inline Hydro_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
-    inline Hydro_PositionIndex getActuatorIndex() const { return _id.posIndex; }
+    inline hposi_t getActuatorIndex() const { return _id.posIndex; }
 
     inline void setNeedsUpdate() { _needsUpdate = true; }
     inline bool needsUpdate() { return _needsUpdate; }
@@ -141,7 +141,7 @@ protected:
 class HydroRelayActuator : public HydroActuator {
 public:
     HydroRelayActuator(Hydro_ActuatorType actuatorType,
-                       Hydro_PositionIndex actuatorIndex,
+                       hposi_t actuatorIndex,
                        HydroDigitalPin outputPin,
                        int classType = Relay);
     HydroRelayActuator(const HydroActuatorData *dataIn);
@@ -170,7 +170,7 @@ protected:
 class HydroRelayPumpActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
 public:
     HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
-                           Hydro_PositionIndex actuatorIndex,
+                           hposi_t actuatorIndex,
                            HydroDigitalPin outputPin,
                            int classType = RelayPump);
     HydroRelayPumpActuator(const HydroPumpActuatorData *dataIn);
@@ -219,7 +219,7 @@ protected:
 class HydroVariableActuator : public HydroActuator {
 public:
     HydroVariableActuator(Hydro_ActuatorType actuatorType,
-                          Hydro_PositionIndex actuatorIndex,
+                          hposi_t actuatorIndex,
                           HydroAnalogPin outputPin,
                           int classType = Variable);
     HydroVariableActuator(const HydroActuatorData *dataIn);

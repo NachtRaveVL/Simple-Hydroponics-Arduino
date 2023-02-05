@@ -41,15 +41,15 @@ struct HydroIdentity {
         Hydro_ReservoirType reservoirType;                  // As reservoir type enumeration
         Hydro_RailType railType;                            // As rail type enumeration
     } objTypeAs;                                            // Enumeration type union
-    Hydro_PositionIndex posIndex;                           // Position index
+    hposi_t posIndex;                           // Position index
     String keyString;                                       // String key
-    Hydro_KeyType key;                                      // UInt Key
+    hkey_t key;                                      // UInt Key
 
     // Default constructor (incomplete id)
     HydroIdentity();
 
     // Copy key (incomplete id)
-    HydroIdentity(Hydro_KeyType key);
+    HydroIdentity(hkey_t key);
 
     // Copy into keyStr (incomplete id)
     HydroIdentity(const char *idKeyStr);
@@ -58,31 +58,31 @@ struct HydroIdentity {
 
     // Copy id with new position index
     HydroIdentity(const HydroIdentity &id,
-                  Hydro_PositionIndex positionIndex);
+                  hposi_t positionIndex);
 
     // Actuator id constructor
     HydroIdentity(Hydro_ActuatorType actuatorType,
-                  Hydro_PositionIndex positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
     // Sensor id constructor
     HydroIdentity(Hydro_SensorType sensorType,
-                  Hydro_PositionIndex positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
     // Crop id constructor
     HydroIdentity(Hydro_CropType cropType,
-                  Hydro_PositionIndex positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
     // Reservoir id constructor
     HydroIdentity(Hydro_ReservoirType reservoirType,
-                  Hydro_PositionIndex positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
     // Rail id constructor
     HydroIdentity(Hydro_RailType railType,
-                  Hydro_PositionIndex positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
 
     // Data constructor
     HydroIdentity(const HydroData *dataIn);
 
     // Used to update key value after modification, returning new key by convenience
-    Hydro_KeyType regenKey();
+    hkey_t regenKey();
 
-    inline operator bool() const { return key != (Hydro_KeyType)-1; }
+    inline operator bool() const { return key != (hkey_t)-1; }
     inline bool operator==(const HydroIdentity &otherId) const { return key == otherId.key; }
     inline bool operator!=(const HydroIdentity &otherId) const { return key != otherId.key; }
 };
@@ -118,7 +118,7 @@ public:
     inline Pair<uint8_t, Pair<HydroObject *, int8_t> *> getLinkages() const { return make_pair(_linksSize, _links); }
 
     virtual HydroIdentity getId() const override;           // Returns the unique Identity of the object
-    virtual Hydro_KeyType getKey() const override;          // Returns the unique key of the object
+    virtual hkey_t getKey() const override;          // Returns the unique key of the object
     virtual String getKeyString() const override;           // Returns the key string of the object
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const override; // Returns the SharedPtr instance of the object
 
@@ -141,7 +141,7 @@ private:
 class HydroSubObject : public HydroObjInterface {
 public:
     virtual HydroIdentity getId() const override;
-    virtual Hydro_KeyType getKey() const override;
+    virtual hkey_t getKey() const override;
     virtual String getKeyString() const override;
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const override;
 

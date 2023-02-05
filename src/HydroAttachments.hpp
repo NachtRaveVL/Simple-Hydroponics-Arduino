@@ -35,7 +35,7 @@ inline HydroDLinkObject &HydroDLinkObject::operator=(const char *rhs)
 
 inline HydroDLinkObject &HydroDLinkObject::operator=(const HydroObjInterface *rhs)
 {
-    _key = rhs ? rhs->getKey() : (Hydro_KeyType)-1;
+    _key = rhs ? rhs->getKey() : (hkey_t)-1;
     _obj = rhs ? getSharedPtr<HydroObjInterface>(rhs) : nullptr;
     if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
 
@@ -44,7 +44,7 @@ inline HydroDLinkObject &HydroDLinkObject::operator=(const HydroObjInterface *rh
 
 inline HydroDLinkObject &HydroDLinkObject::operator=(const HydroAttachment *rhs)
 {
-    _key = rhs ? rhs->getKey() : (Hydro_KeyType)-1;
+    _key = rhs ? rhs->getKey() : (hkey_t)-1;
     _obj = rhs && rhs->isResolved() ? rhs->getSharedPtr() : nullptr;
     if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
 
@@ -62,7 +62,7 @@ inline HydroDLinkObject &HydroDLinkObject::operator=(const HydroAttachment *rhs)
 template<class U>
 inline HydroDLinkObject &HydroDLinkObject::operator=(SharedPtr<U> &rhs)
 {
-    _key = rhs ? rhs->getKey() : (Hydro_KeyType)-1;
+    _key = rhs ? rhs->getKey() : (hkey_t)-1;
     _obj = rhs ? reinterpret_pointer_cast<HydroObjInterface>(rhs) : nullptr;
     if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
 
@@ -86,7 +86,7 @@ template<class U>
 SharedPtr<U> HydroAttachment::getObject()
 {
     if (_obj) { return _obj.getObject<U>(); }
-    if (_obj.getKey() == (Hydro_KeyType)-1) { return nullptr; }
+    if (_obj.getKey() == (hkey_t)-1) { return nullptr; }
 
     if (_obj.needsResolved() && _obj._getObject()) {
         attachObject();

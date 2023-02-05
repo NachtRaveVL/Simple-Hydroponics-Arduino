@@ -1069,7 +1069,7 @@ SharedPtr<HydroObject> Hydruino::objectById_Col(const HydroIdentity &id) const
     return nullptr;
 }
 
-Hydro_PositionIndex Hydruino::firstPosition(HydroIdentity id, bool taken)
+hposi_t Hydruino::firstPosition(HydroIdentity id, bool taken)
 {
     if (id.posIndex != HYDRO_POS_SEARCH_FROMEND) {
         id.posIndex = HYDRO_POS_SEARCH_FROMBEG;
@@ -1465,7 +1465,7 @@ uint16_t Hydruino::getPollingInterval() const
     return _systemData ? _systemData->pollingInterval : 0;
 }
 
-bool Hydruino::isPollingFrameOld(Hydro_PollingFrame frame, Hydro_PollingFrame allowance) const
+bool Hydruino::isPollingFrameOld(hframe_t frame, hframe_t allowance) const
 {
     return _pollingFrame - frame > allowance;
 }

@@ -24,7 +24,7 @@ HydroRail *newRailObjectFromData(const HydroRailData *dataIn)
 }
 
 
-HydroRail::HydroRail(Hydro_RailType railType, Hydro_PositionIndex railIndex, int classTypeIn)
+HydroRail::HydroRail(Hydro_RailType railType, hposi_t railIndex, int classTypeIn)
     : HydroObject(HydroIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
       _powerUnits(defaultPowerUnits()), _limitState(Hydro_TriggerState_Undefined)
 {
@@ -145,7 +145,7 @@ void HydroRail::handleLimit(Hydro_TriggerState limitState)
 
 
 HydroSimpleRail::HydroSimpleRail(Hydro_RailType railType,
-                                             Hydro_PositionIndex railIndex,
+                                             hposi_t railIndex,
                                              int maxActiveAtOnce,
                                              int classType)
     : HydroRail(railType, railIndex, classType), _activeCount(0), _maxActiveAtOnce(maxActiveAtOnce)
@@ -193,7 +193,7 @@ void HydroSimpleRail::handleActivation(HydroActuator *actuator)
 
 
 HydroRegulatedRail::HydroRegulatedRail(Hydro_RailType railType,
-                                                   Hydro_PositionIndex railIndex,
+                                                   hposi_t railIndex,
                                                    float maxPower,
                                                    int classType)
     : HydroRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)

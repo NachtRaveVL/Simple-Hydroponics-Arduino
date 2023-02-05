@@ -91,7 +91,7 @@ Hydro_UnitsCategory defaultMeasureCategoryForSensorType(Hydro_SensorType sensorT
 
 
 HydroSensor::HydroSensor(Hydro_SensorType sensorType,
-                         Hydro_PositionIndex sensorIndex,
+                         hposi_t sensorIndex,
                          int classTypeIn)
     : HydroObject(HydroIdentity(sensorType, sensorIndex)), classType((typeof(classType))classTypeIn),
       _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
@@ -178,7 +178,7 @@ void HydroSensor::saveToData(HydroData *dataOut)
 
 
 HydroBinarySensor::HydroBinarySensor(Hydro_SensorType sensorType,
-                                     Hydro_PositionIndex sensorIndex,
+                                     hposi_t sensorIndex,
                                      HydroDigitalPin inputPin,
                                      int classType)
     : HydroSensor(sensorType, sensorIndex, classType),
@@ -273,7 +273,7 @@ void HydroBinarySensor::saveToData(HydroData *dataOut)
 
 
 HydroAnalogSensor::HydroAnalogSensor(Hydro_SensorType sensorType,
-                                     Hydro_PositionIndex sensorIndex,
+                                     hposi_t sensorIndex,
                                      HydroAnalogPin inputPin,
                                      bool inputInversion,
                                      int classType)
@@ -393,7 +393,7 @@ void HydroAnalogSensor::saveToData(HydroData *dataOut)
 
 
 HydroDigitalSensor::HydroDigitalSensor(Hydro_SensorType sensorType,
-                                       Hydro_PositionIndex sensorIndex,
+                                       hposi_t sensorIndex,
                                        HydroDigitalPin inputPin,
                                        uint8_t bitRes1W,
                                        bool allocate1W,
@@ -424,12 +424,12 @@ HydroDigitalSensor::HydroDigitalSensor(const HydroDigitalSensorData *dataIn, boo
     }
 }
 
-bool HydroDigitalSensor::setWirePositionIndex(Hydro_PositionIndex wirePosIndex)
+bool HydroDigitalSensor::setWirePositionIndex(hposi_t wirePosIndex)
 {
     wirePosIndex = constrain(wirePosIndex, 0, 62);
     if (_oneWire && wirePosIndex >= 0 && (_wirePosIndex != wirePosIndex || arrayElementsEqual<uint8_t>(_wireDevAddress, 8, 0)) &&
         getHydroInstance()->tryGetPinLock(_inputPin.pin)) {
-        Hydro_PositionIndex posIndex = 0;
+        hposi_t posIndex = 0;
         uint8_t devAddress[8];
 
         _oneWire->reset_search();
@@ -449,7 +449,7 @@ bool HydroDigitalSensor::setWirePositionIndex(Hydro_PositionIndex wirePosIndex)
     return false;
 }
 
-Hydro_PositionIndex HydroDigitalSensor::getWirePositionIndex() const
+hposi_t HydroDigitalSensor::getWirePositionIndex() const
 {
     return _wirePosIndex >= 0 ? _wirePosIndex : (_wirePosIndex > -64 ? -_wirePosIndex - 1 : -_wirePosIndex - 64);
 }
@@ -458,7 +458,7 @@ bool HydroDigitalSensor::setWireDeviceAddress(const uint8_t wireDevAddress[8])
 {
     if (_oneWire && !arrayElementsEqual<uint8_t>(wireDevAddress, 8, 0) && (_wirePosIndex < 0 || memcmp(_wireDevAddress, wireDevAddress, 8) != 0) &&
         _oneWire->crc8(wireDevAddress, 7) == wireDevAddress[7] && getHydroInstance()->tryGetPinLock(_inputPin.pin)) {
-        Hydro_PositionIndex posIndex = 0;
+        hposi_t posIndex = 0;
         uint8_t devAddress[8];
 
         _oneWire->reset_search();
@@ -489,7 +489,7 @@ void HydroDigitalSensor::resolveDeviceAddress()
         setWireDeviceAddress(_wireDevAddress);
 
         if (!(_wirePosIndex >= 0) && _wirePosIndex > -64) {
-            Hydro_PositionIndex posIndex = -_wirePosIndex - 1;
+            hposi_t posIndex = -_wirePosIndex - 1;
             setWirePositionIndex(posIndex);
 
             if (!(_wirePosIndex >= 0)) { _wirePosIndex = -64 - posIndex; } // disables further resolve attempts
@@ -508,7 +508,7 @@ void HydroDigitalSensor::saveToData(HydroData *dataOut)
 }
 
 
-HydroDHTTempHumiditySensor::HydroDHTTempHumiditySensor(Hydro_PositionIndex sensorIndex,
+HydroDHTTempHumiditySensor::HydroDHTTempHumiditySensor(hposi_t sensorIndex,
                                                        HydroDigitalPin inputPin,
                                                        Hydro_DHTType dhtType,
                                                        bool computeHeatIndex,
@@ -632,12 +632,12 @@ Hydro_UnitsType HydroDHTTempHumiditySensor::getMeasurementUnits(uint8_t measurem
     return _measurementUnits[measurementRow];
 }
 
-bool HydroDHTTempHumiditySensor::setWirePositionIndex(Hydro_PositionIndex wirePosIndex)
+bool HydroDHTTempHumiditySensor::setWirePositionIndex(hposi_t wirePosIndex)
 {
     return false;
 }
 
-Hydro_PositionIndex HydroDHTTempHumiditySensor::getWirePositionIndex() const
+hposi_t HydroDHTTempHumiditySensor::getWirePositionIndex() const
 {
     return -1;
 }
@@ -669,7 +669,7 @@ void HydroDHTTempHumiditySensor::saveToData(HydroData *dataOut)
 }
 
 
-HydroDSTemperatureSensor::HydroDSTemperatureSensor(Hydro_PositionIndex sensorIndex,
+HydroDSTemperatureSensor::HydroDSTemperatureSensor(hposi_t sensorIndex,
                                                    HydroDigitalPin inputPin,
                                                    uint8_t bitRes1W,
                                                    HydroDigitalPin pullupPin,

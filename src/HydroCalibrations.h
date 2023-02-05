@@ -22,13 +22,13 @@ public:
     bool dropUserCalibrationData(const HydroCalibrationData *calibrationData);
 
     // Returns user calibration data instance in store
-    const HydroCalibrationData *getUserCalibrationData(Hydro_KeyType key) const;
+    const HydroCalibrationData *getUserCalibrationData(hkey_t key) const;
 
     // Returns if there are user calibrations in the store
     inline bool hasUserCalibrations() const { return _calibrationData.size(); };
 
 protected:
-    Map<Hydro_KeyType, HydroCalibrationData *, HYDRO_CALSTORE_CALIBS_MAXSIZE> _calibrationData; // Loaded user calibration data
+    Map<hkey_t, HydroCalibrationData *, HYDRO_CALSTORE_CALIBS_MAXSIZE> _calibrationData; // Loaded user calibration data
 
     friend class Hydruino;
 };

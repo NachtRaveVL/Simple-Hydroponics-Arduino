@@ -25,7 +25,7 @@ HydroCrop *newCropObjectFromData(const HydroCropData *dataIn)
 
 
 HydroCrop::HydroCrop(Hydro_CropType cropType,
-                                 Hydro_PositionIndex cropIndex,
+                                 hposi_t cropIndex,
                                  Hydro_SubstrateType substrateType,
                                  DateTime sowDate,
                                  int classTypeIn)
@@ -181,7 +181,7 @@ void HydroCrop::handleCustomCropUpdated(Hydro_CropType cropType)
 
 
 HydroTimedCrop::HydroTimedCrop(Hydro_CropType cropType,
-                                           Hydro_PositionIndex cropIndex,
+                                           hposi_t cropIndex,
                                            Hydro_SubstrateType substrateType,
                                            DateTime sowDate,
                                            TimeSpan timeOn, TimeSpan timeOff,
@@ -231,7 +231,7 @@ void HydroTimedCrop::saveToData(HydroData *dataOut)
 
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType,
-                                                 Hydro_PositionIndex cropIndex,
+                                                 hposi_t cropIndex,
                                                  Hydro_SubstrateType substrateType,
                                                  DateTime sowDate,
                                                  int classType)

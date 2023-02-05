@@ -411,11 +411,11 @@ public:
     SharedPtr<HydroObject> objectById(HydroIdentity id) const;
 
     // Finds first position either open or taken, given the id type
-    Hydro_PositionIndex firstPosition(HydroIdentity id, bool taken);
+    hposi_t firstPosition(HydroIdentity id, bool taken);
     // Finds first position taken, given the id type
-    inline Hydro_PositionIndex firstPositionTaken(HydroIdentity id) { return firstPosition(id, true); }
+    inline hposi_t firstPositionTaken(HydroIdentity id) { return firstPosition(id, true); }
     // Finds first position open, given the id type
-    inline Hydro_PositionIndex firstPositionOpen(HydroIdentity id) { return firstPosition(id, false); }
+    inline hposi_t firstPositionOpen(HydroIdentity id) { return firstPosition(id, false); }
 
     // Pin Handlers.
 
@@ -534,9 +534,9 @@ public:
     // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRO_DATA_LOOP_INTERVAL)
     uint16_t getPollingInterval() const;
     // System polling frame number for sensor frame tracking
-    inline Hydro_PollingFrame getPollingFrame() const { return _pollingFrame; }
+    inline hframe_t getPollingFrame() const { return _pollingFrame; }
     // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
-    bool isPollingFrameOld(Hydro_PollingFrame frame, Hydro_PollingFrame allowance = 0) const;
+    bool isPollingFrameOld(hframe_t frame, hframe_t allowance = 0) const;
     // Returns if system autosaves are enabled or not
     bool isAutosaveEnabled() const;
     // Returns if system fallback autosaves are enabled or not
@@ -613,13 +613,13 @@ protected:
     taskid_t _miscTaskId;                                   // Misc task Id if created, else TASKMGR_INVALIDID
 #endif
     bool _suspend;                                          // If system is currently suspended from operation
-    Hydro_PollingFrame _pollingFrame;                       // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
+    hframe_t _pollingFrame;                       // Current data polling frame # (index 0 reserved for disabled/undef, advanced by publisher)
     time_t _lastSpaceCheck;                                 // Last date storage media free space was checked, if able (UTC)
     time_t _lastAutosave;                                   // Last date autosave was performed, if able (UTC)
     String _sysConfigFilename;                              // System config filename used in serialization (default: "hydruino.cfg")
     uint16_t _sysDataAddress;                               // EEPROM system data address used in serialization (default: -1/disabled)
 
-    Map<Hydro_KeyType, SharedPtr<HydroObject>, HYDRO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroIdentity
+    Map<hkey_t, SharedPtr<HydroObject>, HYDRO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroIdentity
     Map<pintype_t, OneWire *, HYDRO_SYS_ONEWIRE_MAXSIZE> _oneWires; // Pin OneWire mapping
     Map<pintype_t, pintype_t, HYDRO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
     Map<pintype_t, SharedPtr<HydroPinMuxer>, HYDRO_SYS_PINMUXERS_MAXSIZE> _pinMuxers; // Pin muxers mapping

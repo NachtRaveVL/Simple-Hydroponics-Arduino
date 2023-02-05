@@ -44,13 +44,13 @@ public:
     inline bool isPublishingToMQTTClient() const;
 #endif
 
-    void publishData(Hydro_PositionIndex columnIndex, HydroSingleMeasurement measurement);
+    void publishData(hposi_t columnIndex, HydroSingleMeasurement measurement);
 
     inline void setNeedsTabulation();
     inline bool needsTabulation() { return _needsTabulation; }
 
     inline bool isPublishingEnabled() const;
-    Hydro_PositionIndex getColumnIndexStart(Hydro_KeyType sensorKey);
+    hposi_t getColumnIndexStart(hkey_t sensorKey);
 
     Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_SIGNAL_SLOTS> &getPublishSignal();
 
@@ -67,7 +67,7 @@ protected:
     MQTTClient *_mqttClient;                                // MQTT client object (strong)
 #endif
     String _dataFilename;                                   // Resolved data file name (based on day)
-    Hydro_PollingFrame _pollingFrame;                       // Polling frame that publishing is caught up to
+    hframe_t _pollingFrame;                       // Polling frame that publishing is caught up to
     bool _needsTabulation;                                  // Needs tabulation tracking flag
     uint8_t _columnCount;                                   // Data columns count
     HydroDataColumn *_dataColumns;                          // Data columns (owned)
@@ -94,7 +94,7 @@ protected:
 // Publisher Data Column
 // Data column worth of storage. Intended to be array allocated.
 struct HydroDataColumn {
-    Hydro_KeyType sensorKey;                                // Key to sensor object
+    hkey_t sensorKey;                                // Key to sensor object
     HydroSingleMeasurement measurement;                     // Storage polling frame measurement
 };
 

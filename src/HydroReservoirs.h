@@ -37,7 +37,7 @@ public:
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroReservoir(Hydro_ReservoirType reservoirType,
-                   Hydro_PositionIndex reservoirIndex,
+                   hposi_t reservoirIndex,
                    int classType = Unknown);
     HydroReservoir(const HydroReservoirData *dataIn);
 
@@ -53,7 +53,7 @@ public:
     virtual HydroSensorAttachment &getWaterVolume(bool poll = false) = 0;
 
     inline Hydro_ReservoirType getReservoirType() const { return _id.objTypeAs.reservoirType; }
-    inline Hydro_PositionIndex getReservoirIndex() const { return _id.posIndex; }
+    inline hposi_t getReservoirIndex() const { return _id.posIndex; }
 
     Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &getFilledSignal();
     Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &getEmptySignal();
@@ -82,7 +82,7 @@ protected:
 class HydroFluidReservoir : public HydroReservoir, public HydroVolumeSensorAttachmentInterface {
 public:
     HydroFluidReservoir(Hydro_ReservoirType reservoirType,
-                        Hydro_PositionIndex reservoirIndex,
+                        hposi_t reservoirIndex,
                         float maxVolume,
                         int classType = Fluid);
     HydroFluidReservoir(const HydroFluidReservoirData *dataIn);
@@ -123,7 +123,7 @@ protected:
 // with sensors to automate the variety of tasks associated with feeding crops.
 class HydroFeedReservoir : public HydroFluidReservoir, public HydroWaterPHSensorAttachmentInterface, public HydroWaterTDSSensorAttachmentInterface, public HydroWaterTemperatureSensorAttachmentInterface,  public HydroAirTemperatureSensorAttachmentInterface, public HydroAirCO2SensorAttachmentInterface {
 public:
-    HydroFeedReservoir(Hydro_PositionIndex reservoirIndex,
+    HydroFeedReservoir(hposi_t reservoirIndex,
                        float maxVolume,
                        DateTime lastChangeDate = DateTime((uint32_t)unixNow()),
                        DateTime lastPruningDate = DateTime(),
@@ -160,7 +160,7 @@ public:
     template<typename T> inline void setAirCO2Balancer(T co2Balancer) { _airCO2Balancer.setObject(co2Balancer); }
     inline SharedPtr<HydroBalancer> getAirCO2Balancer() { return _airCO2Balancer.getObject(); }
 
-    inline Hydro_PositionIndex getChannelNumber() const { return _id.posIndex; }
+    inline hposi_t getChannelNumber() const { return _id.posIndex; }
 
     inline DateTime getLastWaterChangeDate() const { return DateTime((uint32_t)_lastChangeDate); }
     inline void notifyWaterChanged() { _lastChangeDate = unixNow(); }
@@ -206,7 +206,7 @@ protected:
 class HydroInfiniteReservoir : public HydroReservoir {
 public:
     HydroInfiniteReservoir(Hydro_ReservoirType reservoirType,
-                           Hydro_PositionIndex reservoirIndex,
+                           hposi_t reservoirIndex,
                            bool alwaysFilled = true,
                            int classType = Pipe);
     HydroInfiniteReservoir(const HydroInfiniteReservoirData *dataIn);
