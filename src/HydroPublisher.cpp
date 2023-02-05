@@ -149,7 +149,7 @@ bool HydroPublisher::beginPublishingToMQTTClient(MQTTClient &client)
 
 #endif
 
-void HydroPublisher::publishData(Hydro_PositionIndex columnIndex, HydroSingleMeasurement measurement)
+void HydroPublisher::publishData(hposi_t columnIndex, HydroSingleMeasurement measurement)
 {
     HYDRO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnCount, SFP(HStr_Err_NotYetInitialized));
     if (_dataColumns && _columnCount && columnIndex >= 0 && columnIndex < _columnCount) {
@@ -158,17 +158,17 @@ void HydroPublisher::publishData(Hydro_PositionIndex columnIndex, HydroSingleMea
     }
 }
 
-Hydro_PositionIndex HydroPublisher::getColumnIndexStart(Hydro_KeyType sensorKey)
+hposi_t HydroPublisher::getColumnIndexStart(hkey_t sensorKey)
 {
     HYDRO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnCount, SFP(HStr_Err_NotYetInitialized));
     if (_dataColumns && _columnCount) {
         for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
             if (_dataColumns[columnIndex].sensorKey == sensorKey) {
-                return (Hydro_PositionIndex)columnIndex;
+                return (hposi_t)columnIndex;
             }
         }
     }
-    return (Hydro_PositionIndex)-1;
+    return (hposi_t)-1;
 }
 
 Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_SIGNAL_SLOTS> &HydroPublisher::getPublishSignal()

@@ -31,7 +31,7 @@ public:
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroRail(Hydro_RailType railType,
-              Hydro_PositionIndex railIndex,
+              hposi_t railIndex,
               int classType = Unknown);
     HydroRail(const HydroRailData *dataIn);
     virtual ~HydroRail();
@@ -48,7 +48,7 @@ public:
     virtual Hydro_UnitsType getPowerUnits() const override;
 
     inline Hydro_RailType getRailType() const { return _id.objTypeAs.railType; }
-    inline Hydro_PositionIndex getRailIndex() const { return _id.posIndex; }
+    inline hposi_t getRailIndex() const { return _id.posIndex; }
     virtual float getRailVoltage() const override;
 
     Signal<HydroRail *, HYDRO_CAPACITY_SIGNAL_SLOTS> &getCapacitySignal();
@@ -74,7 +74,7 @@ protected:
 class HydroSimpleRail : public HydroRail {
 public:
     HydroSimpleRail(Hydro_RailType railType,
-                    Hydro_PositionIndex railIndex,
+                    hposi_t railIndex,
                     int maxActiveAtOnce = 2,
                     int classType = Simple);
     HydroSimpleRail(const HydroSimpleRailData *dataIn);
@@ -100,7 +100,7 @@ protected:
 class HydroRegulatedRail : public HydroRail, public HydroPowerUsageSensorAttachmentInterface {
 public:
     HydroRegulatedRail(Hydro_RailType railType,
-                       Hydro_PositionIndex railIndex,
+                       hposi_t railIndex,
                        float maxPower,
                        int classType = Regulated);
     HydroRegulatedRail(const HydroRegulatedRailData *dataIn);

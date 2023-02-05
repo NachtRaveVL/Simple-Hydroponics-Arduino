@@ -110,7 +110,7 @@ HydroDigitalPin::HydroDigitalPin()
     : HydroPin(Digital)
 { ; }
 
-HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Arduino_PinModeType pinMode, uint8_t muxChannel)
+HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, uint8_t muxChannel)
     : HydroPin(Digital, pinNumber, pinMode != OUTPUT ? (pinMode != INPUT ? (pinMode == INPUT_PULLUP ? Hydro_PinMode_Digital_Input_PullUp : Hydro_PinMode_Digital_Input_PullDown)
                                                                          : Hydro_PinMode_Digital_Input_Floating)
                                                      : (pinMode == OUTPUT ? Hydro_PinMode_Digital_Output_OpenDrain : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
@@ -124,7 +124,7 @@ HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Hydro_PinMode pinMode, uin
                 pinMode == Hydro_PinMode_Digital_Output_OpenDrain)
 { ; }
 
-HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Arduino_PinModeType pinMode, bool isActiveLow, uint8_t muxChannel)
+HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, bool isActiveLow, uint8_t muxChannel)
     : HydroPin(Digital, pinNumber, pinMode != OUTPUT ? (isActiveLow ? Hydro_PinMode_Digital_Input_PullUp : Hydro_PinMode_Digital_Input_PullDown)
                                                      : (isActiveLow ? Hydro_PinMode_Digital_Output_OpenDrain : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
       activeLow(isActiveLow)
@@ -146,17 +146,17 @@ void HydroDigitalPin::saveToData(HydroPinData *dataOut) const
     dataOut->dataAs.digitalPin.activeLow = activeLow;
 }
 
-Arduino_PinStatusType HydroDigitalPin::digitalRead()
+ard_pinstatus_t HydroDigitalPin::digitalRead()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid() && (!isMuxed() || tryEnableMuxer())) {
             return ::digitalRead(pin);
         }
     #endif
-    return (Arduino_PinStatusType)-1;
+    return (ard_pinstatus_t)-1;
 }
 
-void HydroDigitalPin::digitalWrite(Arduino_PinStatusType status)
+void HydroDigitalPin::digitalWrite(ard_pinstatus_t status)
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid() && (!isMuxed() || tryEnableMuxer())) {
@@ -176,7 +176,7 @@ HydroAnalogPin::HydroAnalogPin()
 #endif
 { ; }
 
-HydroAnalogPin::HydroAnalogPin(pintype_t pinNumber, Arduino_PinModeType pinMode, uint8_t analogBitRes,
+HydroAnalogPin::HydroAnalogPin(pintype_t pinNumber, ard_pinmode_t pinMode, uint8_t analogBitRes,
 #ifdef ESP32
                                uint8_t pinPWMChannel,
 #endif

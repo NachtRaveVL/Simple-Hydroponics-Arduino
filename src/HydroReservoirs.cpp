@@ -26,7 +26,7 @@ HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 }
 
 
-HydroReservoir::HydroReservoir(Hydro_ReservoirType reservoirType, Hydro_PositionIndex reservoirIndex, int classTypeIn)
+HydroReservoir::HydroReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, int classTypeIn)
     : HydroObject(HydroIdentity(reservoirType, reservoirIndex)), classType((typeof(classType))classTypeIn),
       _volumeUnits(defaultLiquidVolumeUnits()),
       _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
@@ -132,7 +132,7 @@ void HydroReservoir::handleEmpty(Hydro_TriggerState emptyState)
 
 
 HydroFluidReservoir::HydroFluidReservoir(Hydro_ReservoirType reservoirType,
-                                                     Hydro_PositionIndex reservoirIndex,
+                                                     hposi_t reservoirIndex,
                                                      float maxVolume,
                                                      int classType)
     : HydroReservoir(reservoirType, reservoirIndex, classType),
@@ -245,7 +245,7 @@ void HydroFluidReservoir::handleEmpty(Hydro_TriggerState emptyState)
 }
 
 
-HydroFeedReservoir::HydroFeedReservoir(Hydro_PositionIndex reservoirIndex,
+HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex,
                                                    float maxVolume,
                                                    DateTime lastChangeDate,
                                                    DateTime lastPruningDate,
@@ -392,7 +392,7 @@ void HydroFeedReservoir::saveToData(HydroData *dataOut)
 
 
 HydroInfiniteReservoir::HydroInfiniteReservoir(Hydro_ReservoirType reservoirType,
-                                                           Hydro_PositionIndex reservoirIndex,
+                                                           hposi_t reservoirIndex,
                                                            bool alwaysFilled,
                                                            int classType)
     : HydroReservoir(reservoirType, reservoirIndex, classType), _alwaysFilled(alwaysFilled), _waterVolume(this)

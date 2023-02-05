@@ -92,7 +92,7 @@ void HydroActivationHandle::elapseBy(millis_t delta)
 
 
 HydroActuator::HydroActuator(Hydro_ActuatorType actuatorType,
-                             Hydro_PositionIndex actuatorIndex,
+                             hposi_t actuatorIndex,
                              int classTypeIn)
     : HydroObject(HydroIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
       _enabled(false), _enableMode(Hydro_EnableMode_Undefined), _rail(this), _reservoir(this)
@@ -297,7 +297,7 @@ void HydroActuator::handleActivation()
 
 
 HydroRelayActuator::HydroRelayActuator(Hydro_ActuatorType actuatorType,
-                                       Hydro_PositionIndex actuatorIndex,
+                                       hposi_t actuatorIndex,
                                        HydroDigitalPin outputPin,
                                        int classType)
     : HydroActuator(actuatorType, actuatorIndex, classType),
@@ -372,7 +372,7 @@ void HydroRelayActuator::saveToData(HydroData *dataOut)
 
 
 HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
-                                               Hydro_PositionIndex actuatorIndex,
+                                               hposi_t actuatorIndex,
                                                HydroDigitalPin outputPin,
                                                int classType)
     :  HydroRelayActuator(actuatorType, actuatorIndex, outputPin, classType),
@@ -610,7 +610,7 @@ void HydroRelayPumpActuator::handlePumpTime(millis_t time)
 
 
 HydroVariableActuator::HydroVariableActuator(Hydro_ActuatorType actuatorType,
-                                             Hydro_PositionIndex actuatorIndex,
+                                             hposi_t actuatorIndex,
                                              HydroAnalogPin outputPin,
                                              int classType)
     : HydroActuator(actuatorType, actuatorIndex, classType),

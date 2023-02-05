@@ -64,8 +64,8 @@ protected:
     bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
     int _lastDayNum;                                        // Last day number tracking for daily rescheduling tracking
-    Map<Hydro_KeyType, HydroFeeding *, HYDRO_SCH_FEEDRES_MAXSIZE> _feedings; // Feedings in progress
-    Map<Hydro_KeyType, HydroLighting *, HYDRO_SCH_FEEDRES_MAXSIZE> _lightings; // Lightings in progress
+    Map<hkey_t, HydroFeeding *, HYDRO_SCH_FEEDRES_MAXSIZE> _feedings; // Feedings in progress
+    Map<hkey_t, HydroLighting *, HYDRO_SCH_FEEDRES_MAXSIZE> _lightings; // Lightings in progress
 
     friend class Hydruino;
 

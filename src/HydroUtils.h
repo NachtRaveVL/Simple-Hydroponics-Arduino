@@ -210,7 +210,7 @@ extern String getNNFilename(String prefix, unsigned int value, String ext);
 extern void createDirectoryFor(SDClass *sd, String filename);
 
 // Computes a hash for a string using a fast and efficient (read as: good enough for our use) hashing algorithm.
-extern Hydro_KeyType stringHash(String string);
+extern hkey_t stringHash(String string);
 
 // Returns properly formatted address "0xADDR" (size depending on void* size)
 extern String addressToString(uintptr_t addr);
@@ -451,9 +451,9 @@ extern String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial =
 extern Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr);
 
 // Converts from position index to string, with optional exclude for special types (instead returning "").
-extern String positionIndexToString(Hydro_PositionIndex positionIndex, bool excludeSpecial = false);
+extern String positionIndexToString(hposi_t positionIndex, bool excludeSpecial = false);
 // Converts back to position index from string.
-extern Hydro_PositionIndex positionIndexFromString(String positionIndexStr);
+extern hposi_t positionIndexFromString(String positionIndexStr);
 
 // Converts from boolean value to triggered/not-triggered trigger state.
 inline Hydro_TriggerState triggerStateFromBool(bool value) { return value ? Hydro_TriggerState_Triggered : Hydro_TriggerState_NotTriggered; }

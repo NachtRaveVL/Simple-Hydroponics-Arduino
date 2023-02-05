@@ -6,7 +6,7 @@
 #include "Hydruino.h"
 
 HydroDLinkObject::HydroDLinkObject()
-    : _key((Hydro_KeyType)-1), _obj(nullptr), _keyStr(nullptr)
+    : _key((hkey_t)-1), _obj(nullptr), _keyStr(nullptr)
 { ; }
 
 HydroDLinkObject::HydroDLinkObject(const HydroDLinkObject &obj)
@@ -43,7 +43,7 @@ void HydroDLinkObject::unresolve()
 SharedPtr<HydroObjInterface> HydroDLinkObject::_getObject()
 {
     if (_obj) { return _obj; }
-    if (_key == (Hydro_KeyType)-1) { return nullptr; }
+    if (_key == (hkey_t)-1) { return nullptr; }
     if (Hydruino::_activeInstance) {
         _obj = static_pointer_cast<HydroObjInterface>(Hydruino::_activeInstance->_objects[_key]);
     }

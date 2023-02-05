@@ -33,7 +33,7 @@ public:
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroCrop(Hydro_CropType cropType,
-              Hydro_PositionIndex cropIndex,
+              hposi_t cropIndex,
               Hydro_SubstrateType substrateType,
               DateTime sowDate,
               int classType = Unknown);
@@ -53,7 +53,7 @@ public:
     inline float getFeedingWeight() const { return _feedingWeight; }
 
     inline Hydro_CropType getCropType() const { return _id.objTypeAs.cropType; }
-    inline Hydro_PositionIndex getCropIndex() const { return _id.posIndex; }
+    inline hposi_t getCropIndex() const { return _id.posIndex; }
     inline Hydro_SubstrateType getSubstrateType() const { return _substrateType; }
     inline DateTime getSowDate() const { return DateTime((uint32_t)_sowDate); }
 
@@ -99,7 +99,7 @@ protected:
 class HydroTimedCrop : public HydroCrop {
 public:
     HydroTimedCrop(Hydro_CropType cropType,
-                   Hydro_PositionIndex cropIndex,
+                   hposi_t cropIndex,
                    Hydro_SubstrateType substrateType,
                    DateTime sowDate,
                    TimeSpan timeOn = TimeSpan(0,0,15,0), TimeSpan timeOff = TimeSpan(0,0,45,0),
@@ -128,7 +128,7 @@ protected:
 class HydroAdaptiveCrop : public HydroCrop, public HydroSoilMoistureSensorAttachmentInterface {
 public:
     HydroAdaptiveCrop(Hydro_CropType cropType,
-                      Hydro_PositionIndex cropIndex,
+                      hposi_t cropIndex,
                       Hydro_SubstrateType substrateType,
                       DateTime sowDate,
                       int classType = Adaptive);

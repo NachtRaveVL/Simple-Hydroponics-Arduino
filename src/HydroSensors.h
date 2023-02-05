@@ -46,7 +46,7 @@ public:
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroSensor(Hydro_SensorType sensorType,
-                Hydro_PositionIndex sensorIndex,
+                hposi_t sensorIndex,
                 int classType = Unknown);
     HydroSensor(const HydroSensorData *dataIn);
     virtual ~HydroSensor();
@@ -68,7 +68,7 @@ public:
     inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
 
     inline Hydro_SensorType getSensorType() const { return _id.objTypeAs.sensorType; }
-    inline Hydro_PositionIndex getSensorIndex() const { return _id.posIndex; }
+    inline hposi_t getSensorIndex() const { return _id.posIndex; }
 
     Signal<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> &getMeasurementSignal();
 
@@ -90,7 +90,7 @@ protected:
 class HydroBinarySensor : public HydroSensor {
 public:
     HydroBinarySensor(Hydro_SensorType sensorType,
-                      Hydro_PositionIndex sensorIndex,
+                      hposi_t sensorIndex,
                       HydroDigitalPin inputPin,
                       int classType = Binary);
     HydroBinarySensor(const HydroBinarySensorData *dataIn);
@@ -127,7 +127,7 @@ protected:
 class HydroAnalogSensor : public HydroSensor {
 public:
     HydroAnalogSensor(Hydro_SensorType sensorType,
-                      Hydro_PositionIndex sensorIndex,
+                      hposi_t sensorIndex,
                       HydroAnalogPin inputPin,
                       bool inputInversion = false,
                       int classType = Analog);
@@ -159,15 +159,15 @@ protected:
 class HydroDigitalSensor : public HydroSensor {
 public:
     HydroDigitalSensor(Hydro_SensorType sensorType,
-                       Hydro_PositionIndex sensorIndex,
+                       hposi_t sensorIndex,
                        HydroDigitalPin inputPin,
                        uint8_t bitRes1W = 9,
                        bool allocate1W = false,
                        int classType = Digital);
     HydroDigitalSensor(const HydroDigitalSensorData *dataIn, bool allocate1W = false);
 
-    virtual bool setWirePositionIndex(Hydro_PositionIndex wirePosIndex);
-    virtual Hydro_PositionIndex getWirePositionIndex() const;
+    virtual bool setWirePositionIndex(hposi_t wirePosIndex);
+    virtual hposi_t getWirePositionIndex() const;
 
     virtual bool setWireDeviceAddress(const uint8_t wireDevAddress[8]);
     virtual const uint8_t *getWireDeviceAddress() const;
@@ -178,7 +178,7 @@ protected:
     HydroDigitalPin _inputPin;                              // Digital input pin
     OneWire *_oneWire;                                      // OneWire comm instance (strong, nullptr when not used)
     uint8_t _wireBitRes;                                    // OneWire bit resolution
-    Hydro_PositionIndex _wirePosIndex;                      // OneWire sensor position index
+    hposi_t _wirePosIndex;                      // OneWire sensor position index
     uint8_t _wireDevAddress[8];                             // OneWire sensor device address
 
     void resolveDeviceAddress();
@@ -191,7 +191,7 @@ protected:
 // This class is for working with DHT* OneWire-based air temperature and humidity sensors.
 class HydroDHTTempHumiditySensor : public HydroDigitalSensor {
 public:
-    HydroDHTTempHumiditySensor(Hydro_PositionIndex sensorIndex,
+    HydroDHTTempHumiditySensor(hposi_t sensorIndex,
                                HydroDigitalPin inputPin,
                                Hydro_DHTType dhtType,
                                bool computeHeatIndex = true,
@@ -209,8 +209,8 @@ public:
     virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow) override;
     virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
 
-    virtual bool setWirePositionIndex(Hydro_PositionIndex wirePosIndex) override; // disabled
-    virtual Hydro_PositionIndex getWirePositionIndex() const override; // disabled
+    virtual bool setWirePositionIndex(hposi_t wirePosIndex) override; // disabled
+    virtual hposi_t getWirePositionIndex() const override; // disabled
 
     virtual bool setWireDeviceAddress(const uint8_t wireDevAddress[8]) override; // disabled
     virtual const uint8_t *getWireDeviceAddress() const override; // disabled
@@ -235,7 +235,7 @@ protected:
 // This class is for working with DS18* OneWire-based submersible temperature sensors.
 class HydroDSTemperatureSensor : public HydroDigitalSensor {
 public:
-    HydroDSTemperatureSensor(Hydro_PositionIndex sensorIndex,
+    HydroDSTemperatureSensor(hposi_t sensorIndex,
                              HydroDigitalPin inputPin,
                              uint8_t bitRes1W = 9,
                              HydroDigitalPin pullupPin = HydroDigitalPin(),
@@ -298,7 +298,7 @@ struct HydroAnalogSensorData : public HydroSensorData {
 // Digital Sensor Serialization Data
 struct HydroDigitalSensorData : public HydroSensorData {
     uint8_t wireBitRes;
-    Hydro_PositionIndex wirePosIndex;
+    hposi_t wirePosIndex;
     uint8_t wireDevAddress[8];
 
     HydroDigitalSensorData();

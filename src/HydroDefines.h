@@ -67,12 +67,12 @@
 #endif
 #endif
 
-typedef typeof(millis()) millis_t;                          // Millis type
-typedef int8_t Hydro_PositionIndex;                         // Position indexing type
-typedef uint32_t Hydro_KeyType;                             // Key type, for hashing
-typedef uint16_t Hydro_PollingFrame;                        // Polling frame type, for sync
-typedef typeof(INPUT) Arduino_PinModeType;                  // Arduino pin mode type alias
-typedef typeof(LOW) Arduino_PinStatusType;                  // Arduino pin status type alias
+typedef typeof(millis()) millis_t;                          // Time millis type
+typedef int8_t hposi_t;                                     // Position indexing type
+typedef uint32_t hkey_t;                                    // Key type, for hashing
+typedef uint16_t hframe_t;                                  // Polling frame type, for sync
+typedef typeof(INPUT) ard_pinmode_t;                        // Arduino pin mode type alias
+typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin status type alias
 
 #define HYDRO_NAME_MAXSIZE              24                  // Naming character maximum size (system name, crop name, etc.)
 #define HYDRO_URL_MAXSIZE               64                  // URL string maximum size (max url length)
