@@ -58,27 +58,35 @@ HydroActivationHandle &HydroActivationHandle::operator=(SharedPtr<HydroActuator>
 
 void HydroActivationHandle::unset()
 {
-    if (isActive()) { elapseTo(); checkTime = 0; }
+    if (isActive()) { elapseTo(); }
+    checkTime = 0;
+
     if (actuator) {
         for (auto handleIter = actuator->_handles.end() - 1; handleIter != actuator->_handles.begin() - 1; --handleIter) {
             if ((*handleIter) == this) {
-                actuator->_handles.erase(handleIter); actuator->setNeedsUpdate();
+                actuator->_handles.erase(handleIter);
                 break;
             }
         }
+        actuator->setNeedsUpdate();
         actuator = nullptr;
     }
-    checkTime = 0;
 }
 
 void HydroActivationHandle::elapseBy(millis_t delta)
 {
     if (delta && isValid() && isActive()) {
         if (!isUntimed()) {
-            if (delta <= activation.duration) { activation.duration -= delta; }
-            else { delta = activation.duration; activation.duration = 0; }
+            if (delta <= activation.duration) {
+                activation.duration -= delta;
+                checkTime += delta;
+            } else {
+                delta = activation.duration;
+                activation.duration = 0;
+                checkTime = 0;
+                actuator->setNeedsUpdate();
+            }
         }
-        checkTime += delta;
         elapsed += delta;
     }
 }
@@ -118,7 +126,6 @@ void HydroActuator::update()
                 (*handleIter)->elapseTo(time);
             }
             if (!(*handleIter)->isValid() || (*handleIter)->isDone()) {
-                (*handleIter)->checkTime = 0;
                 (*handleIter)->actuator = nullptr;
                 handleIter = _handles.erase(handleIter) - 1;
                 setNeedsUpdate();
@@ -202,7 +209,7 @@ void HydroActuator::update()
                 break;
         }
 
-        // Enable/disable activation handles as needed
+        // Enable/disable activation handles as needed (serial modes only select 1 at a time)
         switch (_enableMode) {
             case Hydro_EnableMode_InOrder:
             case Hydro_EnableMode_DesOrder: {
