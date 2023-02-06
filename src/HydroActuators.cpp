@@ -210,7 +210,7 @@ void HydroActuator::update()
                 for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
                     if (!selected && (*handleIter)->isValid() && !(*handleIter)->isDone() && isFPEqual((*handleIter)->activation.intensity, getDriveIntensity())) {
                         selected = true; (*handleIter)->checkTime = time;
-                    } else if (selected && (*handleIter)->checkTime != 0) {
+                    } else if ((*handleIter)->checkTime != 0) {
                         (*handleIter)->checkTime = 0;
                     }
                 }
@@ -222,7 +222,7 @@ void HydroActuator::update()
                 for (auto handleIter = _handles.end() - 1; handleIter != _handles.begin() - 1; --handleIter) {
                     if (!selected && (*handleIter)->isValid() && !(*handleIter)->isDone() && isFPEqual((*handleIter)->activation.intensity, getDriveIntensity())) {
                         selected = true; (*handleIter)->checkTime = time;
-                    } else if (selected && (*handleIter)->checkTime != 0) {
+                    } else if ((*handleIter)->checkTime != 0) {
                         (*handleIter)->checkTime = 0;
                     }
                 }
