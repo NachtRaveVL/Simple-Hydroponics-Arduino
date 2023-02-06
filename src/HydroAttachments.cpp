@@ -105,13 +105,14 @@ void HydroAttachment::setParent(HydroObjInterface *parent)
 
 HydroActuatorAttachment::HydroActuatorAttachment(HydroObjInterface *parent)
     :  HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(parent, &HydroActuator::getActivationSignal),
-       _actuatorHandle(), _updateSlot(nullptr), _rateMultiplier(1.0f)
+       _actHandle(), _actSetup(), _updateSlot(nullptr), _rateMultiplier(1.0f), _calledLastUpdate(false)
 { ; }
 
 HydroActuatorAttachment::HydroActuatorAttachment(const HydroActuatorAttachment &attachment)
     : HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(attachment),
+      _actHandle(attachment._actHandle), _actSetup(attachment._actSetup),
       _updateSlot(attachment._updateSlot ? attachment._updateSlot->clone() : nullptr),
-      _actuatorHandle(attachment._actuatorHandle), _rateMultiplier(attachment._rateMultiplier)
+      _rateMultiplier(attachment._rateMultiplier), _calledLastUpdate(false)
 { ; }
 
 HydroActuatorAttachment::~HydroActuatorAttachment()
@@ -119,21 +120,60 @@ HydroActuatorAttachment::~HydroActuatorAttachment()
     if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
 }
 
-void HydroActuatorAttachment::updateIfNeeded(bool poll = false)
+void HydroActuatorAttachment::updateIfNeeded(bool poll)
 {
-    if (isEnabled()) {
-        _actuatorHandle.elapseBy(millis() - _actuatorHandle.checkTime);
-        if (_updateSlot) {
-            _updateSlot->operator()(&_actuatorHandle);
+    if (_actHandle.isValid()) {
+        if (isActivated()) {
+            _actHandle.elapseTo();
+            if (_updateSlot) { _updateSlot->operator()(this); }
+            _calledLastUpdate = _actHandle.isDone();
+        } else if (_actHandle.isDone() && !_calledLastUpdate) {
+            if (_updateSlot) { _updateSlot->operator()(this); }
+            _calledLastUpdate = true;
         }
     }
 }
 
-void HydroActuatorAttachment::setUpdateSlot(const Slot<HydroActivationHandle *> &updateSlot)
+void HydroActuatorAttachment::enableActivation()
+{
+    if (!_actHandle.actuator && _actSetup.isValid() && resolve()) {
+        if (_actHandle.isDone()) { applySetup(); }
+        _calledLastUpdate = false;
+        _actHandle = getObject();
+    }
+}
+
+void HydroActuatorAttachment::setUpdateSlot(const Slot<HydroActuatorAttachment *> &updateSlot)
 {
     if (!_updateSlot || !_updateSlot->operator==(&updateSlot)) {
         if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
         _updateSlot = updateSlot.clone();
+    }
+}
+
+void HydroActuatorAttachment::applySetup()
+{
+    if (_actSetup.isValid()) {
+        if (!isFPEqual(_rateMultiplier, 1.0f)) {
+            _actHandle.activation.direction = _actSetup.direction;
+            _actHandle.activation.flags = _actSetup.flags;
+
+            if (resolve() && get()->isAnyBinaryClass()) { // Duration based
+                _actHandle.activation.intensity = _actSetup.intensity;
+                if (!_actHandle.isUntimed()) {
+                    _actHandle.activation.duration = _actSetup.duration * _rateMultiplier;
+                } else {
+                    _actHandle.activation.duration = _actSetup.duration;
+                }
+            } else { // Intensity based
+                _actHandle.activation.intensity = _actSetup.intensity * _rateMultiplier;
+                _actHandle.activation.duration = _actSetup.duration;
+            }
+        } else {
+            _actHandle.activation = _actSetup;
+        }
+
+        if (isActivated() && resolve()) { get()->setNeedsUpdate(); }
     }
 }
 

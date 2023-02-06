@@ -137,14 +137,15 @@ struct HydroCalibrationData : public HydroData {
 
 
 // Crops Data Flags
-enum Hydro_CropsDataFlag : unsigned short {
-    Hydro_CropsDataFlag_Invasive =    0x01,                 // Flag indicating plant is invasive and will take over other plants (default: false)
-    Hydro_CropsDataFlag_Viner =       0x02,                 // Flag indicating plant is a viner and will require a stick for support (default: false)
-    Hydro_CropsDataFlag_Large =       0x04,                 // Flag indicating plant grows large and will require proper support (default: false)
-    Hydro_CropsDataFlag_Perennial =   0x08,                 // Flag indicating plant grows back year after year (default: false)
-    Hydro_CropsDataFlag_Toxic =       0x10,                 // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
-    Hydro_CropsDataFlag_Pruning =     0x20,                 // Flag indicating plant benefits from active pruning (default: false)
-    Hydro_CropsDataFlag_Spraying =    0x40                  // Flag indicating plant benefits from spraying in the morning (default: false)
+enum Hydro_CropsDataFlag : unsigned char {
+    Hydro_CropsDataFlag_Invasive        = 0x01,             // Flag indicating plant is invasive and will take over other plants (default: false)
+    Hydro_CropsDataFlag_Viner           = 0x02,             // Flag indicating plant is a viner and will require a stick for support (default: false)
+    Hydro_CropsDataFlag_Large           = 0x04,             // Flag indicating plant grows large and will require proper support (default: false)
+    Hydro_CropsDataFlag_Perennial       = 0x08,             // Flag indicating plant grows back year after year (default: false)
+    Hydro_CropsDataFlag_Toxic           = 0x10,             // Flag indicating plant toxicity to common house pets (cats+dogs - default: false)
+    Hydro_CropsDataFlag_Pruning         = 0x20,             // Flag indicating plant benefits from active pruning (default: false)
+    Hydro_CropsDataFlag_Spraying        = 0x40,             // Flag indicating plant benefits from spraying in the morning (default: false)
+    Hydro_CropsDataFlag_None            = 0x00              // Placeholder
 };
 
 // Crops Library Data
@@ -162,7 +163,7 @@ struct HydroCropsLibData : public HydroData {
     float waterTempRange[2];                                // Ideal water temperature range, in Celsius (min,max or mid - default: 25)
     float airTempRange[2];                                  // Ideal air temperature range, in Celsius (min,max or mid - default: 25)
     float co2Levels[2];                                     // Ideal CO2 levels per <=veg/>=bloom stages, in PPM (seed&veg,bloom&> or all - default: 700, 1400)
-    uint16_t flags;                                         // Plant flags
+    Hydro_CropsDataFlag flags;                              // Crop data flags
 
     HydroCropsLibData();
     HydroCropsLibData(Hydro_CropType cropType);             // Convenience constructor, checks out data from Crops Library then returns, good for temporary objects.
@@ -176,6 +177,14 @@ struct HydroCropsLibData : public HydroData {
     inline bool isToxicToPets() const { return flags & Hydro_CropsDataFlag_Toxic; }
     inline bool needsPrunning() const { return flags & Hydro_CropsDataFlag_Pruning; }
     inline bool needsSpraying() const { return flags & Hydro_CropsDataFlag_Spraying; }
+
+    inline void setIsInvasive() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Invasive); }
+    inline void setIsViner() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Viner); }
+    inline void setIsLarge() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Large); }
+    inline void setIsPerennial() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Perennial); }
+    inline void setIsToxicToPets() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Toxic); }
+    inline void setNeedsPrunning() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Pruning); }
+    inline void setNeedsSpraying() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Spraying); }
 };
 
 

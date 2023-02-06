@@ -41,9 +41,9 @@ struct HydroIdentity {
         Hydro_ReservoirType reservoirType;                  // As reservoir type enumeration
         Hydro_RailType railType;                            // As rail type enumeration
     } objTypeAs;                                            // Enumeration type union
-    hposi_t posIndex;                           // Position index
+    hposi_t posIndex;                                       // Position index
     String keyString;                                       // String key
-    hkey_t key;                                      // UInt Key
+    hkey_t key;                                             // UInt Key
 
     // Default constructor (incomplete id)
     HydroIdentity();
