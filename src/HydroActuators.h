@@ -23,6 +23,12 @@ struct HydroPumpActuatorData;
 extern HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn);
 
 
+// Activation Flags
+enum Hydro_ActivationFlags : unsigned char {
+    Hydro_ActivationFlags_Forced        = 0x01,             // Force enable / ignore cursory canEnable checks
+    Hydro_ActivationFlags_None          = 0x00              // Placeholder
+};
+
 // Activation Handle
 // Since actuators are shared objects, those wishing to enable any actuator must receive
 // a valid handle. Actuators may customize how they handle multiple activation handles.
@@ -31,13 +37,23 @@ extern HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 // forced flag is set (also see Actuator activation signal), but can be set up to ensure
 // actuators are enabled for a specified duration, which is able to be async updated.
 struct HydroActivationHandle {
-    SharedPtr<HydroActuator> actuator;  // Actuator owner, set only when activation requested (use operator= to set)
-    float intensity;                    // Normalized driving intensity ([0.0,1.0])
-    Hydro_DirectionMode direction;      // Normalized driving direction
-    millis_t checkTime;                 // Last check timestamp, in milliseconds, else 0 for not started
-    millis_t duration;                  // Duration time remaining, in milliseconds, else -1 for non-diminishing/unlimited or 0 for finished
-    millis_t elapsed;                   // Elapsed time accumulator, in milliseconds, else 0
-    bool forced;                        // If activation should force enable and ignore cursory canEnable checks
+    SharedPtr<HydroActuator> actuator;                      // Actuator owner, set only when activation requested (use operator= to set)
+    struct Activation {
+        Hydro_DirectionMode direction;                      // Normalized driving direction
+        float intensity;                                    // Normalized driving intensity ([0.0,1.0])
+        millis_t duration;                                  // Duration time remaining, in milliseconds, else -1 for non-diminishing/unlimited or 0 for finished
+        Hydro_ActivationFlags flags;                        // Activation flags
+
+        inline Activation(Hydro_DirectionMode directionIn, float intensityIn, millis_t durationIn, Hydro_ActivationFlags flagsIn) : direction(directionIn), intensity(intensityIn), duration(durationIn), flags(flagsIn) { ; }
+        inline Activation() : Activation(Hydro_DirectionMode_Undefined, 0.0f, 0, Hydro_ActivationFlags_None) { ; }
+
+        inline bool isValid() const { return direction != Hydro_DirectionMode_Undefined; }
+        inline bool isDone() const { return duration == 0; }
+        inline bool isUntimed() const { return duration == -1; }
+        inline bool isForced() const { return flags & Hydro_ActivationFlags_Forced; }
+    } activation;                                           // Activation data
+    millis_t checkTime;                                     // Last check timestamp, in milliseconds, else 0 for not started
+    millis_t elapsed;                                       // Elapsed time accumulator, in milliseconds, else 0
 
     // Handle constructor that specifies a normalized enablement, ranged: [0.0,1.0] for specified direction
     HydroActivationHandle(SharedPtr<HydroActuator> actuator, Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false);
@@ -53,23 +69,27 @@ struct HydroActivationHandle {
     inline HydroActivationHandle() : HydroActivationHandle(nullptr, Hydro_DirectionMode_Undefined, 0.0f, 0, false) { ; }
     HydroActivationHandle(const HydroActivationHandle &handle);
     ~HydroActivationHandle();
-    HydroActivationHandle &operator=(const HydroActivationHandle &handle);
+    inline HydroActivationHandle &operator=(const Activation &activationIn) { activation = activationIn; return *this; }
+    inline HydroActivationHandle &operator=(const HydroActivationHandle &handle) { activation = handle.activation; return operator=(handle.actuator); }
     HydroActivationHandle &operator=(SharedPtr<HydroActuator> actuator);
 
     // Disconnects activation from an actuator (un-registers self from actuator)
     void unset();
 
-    // Elapses time by delta, updating relevant operating values if needed
+    // Elapses activation by delta, updating relevant activation values
     void elapseBy(millis_t delta);
+    inline void elapseTo(millis_t time = millis()) { elapseBy(time - checkTime); }
 
     inline bool isActive() const { return actuator && checkTime > 0; }
-    inline bool isDone() const { return duration == 0; }
-    inline bool isInfinite() const { return duration == -1; }
-    inline millis_t timeActive(millis_t time = millis()) const { return isActive() ? (time - checkTime) + elapsed : elapsed; }
+    inline bool isValid() const { return activation.isValid(); }
+    inline bool isDone() const { return activation.isDone(); }
+    inline bool isUntimed() const { return activation.isUntimed(); }
+    inline bool isForced() const { return activation.isForced(); }
+    inline millis_t getTimeActive(millis_t time = millis()) const { return isActive() ? (time - checkTime) + elapsed : elapsed; }
 
     // De-normalized driving intensity value [-1.0,1.0]
-    inline float getDriveIntensity() const { return direction == Hydro_DirectionMode_Forward ? intensity :
-                                                    direction == Hydro_DirectionMode_Reverse ? -intensity : 0.0f; }
+    inline float getDriveIntensity() const { return activation.direction == Hydro_DirectionMode_Forward ? activation.intensity :
+                                                    activation.direction == Hydro_DirectionMode_Reverse ? -activation.intensity : 0.0f; }
 };
 
 
@@ -82,7 +102,9 @@ public:
     inline bool isRelayClass() const { return classType == Relay; }
     inline bool isRelayPumpClass() const { return classType == RelayPump; }
     inline bool isVariableClass() const { return classType == Variable; }
+    inline bool isVariablePumpClass() const { return classType == VariablePump; }
     inline bool isAnyBinaryClass() const { isRelayClass() || isRelayPumpClass(); }
+    inline bool isAnyVariableClass() const { isVariableClass() || isVariablePumpClass(); }
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroActuator(Hydro_ActuatorType actuatorType,

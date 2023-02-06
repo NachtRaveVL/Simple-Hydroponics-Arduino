@@ -254,7 +254,7 @@ HydroCropsLibData::HydroCropsLibData()
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
       phRange{6,6}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
-      flags(0)
+      flags(Hydro_CropsDataFlag_None)
 {
     HYDRO_HARD_ASSERT(isCropsLibData(), SFP(HStr_Err_OperationFailure));
     _size = sizeof(*this);
@@ -267,7 +267,7 @@ HydroCropsLibData::HydroCropsLibData(const Hydro_CropType cropTypeIn)
       dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
       phRange{6,6}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
-      flags(0)
+      flags(Hydro_CropsDataFlag_None)
 {
     _size = sizeof(*this);
     HYDRO_HARD_ASSERT(isCropsLibData(), SFP(HStr_Err_OperationFailure));
@@ -409,23 +409,23 @@ void HydroCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
         if (flagsVar.is<JsonArrayConst>()) {
             JsonArrayConst flagsArray = flagsVar;
             for (String flagStr : flagsArray) {
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Invasive))) { flags |= Hydro_CropsDataFlag_Invasive; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Viner))) { flags |= Hydro_CropsDataFlag_Viner; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Large))) { flags |= Hydro_CropsDataFlag_Large; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Perennial))) { flags |= Hydro_CropsDataFlag_Perennial; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Toxic))) { flags |= Hydro_CropsDataFlag_Toxic; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Pruning))) { flags |= Hydro_CropsDataFlag_Pruning; }
-                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Spraying))) { flags |= Hydro_CropsDataFlag_Spraying; }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Invasive))) { setIsInvasive(); }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Viner))) { setIsViner(); }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Large))) { setIsLarge(); }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Perennial))) { setIsPerennial(); }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Toxic))) { setIsToxicToPets(); }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Pruning))) { setNeedsPrunning(); }
+                if (flagStr.equalsIgnoreCase(SFP(HStr_Key_Spraying))) { setNeedsSpraying(); }
             }
         } else if (!flagsVar.isNull()) {
             String flagsString = String(',') + objectIn[SFP(HStr_Key_Flags)].as<String>() + String(',');
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Invasive) + String(','))) { flags |= Hydro_CropsDataFlag_Invasive; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Viner) + String(','))) { flags |= Hydro_CropsDataFlag_Viner; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Large) + String(','))) { flags |= Hydro_CropsDataFlag_Large; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Perennial) + String(','))) { flags |= Hydro_CropsDataFlag_Perennial; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Toxic) + String(','))) { flags |= Hydro_CropsDataFlag_Toxic; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Pruning) + String(','))) { flags |= Hydro_CropsDataFlag_Pruning; }
-            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Spraying) + String(','))) { flags |= Hydro_CropsDataFlag_Spraying; }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Invasive) + String(','))) { setIsInvasive(); }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Viner) + String(','))) { setIsViner(); }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Large) + String(','))) { setIsLarge(); }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Perennial) + String(','))) { setIsPerennial(); }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Toxic) + String(','))) { setIsToxicToPets(); }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Pruning) + String(','))) { setNeedsPrunning(); }
+            if (occurrencesInStringIgnoreCase(flagsString, String(',') + SFP(HStr_Key_Spraying) + String(','))) { setNeedsSpraying(); }
         }
     }
 }
