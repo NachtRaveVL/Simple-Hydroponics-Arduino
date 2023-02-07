@@ -185,7 +185,7 @@ public:
     inline void setupActivation(const HydroActivationHandle::Activation &activation) { _actSetup = activation; applySetup(); }
     inline void setupActivation(const HydroActivationHandle &handle) { setupActivation(handle.activation); }
     inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { setupActivation(HydroActivationHandle::Activation(direction, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
-    inline void setupActivation(float intensity, millis_t duration = -1, bool force = false) { setupActivation(HydroActivationHandle::Activation(intensity > FLT_EPSILON ? Hydro_DirectionMode_Forward : intensity < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(intensity), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
+    inline void setupActivation(float intensity, millis_t duration = -1, bool force = false) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
     inline void setupActivation(millis_t duration, bool force = false) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
     inline void setupActivation(bool force, millis_t duration = -1) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
 
@@ -197,6 +197,8 @@ public:
 
     // Activation status based on handle activation
     inline bool isActivated() const { return _actHandle.isActive(); }
+    inline millis_t getTimeLeft() const { return _actHandle.getTimeLeft(); }
+    inline millis_t getTimeActive(millis_t time = nzMillis()) const { return _actHandle.getTimeActive(time); }
 
     // Sets an update slot to run during execution of actuator that can further refine duration/intensity.
     // Useful for rate-based or variable activations. Slot receives actuator attachment pointer as parameter.

@@ -206,7 +206,8 @@ template<typename K, typename V, size_t N = ARX_MAP_DEFAULT_SIZE> using Map = ar
 using namespace arx::stdx;
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
 
-extern time_t unixNow();
+inline time_t unixNow();
+inline millis_t nzMillis();
 extern void handleInterrupt(pintype_t pin);
 extern void controlLoop();
 extern void dataLoop();

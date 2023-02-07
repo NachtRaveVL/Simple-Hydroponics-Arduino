@@ -110,11 +110,11 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
                 }
             }
 
-            if (getHydroInstance()->hasCustomAdditives()) {
+            if (Hydruino::_activeInstance->hasCustomAdditives()) {
                 int prevIncSize = incActuators.size();
 
                 for (int reservoirType = Hydro_ReservoirType_CustomAdditive1; reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount; ++reservoirType) {
-                    if (getHydroInstance()->getCustomAdditiveData((Hydro_ReservoirType)reservoirType)) {
+                    if (Hydruino::_activeInstance->getCustomAdditiveData((Hydro_ReservoirType)reservoirType)) {
                         dosingRate = getCombinedDosingRate(reservoir, (Hydro_ReservoirType)reservoirType);
 
                         if (dosingRate > FLT_EPSILON) {
@@ -228,7 +228,7 @@ void HydroScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, Hydro_
             HydroCustomAdditiveData newAdditiveData(reservoirType);
             newAdditiveData._bumpRevIfNotAlreadyModded();
             newAdditiveData.weeklyDosingRates[weekIndex] = dosingRate;
-            getHydroInstance()->setCustomAdditiveData(&newAdditiveData);
+            Hydruino::_activeInstance->setCustomAdditiveData(&newAdditiveData);
 
             setNeedsScheduling();
         } else {
@@ -270,12 +270,12 @@ void HydroScheduler::setFlushWeek(int weekIndex)
         for (Hydro_ReservoirType reservoirType = Hydro_ReservoirType_CustomAdditive1;
              reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount;
              reservoirType = (Hydro_ReservoirType)((int)reservoirType + 1)) {
-            auto additiveData = getHydroInstance()->getCustomAdditiveData(reservoirType);
+            auto additiveData = Hydruino::_activeInstance->getCustomAdditiveData(reservoirType);
             if (additiveData) {
                 HydroCustomAdditiveData newAdditiveData = *additiveData;
                 newAdditiveData._bumpRevIfNotAlreadyModded();
                 newAdditiveData.weeklyDosingRates[weekIndex] = 0;
-                getHydroInstance()->setCustomAdditiveData(&newAdditiveData);
+                Hydruino::_activeInstance->setCustomAdditiveData(&newAdditiveData);
             }
         }
 
@@ -353,7 +353,7 @@ float HydroScheduler::getCombinedDosingRate(HydroReservoir *reservoir, Hydro_Res
                     totalWeights += crop->getFeedingWeight();
                     totalDosing += schedulerData()->stdDosingRates[reservoirType - Hydro_ReservoirType_FreshWater];
                 } else {
-                    auto additiveData = getHydroInstance()->getCustomAdditiveData(reservoirType);
+                    auto additiveData = Hydruino::_activeInstance->getCustomAdditiveData(reservoirType);
                     if (additiveData) {
                         totalWeights += crop->getFeedingWeight();
                         totalDosing += additiveData->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1)];
@@ -387,7 +387,7 @@ float HydroScheduler::getWeeklyDosingRate(int weekIndex, Hydro_ReservoirType res
         if (reservoirType == Hydro_ReservoirType_NutrientPremix) {
             return schedulerData()->weeklyDosingRates[weekIndex];
         } else if (reservoirType >= Hydro_ReservoirType_CustomAdditive1 && reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount) {
-            auto additiveDate = getHydroInstance()->getCustomAdditiveData(reservoirType);
+            auto additiveDate = Hydruino::_activeInstance->getCustomAdditiveData(reservoirType);
             return additiveDate ? additiveDate->weeklyDosingRates[weekIndex] : 0.0f;
         } else {
             HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
@@ -547,7 +547,7 @@ void HydroScheduler::broadcastDayChange()
         });
     #else
         if (getHydroInstance()) {
-            Hydruino::_activeInstance->notifyDayChanged();
+            getHydroInstance()->notifyDayChanged();
         }
         if (getLoggerInstance()) {
             getLoggerInstance()->notifyDayChanged();

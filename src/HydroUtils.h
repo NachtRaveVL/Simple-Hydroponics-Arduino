@@ -270,6 +270,9 @@ extern time_t rtcNow();
 // This will return the time in unixtime (secs since 1970). Uses rtc if available, otherwise time since turned on.
 inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
 
+// This will return a non-zero millis time value, so that 0 time values can be reserved for other use.
+inline millis_t nzMillis() { return millis() ?: 1; }
+
 // This will handle interrupts for task manager.
 extern void handleInterrupt(pintype_t pin);
 
