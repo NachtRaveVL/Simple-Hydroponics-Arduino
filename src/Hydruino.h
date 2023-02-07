@@ -194,9 +194,9 @@ typedef Adafruit_GPS GPSClass;
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 #include "ArxSmartPtr/shared_ptr.h"     // Forced shared pointer library
 using namespace std;
-template<typename T, size_t N = HYDRO_OBJ_LINKSFILTER_DEFSIZE> using Vector = std::vector<T>;
+template<typename T, size_t N = HYDRO_DEFAULT_MAXSIZE> using Vector = std::vector<T>;
 template<class T1, class T2> using Pair = std::pair<T1,T2>;
-template<typename K, typename V, size_t N = HYDRO_OBJ_LINKSFILTER_DEFSIZE> using Map = std::map<K,V>;
+template<typename K, typename V, size_t N = HYDRO_DEFAULT_MAXSIZE> using Map = std::map<K,V>;
 #else
 using namespace arx;
 template<typename T, size_t N = ARX_VECTOR_DEFAULT_SIZE> using Vector = arx::vector<T,N>;
