@@ -58,34 +58,29 @@ struct HydroActivationHandle {
     // Handle constructor that specifies a normalized enablement, ranged: [0.0,1.0] for specified direction
     HydroActivationHandle(SharedPtr<HydroActuator> actuator, Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false);
 
-    // Handle constructor that specifies a binary enablement, ranged: (=0=,!0!) for disable/enable or (<=-1,=0=,>=1) for reverse/stop/forward
-    inline HydroActivationHandle(SharedPtr<HydroActuator> actuator, int enabled, millis_t duration = -1, bool force = false)
-        : HydroActivationHandle(actuator, (enabled > 0 ? Hydro_DirectionMode_Forward : enabled < 0 ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop), (enabled ? 1.0f : 0.0f), duration, force) { ; }
-    // Handle constructor that specifies a variable intensity enablement, ranged: [=0.0=,<=1.0] for disable/enable or [-1.0=>,=0.0=,<=1.0] for reverse/stop/forward
-    inline HydroActivationHandle(SharedPtr<HydroActuator> actuator, float intensity, millis_t duration = -1, bool force = false)
-        : HydroActivationHandle(actuator, (intensity > FLT_EPSILON ? Hydro_DirectionMode_Forward : intensity < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop), fabsf(intensity), duration, force)  { ; }
-
     // Default constructor for empty handles
     inline HydroActivationHandle() : HydroActivationHandle(nullptr, Hydro_DirectionMode_Undefined, 0.0f, 0, false) { ; }
     HydroActivationHandle(const HydroActivationHandle &handle);
     ~HydroActivationHandle();
+    HydroActivationHandle &operator=(SharedPtr<HydroActuator> actuator);
     inline HydroActivationHandle &operator=(const Activation &activationIn) { activation = activationIn; return *this; }
     inline HydroActivationHandle &operator=(const HydroActivationHandle &handle) { activation = handle.activation; return operator=(handle.actuator); }
-    HydroActivationHandle &operator=(SharedPtr<HydroActuator> actuator);
 
-    // Disconnects activation from an actuator (un-registers self from actuator)
+    // Disconnects activation from an actuator (removes handle reference from actuator)
     void unset();
 
     // Elapses activation by delta, updating relevant activation values
     void elapseBy(millis_t delta);
-    inline void elapseTo(millis_t time = millis()) { elapseBy(time - checkTime); }
+    inline void elapseTo(millis_t time = nzMillis()) { elapseBy(time - checkTime); }
 
     inline bool isActive() const { return actuator && checkTime > 0; }
     inline bool isValid() const { return activation.isValid(); }
     inline bool isDone() const { return activation.isDone(); }
     inline bool isUntimed() const { return activation.isUntimed(); }
     inline bool isForced() const { return activation.isForced(); }
-    inline millis_t getTimeActive(millis_t time = millis()) const { return isActive() ? (time - checkTime) + elapsed : elapsed; }
+
+    inline millis_t getTimeLeft() const { return activation.duration; }
+    inline millis_t getTimeActive(millis_t time = nzMillis()) const { return isActive() ? (time - checkTime) + elapsed : elapsed; }
 
     // De-normalized driving intensity value [-1.0,1.0]
     inline float getDriveIntensity() const { return activation.direction == Hydro_DirectionMode_Forward ? activation.intensity :
@@ -117,9 +112,9 @@ public:
     virtual bool getCanEnable() override;
 
     inline HydroActivationHandle enableActuator(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { return HydroActivationHandle(::getSharedPtr<HydroActuator>(this), direction, intensity, duration, force); }
-    inline HydroActivationHandle enableActuator(float intensity, millis_t duration = -1, bool force = false) { return HydroActivationHandle(::getSharedPtr<HydroActuator>(this), intensity, duration, force); }
-    inline HydroActivationHandle enableActuator(millis_t duration, bool force = false) { return HydroActivationHandle(::getSharedPtr<HydroActuator>(this), 1, duration, force); }
-    inline HydroActivationHandle enableActuator(bool force, millis_t duration = -1) { return HydroActivationHandle(::getSharedPtr<HydroActuator>(this), 1, duration, force); }
+    inline HydroActivationHandle enableActuator(float intensity, millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, intensity, duration, force); }
+    inline HydroActivationHandle enableActuator(millis_t duration, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
+    inline HydroActivationHandle enableActuator(bool force, millis_t duration = -1) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
 
     inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; setNeedsUpdate(); }
     inline Hydro_EnableMode getEnableMode() { return _enableMode; }
