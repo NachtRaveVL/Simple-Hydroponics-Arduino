@@ -113,7 +113,7 @@ bool arrayElementsEqual(const T *arrayIn, size_t length, T value)
 }
 
 
-template<size_t N = HYDRO_OBJ_LINKSFILTER_DEFSIZE>
+template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 Vector<HydroObject *, N> linksFilterActuators(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links)
 {
     Vector<HydroObject *, N> retVal;
@@ -127,7 +127,7 @@ Vector<HydroObject *, N> linksFilterActuators(Pair<uint8_t, Pair<HydroObject *, 
     return retVal;
 }
 
-template<size_t N = HYDRO_OBJ_LINKSFILTER_DEFSIZE>
+template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 Vector<HydroObject *, N> linksFilterCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links)
 {
     Vector<HydroObject *, N> retVal;
@@ -141,7 +141,7 @@ Vector<HydroObject *, N> linksFilterCrops(Pair<uint8_t, Pair<HydroObject *, int8
     return retVal;
 }
 
-template<size_t N = HYDRO_OBJ_LINKSFILTER_DEFSIZE>
+template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 Vector<HydroObject *, N> linksFilterActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType)
 {
     Vector<HydroObject *, N> retVal;
@@ -159,7 +159,7 @@ Vector<HydroObject *, N> linksFilterActuatorsByReservoirAndType(Pair<uint8_t, Pa
     return retVal;
 }
 
-template<size_t N = HYDRO_OBJ_LINKSFILTER_DEFSIZE>
+template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 Vector<HydroObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ReservoirType destReservoirType)
 {
     Vector<HydroObject *, N> retVal;
@@ -181,7 +181,7 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReserv
     return retVal;
 }
 
-template<size_t N = HYDRO_OBJ_LINKSFILTER_DEFSIZE>
+template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *destReservoir, Hydro_ReservoirType srcReservoirType)
 {
     Vector<HydroObject *, N> retVal;
