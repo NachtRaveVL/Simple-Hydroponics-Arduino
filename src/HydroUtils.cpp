@@ -43,12 +43,15 @@ ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroActuator> actuat
 
 void ActuatorTimedEnableTask::exec()
 {
-    HydroActivationHandle handle(_actuator, _intensity, _duration);
+    HydroActivationHandle handle = _actuator->enableActuator(_intensity, _duration);
 
-    while (handle.actuator) {
-        // todo
-        yield();
+    while (!handle.isDone()) {
+        handle.elapseTo();
+        if (handle.getTimeLeft() > HYDRO_SYS_DELAYFINE_SPINMILLIS) { yield(); }
     }
+
+    // Custom run loop allows calling this method directly - will disable actuator if needed
+    _actuator->update();
 }
 
 taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, float intensity, time_t enableTime)

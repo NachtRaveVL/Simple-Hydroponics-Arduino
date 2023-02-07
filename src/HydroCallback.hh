@@ -39,47 +39,42 @@ public:
 };
 
 // The Signal class, we can implant these into ends and allow means to connect their members to them should they want to
-// receive callbacks from their children means. Ofcourse it's possible that these callbacks are made within the context of
+// receive callbacks from their children means. Of course it's possible that these callbacks are made within the context of
 // an interrupt so the receipient will want to be fairly quick about how they process it.
 template <class ParameterType, int Slots = 8> class Signal {
-    Slot<ParameterType>* _connections[Slots];
-	int _nextSlot;
+    Vector<Slot<ParameterType> *, Slots> _connections;
 
 public:
-    Signal() : _connections{nullptr}, _nextSlot(0) { }
+    Signal() : _connections() { }
 
     // Since the signal takes copies of all the input slots via clone() it needs to clean up after itself when being destroyed.
     virtual ~Signal() {
-        for(int i = 0; i < _nextSlot; ++i)
-            delete _connections[i];
+        for (auto iter = _connections.begin(); iter != _connections.end(); ++iter) {
+            if (*iter) { delete *iter; *iter = nullptr; }
+        }
     }
 
     // Adds slot to list of connections.
     void attach(const Slot<ParameterType>& slot) {
-        if (_nextSlot < Slots) {
-            // Connect it up and away we go
-            _connections[_nextSlot++] = slot.clone();
-        }
+        // Connect it up and away we go
+        _connections.push_back(slot.clone());
 	}
 
     // Removes slot from list of connections.
     void detach(const Slot<ParameterType>& slot) {
-        for (int i = _nextSlot - 1; i >= 0; --i) {
-            if (slot == _connections[i]) {
-                delete _connections[i];
-                --_nextSlot;
-
-                for (int j = i; j < _nextSlot; ++j)
-                    _connections[j] = _connections[j + 1];
-                _connections[_nextSlot] = NULL;
+        for (auto iter = _connections.begin(); iter != _connections.end(); ++iter) {
+            if (!(*iter) || slot.operator==(*iter)) {
+                if (*iter) { delete *iter; *iter = nullptr; }
+                iter = _connections.erase(iter) - 1;
             }
         }
     }
 
     // Visits each of its listeners and executes them via operator().
     void fire(ParameterType param) const {
-        for(int i = 0; i < _nextSlot; ++i)
-            (*_connections[i])(param);
+        for (auto iter = _connections.begin(); iter != _connections.end(); ++iter) {
+            if (*iter) { (*iter)->operator()(param); }
+        }
     }
 };
 

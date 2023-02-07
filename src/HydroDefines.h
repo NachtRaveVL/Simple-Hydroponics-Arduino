@@ -74,6 +74,7 @@ typedef uint16_t hframe_t;                                  // Polling frame typ
 typedef typeof(INPUT) ard_pinmode_t;                        // Arduino pin mode type alias
 typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin status type alias
 
+// The following slot sizes apply to all architectures
 #define HYDRO_NAME_MAXSIZE              32                  // Naming character maximum size (system name, crop name, etc.)
 #define HYDRO_URL_MAXSIZE               64                  // URL string maximum size (max url length)
 #define HYDRO_POS_MAXSIZE               32                  // Position indicies maximum size (max # of objs of same type)
@@ -81,7 +82,7 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_JSON_DOC_DEFSIZE          192                 // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRO_STRING_BUFFER_SIZE        32                  // Size in bytes of string serialization buffers
 #define HYDRO_WIFISTREAM_BUFFER_SIZE    128                 // Size in bytes of WiFi serialization buffers
-// The following slot sizes apply to all architectures
+// The following max sizes only matter for architectures that do not have STL support
 #define HYDRO_ACTUATOR_SIGNAL_SLOTS     4                   // Maximum number of slots for actuator's activation signal
 #define HYDRO_SENSOR_SIGNAL_SLOTS       6                   // Maximum number of slots for sensor's measurement signal
 #define HYDRO_TRIGGER_SIGNAL_SLOTS      4                   // Maximum number of slots for trigger's state signal
@@ -91,16 +92,10 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_RESERVOIR_SIGNAL_SLOTS    2                   // Maximum number of slots for filled/empty signal
 #define HYDRO_FEEDING_SIGNAL_SLOTS      2                   // Maximum number of slots for crop feed signal
 #define HYDRO_CAPACITY_SIGNAL_SLOTS     8                   // Maximum number of slots for rail capacity signal
-#define HYDRO_CROPS_LINKS_BASESIZE      1                   // Base array size for crop's linkage list
-#define HYDRO_FLUIDRES_LINKS_BASESIZE   1                   // Base array size for fluid reservoir's linkage list
-#define HYDRO_FEEDRES_LINKS_BASESIZE    4                   // Base array size for feed reservoir's linkage list
-#define HYDRO_RAILS_LINKS_BASESIZE      4                   // Base array size for rail's linkage list
-// The following max sizes only matter for architectures that do not have STL support
 #define HYDRO_SYS_OBJECTS_MAXSIZE       16                  // Maximum array size for system objects (max # of objects in system)
 #define HYDRO_CROPS_CROPSLIB_MAXSIZE    8                   // Maximum array size for crops library objects (max # of different kinds of crops)
 #define HYDRO_CAL_CALIBSTORE_MAXSIZE    8                   // Maximum array size for calibration store objects (max # of different custom calibrations)
 #define HYDRO_OBJ_LINKS_MAXSIZE         8                   // Maximum array size for object linkage list, per obj (max # of linked objects)
-#define HYDRO_OBJ_LINKSFILTER_DEFSIZE   8                   // Default array size for object linkage filtering
 #define HYDRO_BAL_ACTUATORS_MAXSIZE     8                   // Maximum array size for balancer actuators list (max # of actuators used)
 #define HYDRO_SCH_REQACTUATORS_MAXSIZE  4                   // Maximum array size for scheduler required actuators list (max # of actuators active per process stage)
 #define HYDRO_SCH_FEEDRES_MAXSIZE       2                   // Maximum array size for scheduler feeding/lighting process lists (max # of feed reservoirs)
@@ -115,6 +110,7 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_ACT_PUMPCALC_UPDATEMS     250                 // Minimum time millis needing to pass before a pump reports/writes changed volume to reservoir (reduces error accumulation)
 #define HYDRO_ACT_PUMPCALC_MINFLOWRATE  0.05f               // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
 
+#define HYDRO_CROPS_LINKS_BASESIZE      1                   // Base array size for crop's linkage list
 #define HYDRO_CROPS_NIGHT_BEGINHR       22                  // Hour of the day night begins (for night feeding multiplier)
 #define HYDRO_CROPS_NIGHT_ENDHR         6                   // Hour of the day night ends (for night feeding multiplier)
 #define HYDRO_CROPS_GROWWEEKS_MAX       16                  // Maximum grow weeks to support scheduling up to
@@ -123,8 +119,12 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_DOSETIME_FRACTION_MIN     0.5f                // What percentage of base dosing time autodosers can scale down to, if estimated dosing time could exceed setpoint
 #define HYDRO_DOSETIME_FRACTION_MAX     1.5f                // What percentage of base dosing time autodosers can scale up to, if estimated dosing time remaining could fall short of setpoint
 
+#define HYDRO_FLUIDRES_LINKS_BASESIZE   1                   // Base array size for fluid reservoir's linkage list
+#define HYDRO_FEEDRES_LINKS_BASESIZE    4                   // Base array size for feed reservoir's linkage list
 #define HYDRO_FEEDRES_FRACTION_EMPTY    0.2f                // What fraction of a feed reservoir's volume is to be considered 'empty' during7*- pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 #define HYDRO_FEEDRES_FRACTION_FILLED   0.9f                // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+
+#define HYDRO_OBJ_LINKSFILTER_DEFSIZE   8                   // Default array size for object linkage filtering
 
 #define HYDRO_POS_SEARCH_FROMBEG        -1                  // Search from beginning to end, 0 up to MAXSIZE-1
 #define HYDRO_POS_SEARCH_FROMEND        HYDRO_POS_MAXSIZE   // Search from end to beginning, MAXSIZE-1 down to 0
@@ -134,6 +134,8 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_RANGE_EC_HALF             0.5f                // How far to go, in either direction, to form a range when TDS/EC is expressed as a single number, in EC (note: this also controls auto-balancer ranges)
 #define HYDRO_RANGE_TEMP_HALF           5.0f                // How far to go, in either direction, to form a range when Temp is expressed as a single number, in C (note: this also controls auto-balancer ranges)
 #define HYDRO_RANGE_CO2_HALF            100.0f              // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
+
+#define HYDRO_RAILS_LINKS_BASESIZE      4                   // Base array size for rail's linkage list
 
 #define HYDRO_SCH_FEED_FRACTION         0.8f                // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRO_SCH_BALANCE_MINTIME       30                  // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
@@ -153,7 +155,7 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_SYS_FREESPACE_INTERVAL    240                 // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRO_SYS_FREESPACE_LOWSPACE    256                 // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRO_SYS_FREESPACE_DAYSBACK    180                 // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
-#define HYDRO_SYS_DELAYFINE_SPINMILLIS  20                  // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (ensures fine dosing)
+#define HYDRO_SYS_DELAYFINE_SPINMILLIS  20                  // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (used for fine timing)
 #define HYDRO_SYS_DEBUGOUT_FLUSH_YIELD  DISABLED            // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
 #define HYDRO_SYS_MEM_LOGGING_ENABLE    DISABLED            // If system will periodically log memory remaining messages (mainly used for debugging)
 #define HYDRO_SYS_DRY_RUN_ENABLE        DISABLED            // Disables pins from actually enabling in order to simply simulate (mainly used for debugging)
@@ -323,9 +325,9 @@ enum Hydro_CropType : signed char {
     Hydro_CropType_CustomCrop7,                             // Custom crop 7
     Hydro_CropType_CustomCrop8,                             // Custom crop 8
 
-    Hydro_CropType_Count,                                   // Internal use only
-    Hydro_CropType_CustomCropCount = 8,                     // Internal use only
-    Hydro_CropType_Undefined = -1                           // Internal use only
+    Hydro_CropType_Count,                                   // Placeholder
+    Hydro_CropType_CustomCropCount = 8,                     // Placeholder
+    Hydro_CropType_Undefined = -1                           // Placeholder
 };
 
 // Substrate Type
@@ -335,8 +337,8 @@ enum Hydro_SubstrateType : signed char {
     Hydro_SubstrateType_CoconutCoir,                        // Coconut coir (aka coco peat) substrate
     Hydro_SubstrateType_Rockwool,                           // Rockwool substrate
 
-    Hydro_SubstrateType_Count,                              // Internal use only
-    Hydro_SubstrateType_Undefined = -1                      // Internal use only
+    Hydro_SubstrateType_Count,                              // Placeholder
+    Hydro_SubstrateType_Undefined = -1                      // Placeholder
 };
 
 // Crop Phase
@@ -347,9 +349,9 @@ enum Hydro_CropPhase : signed char {
     Hydro_CropPhase_Blooming,                               // Flowering stage
     Hydro_CropPhase_Harvest,                                // Harvest stage
 
-    Hydro_CropPhase_Count,                                  // Internal use only
-    Hydro_CropPhase_MainCount = 3,                          // Internal use only
-    Hydro_CropPhase_Undefined = -1                          // Internal use only
+    Hydro_CropPhase_Count,                                  // Placeholder
+    Hydro_CropPhase_MainCount = 3,                          // Placeholder
+    Hydro_CropPhase_Undefined = -1                          // Placeholder
 };
 
 // System Run Mode
@@ -358,8 +360,8 @@ enum Hydro_SystemMode : signed char {
     Hydro_SystemMode_Recycling,                             // System consistently recycles water in main feed water reservoir. Default setting, applicable to a wide range of NFT and DWC setups.
     Hydro_SystemMode_DrainToWaste,                          // System refills feed reservoir every time before feeding (with pH/feed premix top off), and requires a drainage pipe (as feed pump output) or drainage pump (from feed reservoir to drainage pipe).
 
-    Hydro_SystemMode_Count,                                 // Internal use only
-    Hydro_SystemMode_Undefined = -1                         // Internal use only
+    Hydro_SystemMode_Count,                                 // Placeholder
+    Hydro_SystemMode_Undefined = -1                         // Placeholder
 };
 
 // Measurement Units Mode
@@ -369,8 +371,8 @@ enum Hydro_MeasurementMode : signed char {
     Hydro_MeasurementMode_Metric,                           // Metric measurement mode (°C M L Kg Y-M-D Val.X etc)
     Hydro_MeasurementMode_Scientific,                       // Scientific measurement mode (°K M L Kg Y-M-D Val.XX etc)
 
-    Hydro_MeasurementMode_Count,                            // Internal use only
-    Hydro_MeasurementMode_Undefined = -1,                   // Internal use only
+    Hydro_MeasurementMode_Count,                            // Placeholder
+    Hydro_MeasurementMode_Undefined = -1,                   // Placeholder
     Hydro_MeasurementMode_Default = Hydro_MeasurementMode_Metric // Default system measurement mode
 };
 
@@ -384,8 +386,8 @@ enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_16x2LCD,                        // 16x2 i2c LCD (with layout: EN, RW, RS, BL, Data)
     Hydro_DisplayOutputMode_16x2LCD_Swapped,                // 16x2 i2c LCD (with EN<->RS swapped, layout: RS, RW, EN, BL, Data)
 
-    Hydro_DisplayOutputMode_Count,                          // Internal use only
-    Hydro_DisplayOutputMode_Undefined = -1                  // Internal use only
+    Hydro_DisplayOutputMode_Count,                          // Placeholder
+    Hydro_DisplayOutputMode_Undefined = -1                  // Placeholder
 };
 
 // Control Input Mode
@@ -398,8 +400,8 @@ enum Hydro_ControlInputMode : signed char {
     Hydro_ControlInputMode_6xButton,                        // 6x standard momentary buttons, ribbon: {TODO} (X = pin 1)
     Hydro_ControlInputMode_RotaryEncoder,                   // Rotary encoder, ribbon: {A,B,OK,L,R} (A = pin 1)
 
-    Hydro_ControlInputMode_Count,                           // Internal use only
-    Hydro_ControlInputMode_Undefined = -1                   // Internal use only
+    Hydro_ControlInputMode_Count,                           // Placeholder
+    Hydro_ControlInputMode_Undefined = -1                   // Placeholder
 };
 
 // Actuator Type
@@ -413,8 +415,8 @@ enum Hydro_ActuatorType : signed char {
     Hydro_ActuatorType_WaterSprayer,                        // Water sprayer actuator (feed reservoir only, uses crop linkages - assumes infinite water source)
     Hydro_ActuatorType_FanExhaust,                          // Fan exhaust/circulation relay actuator (feed reservoir only, uses crop linkages)
 
-    Hydro_ActuatorType_Count,                               // Internal use only
-    Hydro_ActuatorType_Undefined = -1                       // Internal use only
+    Hydro_ActuatorType_Count,                               // Placeholder
+    Hydro_ActuatorType_Undefined = -1                       // Placeholder
 };
 
 // Sensor Type
@@ -431,8 +433,8 @@ enum Hydro_SensorType : signed char {
     Hydro_SensorType_AirCarbonDioxide,                      // Air CO2 sensor (analog/digital)
     Hydro_SensorType_PowerUsage,                            // Power usage meter (analog)
 
-    Hydro_SensorType_Count,                                 // Internal use only
-    Hydro_SensorType_Undefined = -1                         // Internal use only
+    Hydro_SensorType_Count,                                 // Placeholder
+    Hydro_SensorType_Undefined = -1                         // Placeholder
 };
 
 // Reservoir Type
@@ -464,9 +466,9 @@ enum Hydro_ReservoirType : signed char {
     Hydro_ReservoirType_CustomAdditive15,                   // Custom additive 15 solution
     Hydro_ReservoirType_CustomAdditive16,                   // Custom additive 16 solution
 
-    Hydro_ReservoirType_Count,                              // Internal use only
-    Hydro_ReservoirType_CustomAdditiveCount = 16,           // Internal use only
-    Hydro_ReservoirType_Undefined = -1                      // Internal use only
+    Hydro_ReservoirType_Count,                              // Placeholder
+    Hydro_ReservoirType_CustomAdditiveCount = 16,           // Placeholder
+    Hydro_ReservoirType_Undefined = -1                      // Placeholder
 };
 
 // Power Rail
@@ -477,8 +479,8 @@ enum Hydro_RailType : signed char {
     Hydro_RailType_DC5V,                                    // 5v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
     Hydro_RailType_DC12V,                                   // 12v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
 
-    Hydro_RailType_Count,                                   // Internal use only
-    Hydro_RailType_Undefined = -1                           // Internal use only
+    Hydro_RailType_Count,                                   // Placeholder
+    Hydro_RailType_Undefined = -1                           // Placeholder
 };
 
 // Pin Mode
@@ -492,8 +494,8 @@ enum Hydro_PinMode : signed char {
     Hydro_PinMode_Analog_Input,                             // Analog input pin
     Hydro_PinMode_Analog_Output,                            // Analog output pin
 
-    Hydro_PinMode_Count,                                    // Internal use only
-    Hydro_PinMode_Undefined = -1                            // Internal use only
+    Hydro_PinMode_Count,                                    // Placeholder
+    Hydro_PinMode_Undefined = -1                            // Placeholder
 };
 
 // Trigger Status
@@ -503,8 +505,8 @@ enum Hydro_TriggerState : signed char {
     Hydro_TriggerState_NotTriggered,                        // Not triggered
     Hydro_TriggerState_Triggered,                           // Triggered
 
-    Hydro_TriggerState_Count,                               // Internal use only
-    Hydro_TriggerState_Undefined = -1                       // Internal use only
+    Hydro_TriggerState_Count,                               // Placeholder
+    Hydro_TriggerState_Undefined = -1                       // Placeholder
 };
 
 // Balancing State
@@ -514,8 +516,8 @@ enum Hydro_BalancingState : signed char {
     Hydro_BalancingState_Balanced,                          // Balanced state
     Hydro_BalancingState_TooHigh,                           // Too high / needs to go lower
 
-    Hydro_BalancingState_Count,                             // Internal use only
-    Hydro_BalancingState_Undefined = -1                     // Internal use only
+    Hydro_BalancingState_Count,                             // Placeholder
+    Hydro_BalancingState_Undefined = -1                     // Placeholder
 };
 
 // Enable Mode
@@ -531,8 +533,8 @@ enum Hydro_EnableMode : signed char {
     Hydro_EnableMode_DesOrder,                              // Serial activation using highest-to-lowest/descending-order drive intensities
     Hydro_EnableMode_AscOrder,                              // Serial activation using lowest-to-highest/ascending-order drive intensities
 
-    Hydro_EnableMode_Count,                                 // Internal use only
-    Hydro_EnableMode_Undefined = -1,                        // Internal use only
+    Hydro_EnableMode_Count,                                 // Placeholder
+    Hydro_EnableMode_Undefined = -1,                        // Placeholder
     Hydro_EnableMode_Serial = Hydro_EnableMode_InOrder      // Serial (alias for in-order)
 };
 
@@ -543,8 +545,8 @@ enum Hydro_DirectionMode : signed char {
     Hydro_DirectionMode_Reverse,                            // Opposite/reverse direction mode
     Hydro_DirectionMode_Stop,                               // Stationary/braking direction mode
 
-    Hydro_DirectionMode_Count,                              // Internal use only
-    Hydro_DirectionMode_Undefined = -1                      // Internal use only
+    Hydro_DirectionMode_Count,                              // Placeholder
+    Hydro_DirectionMode_Undefined = -1                      // Placeholder
 };
 
 // Units Category
@@ -565,8 +567,8 @@ enum Hydro_UnitsCategory : signed char {
     Hydro_UnitsCategory_Weight,                             // Weight based unit
     Hydro_UnitsCategory_Power,                              // Power based unit
 
-    Hydro_UnitsCategory_Count,                              // Internal use only
-    Hydro_UnitsCategory_Undefined = -1                      // Internal use only
+    Hydro_UnitsCategory_Count,                              // Placeholder
+    Hydro_UnitsCategory_Undefined = -1                      // Placeholder
 };
 
 // Units Type
@@ -595,11 +597,11 @@ enum Hydro_UnitsType : signed char {
     Hydro_UnitsType_Power_Wattage,                          // Wattage power mode
     Hydro_UnitsType_Power_Amperage,                         // Amperage current power mode
 
-    Hydro_UnitsType_Count,                                  // Internal use only
+    Hydro_UnitsType_Count,                                  // Placeholder
     Hydro_UnitsType_Concentration_TDS = Hydro_UnitsType_Concentration_EC, // Standard TDS concentration mode alias
     Hydro_UnitsType_Concentration_PPM = Hydro_UnitsType_Concentration_PPM500, // Standard PPM concentration mode alias
     Hydro_UnitsType_Power_JoulesPerSecond = Hydro_UnitsType_Power_Wattage, // Joules per second power mode alias
-    Hydro_UnitsType_Undefined = -1                          // Internal use only
+    Hydro_UnitsType_Undefined = -1                          // Placeholder
 };
 
 // Common forward decls
