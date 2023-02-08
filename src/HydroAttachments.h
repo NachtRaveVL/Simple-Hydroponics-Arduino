@@ -185,9 +185,12 @@ public:
     inline void setupActivation(const HydroActivationHandle::Activation &activation) { _actSetup = activation; applySetup(); }
     inline void setupActivation(const HydroActivationHandle &handle) { setupActivation(handle.activation); }
     inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { setupActivation(HydroActivationHandle::Activation(direction, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
-    inline void setupActivation(float intensity, millis_t duration = -1, bool force = false) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
     inline void setupActivation(millis_t duration, bool force = false) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
     inline void setupActivation(bool force, millis_t duration = -1) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
+    // These activation methods takes into account actuator settings such as user
+    // calibration data and type checks in determining how to interpret passed value.
+    void setupActivation(float value, millis_t duration = -1, bool force = false);
+    inline void setupActivation(const HydroSingleMeasurement &measurement, millis_t duration = -1, bool force = false) { setupActivation(measurement.value, duration, force); }
 
     // Enables activation handle with current setup, if not already active.
     // Repeat activations will reuse most recent setupActivation() values.
