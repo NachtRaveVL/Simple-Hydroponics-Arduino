@@ -31,7 +31,8 @@ void HydroScheduler::update()
         #endif
 
         {   DateTime currTime = getCurrentTime();
-            bool daytimeMode = currTime.hour() >= HYDRO_CROPS_NIGHT_ENDHR && currTime.hour() < HYDRO_CROPS_NIGHT_BEGINHR;
+            bool daytimeMode = currTime.hour() >= HYDRO_NIGHT_FINISH_HR && currTime.hour() < HYDRO_NIGHT_START_HR;
+            // TODO: calcSunriseSunset()
 
             if (_inDaytimeMode != daytimeMode) {
                 _inDaytimeMode = daytimeMode;
@@ -334,7 +335,7 @@ float HydroScheduler::getCombinedDosingRate(HydroReservoir *reservoir, Hydro_Res
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
     HYDRO_SOFT_ASSERT(!hasSchedulerData() || reservoir, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(!hasSchedulerData() || !reservoir || (reservoirType >= Hydro_ReservoirType_NutrientPremix &&
-                                                               reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount), SFP(HStr_Err_InvalidParameter));
+                                                            reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount), SFP(HStr_Err_InvalidParameter));
 
     if (hasSchedulerData() && reservoir &&
         (reservoirType >= Hydro_ReservoirType_NutrientPremix &&
@@ -449,7 +450,8 @@ void HydroScheduler::updateDayTracking()
 {
     auto currTime = getCurrentTime();
     _lastDayNum = currTime.day();
-    _inDaytimeMode = currTime.hour() >= HYDRO_CROPS_NIGHT_ENDHR && currTime.hour() < HYDRO_CROPS_NIGHT_BEGINHR;
+    _inDaytimeMode = currTime.hour() >= HYDRO_NIGHT_FINISH_HR && currTime.hour() < HYDRO_NIGHT_START_HR;
+    // TODO: calcSunriseSunset()
 
     setNeedsScheduling();
 

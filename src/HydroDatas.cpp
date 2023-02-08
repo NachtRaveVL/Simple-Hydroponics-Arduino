@@ -44,6 +44,8 @@ HydroData *_allocateDataForObjType(int8_t idType, int8_t classType)
                     return new HydroPumpActuatorData();
                 case (int8_t)HydroActuator::Variable:
                     return new HydroActuatorData();
+                case (int8_t)HydroActuator::VariablePump:
+                    return new HydroPumpActuatorData();
                 default: break;
             }
             break;
@@ -234,7 +236,7 @@ void HydroCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 void HydroCalibrationData::setFromTwoPoints(float point1MeasuredAt, float point1CalibratedTo,
-                                                  float point2MeasuredAt, float point2CalibratedTo)
+                                            float point2MeasuredAt, float point2CalibratedTo)
 {
     float aTerm = point2CalibratedTo - point1CalibratedTo;
     float bTerm = point2MeasuredAt - point1MeasuredAt;

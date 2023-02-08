@@ -28,11 +28,11 @@ struct HydroBitResolution {
 
     HydroBitResolution(uint8_t bitResolution);              // Bit resolution (# of bits)
 
-    // Transforms value from raw integer (or initial) value into normalized raw (or transformed) value.
-    inline float transform(int intValue) const { return constrain(intValue / (float)maxVal, 0.0f, 1.0f); }
+    // Transforms value from raw/integer (or initial) value into normalized (or transformed) value.
+    inline float transform(int value) const { return constrain(value / (float)maxVal, 0.0f, 1.0f); }
 
-    // Inverse transforms value from normalized raw (or transformed) value back into raw integer (or initial) value.
-    inline int inverseTransform(float rawValue) const { return constrain((int)((float)maxVal * rawValue), 0, maxVal); }
+    // Inverse transforms value from normalized (or transformed) value back into raw/integer (or initial) value.
+    inline int inverseTransform(float value) const { return constrain((int)((float)maxVal * value), 0, maxVal); }
 };
 
 // Simple wrapper class for dealing with RTC modules.

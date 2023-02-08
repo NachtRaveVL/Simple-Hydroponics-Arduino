@@ -63,7 +63,7 @@ struct HydroSystemData : public HydroData {
 // for storing custom user curve/offset correction/mapping data.
 // See setFrom* methods to set calibrated data in various formats.
 struct HydroCalibrationData : public HydroData {
-    char ownerName[HYDRO_NAME_MAXSIZE];                     // Owner object name this calibration belongs to
+    char ownerName[HYDRO_NAME_MAXSIZE];                     // Owner object name this calibration belongs to (actuator/sensor)
     Hydro_UnitsType calibUnits;                             // Calibration output units
     float multiplier, offset;                               // Ax + B value transform coefficients
 
@@ -75,22 +75,22 @@ struct HydroCalibrationData : public HydroData {
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 
     // Transforms value from raw (or initial) value into calibrated (or transformed) value.
-    inline float transform(float rawValue) const { return (rawValue * multiplier) + offset; }
+    inline float transform(float value) const { return (value * multiplier) + offset; }
     // Transforms value in-place from raw (or initial) value into calibrated (or transformed) value, with optional units write out.
     inline void transform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { *valueInOut = transform(*valueInOut);
                                                                                           if (unitsOut) { *unitsOut = calibUnits; } }
     // Transforms measurement from raw (or initial) measurement into calibrated (or transformed) measurement.
-    inline HydroSingleMeasurement transform(HydroSingleMeasurement rawMeasurement) { return HydroSingleMeasurement(transform(rawMeasurement.value), calibUnits, rawMeasurement.timestamp, rawMeasurement.frame); }
+    inline HydroSingleMeasurement transform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(transform(measurement.value), calibUnits, measurement.timestamp, measurement.frame); }
     // Transforms measurement in-place from raw (or initial) measurement into calibrated (or transformed) measurement.
     inline void transform(HydroSingleMeasurement *measurementInOut) const { transform(&measurementInOut->value, &measurementInOut->units); }
 
     // Inverse transforms value from calibrated (or transformed) value back into raw (or initial) value.
-    inline float inverseTransform(float calibratedValue) const { return (calibratedValue - offset) / multiplier; }
+    inline float inverseTransform(float value) const { return (value - offset) / multiplier; }
     // Inverse transforms value in-place from calibrated (or transformed) value back into raw (or initial) value, with optional units write out.
     inline void inverseTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { *valueInOut = inverseTransform(*valueInOut);
                                                                                                  if (unitsOut) { *unitsOut = Hydro_UnitsType_Raw_0_1; } }
     // Inverse transforms measurement from calibrated (or transformed) measurement back into raw (or initial) measurement.
-    inline HydroSingleMeasurement inverseTransform(HydroSingleMeasurement rawMeasurement) { return HydroSingleMeasurement(inverseTransform(rawMeasurement.value), calibUnits, rawMeasurement.timestamp, rawMeasurement.frame); }
+    inline HydroSingleMeasurement inverseTransform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(inverseTransform(measurement.value), calibUnits, measurement.timestamp, measurement.frame); }
     // Inverse transforms measurement in-place from calibrated (or transformed) measurement back into raw (or initial) measurement.
     inline void inverseTransform(HydroSingleMeasurement *measurementInOut) const { inverseTransform(&measurementInOut->value, &measurementInOut->units); }
 
@@ -99,8 +99,8 @@ struct HydroCalibrationData : public HydroData {
     // the normalized voltage signal measurement from the analogRead() function (after
     // taking into account appropiate bit resolution conversion). Calibrated-to values
     // are what each measurement-at value should map out to.
-    // For example, if your sensor should treat 0v (aka 0.0) as a pH of 2 and treat 5v
-    // (aka 1.0, or MCU max voltage) as a pH of 10, you would pass 0.0, 2.0, 1.0, 10.0.
+    // For example, if your sensor should treat 0v (aka 0.0) as a value of 2 and treat 5v
+    // (aka 1.0, or MCU max voltage) as a value of 10, you would pass 0.0, 2.0, 1.0, 10.0.
     // The final calculated curvature transform, for this example, would be y = 8x + 2.
     void setFromTwoPoints(float point1RawMeasuredAt,        // What normalized value point 1 measured in at [0.0,1.0]
                           float point1CalibratedTo,         // What value point 1 should be mapped to
@@ -109,29 +109,28 @@ struct HydroCalibrationData : public HydroData {
 
     // Sets linear calibration curvature from two voltages.
     // Wrapper to setFromTwoPoints, used when raw voltage values are easier to work with.
-    inline void setFromTwoVoltages(float point1VoltageAt,   // What raw voltage value point 1 measured in at [0.0,aRef]
-                                   float point1CalibratedTo, // What value point 1 should be mapped to
-                                   float point2VoltageAt,   // What raw voltage value point 2 measured in at [0.0,aRef]
-                                   float point2CalibratedTo, // What value point 2 should be mapped to
-                                   float analogRefVoltage) { // aRef: Value of aRef pin (if not connected uses default of 5 for 5v MCUs, 3.3 for 3.3v MCUs)
-        setFromTwoPoints(point1VoltageAt / analogRefVoltage, point1CalibratedTo,
-                         point2VoltageAt / analogRefVoltage, point2CalibratedTo);
+    inline void setFromTwoVoltages(float point1VoltsAt,     // What raw voltage value point 1 measured in at [0.0,aRef]
+                                   float point1CalibTo,     // What value point 1 should be mapped to
+                                   float point2VoltsAt,     // What raw voltage value point 2 measured in at [0.0,aRef]
+                                   float point2CalibTo,     // What value point 2 should be mapped to
+                                   float analogRefVolts) {  // aRef: Value of aRef pin (use 5 for 5v MCUs, 3.3 for 3.3v MCUs)
+        setFromTwoPoints(point1VoltsAt / analogRefVolts, point1CalibTo,
+                         point2VoltsAt / analogRefVolts, point2CalibTo);
     }
 
     // Sets linear calibration curvature from known output range.
-    // Wrapper to setFromTwoPoints, used when data uses the entire intensity range
-    // with a known min/max value at each end. E.g. will map 0v (aka 0.0) to min value
-    // and 5v (aka 1.0, or MCU max voltage) to max value.
+    // Wrapper to setFromTwoPoints, used when data uses the entire intensity range with a known min/max value at each end.
+    // E.g. will map 0v (aka 0.0) to min value and 5v (aka 1.0, or MCU max voltage) to max value.
     inline void setFromRange(float min, float max) { setFromTwoPoints(0.0, min, 1.0, max); }
 
     // Sets linear calibration curvature from known output scale.
     // Similar to setFromTwoPoints, but when data has a known max intensity.
-    // E.g. will map 0v to 0 and 5v (or MCU max voltage) to scale value.
+    // E.g. will map 0v to 0 and 5v (aka 1.0, or MCU max voltage) to scale value.
     inline void setFromScale(float scale) { setFromRange(0.0, scale); }
 
-    // Sets linear calibration curvature to typical servo ranges.
-    // Wrapper to setFromTwoPoints, used for specifying servo degree operation ranges
-    // using the typical 2.5% and 12.5% phase lengths that hobbyist servos operate at.
+    // Sets linear calibration curvature from typical servo ranges.
+    // Wrapper to setFromTwoPoints, used for specifying servo degree operation ranges using the typical 2.5% and 12.5% phase lengths that hobbyist servos operate at.
+    // E.g. will map 2.5% (servo min/neg position/speed) to minDegrees and 12.5% (servo max/pos position/speed) to maxDegrees.
     inline void setFromServo(float minDegrees, float maxDegrees) { setFromTwoPoints(0.025f, minDegrees, 0.125f, maxDegrees); }
 };
 
@@ -170,14 +169,6 @@ struct HydroCropsLibData : public HydroData {
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 
-    inline bool isInvasive() const { return flags & Hydro_CropsDataFlag_Invasive; }
-    inline bool isViner() const { return flags & Hydro_CropsDataFlag_Viner; }
-    inline bool isLarge() const { return flags & Hydro_CropsDataFlag_Large; }
-    inline bool isPerennial() const { return flags & Hydro_CropsDataFlag_Perennial; }
-    inline bool isToxicToPets() const { return flags & Hydro_CropsDataFlag_Toxic; }
-    inline bool needsPrunning() const { return flags & Hydro_CropsDataFlag_Pruning; }
-    inline bool needsSpraying() const { return flags & Hydro_CropsDataFlag_Spraying; }
-
     inline void setIsInvasive() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Invasive); }
     inline void setIsViner() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Viner); }
     inline void setIsLarge() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Large); }
@@ -185,6 +176,14 @@ struct HydroCropsLibData : public HydroData {
     inline void setIsToxicToPets() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Toxic); }
     inline void setNeedsPrunning() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Pruning); }
     inline void setNeedsSpraying() { flags = (Hydro_CropsDataFlag)(flags | Hydro_CropsDataFlag_Spraying); }
+
+    inline bool isInvasive() const { return flags & Hydro_CropsDataFlag_Invasive; }
+    inline bool isViner() const { return flags & Hydro_CropsDataFlag_Viner; }
+    inline bool isLarge() const { return flags & Hydro_CropsDataFlag_Large; }
+    inline bool isPerennial() const { return flags & Hydro_CropsDataFlag_Perennial; }
+    inline bool isToxicToPets() const { return flags & Hydro_CropsDataFlag_Toxic; }
+    inline bool needsPrunning() const { return flags & Hydro_CropsDataFlag_Pruning; }
+    inline bool needsSpraying() const { return flags & Hydro_CropsDataFlag_Spraying; }
 };
 
 

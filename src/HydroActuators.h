@@ -126,6 +126,21 @@ public:
     virtual HydroAttachment &getParentRail(bool resolve = true) override;
     virtual HydroAttachment &getParentReservoir(bool resolve = true) override;
 
+    void setUserCalibrationData(HydroCalibrationData *userCalibrationData);
+    inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
+
+    // Transformation methods that convert from normalized driving intensity to calibration units
+    inline float fromIntensity(float value) const { return _calibrationData ? _calibrationData->transform(value) : value; }
+    inline void fromIntensity(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->transform(valueInOut, unitsOut); } }
+    inline HydroSingleMeasurement fromIntensity(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline void fromIntensity(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->transform(&measurementInOut->value, &measurementInOut->units); } }
+
+    // Transformation methods that convert from calibration units to normalized driving intensity
+    inline float toIntensity(float value) const { return _calibrationData ? _calibrationData->inverseTransform(value) : value; }
+    inline void toIntensity(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->inverseTransform(valueInOut, unitsOut); } }
+    inline HydroSingleMeasurement toIntensity(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline void toIntensity(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->inverseTransform(&measurementInOut->value, &measurementInOut->units); } }
+
     inline Hydro_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
     inline hposi_t getActuatorIndex() const { return _id.posIndex; }
 
@@ -142,6 +157,7 @@ protected:
     HydroSingleMeasurement _contPowerUsage;                 // Continuous power draw
     HydroAttachment _rail;                                  // Power rail attachment
     HydroAttachment _reservoir;                             // Reservoir attachment
+    const HydroCalibrationData *_calibrationData;           // Calibration data
     Signal<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS> _activateSignal; // Activation update signal
 
     virtual HydroData *allocateData() const override;
@@ -263,11 +279,11 @@ protected:
 };
 
 
-// Throttled Pump Actuator
+// Variable/Throttled Pump Actuator
 // This actuator acts as a throttleable water pump and attaches to both an input and output
 // reservoir. Pumps using this class have variable flow control but also can be paired with
 // a flow sensor for more precise pumping calculations.
-//class HydroThrottledPumpActuator : public HydroVariableActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
+//class HydroVariablePumpActuator : public HydroVariableActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
 // TODO
 //};
 

@@ -67,6 +67,18 @@ public:
     void setUserCalibrationData(HydroCalibrationData *userCalibrationData);
     inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
 
+    // Transformation methods that convert from normalized reading intensity to calibration units
+    inline float fromIntensity(float value) const { return _calibrationData ? _calibrationData->transform(value) : value; }
+    inline void fromIntensity(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->transform(valueInOut, unitsOut); } }
+    inline HydroSingleMeasurement fromIntensity(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline void fromIntensity(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->transform(&measurementInOut->value, &measurementInOut->units); } }
+
+    // Transformation methods that convert from calibration units to normalized reading intensity
+    inline float toIntensity(float value) const { return _calibrationData ? _calibrationData->inverseTransform(value) : value; }
+    inline void toIntensity(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->inverseTransform(valueInOut, unitsOut); } }
+    inline HydroSingleMeasurement toIntensity(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline void toIntensity(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->inverseTransform(&measurementInOut->value, &measurementInOut->units); } }
+
     inline Hydro_SensorType getSensorType() const { return _id.objTypeAs.sensorType; }
     inline hposi_t getSensorIndex() const { return _id.posIndex; }
 
