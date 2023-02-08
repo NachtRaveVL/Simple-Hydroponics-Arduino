@@ -51,7 +51,7 @@ bool HydroReservoir::canActivate(HydroActuator *actuator)
 {
     bool doEmptyCheck;
 
-    if (getActuatorIsPumpFromType(actuator->getActuatorType())) {
+    if (actuator->isPumpType()) {
         doEmptyCheck = (actuator->getReservoir().get() == this);
     } else if (getActuatorInWaterFromType(actuator->getActuatorType())) {
         doEmptyCheck = true;

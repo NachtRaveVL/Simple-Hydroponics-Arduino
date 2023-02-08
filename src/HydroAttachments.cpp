@@ -134,10 +134,24 @@ void HydroActuatorAttachment::updateIfNeeded(bool poll)
     }
 }
 
+void HydroActuatorAttachment::setupActivation(float value, millis_t duration, bool force)
+{
+    if (resolve()) {
+        value = get()->calibrationInvTransform(value);
+
+        if (get()->isDirectionalType()) {
+            setupActivation(HydroActivationHandle::Activation(value > FLT_EPSILON ? Hydro_DirectionMode_Forward : value < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(value), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+            return;
+        }
+    }
+
+    setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, value, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+}
+
 void HydroActuatorAttachment::enableActivation()
 {
     if (!_actHandle.actuator && _actSetup.isValid() && resolve()) {
-        if (_actHandle.isDone()) { applySetup(); }
+        if (_actHandle.isDone()) { applySetup(); } // repeats existing setup
         _calledLastUpdate = false;
         _actHandle = getObject();
     }
@@ -158,14 +172,14 @@ void HydroActuatorAttachment::applySetup()
             _actHandle.activation.direction = _actSetup.direction;
             _actHandle.activation.flags = _actSetup.flags;
 
-            if (resolve() && get()->isAnyBinaryClass()) { // Duration based
+            if (resolve() && get()->isAnyBinaryClass()) { // Duration based change for rate multiplier
                 _actHandle.activation.intensity = _actSetup.intensity;
                 if (!_actHandle.isUntimed()) {
                     _actHandle.activation.duration = _actSetup.duration * _rateMultiplier;
                 } else {
                     _actHandle.activation.duration = _actSetup.duration;
                 }
-            } else { // Intensity based
+            } else { // Intensity based change for rate multiplier
                 _actHandle.activation.intensity = _actSetup.intensity * _rateMultiplier;
                 _actHandle.activation.duration = _actSetup.duration;
             }

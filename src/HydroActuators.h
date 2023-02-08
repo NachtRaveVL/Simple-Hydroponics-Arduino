@@ -44,7 +44,7 @@ struct HydroActivationHandle {
         millis_t duration;                                  // Duration time remaining, in milliseconds, else -1 for non-diminishing/unlimited or 0 for finished
         Hydro_ActivationFlags flags;                        // Activation flags
 
-        inline Activation(Hydro_DirectionMode directionIn, float intensityIn, millis_t durationIn, Hydro_ActivationFlags flagsIn) : direction(directionIn), intensity(intensityIn), duration(durationIn), flags(flagsIn) { ; }
+        inline Activation(Hydro_DirectionMode directionIn, float intensityIn, millis_t durationIn, Hydro_ActivationFlags flagsIn) : direction(directionIn), intensity(constrain(intensityIn, 0.0f, 1.0f)), duration(durationIn), flags(flagsIn) { ; }
         inline Activation() : Activation(Hydro_DirectionMode_Undefined, 0.0f, 0, Hydro_ActivationFlags_None) { ; }
 
         inline bool isValid() const { return direction != Hydro_DirectionMode_Undefined; }
@@ -111,14 +111,25 @@ public:
 
     virtual bool getCanEnable() override;
 
+    // Activating actuators is done through handles, these methods only understanding normalized driving intensity [0.0,1.0]
     inline HydroActivationHandle enableActuator(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { return HydroActivationHandle(::getSharedPtr<HydroActuator>(this), direction, intensity, duration, force); }
     inline HydroActivationHandle enableActuator(float intensity, millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, intensity, duration, force); }
     inline HydroActivationHandle enableActuator(millis_t duration, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
     inline HydroActivationHandle enableActuator(bool force, millis_t duration = -1) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
 
+    // Actuators that have user calibrations, such as servos, can use these methods to correctly map calibrated values to driving intensities
+    inline HydroActivationHandle enableCalibratedActuator(float value, millis_t duration = -1, bool force = false) { return enableActuator(calibrationInvTransform(value), duration, force); }
+
+    // Actuators that see [+1,0,-1] mapping to [reverse,stop,forward], such as motors, can use these methods that properly handle directionality
+    inline HydroActivationHandle enableDirectionalActuator(float intensity, millis_t duration = -1, bool force = false) { return enableActuator(intensity > FLT_EPSILON ? Hydro_DirectionMode_Forward : intensity < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(intensity), duration, force); }
+    inline HydroActivationHandle enableDirectionalCalibratedActuator(float value, millis_t duration = -1, bool force = false) { return enableDirectionalActuator(calibrationInvTransform(value)); }
+
     inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; setNeedsUpdate(); }
     inline Hydro_EnableMode getEnableMode() { return _enableMode; }
+
     inline bool isSerialMode() { return getActuatorIsSerialFromMode(getEnableMode()); }
+    inline bool isPumpType() { return getActuatorIsPumpFromType(getActuatorType()); }
+    inline bool isDirectionalType() { return false; }
 
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) override;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() override;
@@ -129,17 +140,17 @@ public:
     void setUserCalibrationData(HydroCalibrationData *userCalibrationData);
     inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
 
-    // Transformation methods that convert from normalized driving intensity to calibration units
-    inline float fromIntensity(float value) const { return _calibrationData ? _calibrationData->transform(value) : value; }
-    inline void fromIntensity(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->transform(valueInOut, unitsOut); } }
-    inline HydroSingleMeasurement fromIntensity(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
-    inline void fromIntensity(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->transform(&measurementInOut->value, &measurementInOut->units); } }
+    // Transformation methods that convert from normalized driving intensity/driver value to calibration units
+    inline float calibrationTransform(float value) const { return _calibrationData ? _calibrationData->transform(value) : value; }
+    inline void calibrationTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->transform(valueInOut, unitsOut); } }
+    inline HydroSingleMeasurement calibrationTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline void calibrationTransform(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->transform(&measurementInOut->value, &measurementInOut->units); } }
 
-    // Transformation methods that convert from calibration units to normalized driving intensity
-    inline float toIntensity(float value) const { return _calibrationData ? _calibrationData->inverseTransform(value) : value; }
-    inline void toIntensity(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->inverseTransform(valueInOut, unitsOut); } }
-    inline HydroSingleMeasurement toIntensity(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
-    inline void toIntensity(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->inverseTransform(&measurementInOut->value, &measurementInOut->units); } }
+    // Transformation methods that convert from calibration units to normalized driving intensity/driver value
+    inline float calibrationInvTransform(float value) const { return _calibrationData ? _calibrationData->inverseTransform(value) : value; }
+    inline void calibrationInvTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->inverseTransform(valueInOut, unitsOut); } }
+    inline HydroSingleMeasurement calibrationInvTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline void calibrationInvTransform(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->inverseTransform(&measurementInOut->value, &measurementInOut->units); } }
 
     inline Hydro_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
     inline hposi_t getActuatorIndex() const { return _id.posIndex; }
