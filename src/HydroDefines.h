@@ -31,11 +31,16 @@
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
+#ifndef TWO_PI                                              // Missing 2pi
+#define TWO_PI                          6.283185307179586476925286766559
+#endif
 #ifndef RANDOM_MAX                                          // Missing random max
-#ifdef RAND_MAX
-#define RANDOM_MAX RAND_MAX
+#if defined(RAND_MAX)
+#define RANDOM_MAX                      RAND_MAX
+#elif defined(INTPTR_MAX)
+#define RANDOM_MAX                      INTPTR_MAX
 #else
-#define RANDOM_MAX INTPTR_MAX
+#define RANDOM_MAX                      __INT_MAX__
 #endif
 #endif
 #if (defined(ESP32) || defined(ESP8266)) && !defined(ESP_PLATFORM) // Missing ESP_PLATFORM
@@ -113,8 +118,6 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_ACT_PUMPCALC_MINFLOWRATE  0.05f               // What percentage of continuous flow rate an instantaneous flow rate sensor must achieve before it is used in pump/volume calculations (reduces near-zero error jitters)
 
 #define HYDRO_CROPS_LINKS_BASESIZE      1                   // Base array size for crop's linkage list
-#define HYDRO_CROPS_NIGHT_BEGINHR       22                  // Hour of the day night begins (for night feeding multiplier)
-#define HYDRO_CROPS_NIGHT_ENDHR         6                   // Hour of the day night ends (for night feeding multiplier)
 #define HYDRO_CROPS_GROWWEEKS_MAX       16                  // Maximum grow weeks to support scheduling up to
 #define HYDRO_CROPS_GROWWEEKS_MIN       8                   // Minimum grow weeks to support scheduling up to
 
@@ -125,6 +128,9 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_FEEDRES_LINKS_BASESIZE    4                   // Base array size for feed reservoir's linkage list
 #define HYDRO_FEEDRES_FRACTION_EMPTY    0.2f                // What fraction of a feed reservoir's volume is to be considered 'empty' during7*- pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 #define HYDRO_FEEDRES_FRACTION_FILLED   0.9f                // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
+
+#define HYDRO_NIGHT_START_HR            20                  // Hour of the day night starts (for night feeding multiplier, used if not able to calculate from lat/long/date)
+#define HYDRO_NIGHT_FINISH_HR           6                   // Hour of the day night finishes (for night feeding multiplier, used if not able to calculate from lat/long/date)
 
 #define HYDRO_POS_SEARCH_FROMBEG        -1                  // Search from beginning to end, 0 up to MAXSIZE-1
 #define HYDRO_POS_SEARCH_FROMEND        HYDRO_POS_MAXSIZE   // Search from end to beginning, MAXSIZE-1 down to 0

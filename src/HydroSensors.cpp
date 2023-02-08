@@ -51,7 +51,7 @@ Hydro_UnitsType defaultMeasureUnitsForSensorType(Hydro_SensorType sensorType, ui
         case Hydro_SensorType_WaterHeight:
             return defaultDistanceUnits(measureMode);
         case Hydro_SensorType_PowerUsage:
-            return Hydro_UnitsType_Power_Wattage;
+            return defaultPowerUnits(measureMode);
         default:
             return Hydro_UnitsType_Undefined;
     }
@@ -84,9 +84,9 @@ Hydro_UnitsCategory defaultMeasureCategoryForSensorType(Hydro_SensorType sensorT
             return Hydro_UnitsCategory_AirConcentration;
         case Hydro_SensorType_PowerUsage:
             return Hydro_UnitsCategory_Power;
-        default: break;
+        default:
+            return Hydro_UnitsCategory_Undefined;
     }
-    return Hydro_UnitsCategory_Undefined;
 }
 
 
@@ -345,9 +345,7 @@ void HydroAnalogSensor::_takeMeasurement(unsigned int taskId)
                 timestamp
             );
 
-            if (_calibrationData) {
-                _calibrationData->transform(&newMeasurement);
-            }
+            fromIntensity(&newMeasurement);
             convertUnits(&newMeasurement, outUnits);
 
             _lastMeasurement = newMeasurement;
@@ -583,14 +581,12 @@ void HydroDHTTempHumiditySensor::_takeMeasurement(unsigned int taskId)
             auto timestamp = unixNow();
 
             HydroTripleMeasurement newMeasurement(
-                tempRead, readUnits, humidRead, Hydro_UnitsType_Percentile_0_100,
+                tempRead, readUnits,
+                humidRead, Hydro_UnitsType_Percentile_0_100,
                 0.0f, Hydro_UnitsType_Undefined,
                 timestamp
             );
 
-            if (_calibrationData) {
-                _calibrationData->transform(&newMeasurement.value[0], &newMeasurement.units[0]);
-            }
             convertUnits(&newMeasurement.value[0], &newMeasurement.units[0], outUnits[0]);
             convertUnits(&newMeasurement.value[1], &newMeasurement.units[1], outUnits[1]);
 
@@ -761,9 +757,6 @@ void HydroDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
                 HYDRO_SOFT_ASSERT(!deviceDisconnected, SFP(HStr_Err_MeasurementFailure)); // device disconnected
 
                 if (!deviceDisconnected) {
-                    if (_calibrationData) {
-                        _calibrationData->transform(&newMeasurement);
-                    }
                     convertUnits(&newMeasurement, outUnits);
 
                     _lastMeasurement = newMeasurement;

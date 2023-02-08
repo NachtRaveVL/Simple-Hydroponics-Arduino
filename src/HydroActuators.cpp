@@ -18,6 +18,8 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
                 return new HydroRelayPumpActuator((const HydroPumpActuatorData *)dataIn);
             case (int8_t)HydroActuator::Variable:
                 return new HydroVariableActuator((const HydroActuatorData *)dataIn);
+            case (int8_t)HydroActuator::VariablePump:
+                //return new HydroVariablePumpActuator((const HydroPumpActuatorData *)dataIn);
             default: break;
         }
     }
@@ -276,6 +278,19 @@ HydroAttachment &HydroActuator::getParentReservoir(bool resolve)
 {
     if (resolve) { _reservoir.resolve(); }
     return _reservoir;
+}
+
+void HydroActuator::setUserCalibrationData(HydroCalibrationData *userCalibrationData)
+{
+    if (getHydroInstance()) {
+        if (userCalibrationData && getHydroInstance()->setUserCalibrationData(userCalibrationData)) {
+            _calibrationData = getHydroInstance()->getUserCalibrationData(_id.key);
+        } else if (!userCalibrationData && _calibrationData && getHydroInstance()->dropUserCalibrationData(_calibrationData)) {
+            _calibrationData = nullptr;
+        }
+    } else {
+        _calibrationData = userCalibrationData;
+    }
 }
 
 Signal<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS> &HydroActuator::getActivationSignal()
