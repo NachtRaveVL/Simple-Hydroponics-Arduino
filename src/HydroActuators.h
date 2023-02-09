@@ -111,18 +111,14 @@ public:
 
     virtual bool getCanEnable() override;
 
-    // Activating actuators is done through handles, these methods only understanding normalized driving intensity [0.0,1.0]
+    // Activating actuators is done through activation handles, which must stay memory
+    // resident in order for the actuator to pick up and process it. Enablement mode
+    // affects how handles are processed - in parallel, or in serial - and what the
+    // applied output is. See HelioActuatorAttachment for an abstraction of this process.
     inline HydroActivationHandle enableActuator(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { return HydroActivationHandle(::getSharedPtr<HydroActuator>(this), direction, intensity, duration, force); }
-    inline HydroActivationHandle enableActuator(float intensity, millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, intensity, duration, force); }
+    inline HydroActivationHandle enableActuator(float value, millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, calibrationInvTransform(value), duration, force); }
     inline HydroActivationHandle enableActuator(millis_t duration, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
     inline HydroActivationHandle enableActuator(bool force, millis_t duration = -1) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
-
-    // Actuators that have user calibrations, such as servos, can use these methods to correctly map calibrated values to driving intensities
-    inline HydroActivationHandle enableCalibratedActuator(float value, millis_t duration = -1, bool force = false) { return enableActuator(calibrationInvTransform(value), duration, force); }
-
-    // Actuators that see [+1,0,-1] mapping to [reverse,stop,forward], such as motors, can use these methods that properly handle directionality
-    inline HydroActivationHandle enableDirectionalActuator(float intensity, millis_t duration = -1, bool force = false) { return enableActuator(intensity > FLT_EPSILON ? Hydro_DirectionMode_Forward : intensity < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(intensity), duration, force); }
-    inline HydroActivationHandle enableDirectionalCalibratedActuator(float value, millis_t duration = -1, bool force = false) { return enableDirectionalActuator(calibrationInvTransform(value)); }
 
     inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; setNeedsUpdate(); }
     inline Hydro_EnableMode getEnableMode() { return _enableMode; }
