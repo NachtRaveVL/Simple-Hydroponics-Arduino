@@ -380,7 +380,7 @@ enum Hydro_MeasurementMode : signed char {
 
     Hydro_MeasurementMode_Count,                            // Placeholder
     Hydro_MeasurementMode_Undefined = -1,                   // Placeholder
-    Hydro_MeasurementMode_Default = Hydro_MeasurementMode_Metric // Default system measurement mode
+    Hydro_MeasurementMode_Default = Hydro_MeasurementMode_Metric // Default system measurement mode (alias, feel free to change)
 };
 
 // LCD/Display Output Mode
@@ -487,7 +487,8 @@ enum Hydro_RailType : signed char {
     Hydro_RailType_DC12V,                                   // 12v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
 
     Hydro_RailType_Count,                                   // Placeholder
-    Hydro_RailType_Undefined = -1                           // Placeholder
+    Hydro_RailType_Undefined = -1,                          // Placeholder
+    Hydro_RailType_DefaultAC = Hydro_RailType_AC110V        // Default AC rating for AC-based power rail (alias, feel free to change)
 };
 
 // Pin Mode
