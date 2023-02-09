@@ -48,10 +48,9 @@ public:
 
     inline void setNeedsScheduling();
     inline bool needsScheduling() { return _needsScheduling; }
-
-    float getCombinedDosingRate(HydroReservoir *reservoir, Hydro_ReservoirType reservoirType = Hydro_ReservoirType_NutrientPremix);
     inline bool inDaytimeMode() const { return _inDaytimeMode; }
 
+    float getCombinedDosingRate(HydroReservoir *reservoir, Hydro_ReservoirType reservoirType = Hydro_ReservoirType_NutrientPremix);
     float getBaseFeedMultiplier() const;
     float getWeeklyDosingRate(int weekIndex, Hydro_ReservoirType reservoirType = Hydro_ReservoirType_NutrientPremix) const;
     float getStandardDosingRate(Hydro_ReservoirType reservoirType) const;
@@ -62,8 +61,9 @@ public:
     TimeSpan getAirReportInterval() const;
 
 protected:
-    bool _inDaytimeMode;                                    // Whenever in daytime feeding mode or not
+    Twilight _dailyTwilight;                                // Daily twilight settings
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
+    bool _inDaytimeMode;                                    // Daytime mode flag
     int _lastDayNum;                                        // Last day number tracking for daily rescheduling tracking
     Map<hkey_t, HydroFeeding *, HYDRO_SCH_FEEDRES_MAXSIZE> _feedings; // Feedings in progress
     Map<hkey_t, HydroLighting *, HYDRO_SCH_FEEDRES_MAXSIZE> _lightings; // Lightings in progress

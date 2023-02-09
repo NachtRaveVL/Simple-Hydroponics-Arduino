@@ -6,7 +6,7 @@
 #include "Hydruino.h"
 
 HydroScheduler::HydroScheduler()
-    : _inDaytimeMode(false), _needsScheduling(false), _lastDayNum(-1)
+    : _needsScheduling(false), _inDaytimeMode(false), _lastDayNum(-1)
 { ; }
 
 HydroScheduler::~HydroScheduler()
@@ -31,8 +31,7 @@ void HydroScheduler::update()
         #endif
 
         {   DateTime currTime = getCurrentTime();
-            bool daytimeMode = currTime.hour() >= HYDRO_NIGHT_FINISH_HR && currTime.hour() < HYDRO_NIGHT_START_HR;
-            // TODO: calcSunriseSunset()
+            bool daytimeMode = _dailyTwilight.isDaytime();
 
             if (_inDaytimeMode != daytimeMode) {
                 _inDaytimeMode = daytimeMode;
@@ -448,10 +447,15 @@ TimeSpan HydroScheduler::getAirReportInterval() const
 
 void HydroScheduler::updateDayTracking()
 {
-    auto currTime = getCurrentTime();
-    _lastDayNum = currTime.day();
-    _inDaytimeMode = currTime.hour() >= HYDRO_NIGHT_FINISH_HR && currTime.hour() < HYDRO_NIGHT_START_HR;
-    // TODO: calcSunriseSunset()
+    _lastDayNum = getCurrentTime().day();
+
+    Location loc = getHydroInstance()->getSystemLocation();
+    if (loc.hasPosition()) {
+        double transit;
+        calcSunriseSunset((unsigned long)unixNow(), loc.latitude, loc.longitude, transit, _dailyTwilight.sunrise, _dailyTwilight.sunset,
+                          loc.hasAltitude() ? loc.altitude : SUNRISESET_STD_ALTITUDE, HYDRO_SYS_SUNRISESET_CALCITERS);
+    }
+    _inDaytimeMode = _dailyTwilight.isDaytime();
 
     setNeedsScheduling();
 
