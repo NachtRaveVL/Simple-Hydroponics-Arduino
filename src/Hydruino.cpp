@@ -1260,6 +1260,21 @@ void Hydruino::setEthernetConnection(const uint8_t *macAddress)
 }
 
 #endif
+
+void Hydruino::setSystemLocation(double latitude, double longitude, double altitude)
+{
+    HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
+    if (_systemData && (!isFPEqual(_systemData->latitude, latitude) || !isFPEqual(_systemData->longitude, longitude) || !isFPEqual(_systemData->altitude, altitude))) {
+        _systemData->_bumpRevIfNotAlreadyModded();
+
+        _systemData->latitude = latitude;
+        _systemData->longitude = longitude;
+        _systemData->altitude = altitude;
+
+        scheduler.broadcastDayChange();
+    }
+}
+
 #ifdef HYDRO_USE_GUI
 
 int Hydruino::getControlInputPins() const
@@ -1520,6 +1535,12 @@ const uint8_t *Hydruino::getMACAddress() const
 }
 
 #endif
+
+Location Hydruino::getSystemLocation() const
+{
+    HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
+    return _systemData ? Location(_systemData->latitude, _systemData->longitude, _systemData->altitude) : Location();
+}
 
 void Hydruino::notifyRTCTimeUpdated()
 {

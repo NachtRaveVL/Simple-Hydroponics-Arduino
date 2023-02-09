@@ -24,11 +24,7 @@ HydroCrop *newCropObjectFromData(const HydroCropData *dataIn)
 }
 
 
-HydroCrop::HydroCrop(Hydro_CropType cropType,
-                                 hposi_t cropIndex,
-                                 Hydro_SubstrateType substrateType,
-                                 DateTime sowDate,
-                                 int classTypeIn)
+HydroCrop::HydroCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowDate, int classTypeIn)
     : HydroObject(HydroIdentity(cropType, cropIndex)), classType((typeof(classType))classTypeIn),
       _substrateType(substrateType), _sowDate(sowDate.unixtime()), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
       _cropPhase(Hydro_CropPhase_Undefined), _feedingState(Hydro_TriggerState_NotTriggered)
@@ -180,12 +176,7 @@ void HydroCrop::handleCustomCropUpdated(Hydro_CropType cropType)
 }
 
 
-HydroTimedCrop::HydroTimedCrop(Hydro_CropType cropType,
-                                           hposi_t cropIndex,
-                                           Hydro_SubstrateType substrateType,
-                                           DateTime sowDate,
-                                           TimeSpan timeOn, TimeSpan timeOff,
-                                           int classType)
+HydroTimedCrop::HydroTimedCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowDate, TimeSpan timeOn, TimeSpan timeOff, int classType)
     : HydroCrop(cropType, cropIndex, substrateType, sowDate, classType),
       _lastFeedingDate(),
       _feedTimingMins{timeOn.totalseconds() / SECS_PER_MIN, timeOff.totalseconds() / SECS_PER_MIN}
@@ -199,8 +190,9 @@ HydroTimedCrop::HydroTimedCrop(const HydroTimedCropData *dataIn)
 
 bool HydroTimedCrop::getNeedsFeeding()
 {
-    return unixNow() >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
-           unixNow() < _lastFeedingDate + (_feedTimingMins[0] * SECS_PER_MIN);
+    time_t time = unixNow();
+    return time >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
+           time < _lastFeedingDate + (_feedTimingMins[0] * SECS_PER_MIN);
 }
 
 void HydroTimedCrop::notifyFeedingBegan()
@@ -230,11 +222,7 @@ void HydroTimedCrop::saveToData(HydroData *dataOut)
 }
 
 
-HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType,
-                                                 hposi_t cropIndex,
-                                                 Hydro_SubstrateType substrateType,
-                                                 DateTime sowDate,
-                                                 int classType)
+HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowDate, int classType)
     : HydroCrop(cropType, cropIndex, substrateType, sowDate, classType),
       _moistureUnits(Hydro_UnitsType_Concentration_EC), _soilMoisture(this), _feedingTrigger(this)
 {

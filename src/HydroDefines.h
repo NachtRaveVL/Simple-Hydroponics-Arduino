@@ -9,11 +9,14 @@
 #ifndef FLT_EPSILON
 #define FLT_EPSILON                     0.00001f            // Single-precision floating point error tolerance
 #endif
-#ifndef FLT_UNDEF
-#define FLT_UNDEF                       __FLT_MAX__         // A floating point value to stand in for "undefined"
-#endif
 #ifndef DBL_EPSILON
 #define DBL_EPSILON                     0.0000000000001     // Double-precision floating point error tolerance
+#endif
+#ifndef FLT_UNDEF
+#define FLT_UNDEF                       __FLT_MAX__         // Single-precision floating point value to stand in for "undefined"
+#endif
+#ifndef DBL_UNDEF
+#define DBL_UNDEF                       __DBL_MAX__         // Double-precision floating point value to stand in for "undefined"
 #endif
 #ifndef ENABLED
 #define ENABLED                         0x1                 // Enabled define (convenience)
@@ -161,6 +164,7 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_SYS_FREESPACE_INTERVAL    240                 // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRO_SYS_FREESPACE_LOWSPACE    256                 // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first
 #define HYDRO_SYS_FREESPACE_DAYSBACK    180                 // How many days back log/data files are allowed to be stored up to (any beyond this are deleted during cleanup)
+#define HYDRO_SYS_SUNRISESET_CALCITERS  3                   // # of iterations that sunrise/sunset calculations should run (higher # = more accurate but also more costly)
 #define HYDRO_SYS_DELAYFINE_SPINMILLIS  20                  // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (used for fine timing)
 #define HYDRO_SYS_DEBUGOUT_FLUSH_YIELD  DISABLED            // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
 #define HYDRO_SYS_MEM_LOGGING_ENABLE    DISABLED            // If system will periodically log memory remaining messages (mainly used for debugging)

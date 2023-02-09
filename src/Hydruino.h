@@ -296,6 +296,35 @@ struct DeviceSetup {
     inline DeviceSetup(UARTDeviceSetup uartSetup) : cfgType(UARTSetup), cfgAs{.uart=uartSetup} { ; }
 };
 
+// Location Data
+struct Location {
+    double latitude;                    // Latitude
+    double longitude;                   // Longitude
+    double altitude;                    // Altitude
+
+    inline Location() : latitude(DBL_UNDEF), longitude(DBL_UNDEF), altitude(DBL_UNDEF) { ; }
+    inline Location(double latitudeIn, double longitudeIn, double altitudeIn = DBL_UNDEF) : latitude(latitudeIn), longitude(longitudeIn), altitude(altitudeIn) { ; }
+
+    inline bool hasPosition() { return !isFPEqual(latitude, DBL_UNDEF) && !isFPEqual(longitude, DBL_UNDEF); }
+    inline bool hasAltitude() { return !isFPEqual(altitude, DBL_UNDEF); }
+};
+
+// Twilight Data
+struct Twilight {
+    double sunrise;                     // Hour of sunrise
+    double sunset;                      // Hour of sunset
+
+    inline Twilight() : sunrise(HYDRO_NIGHT_FINISH_HR), sunset(HYDRO_NIGHT_START_HR) { ; }
+    inline Twilight(double sunriseIn, double sunsetIn) : sunrise(sunriseIn), sunset(sunsetIn) { ; }
+
+    inline bool isDaytime(time_t time = unixNow()) const {
+        DateTime currTime((uint32_t)time);
+        double currHour = currTime.hour() + (currTime.minute() / 60.0) + (currTime.second() / 3600.0);
+        return sunrise <= sunset ? currHour >= sunrise && currHour < sunset
+                                 : currHour >= sunrise || currHour < sunset;
+    }
+};
+
 // Hydruino Controller
 // Main controller interface of the Hydruino hydroponics system.
 class Hydruino : public HydroFactory, public HydroAdditives, public HydroCalibrations {
@@ -461,6 +490,8 @@ public:
     // Sets Ethernet connection's MAC address
     void setEthernetConnection(const uint8_t *macAddress);
 #endif
+    // Sets system location (lat/long/alt)
+    void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF);
 
     // Accessors.
 
@@ -556,6 +587,8 @@ public:
     // MAC address for Ethernet connection
     const uint8_t *getMACAddress() const;
 #endif
+    // System location (lat/long/alt)
+    Location getSystemLocation() const;
 
     // Misc.
 
