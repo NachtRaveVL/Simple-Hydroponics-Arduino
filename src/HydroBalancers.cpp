@@ -41,25 +41,25 @@ Hydro_BalancingState HydroBalancer::getBalancingState() const
 
 void HydroBalancer::setIncrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &incActuators)
 {
-    for (auto activationIter = _incActuators.begin(); activationIter != _incActuators.end(); ++activationIter) {
+    for (auto attachIter = _incActuators.begin(); attachIter != _incActuators.end(); ++attachIter) {
         bool found = false;
-        auto key = activationIter->getKey();
+        auto key = attachIter->getKey();
 
-        for (auto activationInIter = incActuators.begin(); activationInIter != incActuators.end(); ++activationInIter) {
-            if (key == activationInIter->getKey()) {
+        for (auto attachInIter = incActuators.begin(); attachInIter != incActuators.end(); ++attachInIter) {
+            if (key == attachInIter->getKey()) {
                 found = true;
                 break;
             }
         }
 
         if (!found) { // disables activations not found in new list, prevents same used actuators from prev cycle from turning off/on on cycle switch
-            activationIter->disableActivation();
+            attachIter->disableActivation();
         }
     }
 
     {   _incActuators.clear();
-        for (auto activationInIter = incActuators.begin(); activationInIter != incActuators.end(); ++activationInIter) {
-            _incActuators.push_back(*activationInIter);
+        for (auto attachInIter = incActuators.begin(); attachInIter != incActuators.end(); ++attachInIter) {
+            _incActuators.push_back(*attachInIter);
             _incActuators.back().setParent(this);
         }
     }
@@ -67,25 +67,25 @@ void HydroBalancer::setIncrementActuators(const Vector<HydroActuatorAttachment, 
 
 void HydroBalancer::setDecrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &decActuators)
 {
-    for (auto activationIter = _decActuators.begin(); activationIter != _decActuators.end(); ++activationIter) {
+    for (auto attachIter = _decActuators.begin(); attachIter != _decActuators.end(); ++attachIter) {
         bool found = false;
-        auto key = activationIter->getKey();
+        auto key = attachIter->getKey();
 
-        for (auto activationInIter = decActuators.begin(); activationInIter != decActuators.end(); ++activationInIter) {
-            if (key == activationInIter->getKey()) {
+        for (auto attachInIter = decActuators.begin(); attachInIter != decActuators.end(); ++attachInIter) {
+            if (key == attachInIter->getKey()) {
                 found = true;
                 break;
             }
         }
 
         if (!found) { // disables activations not found in new list
-            activationIter->disableActivation();
+            attachIter->disableActivation();
         }
     }
 
     {   _decActuators.clear();
-        for (auto activationInIter = decActuators.begin(); activationInIter != decActuators.end(); ++activationInIter) {
-            _decActuators.push_back(*activationInIter);
+        for (auto attachInIter = decActuators.begin(); attachInIter != decActuators.end(); ++attachInIter) {
+            _decActuators.push_back(*attachInIter);
             _decActuators.back().setParent(this);
         }
     }
@@ -98,11 +98,11 @@ Signal<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> &HydroBalancer::getBal
 
 void HydroBalancer::disableAllActivations()
 {
-    for (auto activationIter = _incActuators.begin(); activationIter != _incActuators.end(); ++activationIter) {
-        activationIter->disableActivation();
+    for (auto attachIter = _incActuators.begin(); attachIter != _incActuators.end(); ++attachIter) {
+        attachIter->disableActivation();
     }
-    for (auto activationIter = _decActuators.begin(); activationIter != _decActuators.end(); ++activationIter) {
-        activationIter->disableActivation();
+    for (auto attachIter = _decActuators.begin(); attachIter != _decActuators.end(); ++attachIter) {
+        attachIter->disableActivation();
     }
 }
 
@@ -154,14 +154,14 @@ void HydroLinearEdgeBalancer::update()
         val = constrain(val, 0.0f, 1.0f);
 
         if (_balancingState == Hydro_BalancingState_TooLow) {
-            for (auto activationIter = _incActuators.begin(); activationIter != _incActuators.end(); ++activationIter) {
-                activationIter->setupActivation(val * activationIter->getRateMultiplier());
-                activationIter->enableActivation();
+            for (auto attachIter = _incActuators.begin(); attachIter != _incActuators.end(); ++attachIter) {
+                attachIter->setupActivation(val * attachIter->getRateMultiplier());
+                attachIter->enableActivation();
             }
         } else {
-            for (auto activationIter = _decActuators.begin(); activationIter != _decActuators.end(); ++activationIter) {
-                activationIter->setupActivation(val * activationIter->getRateMultiplier());
-                activationIter->enableActivation();
+            for (auto attachIter = _decActuators.begin(); attachIter != _decActuators.end(); ++attachIter) {
+                attachIter->setupActivation(val * attachIter->getRateMultiplier());
+                attachIter->enableActivation();
             }
         }
     }
@@ -221,16 +221,16 @@ void HydroTimedDosingBalancer::update()
         switch (_dosingDir) {
             case Hydro_BalancingState_TooLow:
                 while (_dosingActIndex < _incActuators.size()) {
-                    auto activationIter = _incActuators.begin(); // advance iter to index
-                    for (int actuatorIndex = 0; activationIter != _incActuators.end() && actuatorIndex < _dosingActIndex; ++activationIter, ++actuatorIndex) { ; }
+                    auto attachIter = _incActuators.begin(); // advance iter to index
+                    for (int actuatorIndex = 0; attachIter != _incActuators.end() && actuatorIndex < _dosingActIndex; ++attachIter, ++actuatorIndex) { ; }
 
-                    if (activationIter != _incActuators.end()) {
-                        if (activationIter->get()->isAnyBinaryClass()) {
-                            activationIter->setupActivation(1.0f, activationIter->getRateMultiplier() * _dosing);
+                    if (attachIter != _incActuators.end()) {
+                        if (attachIter->get()->isAnyBinaryClass()) {
+                            attachIter->setupActivation(1.0f, attachIter->getRateMultiplier() * _dosing);
                         } else {
-                            activationIter->setupActivation(activationIter->getRateMultiplier(), _dosing);
+                            attachIter->setupActivation(attachIter->getRateMultiplier(), _dosing);
                         }
-                        activationIter->enableActivation();
+                        attachIter->enableActivation();
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif
@@ -243,16 +243,16 @@ void HydroTimedDosingBalancer::update()
 
             case Hydro_BalancingState_TooHigh:
                 while (_dosingActIndex < _decActuators.size()) {
-                    auto activationIter = _decActuators.begin();  // advance iter to index
-                    for (int actuatorIndex = 0; activationIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++activationIter, ++actuatorIndex) { ; }
+                    auto attachIter = _decActuators.begin();  // advance iter to index
+                    for (int actuatorIndex = 0; attachIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++attachIter, ++actuatorIndex) { ; }
 
-                    if (activationIter != _decActuators.end()) {
-                        if (activationIter->get()->isAnyBinaryClass()) {
-                            activationIter->setupActivation(1.0f, activationIter->getRateMultiplier() * _dosing);
+                    if (attachIter != _decActuators.end()) {
+                        if (attachIter->get()->isAnyBinaryClass()) {
+                            attachIter->setupActivation(1.0f, attachIter->getRateMultiplier() * _dosing);
                         } else {
-                            activationIter->setupActivation(activationIter->getRateMultiplier(), _dosing);
+                            attachIter->setupActivation(attachIter->getRateMultiplier(), _dosing);
                         }
-                        activationIter->enableActivation();
+                        attachIter->enableActivation();
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif

@@ -577,25 +577,25 @@ void HydroProcess::clearActuatorReqs()
 
 void HydroProcess::setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn)
 {
-    for (auto activationIter = actuatorReqs.begin(); activationIter != actuatorReqs.end(); ++activationIter) {
+    for (auto attachIter = actuatorReqs.begin(); attachIter != actuatorReqs.end(); ++attachIter) {
         bool found = false;
-        auto key = activationIter->getKey();
+        auto key = attachIter->getKey();
     
-        for (auto activationInIter = actuatorReqsIn.begin(); activationInIter != actuatorReqsIn.end(); ++activationInIter) {
-            if (key == activationInIter->getKey()) {
+        for (auto attachInIter = actuatorReqsIn.begin(); attachInIter != actuatorReqsIn.end(); ++attachInIter) {
+            if (key == attachInIter->getKey()) {
                 found = true;
                 break;
             }
         }
     
         if (!found) { // disables actuators not found in new list
-            activationIter->disableActivation();
+            attachIter->disableActivation();
         }
     }
 
     {   actuatorReqs.clear();
-        for (auto activationInIter = actuatorReqsIn.begin(); activationInIter != actuatorReqsIn.end(); ++activationInIter) {
-            actuatorReqs.push_back(*activationInIter);
+        for (auto attachInIter = actuatorReqsIn.begin(); attachInIter != actuatorReqsIn.end(); ++attachInIter) {
+            actuatorReqs.push_back(*attachInIter);
             actuatorReqs.back().setParent(nullptr);
         }
     }  
@@ -987,8 +987,8 @@ void HydroFeeding::update()
     }
 
     if (actuatorReqs.size()) {
-        for (auto activationIter = actuatorReqs.begin(); activationIter != actuatorReqs.end(); ++activationIter) {
-            activationIter->enableActivation();
+        for (auto attachIter = actuatorReqs.begin(); attachIter != actuatorReqs.end(); ++attachIter) {
+            attachIter->enableActivation();
         }
     }
 
@@ -1262,8 +1262,8 @@ void HydroLighting::update()
     }
 
     if (actuatorReqs.size()) {
-        for (auto activationIter = actuatorReqs.begin(); activationIter != actuatorReqs.end(); ++activationIter) {
-            activationIter->enableActivation();
+        for (auto attachIter = actuatorReqs.begin(); attachIter != actuatorReqs.end(); ++attachIter) {
+            attachIter->enableActivation();
         }
     }
 

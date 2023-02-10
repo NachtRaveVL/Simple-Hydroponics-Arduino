@@ -166,7 +166,7 @@ public:
 class HydroActuatorObjectInterface {
 public:
     virtual bool getCanEnable() = 0;
-    virtual float getDriveIntensity() = 0;
+    virtual float getDriveIntensity() const = 0;
     virtual bool isEnabled(float tolerance = 0.0f) const = 0;
 
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) = 0;
