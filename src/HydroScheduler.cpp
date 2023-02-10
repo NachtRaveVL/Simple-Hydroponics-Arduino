@@ -30,16 +30,14 @@ void HydroScheduler::update()
             Serial.println(F("Scheduler::update")); flushYield();
         #endif
 
-        {   DateTime currTime = getCurrentTime();
-            bool daytimeMode = _dailyTwilight.isDaytime();
+        {   time_t time = unixNow();
+            DateTime currTime = getCurrentTime(time);
+            bool daytimeMode = _dailyTwilight.isDaytime(time);
 
             if (_inDaytimeMode != daytimeMode) {
                 _inDaytimeMode = daytimeMode;
                 setNeedsScheduling();
-
-                if (Hydruino::_activeInstance->_activeUIInstance) {
-                    Hydruino::_activeInstance->_activeUIInstance->setNeedsLayout();
-                }
+                Hydruino::_activeInstance->setNeedsLayout();
             }
 
             if (_lastDayNum != currTime.day()) {
@@ -51,7 +49,7 @@ void HydroScheduler::update()
             }
         }
 
-        if (_needsScheduling) { performScheduling(); }
+        if (needsScheduling()) { performScheduling(); }
 
         for (auto feedingIter = _feedings.begin(); feedingIter != _feedings.end(); ++feedingIter) {
             feedingIter->second->update();
@@ -447,21 +445,22 @@ TimeSpan HydroScheduler::getAirReportInterval() const
 
 void HydroScheduler::updateDayTracking()
 {
-    _lastDayNum = getCurrentTime().day();
+    time_t time = unixNow();
+    _lastDayNum = getCurrentTime(time).day();
 
     Location loc = getHydroInstance()->getSystemLocation();
     if (loc.hasPosition()) {
         double transit;
-        calcSunriseSunset((unsigned long)unixNow(), loc.latitude, loc.longitude, transit, _dailyTwilight.sunrise, _dailyTwilight.sunset,
-                          loc.hasAltitude() ? loc.altitude : SUNRISESET_STD_ALTITUDE, HYDRO_SYS_SUNRISESET_CALCITERS);
+        calcSunriseSunset((unsigned long)time, loc.latitude, loc.longitude, transit, _dailyTwilight.sunrise, _dailyTwilight.sunset,
+                          loc.resolveSunAlt(), HYDRO_SYS_SUNRISESET_CALCITERS);
+        _dailyTwilight.isUTC = true;
+    } else if (_dailyTwilight.isUTC) {
+        _dailyTwilight = Twilight();
     }
-    _inDaytimeMode = _dailyTwilight.isDaytime();
+    _inDaytimeMode = _dailyTwilight.isDaytime(time);
 
     setNeedsScheduling();
-
-    if (Hydruino::_activeInstance->_activeUIInstance) {
-        Hydruino::_activeInstance->_activeUIInstance->setNeedsLayout();
-    }
+    Hydruino::_activeInstance->setNeedsLayout();
 }
 
 void HydroScheduler::performScheduling()

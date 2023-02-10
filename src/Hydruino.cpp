@@ -752,9 +752,9 @@ void Hydruino::commonPostInit()
         setSyncProvider(rtcNow);
     }
 
-    scheduler.updateDayTracking(); // also calls setNeedsScheduling
+    scheduler.updateDayTracking(); // also calls setNeedsScheduling & setNeedsLayout
     logger.updateInitTracking();
-    publisher.setNeedsTabulation();
+    setNeedsTabulation();
 
     #ifdef HYDRO_USE_WIFI
         if (!_systemData->wifiPasswordSeed && _systemData->wifiPassword[0]) {
@@ -809,6 +809,10 @@ void Hydruino::commonPostSave()
 {
     logger.logSystemSave();
 
+    if (_systemData) {
+        _systemData->_unsetModded();
+    }
+
     if (hasUserCalibrations()) {
         for (auto iter = _calibrationData.begin(); iter != _calibrationData.end(); ++iter) {
             iter->second->_unsetModded();
@@ -839,6 +843,8 @@ void controlLoop()
 
         for (auto iter = Hydruino::_activeInstance->_objects.begin(); iter != Hydruino::_activeInstance->_objects.end(); ++iter) {
             iter->second->update();
+
+            yield(); // This allows cursory checks/updates for finely-timed tasks to run more often
         }
 
         Hydruino::_activeInstance->scheduler.update();
@@ -865,6 +871,8 @@ void dataLoop()
                 auto sensor = static_pointer_cast<HydroSensor>(iter->second);
                 if (sensor->getNeedsPolling()) {
                     sensor->takeMeasurement(); // no force if already current for this frame #, we're just ensuring data for publisher
+
+                    yield(); // This allows cursory checks/updates for finely-timed tasks to run more often
                 }
             }
         }
@@ -884,19 +892,6 @@ void miscLoop()
             Serial.println(F("miscLoop")); flushYield();
         #endif
 
-        Hydruino::_activeInstance->checkFreeMemory();
-        Hydruino::_activeInstance->checkFreeSpace();
-        Hydruino::_activeInstance->checkAutosave();
-
-        Hydruino::_activeInstance->publisher.update();
-
-        #ifdef HYDRO_USE_GPS // FIXME: This may get removed if it doesn't work right, but it's probably close.
-            if (Hydruino::_gps && Hydruino::_gps->newNMEAreceived()) {
-                Hydruino::_gps->parse(Hydruino::_gps->lastNMEA());
-                // TODO: Update lat/long of controller (trigger possible event change, possibly back behind a frequency timer).
-            }
-        #endif
-
         #if HYDRO_SYS_MEM_LOGGING_ENABLE
         {   static time_t _lastMemLog = unixNow();
             if (unixNow() >= _lastMemLog + 15) {
@@ -904,6 +899,25 @@ void miscLoop()
                 Hydruino::_activeInstance->logger.logMessage(String(F("Free memory: ")), String(freeMemory()));
             }
         }
+        #endif
+
+        Hydruino::_activeInstance->checkFreeMemory();
+        Hydruino::_activeInstance->checkFreeSpace();
+        Hydruino::_activeInstance->checkAutosave();
+
+        yield(); // This allows cursory checks/updates for finely-timed tasks to run more often
+
+        Hydruino::_activeInstance->publisher.update();
+
+        yield(); // This allows cursory checks/updates for finely-timed tasks to run more often
+
+        #ifdef HYDRO_USE_GPS
+            if (Hydroduino::_gps && Hydroduino::_gps->newNMEAreceived()) {
+                Hydroduino::_gps->parse(Hydroduino::_gps->lastNMEA());
+                if (Hydroduino::_gps->fix) {
+                    Hydroduino::_activeInstance->setSystemLocation(Hydroduino::_gps->lat, Hydroduino::_gps->lon, Hydroduino::_gps->altitude);
+                }
+            }
         #endif
 
         #ifdef HYDRO_USE_VERBOSE_OUTPUT
@@ -989,10 +1003,10 @@ bool Hydruino::registerObject(SharedPtr<HydroObject> obj)
         _objects[obj->getKey()] = obj;
 
         if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
-            scheduler.setNeedsScheduling();
+            setNeedsScheduling();
         }
         if (obj->isSensorType()) {
-            publisher.setNeedsTabulation();
+            setNeedsTabulation();
         }
 
         return true;
@@ -1007,10 +1021,10 @@ bool Hydruino::unregisterObject(SharedPtr<HydroObject> obj)
         _objects.erase(iter);
 
         if (obj->isActuatorType() || obj->isCropType() || obj->isReservoirType()) {
-            scheduler.setNeedsScheduling();
+            setNeedsScheduling();
         }
         if (obj->isSensorType()) {
-            publisher.setNeedsTabulation();
+            setNeedsTabulation();
         }
 
         return true;
@@ -1147,7 +1161,7 @@ void Hydruino::setSystemName(String systemName)
     if (_systemData && !systemName.equals(getSystemName())) {
         _systemData->_bumpRevIfNotAlreadyModded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRO_NAME_MAXSIZE);
-        if (_activeUIInstance) { _activeUIInstance->setNeedsLayout(); }
+        setNeedsLayout();
     }
 }
 
@@ -1157,8 +1171,7 @@ void Hydruino::setTimeZoneOffset(int8_t timeZoneOffset)
     if (_systemData && _systemData->timeZoneOffset != timeZoneOffset) {
         _systemData->_bumpRevIfNotAlreadyModded();
         _systemData->timeZoneOffset = timeZoneOffset;
-        scheduler.setNeedsScheduling();
-        if (_activeUIInstance) { _activeUIInstance->setNeedsLayout(); }
+        scheduler.broadcastDayChange();
     }
 }
 
@@ -1261,17 +1274,18 @@ void Hydruino::setEthernetConnection(const uint8_t *macAddress)
 
 #endif
 
-void Hydruino::setSystemLocation(double latitude, double longitude, double altitude)
+void Hydruino::setSystemLocation(double latitude, double longitude, double altitude, bool forceUpdate)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && (!isFPEqual(_systemData->latitude, latitude) || !isFPEqual(_systemData->longitude, longitude) || !isFPEqual(_systemData->altitude, altitude))) {
-        _systemData->_bumpRevIfNotAlreadyModded();
-
+        forceUpdate |= ((latitude - _systemData->latitude) * (latitude - _systemData->latitude)) +
+                       ((longitude - _systemData->longitude) * (longitude - _systemData->longitude)) >= HYDRO_SYS_LATLONG_DISTSQRDTOL ||
+                       fabs(altitude - _systemData->altitude) >= HYDRO_SYS_ALTITUDE_DISTTOL;
+        if (forceUpdate) { _systemData->_bumpRevIfNotAlreadyModded(); }
         _systemData->latitude = latitude;
         _systemData->longitude = longitude;
         _systemData->altitude = altitude;
-
-        scheduler.broadcastDayChange();
+        if (forceUpdate) { scheduler.updateDayTracking(); }
     }
 }
 

@@ -298,30 +298,37 @@ struct DeviceSetup {
 
 // Location Data
 struct Location {
-    double latitude;                    // Latitude
-    double longitude;                   // Longitude
-    double altitude;                    // Altitude
+    double latitude;                    // Latitude (degrees)
+    double longitude;                   // Longitude (minutes)
+    double altitude;                    // Altitude (MSL)
 
     inline Location() : latitude(DBL_UNDEF), longitude(DBL_UNDEF), altitude(DBL_UNDEF) { ; }
     inline Location(double latitudeIn, double longitudeIn, double altitudeIn = DBL_UNDEF) : latitude(latitudeIn), longitude(longitudeIn), altitude(altitudeIn) { ; }
 
-    inline bool hasPosition() { return !isFPEqual(latitude, DBL_UNDEF) && !isFPEqual(longitude, DBL_UNDEF); }
-    inline bool hasAltitude() { return !isFPEqual(altitude, DBL_UNDEF); }
+    inline bool hasPosition() const { return !isFPEqual(latitude, DBL_UNDEF) && !isFPEqual(longitude, DBL_UNDEF); }
+    inline bool hasAltitude() const { return !isFPEqual(altitude, DBL_UNDEF); }
+
+    // Determines sun altitude for accurate sunrise/sunset calculations. Note: Costly method due to sqrt().
+    inline double resolveSunAlt(double defaultSunAlt = SUNRISESET_STD_ALTITUDE) const {
+        return hasAltitude() ? SUNRISESET_STD_ALTITUDE - 0.0353 * sqrt(altitude) : defaultSunAlt;
+    }
 };
 
 // Twilight Data
 struct Twilight {
-    double sunrise;                     // Hour of sunrise
-    double sunset;                      // Hour of sunset
+    double sunrise;                     // Hour of sunrise (+fractional)
+    double sunset;                      // Hour of sunset (+fractional)
+    bool isUTC;                         // UTC flag
 
-    inline Twilight() : sunrise(HYDRO_NIGHT_FINISH_HR), sunset(HYDRO_NIGHT_START_HR) { ; }
-    inline Twilight(double sunriseIn, double sunsetIn) : sunrise(sunriseIn), sunset(sunsetIn) { ; }
+    inline Twilight() : sunrise(HYDRO_NIGHT_FINISH_HR), sunset(HYDRO_NIGHT_START_HR), isUTC(false) { ; }
+    inline Twilight(double sunriseIn, double sunsetIn, bool isUTCIn = true) : sunrise(sunriseIn), sunset(sunsetIn), isUTC(isUTCIn) { ; }
 
+    // Correctly determines if passed UTC time is in daytime hours or not, with proper respect to system TZ settings/fractional hours.
     inline bool isDaytime(time_t time = unixNow()) const {
-        DateTime currTime((uint32_t)time);
+        DateTime currTime = isUTC ? DateTime((uint32_t)time) : DateTime((uint32_t)(time + (getHydroInstance() ? getHydroInstance()->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
         double currHour = currTime.hour() + (currTime.minute() / 60.0) + (currTime.second() / 3600.0);
-        return sunrise <= sunset ? currHour >= sunrise && currHour < sunset
-                                 : currHour >= sunrise || currHour < sunset;
+        return sunrise <= sunset ? currHour >= sunrise && currHour <= sunset
+                                 : currHour >= sunrise || currHour <= sunset;
     }
 };
 
@@ -468,6 +475,13 @@ public:
 
     // Mutators.
 
+    // Sets scheduler scheduling needed flag
+    inline void setNeedsScheduling() { scheduler.setNeedsScheduling(); }
+    // Sets publisher tabulation needed flag
+    inline void setNeedsTabulation() { publisher.setNeedsTabulation(); }
+    // Sets active UI layout needed flag
+    inline void setNeedsLayout() { if (_activeUIInstance) { _activeUIInstance->setNeedsLayout(); } }
+
     // Sets display name of system (HYDRO_NAME_MAXSIZE size limit)
     void setSystemName(String systemName);
     // Sets system time zone offset from UTC
@@ -490,8 +504,8 @@ public:
     // Sets Ethernet connection's MAC address
     void setEthernetConnection(const uint8_t *macAddress);
 #endif
-    // Sets system location (lat/long/alt)
-    void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF);
+    // Sets system location (lat/long/alt, note: only triggers update if significant or forced)
+    void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF, bool forceUpdate = false);
 
     // Accessors.
 
@@ -595,7 +609,7 @@ public:
     // Called to notify system when RTC time is updated (also clears RTC battery failure flag)
     void notifyRTCTimeUpdated();
 
-    // Called by scheduler to announce that a significant time event has occurred
+    // Called by scheduler to announce that date conditions have changed (significant time event)
     void notifyDayChanged();
 
 protected:
