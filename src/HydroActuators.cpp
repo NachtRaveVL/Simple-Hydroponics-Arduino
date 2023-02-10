@@ -373,7 +373,7 @@ bool HydroRelayActuator::getCanEnable()
     return _outputPin.isValid() && HydroActuator::getCanEnable();
 }
 
-float HydroRelayActuator::getDriveIntensity()
+float HydroRelayActuator::getDriveIntensity() const
 {
     return _enabled ? 1.0f : 0.0f;
 }
@@ -692,7 +692,7 @@ bool HydroVariableActuator::getCanEnable()
     return _outputPin.isValid() && HydroActuator::getCanEnable();
 }
 
-float HydroVariableActuator::getDriveIntensity()
+float HydroVariableActuator::getDriveIntensity() const
 {
     return _intensity;
 }

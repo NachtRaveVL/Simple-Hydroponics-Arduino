@@ -98,8 +98,9 @@ public:
     inline bool isRelayPumpClass() const { return classType == RelayPump; }
     inline bool isVariableClass() const { return classType == Variable; }
     inline bool isVariablePumpClass() const { return classType == VariablePump; }
-    inline bool isAnyBinaryClass() const { isRelayClass() || isRelayPumpClass(); }
-    inline bool isAnyVariableClass() const { isVariableClass() || isVariablePumpClass(); }
+    inline bool isAnyBinaryClass() const { return isRelayClass() || isRelayPumpClass(); }
+    inline bool isAnyVariableClass() const { return isVariableClass() || isVariablePumpClass(); }
+    inline bool isAnyPumpClass() const { return isRelayPumpClass() || isVariablePumpClass(); }
     inline bool isUnknownClass() const { return classType <= Unknown; }
 
     HydroActuator(Hydro_ActuatorType actuatorType,
@@ -148,6 +149,8 @@ public:
     inline HydroSingleMeasurement calibrationInvTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
     inline void calibrationInvTransform(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->inverseTransform(&measurementInOut->value, &measurementInOut->units); } }
 
+    inline float getCalibratedValue() const { return calibrationTransform(getDriveIntensity()); }
+
     inline Hydro_ActuatorType getActuatorType() const { return _id.objTypeAs.actuatorType; }
     inline hposi_t getActuatorIndex() const { return _id.posIndex; }
 
@@ -189,7 +192,7 @@ public:
     virtual ~HydroRelayActuator();
 
     virtual bool getCanEnable() override;
-    virtual float getDriveIntensity() override;
+    virtual float getDriveIntensity() const override;
     virtual bool isEnabled(float tolerance = 0.0f) const override;
 
     inline const HydroDigitalPin &getOutputPin() const { return _outputPin; }
@@ -267,7 +270,7 @@ public:
     virtual ~HydroVariableActuator();
 
     virtual bool getCanEnable() override;
-    virtual float getDriveIntensity() override;
+    virtual float getDriveIntensity() const override;
     virtual bool isEnabled(float tolerance = 0.0f) const override;
 
     inline int getDriveIntensity_raw() const { return _outputPin.bitRes.inverseTransform(_intensity); }
