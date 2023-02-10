@@ -48,7 +48,7 @@ public:
     virtual bool isEmpty() = 0;
 
     virtual void setVolumeUnits(Hydro_UnitsType volumeUnits);
-    virtual Hydro_UnitsType getVolumeUnits() const { return definedUnitsElse(_volumeUnits, defaultLiquidVolumeUnits()); }
+    inline Hydro_UnitsType getVolumeUnits() const { return definedUnitsElse(_volumeUnits, defaultLiquidVolumeUnits()); }
 
     virtual HydroSensorAttachment &getWaterVolume(bool poll = false) = 0;
 

@@ -194,10 +194,10 @@ inline HydruinoUIInterface *getUIInstance();
 // Publishes latest data from sensor to Publisher output.
 extern void publishData(HydroSensor *sensor);
 
-// Returns current time, with proper time zone offset based on active hydruino instance.
-inline DateTime getCurrentTime();
-// Returns the UTC seconds time that today started, accounting for time zone offset based on active hydruino instance.
-inline time_t getCurrentDayStartTime();
+// Returns current local date time, with proper time zone offset based on active Hydruino instance.
+inline DateTime getCurrentTime(time_t time = unixNow());
+// Returns the local date time of when today started, accounting for proper time zone offset based on active Hydruino instance.
+inline time_t getCurrentDayStartTime(time_t time = unixNow());
 // Sets the global current time of the RTC, returning if update was successful, and additionally calls appropriate system time updaters.
 extern bool setCurrentTime(DateTime currTime);
 
