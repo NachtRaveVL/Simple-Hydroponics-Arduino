@@ -508,18 +508,18 @@ enum Hydro_RailType : signed char {
 // Pin Mode
 // Pin mode setting. Specifies what kind of pin and how it's used.
 enum Hydro_PinMode : signed char {
-    Hydro_PinMode_Digital_Input_Floating,                   // Digital input pin with floating input (pull-up/pull-down disabled, used during mux channel select)
-    Hydro_PinMode_Digital_Input_PullUp,                     // Digital input pin with pull-up resistor enabled input (default pairing for active-low trigger)
-    Hydro_PinMode_Digital_Input_PullDown,                   // Digital input pin with pull-down resistor enabled input (or pull-up disabled if not avail, default pairing for active-high trigger)
-    Hydro_PinMode_Digital_Output_OpenDrain,                 // Digital output pin with open-drain NPN-based sink (default pairing for active-low trigger)
-    Hydro_PinMode_Digital_Output_PushPull,                  // Digital output pin with push-pull NPN+PNP-based src+sink (default pairing for active-high trigger)
-    Hydro_PinMode_Analog_Input,                             // Analog input pin
-    Hydro_PinMode_Analog_Output,                            // Analog output pin
+    Hydro_PinMode_Digital_Input_Floating,                   // Digital input pin as floating/no-pull (pull-up/pull-down disabled, used during mux channel select, type alias for INPUT/GPIO_PuPd_NOPULL)
+    Hydro_PinMode_Digital_Input_PullUp,                     // Digital input pin with pull-up resistor (default pairing for active-low trigger, type alias for INPUT_PULLUP/GPIO_PuPd_UP)
+    Hydro_PinMode_Digital_Input_PullDown,                   // Digital input pin with pull-down resistor (or pull-up disabled if not avail, default pairing for active-high trigger, type alias for INPUT_PULLDOWN/GPIO_PuPd_DOWN)
+    Hydro_PinMode_Digital_Output_OpenDrain,                 // Digital output pin with open-drain NPN-based sink (default pairing for active-low trigger, type alias for OUTPUT/GPIO_OType_OD)
+    Hydro_PinMode_Digital_Output_PushPull,                  // Digital output pin with push-pull NPN+PNP-based src+sink (default pairing for active-high trigger, type alias for GPIO_OType_PP)
+    Hydro_PinMode_Analog_Input,                             // Analog input pin (type alias for INPUT)
+    Hydro_PinMode_Analog_Output,                            // Analog output pin (type alias for OUTPUT)
 
     Hydro_PinMode_Count,                                    // Placeholder
     Hydro_PinMode_Undefined = -1,                           // Placeholder
-    Hydro_PinMode_Digital_Input = Hydro_PinMode_Digital_Input_Floating, // Default digital input (alias for INPUT)
-    Hydro_PinMode_Digital_Output = Hydro_PinMode_Digital_Output_OpenDrain // Default digital output (alias for OUTPUT)
+    Hydro_PinMode_Digital_Input = Hydro_PinMode_Digital_Input_Floating, // Default digital input (alias for Floating, type for INPUT)
+    Hydro_PinMode_Digital_Output = Hydro_PinMode_Digital_Output_OpenDrain // Default digital output (alias for OpenDrain, type for OUTPUT)
 };
 
 // Trigger Status
