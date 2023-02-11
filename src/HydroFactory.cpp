@@ -352,16 +352,16 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addPowerUsageMeter(pintype_t inputPin, bool isWattageBased, uint8_t inputBitRes)
+SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin, bool isWattageBased, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PowerUsage));
+    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PowerLevel));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
     if (inputPinIsAnalog && isValidIndex(positionIndex)) {
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
-            Hydro_SensorType_PowerUsage,
+            Hydro_SensorType_PowerLevel,
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));

@@ -427,13 +427,13 @@ enum Hydro_ControlInputMode : signed char {
 // Actuator Type
 // Control actuator type. Specifies the various controllable equipment and their usage.
 enum Hydro_ActuatorType : signed char {
-    Hydro_ActuatorType_GrowLights,                          // Grow lights actuator
-    Hydro_ActuatorType_WaterPump,                           // Water pump actuator (feed or drainage/main-water pipe reservoirs only)
-    Hydro_ActuatorType_PeristalticPump,                     // Peristaltic pump actuator (pH-up/down, nutrient, fresh water, or custom additive reservoirs only)
-    Hydro_ActuatorType_WaterHeater,                         // Water heater actuator (feed reservoir only)
-    Hydro_ActuatorType_WaterAerator,                        // Water aerator actuator (feed reservoir only)
-    Hydro_ActuatorType_WaterSprayer,                        // Water sprayer actuator (feed reservoir only, uses crop linkages - assumes infinite water source)
-    Hydro_ActuatorType_FanExhaust,                          // Fan exhaust/circulation relay actuator (feed reservoir only, uses crop linkages)
+    Hydro_ActuatorType_FanExhaust,                          // Fan exhaust/circulation (binary/analog, feed reservoir only, uses crop linkages)
+    Hydro_ActuatorType_GrowLights,                          // Grow lights (binary)
+    Hydro_ActuatorType_PeristalticPump,                     // Peristaltic pump (pump, pH-up/down, nutrient, fresh water, or custom additive reservoirs only)
+    Hydro_ActuatorType_WaterAerator,                        // Water aerator (binary, feed reservoir only)
+    Hydro_ActuatorType_WaterHeater,                         // Water heater (binary, feed reservoir only)
+    Hydro_ActuatorType_WaterPump,                           // Water pump (pump, feed or drainage/main-water pipe reservoirs only)
+    Hydro_ActuatorType_WaterSprayer,                        // Water sprayer (binary, feed reservoir only, uses crop linkages - assumes infinite water source)
 
     Hydro_ActuatorType_Count,                               // Placeholder
     Hydro_ActuatorType_Undefined = -1                       // Placeholder
@@ -442,16 +442,16 @@ enum Hydro_ActuatorType : signed char {
 // Sensor Type
 // Sensor device type. Specifies the various sensors and the kinds of things they measure.
 enum Hydro_SensorType : signed char {
-    Hydro_SensorType_PotentialHydrogen,                     // pH sensor (analog/digital, feed reservoir only)
-    Hydro_SensorType_TotalDissolvedSolids,                  // TDS salts electrode sensor (analog/digital, feed reservoir only)
-    Hydro_SensorType_SoilMoisture,                          // Soil moisture sensor (analog/digital)
-    Hydro_SensorType_WaterTemperature,                      // Submersible water sensor (analog/digital)
-    Hydro_SensorType_PumpFlow,                              // Water pump flow hall sensor (analog(PWM))
-    Hydro_SensorType_WaterLevel,                            // Water level indicator (binary)
-    Hydro_SensorType_WaterHeight,                           // Water height meter (analog)
-    Hydro_SensorType_AirTempHumidity,                       // Air temperature and humidity sensor (digital)
     Hydro_SensorType_AirCarbonDioxide,                      // Air CO2 sensor (analog/digital)
-    Hydro_SensorType_PowerUsage,                            // Power usage meter (analog)
+    Hydro_SensorType_AirTempHumidity,                       // Air temperature and humidity sensor (digital)
+    Hydro_SensorType_PotentialHydrogen,                     // pH sensor (analog/digital, feed reservoir only)
+    Hydro_SensorType_PowerLevel,                            // Power level meter (analog)
+    Hydro_SensorType_PumpFlow,                              // Water pump flow hall sensor (analog(PWM))
+    Hydro_SensorType_SoilMoisture,                          // Soil moisture sensor (analog/digital)
+    Hydro_SensorType_TotalDissolvedSolids,                  // TDS salts electrode sensor (analog/digital, feed reservoir only)
+    Hydro_SensorType_WaterHeight,                           // Water height meter (analog)
+    Hydro_SensorType_WaterLevel,                            // Water level indicator (binary)
+    Hydro_SensorType_WaterTemperature,                      // Submersible water sensor (analog/digital)
 
     Hydro_SensorType_Count,                                 // Placeholder
     Hydro_SensorType_Undefined = -1                         // Placeholder
@@ -494,10 +494,13 @@ enum Hydro_ReservoirType : signed char {
 // Power Rail
 // Common power rails. Specifies an isolated operational power rail unit.
 enum Hydro_RailType : signed char {
-    Hydro_RailType_AC110V,                                  // 110~120V AC-based power rail, for pumps, lights, heaters, etc.
-    Hydro_RailType_AC220V,                                  // 110~120V AC-based power rail, for pumps, lights, heaters, etc.
-    Hydro_RailType_DC5V,                                    // 5v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
-    Hydro_RailType_DC12V,                                   // 12v DC-based power rail, for dosing pumps, PWM fans, sensors, etc.
+    Hydro_RailType_AC110V,                                  // ~110V AC-based power rail
+    Hydro_RailType_AC220V,                                  // ~220V AC-based power rail
+    Hydro_RailType_DC3V3,                                   // 3.3v DC-based power rail
+    Hydro_RailType_DC5V,                                    // 5v DC-based power rail
+    Hydro_RailType_DC12V,                                   // 12v DC-based power rail
+    Hydro_RailType_DC24V,                                   // 24v DC-based power rail
+    Hydro_RailType_DC48V,                                   // 48v DC-based power rail
 
     Hydro_RailType_Count,                                   // Placeholder
     Hydro_RailType_Undefined = -1,                          // Placeholder
@@ -573,20 +576,20 @@ enum Hydro_DirectionMode : signed char {
 // Units Category
 // Unit of measurement category. Specifies the kind of unit.
 enum Hydro_UnitsCategory : signed char {
+    Hydro_UnitsCategory_AirConcentration,                   // Air particle concentration based unit
+    Hydro_UnitsCategory_AirHeatIndex,                       // Air heat index based unit
+    Hydro_UnitsCategory_AirHumidity,                        // Air humidity based unit
+    Hydro_UnitsCategory_AirTemperature,                     // Air temperature based unit
     Hydro_UnitsCategory_Alkalinity,                         // Alkalinity based unit
     Hydro_UnitsCategory_DissolvedSolids,                    // Dissolved solids based unit
-    Hydro_UnitsCategory_SoilMoisture,                       // Soil moisture based unit
+    Hydro_UnitsCategory_Distance,                           // Distance/position based unit
+    Hydro_UnitsCategory_LiqDilution,                        // Liquid dilution based unit
+    Hydro_UnitsCategory_LiqFlowRate,                        // Liquid flow rate based unit
     Hydro_UnitsCategory_LiqTemperature,                     // Liquid temperature based unit
     Hydro_UnitsCategory_LiqVolume,                          // Liquid volume based unit
-    Hydro_UnitsCategory_LiqFlowRate,                        // Liquid flow rate based unit
-    Hydro_UnitsCategory_LiqDilution,                        // Liquid dilution based unit
-    Hydro_UnitsCategory_AirTemperature,                     // Air temperature based unit
-    Hydro_UnitsCategory_AirHumidity,                        // Air humidity based unit
-    Hydro_UnitsCategory_AirHeatIndex,                       // Air heat index based unit
-    Hydro_UnitsCategory_AirConcentration,                   // Air particle concentration based unit
-    Hydro_UnitsCategory_Distance,                           // Distance/position based unit
-    Hydro_UnitsCategory_Weight,                             // Weight based unit
     Hydro_UnitsCategory_Power,                              // Power based unit
+    Hydro_UnitsCategory_SoilMoisture,                       // Soil moisture based unit
+    Hydro_UnitsCategory_Weight,                             // Weight based unit
 
     Hydro_UnitsCategory_Count,                              // Placeholder
     Hydro_UnitsCategory_Undefined = -1                      // Placeholder
@@ -599,24 +602,24 @@ enum Hydro_UnitsType : signed char {
     Hydro_UnitsType_Percentile_0_100,                       // Percentile [0.0,100.0] mode
     Hydro_UnitsType_Alkalinity_pH_0_14,                     // pH value [0.0,14.0] alkalinity mode
     Hydro_UnitsType_Concentration_EC,                       // Siemens electrical conductivity mode
-    Hydro_UnitsType_Temperature_Celsius,                    // Celsius temperature mode
-    Hydro_UnitsType_Temperature_Fahrenheit,                 // Fahrenheit temperature mode
-    Hydro_UnitsType_Temperature_Kelvin,                     // Kelvin temperature mode
-    Hydro_UnitsType_LiqVolume_Liters,                       // Liters liquid volume mode
-    Hydro_UnitsType_LiqVolume_Gallons,                      // Gallons liquid volume mode
-    Hydro_UnitsType_LiqFlowRate_LitersPerMin,               // Liters per minute liquid flow rate mode
-    Hydro_UnitsType_LiqFlowRate_GallonsPerMin,              // Gallons per minute liquid flow rate mode
-    Hydro_UnitsType_LiqDilution_MilliLiterPerLiter,         // Milli liter per liter dilution mode
-    Hydro_UnitsType_LiqDilution_MilliLiterPerGallon,        // Milli liter per gallon dilution mode
     Hydro_UnitsType_Concentration_PPM500,                   // Parts-per-million 500 (NaCl) concentration mode (US)
     Hydro_UnitsType_Concentration_PPM640,                   // Parts-per-million 640 concentration mode (EU)
     Hydro_UnitsType_Concentration_PPM700,                   // Parts-per-million 700 (KCl) concentration mode (AU)
-    Hydro_UnitsType_Distance_Meters,                        // Meters distance mode
     Hydro_UnitsType_Distance_Feet,                          // Feet distance mode
+    Hydro_UnitsType_Distance_Meters,                        // Meters distance mode
+    Hydro_UnitsType_LiqDilution_MilliLiterPerGallon,        // Milli liter per gallon dilution mode
+    Hydro_UnitsType_LiqDilution_MilliLiterPerLiter,         // Milli liter per liter dilution mode
+    Hydro_UnitsType_LiqFlowRate_GallonsPerMin,              // Gallons per minute liquid flow rate mode
+    Hydro_UnitsType_LiqFlowRate_LitersPerMin,               // Liters per minute liquid flow rate mode
+    Hydro_UnitsType_LiqVolume_Gallons,                      // Gallons liquid volume mode
+    Hydro_UnitsType_LiqVolume_Liters,                       // Liters liquid volume mode
+    Hydro_UnitsType_Power_Amperage,                         // Amperage current power mode
+    Hydro_UnitsType_Power_Wattage,                          // Wattage power mode
+    Hydro_UnitsType_Temperature_Celsius,                    // Celsius temperature mode
+    Hydro_UnitsType_Temperature_Fahrenheit,                 // Fahrenheit temperature mode
+    Hydro_UnitsType_Temperature_Kelvin,                     // Kelvin temperature mode
     Hydro_UnitsType_Weight_Kilogram,                        // Kilogram weight mode
     Hydro_UnitsType_Weight_Pounds,                          // Pounds weight mode
-    Hydro_UnitsType_Power_Wattage,                          // Wattage power mode
-    Hydro_UnitsType_Power_Amperage,                         // Amperage current power mode
 
     Hydro_UnitsType_Count,                                  // Placeholder
     Hydro_UnitsType_Concentration_TDS = Hydro_UnitsType_Concentration_EC, // Standard TDS concentration mode alias

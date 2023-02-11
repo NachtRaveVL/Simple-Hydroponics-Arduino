@@ -91,7 +91,7 @@ public:
                                                              uint8_t inputBitRes = ADC_RESOLUTION); // ADC input bit resolution to use
     // Adds a new analog power usage meter to the system using the given parameters.
     // Power usage meters can be used to determine and manage the energy demands of a power rail.
-    SharedPtr<HydroAnalogSensor> addPowerUsageMeter(pintype_t inputPin,                     // Analog input pin this sensor sits on
+    SharedPtr<HydroAnalogSensor> addPowerLevelMeter(pintype_t inputPin,                     // Analog input pin this sensor sits on
                                                     bool isWattageBased,                    // If power meter measures wattage (true) or amperage (false)
                                                     uint8_t inputBitRes = ADC_RESOLUTION);  // ADC input bit resolution to use
 

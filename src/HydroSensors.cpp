@@ -50,7 +50,7 @@ Hydro_UnitsType defaultMeasureUnitsForSensorType(Hydro_SensorType sensorType, ui
         case Hydro_SensorType_WaterLevel:
         case Hydro_SensorType_WaterHeight:
             return defaultDistanceUnits(measureMode);
-        case Hydro_SensorType_PowerUsage:
+        case Hydro_SensorType_PowerLevel:
             return defaultPowerUnits(measureMode);
         default:
             return Hydro_UnitsType_Undefined;
@@ -82,7 +82,7 @@ Hydro_UnitsCategory defaultMeasureCategoryForSensorType(Hydro_SensorType sensorT
             }
         case Hydro_SensorType_AirCarbonDioxide:
             return Hydro_UnitsCategory_AirConcentration;
-        case Hydro_SensorType_PowerUsage:
+        case Hydro_SensorType_PowerLevel:
             return Hydro_UnitsCategory_Power;
         default:
             return Hydro_UnitsCategory_Undefined;
