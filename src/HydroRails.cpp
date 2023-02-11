@@ -376,7 +376,7 @@ void HydroRegulatedRailData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[SFP(HStr_Key_MaxPower)] = maxPower;
     if (powerSensor[0]) { objectOut[SFP(HStr_Key_PowerSensor)] = charsToString(powerSensor, HYDRO_NAME_MAXSIZE); }
-    if (limitTrigger.type != -1) {
+    if (isValidType(limitTrigger.type)) {
         JsonObject limitTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_LimitTrigger));
         limitTrigger.toJSONObject(limitTriggerObj);
     }

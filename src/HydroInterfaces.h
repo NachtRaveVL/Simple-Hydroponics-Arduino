@@ -60,13 +60,15 @@ struct HydroJSONSerializableInterface {
 // Object Interface
 class HydroObjInterface {
 public:
+    virtual void unresolveAny(HydroObject *obj) = 0;
+
     virtual HydroIdentity getId() const = 0;
     virtual hkey_t getKey() const = 0;
     virtual String getKeyString() const = 0;
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const = 0;
 
-    inline bool isSubObject() const { return getId().isUnknownType(); }
-    inline bool isObject() const { return !isSubObject(); }
+    virtual bool isObject() const = 0;
+    inline bool isSubObject() const { return !isObject(); }
 };
 
 // UI Interface

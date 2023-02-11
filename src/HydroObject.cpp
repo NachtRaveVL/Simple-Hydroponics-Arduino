@@ -119,7 +119,7 @@ bool HydroObject::addLinkage(HydroObject *obj)
         }
         if (linksIndex >= _linksSize) { allocateLinkages(_linksSize << 1); } // grow *2 if too small
         if (linksIndex < _linksSize) {
-            _links[linksIndex] = make_pair(obj, (int8_t)0);
+            _links[linksIndex] = make_pair(obj, (int8_t)1);
             return true;
         }
     }
@@ -156,6 +156,25 @@ bool HydroObject::hasLinkage(HydroObject *obj) const
     return false;
 }
 
+void HydroObject::unresolveAny(HydroObject *obj)
+{
+    if (_links) {
+        HydroObject *lastObject = nullptr;
+        for (hposi_t linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
+            HydroObject *object = _links[linksIndex].first;
+            if (object != obj) {
+                object->unresolveAny(obj); // may clobber indexing
+
+                if (linksIndex && _links[linksIndex].first != object) {
+                    while (linksIndex && _links[linksIndex].first != lastObject) { --linksIndex; }
+                    object = lastObject;
+                }
+            }
+            lastObject = object;
+        }
+    }
+}
+
 HydroIdentity HydroObject::getId() const
 {
     return _id;
@@ -177,6 +196,11 @@ SharedPtr<HydroObjInterface> HydroObject::getSharedPtr() const
                               : SharedPtr<HydroObjInterface>((HydroObjInterface *)this);
 }
 
+bool HydroObject::isObject() const
+{
+    return true;
+}
+
 HydroData *HydroObject::allocateData() const
 {
     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
@@ -193,6 +217,9 @@ void HydroObject::saveToData(HydroData *dataOut)
     }
 }
 
+
+void HydroSubObject::unresolveAny(HydroObject *obj)
+{ ; }
 
 HydroIdentity HydroSubObject::getId() const
 {
@@ -212,6 +239,11 @@ String HydroSubObject::getKeyString() const
 SharedPtr<HydroObjInterface> HydroSubObject::getSharedPtr() const
 {
     return SharedPtr<HydroObjInterface>((HydroObjInterface *)this);
+}
+
+bool HydroSubObject::isObject() const
+{
+    return false;
 }
 
 void HydroSubObject::setParent(HydroObjInterface *parent)
