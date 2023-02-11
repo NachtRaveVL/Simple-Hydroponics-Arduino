@@ -1270,9 +1270,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_DigitalInputPullDown[] PROGMEM = {"DigitalInputPullDown"};
             return flashStr_Enum_DigitalInputPullDown;
         } break;
-        case HStr_Enum_DigitalInputFloating: {
-            static const char flashStr_Enum_DigitalInputFloating[] PROGMEM = {"DigitalInputFloating"};
-            return flashStr_Enum_DigitalInputFloating;
+        case HStr_Enum_DigitalInputPullUp: {
+            static const char flashStr_Enum_DigitalInputPullUp[] PROGMEM = {"DigitalInputPullUp"};
+            return flashStr_Enum_DigitalInputPullUp;
         } break;
         case HStr_Enum_DigitalOutput: {
             static const char flashStr_Enum_DigitalOutput[] PROGMEM = {"DigitalOutput"};
