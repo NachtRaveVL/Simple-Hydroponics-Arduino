@@ -333,7 +333,7 @@ void setup() {
             #if SETUP_AC_SUPPLY_POWER
                 auto acRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydro_RailType,SETUP_AC_POWER_RAIL_TYPE),SETUP_AC_SUPPLY_POWER);
                 #if SETUP_AC_POWER_SENSOR_PIN >= 0
-                {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_AC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
+                {   auto powerMeter = hydroController.addPowerLevelMeter(SETUP_AC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
                     acRelayPower->setPowerSensor(powerMeter);
                 }
                 #endif
@@ -345,7 +345,7 @@ void setup() {
             #if SETUP_DC_SUPPLY_POWER
                 auto dcRelayPower = hydroController.addRegulatedPowerRail(JOIN(Hydro_RailType,SETUP_DC_POWER_RAIL_TYPE),SETUP_DC_SUPPLY_POWER);
                 #if SETUP_DC_POWER_SENSOR_PIN >= 0
-                {   auto powerMeter = hydroController.addPowerUsageMeter(SETUP_DC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
+                {   auto powerMeter = hydroController.addPowerLevelMeter(SETUP_DC_POWER_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
                     dcRelayPower->setPowerSensor(powerMeter);
                 }
                 #endif

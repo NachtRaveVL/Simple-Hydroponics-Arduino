@@ -1329,9 +1329,9 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
 bool getActuatorInWaterFromType(Hydro_ActuatorType actuatorType)
 {
     switch (actuatorType) {
+        case Hydro_ActuatorType_WaterAerator:
         case Hydro_ActuatorType_WaterPump:
         case Hydro_ActuatorType_WaterHeater:
-        case Hydro_ActuatorType_WaterAerator:
             return true;
 
         default:
@@ -1342,8 +1342,8 @@ bool getActuatorInWaterFromType(Hydro_ActuatorType actuatorType)
 bool getActuatorIsPumpFromType(Hydro_ActuatorType actuatorType)
 {
     switch (actuatorType) {
-        case Hydro_ActuatorType_WaterPump:
         case Hydro_ActuatorType_PeristalticPump:
+        case Hydro_ActuatorType_WaterPump:
             return true;
 
         default:
@@ -1354,20 +1354,20 @@ bool getActuatorIsPumpFromType(Hydro_ActuatorType actuatorType)
 String actuatorTypeToString(Hydro_ActuatorType actuatorType, bool excludeSpecial)
 {
     switch (actuatorType) {
-        case Hydro_ActuatorType_GrowLights:
-            return SFP(HStr_Enum_GrowLights);
-        case Hydro_ActuatorType_WaterPump:
-            return SFP(HStr_Enum_WaterPump);
-        case Hydro_ActuatorType_PeristalticPump:
-            return SFP(HStr_Enum_PeristalticPump);
-        case Hydro_ActuatorType_WaterHeater:
-            return SFP(HStr_Enum_WaterHeater);
-        case Hydro_ActuatorType_WaterAerator:
-            return SFP(HStr_Enum_WaterAerator);
-        case Hydro_ActuatorType_WaterSprayer:
-            return SFP(HStr_Enum_WaterSprayer);
         case Hydro_ActuatorType_FanExhaust:
             return SFP(HStr_Enum_FanExhaust);
+        case Hydro_ActuatorType_GrowLights:
+            return SFP(HStr_Enum_GrowLights);
+        case Hydro_ActuatorType_PeristalticPump:
+            return SFP(HStr_Enum_PeristalticPump);
+        case Hydro_ActuatorType_WaterAerator:
+            return SFP(HStr_Enum_WaterAerator);
+        case Hydro_ActuatorType_WaterHeater:
+            return SFP(HStr_Enum_WaterHeater);
+        case Hydro_ActuatorType_WaterPump:
+            return SFP(HStr_Enum_WaterPump);
+        case Hydro_ActuatorType_WaterSprayer:
+            return SFP(HStr_Enum_WaterSprayer);
         case Hydro_ActuatorType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_ActuatorType_Undefined:
@@ -1379,26 +1379,26 @@ String actuatorTypeToString(Hydro_ActuatorType actuatorType, bool excludeSpecial
 String sensorTypeToString(Hydro_SensorType sensorType, bool excludeSpecial)
 {
     switch (sensorType) {
-        case Hydro_SensorType_PotentialHydrogen:
-            return SFP(HStr_Enum_WaterPH);
-        case Hydro_SensorType_TotalDissolvedSolids:
-            return SFP(HStr_Enum_WaterTDS);
-        case Hydro_SensorType_SoilMoisture:
-            return SFP(HStr_Enum_SoilMoisture);
-        case Hydro_SensorType_WaterTemperature:
-            return SFP(HStr_Enum_WaterTemperature);
-        case Hydro_SensorType_PumpFlow:
-            return SFP(HStr_Enum_PumpFlow);
-        case Hydro_SensorType_WaterLevel:
-            return SFP(HStr_Enum_WaterLevel);
-        case Hydro_SensorType_WaterHeight:
-            return SFP(HStr_Enum_WaterHeight);
-        case Hydro_SensorType_AirTempHumidity:
-            return SFP(HStr_Enum_AirTemperatureHumidity);
         case Hydro_SensorType_AirCarbonDioxide:
             return SFP(HStr_Enum_AirCarbonDioxide);
-        case Hydro_SensorType_PowerUsage:
-            return SFP(HStr_Enum_PowerUsage);
+        case Hydro_SensorType_AirTempHumidity:
+            return SFP(HStr_Enum_AirTemperatureHumidity);
+        case Hydro_SensorType_PotentialHydrogen:
+            return SFP(HStr_Enum_WaterPH);
+        case Hydro_SensorType_PowerLevel:
+            return SFP(HStr_Enum_PowerLevel);
+        case Hydro_SensorType_PumpFlow:
+            return SFP(HStr_Enum_PumpFlow);
+        case Hydro_SensorType_SoilMoisture:
+            return SFP(HStr_Enum_SoilMoisture);
+        case Hydro_SensorType_TotalDissolvedSolids:
+            return SFP(HStr_Enum_WaterTDS);
+        case Hydro_SensorType_WaterHeight:
+            return SFP(HStr_Enum_WaterHeight);
+        case Hydro_SensorType_WaterLevel:
+            return SFP(HStr_Enum_WaterLevel);
+        case Hydro_SensorType_WaterTemperature:
+            return SFP(HStr_Enum_WaterTemperature);
         case Hydro_SensorType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_SensorType_Undefined:
@@ -1667,10 +1667,16 @@ float getRailVoltageFromType(Hydro_RailType railType)
             return 110.0f;
         case Hydro_RailType_AC220V:
             return 220.0f;
+        case Hydro_RailType_DC3V3:
+            return 3.3f;
         case Hydro_RailType_DC5V:
             return 5.0f;
         case Hydro_RailType_DC12V:
             return 12.0f;
+        case Hydro_RailType_DC24V:
+            return 24.0f;
+        case Hydro_RailType_DC48V:
+            return 48.0f;
         default:
             return 0.0f;
     }
@@ -1683,10 +1689,16 @@ String railTypeToString(Hydro_RailType railType, bool excludeSpecial)
             return SFP(HStr_Enum_AC110V);
         case Hydro_RailType_AC220V:
             return SFP(HStr_Enum_AC220V);
+        case Hydro_RailType_DC3V3:
+            return SFP(HStr_Enum_DC3V3);
         case Hydro_RailType_DC5V:
             return SFP(HStr_Enum_DC5V);
         case Hydro_RailType_DC12V:
             return SFP(HStr_Enum_DC12V);
+        case Hydro_RailType_DC24V:
+            return SFP(HStr_Enum_DC24V);
+        case Hydro_RailType_DC48V:
+            return SFP(HStr_Enum_DC48V);
         case Hydro_RailType_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_RailType_Undefined:
@@ -1698,34 +1710,34 @@ String railTypeToString(Hydro_RailType railType, bool excludeSpecial)
 String unitsCategoryToString(Hydro_UnitsCategory unitsCategory, bool excludeSpecial)
 {
     switch (unitsCategory) {
+        case Hydro_UnitsCategory_AirConcentration:
+            return SFP(HStr_Enum_AirConcentration);
+        case Hydro_UnitsCategory_AirHeatIndex:
+            return SFP(HStr_Enum_AirHeatIndex);
+        case Hydro_UnitsCategory_AirHumidity:
+            return SFP(HStr_Enum_AirHumidity);
+        case Hydro_UnitsCategory_AirTemperature:
+            return SFP(HStr_Enum_AirTemperature);
         case Hydro_UnitsCategory_Alkalinity:
             return SFP(HStr_Enum_Alkalinity);
         case Hydro_UnitsCategory_DissolvedSolids:
             return SFP(HStr_Enum_DissolvedSolids);
-        case Hydro_UnitsCategory_SoilMoisture:
-            return SFP(HStr_Enum_SoilMoisture);
+        case Hydro_UnitsCategory_Distance:
+            return SFP(HStr_Enum_Distance);
+        case Hydro_UnitsCategory_LiqDilution:
+            return SFP(HStr_Enum_LiqDilution);
+        case Hydro_UnitsCategory_LiqFlowRate:
+            return SFP(HStr_Enum_LiqFlowRate);
         case Hydro_UnitsCategory_LiqTemperature:
             return SFP(HStr_Enum_LiqTemperature);
         case Hydro_UnitsCategory_LiqVolume:
             return SFP(HStr_Enum_LiqVolume);
-        case Hydro_UnitsCategory_LiqFlowRate:
-            return SFP(HStr_Enum_LiqFlowRate);
-        case Hydro_UnitsCategory_LiqDilution:
-            return SFP(HStr_Enum_LiqDilution);
-        case Hydro_UnitsCategory_AirTemperature:
-            return SFP(HStr_Enum_AirTemperature);
-        case Hydro_UnitsCategory_AirHumidity:
-            return SFP(HStr_Enum_AirHumidity);
-        case Hydro_UnitsCategory_AirHeatIndex:
-            return SFP(HStr_Enum_AirHeatIndex);
-        case Hydro_UnitsCategory_AirConcentration:
-            return SFP(HStr_Enum_AirConcentration);
-        case Hydro_UnitsCategory_Distance:
-            return SFP(HStr_Enum_Distance);
-        case Hydro_UnitsCategory_Weight:
-            return SFP(HStr_Enum_Weight);
         case Hydro_UnitsCategory_Power:
             return SFP(HStr_Enum_Power);
+        case Hydro_UnitsCategory_SoilMoisture:
+            return SFP(HStr_Enum_SoilMoisture);
+        case Hydro_UnitsCategory_Weight:
+            return SFP(HStr_Enum_Weight);
         case Hydro_UnitsCategory_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_UnitsCategory_Undefined:
@@ -1745,42 +1757,42 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
             return !excludeSpecial ? SFP(HStr_Unit_pH) : String(); // technically unitless
         case Hydro_UnitsType_Concentration_EC:
             return SFP(HStr_Unit_EC); // alt: mS/cm, TDS
+        case Hydro_UnitsType_Concentration_PPM500:
+            return SFP(HStr_Unit_PPM500);
+        case Hydro_UnitsType_Concentration_PPM640:
+            return SFP(HStr_Unit_PPM640);
+        case Hydro_UnitsType_Concentration_PPM700:
+            return SFP(HStr_Unit_PPM700);
+        case Hydro_UnitsType_Distance_Feet:
+            return SFP(HStr_Unit_Feet);
+        case Hydro_UnitsType_Distance_Meters:
+            return SFP(HStr_Unit_Meters);
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
+            return SFP(HStr_Unit_MilliLiterPerGallon);
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
+            return SFP(HStr_Unit_MilliLiterPerLiter);
+        case Hydro_UnitsType_LiqFlowRate_GallonsPerMin:
+            return SFP(HStr_Unit_GallonsPerMin);
+        case Hydro_UnitsType_LiqFlowRate_LitersPerMin:
+            return SFP(HStr_Unit_LitersPerMin);
+        case Hydro_UnitsType_LiqVolume_Gallons:
+            return SFP(HStr_Unit_Gallons);
+        case Hydro_UnitsType_LiqVolume_Liters:
+            return SFP(HStr_Unit_Liters);
+        case Hydro_UnitsType_Power_Amperage:
+            return SFP(HStr_Unit_Amperage);
+        case Hydro_UnitsType_Power_Wattage:
+            return SFP(HStr_Unit_Wattage); // alt: J/s
         case Hydro_UnitsType_Temperature_Celsius:
             return SFP(HStr_Unit_Celsius);
         case Hydro_UnitsType_Temperature_Fahrenheit:
             return SFP(HStr_Unit_Fahrenheit);
         case Hydro_UnitsType_Temperature_Kelvin:
             return SFP(HStr_Unit_Kelvin);
-        case Hydro_UnitsType_LiqVolume_Liters:
-            return SFP(HStr_Unit_Liters);
-        case Hydro_UnitsType_LiqVolume_Gallons:
-            return SFP(HStr_Unit_Gallons);
-        case Hydro_UnitsType_LiqFlowRate_LitersPerMin:
-            return SFP(HStr_Unit_LitersPerMin);
-        case Hydro_UnitsType_LiqFlowRate_GallonsPerMin:
-            return SFP(HStr_Unit_GallonsPerMin);
-        case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
-            return SFP(HStr_Unit_MilliLiterPerLiter);
-        case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
-            return SFP(HStr_Unit_MilliLiterPerGallon);
-        case Hydro_UnitsType_Concentration_PPM:
-            return SFP(HStr_Unit_PPM500);
-        case Hydro_UnitsType_Concentration_PPM640:
-            return SFP(HStr_Unit_PPM640);
-        case Hydro_UnitsType_Concentration_PPM700:
-            return SFP(HStr_Unit_PPM700);
-        case Hydro_UnitsType_Distance_Meters:
-            return SFP(HStr_Unit_Meters);
-        case Hydro_UnitsType_Distance_Feet:
-            return SFP(HStr_Unit_Feet);
         case Hydro_UnitsType_Weight_Kilogram:
             return SFP(HStr_Unit_Kilogram);
         case Hydro_UnitsType_Weight_Pounds:
             return SFP(HStr_Unit_Pounds);
-        case Hydro_UnitsType_Power_Wattage:
-            return SFP(HStr_Unit_Wattage); // alt: J/s
-        case Hydro_UnitsType_Power_Amperage:
-            return SFP(HStr_Unit_Amperage);
         case Hydro_UnitsType_Count:
             return !excludeSpecial ? SFP(HStr_Unit_Count) : String();
         case Hydro_UnitsType_Undefined:
