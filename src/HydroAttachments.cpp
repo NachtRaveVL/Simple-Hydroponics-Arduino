@@ -104,7 +104,7 @@ void HydroAttachment::setParent(HydroObjInterface *parent)
 
 
 HydroActuatorAttachment::HydroActuatorAttachment(HydroObjInterface *parent)
-    :  HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(parent, &HydroActuator::getActivationSignal),
+    : HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>(parent, &HydroActuator::getActivationSignal),
        _actHandle(), _actSetup(), _updateSlot(nullptr), _rateMultiplier(1.0f), _calledLastUpdate(false)
 { ; }
 
