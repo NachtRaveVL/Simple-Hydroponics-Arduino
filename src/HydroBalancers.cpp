@@ -243,7 +243,7 @@ void HydroTimedDosingBalancer::update()
 
             case Hydro_BalancingState_TooHigh:
                 while (_dosingActIndex < _decActuators.size()) {
-                    auto attachIter = _decActuators.begin();  // advance iter to index
+                    auto attachIter = _decActuators.begin(); // advance iter to index
                     for (int actuatorIndex = 0; attachIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++attachIter, ++actuatorIndex) { ; }
 
                     if (attachIter != _decActuators.end()) {
