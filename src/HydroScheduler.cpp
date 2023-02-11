@@ -575,7 +575,7 @@ void HydroProcess::clearActuatorReqs()
     }
 }
 
-void HydroProcess::setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn)
+void HydroProcess::setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> &actuatorReqsIn)
 {
     for (auto attachIter = actuatorReqs.begin(); attachIter != actuatorReqs.end(); ++attachIter) {
         bool found = false;
@@ -790,12 +790,12 @@ void HydroFeeding::setupStaging()
 
         case TopOff: {
             if (!feedRes->isFilled()) {
-                Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
-                auto topOffPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FreshWater);
+                Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
+                auto topOffPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FreshWater);
 
-                linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(topOffPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // fresh water pumps
+                linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(topOffPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // fresh water pumps
                 if (!newActuatorReqs.size()) {
-                    linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(topOffPumps, newActuatorReqs, Hydro_ActuatorType_PeristalticPump); // fresh water peristaltic pumps
+                    linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(topOffPumps, newActuatorReqs, Hydro_ActuatorType_PeristalticPump); // fresh water peristaltic pumps
                 }
 
                 HYDRO_SOFT_ASSERT(newActuatorReqs.size(), SFP(HStr_Err_MissingLinkage)); // no fresh water pumps
@@ -806,34 +806,34 @@ void HydroFeeding::setupStaging()
         } break;
 
         case PreFeed: {
-            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
-            auto aerators = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_WaterAerator);
+            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
+            auto aerators = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_WaterAerator);
 
-            linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(aerators, newActuatorReqs, Hydro_ActuatorType_WaterAerator);
+            linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(aerators, newActuatorReqs, Hydro_ActuatorType_WaterAerator);
 
             setActuatorReqs(newActuatorReqs);
         } break;
 
         case Feed: {
-            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
+            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
 
-            {   auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FeedWater);
+            {   auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FeedWater);
 
-                linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // feed water pump
+                linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // feed water pump
             }
 
             if (!newActuatorReqs.size() && getHydroInstance()->getSystemMode() == Hydro_SystemMode_DrainToWaste) { // prefers feed water pumps, else direct to waste is feed
-                auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
+                auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
 
-                linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // DTW feed water pump
+                linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // DTW feed water pump
             }
 
             HYDRO_SOFT_ASSERT(newActuatorReqs.size(), SFP(HStr_Err_MissingLinkage)); // no feed water pumps
 
             #if HYDRO_SCH_AERATORS_FEEDRUN
-                {   auto aerators = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_WaterAerator);
+                {   auto aerators = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_WaterAerator);
 
-                    linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(aerators, newActuatorReqs, Hydro_ActuatorType_WaterAerator);
+                    linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(aerators, newActuatorReqs, Hydro_ActuatorType_WaterAerator);
                 }
             #endif
 
@@ -841,10 +841,10 @@ void HydroFeeding::setupStaging()
         } break;
 
         case Drain: {
-            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
-            auto drainPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
+            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
+            auto drainPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
 
-            linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(drainPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // drainage water pump
+            linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(drainPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // drainage water pump
 
             HYDRO_SOFT_ASSERT(newActuatorReqs.size(), SFP(HStr_Err_MissingLinkage)); // no drainage water pumps
             setActuatorReqs(newActuatorReqs);
@@ -1171,19 +1171,19 @@ void HydroLighting::setupStaging()
         } break;
 
         case Spray: {
-            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
-            auto sprayers = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_WaterSprayer);
+            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
+            auto sprayers = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_WaterSprayer);
 
-            linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(sprayers, newActuatorReqs, Hydro_ActuatorType_WaterSprayer);
+            linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(sprayers, newActuatorReqs, Hydro_ActuatorType_WaterSprayer);
 
             setActuatorReqs(newActuatorReqs);
         } break;
 
         case Light: {
-            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> newActuatorReqs;
-            auto lights = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_GrowLights);
+            Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
+            auto lights = linksFilterActuatorsByReservoirAndType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_GrowLights);
 
-            linksResolveActuatorsByType<HYDRO_SCH_REQACTUATORS_MAXSIZE>(lights, newActuatorReqs, Hydro_ActuatorType_GrowLights);
+            linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(lights, newActuatorReqs, Hydro_ActuatorType_GrowLights);
 
             setActuatorReqs(newActuatorReqs);
         } break;

@@ -668,7 +668,7 @@ protected:
     uint16_t _sysDataAddress;                               // EEPROM system data address used in serialization (default: -1/disabled)
 
     Map<hkey_t, SharedPtr<HydroObject>, HYDRO_SYS_OBJECTS_MAXSIZE> _objects; // Shared object collection, key'ed by HydroIdentity
-    Map<pintype_t, OneWire *, HYDRO_SYS_ONEWIRE_MAXSIZE> _oneWires; // Pin OneWire mapping
+    Map<pintype_t, OneWire *, HYDRO_SYS_ONEWIRES_MAXSIZE> _oneWires; // Pin OneWire mapping
     Map<pintype_t, pintype_t, HYDRO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
     Map<pintype_t, SharedPtr<HydroPinMuxer>, HYDRO_SYS_PINMUXERS_MAXSIZE> _pinMuxers; // Pin muxers mapping
 

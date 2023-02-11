@@ -51,14 +51,14 @@ public:
     inline hposi_t getRailIndex() const { return _id.posIndex; }
     virtual float getRailVoltage() const override;
 
-    Signal<HydroRail *, HYDRO_CAPACITY_SIGNAL_SLOTS> &getCapacitySignal();
+    Signal<HydroRail *, HYDRO_RAIL_SIGNAL_SLOTS> &getCapacitySignal();
 
 protected:
     Hydro_UnitsType _powerUnits;                            // Power units preferred
 
     Hydro_TriggerState _limitState;                         // Current limit state
 
-    Signal<HydroRail *, HYDRO_CAPACITY_SIGNAL_SLOTS> _capacitySignal; // Capacity changed signal
+    Signal<HydroRail *, HYDRO_RAIL_SIGNAL_SLOTS> _capacitySignal; // Capacity changed signal
 
     virtual HydroData *allocateData() const override;
     virtual void saveToData(HydroData *dataOut) override;
