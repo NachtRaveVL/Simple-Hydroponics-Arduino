@@ -113,10 +113,14 @@ public:
     // Objects are considered strong pointers, since existence -> SharedPtr ref to this instance exists.
     inline Pair<uint8_t, Pair<HydroObject *, int8_t> *> getLinkages() const { return make_pair(_linksSize, _links); }
 
+    virtual void unresolveAny(HydroObject *obj) override;   // Unresolves any dlinks to obj prior to caching
+    inline void unresolve() { unresolveAny(this); }         // Unresolves this instance from any dlinks
+
     virtual HydroIdentity getId() const override;           // Returns the unique Identity of the object
     virtual hkey_t getKey() const override;                 // Returns the unique key of the object
     virtual String getKeyString() const override;           // Returns the key string of the object
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const override; // Returns the SharedPtr instance of the object
+    virtual bool isObject() const override;                 // Returns true for object
 
 protected:
     HydroIdentity _id;                                      // Object id
@@ -139,10 +143,13 @@ class HydroSubObject : public HydroObjInterface {
 public:
     inline HydroSubObject(HydroObjInterface *parent = nullptr) : _parent(parent) { ; }
 
+    virtual void unresolveAny(HydroObject *obj) override;
+
     virtual HydroIdentity getId() const override;
     virtual hkey_t getKey() const override;
     virtual String getKeyString() const override;
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const override;
+    virtual bool isObject() const override;
 
     virtual void setParent(HydroObjInterface *parent);
     inline HydroObjInterface *getParent() const { return _parent; }

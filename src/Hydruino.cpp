@@ -836,7 +836,7 @@ void Hydruino::commonPostSave()
 
 // Runloops
 
-// Super tight updates (buzzer/gps/etc) need to go here
+// Super tight updates (buzzer/gps/etc) that need to be ran often
 inline void tightUpdates()
 {
     // TODO: put in link to buzzer update here
@@ -941,10 +941,10 @@ void miscLoop()
         #ifdef HYDRO_USE_GPS
             yieldIfNeeded(lastYield);
 
-            if (Hydroduino::_gps && Hydroduino::_gps->newNMEAreceived()) {
-                Hydroduino::_gps->parse(Hydroduino::_gps->lastNMEA());
-                if (Hydroduino::_gps->fix) {
-                    Hydroduino::_activeInstance->setSystemLocation(Hydroduino::_gps->lat, Hydroduino::_gps->lon, Hydroduino::_gps->altitude);
+            if (Hydroduino::_activeInstance->_gps && Hydroduino::_activeInstance->_gps->newNMEAreceived()) {
+                Hydroduino::_activeInstance->_gps->parse(Hydroduino::_activeInstance->_gps->lastNMEA());
+                if (Hydroduino::_activeInstance->_gps->fix) {
+                    Hydroduino::_activeInstance->setSystemLocation(Hydroduino::_activeInstance->_gps->lat, Hydroduino::_activeInstance->_gps->lon, Hydroduino::_activeInstance->_gps->altitude);
                 }
             }
         #endif
