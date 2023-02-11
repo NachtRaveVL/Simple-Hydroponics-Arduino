@@ -131,10 +131,7 @@ void HydroReservoir::handleEmpty(Hydro_TriggerState emptyState)
 }
 
 
-HydroFluidReservoir::HydroFluidReservoir(Hydro_ReservoirType reservoirType,
-                                                     hposi_t reservoirIndex,
-                                                     float maxVolume,
-                                                     int classType)
+HydroFluidReservoir::HydroFluidReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, float maxVolume, int classType)
     : HydroReservoir(reservoirType, reservoirIndex, classType),
       _maxVolume(maxVolume), _waterVolume(this), _filledTrigger(this), _emptyTrigger(this)
 {
@@ -183,14 +180,14 @@ bool HydroFluidReservoir::isFilled()
 {
     if (_filledTrigger.resolve() && triggerStateToBool(_filledTrigger.getTriggerState())) { return true; }
     return _waterVolume.getMeasurementValue() >= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
-                                                                                                                     : _maxVolume) - FLT_EPSILON;
+                                                                                                               : _maxVolume) - FLT_EPSILON;
 }
 
 bool HydroFluidReservoir::isEmpty()
 {
     if (_emptyTrigger.resolve() && triggerStateToBool(_emptyTrigger.getTriggerState())) { return true; }
     return _waterVolume.getMeasurementValue() <= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
-                                                                                                                     : 0) + FLT_EPSILON;
+                                                                                                               : 0) + FLT_EPSILON;
 }
 
 void HydroFluidReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
@@ -230,7 +227,7 @@ void HydroFluidReservoir::handleFilled(Hydro_TriggerState filledState)
 
     if (triggerStateToBool(_filledState) && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
-                                                                                                           : _maxVolume, _volumeUnits);
+                                                                                                     : _maxVolume, _volumeUnits);
     }
 }
 
@@ -240,16 +237,12 @@ void HydroFluidReservoir::handleEmpty(Hydro_TriggerState emptyState)
 
     if (triggerStateToBool(_emptyState) && !getWaterVolumeSensor()) {
         getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
-                                                                                                           : 0, _volumeUnits);
+                                                                                                     : 0, _volumeUnits);
     }
 }
 
 
-HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex,
-                                                   float maxVolume,
-                                                   DateTime lastChangeDate,
-                                                   DateTime lastPruningDate,
-                                                   int classType)
+HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, DateTime lastChangeDate, DateTime lastPruningDate, int classType)
     : HydroFluidReservoir(Hydro_ReservoirType_FeedWater, reservoirIndex, maxVolume, classType),
        _lastChangeDate(lastChangeDate.unixtime()), _lastPruningDate(lastPruningDate.unixtime()), _lastFeedingDate(0), _numFeedingsToday(0),
        _tdsUnits(Hydro_UnitsType_Concentration_TDS), _tempUnits(defaultTemperatureUnits()),
@@ -391,10 +384,7 @@ void HydroFeedReservoir::saveToData(HydroData *dataOut)
 }
 
 
-HydroInfiniteReservoir::HydroInfiniteReservoir(Hydro_ReservoirType reservoirType,
-                                                           hposi_t reservoirIndex,
-                                                           bool alwaysFilled,
-                                                           int classType)
+HydroInfiniteReservoir::HydroInfiniteReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, bool alwaysFilled, int classType)
     : HydroReservoir(reservoirType, reservoirIndex, classType), _alwaysFilled(alwaysFilled), _waterVolume(this)
 { ; }
 

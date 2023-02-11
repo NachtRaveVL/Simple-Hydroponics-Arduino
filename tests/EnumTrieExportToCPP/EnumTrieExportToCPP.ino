@@ -266,6 +266,26 @@ void buildRailTypeTree() {
     _root->printCode(1, varName, typeCast);
 }
 
+void buildPinModeTree() {
+    if (_root) { delete _root; } _root = new TreeNode("");
+    for (int typeIndex = -1; typeIndex <= Hydro_PinMode_Count; ++typeIndex) {
+        _root->insert(nullptr, pinModeToString((Hydro_PinMode)typeIndex), typeIndex);
+    }
+    String typeCast(F("(Hydro_PinMode)"));
+    String varName(F("pinModeStr"));
+    _root->printCode(1, varName, typeCast);
+}
+
+void buildEnableModeTree() {
+    if (_root) { delete _root; } _root = new TreeNode("");
+    for (int typeIndex = -1; typeIndex <= Hydro_EnableMode_Count; ++typeIndex) {
+        _root->insert(nullptr, enableModeToString((Hydro_EnableMode)typeIndex), typeIndex);
+    }
+    String typeCast(F("(Hydro_EnableMode)"));
+    String varName(F("enableModeStr"));
+    _root->printCode(1, varName, typeCast);
+}
+
 void buildUnitsCategoryTree() {
     if (_root) { delete _root; } _root = new TreeNode("");
     for (int typeIndex = -1; typeIndex <= Hydro_UnitsCategory_Count; ++typeIndex) {
@@ -354,6 +374,12 @@ void setup() {
 
     getLoggerInstance()->logMessage(F("Rail type tree:"));
     buildRailTypeTree();
+
+    getLoggerInstance()->logMessage(F("Pin mode tree:"));
+    buildPinModeTree();
+
+    getLoggerInstance()->logMessage(F("Enable mode tree:"));
+    buildEnableModeTree();
 
     getLoggerInstance()->logMessage(F("Units category tree:"));
     buildUnitsCategoryTree();

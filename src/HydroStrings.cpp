@@ -1010,6 +1010,14 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_AloeVera[] PROGMEM = {"AloeVera"};
             return flashStr_Enum_AloeVera;
         } break;
+        case HStr_Enum_AnalogInput: {
+            static const char flashStr_Enum_AnalogInput[] PROGMEM = {"AnalogInput"};
+            return flashStr_Enum_AnalogInput;
+        } break;
+        case HStr_Enum_AnalogOutput: {
+            static const char flashStr_Enum_AnalogOutput[] PROGMEM = {"AnalogOutput"};
+            return flashStr_Enum_AnalogOutput;
+        } break;
         case HStr_Enum_Anise: {
             static const char flashStr_Enum_Anise[] PROGMEM = {"Anise"};
             return flashStr_Enum_Anise;
@@ -1022,9 +1030,17 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Arugula[] PROGMEM = {"Arugula"};
             return flashStr_Enum_Arugula;
         } break;
+        case HStr_Enum_AscOrder: {
+            static const char flashStr_Enum_AscOrder[] PROGMEM = {"AscOrder"};
+            return flashStr_Enum_AscOrder;
+        } break;
         case HStr_Enum_Asparagus: {
             static const char flashStr_Enum_Asparagus[] PROGMEM = {"Asparagus"};
             return flashStr_Enum_Asparagus;
+        } break;
+        case HStr_Enum_Average: {
+            static const char flashStr_Enum_Average[] PROGMEM = {"Average"};
+            return flashStr_Enum_Average;
         } break;
         case HStr_Enum_Basil: {
             static const char flashStr_Enum_Basil[] PROGMEM = {"Basil"};
@@ -1242,6 +1258,30 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_DC5V[] PROGMEM = {"DC5V"};
             return flashStr_Enum_DC5V;
         } break;
+        case HStr_Enum_DesOrder: {
+            static const char flashStr_Enum_DesOrder[] PROGMEM = {"DesOrder"};
+            return flashStr_Enum_DesOrder;
+        } break;
+        case HStr_Enum_DigitalInput: {
+            static const char flashStr_Enum_DigitalInput[] PROGMEM = {"DigitalInput"};
+            return flashStr_Enum_DigitalInput;
+        } break;
+        case HStr_Enum_DigitalInputPullDown: {
+            static const char flashStr_Enum_DigitalInputPullDown[] PROGMEM = {"DigitalInputPullDown"};
+            return flashStr_Enum_DigitalInputPullDown;
+        } break;
+        case HStr_Enum_DigitalInputFloating: {
+            static const char flashStr_Enum_DigitalInputFloating[] PROGMEM = {"DigitalInputFloating"};
+            return flashStr_Enum_DigitalInputFloating;
+        } break;
+        case HStr_Enum_DigitalOutput: {
+            static const char flashStr_Enum_DigitalOutput[] PROGMEM = {"DigitalOutput"};
+            return flashStr_Enum_DigitalOutput;
+        } break;
+        case HStr_Enum_DigitalOutputPushPull: {
+            static const char flashStr_Enum_DigitalOutputPushPull[] PROGMEM = {"DigitalOutputPushPull"};
+            return flashStr_Enum_DigitalOutputPushPull;
+        } break;
         case HStr_Enum_Dill: {
             static const char flashStr_Enum_Dill[] PROGMEM = {"Dill"};
             return flashStr_Enum_Dill;
@@ -1306,9 +1346,17 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_GrowLights[] PROGMEM = {"GrowLights"};
             return flashStr_Enum_GrowLights;
         } break;
+        case HStr_Enum_Highest: {
+            static const char flashStr_Enum_Highest[] PROGMEM = {"Highest"};
+            return flashStr_Enum_Highest;
+        } break;
         case HStr_Enum_Imperial: {
             static const char flashStr_Enum_Imperial[] PROGMEM = {"Imperial"};
             return flashStr_Enum_Imperial;
+        } break;
+        case HStr_Enum_InOrder: {
+            static const char flashStr_Enum_InOrder[] PROGMEM = {"InOrder"};
+            return flashStr_Enum_InOrder;
         } break;
         case HStr_Enum_Kale: {
             static const char flashStr_Enum_Kale[] PROGMEM = {"Kale"};
@@ -1346,6 +1394,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_LiqVolume[] PROGMEM = {"LiqVolume"};
             return flashStr_Enum_LiqVolume;
         } break;
+        case HStr_Enum_Lowest: {
+            static const char flashStr_Enum_Lowest[] PROGMEM = {"Lowest"};
+            return flashStr_Enum_Lowest;
+        } break;
         case HStr_Enum_Marrow: {
             static const char flashStr_Enum_Marrow[] PROGMEM = {"Marrow"};
             return flashStr_Enum_Marrow;
@@ -1361,6 +1413,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_Mint: {
             static const char flashStr_Enum_Mint[] PROGMEM = {"Mint"};
             return flashStr_Enum_Mint;
+        } break;
+        case HStr_Enum_Multiply: {
+            static const char flashStr_Enum_Multiply[] PROGMEM = {"Multiply"};
+            return flashStr_Enum_Multiply;
         } break;
         case HStr_Enum_MustardCress: {
             static const char flashStr_Enum_MustardCress[] PROGMEM = {"MustardCress"};
@@ -1457,6 +1513,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_Recycling: {
             static const char flashStr_Enum_Recycling[] PROGMEM = {"Recycling"};
             return flashStr_Enum_Recycling;
+        } break;
+        case HStr_Enum_RevOrder: {
+            static const char flashStr_Enum_RevOrder[] PROGMEM = {"RevOrder"};
+            return flashStr_Enum_RevOrder;
         } break;
         case HStr_Enum_Rhubarb: {
             static const char flashStr_Enum_Rhubarb[] PROGMEM = {"Rhubarb"};

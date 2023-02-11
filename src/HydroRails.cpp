@@ -144,10 +144,7 @@ void HydroRail::handleLimit(Hydro_TriggerState limitState)
 }
 
 
-HydroSimpleRail::HydroSimpleRail(Hydro_RailType railType,
-                                             hposi_t railIndex,
-                                             int maxActiveAtOnce,
-                                             int classType)
+HydroSimpleRail::HydroSimpleRail(Hydro_RailType railType, hposi_t railIndex, int maxActiveAtOnce, int classType)
     : HydroRail(railType, railIndex, classType), _activeCount(0), _maxActiveAtOnce(maxActiveAtOnce)
 { ; }
 
@@ -192,10 +189,7 @@ void HydroSimpleRail::handleActivation(HydroActuator *actuator)
 }
 
 
-HydroRegulatedRail::HydroRegulatedRail(Hydro_RailType railType,
-                                                   hposi_t railIndex,
-                                                   float maxPower,
-                                                   int classType)
+HydroRegulatedRail::HydroRegulatedRail(Hydro_RailType railType, hposi_t railIndex, float maxPower, int classType)
     : HydroRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());

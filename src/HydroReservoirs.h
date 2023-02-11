@@ -108,8 +108,8 @@ public:
 protected:
     float _maxVolume;                                       // Maximum volume
     HydroSensorAttachment _waterVolume;                     // Water volume sensor attachment
-    HydroTriggerAttachment _filledTrigger;                  // Filled trigger (owned)
-    HydroTriggerAttachment _emptyTrigger;                   // Empty trigger (owned)
+    HydroTriggerAttachment _filledTrigger;                  // Filled trigger attachment
+    HydroTriggerAttachment _emptyTrigger;                   // Empty trigger attachment
 
     virtual void saveToData(HydroData *dataOut) override;
 
