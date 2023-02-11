@@ -90,9 +90,7 @@ Hydro_UnitsCategory defaultMeasureCategoryForSensorType(Hydro_SensorType sensorT
 }
 
 
-HydroSensor::HydroSensor(Hydro_SensorType sensorType,
-                         hposi_t sensorIndex,
-                         int classTypeIn)
+HydroSensor::HydroSensor(Hydro_SensorType sensorType, hposi_t sensorIndex, int classTypeIn)
     : HydroObject(HydroIdentity(sensorType, sensorIndex)), classType((typeof(classType))classTypeIn),
       _isTakingMeasure(false), _crop(this), _reservoir(this), _calibrationData(nullptr)
 {
@@ -181,10 +179,7 @@ void HydroSensor::saveToData(HydroData *dataOut)
 }
 
 
-HydroBinarySensor::HydroBinarySensor(Hydro_SensorType sensorType,
-                                     hposi_t sensorIndex,
-                                     HydroDigitalPin inputPin,
-                                     int classType)
+HydroBinarySensor::HydroBinarySensor(Hydro_SensorType sensorType, hposi_t sensorIndex, HydroDigitalPin inputPin, int classType)
     : HydroSensor(sensorType, sensorIndex, classType),
       _inputPin(inputPin), _usingISR(false)
 {
@@ -276,11 +271,7 @@ void HydroBinarySensor::saveToData(HydroData *dataOut)
 }
 
 
-HydroAnalogSensor::HydroAnalogSensor(Hydro_SensorType sensorType,
-                                     hposi_t sensorIndex,
-                                     HydroAnalogPin inputPin,
-                                     bool inputInversion,
-                                     int classType)
+HydroAnalogSensor::HydroAnalogSensor(Hydro_SensorType sensorType, hposi_t sensorIndex, HydroAnalogPin inputPin, bool inputInversion, int classType)
     : HydroSensor(sensorType, sensorIndex, classType),
       _inputPin(inputPin), _inputInversion(inputInversion), _measurementUnits(defaultMeasureUnitsForSensorType(sensorType))
 {
@@ -394,12 +385,7 @@ void HydroAnalogSensor::saveToData(HydroData *dataOut)
 }
 
 
-HydroDigitalSensor::HydroDigitalSensor(Hydro_SensorType sensorType,
-                                       hposi_t sensorIndex,
-                                       HydroDigitalPin inputPin,
-                                       uint8_t bitRes1W,
-                                       bool allocate1W,
-                                       int classType)
+HydroDigitalSensor::HydroDigitalSensor(Hydro_SensorType sensorType, hposi_t sensorIndex, HydroDigitalPin inputPin, uint8_t bitRes1W, bool allocate1W, int classType)
     : HydroSensor(sensorType, sensorIndex, classType), _inputPin(inputPin), _oneWire(nullptr), _wireBitRes(bitRes1W), _wirePosIndex(-1), _wireDevAddress{0}
 {
     HYDRO_HARD_ASSERT(_inputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
@@ -510,11 +496,7 @@ void HydroDigitalSensor::saveToData(HydroData *dataOut)
 }
 
 
-HydroDHTTempHumiditySensor::HydroDHTTempHumiditySensor(hposi_t sensorIndex,
-                                                       HydroDigitalPin inputPin,
-                                                       Hydro_DHTType dhtType,
-                                                       bool computeHeatIndex,
-                                                       int classType)
+HydroDHTTempHumiditySensor::HydroDHTTempHumiditySensor(hposi_t sensorIndex, HydroDigitalPin inputPin, Hydro_DHTType dhtType, bool computeHeatIndex, int classType)
     : HydroDigitalSensor(Hydro_SensorType_AirTempHumidity, sensorIndex, inputPin, 9, false, classType),
       _dht(new DHT(inputPin.pin, dhtType)), _dhtType(dhtType), _computeHeatIndex(computeHeatIndex),
       _measurementUnits{defaultTemperatureUnits(), Hydro_UnitsType_Percentile_0_100, defaultTemperatureUnits()}
@@ -670,11 +652,7 @@ void HydroDHTTempHumiditySensor::saveToData(HydroData *dataOut)
 }
 
 
-HydroDSTemperatureSensor::HydroDSTemperatureSensor(hposi_t sensorIndex,
-                                                   HydroDigitalPin inputPin,
-                                                   uint8_t bitRes1W,
-                                                   HydroDigitalPin pullupPin,
-                                                   int classType)
+HydroDSTemperatureSensor::HydroDSTemperatureSensor(hposi_t sensorIndex, HydroDigitalPin inputPin, uint8_t bitRes1W, HydroDigitalPin pullupPin, int classType)
     : HydroDigitalSensor(Hydro_SensorType_WaterTemperature, sensorIndex, inputPin, bitRes1W, true, classType),
       _dt(new DallasTemperature()), _pullupPin(pullupPin), _measurementUnits(defaultTemperatureUnits())
 {

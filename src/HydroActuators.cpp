@@ -28,9 +28,7 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 }
 
 
-HydroActuator::HydroActuator(Hydro_ActuatorType actuatorType,
-                             hposi_t actuatorIndex,
-                             int classTypeIn)
+HydroActuator::HydroActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, int classTypeIn)
     : HydroObject(HydroIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
       _enabled(false), _enableMode(Hydro_EnableMode_Undefined), _rail(this), _reservoir(this), _needsUpdate(false)
 { ; }
@@ -275,10 +273,7 @@ void HydroActuator::handleActivation()
 }
 
 
-HydroRelayActuator::HydroRelayActuator(Hydro_ActuatorType actuatorType,
-                                       hposi_t actuatorIndex,
-                                       HydroDigitalPin outputPin,
-                                       int classType)
+HydroRelayActuator::HydroRelayActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, HydroDigitalPin outputPin, int classType)
     : HydroActuator(actuatorType, actuatorIndex, classType),
       _outputPin(outputPin)
 {
@@ -355,10 +350,7 @@ void HydroRelayActuator::saveToData(HydroData *dataOut)
 }
 
 
-HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
-                                               hposi_t actuatorIndex,
-                                               HydroDigitalPin outputPin,
-                                               int classType)
+HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, HydroDigitalPin outputPin, int classType)
     :  HydroRelayActuator(actuatorType, actuatorIndex, outputPin, classType),
        _flowRateUnits(defaultLiquidFlowUnits()), _flowRate(this), _destReservoir(this),
        _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0)
@@ -593,10 +585,7 @@ void HydroRelayPumpActuator::handlePumpTime(millis_t time)
 }
 
 
-HydroVariableActuator::HydroVariableActuator(Hydro_ActuatorType actuatorType,
-                                             hposi_t actuatorIndex,
-                                             HydroAnalogPin outputPin,
-                                             int classType)
+HydroVariableActuator::HydroVariableActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, HydroAnalogPin outputPin, int classType)
     : HydroActuator(actuatorType, actuatorIndex, classType),
       _outputPin(outputPin), _intensity(0.0f)
 {
@@ -684,7 +673,7 @@ void HydroActuatorData::toJSONObject(JsonObject &objectOut) const
         JsonObject outputPinObj = objectOut.createNestedObject(SFP(HStr_Key_OutputPin));
         outputPin.toJSONObject(outputPinObj);
     }
-    if (enableMode != Hydro_EnableMode_Undefined) { objectOut[SFP(HStr_Key_EnableMode)] = enableMode; }
+    if (enableMode != Hydro_EnableMode_Undefined) { objectOut[SFP(HStr_Key_EnableMode)] = enableModeToString(enableMode); }
     if (contPowerUsage.value > FLT_EPSILON) {
         JsonObject contPowerUsageObj = objectOut.createNestedObject(SFP(HStr_Key_ContinousPowerUsage));
         contPowerUsage.toJSONObject(contPowerUsageObj);
@@ -699,7 +688,7 @@ void HydroActuatorData::fromJSONObject(JsonObjectConst &objectIn)
 
     JsonObjectConst outputPinObj = objectIn[SFP(HStr_Key_OutputPin)];
     if (!outputPinObj.isNull()) { outputPin.fromJSONObject(outputPinObj); }
-    enableMode = objectIn[SFP(HStr_Key_EnableMode)] | enableMode;
+    enableMode = enableModeFromString(objectIn[SFP(HStr_Key_EnableMode)]);
     JsonVariantConst contPowerUsageVar = objectIn[SFP(HStr_Key_ContinousPowerUsage)];
     if (!contPowerUsageVar.isNull()) { contPowerUsage.fromJSONVariant(contPowerUsageVar); }
     const char *railNameStr = objectIn[SFP(HStr_Key_RailName)];

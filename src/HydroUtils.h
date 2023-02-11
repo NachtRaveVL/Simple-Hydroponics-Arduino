@@ -314,8 +314,12 @@ inline bool convertUnits(const HydroSingleMeasurement *measureIn, HydroSingleMea
 
 // Returns the base units from a rate unit (e.g. L/min -> L).
 extern Hydro_UnitsType baseUnitsFromRate(Hydro_UnitsType units);
+// Returns the rate units from a base unit (e.g. mm -> mm/min).
+extern Hydro_UnitsType rateUnitsFromBase(Hydro_UnitsType units);
 // Returns the base units from a dilution unit (e.g. mL/L -> L).
-Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units);
+extern Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units);
+// Returns the dilution units from a base unit (e.g. L -> mL/L).
+extern Hydro_UnitsType dilutionUnitsFromVolume(Hydro_UnitsType units);
 
 // Returns default temperature units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
 extern Hydro_UnitsType defaultTemperatureUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
@@ -326,9 +330,9 @@ extern Hydro_UnitsType defaultWeightUnits(Hydro_MeasurementMode measureMode = Hy
 // Returns default liquid volume units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
 extern Hydro_UnitsType defaultLiquidVolumeUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
 // Returns default liquid flow units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultLiquidFlowUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
+inline Hydro_UnitsType defaultLiquidFlowUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return rateUnitsFromBase(defaultLiquidVolumeUnits(measureMode)); }
 // Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultLiquidDilutionUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
+inline Hydro_UnitsType defaultLiquidDilutionUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return dilutionUnitsFromVolume(defaultLiquidVolumeUnits(measureMode)); }
 // Returns default power units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
 extern Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
 // Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
@@ -377,11 +381,6 @@ inline bool checkPinIsPWMOutput(pintype_t pin);
 inline bool checkPinCanInterrupt(pintype_t pin);
 
 // Enums & Conversions
-
-// Converts from pin mode enum to string, with optional exclude for special types (instead returning "").
-extern String pinModeToString(Hydro_PinMode pinMode, bool excludeSpecial = false);
-// Converts back to pin mode enum from string.
-extern Hydro_PinMode pinModeFromString(String pinModeStr);
 
 // Converts from system mode enum to string, with optional exclude for special types (instead returning "").
 extern String systemModeToString(Hydro_SystemMode systemMode, bool excludeSpecial = false);
@@ -442,6 +441,16 @@ extern float getRailVoltageFromType(Hydro_RailType railType);
 extern String railTypeToString(Hydro_RailType railType, bool excludeSpecial = false);
 // Converts back to power rail enum from string.
 extern Hydro_RailType railTypeFromString(String railTypeStr);
+
+// Converts from pin mode enum to string, with optional exclude for special types (instead returning "").
+extern String pinModeToString(Hydro_PinMode pinMode, bool excludeSpecial = false);
+// Converts back to pin mode enum from string.
+extern Hydro_PinMode pinModeFromString(String pinModeStr);
+
+// Converts from actuator enable mode enum to string, with optional exclude for special types (instead returning "").
+extern String enableModeToString(Hydro_EnableMode enableMode, bool excludeSpecial = false);
+// Converts back to actuator enable mode enum from string.
+extern Hydro_EnableMode enableModeFromString(String enableModeStr);
 
 // Converts from units category enum to string, with optional exclude for special types (instead returning "").
 extern String unitsCategoryToString(Hydro_UnitsCategory unitsCategory, bool excludeSpecial = false);

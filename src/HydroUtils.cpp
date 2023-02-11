@@ -920,7 +920,33 @@ Hydro_UnitsType baseUnitsFromRate(Hydro_UnitsType units)
     return Hydro_UnitsType_Undefined;
 }
 
+Hydro_UnitsType rateUnitsFromBase(Hydro_UnitsType units)
+{
+    switch (units) {
+        case Hydro_UnitsType_LiqVolume_Liters:
+            return Hydro_UnitsType_LiqFlowRate_LitersPerMin;
+        case Hydro_UnitsType_LiqVolume_Gallons:
+            return Hydro_UnitsType_LiqFlowRate_GallonsPerMin;
+        default:
+            break;
+    }
+    return Hydro_UnitsType_Undefined;
+}
+
 Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units)
+{
+    switch (units) {
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
+            return Hydro_UnitsType_LiqVolume_Liters;
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
+            return Hydro_UnitsType_LiqVolume_Gallons;
+        default:
+            break;
+    }
+    return Hydro_UnitsType_Undefined;
+}
+
+Hydro_UnitsType dilutionUnitsFromVolume(Hydro_UnitsType units)
 {
     switch (units) {
         case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
@@ -997,40 +1023,6 @@ Hydro_UnitsType defaultLiquidVolumeUnits(Hydro_MeasurementMode measureMode)
         case Hydro_MeasurementMode_Metric:
         case Hydro_MeasurementMode_Scientific:
             return Hydro_UnitsType_LiqVolume_Liters;
-        default:
-            return Hydro_UnitsType_Undefined;
-    }
-}
-
-Hydro_UnitsType defaultLiquidFlowUnits(Hydro_MeasurementMode measureMode)
-{
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
-
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Imperial:
-            return Hydro_UnitsType_LiqFlowRate_GallonsPerMin;
-        case Hydro_MeasurementMode_Metric:
-        case Hydro_MeasurementMode_Scientific:
-            return Hydro_UnitsType_LiqFlowRate_LitersPerMin;
-        default:
-            return Hydro_UnitsType_Undefined;
-    }
-}
-
-Hydro_UnitsType defaultLiquidDilutionUnits(Hydro_MeasurementMode measureMode)
-{
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
-
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Imperial:
-            return Hydro_UnitsType_LiqDilution_MilliLiterPerGallon;
-        case Hydro_MeasurementMode_Metric:
-        case Hydro_MeasurementMode_Scientific:
-            return Hydro_UnitsType_LiqDilution_MilliLiterPerLiter;
         default:
             return Hydro_UnitsType_Undefined;
     }
@@ -1237,34 +1229,6 @@ bool checkPinIsAnalogOutput(pintype_t pin)
     #endif
 }
 
-
-String pinModeToString(Hydro_PinMode pinMode, bool excludeSpecial)
-{
-    switch (pinMode) {
-        // TODO
-        // case Hydro_PinMode_Digital_Input_PullUp:
-        //     return SFP(HStr_Enum_DigitalInputPullUp);
-        // case Hydro_PinMode_Digital_Input_PullDown:
-        //     return SFP(HStr_Enum_DigitalInputPullDown);
-        // case Hydro_PinMode_Digital_Input_Floating:
-        //     return SFP(HStr_Enum_DigitalInputFloating);
-        // case Hydro_PinMode_Digital_Output_OpenDrain:
-        //     return SFP(HStr_Enum_DigitalOutputOpenDrain);
-        // case Hydro_PinMode_Digital_Output_PushPull:
-        //     return SFP(HStr_Enum_DigitalOutputPushPull);
-        // case Hydro_PinMode_Analog_Input:
-        //     return SFP(HStr_Enum_AnalogInput);
-        // case Hydro_PinMode_Analog_Output:
-        //     return SFP(HStr_Enum_AnalogOutput);
-        case Hydro_PinMode_Count:
-            return !excludeSpecial ? SFP(HStr_Count) : String();
-        case Hydro_PinMode_Undefined:
-            break;
-        default:
-            return String((int)pinMode);
-    }
-    return !excludeSpecial ? SFP(HStr_Undefined) : String();
-}
 
 String systemModeToString(Hydro_SystemMode systemMode, bool excludeSpecial)
 {
@@ -1721,6 +1685,62 @@ String railTypeToString(Hydro_RailType railType, bool excludeSpecial)
     return !excludeSpecial ? SFP(HStr_Undefined) : String();
 }
 
+String pinModeToString(Hydro_PinMode pinMode, bool excludeSpecial)
+{
+    switch (pinMode) {
+        case Hydro_PinMode_Digital_Input_PullUp:
+            return SFP(HStr_Enum_DigitalInput);
+        case Hydro_PinMode_Digital_Input_PullDown:
+            return SFP(HStr_Enum_DigitalInputPullDown);
+        case Hydro_PinMode_Digital_Input_Floating:
+            return SFP(HStr_Enum_DigitalInputFloating);
+        case Hydro_PinMode_Digital_Output_OpenDrain:
+            return SFP(HStr_Enum_DigitalOutput);
+        case Hydro_PinMode_Digital_Output_PushPull:
+            return SFP(HStr_Enum_DigitalOutputPushPull);
+        case Hydro_PinMode_Analog_Input:
+            return SFP(HStr_Enum_AnalogInput);
+        case Hydro_PinMode_Analog_Output:
+            return SFP(HStr_Enum_AnalogOutput);
+        case Hydro_PinMode_Count:
+            return !excludeSpecial ? SFP(HStr_Count) : String();
+        case Hydro_PinMode_Undefined:
+            break;
+        default:
+            return String((int)pinMode);
+    }
+    return !excludeSpecial ? SFP(HStr_Undefined) : String();
+}
+
+String enableModeToString(Hydro_EnableMode enableMode, bool excludeSpecial)
+{
+    switch (enableMode) {
+        case Hydro_EnableMode_Highest:
+            return SFP(HStr_Enum_Highest);
+        case Hydro_EnableMode_Lowest:
+            return SFP(HStr_Enum_Lowest);
+        case Hydro_EnableMode_Average:
+            return SFP(HStr_Enum_Average);
+        case Hydro_EnableMode_Multiply:
+            return SFP(HStr_Enum_Multiply);
+        case Hydro_EnableMode_InOrder:
+            return SFP(HStr_Enum_InOrder);
+        case Hydro_EnableMode_RevOrder:
+            return SFP(HStr_Enum_RevOrder);
+        case Hydro_EnableMode_DesOrder:
+            return SFP(HStr_Enum_DesOrder);
+        case Hydro_EnableMode_AscOrder:
+            return SFP(HStr_Enum_AscOrder);
+        case Hydro_EnableMode_Count:
+            return !excludeSpecial ? SFP(HStr_Count) : String();
+        case Hydro_EnableMode_Undefined:
+            break;
+        default:
+            return String((int)enableMode);
+    }
+    return !excludeSpecial ? SFP(HStr_Undefined) : String();
+}
+
 String unitsCategoryToString(Hydro_UnitsCategory unitsCategory, bool excludeSpecial)
 {
     switch (unitsCategory) {
@@ -1843,12 +1863,6 @@ hposi_t positionIndexFromString(String positionIndexStr)
 
 
 // All remaining methods generated from minimum spanning trie
-
-Hydro_PinMode pinModeFromString(String pinModeStr)
-{
-    // TODO
-    return (Hydro_PinMode)pinModeStr.toInt();
-}
 
 Hydro_SystemMode systemModeFromString(String systemModeStr)
 {
@@ -2433,6 +2447,18 @@ Hydro_RailType railTypeFromString(String railTypeStr) {
             break;
     }
     return Hydro_RailType_Undefined;
+}
+
+Hydro_PinMode pinModeFromString(String pinModeStr)
+{
+    // TODO
+    return (Hydro_PinMode)pinModeStr.toInt();
+}
+
+Hydro_EnableMode enableModeFromString(String enableModeStr)
+{
+    // TODO
+    return (Hydro_EnableMode)enableModeStr.toInt();
 }
 
 Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
