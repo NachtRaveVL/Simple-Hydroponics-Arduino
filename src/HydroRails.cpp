@@ -107,7 +107,7 @@ float HydroRail::getRailVoltage() const
     return getRailVoltageFromType(_id.objTypeAs.railType);
 }
 
-Signal<HydroRail *, HYDRO_CAPACITY_SIGNAL_SLOTS> &HydroRail::getCapacitySignal()
+Signal<HydroRail *, HYDRO_RAIL_SIGNAL_SLOTS> &HydroRail::getCapacitySignal()
 {
     return _capacitySignal;
 }

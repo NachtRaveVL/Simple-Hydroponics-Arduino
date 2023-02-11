@@ -28,7 +28,7 @@ public:
     inline bool hasUserCalibrations() const { return _calibrationData.size(); };
 
 protected:
-    Map<hkey_t, HydroCalibrationData *, HYDRO_CAL_CALIBSTORE_MAXSIZE> _calibrationData; // Loaded user calibration data
+    Map<hkey_t, HydroCalibrationData *, HYDRO_CAL_CALIBS_MAXSIZE> _calibrationData; // Loaded user calibration data
 };
 
 #endif // /ifndef HydroCalibrations_H

@@ -106,18 +106,17 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_PUBLISH_SIGNAL_SLOTS      2                   // Maximum number of slots for data publish signal
 #define HYDRO_RESERVOIR_SIGNAL_SLOTS    2                   // Maximum number of slots for filled/empty signal
 #define HYDRO_FEEDING_SIGNAL_SLOTS      2                   // Maximum number of slots for crop feed signal
-#define HYDRO_CAPACITY_SIGNAL_SLOTS     8                   // Maximum number of slots for rail capacity signal
+#define HYDRO_RAIL_SIGNAL_SLOTS         8                   // Maximum number of slots for rail capacity signal
 #define HYDRO_SYS_OBJECTS_MAXSIZE       16                  // Maximum array size for system objects (max # of objects in system)
 #define HYDRO_CROPS_CROPSLIB_MAXSIZE    8                   // Maximum array size for crops library objects (max # of different kinds of crops)
-#define HYDRO_CAL_CALIBSTORE_MAXSIZE    8                   // Maximum array size for calibration store objects (max # of different custom calibrations)
+#define HYDRO_CAL_CALIBS_MAXSIZE        8                   // Maximum array size for calibration store objects (max # of different custom calibrations)
 #define HYDRO_OBJ_LINKS_MAXSIZE         8                   // Maximum array size for object linkage list, per obj (max # of linked objects)
 #define HYDRO_BAL_ACTUATORS_MAXSIZE     8                   // Maximum array size for balancer actuators list (max # of actuators used)
-#define HYDRO_SCH_REQACTUATORS_MAXSIZE  4                   // Maximum array size for scheduler required actuators list (max # of actuators active per process stage)
-#define HYDRO_SCH_FEEDRES_MAXSIZE       2                   // Maximum array size for scheduler feeding/lighting process lists (max # of feed reservoirs)
-#define HYDRO_SYS_ONEWIRE_MAXSIZE       2                   // Maximum array size for pin OneWire list (max # of OneWire comm pins)
+#define HYDRO_SCH_REQACTS_MAXSIZE       4                   // Maximum array size for scheduler required actuators list (max # of actuators active per process stage)
+#define HYDRO_SCH_PROCS_MAXSIZE         2                   // Maximum array size for scheduler feeding/lighting process lists (max # of feed reservoirs)
+#define HYDRO_SYS_ONEWIRES_MAXSIZE      2                   // Maximum array size for pin OneWire list (max # of OneWire comm pins)
 #define HYDRO_SYS_PINLOCKS_MAXSIZE      2                   // Maximum array size for pin locks list (max # of locks)
 #define HYDRO_SYS_PINMUXERS_MAXSIZE     2                   // Maximum array size for pin muxers list (max # of muxers)
-
 
 #define HYDRO_CONTROL_LOOP_INTERVAL     100                 // Run interval of main control loop, in milliseconds
 #define HYDRO_DATA_LOOP_INTERVAL        2000                // Default run interval of data loop, in milliseconds (customizable later)
@@ -178,7 +177,6 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_SYS_DEBUGOUT_FLUSH_YIELD  DISABLED            // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
 #define HYDRO_SYS_MEM_LOGGING_ENABLE    DISABLED            // If system will periodically log memory remaining messages (mainly used for debugging)
 #define HYDRO_SYS_DRY_RUN_ENABLE        DISABLED            // Disables pins from actually enabling in order to simply simulate (mainly used for debugging)
-
 
 #if defined(__APPLE__) || defined(__APPLE) || defined(__unix__) || defined(__unix)
 #define HYDRO_BLDPATH_SEPARATOR         '/'                 // Path separator for nix-based build machines

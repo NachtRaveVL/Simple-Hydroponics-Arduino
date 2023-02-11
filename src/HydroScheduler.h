@@ -65,8 +65,8 @@ protected:
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
     bool _inDaytimeMode;                                    // Daytime mode flag
     int _lastDayNum;                                        // Last day number tracking for daily rescheduling tracking
-    Map<hkey_t, HydroFeeding *, HYDRO_SCH_FEEDRES_MAXSIZE> _feedings; // Feedings in progress
-    Map<hkey_t, HydroLighting *, HYDRO_SCH_FEEDRES_MAXSIZE> _lightings; // Lightings in progress
+    Map<hkey_t, HydroFeeding *, HYDRO_SCH_PROCS_MAXSIZE> _feedings; // Feedings in progress
+    Map<hkey_t, HydroLighting *, HYDRO_SCH_PROCS_MAXSIZE> _lightings; // Lightings in progress
 
     friend class Hydruino;
 
@@ -98,14 +98,14 @@ enum HydroFeedingBroadcastType : signed char {
 // sequences necessary for crops to grow.
 struct HydroProcess {
     SharedPtr<HydroFeedReservoir> feedRes;                  // Feed reservoir
-    Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> actuatorReqs; // Actuators required for this stage (keep-enabled list)
+    Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> actuatorReqs; // Actuators required for this stage (keep-enabled list)
 
     time_t stageStart;                                      // Stage start time
 
     HydroProcess(SharedPtr<HydroFeedReservoir> feedRes);
 
     void clearActuatorReqs();
-    void setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTUATORS_MAXSIZE> &actuatorReqsIn);
+    void setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> &actuatorReqsIn);
 };
 
 // Scheduler Feeding Process
