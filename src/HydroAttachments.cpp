@@ -6,7 +6,7 @@
 #include "Hydruino.h"
 
 HydroDLinkObject::HydroDLinkObject()
-    : _key((hkey_t)-1), _obj(nullptr), _keyStr(nullptr)
+    : _key(hkey_none), _obj(nullptr), _keyStr(nullptr)
 { ; }
 
 HydroDLinkObject::HydroDLinkObject(const HydroDLinkObject &obj)
@@ -43,7 +43,7 @@ void HydroDLinkObject::unresolve()
 SharedPtr<HydroObjInterface> HydroDLinkObject::_getObject()
 {
     if (_obj) { return _obj; }
-    if (_key == (hkey_t)-1) { return nullptr; }
+    if (_key == hkey_none) { return nullptr; }
     if (Hydruino::_activeInstance) {
         _obj = static_pointer_cast<HydroObjInterface>(Hydruino::_activeInstance->_objects[_key]);
     }
@@ -55,33 +55,33 @@ SharedPtr<HydroObjInterface> HydroDLinkObject::_getObject()
 
 
 HydroAttachment::HydroAttachment(HydroObjInterface *parent)
-    : _parent(parent), _obj()
+    : HydroSubObject(parent), _obj()
 { ; }
 
 HydroAttachment::HydroAttachment(const HydroAttachment &attachment)
-    : _parent(attachment._parent), _obj()
+    : HydroSubObject(attachment._parent), _obj()
 {
     setObject(attachment);
 }
 
 HydroAttachment::~HydroAttachment()
 {
-    if (isResolved() && _parent) {
-        _obj->removeLinkage((HydroObject *)_parent);
+    if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) {
+        _obj.get<HydroObject>()->removeLinkage((HydroObject *)_parent);
     }
 }
 
 void HydroAttachment::attachObject()
 {
-    if (resolve() && _parent) { // purposeful resolve in front
-        _obj->addLinkage((HydroObject *)_parent);
+    if (resolve() && _obj->isObject() && _parent && _parent->isObject()) { // purposeful resolve in front
+        _obj.get<HydroObject>()->addLinkage((HydroObject *)_parent);
     }
 }
 
 void HydroAttachment::detachObject()
 {
-    if (isResolved() && _parent) {
-        _obj->removeLinkage((HydroObject *)_parent);
+    if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) {
+        _obj.get<HydroObject>()->removeLinkage((HydroObject *)_parent);
     }
     // note: used to set _obj to nullptr here, but found that it's best not to -> avoids additional operator= calls during typical detach scenarios
 }
@@ -94,11 +94,11 @@ void HydroAttachment::updateIfNeeded(bool poll)
 void HydroAttachment::setParent(HydroObjInterface *parent)
 {
     if (_parent != parent) {
-        if (isResolved() && _parent) { _obj->removeLinkage((HydroObject *)_parent); }
+        if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) { _obj.get<HydroObject>()->removeLinkage((HydroObject *)_parent); }
 
         _parent = parent;
 
-        if (isResolved() && _parent) { _obj->addLinkage((HydroObject *)_parent); }
+        if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) { _obj.get<HydroObject>()->addLinkage((HydroObject *)_parent); }
     }
 }
 

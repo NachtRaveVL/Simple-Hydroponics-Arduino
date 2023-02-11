@@ -7,7 +7,7 @@
 
 HydroCrop *newCropObjectFromData(const HydroCropData *dataIn)
 {
-    if (dataIn && dataIn->id.object.idType == -1) return nullptr;
+    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
@@ -358,7 +358,7 @@ void HydroAdaptiveCropData::toJSONObject(JsonObject &objectOut) const
 
     if (moistureUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_MoistureUnits)] = unitsTypeToSymbol(moistureUnits); }
     if (moistureSensor[0]) { objectOut[SFP(HStr_Key_MoistureSensor)] = charsToString(moistureSensor, HYDRO_NAME_MAXSIZE); }
-    if (feedingTrigger.type != -1) {
+    if (isValidType(feedingTrigger.type)) {
         JsonObject feedingTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_FeedingTrigger));
         feedingTrigger.toJSONObject(feedingTriggerObj);
     }

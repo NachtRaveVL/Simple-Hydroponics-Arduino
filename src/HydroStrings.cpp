@@ -22,7 +22,7 @@ void beginStringsFromSDCard(String dataFilePrefix)
     _strDataFilePrefix = dataFilePrefix;
 }
 
-static inline String getStringsFilename()
+inline String getStringsFilename()
 {
     String filename; filename.reserve(_strDataFilePrefix.length() + 12);
     filename.concat(_strDataFilePrefix);

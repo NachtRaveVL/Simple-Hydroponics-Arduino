@@ -7,7 +7,7 @@
 
 HydroObject *newObjectFromData(const HydroData *dataIn)
 {
-    if (dataIn && dataIn->id.object.idType == -1) return nullptr;
+    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
@@ -30,69 +30,6 @@ HydroObject *newObjectFromData(const HydroData *dataIn)
     return nullptr;
 }
 
-
-HydroIdentity::HydroIdentity()
-    : type(Unknown), objTypeAs{.actuatorType=(Hydro_ActuatorType)-1}, posIndex(-1), keyString(), key((hkey_t)-1)
-{ ; }
-
-HydroIdentity::HydroIdentity(hkey_t key)
-    : type(Unknown), objTypeAs{.actuatorType=(Hydro_ActuatorType)-1}, posIndex(-1), keyString(), key(key)
-{ ; }
-
-HydroIdentity::HydroIdentity(const char *idKeyStr)
-    : type(Unknown), objTypeAs{.actuatorType=(Hydro_ActuatorType)-1}, posIndex(-1), keyString(idKeyStr), key(stringHash(idKeyStr))
-{
-    // TODO: Advanced string detokenization (may not be needed tho)
-}
-
-HydroIdentity::HydroIdentity(String idKey)
-    : type(Unknown), objTypeAs{.actuatorType=(Hydro_ActuatorType)-1}, posIndex(-1), keyString(idKey), key(stringHash(idKey.c_str()))
-{ ; }
-
-HydroIdentity::HydroIdentity(const HydroIdentity &id, hposi_t positionIndex)
-    : type(id.type), objTypeAs{.actuatorType=id.objTypeAs.actuatorType}, posIndex(positionIndex), keyString(), key((hkey_t)-1)
-{
-    regenKey();
-}
-
-HydroIdentity::HydroIdentity(Hydro_ActuatorType actuatorTypeIn, hposi_t positionIndex)
-    : type(Actuator), objTypeAs{.actuatorType=actuatorTypeIn}, posIndex(positionIndex), keyString(), key((hkey_t)-1)
-{
-    regenKey();
-}
-
-HydroIdentity::HydroIdentity(Hydro_SensorType sensorTypeIn, hposi_t positionIndex)
-    : type(Sensor), objTypeAs{.sensorType=sensorTypeIn}, posIndex(positionIndex), keyString(), key((hkey_t)-1)
-{
-    regenKey();
-}
-
-HydroIdentity::HydroIdentity(Hydro_CropType cropTypeIn, hposi_t positionIndex)
-    : type(Crop), objTypeAs{.cropType=cropTypeIn}, posIndex(positionIndex), keyString(), key((hkey_t)-1)
-{
-    regenKey();
-}
-
-HydroIdentity::HydroIdentity(Hydro_ReservoirType reservoirTypeIn, hposi_t positionIndex)
-    : type(Reservoir), objTypeAs{.reservoirType=reservoirTypeIn}, posIndex(positionIndex), keyString(), key((hkey_t)-1)
-{
-    regenKey();
-}
-
-HydroIdentity::HydroIdentity(Hydro_RailType railTypeIn, hposi_t positionIndex)
-    : type(Rail), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyString(), key((hkey_t)-1)
-{
-    regenKey();
-}
-
-HydroIdentity::HydroIdentity(const HydroData *dataIn)
-    : type((typeof(type))(dataIn->id.object.idType)),
-      objTypeAs{.actuatorType=(Hydro_ActuatorType)(dataIn->id.object.objType)},
-      posIndex(dataIn->id.object.posIndex),
-      keyString(), key((hkey_t)-1)
-{
-    regenKey();
-}
 
 hkey_t HydroIdentity::regenKey()
 {
@@ -123,14 +60,6 @@ hkey_t HydroIdentity::regenKey()
 }
 
 
-HydroObject::HydroObject(HydroIdentity id)
-    : _id(id), _linksSize(0), _links(nullptr)
-{ ; }
-
-HydroObject::HydroObject(const HydroData *data)
-    : _id(data), _linksSize(0), _links(nullptr)
-{ ; }
-
 HydroObject::~HydroObject()
 {
     if (_links) { delete [] _links; _links = nullptr; }
@@ -160,7 +89,7 @@ void HydroObject::allocateLinkages(size_t size)
         if (size) {
             HYDRO_HARD_ASSERT(newLinks, SFP(HStr_Err_AllocationFailure));
 
-            int linksIndex = 0;
+            hposi_t linksIndex = 0;
             if (_links) {
                 for (; linksIndex < _linksSize && linksIndex < size; ++linksIndex) {
                     newLinks[linksIndex] = _links[linksIndex];
@@ -181,14 +110,14 @@ bool HydroObject::addLinkage(HydroObject *obj)
 {
     if (!_links) { allocateLinkages(); }
     if (_links) {
-        if (_links[_linksSize-1].first) { allocateLinkages(_linksSize << 1); } // grow *2 if too small
-        int linksIndex = 0;
+        hposi_t linksIndex = 0;
         for (; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
             if (_links[linksIndex].first == obj) {
                 _links[linksIndex].second++;
                 return true;
             }
         }
+        if (linksIndex >= _linksSize) { allocateLinkages(_linksSize << 1); } // grow *2 if too small
         if (linksIndex < _linksSize) {
             _links[linksIndex] = make_pair(obj, (int8_t)0);
             return true;
@@ -200,12 +129,14 @@ bool HydroObject::addLinkage(HydroObject *obj)
 bool HydroObject::removeLinkage(HydroObject *obj)
 {
     if (_links) {
-        for (int linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
+        for (hposi_t linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
             if (_links[linksIndex].first == obj) {
-                for (int linksSubIndex = linksIndex; linksSubIndex < _linksSize - 1; ++linksSubIndex) {
-                    _links[linksSubIndex] = _links[linksSubIndex + 1];
+                if (--_links[linksIndex].second <= 0) {
+                    for (int linksSubIndex = linksIndex; linksSubIndex < _linksSize - 1; ++linksSubIndex) {
+                        _links[linksSubIndex] = _links[linksSubIndex + 1];
+                    }
+                    _links[_linksSize - 1] = make_pair((HydroObject *)nullptr, (int8_t)0);
                 }
-                _links[_linksSize - 1] = make_pair((HydroObject *)nullptr, (int8_t)0);
                 return true;
             }
         }
@@ -216,7 +147,7 @@ bool HydroObject::removeLinkage(HydroObject *obj)
 bool HydroObject::hasLinkage(HydroObject *obj) const
 {
     if (_links) {
-        for (int linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
+        for (hposi_t linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
             if (_links[linksIndex].first == obj) {
                 return true;
             }
@@ -254,9 +185,9 @@ HydroData *HydroObject::allocateData() const
 
 void HydroObject::saveToData(HydroData *dataOut)
 {
-    dataOut->id.object.idType = (int8_t)_id.type;
-    dataOut->id.object.objType = (int8_t)_id.objTypeAs.actuatorType;
-    dataOut->id.object.posIndex = (int8_t)_id.posIndex;
+    dataOut->id.object.idType = (hid_t)_id.type;
+    dataOut->id.object.objType = _id.objTypeAs.idType;
+    dataOut->id.object.posIndex = _id.posIndex;
     if (_id.keyString.length()) {
         strncpy(((HydroObjectData *)dataOut)->name, _id.keyString.c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -283,14 +214,9 @@ SharedPtr<HydroObjInterface> HydroSubObject::getSharedPtr() const
     return SharedPtr<HydroObjInterface>((HydroObjInterface *)this);
 }
 
-bool HydroSubObject::addLinkage(HydroObject *obj)
+void HydroSubObject::setParent(HydroObjInterface *parent)
 {
-    return false;
-}
-
-bool HydroSubObject::removeLinkage(HydroObject *obj)
-{
-    return false;
+    _parent = parent;
 }
 
 

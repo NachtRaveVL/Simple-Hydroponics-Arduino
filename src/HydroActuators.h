@@ -48,9 +48,11 @@ struct HydroActivationHandle {
         inline Activation() : Activation(Hydro_DirectionMode_Undefined, 0.0f, 0, Hydro_ActivationFlags_None) { ; }
 
         inline bool isValid() const { return direction != Hydro_DirectionMode_Undefined; }
-        inline bool isDone() const { return duration == 0; }
+        inline bool isDone() const { return duration == millis_none; }
         inline bool isUntimed() const { return duration == -1; }
         inline bool isForced() const { return flags & Hydro_ActivationFlags_Forced; }
+        inline float getDriveIntensity() const { return direction == Hydro_DirectionMode_Forward ? intensity :
+                                                        direction == Hydro_DirectionMode_Reverse ? -intensity : 0.0f; }
     } activation;                                           // Activation data
     millis_t checkTime;                                     // Last check timestamp, in milliseconds, else 0 for not started
     millis_t elapsed;                                       // Elapsed time accumulator, in milliseconds, else 0
@@ -83,8 +85,7 @@ struct HydroActivationHandle {
     inline millis_t getTimeActive(millis_t time = nzMillis()) const { return isActive() ? (time - checkTime) + elapsed : elapsed; }
 
     // De-normalized driving intensity value [-1.0,1.0]
-    inline float getDriveIntensity() const { return activation.direction == Hydro_DirectionMode_Forward ? activation.intensity :
-                                                    activation.direction == Hydro_DirectionMode_Reverse ? -activation.intensity : 0.0f; }
+    inline float getDriveIntensity() const { return activation.getDriveIntensity(); }
 };
 
 

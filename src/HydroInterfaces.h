@@ -65,8 +65,8 @@ public:
     virtual String getKeyString() const = 0;
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const = 0;
 
-    virtual bool addLinkage(HydroObject *obj) = 0;
-    virtual bool removeLinkage(HydroObject *obj) = 0;
+    inline bool isSubObject() const { return getId().isUnknownType(); }
+    inline bool isObject() const { return !isSubObject(); }
 };
 
 // UI Interface
@@ -185,7 +185,7 @@ public:
     virtual bool takeMeasurement(bool force = false) = 0;
     virtual const HydroMeasurement *getLatestMeasurement() const = 0;
     virtual bool isTakingMeasurement() const = 0;
-    virtual bool getNeedsPolling(uint32_t allowance = 0) const = 0;
+    virtual bool getNeedsPolling(hframe_t allowance = 0) const = 0;
 
 protected:
     //virtual void handleMeasurement() = 0;

@@ -66,7 +66,7 @@ HydroData::HydroData(char id0, char id1, char id2, char id3, uint8_t version, ui
     HYDRO_HARD_ASSERT(isStandardData(), SFP(HStr_Err_InvalidParameter));
 }
 
-HydroData::HydroData(int8_t idType, int8_t objType, int8_t posIndex, int8_t classType, uint8_t version, uint8_t revision)
+HydroData::HydroData(hid_t idType, hid_t objType, hposi_t posIndex, hid_t classType, uint8_t version, uint8_t revision)
     : id{.object={idType,objType,posIndex,classType}}, _version(version), _revision(revision), _modified(false)
 {
     _size = sizeof(*this);
@@ -110,16 +110,16 @@ void HydroData::fromJSONObject(JsonObjectConst &objectIn)
 
 
 HydroSubData::HydroSubData()
-    : type(-1)
+    : type(hid_none)
 { ; }
 
-HydroSubData::HydroSubData(int8_t dataType)
+HydroSubData::HydroSubData(hid_t dataType)
     : type(dataType)
 { ; }
 
 void HydroSubData::toJSONObject(JsonObject &objectOut) const
 {
-    if (type != -1) { objectOut[SFP(HStr_Key_Type)] = type; }
+    if (type != hid_none) { objectOut[SFP(HStr_Key_Type)] = type; }
 }
 
 void HydroSubData::fromJSONObject(JsonObjectConst &objectIn)
