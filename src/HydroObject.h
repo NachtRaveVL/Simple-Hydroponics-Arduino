@@ -40,49 +40,45 @@ struct HydroIdentity {
         Hydro_CropType cropType;                            // As crop type enumeration
         Hydro_ReservoirType reservoirType;                  // As reservoir type enumeration
         Hydro_RailType railType;                            // As rail type enumeration
-    } objTypeAs;                                            // Enumeration type union
+        hid_t idType;                                       // As standard id type enumeration
+    } objTypeAs;                                            // Object type union
     hposi_t posIndex;                                       // Position index
     String keyString;                                       // String key
     hkey_t key;                                             // UInt Key
 
-    // Default constructor (incomplete id)
-    HydroIdentity();
-
-    // Copy key (incomplete id)
-    HydroIdentity(hkey_t key);
-
+    // Default/copy key (incomplete id)
+    inline HydroIdentity(hkey_t key = -1) : type(Unknown), objTypeAs{.idType=Unknown}, posIndex(-1), keyString(), key(key) { ; }
     // Copy into keyStr (incomplete id)
-    HydroIdentity(const char *idKeyStr);
+    inline HydroIdentity(const char *idKeyStr) : type(Unknown), objTypeAs{.idType=Unknown}, posIndex(-1), keyString(idKeyStr), key(stringHash(idKeyStr)) { ; }
     // Copy into keyStr (incomplete id)
-    HydroIdentity(String idKey);
+    inline HydroIdentity(String idKey) : type(Unknown), objTypeAs{.idType=Unknown}, posIndex(-1), keyString(idKey), key(stringHash(idKey.c_str())) { ; }
 
     // Copy id with new position index
-    HydroIdentity(const HydroIdentity &id,
-                  hposi_t positionIndex);
+    inline HydroIdentity(const HydroIdentity &id, hposi_t positionIndex) : type(id.type), objTypeAs{.idType=id.objTypeAs.idType}, posIndex(positionIndex), keyString(), key(hkey_none) { regenKey(); }
 
     // Actuator id constructor
-    HydroIdentity(Hydro_ActuatorType actuatorType,
-                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+    inline HydroIdentity(Hydro_ActuatorType actuatorTypeIn,
+                         hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG) : type(Actuator), objTypeAs{.actuatorType=actuatorTypeIn}, posIndex(positionIndex), keyString(), key(hkey_none) { regenKey(); }
     // Sensor id constructor
-    HydroIdentity(Hydro_SensorType sensorType,
-                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+    inline HydroIdentity(Hydro_SensorType sensorTypeIn,
+                         hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG) : type(Sensor), objTypeAs{.sensorType=sensorTypeIn}, posIndex(positionIndex), keyString(), key(hkey_none) { regenKey(); }
     // Crop id constructor
-    HydroIdentity(Hydro_CropType cropType,
-                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+    inline HydroIdentity(Hydro_CropType cropTypeIn,
+                         hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG) : type(Crop), objTypeAs{.cropType=cropTypeIn}, posIndex(positionIndex), keyString(), key(hkey_none) { regenKey(); }
     // Reservoir id constructor
-    HydroIdentity(Hydro_ReservoirType reservoirType,
-                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+    inline HydroIdentity(Hydro_ReservoirType reservoirTypeIn,
+                         hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG) : type(Reservoir), objTypeAs{.reservoirType=reservoirTypeIn}, posIndex(positionIndex), keyString(), key(hkey_none) { regenKey(); }
     // Rail id constructor
-    HydroIdentity(Hydro_RailType railType,
-                  hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG);
+    inline HydroIdentity(Hydro_RailType railTypeIn,
+                         hposi_t positionIndex = HYDRO_POS_SEARCH_FROMBEG) : type(Rail), objTypeAs{.railType=railTypeIn}, posIndex(positionIndex), keyString(), key(hkey_none) { regenKey(); }
 
     // Data constructor
-    HydroIdentity(const HydroData *dataIn);
+    inline HydroIdentity(const HydroData *dataIn) : type((typeof(type))(dataIn->id.object.idType)), objTypeAs{.idType=dataIn->id.object.objType}, posIndex(dataIn->id.object.posIndex), keyString(), key(hkey_none) { regenKey(); }
 
     // Used to update key value after modification, returning new key by convenience
     hkey_t regenKey();
 
-    inline operator bool() const { return key != (hkey_t)-1; }
+    inline operator bool() const { return key != hkey_none; }
     inline bool operator==(const HydroIdentity &otherId) const { return key == otherId.key; }
     inline bool operator!=(const HydroIdentity &otherId) const { return key != otherId.key; }
 };
@@ -99,9 +95,9 @@ public:
     inline bool isRailType() const { return _id.isRailType(); }
     inline bool isUnknownType() const { return _id.isUnknownType(); }
 
-    HydroObject(HydroIdentity id);                          // Standard constructor
-    HydroObject(const HydroData *dataIn);                   // Data constructor
-    virtual ~HydroObject();                                 // Destructor
+    inline HydroObject(HydroIdentity id) : _id(id), _linksSize(0), _links(nullptr) { ; }
+    inline HydroObject(const HydroData *data) : _id(data), _linksSize(0), _links(nullptr) { ; }
+    virtual ~HydroObject();
 
     virtual void update();                                  // Called over intervals of time by runloop
     virtual void handleLowMemory();                         // Called upon low memory condition to try and free memory up
@@ -109,8 +105,8 @@ public:
     HydroData *newSaveData();                               // Saves object state to proper backing data
 
     void allocateLinkages(size_t size = 1);                 // Allocates linkage list of specified size (reallocates)
-    virtual bool addLinkage(HydroObject *obj) override;     // Adds linkage to this object, returns true upon initial add
-    virtual bool removeLinkage(HydroObject *obj) override;  // Removes linkage from this object, returns true upon last remove
+    virtual bool addLinkage(HydroObject *obj);              // Adds linkage to this object, returns true upon initial add
+    virtual bool removeLinkage(HydroObject *obj);           // Removes linkage from this object, returns true upon last remove
     bool hasLinkage(HydroObject *obj) const;                // Checks object linkage to this object
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
@@ -118,7 +114,7 @@ public:
     inline Pair<uint8_t, Pair<HydroObject *, int8_t> *> getLinkages() const { return make_pair(_linksSize, _links); }
 
     virtual HydroIdentity getId() const override;           // Returns the unique Identity of the object
-    virtual hkey_t getKey() const override;          // Returns the unique key of the object
+    virtual hkey_t getKey() const override;                 // Returns the unique key of the object
     virtual String getKeyString() const override;           // Returns the key string of the object
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const override; // Returns the SharedPtr instance of the object
 
@@ -131,7 +127,8 @@ protected:
     virtual void saveToData(HydroData *dataOut);            // *ALL* derived classes must override and implement
 
 private:
-    HydroObject() = default;                                // Private constructor to disable derived/public access
+    // Private constructor to disable derived/public access
+    inline HydroObject() : _id(), _linksSize(0), _links(nullptr) { ; }
 };
 
 
@@ -140,13 +137,18 @@ private:
 // but want to replicate some of the same functionality. Not required to be inherited from.
 class HydroSubObject : public HydroObjInterface {
 public:
+    inline HydroSubObject(HydroObjInterface *parent = nullptr) : _parent(parent) { ; }
+
     virtual HydroIdentity getId() const override;
     virtual hkey_t getKey() const override;
     virtual String getKeyString() const override;
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const override;
 
-    virtual bool addLinkage(HydroObject *obj) override;
-    virtual bool removeLinkage(HydroObject *obj) override;
+    virtual void setParent(HydroObjInterface *parent);
+    inline HydroObjInterface *getParent() const { return _parent; }
+
+protected:
+    HydroObjInterface *_parent;                             // Parent object pointer (reverse ownership)
 };
 
 

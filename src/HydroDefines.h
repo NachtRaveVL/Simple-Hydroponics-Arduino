@@ -76,9 +76,15 @@
 #endif
 
 typedef typeof(millis()) millis_t;                          // Time millis type
-typedef int8_t hposi_t;                                     // Position indexing type
-typedef uint32_t hkey_t;                                    // Key type, for hashing
+typedef int8_t hposi_t;                                     // Position indexing type alias
+typedef uint32_t hkey_t;                                    // Key type alias, for hashing
+typedef int8_t hid_t;                                       // Id type alias, for RTTI
 typedef uint16_t hframe_t;                                  // Polling frame type, for sync
+#define millis_none                     ((millis_t)0)       // No millis defined/invalid placeholder
+#define hposi_none                      ((hposi_t)-1)       // No position defined/invalid placeholder
+#define hkey_none                       ((hkey_t)-1)        // No key defined/invalid placeholder
+#define hid_none                        ((hid_t)-1)         // No id defined/invalid placeholder
+#define hframe_none                     ((hframe_t)0)       // No frame defined/invalid placeholder
 typedef typeof(INPUT) ard_pinmode_t;                        // Arduino pin mode type alias
 typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin status type alias
 
@@ -168,6 +174,7 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_SYS_LATLONG_DISTSQRDTOL   0.25                // Squared difference in lat/long coords that needs to occur for it to be considered significant enough for system update
 #define HYDRO_SYS_ALTITUDE_DISTTOL      0.5                 // Difference in altitude coords that needs to occur for it to be considered significant enough for system update
 #define HYDRO_SYS_DELAYFINE_SPINMILLIS  20                  // How many milliseconds away from stop time fine delays can use yield() up to before using a blocking spin-lock (used for fine timing)
+#define HYDRO_SYS_YIELD_AFTERMILLIS     20                  // How many milliseconds must pass by before system run loops call a yield() mid-loop, in order to allow finely-timed tasks a chance to run
 #define HYDRO_SYS_DEBUGOUT_FLUSH_YIELD  DISABLED            // If debug output statements should flush and yield afterwards to force send through to serial monitor (mainly used for debugging)
 #define HYDRO_SYS_MEM_LOGGING_ENABLE    DISABLED            // If system will periodically log memory remaining messages (mainly used for debugging)
 #define HYDRO_SYS_DRY_RUN_ENABLE        DISABLED            // Disables pins from actually enabling in order to simply simulate (mainly used for debugging)

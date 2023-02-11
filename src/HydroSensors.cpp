@@ -7,7 +7,7 @@
 
 HydroSensor *newSensorObjectFromData(const HydroSensorData *dataIn)
 {
-    if (dataIn && dataIn->id.object.idType == -1) return nullptr;
+    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
@@ -126,7 +126,7 @@ bool HydroSensor::isTakingMeasurement() const
     return _isTakingMeasure;
 }
 
-bool HydroSensor::getNeedsPolling(uint32_t allowance) const
+bool HydroSensor::getNeedsPolling(hframe_t allowance) const
 {
     auto latestMeasurement = getLatestMeasurement();
     return getHydroInstance() && latestMeasurement ? getHydroInstance()->isPollingFrameOld(latestMeasurement->frame, allowance) : false;

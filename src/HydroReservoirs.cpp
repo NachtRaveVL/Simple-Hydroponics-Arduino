@@ -7,7 +7,7 @@
 
 HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 {
-    if (dataIn && dataIn->id.object.idType == -1) return nullptr;
+    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
@@ -463,11 +463,11 @@ void HydroFluidReservoirData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[SFP(HStr_Key_MaxVolume)] = maxVolume;
     if (volumeSensor[0]) { objectOut[SFP(HStr_Key_VolumeSensor)] = charsToString(volumeSensor, HYDRO_NAME_MAXSIZE); }
-    if (filledTrigger.type != -1) {
+    if (isValidType(filledTrigger.type)) {
         JsonObject filledTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_FilledTrigger));
         filledTrigger.toJSONObject(filledTriggerObj);
     }
-    if (emptyTrigger.type != -1) {
+    if (isValidType(emptyTrigger.type)) {
         JsonObject emptyTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_EmptyTrigger));
         emptyTrigger.toJSONObject(emptyTriggerObj);
     }

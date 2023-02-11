@@ -118,7 +118,7 @@ Vector<HydroObject *, N> linksFilterActuators(Pair<uint8_t, Pair<HydroObject *, 
 {
     Vector<HydroObject *, N> retVal;
 
-    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+    for (hposi_t linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
         if (links.second[linksIndex].first->isActuatorType()) {
             retVal.push_back(links.second[linksIndex].first);
         }
@@ -132,7 +132,7 @@ Vector<HydroObject *, N> linksFilterCrops(Pair<uint8_t, Pair<HydroObject *, int8
 {
     Vector<HydroObject *, N> retVal;
 
-    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+    for (hposi_t linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
         if (links.second[linksIndex].first->isCropType()) {
             retVal.push_back(links.second[linksIndex].first);
         }
@@ -146,7 +146,7 @@ Vector<HydroObject *, N> linksFilterActuatorsByReservoirAndType(Pair<uint8_t, Pa
 {
     Vector<HydroObject *, N> retVal;
 
-    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+    for (hposi_t linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
         if (links.second[linksIndex].first->isActuatorType()) {
             auto actuator = static_cast<HydroActuator *>(links.second[linksIndex].first);
 
@@ -164,7 +164,7 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReserv
 {
     Vector<HydroObject *, N> retVal;
 
-    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+    for (hposi_t linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
         if (links.second[linksIndex].first->isActuatorType()) {
             auto actuator = static_cast<HydroActuator *>(links.second[linksIndex].first);
 
@@ -186,7 +186,7 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReserv
 {
     Vector<HydroObject *, N> retVal;
 
-    for (int linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
+    for (hposi_t linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
         if (links.second[linksIndex].first->isActuatorType()) {
             auto actuator = static_cast<HydroActuator *>(links.second[linksIndex].first);
 
