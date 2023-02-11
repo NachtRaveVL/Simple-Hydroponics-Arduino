@@ -1,4 +1,4 @@
-// Crops Lib to CPP export script - mainly for dev purposes
+// Enum to CPP export script - mainly for dev purposes
 
 #include <Hydruino.h>
 

@@ -1,5 +1,5 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino Attachment Points
 */
 
@@ -61,7 +61,7 @@ HydroAttachment::HydroAttachment(HydroObjInterface *parent)
 HydroAttachment::HydroAttachment(const HydroAttachment &attachment)
     : HydroSubObject(attachment._parent), _obj()
 {
-    setObject(attachment);
+    setObject(attachment._obj);
 }
 
 HydroAttachment::~HydroAttachment()
@@ -140,12 +140,12 @@ void HydroActuatorAttachment::setupActivation(float value, millis_t duration, bo
         value = get()->calibrationInvTransform(value);
 
         if (get()->isDirectionalType()) {
-            setupActivation(HydroActivationHandle::Activation(value > FLT_EPSILON ? Hydro_DirectionMode_Forward : value < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(value), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+            setupActivation(HydroActivation(value > FLT_EPSILON ? Hydro_DirectionMode_Forward : value < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(value), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
             return;
         }
     }
 
-    setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, value, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+    setupActivation(HydroActivation(Hydro_DirectionMode_Forward, value, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
 }
 
 void HydroActuatorAttachment::enableActivation()
