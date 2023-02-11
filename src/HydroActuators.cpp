@@ -351,7 +351,7 @@ void HydroRelayActuator::saveToData(HydroData *dataOut)
 
 
 HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, HydroDigitalPin outputPin, int classType)
-    :  HydroRelayActuator(actuatorType, actuatorIndex, outputPin, classType),
+    : HydroRelayActuator(actuatorType, actuatorIndex, outputPin, classType),
        _flowRateUnits(defaultLiquidFlowUnits()), _flowRate(this), _destReservoir(this),
        _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0)
 {
