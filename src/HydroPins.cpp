@@ -59,6 +59,11 @@ void HydroPin::init()
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid()) {
             switch (mode) {
+                case Hydro_PinMode_Digital_Input_Floating:
+                case Hydro_PinMode_Analog_Input:
+                    pinMode(pin, INPUT);
+                    break;
+
                 case Hydro_PinMode_Digital_Input_PullUp:
                     pinMode(pin, INPUT_PULLUP);
                     break;
@@ -69,11 +74,6 @@ void HydroPin::init()
                     #else
                         pinMode(pin, INPUT);
                     #endif
-                    break;
-
-                case Hydro_PinMode_Digital_Input_Floating:
-                case Hydro_PinMode_Analog_Input:
-                    pinMode(pin, INPUT);
                     break;
 
                 case Hydro_PinMode_Digital_Output_OpenDrain:

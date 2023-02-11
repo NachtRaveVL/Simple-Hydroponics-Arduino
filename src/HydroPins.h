@@ -51,18 +51,18 @@ struct HydroPin {
 
     inline bool isValid() const { return isValidPin(pin) && mode != Hydro_PinMode_Undefined; }
     inline bool isMuxed() const { return isValidChannel(channel); }
-    inline bool isInput() const { return mode == Hydro_PinMode_Digital_Input_PullUp ||
+    inline bool isInput() const { return mode == Hydro_PinMode_Digital_Input_Floating ||
+                                         mode == Hydro_PinMode_Digital_Input_PullUp ||
                                          mode == Hydro_PinMode_Digital_Input_PullDown ||
-                                         mode == Hydro_PinMode_Digital_Input_Floating ||
                                          mode == Hydro_PinMode_Analog_Input; }
     inline bool canRead() const { return isValid() && isInput(); }
     inline bool isOutput() const { return mode == Hydro_PinMode_Digital_Output_OpenDrain ||
                                           mode == Hydro_PinMode_Digital_Output_PushPull ||
                                           mode == Hydro_PinMode_Analog_Output; }
     inline bool canWrite() const { return isValid() && isOutput(); }
-    inline bool isDigital() const { return mode == Hydro_PinMode_Digital_Input_PullUp ||
+    inline bool isDigital() const { return mode == Hydro_PinMode_Digital_Input_Floating ||
+                                           mode == Hydro_PinMode_Digital_Input_PullUp ||
                                            mode == Hydro_PinMode_Digital_Input_PullDown ||
-                                           mode == Hydro_PinMode_Digital_Input_Floating ||
                                            mode == Hydro_PinMode_Digital_Output_OpenDrain ||
                                            mode == Hydro_PinMode_Digital_Output_PushPull; }
     inline bool isAnalog() const { return mode == Hydro_PinMode_Analog_Input ||
