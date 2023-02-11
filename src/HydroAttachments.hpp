@@ -1,5 +1,5 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino Attachment Points
 */
 
@@ -160,6 +160,78 @@ void HydroSignalAttachment<ParameterType,Slots>::setHandleSlot(const Slot<Parame
 
         if (isResolved() && _handleSlot && _signalGetter) { (get()->*_signalGetter)().attach(*_handleSlot); }
     }
+}
+
+
+inline void HydroActuatorAttachment::setupActivation(const HydroActivation &activation)
+{
+    _actSetup = activation;
+    applySetup();
+}
+
+inline void HydroActuatorAttachment::setupActivation(const HydroActivationHandle &handle)
+{
+    setupActivation(handle.activation);
+}
+
+inline void HydroActuatorAttachment::setupActivation(Hydro_DirectionMode direction, float intensity, millis_t duration, bool force)
+{
+    setupActivation(HydroActivation(direction, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+}
+
+inline void HydroActuatorAttachment::setupActivation(millis_t duration, bool force)
+{
+    setupActivation(HydroActivation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+}
+
+inline void HydroActuatorAttachment::setupActivation(bool force, millis_t duration)
+{
+    setupActivation(HydroActivation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+}
+
+inline void HydroActuatorAttachment::setupActivation(const HydroSingleMeasurement &measurement, millis_t duration, bool force)
+{
+    setupActivation(measurement.value, duration, force);
+}
+
+inline void HydroActuatorAttachment::disableActivation()
+{
+    _actHandle.unset();
+}
+
+inline bool HydroActuatorAttachment::isActivated() const
+{
+    return _actHandle.isActive();
+}
+
+inline millis_t HydroActuatorAttachment::getTimeLeft() const
+{
+    return _actHandle.getTimeLeft();
+}
+
+inline millis_t HydroActuatorAttachment::getTimeActive(millis_t time) const
+{
+    return _actHandle.getTimeActive(time);
+}
+
+inline float HydroActuatorAttachment::getActiveDriveIntensity()
+{
+    return resolve() ? get()->getDriveIntensity() : 0.0f;
+}
+
+inline float HydroActuatorAttachment::getActiveCalibratedValue()
+{
+    return resolve() ? get()->getCalibratedValue() : 0.0f;
+}
+
+inline float HydroActuatorAttachment::getSetupDriveIntensity() const
+{
+    return _actSetup.intensity;
+}
+
+inline float HydroActuatorAttachment::getSetupCalibratedValue()
+{
+    return resolve() ? get()->calibrationTransform(_actSetup.intensity) : 0.0f;
 }
 
 

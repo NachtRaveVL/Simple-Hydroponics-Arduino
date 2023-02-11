@@ -1,5 +1,5 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino System
 */
 
@@ -841,7 +841,7 @@ inline void tightUpdates()
 {
     // TODO: put in link to buzzer update here
     #ifdef HYDRO_USE_GPS
-        if (Hydroduino::_activeInstance->_gps) { while(Hydroduino::_activeInstance->_gps->available()) { Hydroduino::_activeInstance->_gps->read(); } }
+        if (Hydruino::_activeInstance->_gps) { while(Hydruino::_activeInstance->_gps->available()) { Hydruino::_activeInstance->_gps->read(); } }
     #endif
 }
 
@@ -941,10 +941,10 @@ void miscLoop()
         #ifdef HYDRO_USE_GPS
             yieldIfNeeded(lastYield);
 
-            if (Hydroduino::_activeInstance->_gps && Hydroduino::_activeInstance->_gps->newNMEAreceived()) {
-                Hydroduino::_activeInstance->_gps->parse(Hydroduino::_activeInstance->_gps->lastNMEA());
-                if (Hydroduino::_activeInstance->_gps->fix) {
-                    Hydroduino::_activeInstance->setSystemLocation(Hydroduino::_activeInstance->_gps->lat, Hydroduino::_activeInstance->_gps->lon, Hydroduino::_activeInstance->_gps->altitude);
+            if (Hydruino::_activeInstance->_gps && Hydruino::_activeInstance->_gps->newNMEAreceived()) {
+                Hydruino::_activeInstance->_gps->parse(Hydruino::_activeInstance->_gps->lastNMEA());
+                if (Hydruino::_activeInstance->_gps->fix) {
+                    Hydruino::_activeInstance->setSystemLocation(Hydruino::_activeInstance->_gps->lat, Hydruino::_activeInstance->_gps->lon, Hydruino::_activeInstance->_gps->altitude);
                 }
             }
         #endif

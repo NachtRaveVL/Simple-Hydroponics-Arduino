@@ -1,5 +1,5 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino Defines
 */
 
@@ -638,6 +638,7 @@ struct HydroObjectData;;
 struct HydroPin;
 struct HydroDigitalPin;
 struct HydroAnalogPin;
+struct HydroActivation;
 struct HydroActivationHandle;
 struct HydroMeasurement;
 struct HydroSingleMeasurement;

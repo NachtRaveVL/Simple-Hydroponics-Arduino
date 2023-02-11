@@ -1,5 +1,5 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino Utilities
 */
 
@@ -1036,7 +1036,7 @@ Hydro_UnitsType defaultLiquidDilutionUnits(Hydro_MeasurementMode measureMode)
     }
 }
 
-Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined)
+Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode)
 {
     if (measureMode == Hydro_MeasurementMode_Undefined) {
         measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
@@ -1242,6 +1242,20 @@ String pinModeToString(Hydro_PinMode pinMode, bool excludeSpecial)
 {
     switch (pinMode) {
         // TODO
+        // case Hydro_PinMode_Digital_Input_PullUp:
+        //     return SFP(HStr_Enum_DigitalInputPullUp);
+        // case Hydro_PinMode_Digital_Input_PullDown:
+        //     return SFP(HStr_Enum_DigitalInputPullDown);
+        // case Hydro_PinMode_Digital_Input_Floating:
+        //     return SFP(HStr_Enum_DigitalInputFloating);
+        // case Hydro_PinMode_Digital_Output_OpenDrain:
+        //     return SFP(HStr_Enum_DigitalOutputOpenDrain);
+        // case Hydro_PinMode_Digital_Output_PushPull:
+        //     return SFP(HStr_Enum_DigitalOutputPushPull);
+        // case Hydro_PinMode_Analog_Input:
+        //     return SFP(HStr_Enum_AnalogInput);
+        // case Hydro_PinMode_Analog_Output:
+        //     return SFP(HStr_Enum_AnalogOutput);
         case Hydro_PinMode_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_PinMode_Undefined:

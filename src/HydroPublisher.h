@@ -1,6 +1,6 @@
 
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino Publisher
 */
 
@@ -12,6 +12,7 @@ struct HydroPublisherSubData;
 struct HydroDataColumn;
 
 #include "Hydruino.h"
+#include "HydroMeasurements.h"
 
 // Data Publisher
 // The Publisher allows for data collection and publishing capabilities. The data output

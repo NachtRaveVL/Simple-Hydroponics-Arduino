@@ -1,9 +1,17 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino System
 */
 
 #include "Hydruino.h"
+
+inline bool Twilight::isDaytime(time_t time) const {
+    DateTime currTime = isUTC ? DateTime((uint32_t)time) : DateTime((uint32_t)(time + (getHydroInstance() ? getHydroInstance()->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
+    double currHour = currTime.hour() + (currTime.minute() / 60.0) + (currTime.second() / 3600.0);
+    return sunrise <= sunset ? currHour >= sunrise && currHour <= sunset
+                             : currHour >= sunrise || currHour <= sunset;
+}
+
 
 inline void Hydruino::returnPinLock(pintype_t pin)
 {

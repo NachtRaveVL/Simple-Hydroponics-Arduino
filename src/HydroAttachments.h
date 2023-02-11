@@ -1,5 +1,5 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
-    Copyright (C) 2022-2003 NachtRaveVL     <nachtravevl@gmail.com>
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     Hydruino Attachment Points
 */
 
@@ -17,11 +17,7 @@ class HydroBalancerAttachment;
 #include "Hydruino.h"
 #include "HydroObject.h"
 #include "HydroMeasurements.h"
-#include "HydroActuators.h"
-
-// forward decls
-extern hkey_t stringHash(String);
-extern String addressToString(uintptr_t);
+#include "HydroActivation.h"
 
 // Delay/Dynamic Loaded/Linked Object Reference
 // Simple class for delay loading objects that get references to others during object
@@ -148,7 +144,7 @@ public:
     // Sets a handle slot to run when attached signal fires
     void setHandleSlot(const Slot<ParameterType> &handleSlot);
     inline void setHandleFunction(void (*handleFunctionPtr)(ParameterType)) { setHandleSlot(FunctionSlot<ParameterType>(handleFunctionPtr)); }
-    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType), U *handleClassInst = nullptr) { setUpdateSlot(MethodSlot<U,ParameterType>(handleClassInst ? handleClassInst : reinterpret_cast<U *>(_parent), handleMethodPtr)); }
+    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType), U *handleClassInst = nullptr) { setHandleSlot(MethodSlot<U,ParameterType>(handleClassInst ? handleClassInst : reinterpret_cast<U *>(_parent), handleMethodPtr)); }
 
     inline HydroSignalAttachment<ParameterType,Slots> &operator=(const HydroIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroSignalAttachment<ParameterType,Slots> &operator=(const char *rhs) { setObject(HydroIdentity(rhs)); return *this; }
@@ -183,34 +179,34 @@ public:
     // direction, intensity, duration, and any run flags that the actuator will operate
     // upon once enabled, pending any rate offsetting. These methods are re-entrant.
     // The most recently used setup values are used for repeat activations.
-    inline void setupActivation(const HydroActivationHandle::Activation &activation) { _actSetup = activation; applySetup(); }
-    inline void setupActivation(const HydroActivationHandle &handle) { setupActivation(handle.activation); }
-    inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { setupActivation(HydroActivationHandle::Activation(direction, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
-    inline void setupActivation(millis_t duration, bool force = false) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
-    inline void setupActivation(bool force, millis_t duration = -1) { setupActivation(HydroActivationHandle::Activation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
+    inline void setupActivation(const HydroActivation &activation);
+    inline void setupActivation(const HydroActivationHandle &handle);
+    inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false);
+    inline void setupActivation(millis_t duration, bool force = false);
+    inline void setupActivation(bool force, millis_t duration = -1);
     // These activation methods take into account actuator settings such as user
     // calibration data and type checks in determining how to interpret passed value.
     void setupActivation(float value, millis_t duration = -1, bool force = false);
-    inline void setupActivation(const HydroSingleMeasurement &measurement, millis_t duration = -1, bool force = false) { setupActivation(measurement.value, duration, force); }
+    inline void setupActivation(const HydroSingleMeasurement &measurement, millis_t duration = -1, bool force = false);
 
     // Enables activation handle with current setup, if not already active.
     // Repeat activations will reuse most recent setupActivation() values.
     void enableActivation();
     // Disables activation handle, if not already inactive.
-    inline void disableActivation() { _actHandle.unset(); }
+    inline void disableActivation();
 
     // Activation status based on handle activation
-    inline bool isActivated() const { return _actHandle.isActive(); }
-    inline millis_t getTimeLeft() const { return _actHandle.getTimeLeft(); }
-    inline millis_t getTimeActive(millis_t time = nzMillis()) const { return _actHandle.getTimeActive(time); }
+    inline bool isActivated() const;
+    inline millis_t getTimeLeft() const;
+    inline millis_t getTimeActive(millis_t time = nzMillis()) const;
 
     // Currently active driving intensity [-1.0,1.0] / calibrated value [calibMin,calibMax], from actuator
-    inline float getActiveDriveIntensity() { return resolve() ? get()->getDriveIntensity() : 0.0f; }
-    inline float getActiveCalibratedValue() { return resolve() ? get()->getCalibratedValue() : 0.0f; }
+    inline float getActiveDriveIntensity();
+    inline float getActiveCalibratedValue();
 
     // Currently setup driving intensity [-1.0,1.0] / calibrated value [calibMin,calibMax], from activation
-    inline float getSetupDriveIntensity() const { return _actSetup.intensity; }
-    inline float getSetupCalibratedValue() { return resolve() ? get()->calibrationTransform(_actSetup.intensity) : 0.0f; }
+    inline float getSetupDriveIntensity() const;
+    inline float getSetupCalibratedValue();
 
     // Sets an update slot to run during execution of actuator that can further refine duration/intensity.
     // Useful for rate-based or variable activations. Slot receives actuator attachment pointer as parameter.
@@ -220,7 +216,7 @@ public:
     template<class U> inline void setUpdateMethod(void (U::*updateMethodPtr)(HydroActivationHandle *), U *updateClassInst = nullptr) { setUpdateSlot(MethodSlot<U,HydroActuatorAttachment *>(updateClassInst ? updateClassInst : reinterpret_cast<U *>(_parent), updateMethodPtr)); }
 
     inline const HydroActivationHandle &getHandle() const { return _actHandle; }
-    inline const HydroActivationHandle::Activation &getSetup() const { return _actSetup; }
+    inline const HydroActivation &getSetup() const { return _actSetup; }
     inline SharedPtr<HydroActuator> getObject() { return HydroAttachment::getObject<HydroActuator>(); }
     inline HydroActuator *get() { return HydroAttachment::get<HydroActuator>(); }
 
@@ -234,7 +230,7 @@ public:
 
 protected:
     HydroActivationHandle _actHandle;                       // Actuator activation handle (double ref to object when active)
-    HydroActivationHandle::Activation _actSetup;            // Actuator activation setup
+    HydroActivation _actSetup;            // Actuator activation setup
     Slot<HydroActuatorAttachment *> *_updateSlot;           // Update slot (owned)
     float _rateMultiplier;                                  // Rate multiplier
     bool _calledLastUpdate;                                 // Last update call flag
