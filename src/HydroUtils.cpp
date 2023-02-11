@@ -1688,13 +1688,13 @@ String railTypeToString(Hydro_RailType railType, bool excludeSpecial)
 String pinModeToString(Hydro_PinMode pinMode, bool excludeSpecial)
 {
     switch (pinMode) {
-        case Hydro_PinMode_Digital_Input_Floating:
+        case Hydro_PinMode_Digital_Input:
             return SFP(HStr_Enum_DigitalInput);
         case Hydro_PinMode_Digital_Input_PullUp:
             return SFP(HStr_Enum_DigitalInputPullUp);
         case Hydro_PinMode_Digital_Input_PullDown:
             return SFP(HStr_Enum_DigitalInputPullDown);
-        case Hydro_PinMode_Digital_Output_OpenDrain:
+        case Hydro_PinMode_Digital_Output:
             return SFP(HStr_Enum_DigitalOutput);
         case Hydro_PinMode_Digital_Output_PushPull:
             return SFP(HStr_Enum_DigitalOutputPushPull);

@@ -59,7 +59,7 @@ void HydroPin::init()
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid()) {
             switch (mode) {
-                case Hydro_PinMode_Digital_Input_Floating:
+                case Hydro_PinMode_Digital_Input:
                 case Hydro_PinMode_Analog_Input:
                     pinMode(pin, INPUT);
                     break;
@@ -76,7 +76,7 @@ void HydroPin::init()
                     #endif
                     break;
 
-                case Hydro_PinMode_Digital_Output_OpenDrain:
+                case Hydro_PinMode_Digital_Output:
                 case Hydro_PinMode_Digital_Output_PushPull:
                 case Hydro_PinMode_Analog_Output:
                     pinMode(pin, OUTPUT);
@@ -112,21 +112,21 @@ HydroDigitalPin::HydroDigitalPin()
 
 HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, uint8_t muxChannel)
     : HydroPin(Digital, pinNumber, pinMode != OUTPUT ? (pinMode != INPUT ? (pinMode == INPUT_PULLUP ? Hydro_PinMode_Digital_Input_PullUp : Hydro_PinMode_Digital_Input_PullDown)
-                                                                         : Hydro_PinMode_Digital_Input_Floating)
-                                                     : (pinMode == OUTPUT ? Hydro_PinMode_Digital_Output_OpenDrain : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
+                                                                         : Hydro_PinMode_Digital_Input)
+                                                     : (pinMode == OUTPUT ? Hydro_PinMode_Digital_Output : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
       activeLow(pinMode == INPUT || pinMode == INPUT_PULLUP || pinMode == OUTPUT)
 { ; }
 
 HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Hydro_PinMode pinMode, uint8_t muxChannel)
     : HydroPin(Digital, pinNumber, pinMode, muxChannel),
-      activeLow(pinMode == Hydro_PinMode_Digital_Input_Floating ||
+      activeLow(pinMode == Hydro_PinMode_Digital_Input ||
                 pinMode == Hydro_PinMode_Digital_Input_PullUp ||
-                pinMode == Hydro_PinMode_Digital_Output_OpenDrain)
+                pinMode == Hydro_PinMode_Digital_Output)
 { ; }
 
 HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, bool isActiveLow, uint8_t muxChannel)
     : HydroPin(Digital, pinNumber, pinMode != OUTPUT ? (isActiveLow ? Hydro_PinMode_Digital_Input_PullUp : Hydro_PinMode_Digital_Input_PullDown)
-                                                     : (isActiveLow ? Hydro_PinMode_Digital_Output_OpenDrain : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
+                                                     : (isActiveLow ? Hydro_PinMode_Digital_Output : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
       activeLow(isActiveLow)
 { ; }
 
