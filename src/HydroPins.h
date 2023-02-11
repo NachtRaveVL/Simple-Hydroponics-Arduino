@@ -23,7 +23,7 @@ extern HydroPin *newPinObjectFromSubData(const HydroPinData *dataIn);
 
 // Pin Base
 struct HydroPin {
-    enum : signed char { Digital, Analog, Unknown = -1 } type;  // Pin type (custom RTTI)
+    enum : signed char { Digital, Analog, Unknown = -1 } type; // Pin type (custom RTTI)
     inline bool isDigitalType() const { return type == Digital; }
     inline bool isAnalogType() const { return type == Analog; }
     inline bool isUnknownType() const { return type <= Unknown; }
@@ -76,13 +76,13 @@ struct HydroDigitalPin : public HydroPin, public HydroDigitalInputPinInterface, 
 
     HydroDigitalPin();
     HydroDigitalPin(pintype_t pinNumber,                    // Digital pin number (e.g. D0, D1)
-                    ard_pinmode_t pinMode,            // Arduino pin mode (e.g. INPUT, OUTPUT, determines activeLow trigger state)
+                    ard_pinmode_t pinMode,                  // Arduino pin mode (e.g. INPUT, OUTPUT, determines activeLow trigger state)
                     uint8_t muxChannel = -1);               // Muxing channel select (else -1 if unused)
     HydroDigitalPin(pintype_t pinNumber,                    // Digital pin number (e.g. D0, D1)
                     Hydro_PinMode pinMode,                  // Hydruino pin mode (determines activeLow trigger state)
                     uint8_t muxChannel = -1);               // Muxing channel select (else -1 if unused)
     HydroDigitalPin(pintype_t pinNumber,                    // Digital pin number (e.g. D0, D1)
-                    ard_pinmode_t pinMode,            // Arduino pin mode (e.g. INPUT, OUTPUT)
+                    ard_pinmode_t pinMode,                  // Arduino pin mode (e.g. INPUT, OUTPUT)
                     bool isActiveLow,                       // Explicit pin active-low trigger state boolean
                     uint8_t muxChannel = -1);               // Muxing channel select (else -1 if unused)
     HydroDigitalPin(pintype_t pinNumber,                    // Digital pin number (e.g. D0, D1)
@@ -116,7 +116,7 @@ struct HydroAnalogPin : public HydroPin, public HydroAnalogInputPinInterface, pu
 
     HydroAnalogPin();
     HydroAnalogPin(pintype_t pinNumber,                     // Analog pin number (e.g. A0, A1)
-                   ard_pinmode_t pinMode,             // Arduino pin mode (e.g. INPUT, OUTPUT)
+                   ard_pinmode_t pinMode,                   // Arduino pin mode (e.g. INPUT, OUTPUT)
                    uint8_t analogBitRes = 0,                // Bit resolution (0 for std DAC/ADC res by mode i/o)
 #ifdef ESP32
                    uint8_t pinPWMChannel = 1,               // PWM channel (0 reserved for buzzer)
