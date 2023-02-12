@@ -6,11 +6,6 @@
 #include "Hydruino.h"
 #include <pins_arduino.h>
 
-HydroBitResolution::HydroBitResolution(uint8_t bitResolution)
-    : bits(bitResolution), maxVal(1 << bitResolution)
-{ ; }
-
-
 bool HydroRTCWrapper<RTC_DS1307>::begin(TwoWire *wireInstance)
 {
     return _rtc.begin(wireInstance);
@@ -99,9 +94,9 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
 {
     if (!cond) {
         String assertMsg = makeAssertMsg(file, func, line);
-        getLoggerInstance()->logWarning(SFP(HStr_Err_AssertionFailure), SFP(HStr_ColonSpace), assertMsg);
-        getLoggerInstance()->logWarning(SFP(HStr_DoubleSpace), msg);
-        getLoggerInstance()->flush();
+        getLogger()->logWarning(SFP(HStr_Err_AssertionFailure), SFP(HStr_ColonSpace), assertMsg);
+        getLogger()->logWarning(SFP(HStr_DoubleSpace), msg);
+        getLogger()->flush();
     }
 }
 
@@ -109,11 +104,11 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
 {
     if (!cond) {
         String assertMsg = makeAssertMsg(file, func, line);
-        getLoggerInstance()->logError(SFP(HStr_Err_AssertionFailure), String(F(" HARD")) + SFP(HStr_ColonSpace), assertMsg);
-        getLoggerInstance()->logError(SFP(HStr_DoubleSpace), msg);
-        getLoggerInstance()->flush();
+        getLogger()->logError(SFP(HStr_Err_AssertionFailure), String(F(" HARD")) + SFP(HStr_ColonSpace), assertMsg);
+        getLogger()->logError(SFP(HStr_DoubleSpace), msg);
+        getLogger()->flush();
 
-        if (getHydroInstance()) { getHydroInstance()->suspend(); }
+        if (getController()) { getController()->suspend(); }
         yield(); delay(10);
         abort();
     }
@@ -126,25 +121,25 @@ void publishData(HydroSensor *sensor)
 {
     HYDRO_HARD_ASSERT(sensor, SFP(HStr_Err_InvalidParameter));
 
-    if (getPublisherInstance()) {
+    if (getPublisher()) {
         auto measurement = sensor->getLatestMeasurement();
-        hposi_t rows = getMeasurementRowCount(measurement);
-        hposi_t columnIndexStart = getPublisherInstance()->getColumnIndexStart(sensor->getKey());
+        hposi_t rows = getMeasureRowCount(measurement);
+        hposi_t columnIndexStart = getPublisher()->getColumnIndexStart(sensor->getKey());
 
         if (columnIndexStart >= 0) {
-            for (uint8_t measurementRow = 0; measurementRow < rows; ++measurementRow) {
-                getPublisherInstance()->publishData(columnIndexStart + measurementRow, getAsSingleMeasurement(measurement, measurementRow));
+            for (uint8_t measureRow = 0; measureRow < rows; ++measureRow) {
+                getPublisher()->publishData(columnIndexStart + measureRow, getAsSingleMeasurement(measurement, measureRow));
             }
         }
     }
 }
 
-bool setCurrentTime(DateTime currTime)
+bool setUnixTime(DateTime unixTime)
 {
-    auto rtc = getHydroInstance() ? getHydroInstance()->getRTC() : nullptr;
+    auto rtc = getController() ? getController()->getRTC() : nullptr;
     if (rtc) {
-        rtc->adjust(currTime);
-        getHydroInstance()->notifyRTCTimeUpdated();
+        rtc->adjust(unixTime);
+        getController()->notifyRTCTimeUpdated();
         return true;
     }
     return false;
@@ -152,7 +147,7 @@ bool setCurrentTime(DateTime currTime)
 
 String getYYMMDDFilename(String prefix, String ext)
 {
-    DateTime currTime = getCurrentTime();
+    DateTime currTime = localNow();
     uint8_t yy = currTime.year() % 100;
     uint8_t mm = currTime.month();
     uint8_t dd = currTime.day();
@@ -526,47 +521,31 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Raw_0_1:
             switch (unitsOut) {
                 case Hydro_UnitsType_Alkalinity_pH_0_14:
-                    *valueOut = valueIn * 14.0f;
+                    *valueOut = valueIn * 14.0;
                     return true;
 
-                case Hydro_UnitsType_Concentration_EC:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage (5 or 3.3) of meter -> typically 1v = 1EC, depending on calib
-                        *valueOut = valueIn * 5.0f;
-                    } else {
-                        *valueOut = valueIn * convertParam;
-                    }
+                case Hydro_UnitsType_Concentration_EC: // convertParam = aRef voltage (5v or 3.3v) -> typically 1v = 1EC, depending on calib
+                    *valueOut = valueIn * (convertParam != FLT_UNDEF ? convertParam : V_MCU);
                     return true;
 
-                case Hydro_UnitsType_Concentration_PPM500:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
-                        *valueOut = valueIn * (5.0f * 500.0f);
-                    } else {
-                        *valueOut = valueIn * (convertParam * 500.0f);
-                    }
+                case Hydro_UnitsType_Concentration_PPM500: // convertParam = aRef voltage
+                    *valueOut = valueIn * (convertParam != FLT_UNDEF ? convertParam : V_MCU) * 500.0;
                     return true;
 
-                case Hydro_UnitsType_Concentration_PPM640:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
-                        *valueOut = valueIn * (5.0f * 640.0f);
-                    } else {
-                        *valueOut = valueIn * (convertParam * 640.0f);
-                    }
+                case Hydro_UnitsType_Concentration_PPM640: // convertParam = aRef voltage
+                    *valueOut = valueIn * (convertParam != FLT_UNDEF ? convertParam : V_MCU) * 640.0;
                     return true;
 
-                case Hydro_UnitsType_Concentration_PPM700:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
-                        *valueOut = valueIn * (5.0f * 700.0f);
-                    } else {
-                        *valueOut = valueIn * (convertParam * 700.0f);
-                    }
+                case Hydro_UnitsType_Concentration_PPM700: // convertParam = aRef voltage
+                    *valueOut = valueIn * (convertParam != FLT_UNDEF ? convertParam : V_MCU) * 700.0;
                     return true;
 
                 case Hydro_UnitsType_Percentile_0_100:
-                    *valueOut = valueIn * 100.0f;
+                    *valueOut = valueIn * 100.0;
                     return true;
 
                 default:
-                    if (!isFPEqual(convertParam, FLT_UNDEF)) {
+                    if (convertParam != FLT_UNDEF) {
                         *valueOut = valueIn * convertParam;
                         return true;
                     }
@@ -577,7 +556,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Percentile_0_100:
             switch (unitsOut) {
                 case Hydro_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / 100.0f;
+                    *valueOut = valueIn / 100.0;
                     return true;
 
                 default:
@@ -588,7 +567,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Alkalinity_pH_0_14:
             switch (unitsOut) {
                 case Hydro_UnitsType_Raw_0_1:
-                    *valueOut = valueIn / 14.0f;
+                    *valueOut = valueIn / 14.0;
                     return true;
 
                 default:
@@ -598,24 +577,20 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
 
         case Hydro_UnitsType_Concentration_EC:
             switch (unitsOut) {
-                case Hydro_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
-                        *valueOut = valueIn / 5.0f;
-                    } else {
-                        *valueOut = valueIn / convertParam;
-                    }
+                case Hydro_UnitsType_Raw_0_1: // convertParam = aRef voltage
+                    *valueOut = valueIn / (convertParam != FLT_UNDEF ? convertParam : V_MCU);
                     return true;
 
                 case Hydro_UnitsType_Concentration_PPM500:
-                    *valueOut = valueIn * 500.0f;
+                    *valueOut = valueIn * 500.0;
                     return true;
 
                 case Hydro_UnitsType_Concentration_PPM640:
-                    *valueOut = valueIn * 640.0f;
+                    *valueOut = valueIn * 640.0;
                     return true;
 
                 case Hydro_UnitsType_Concentration_PPM700:
-                    *valueOut = valueIn * 700.0f;
+                    *valueOut = valueIn * 700.0;
                     return true;
 
                 default:
@@ -645,7 +620,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
                     return true;
 
                 case Hydro_UnitsType_Temperature_Kelvin:
-                    *valueOut = ((valueIn + 459.67f) * 5.0f) / 9.0f;
+                    *valueOut = ((valueIn + 459.67) * 5.0) / 9.0;
                     return true;
 
                 default:
@@ -671,7 +646,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_LiqVolume_Liters:
             switch (unitsOut) {
                 case Hydro_UnitsType_LiqVolume_Gallons:
-                    *valueOut = valueIn * 0.264172f;
+                    *valueOut = valueIn * 0.264172;
                     return true;
 
                 default:
@@ -682,7 +657,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_LiqVolume_Gallons:
             switch (unitsOut) {
                 case Hydro_UnitsType_LiqVolume_Liters:
-                    *valueOut = valueIn * 3.78541f;
+                    *valueOut = valueIn * 3.78541;
                     return true;
 
                 default:
@@ -693,7 +668,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_LiqFlowRate_LitersPerMin:
             switch (unitsOut) {
                 case Hydro_UnitsType_LiqFlowRate_GallonsPerMin:
-                    *valueOut = valueIn * 0.264172f;
+                    *valueOut = valueIn * 0.264172;
                     return true;
 
                 default:
@@ -704,7 +679,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_LiqFlowRate_GallonsPerMin:
             switch (unitsOut) {
                 case Hydro_UnitsType_LiqFlowRate_LitersPerMin:
-                    *valueOut = valueIn * 3.78541f;
+                    *valueOut = valueIn * 3.78541;
                     return true;
 
                 default:
@@ -715,7 +690,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
             switch (unitsOut) {
                 case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
-                    *valueOut = valueIn * 3.78541f;
+                    *valueOut = valueIn * 3.78541;
                     return true;
 
                 default:
@@ -726,7 +701,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
             switch (unitsOut) {
                 case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
-                    *valueOut = valueIn * 0.264172f;
+                    *valueOut = valueIn * 0.264172;
                     return true;
 
                 default:
@@ -736,16 +711,12 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
 
         case Hydro_UnitsType_Concentration_PPM500:
             switch (unitsOut) {
-                case Hydro_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
-                        *valueOut = valueIn / (5.0f * 500.0f);
-                    } else {
-                        *valueOut = valueIn / (convertParam * 500.0f);
-                    }
+                case Hydro_UnitsType_Raw_0_1: // convertParam = aRef voltage
+                    *valueOut = valueIn / ((convertParam != FLT_UNDEF ? convertParam : V_MCU) * 500.0);
                     return true;
 
                 case Hydro_UnitsType_Concentration_EC:
-                    *valueOut = valueIn / 500.0f;
+                    *valueOut = valueIn / 500.0;
                     return true;
 
                 case Hydro_UnitsType_Concentration_PPM640:
@@ -762,16 +733,12 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
 
         case Hydro_UnitsType_Concentration_PPM640:
             switch (unitsOut) {
-                case Hydro_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
-                        *valueOut = valueIn / (5.0f * 640.0f);
-                    } else {
-                        *valueOut = valueIn / (convertParam * 640.0f);
-                    }
+                case Hydro_UnitsType_Raw_0_1: // convertParam = aRef voltage
+                    *valueOut = valueIn / ((convertParam != FLT_UNDEF ? convertParam : V_MCU) * 640.0);
                     return true;
 
                 case Hydro_UnitsType_Concentration_EC:
-                    *valueOut = valueIn / 640.0f;
+                    *valueOut = valueIn / 640.0;
                     return true;
 
                 case Hydro_UnitsType_Concentration_PPM500:
@@ -788,16 +755,12 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
 
         case Hydro_UnitsType_Concentration_PPM700:
             switch (unitsOut) {
-                case Hydro_UnitsType_Raw_0_1:
-                    if (isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = aRef voltage
-                        *valueOut = valueIn / (5.0f * 700.0f);
-                    } else {
-                        *valueOut = valueIn / (convertParam * 700.0f);
-                    }
+                case Hydro_UnitsType_Raw_0_1: // convertParam = aRef voltage
+                    *valueOut = valueIn / ((convertParam != FLT_UNDEF ? convertParam : V_MCU) * 700.0);
                     return true;
 
                 case Hydro_UnitsType_Concentration_EC:
-                    *valueOut = valueIn / 700.0f;
+                    *valueOut = valueIn / 700.0;
                     return true;
 
                 case Hydro_UnitsType_Concentration_PPM500:
@@ -815,7 +778,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Distance_Meters:
             switch (unitsOut) {
                 case Hydro_UnitsType_Distance_Feet:
-                    *valueOut = valueIn * 3.28084f;
+                    *valueOut = valueIn * 3.28084;
                     return true;
 
                 default:
@@ -826,7 +789,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Distance_Feet:
             switch (unitsOut) {
                 case Hydro_UnitsType_Distance_Meters:
-                    *valueOut = valueIn * 0.3048f;
+                    *valueOut = valueIn * 0.3048;
                     return true;
 
                 default:
@@ -834,10 +797,10 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
             }
             break;
 
-        case Hydro_UnitsType_Weight_Kilogram:
+        case Hydro_UnitsType_Weight_Kilograms:
             switch (unitsOut) {
                 case Hydro_UnitsType_Weight_Pounds:
-                    *valueOut = valueIn * 2.20462f;
+                    *valueOut = valueIn * 2.20462;
                     return true;
 
                 default:
@@ -847,8 +810,8 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
 
         case Hydro_UnitsType_Weight_Pounds:
             switch (unitsOut) {
-                case Hydro_UnitsType_Weight_Kilogram:
-                    *valueOut = valueIn * 0.453592f;
+                case Hydro_UnitsType_Weight_Kilograms:
+                    *valueOut = valueIn * 0.453592;
                     return true;
 
                 default:
@@ -859,7 +822,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Power_Wattage:
             switch (unitsOut) {
                 case Hydro_UnitsType_Power_Amperage:
-                    if (!isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = rail voltage
+                    if (convertParam != FLT_UNDEF) { // convertParam = rail voltage
                         *valueOut = valueIn / convertParam;
                         return true;
                     }
@@ -870,7 +833,7 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
         case Hydro_UnitsType_Power_Amperage:
             switch (unitsOut) {
                 case Hydro_UnitsType_Power_Wattage:
-                    if (!isFPEqual(convertParam, FLT_UNDEF)) { // convertParam = rail voltage
+                    if (convertParam != FLT_UNDEF) { // convertParam = rail voltage
                         *valueOut = valueIn * convertParam;
                         return true;
                     }
@@ -889,38 +852,21 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
     return false;
 }
 
-bool convertUnits(float *valueInOut, Hydro_UnitsType *unitsInOut, Hydro_UnitsType outUnits, float convertParam)
-{
-    if (tryConvertUnits(*valueInOut, *unitsInOut, valueInOut, outUnits, convertParam)) {
-        *unitsInOut = outUnits;
-        return true;
-    }
-    return false;
-}
-
-bool convertUnits(float valueIn, float *valueOut, Hydro_UnitsType unitsIn, Hydro_UnitsType outUnits, Hydro_UnitsType *unitsOut, float convertParam)
-{
-    if (tryConvertUnits(valueIn, unitsIn, valueOut, outUnits, convertParam)) {
-        if (unitsOut) { *unitsOut = outUnits; }
-        return true;
-    }
-    return false;
-}
-
-Hydro_UnitsType baseUnitsFromRate(Hydro_UnitsType units)
+Hydro_UnitsType baseUnits(Hydro_UnitsType units)
 {
     switch (units) {
         case Hydro_UnitsType_LiqFlowRate_LitersPerMin:
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
             return Hydro_UnitsType_LiqVolume_Liters;
         case Hydro_UnitsType_LiqFlowRate_GallonsPerMin:
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
             return Hydro_UnitsType_LiqVolume_Gallons;
         default:
-            break;
+            return Hydro_UnitsType_Undefined;
     }
-    return Hydro_UnitsType_Undefined;
 }
 
-Hydro_UnitsType rateUnitsFromBase(Hydro_UnitsType units)
+Hydro_UnitsType rateUnits(Hydro_UnitsType units)
 {
     switch (units) {
         case Hydro_UnitsType_LiqVolume_Liters:
@@ -928,12 +874,11 @@ Hydro_UnitsType rateUnitsFromBase(Hydro_UnitsType units)
         case Hydro_UnitsType_LiqVolume_Gallons:
             return Hydro_UnitsType_LiqFlowRate_GallonsPerMin;
         default:
-            break;
+            return Hydro_UnitsType_Undefined;
     }
-    return Hydro_UnitsType_Undefined;
 }
 
-Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units)
+Hydro_UnitsType volumeUnits(Hydro_UnitsType units)
 {
     switch (units) {
         case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
@@ -941,12 +886,11 @@ Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units)
         case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
             return Hydro_UnitsType_LiqVolume_Gallons;
         default:
-            break;
+            return Hydro_UnitsType_Undefined;
     }
-    return Hydro_UnitsType_Undefined;
 }
 
-Hydro_UnitsType dilutionUnitsFromVolume(Hydro_UnitsType units)
+Hydro_UnitsType dilutionUnits(Hydro_UnitsType units)
 {
     switch (units) {
         case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
@@ -954,108 +898,108 @@ Hydro_UnitsType dilutionUnitsFromVolume(Hydro_UnitsType units)
         case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
             return Hydro_UnitsType_LiqVolume_Gallons;
         default:
-            break;
-    }
-    return Hydro_UnitsType_Undefined;
-}
-
-Hydro_UnitsType defaultTemperatureUnits(Hydro_MeasurementMode measureMode)
-{
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
-
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Imperial:
-            return Hydro_UnitsType_Temperature_Fahrenheit;
-        case Hydro_MeasurementMode_Metric:
-            return Hydro_UnitsType_Temperature_Celsius;
-        case Hydro_MeasurementMode_Scientific:
-            return Hydro_UnitsType_Temperature_Kelvin;
-        default:
             return Hydro_UnitsType_Undefined;
     }
 }
 
-Hydro_UnitsType defaultDistanceUnits(Hydro_MeasurementMode measureMode)
+Hydro_UnitsType defaultUnits(Hydro_UnitsCategory unitsCategory, Hydro_MeasurementMode measureMode)
 {
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
+    measureMode = (measureMode == Hydro_MeasurementMode_Undefined && getController() ? getController()->getMeasurementMode() : measureMode);
 
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Imperial:
-            return Hydro_UnitsType_Distance_Feet;
-        case Hydro_MeasurementMode_Metric:
-        case Hydro_MeasurementMode_Scientific:
-            return Hydro_UnitsType_Distance_Meters;
-        default:
-            return Hydro_UnitsType_Undefined;
-    }
-}
+    switch (unitsCategory) {
+        case Hydro_UnitsCategory_AirConcentration:
+            return Hydro_UnitsType_Concentration_PPM;
 
-Hydro_UnitsType defaultWeightUnits(Hydro_MeasurementMode measureMode)
-{
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
+        case Hydro_UnitsCategory_LiqConcentration:
+            return Hydro_UnitsType_Concentration_EC;
 
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Imperial:
-            return Hydro_UnitsType_Weight_Pounds;
-        case Hydro_MeasurementMode_Metric:
-        case Hydro_MeasurementMode_Scientific:
-            return Hydro_UnitsType_Weight_Kilogram;
-        default:
-            return Hydro_UnitsType_Undefined;
-    }
-}
+        case Hydro_UnitsCategory_Alkalinity:
+            return Hydro_UnitsType_Alkalinity_pH_0_14;
 
-Hydro_UnitsType defaultLiquidVolumeUnits(Hydro_MeasurementMode measureMode)
-{
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
+        case Hydro_UnitsCategory_Distance:
+            switch (measureMode) {
+                case Hydro_MeasurementMode_Imperial:
+                    return Hydro_UnitsType_Distance_Feet;
+                case Hydro_MeasurementMode_Metric:
+                case Hydro_MeasurementMode_Scientific:
+                    return Hydro_UnitsType_Distance_Meters;
+                default:
+                    return Hydro_UnitsType_Undefined;
+            }
 
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Imperial:
-            return Hydro_UnitsType_LiqVolume_Gallons;
-        case Hydro_MeasurementMode_Metric:
-        case Hydro_MeasurementMode_Scientific:
-            return Hydro_UnitsType_LiqVolume_Liters;
-        default:
-            return Hydro_UnitsType_Undefined;
-    }
-}
+        case Hydro_UnitsCategory_LiqFlowRate:
+            switch (measureMode) {
+                case Hydro_MeasurementMode_Imperial:
+                    return Hydro_UnitsType_LiqFlowRate_GallonsPerMin;
+                case Hydro_MeasurementMode_Metric:
+                case Hydro_MeasurementMode_Scientific:
+                    return Hydro_UnitsType_LiqFlowRate_LitersPerMin;
+                default:
+                    return Hydro_UnitsType_Undefined;
+            }
 
-Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode)
-{
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
+        case Hydro_UnitsCategory_LiqDilution:
+            switch (measureMode) {
+                case Hydro_MeasurementMode_Imperial:
+                    return Hydro_UnitsType_LiqDilution_MilliLiterPerGallon;
+                case Hydro_MeasurementMode_Metric:
+                case Hydro_MeasurementMode_Scientific:
+                    return Hydro_UnitsType_LiqDilution_MilliLiterPerLiter;
+                default:
+                    return Hydro_UnitsType_Undefined;
+            }
 
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Imperial:
-        case Hydro_MeasurementMode_Metric:
+        case Hydro_UnitsCategory_Percentile:
+            return Hydro_UnitsType_Percentile_0_100;
+
+        case Hydro_UnitsCategory_Power:
             return Hydro_UnitsType_Power_Wattage;
-        case Hydro_MeasurementMode_Scientific:
-            return Hydro_UnitsType_Power_JoulesPerSecond;
-        default:
+
+        case Hydro_UnitsCategory_AirTemperature:
+        case Hydro_UnitsCategory_LiqTemperature:
+            switch (measureMode) {
+                case Hydro_MeasurementMode_Imperial:
+                    return Hydro_UnitsType_Temperature_Fahrenheit;
+                case Hydro_MeasurementMode_Metric:
+                    return Hydro_UnitsType_Temperature_Celsius;
+                case Hydro_MeasurementMode_Scientific:
+                    return Hydro_UnitsType_Temperature_Kelvin;
+                default:
+                    return Hydro_UnitsType_Undefined;
+            }
+
+        case Hydro_UnitsCategory_LiqVolume:
+            switch (measureMode) {
+                case Hydro_MeasurementMode_Imperial:
+                    return Hydro_UnitsType_LiqVolume_Gallons;
+                case Hydro_MeasurementMode_Metric:
+                case Hydro_MeasurementMode_Scientific:
+                    return Hydro_UnitsType_LiqVolume_Liters;
+                default:
+                    return Hydro_UnitsType_Undefined;
+            }
+
+        case Hydro_UnitsCategory_Weight:
+            switch (measureMode) {
+                case Hydro_MeasurementMode_Imperial:
+                    return Hydro_UnitsType_Weight_Pounds;
+                case Hydro_MeasurementMode_Metric:
+                case Hydro_MeasurementMode_Scientific:
+                    return Hydro_UnitsType_Weight_Kilograms;
+                default:
+                    return Hydro_UnitsType_Undefined;
+            }
+
+        case Hydro_UnitsCategory_Count:
+            switch (measureMode) {
+                case Hydro_MeasurementMode_Scientific:
+                    return (Hydro_UnitsType)2;
+                default:
+                    return (Hydro_UnitsType)1;
+            }
+
+        case Hydro_UnitsCategory_Undefined:
             return Hydro_UnitsType_Undefined;
-    }
-}
-
-int defaultDecimalPlaces(Hydro_MeasurementMode measureMode)
-{
-    if (measureMode == Hydro_MeasurementMode_Undefined) {
-        measureMode = (getHydroInstance() ? getHydroInstance()->getMeasurementMode() : Hydro_MeasurementMode_Default);
-    }
-
-    switch (measureMode) {
-        case Hydro_MeasurementMode_Scientific:
-            return 2;
-        default:
-            return 1;
     }
 }
 
@@ -1100,49 +1044,49 @@ bool checkPinIsAnalogInput(pintype_t pin)
             #if NUM_ANALOG_INPUTS > 0
                 case (pintype_t)A0:
             #endif
-            #if NUM_ANALOG_INPUTS > 1 && !defined(ESP32)
+            #if NUM_ANALOG_INPUTS > 1 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A1))
                 case (pintype_t)A1:
             #endif
-            #if NUM_ANALOG_INPUTS > 2 && !defined(ESP32)
+            #if NUM_ANALOG_INPUTS > 2 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A2))
                 case (pintype_t)A2:
             #endif
-            #if NUM_ANALOG_INPUTS > 3
+            #if NUM_ANALOG_INPUTS > 3 && !(defined(PIN_A0) && !defined(PIN_A3))
                 case (pintype_t)A3:
             #endif
-            #if NUM_ANALOG_INPUTS > 4
+            #if NUM_ANALOG_INPUTS > 4 && !(defined(PIN_A0) && !defined(PIN_A4))
                 case (pintype_t)A4:
             #endif
-            #if NUM_ANALOG_INPUTS > 5
+            #if NUM_ANALOG_INPUTS > 5 && !(defined(PIN_A0) && !defined(PIN_A5))
                 case (pintype_t)A5:
             #endif
-            #if NUM_ANALOG_INPUTS > 6
+            #if NUM_ANALOG_INPUTS > 6 && !(defined(PIN_A0) && !defined(PIN_A6))
                 case (pintype_t)A6:
             #endif
-            #if NUM_ANALOG_INPUTS > 7
+            #if NUM_ANALOG_INPUTS > 7 && !(defined(PIN_A0) && !defined(PIN_A7))
                 case (pintype_t)A7:
             #endif
-            #if NUM_ANALOG_INPUTS > 8 && !defined(ESP32)
+            #if NUM_ANALOG_INPUTS > 8 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A8))
                 case (pintype_t)A8:
             #endif
-            #if NUM_ANALOG_INPUTS > 9 && !defined(ESP32)
+            #if NUM_ANALOG_INPUTS > 9 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A9))
                 case (pintype_t)A9:
             #endif
-            #if NUM_ANALOG_INPUTS > 10
+            #if NUM_ANALOG_INPUTS > 10 && !(defined(PIN_A0) && !defined(PIN_A10))
                 case (pintype_t)A10:
             #endif
-            #if NUM_ANALOG_INPUTS > 11
+            #if NUM_ANALOG_INPUTS > 11 && !(defined(PIN_A0) && !defined(PIN_A11))
                 case (pintype_t)A11:
             #endif
-            #if NUM_ANALOG_INPUTS > 12
+            #if NUM_ANALOG_INPUTS > 12 && !(defined(PIN_A0) && !defined(PIN_A12))
                 case (pintype_t)A12:
             #endif
-            #if NUM_ANALOG_INPUTS > 13
+            #if NUM_ANALOG_INPUTS > 13 && !(defined(PIN_A0) && !defined(PIN_A13))
                 case (pintype_t)A13:
             #endif
-            #if NUM_ANALOG_INPUTS > 14
+            #if NUM_ANALOG_INPUTS > 14 && !(defined(PIN_A0) && !defined(PIN_A14))
                 case (pintype_t)A14:
             #endif
-            #if NUM_ANALOG_INPUTS > 15
+            #if NUM_ANALOG_INPUTS > 15 && !(defined(PIN_A0) && !defined(PIN_A15))
                 case (pintype_t)A15:
             #endif
             #ifdef ESP32
@@ -1302,31 +1246,6 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
             break;
     }
     return !excludeSpecial ? SFP(HStr_Undefined) : String();
-}
-
-bool getActuatorInWaterFromType(Hydro_ActuatorType actuatorType)
-{
-    switch (actuatorType) {
-        case Hydro_ActuatorType_WaterAerator:
-        case Hydro_ActuatorType_WaterPump:
-        case Hydro_ActuatorType_WaterHeater:
-            return true;
-
-        default:
-            return false;
-    }
-}
-
-bool getActuatorIsPumpFromType(Hydro_ActuatorType actuatorType)
-{
-    switch (actuatorType) {
-        case Hydro_ActuatorType_PeristalticPump:
-        case Hydro_ActuatorType_WaterPump:
-            return true;
-
-        default:
-            return false;
-    }
 }
 
 String actuatorTypeToString(Hydro_ActuatorType actuatorType, bool excludeSpecial)
@@ -1746,18 +1665,14 @@ String unitsCategoryToString(Hydro_UnitsCategory unitsCategory, bool excludeSpec
     switch (unitsCategory) {
         case Hydro_UnitsCategory_AirConcentration:
             return SFP(HStr_Enum_AirConcentration);
-        case Hydro_UnitsCategory_AirHeatIndex:
-            return SFP(HStr_Enum_AirHeatIndex);
-        case Hydro_UnitsCategory_AirHumidity:
-            return SFP(HStr_Enum_AirHumidity);
         case Hydro_UnitsCategory_AirTemperature:
             return SFP(HStr_Enum_AirTemperature);
         case Hydro_UnitsCategory_Alkalinity:
             return SFP(HStr_Enum_Alkalinity);
-        case Hydro_UnitsCategory_DissolvedSolids:
-            return SFP(HStr_Enum_DissolvedSolids);
         case Hydro_UnitsCategory_Distance:
             return SFP(HStr_Enum_Distance);
+        case Hydro_UnitsCategory_LiqConcentration:
+            return SFP(HStr_Enum_LiqConcentration);
         case Hydro_UnitsCategory_LiqDilution:
             return SFP(HStr_Enum_LiqDilution);
         case Hydro_UnitsCategory_LiqFlowRate:
@@ -1766,10 +1681,10 @@ String unitsCategoryToString(Hydro_UnitsCategory unitsCategory, bool excludeSpec
             return SFP(HStr_Enum_LiqTemperature);
         case Hydro_UnitsCategory_LiqVolume:
             return SFP(HStr_Enum_LiqVolume);
+        case Hydro_UnitsCategory_Percentile:
+            return SFP(HStr_Enum_Percentile);
         case Hydro_UnitsCategory_Power:
             return SFP(HStr_Enum_Power);
-        case Hydro_UnitsCategory_SoilMoisture:
-            return SFP(HStr_Enum_SoilMoisture);
         case Hydro_UnitsCategory_Weight:
             return SFP(HStr_Enum_Weight);
         case Hydro_UnitsCategory_Count:
@@ -1786,7 +1701,7 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
         case Hydro_UnitsType_Raw_0_1:
             return SFP(HStr_raw);
         case Hydro_UnitsType_Percentile_0_100:
-            return SFP(HStr_Unit_Percentile);
+            return String('%');
         case Hydro_UnitsType_Alkalinity_pH_0_14:
             return !excludeSpecial ? SFP(HStr_Unit_pH) : String(); // technically unitless
         case Hydro_UnitsType_Concentration_EC:
@@ -1800,31 +1715,31 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
         case Hydro_UnitsType_Distance_Feet:
             return SFP(HStr_Unit_Feet);
         case Hydro_UnitsType_Distance_Meters:
-            return SFP(HStr_Unit_Meters);
+            return String('m');
         case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
             return SFP(HStr_Unit_MilliLiterPerGallon);
         case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
             return SFP(HStr_Unit_MilliLiterPerLiter);
         case Hydro_UnitsType_LiqFlowRate_GallonsPerMin:
-            return SFP(HStr_Unit_GallonsPerMin);
+            return SFP(HStr_Unit_Gallons) + SFP(HStr_Unit_PerMinute);
         case Hydro_UnitsType_LiqFlowRate_LitersPerMin:
-            return SFP(HStr_Unit_LitersPerMin);
+            return String('L') + SFP(HStr_Unit_PerMinute);
         case Hydro_UnitsType_LiqVolume_Gallons:
             return SFP(HStr_Unit_Gallons);
         case Hydro_UnitsType_LiqVolume_Liters:
-            return SFP(HStr_Unit_Liters);
+            return String('L');
         case Hydro_UnitsType_Power_Amperage:
-            return SFP(HStr_Unit_Amperage);
+            return String('A');
         case Hydro_UnitsType_Power_Wattage:
-            return SFP(HStr_Unit_Wattage); // alt: J/s
+            return String('W'); // alt: J/s
         case Hydro_UnitsType_Temperature_Celsius:
             return SFP(HStr_Unit_Celsius);
         case Hydro_UnitsType_Temperature_Fahrenheit:
             return SFP(HStr_Unit_Fahrenheit);
         case Hydro_UnitsType_Temperature_Kelvin:
             return SFP(HStr_Unit_Kelvin);
-        case Hydro_UnitsType_Weight_Kilogram:
-            return SFP(HStr_Unit_Kilogram);
+        case Hydro_UnitsType_Weight_Kilograms:
+            return SFP(HStr_Unit_Kilograms);
         case Hydro_UnitsType_Weight_Pounds:
             return SFP(HStr_Unit_Pounds);
         case Hydro_UnitsType_Count:

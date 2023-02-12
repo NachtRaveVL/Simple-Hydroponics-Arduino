@@ -48,7 +48,7 @@ public:
     virtual bool isEmpty() = 0;
 
     virtual void setVolumeUnits(Hydro_UnitsType volumeUnits);
-    inline Hydro_UnitsType getVolumeUnits() const { return definedUnitsElse(_volumeUnits, defaultLiquidVolumeUnits()); }
+    inline Hydro_UnitsType getVolumeUnits() const { return definedUnitsElse(_volumeUnits, defaultVolumeUnits()); }
 
     virtual HydroSensorAttachment &getWaterVolume(bool poll = false) = 0;
 
@@ -97,10 +97,10 @@ public:
 
     virtual HydroSensorAttachment &getWaterVolume(bool poll = false) override;
 
-    template<typename T> inline void setFilledTrigger(T filledTrigger) { _filledTrigger = filledTrigger; }
+    template<typename T> inline void setFilledTrigger(T filledTrigger) { _filledTrigger.setObject(filledTrigger); }
     inline SharedPtr<HydroTrigger> getFilledTrigger() { return _filledTrigger.getObject(); }
 
-    template<typename T> inline void setEmptyTrigger(T emptyTrigger) { _emptyTrigger = emptyTrigger; }
+    template<typename T> inline void setEmptyTrigger(T emptyTrigger) { _emptyTrigger.setObject(emptyTrigger); }
     inline SharedPtr<HydroTrigger> getEmptyTrigger() { return _emptyTrigger.getObject(); }
 
     inline float getMaxVolume() const { return _maxVolume; }
@@ -121,23 +121,20 @@ protected:
 // Feed Water Reservoir
 // The feed water reservoir can be thought of as an entire feeding channel hub, complete
 // with sensors to automate the variety of tasks associated with feeding crops.
-class HydroFeedReservoir : public HydroFluidReservoir, public HydroWaterPHSensorAttachmentInterface, public HydroWaterTDSSensorAttachmentInterface, public HydroWaterTemperatureSensorAttachmentInterface,  public HydroAirTemperatureSensorAttachmentInterface, public HydroAirCO2SensorAttachmentInterface {
+class HydroFeedReservoir : public HydroFluidReservoir, public HydroConcentrateUnitsInterface, public HydroTemperatureUnitsInterface, public HydroWaterPHSensorAttachmentInterface, public HydroWaterTDSSensorAttachmentInterface, public HydroWaterTemperatureSensorAttachmentInterface,  public HydroAirTemperatureSensorAttachmentInterface, public HydroAirCO2SensorAttachmentInterface {
 public:
     HydroFeedReservoir(hposi_t reservoirIndex,
                        float maxVolume,
-                       DateTime lastChangeDate = DateTime((uint32_t)unixNow()),
-                       DateTime lastPruningDate = DateTime(),
+                       DateTime lastChangeTime = localNow(),
+                       DateTime lastPruningTime = localNow(),
                        int classType = Feed);
     HydroFeedReservoir(const HydroFeedReservoirData *dataIn);
 
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    void setTDSUnits(Hydro_UnitsType tdsUnits);
-    inline Hydro_UnitsType getTDSUnits() const { return definedUnitsElse(_tdsUnits, Hydro_UnitsType_Concentration_TDS); }
-
-    void setTemperatureUnits(Hydro_UnitsType tempUnits);
-    inline Hydro_UnitsType getTemperatureUnits() const { return definedUnitsElse(_tempUnits, defaultTemperatureUnits()); }
+    virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
+    virtual void setTemperatureUnits(Hydro_UnitsType temperatureUnits) override;
 
     virtual HydroSensorAttachment &getWaterPH(bool poll = false) override;
     virtual HydroSensorAttachment &getWaterTDS(bool poll = false) override;
@@ -162,26 +159,23 @@ public:
 
     inline hposi_t getChannelNumber() const { return _id.posIndex; }
 
-    inline DateTime getLastWaterChangeDate() const { return DateTime((uint32_t)_lastChangeDate); }
-    inline void notifyWaterChanged() { _lastChangeDate = unixNow(); }
+    inline DateTime getLastWaterChangeTime() const { return localTime(_lastChangeTime); }
+    inline void notifyWaterChanged() { _lastChangeTime = unixNow(); }
 
-    inline DateTime getLastPruningDate() const { return DateTime((uint32_t)_lastPruningDate); }
-    inline void notifyPruningCompleted() { _lastPruningDate = unixNow(); }
+    inline DateTime getLastPruningTime() const { return localTime(_lastPruningTime); }
+    inline void notifyPruningCompleted() { _lastPruningTime = unixNow(); }
 
-    inline DateTime getLastFeeding() const { return DateTime((uint32_t)_lastFeedingDate); }
+    inline DateTime getLastFeedingTime() const { return localTime(_lastFeedingTime); }
     inline int8_t getFeedingsToday() const { return _numFeedingsToday; }
-    inline void notifyFeedingBegan() { _numFeedingsToday++; _lastFeedingDate = unixNow(); }
+    inline void notifyFeedingBegan() { _numFeedingsToday++; _lastFeedingTime = unixNow(); }
     inline void notifyFeedingEnded() { ; }
     inline void notifyDayChanged() { _numFeedingsToday = 0; }
 
 protected:
-    time_t _lastChangeDate;                                 // Last water change date (recycling systems only, UTC)
-    time_t _lastPruningDate;                                // Last pruning date (pruning crops only, UTC)
-    time_t _lastFeedingDate;                                // Last feeding date (UTC)
+    time_t _lastChangeTime;                                 // Last water change date (recycling systems only, UTC)
+    time_t _lastPruningTime;                                // Last pruning date (pruning crops only, UTC)
+    time_t _lastFeedingTime;                                // Last feeding date (UTC)
     int8_t _numFeedingsToday;                               // Number of feedings performed today
-
-    Hydro_UnitsType _tdsUnits;                              // TDS units preferred
-    Hydro_UnitsType _tempUnits;                             // Temperature units preferred
 
     HydroSensorAttachment _waterPH;                         // Water PH sensor attachment
     HydroSensorAttachment _waterTDS;                        // Water TDS sensor attachment
@@ -247,12 +241,12 @@ struct HydroFluidReservoirData : public HydroReservoirData {
 
 // Feed Water Reservoir Serialization Data
 struct HydroFeedReservoirData : public HydroFluidReservoirData {
-    time_t lastChangeDate;
-    time_t lastPruningDate;
-    time_t lastFeedingDate;
+    time_t lastChangeTime;
+    time_t lastPruningTime;
+    time_t lastFeedingTime;
     uint8_t numFeedingsToday;
-    Hydro_UnitsType tdsUnits;
-    Hydro_UnitsType tempUnits;
+    Hydro_UnitsType concentrateUnits;
+    Hydro_UnitsType temperatureUnits;
     char waterPHSensor[HYDRO_NAME_MAXSIZE];
     char waterTDSSensor[HYDRO_NAME_MAXSIZE];
     char waterTempSensor[HYDRO_NAME_MAXSIZE];

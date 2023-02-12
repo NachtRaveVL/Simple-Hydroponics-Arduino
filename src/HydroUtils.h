@@ -6,7 +6,6 @@
 #ifndef HydroUtils_H
 #define HydroUtils_H
 
-struct HydroBitResolution;
 template<typename RTCType> class HydroRTCWrapper;
 #ifdef HYDRO_USE_MULTITASKING
 template<typename ParameterType, int Slots> class SignalFireTask;
@@ -19,21 +18,6 @@ class ActuatorTimedEnableTask;
 #ifdef HYDRO_USE_MULTITASKING
 #include "BasicInterruptAbstraction.h"
 #endif
-
-// Simple class for describing an analog bit resolution.
-// This class is mainly used to calculate analog pin range boundary values.
-struct HydroBitResolution {
-    uint8_t bits;                                           // Bit resolution (# of bits)
-    int maxVal;                                             // Maximum value (2 ^ (# of bits))
-
-    HydroBitResolution(uint8_t bitResolution);              // Bit resolution (# of bits)
-
-    // Transforms value from raw/integer (or initial) value into normalized (or transformed) value.
-    inline float transform(int value) const { return constrain(value / (float)maxVal, 0.0f, 1.0f); }
-
-    // Inverse transforms value from normalized (or transformed) value back into raw/integer (or initial) value.
-    inline int inverseTransform(float value) const { return constrain((int)((float)maxVal * value), 0, maxVal); }
-};
 
 // Simple wrapper class for dealing with RTC modules.
 // This class is mainly used to abstract which RTC module is used.
@@ -178,28 +162,36 @@ extern void hardAssert(bool cond, String msg, const char *file, const char *func
 
 // Helpers & Misc
 
-// Returns the active hydruino instance. Not guaranteed to be non-null.
-inline Hydruino *getHydroInstance();
+// Returns the active controller instance. Not guaranteed to be non-null.
+inline Hydruino *getController();
 // Returns the active scheduler instance. Not guaranteed to be non-null.
-inline HydroScheduler *getSchedulerInstance();
+inline HydroScheduler *getScheduler();
 // Returns the active logger instance. Not guaranteed to be non-null.
-inline HydroLogger *getLoggerInstance();
+inline HydroLogger *getLogger();
 // Returns the active publisher instance. Not guaranteed to be non-null.
-inline HydroPublisher *getPublisherInstance();
+inline HydroPublisher *getPublisher();
 #ifdef HYDRO_USE_GUI
 // Returns the active UI instance. Not guaranteed to be non-null.
-inline HydruinoUIInterface *getUIInstance();
+inline HydruinoUIInterface *getUI();
 #endif
 
 // Publishes latest data from sensor to Publisher output.
 extern void publishData(HydroSensor *sensor);
 
-// Returns current local date time, with proper time zone offset based on active Hydruino instance.
-inline DateTime getCurrentTime(time_t time = unixNow());
-// Returns the local date time of when today started, accounting for proper time zone offset based on active Hydruino instance.
-inline time_t getCurrentDayStartTime(time_t time = unixNow());
-// Sets the global current time of the RTC, returning if update was successful, and additionally calls appropriate system time updaters.
-extern bool setCurrentTime(DateTime currTime);
+// Converts from local DateTime (offset by system TZ) back into unix/UTC time.
+inline time_t unixTime(DateTime localTime);
+// Converts from unix/UTC time into local DateTime (offset by system TZ).
+inline DateTime localTime(time_t unixTime);
+// Returns unix/UTC time of when today started.
+inline time_t unixDayStart(time_t unixTime = unixNow());
+// Returns local DateTime (offset by system TZ) of when today started.
+inline DateTime localDayStart(time_t unixTime = unixNow());
+// Sets global RTC current time to passed unix/UTC time.
+// Returns update success after calling appropriate system notifiers.
+inline bool setUnixTime(time_t unixTime);
+// Sets global RTC current time to passed local DateTime (offset by system TZ).
+// Returns update success after calling appropriate system notifiers.
+inline bool setLocalTime(DateTime localTime);
 
 // Returns a proper filename for a storage monitoring file (log, data, etc) that uses YYMMDD as filename.
 extern String getYYMMDDFilename(String prefix, String ext);
@@ -244,13 +236,13 @@ extern void hexStringToBytes(String stringIn, uint8_t *bytesOut, size_t length);
 extern void hexStringToBytes(JsonVariantConst &variantIn, uint8_t *bytesOut, size_t length);
 
 // Returns # of occurrences of character in string.
-int occurrencesInString(String string, char singleChar);
+extern int occurrencesInString(String string, char singleChar);
 // Returns # of occurrences of substring in string.
-int occurrencesInString(String string, String subString);
+extern int occurrencesInString(String string, String subString);
 // Returns # of occurrences of character in string, ignoring case.
-int occurrencesInStringIgnoreCase(String string, char singleChar);
+extern int occurrencesInStringIgnoreCase(String string, char singleChar);
 // Returns # of occurrences of substring in string, ignoring case.
-int occurrencesInStringIgnoreCase(String string, String subString);
+extern int occurrencesInStringIgnoreCase(String string, String subString);
 
 // Returns whenever all elements of an array are equal to the specified value, or not.
 template<typename T> bool arrayElementsEqual(const T *arrayIn, size_t length, T value);
@@ -267,8 +259,10 @@ extern void delayFine(millis_t time);
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
 
-// This will return the time in unixtime (secs since 1970). Uses rtc if available, otherwise time since turned on.
+// This will return the current time in unix/UTC time (secs since 1970). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
 inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
+// This will return the current time in local DateTime (offset by system TZ). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
+inline DateTime localNow() { return localTime(unixNow()); }
 
 // This will return a non-zero millis time value, so that 0 time values can be reserved for other use.
 inline millis_t nzMillis() { return millis() ?: 1; }
@@ -301,42 +295,47 @@ extern bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *value
 
 // Attempts to convert value in-place from one unit to another, and if successful then assigns value back overtop of itself.
 // Convert param used in certain unit conversions. Returns conversion success flag.
-extern bool convertUnits(float *valueInOut, Hydro_UnitsType *unitsInOut, Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF);
+inline bool convertUnits(float *valueInOut, Hydro_UnitsType *unitsInOut, Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF);
 // Attempts to convert value from one unit to another, and if successful then assigns value, and optionally units, to output.
 // Convert param used in certain unit conversions. Returns conversion success flag.
-extern bool convertUnits(float valueIn, float *valueOut, Hydro_UnitsType unitsIn, Hydro_UnitsType outUnits, Hydro_UnitsType *unitsOut = nullptr, float convertParam = FLT_UNDEF);
+inline bool convertUnits(float valueIn, float *valueOut, Hydro_UnitsType unitsIn, Hydro_UnitsType outUnits, Hydro_UnitsType *unitsOut = nullptr, float convertParam = FLT_UNDEF);
 // Attempts to convert measurement in-place from one unit to another, and if successful then assigns value and units back overtop of itself.
 // Convert param used in certain unit conversions. Returns conversion success flag.
-inline bool convertUnits(HydroSingleMeasurement *measureInOut, Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF) { return convertUnits(&measureInOut->value, &measureInOut->units, outUnits, convertParam); }
+inline bool convertUnits(HydroSingleMeasurement *measureInOut, Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF);
 // Attemps to convert measurement from one unit to another, and if successful then assigns value and units to output measurement.
 // Convert param used in certain unit conversions. Returns conversion success flag.
-inline bool convertUnits(const HydroSingleMeasurement *measureIn, HydroSingleMeasurement *measureOut, Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF) { return convertUnits(measureIn->value, &measureOut->value, measureIn->units, outUnits, &measureOut->units, convertParam); }
+inline bool convertUnits(const HydroSingleMeasurement *measureIn, HydroSingleMeasurement *measureOut, Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF);
 
-// Returns the base units from a rate unit (e.g. L/min -> L).
-extern Hydro_UnitsType baseUnitsFromRate(Hydro_UnitsType units);
+// Returns the base units from a rate unit (e.g. L/min -> L). Also will convert dilution to volume.
+extern Hydro_UnitsType baseUnits(Hydro_UnitsType units);
 // Returns the rate units from a base unit (e.g. mm -> mm/min).
-extern Hydro_UnitsType rateUnitsFromBase(Hydro_UnitsType units);
+extern Hydro_UnitsType rateUnits(Hydro_UnitsType units);
 // Returns the base units from a dilution unit (e.g. mL/L -> L).
-extern Hydro_UnitsType volumeUnitsFromDilution(Hydro_UnitsType units);
+extern Hydro_UnitsType volumeUnits(Hydro_UnitsType units);
 // Returns the dilution units from a base unit (e.g. L -> mL/L).
-extern Hydro_UnitsType dilutionUnitsFromVolume(Hydro_UnitsType units);
+extern Hydro_UnitsType dilutionUnits(Hydro_UnitsType units);
 
-// Returns default temperature units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultTemperatureUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
-// Returns default distance units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultDistanceUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
-// Returns default weight units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultWeightUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
-// Returns default liquid volume units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultLiquidVolumeUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
-// Returns default liquid flow units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-inline Hydro_UnitsType defaultLiquidFlowUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return rateUnitsFromBase(defaultLiquidVolumeUnits(measureMode)); }
-// Returns default liquid dilution units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-inline Hydro_UnitsType defaultLiquidDilutionUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return dilutionUnitsFromVolume(defaultLiquidVolumeUnits(measureMode)); }
-// Returns default power units to use based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
-// Returns default decimal places rounded to based on measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern int defaultDecimalPlaces(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
+// Returns default units based on category and measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+extern Hydro_UnitsType defaultUnits(Hydro_UnitsCategory unitsCategory, Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
+
+// Returns default concentrate units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultConcentrateUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqConcentration, measureMode); }
+// Returns default distance units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultDistanceUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_Distance, measureMode); }
+// Returns default liquid flow rate units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultFlowRateUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqFlowRate, measureMode); }
+// Returns default liquid dilution units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultDilutionUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqDilution, measureMode); }
+// Returns default power units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_Power, measureMode); }
+// Returns default temperature units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultTemperatureUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqTemperature, measureMode); }
+// Returns default liquid volume units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultVolumeUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqVolume, measureMode); }
+// Returns default weight units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline Hydro_UnitsType defaultWeightUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_Weight, measureMode); }
+// Returns default decimal places rounded to based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
+inline int defaultDecimalPlaces(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return (int)defaultUnits(Hydro_UnitsCategory_Count, measureMode); }
 
 // Rounds value according to default decimal places rounding, as typically used for data export, with optional additional decimal places.
 inline float roundForExport(float value, unsigned int additionalDecPlaces = 0) { return roundToDecimalPlaces(value, defaultDecimalPlaces() + additionalDecPlaces); }
@@ -358,9 +357,9 @@ template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterP
 template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *destReservoir, Hydro_ReservoirType srcReservoirType);
 
 // Returns the # of crops found in the linkages list.
-int linksCountCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links);
+extern int linksCountCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links);
 // Returns the # of actuators of a certain type that operate on a specific reservoir.
-int linksCountActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType);
+extern int linksCountActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType);
 
 // Recombines filtered object list back into SharedPtr actuator list.
 template<size_t N> void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
@@ -403,11 +402,11 @@ extern String controlInputModeToString(Hydro_ControlInputMode controlInMode, boo
 extern Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr);
 
 // Returns true for actuators that "live" in water (thus must do empty checks) as derived from actuator type enumeration.
-extern bool getActuatorInWaterFromType(Hydro_ActuatorType actuatorType);
+inline bool getActuatorInWaterFromType(Hydro_ActuatorType actuatorType) { return actuatorType == Hydro_ActuatorType_WaterAerator || actuatorType == Hydro_ActuatorType_WaterPump || actuatorType == Hydro_ActuatorType_WaterHeater; }
 // Returns true for actuators that pump liquid (thus must do empty/filled checks) as derived from actuator type enumeration.
-extern bool getActuatorIsPumpFromType(Hydro_ActuatorType actuatorType);
+inline bool getActuatorIsPumpFromType(Hydro_ActuatorType actuatorType) { return actuatorType == Hydro_ActuatorType_PeristalticPump || actuatorType == Hydro_ActuatorType_WaterPump; }
 // Returns true for actuators that operate activation handles serially (as opposed to in-parallel) as derived from enabled mode enumeration.
-inline bool getActuatorIsSerialFromMode(Hydro_EnableMode actuatorMode) { return actuatorMode >= Hydro_EnableMode_Serial; }
+inline bool getActuatorIsSerialFromMode(Hydro_EnableMode enableMode) { return enableMode >= Hydro_EnableMode_Serial; }
 
 // Converts from actuator type enum to string, with optional exclude for special types (instead returning "").
 extern String actuatorTypeToString(Hydro_ActuatorType actuatorType, bool excludeSpecial = false);

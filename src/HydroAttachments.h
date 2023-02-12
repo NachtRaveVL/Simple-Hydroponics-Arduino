@@ -51,7 +51,7 @@ public:
     template<class U> inline HydroDLinkObject &operator=(SharedPtr<U> &rhs);
     inline HydroDLinkObject &operator=(const HydroObjInterface *rhs);
     inline HydroDLinkObject &operator=(const HydroAttachment *rhs);
-    inline HydroDLinkObject &operator=(nullptr_t) { return this->operator=((HydroObjInterface *)nullptr); }
+    inline HydroDLinkObject &operator=(nullptr_t) { return operator=((HydroObjInterface *)nullptr); }
 
     inline bool operator==(const HydroIdentity &rhs) const { return _key == rhs.key; }
     inline bool operator==(const char *rhs) const { return _key == stringHash(rhs); }
@@ -230,7 +230,7 @@ public:
 
 protected:
     HydroActivationHandle _actHandle;                       // Actuator activation handle (double ref to object when active)
-    HydroActivation _actSetup;            // Actuator activation setup
+    HydroActivation _actSetup;                              // Actuator activation setup
     Slot<HydroActuatorAttachment *> *_updateSlot;           // Update slot (owned)
     float _rateMultiplier;                                  // Rate multiplier
     bool _calledLastUpdate;                                 // Last update call flag
@@ -246,7 +246,7 @@ protected:
 // Custom handle method is responsible for calling setMeasurement() to update measurement.
 class HydroSensorAttachment : public HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> {
 public:
-    HydroSensorAttachment(HydroObjInterface *parent = nullptr, uint8_t measurementRow = 0);
+    HydroSensorAttachment(HydroObjInterface *parent = nullptr, uint8_t measureRow = 0);
     HydroSensorAttachment(const HydroSensorAttachment &attachment);
     virtual ~HydroSensorAttachment();
 
@@ -259,8 +259,8 @@ public:
     // Sets the current measurement associated with this process. Required to be called by custom handlers.
     void setMeasurement(HydroSingleMeasurement measurement);
     inline void setMeasurement(float value, Hydro_UnitsType units = Hydro_UnitsType_Undefined) { setMeasurement(HydroSingleMeasurement(value, units)); }
-    void setMeasurementRow(uint8_t measurementRow);
-    void setMeasurementUnits(Hydro_UnitsType units, float convertParam = FLT_UNDEF);
+    void setMeasureRow(uint8_t measureRow);
+    void setMeasureUnits(Hydro_UnitsType units, float convertParam = FLT_UNDEF);
 
     inline void setNeedsMeasurement() { _needsMeasurement = true; }
     inline bool needsMeasurement() { return _needsMeasurement; }
@@ -268,9 +268,9 @@ public:
     inline const HydroSingleMeasurement &getMeasurement(bool poll = false) { updateIfNeeded(poll); return _measurement; }
     inline uint16_t getMeasurementFrame(bool poll = false) { updateIfNeeded(poll); return _measurement.frame; }
     inline float getMeasurementValue(bool poll = false) { updateIfNeeded(poll); return _measurement.value; }
-    inline Hydro_UnitsType getMeasurementUnits() const { return _measurement.units; }
+    inline Hydro_UnitsType getMeasureUnits() const { return _measurement.units; }
 
-    inline uint8_t getMeasurementRow() const { return _measurementRow; }
+    inline uint8_t getMeasureRow() const { return _measureRow; }
     inline float getMeasurementConvertParam() const { return _convertParam; }
 
     inline SharedPtr<HydroSensor> getObject() { return HydroAttachment::getObject<HydroSensor>(); }
@@ -286,7 +286,7 @@ public:
 
 protected:
     HydroSingleMeasurement _measurement;                    // Local measurement (converted to measure units)
-    uint8_t _measurementRow;                                // Measurement row
+    uint8_t _measureRow;                                    // Measurement row
     float _convertParam;                                    // Convert param (default: FLT_UNDEF)
     bool _needsMeasurement;                                 // Stale measurement tracking flag
 

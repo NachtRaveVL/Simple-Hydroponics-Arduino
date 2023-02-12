@@ -96,17 +96,17 @@ struct HydroDigitalPin : public HydroPin, public HydroDigitalInputPinInterface, 
     void saveToData(HydroPinData *dataOut) const;
 
     virtual ard_pinstatus_t digitalRead() override;
-    inline bool isActive() { return this->digitalRead() == (activeLow ? LOW : HIGH); }
+    inline bool isActive() { return digitalRead() == (activeLow ? LOW : HIGH); }
 
     virtual void digitalWrite(ard_pinstatus_t status) override;
-    inline void activate() { this->digitalWrite((activeLow ? LOW : HIGH)); }
-    inline void deactivate() { this->digitalWrite((activeLow ? HIGH : LOW)); }
+    inline void activate() { digitalWrite((activeLow ? LOW : HIGH)); }
+    inline void deactivate() { digitalWrite((activeLow ? HIGH : LOW)); }
 };
 
 // Analog Pin
 struct HydroAnalogPin : public HydroPin, public HydroAnalogInputPinInterface, public HydroAnalogOutputPinInterface
 {
-    HydroBitResolution bitRes;                              // Bit resolution
+    BitResolution bitRes;                                   // Bit resolution
 #ifdef ESP32
     uint8_t pwmChannel;                                     // PWM channel
 #endif

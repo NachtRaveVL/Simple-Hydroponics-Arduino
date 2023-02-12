@@ -115,10 +115,7 @@ public:
 
     virtual HydroSensorAttachment &getPowerUsage(bool poll = false) override;
 
-    void setLimitTrigger(HydroTrigger *limitTrigger);
-    const HydroTrigger *getLimitTrigger() const;
-
-    template<typename T> inline void setLimitTrigger(T limitTrigger) { _limitTrigger = limitTrigger; }
+    template<typename T> inline void setLimitTrigger(T limitTrigger) { _limitTrigger.setObject(limitTrigger); }
     inline SharedPtr<HydroTrigger> getLimitTrigger() { return _limitTrigger.getObject(); }
 
     inline float getMaxPower() const { return _maxPower; }

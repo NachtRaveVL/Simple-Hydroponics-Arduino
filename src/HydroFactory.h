@@ -111,14 +111,14 @@ public:
     // Timer fed crops use a simple on/off timer for driving their feeding signal.
     SharedPtr<HydroTimedCrop> addTimerFedCrop(Hydro_CropType cropType,                      // Crop type
                                               Hydro_SubstrateType substrateType,            // Substrate type
-                                              DateTime sowDate,                             // Sow date
+                                              DateTime sowTime,                             // Sow date
                                               uint8_t minsOn = 15,                          // Feeding signal on-time interval, in minutes
                                               uint8_t minsOff = 45);                        // Feeding signal off-time interval, in minutes
     // Adds a new simple timer-fed crop to the system using the given parameters (perennials only).
     // Perennials that grow back are easier to define from their last end-of-harvest date instead of when they were planted.
     SharedPtr<HydroTimedCrop> addTimerFedPerennialCrop(Hydro_CropType cropType,             // Crop type
                                                        Hydro_SubstrateType substrateType,   // Substrate type
-                                                       DateTime lastHarvestDate,            // Last harvest date
+                                                       DateTime lastHarvestTime,            // Last harvest date
                                                        uint8_t minsOn = 15,                 // Feeding signal on-time interval, in minutes
                                                        uint8_t minsOff = 45);               // Feeding signal off-time interval, in minutes
 
@@ -126,12 +126,12 @@ public:
     // Adaptive crops use soil based sensors, such as moisture sensors, to drive their feeding signal.
     SharedPtr<HydroAdaptiveCrop> addAdaptiveFedCrop(Hydro_CropType cropType,                // Crop type
                                                     Hydro_SubstrateType substrateType,      // Substrate type
-                                                    DateTime sowDate);                      // Sow date
+                                                    DateTime sowTime);                      // Sow date
     // Adds a new adaptive trigger-fed crop to the system using the given parameters (perennials only).
     // Perennials that grow back are easier to define from their last end-of-harvest date instead of when they were planted.
     SharedPtr<HydroAdaptiveCrop> addAdaptiveFedPerennialCrop(Hydro_CropType cropType,       // Crop type
                                                              Hydro_SubstrateType substrateType, // Substrate type
-                                                             DateTime lastHarvestDate);     // Last harvest date
+                                                             DateTime lastHarvestTime);     // Last harvest date
 
     // Convenience builders for common reservoirs (shared, nullptr return -> failure).
 
@@ -145,8 +145,8 @@ public:
     // Feed reservoirs, aka channels, are the reservoirs used to feed crops and provide a central point for managing feeding.
     SharedPtr<HydroFeedReservoir> addFeedWaterReservoir(float maxVolume,                    // Maximum volume
                                                         bool beginFilled = false,           // If feed reservoir should begin filled or empty
-                                                        DateTime lastChangeDate = DateTime((uint32_t)unixNow()), // Last water change date
-                                                        DateTime lastPruningDate = DateTime()); // Last pruning date
+                                                        DateTime lastChangeTime = localNow(), // Last water change date
+                                                        DateTime lastPruningTime = localNow()); // Last pruning date
 
     // Adds a drainage pipe to the system using the given parameters.
     // Drainage pipes are never-filled infinite reservoirs that can always be pumped/drained into.

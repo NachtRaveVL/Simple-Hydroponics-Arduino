@@ -34,6 +34,7 @@
 #define JOIN_(X,Y) X##_##Y
 #define JOIN(X,Y) JOIN_(X,Y)
 #endif
+
 #ifndef TWO_PI                                              // Missing 2pi
 #define TWO_PI                          6.283185307179586476925286766559
 #endif
@@ -71,9 +72,21 @@
 #elif defined(F_BUS)                                        // Teensy/etc support
 #define F_SPD F_BUS
 #else                                                       // Fast/good enough
-#define F_SPD 50000000U
+#define F_SPD 32000000U
 #endif
 #endif
+#if defined(__AVR__) && !defined(ARDUINO_AVR_FIO) && !(defined(ARDUINO_AVR_PRO) && F_CPU == 8000000L)
+#define V_MCU                           5.0                 // 5v MCU
+#else
+#define V_MCU                           3.3                 // 3v3 MCU
+#endif
+
+#define PER_SEC_TO_PER_MIN(t)   ((t) * (SECS_PER_MIN))      // Per seconds to per minutes
+#define PER_SEC_TO_PER_HR(t)    ((t) * (SECS_PER_HOUR))     // Per seconds to per hour
+#define PER_MIN_TO_PER_SEC(t)   ((t) / (SECS_PER_MIN))      // Per minutes to per seconds
+#define PER_MIN_TO_PER_HR(t)    ((t) * (SECS_PER_MIN))      // Per minutes to per hour
+#define PER_HR_TO_PER_SEC(t)    ((t) / (SECS_PER_HOUR))     // Per hour to per seconds
+#define PER_HR_TO_PER_MIN(t)    ((t) / (SECS_PER_MIN))      // Per hour to per minutes
 
 typedef typeof(millis()) millis_t;                          // Time millis type
 typedef int8_t hposi_t;                                     // Position indexing type alias
@@ -512,7 +525,7 @@ enum Hydro_PinMode : signed char {
     Hydro_PinMode_Digital_Input_PullUp,                     // Digital input pin with pull-up resistor (default pairing for active-low trigger, type alias for INPUT_PULLUP/GPIO_PuPd_UP)
     Hydro_PinMode_Digital_Input_PullDown,                   // Digital input pin with pull-down resistor (or pull-up disabled if not avail, default pairing for active-high trigger, type alias for INPUT_PULLDOWN/GPIO_PuPd_DOWN)
     Hydro_PinMode_Digital_Output_OpenDrain,                 // Digital output pin with open-drain NPN-based sink (default pairing for active-low trigger, type alias for OUTPUT/GPIO_OType_OD)
-    Hydro_PinMode_Digital_Output_PushPull,                  // Digital output pin with push-pull NPN+PNP-based src+sink (default pairing for active-high trigger, type alias for GPIO_OType_PP)
+    Hydro_PinMode_Digital_Output_PushPull,                  // Digital output pin with push-pull NPN+PNP-based sink+src (default pairing for active-high trigger, type alias for GPIO_OType_PP)
     Hydro_PinMode_Analog_Input,                             // Analog input pin (type alias for INPUT)
     Hydro_PinMode_Analog_Output,                            // Analog output pin (type alias for OUTPUT)
 
@@ -536,9 +549,9 @@ enum Hydro_TriggerState : signed char {
 // Balancing State
 // Common balancing states. Specifies balance or which direction of imbalance.
 enum Hydro_BalancingState : signed char {
-    Hydro_BalancingState_TooLow,                            // Too low / needs to go higher
+    Hydro_BalancingState_TooLow,                            // Too low / reading needs to go higher
     Hydro_BalancingState_Balanced,                          // Balanced state
-    Hydro_BalancingState_TooHigh,                           // Too high / needs to go lower
+    Hydro_BalancingState_TooHigh,                           // Too high / reading needs to go lower
 
     Hydro_BalancingState_Count,                             // Placeholder
     Hydro_BalancingState_Undefined = -1                     // Placeholder
@@ -559,7 +572,7 @@ enum Hydro_EnableMode : signed char {
 
     Hydro_EnableMode_Count,                                 // Placeholder
     Hydro_EnableMode_Undefined = -1,                        // Placeholder
-    Hydro_EnableMode_Serial = Hydro_EnableMode_InOrder      // Serial (alias for in-order)
+    Hydro_EnableMode_Serial = Hydro_EnableMode_InOrder      // Serial activation (alias for InOrder)
 };
 
 // Direction Mode
@@ -567,7 +580,7 @@ enum Hydro_EnableMode : signed char {
 enum Hydro_DirectionMode : signed char {
     Hydro_DirectionMode_Forward,                            // Standard/forward direction mode
     Hydro_DirectionMode_Reverse,                            // Opposite/reverse direction mode
-    Hydro_DirectionMode_Stop,                               // Stationary/braking direction mode
+    Hydro_DirectionMode_Stop,                               // Stationary/braking direction mode  (intensity undef)
 
     Hydro_DirectionMode_Count,                              // Placeholder
     Hydro_DirectionMode_Undefined = -1                      // Placeholder
@@ -577,18 +590,16 @@ enum Hydro_DirectionMode : signed char {
 // Unit of measurement category. Specifies the kind of unit.
 enum Hydro_UnitsCategory : signed char {
     Hydro_UnitsCategory_AirConcentration,                   // Air particle concentration based unit
-    Hydro_UnitsCategory_AirHeatIndex,                       // Air heat index based unit
-    Hydro_UnitsCategory_AirHumidity,                        // Air humidity based unit
     Hydro_UnitsCategory_AirTemperature,                     // Air temperature based unit
     Hydro_UnitsCategory_Alkalinity,                         // Alkalinity based unit
-    Hydro_UnitsCategory_DissolvedSolids,                    // Dissolved solids based unit
     Hydro_UnitsCategory_Distance,                           // Distance/position based unit
+    Hydro_UnitsCategory_LiqConcentration,                   // Liquid concentration based unit
     Hydro_UnitsCategory_LiqDilution,                        // Liquid dilution based unit
     Hydro_UnitsCategory_LiqFlowRate,                        // Liquid flow rate based unit
     Hydro_UnitsCategory_LiqTemperature,                     // Liquid temperature based unit
     Hydro_UnitsCategory_LiqVolume,                          // Liquid volume based unit
+    Hydro_UnitsCategory_Percentile,                         // Percentile based unit
     Hydro_UnitsCategory_Power,                              // Power based unit
-    Hydro_UnitsCategory_SoilMoisture,                       // Soil moisture based unit
     Hydro_UnitsCategory_Weight,                             // Weight based unit
 
     Hydro_UnitsCategory_Count,                              // Placeholder
@@ -597,8 +608,9 @@ enum Hydro_UnitsCategory : signed char {
 
 // Units Type
 // Unit of measurement type. Specifies the unit type associated with a measured value.
+// Note: Rate units may only be in per minute, use PER_X_TO_PER_Y defines to convert.
 enum Hydro_UnitsType : signed char {
-    Hydro_UnitsType_Raw_0_1,                                // Raw value [0.0,1.0] mode
+    Hydro_UnitsType_Raw_0_1,                                // Normalized raw value [0.0,1.0] mode
     Hydro_UnitsType_Percentile_0_100,                       // Percentile [0.0,100.0] mode
     Hydro_UnitsType_Alkalinity_pH_0_14,                     // pH value [0.0,14.0] alkalinity mode
     Hydro_UnitsType_Concentration_EC,                       // Siemens electrical conductivity mode
@@ -618,7 +630,7 @@ enum Hydro_UnitsType : signed char {
     Hydro_UnitsType_Temperature_Celsius,                    // Celsius temperature mode
     Hydro_UnitsType_Temperature_Fahrenheit,                 // Fahrenheit temperature mode
     Hydro_UnitsType_Temperature_Kelvin,                     // Kelvin temperature mode
-    Hydro_UnitsType_Weight_Kilogram,                        // Kilogram weight mode
+    Hydro_UnitsType_Weight_Kilograms,                       // Kilograms weight mode
     Hydro_UnitsType_Weight_Pounds,                          // Pounds weight mode
 
     Hydro_UnitsType_Count,                                  // Placeholder

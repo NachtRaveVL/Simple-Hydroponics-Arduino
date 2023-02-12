@@ -332,7 +332,7 @@ void HydroPublisher::performTabulation()
     for (auto iter = Hydruino::_activeInstance->_objects.begin(); iter != Hydruino::_activeInstance->_objects.end(); ++iter) {
         if (iter->second->isSensorType()) {
             auto sensor = static_pointer_cast<HydroSensor>(iter->second);
-            auto rowCount = getMeasurementRowCount(sensor->getLatestMeasurement());
+            auto rowCount = getMeasureRowCount(sensor->getLatestMeasurement());
 
             for (int rowIndex = 0; sameOrder && rowIndex < rowCount; ++rowIndex) {
                 sameOrder = sameOrder && (columnCount + rowIndex + 1 <= _columnCount) &&
@@ -360,7 +360,7 @@ void HydroPublisher::performTabulation()
                     if (iter->second->isSensorType()) {
                         auto sensor = static_pointer_cast<HydroSensor>(iter->second);
                         auto measurement = sensor->getLatestMeasurement();
-                        auto rowCount = getMeasurementRowCount(measurement);
+                        auto rowCount = getMeasureRowCount(measurement);
 
                         for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
                             HYDRO_HARD_ASSERT(columnIndex < _columnCount, SFP(HStr_Err_OperationFailure));
@@ -400,7 +400,7 @@ void HydroPublisher::resetDataFile()
 
             if (dataFile) {
                 HydroSensor *lastSensor = nullptr;
-                uint8_t measurementRow = 0;
+                uint8_t measureRow = 0;
 
                 dataFile.print(SFP(HStr_Key_Timestamp));
 
@@ -408,15 +408,15 @@ void HydroPublisher::resetDataFile()
                     dataFile.print(',');
 
                     auto sensor = (HydroSensor *)(Hydruino::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
-                    if (sensor && sensor == lastSensor) { ++measurementRow; }
-                    else { measurementRow = 0; lastSensor = sensor; }
+                    if (sensor && sensor == lastSensor) { ++measureRow; }
+                    else { measureRow = 0; lastSensor = sensor; }
 
                     if (sensor) {
                         dataFile.print(sensor->getKeyString());
                         dataFile.print('_');
-                        dataFile.print(unitsCategoryToString(defaultMeasureCategoryForSensorType(sensor->getSensorType(), measurementRow)));
+                        dataFile.print(unitsCategoryToString(defaultCategoryForSensor(sensor->getSensorType(), measureRow)));
                         dataFile.print('_');
-                        dataFile.print(unitsTypeToSymbol(getMeasurementUnits(sensor->getLatestMeasurement(), measurementRow)));
+                        dataFile.print(unitsTypeToSymbol(getMeasureUnits(sensor->getLatestMeasurement(), measureRow)));
                     } else {
                         HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
                         dataFile.print(SFP(HStr_Undefined));
@@ -455,7 +455,7 @@ void HydroPublisher::resetDataFile()
         if (dataFile) {
             auto dataFileStream = HydroWiFiStorageFileStream(dataFile);
             HydroSensor *lastSensor = nullptr;
-            uint8_t measurementRow = 0;
+            uint8_t measureRow = 0;
 
             dataFileStream.print(SFP(HStr_Key_Timestamp));
 
@@ -463,15 +463,15 @@ void HydroPublisher::resetDataFile()
                 dataFileStream.print(',');
 
                 auto sensor = (HydroSensor *)(Hydruino::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
-                if (sensor && sensor == lastSensor) { ++measurementRow; }
-                else { measurementRow = 0; lastSensor = sensor; }
+                if (sensor && sensor == lastSensor) { ++measureRow; }
+                else { measureRow = 0; lastSensor = sensor; }
 
                 if (sensor) {
                     dataFileStream.print(sensor->getKeyString());
                     dataFileStream.print('_');
-                    dataFileStream.print(unitsCategoryToString(defaultMeasureCategoryForSensorType(sensor->getSensorType(), measurementRow)));
+                    dataFileStream.print(unitsCategoryToString(defaultCategoryForSensor(sensor->getSensorType(), measureRow)));
                     dataFileStream.print('_');
-                    dataFileStream.print(unitsTypeToSymbol(getMeasurementUnits(sensor->getLatestMeasurement(), measurementRow)));
+                    dataFileStream.print(unitsTypeToSymbol(getMeasureUnits(sensor->getLatestMeasurement(), measureRow)));
                 } else {
                     HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
                     dataFileStream.print(SFP(HStr_Undefined));

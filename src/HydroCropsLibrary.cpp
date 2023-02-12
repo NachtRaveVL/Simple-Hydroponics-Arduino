@@ -180,7 +180,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
 {
     if (_libSDCropPrefix.length()) {
         HydroCropsLibraryBook *retVal = nullptr;
-        auto sd = getHydroInstance()->getSDCard();
+        auto sd = getController()->getSDCard();
 
         if (sd) {
             String filename = getNNFilename(_libSDCropPrefix, (unsigned int)cropType, SFP(HStr_dat));
@@ -193,7 +193,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 }
             }
 
-            getHydroInstance()->endSDCard(sd);
+            getController()->endSDCard(sd);
         }
 
         if (retVal) { return retVal; }
@@ -201,7 +201,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
 
     if (_libEEPROMDataAddress != (size_t)-1) {
         HydroCropsLibraryBook *retVal = nullptr;
-        auto eeprom = getHydroInstance()->getEEPROM();
+        auto eeprom = getController()->getEEPROM();
 
         if (eeprom) {
             uint16_t lookupOffset = 0;

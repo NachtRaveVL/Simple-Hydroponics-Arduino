@@ -33,8 +33,8 @@ void testSystemModeEnums()
         String typeString = systemModeToString((Hydro_SystemMode)typeIndex);
         int retTypeIndex = (int)systemModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testSystemModeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testSystemModeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -45,8 +45,8 @@ void testMeasurementModeEnums()
         String typeString = measurementModeToString((Hydro_MeasurementMode)typeIndex);
         int retTypeIndex = (int)measurementModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testMeasurementModeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testMeasurementModeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -57,8 +57,8 @@ void testDisplayOutputModeEnums()
         String typeString = displayOutputModeToString((Hydro_DisplayOutputMode)typeIndex);
         int retTypeIndex = (int)displayOutputModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testDisplayOutputModeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testDisplayOutputModeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -69,8 +69,8 @@ void testControlInputModeEnums()
         String typeString = controlInputModeToString((Hydro_ControlInputMode)typeIndex);
         int retTypeIndex = (int)controlInputModeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testControlInputModeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testControlInputModeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -81,8 +81,8 @@ void testActuatorTypeEnums()
         String typeString = actuatorTypeToString((Hydro_ActuatorType)typeIndex);
         int retTypeIndex = (int)actuatorTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testActuatorTypeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testActuatorTypeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -93,8 +93,8 @@ void testSensorTypeEnums()
         String typeString = sensorTypeToString((Hydro_SensorType)typeIndex);
         int retTypeIndex = (int)sensorTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testSensorTypeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testSensorTypeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -105,8 +105,8 @@ void testCropTypeEnums()
         String typeString = cropTypeToString((Hydro_CropType)typeIndex);
         int retTypeIndex = (int)cropTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testCropTypeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testCropTypeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -117,8 +117,8 @@ void testSubstrateTypeEnums()
         String typeString = substrateTypeToString((Hydro_SubstrateType)typeIndex);
         int retTypeIndex = (int)substrateTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testSubstrateTypeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testSubstrateTypeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -129,8 +129,8 @@ void testReservoirTypeEnums()
         String typeString = reservoirTypeToString((Hydro_ReservoirType)typeIndex);
         int retTypeIndex = (int)reservoirTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testReservoirTypeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testReservoirTypeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -141,8 +141,8 @@ void testRailTypeEnums()
         String typeString = railTypeToString((Hydro_RailType)typeIndex);
         int retTypeIndex = (int)railTypeFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testRailTypeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testRailTypeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -153,8 +153,8 @@ void testUnitsCategoryEnums()
         String typeString = unitsCategoryToString((Hydro_UnitsCategory)typeIndex);
         int retTypeIndex = (int)unitsCategoryFromString(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testUnitsCategoryEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testUnitsCategoryEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -165,8 +165,8 @@ void testUnitsTypeEnums()
         String typeString = unitsTypeToSymbol((Hydro_UnitsType)typeIndex);
         int retTypeIndex = (int)unitsTypeFromSymbol(typeString);
         if (typeIndex != retTypeIndex) {
-            getLoggerInstance()->logError(F("testUnitsTypeEnums: Conversion failure: "), String(typeIndex));
-            getLoggerInstance()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+            getLogger()->logError(F("testUnitsTypeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
         }
     }
 }
@@ -183,7 +183,7 @@ void setup() {
 
     hydroController.init();
 
-    getLoggerInstance()->logMessage(F("=BEGIN="));
+    getLogger()->logMessage(F("=BEGIN="));
 
     testSystemModeEnums();
     testMeasurementModeEnums();
@@ -198,7 +198,7 @@ void setup() {
     testUnitsCategoryEnums();
     testUnitsTypeEnums();
 
-    getLoggerInstance()->logMessage(F("=FINISH="));
+    getLogger()->logMessage(F("=FINISH="));
 }
 
 void loop()

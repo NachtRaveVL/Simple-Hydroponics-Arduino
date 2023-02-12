@@ -1630,10 +1630,10 @@ static uint64_t getSDCardFreeSpace()
 {
     uint64_t retVal = HYDRO_SYS_FREESPACE_LOWSPACE;
     #if defined(CORE_TEENSY)
-        auto sd = getHydroInstance()->getSDCard();
+        auto sd = getController()->getSDCard();
         if (sd) {
             retVal = sd->totalSize() - sd->usedSize();
-            getHydroInstance()->endSDCard(sd);
+            getController()->endSDCard(sd);
         }
     #endif
     return retVal;

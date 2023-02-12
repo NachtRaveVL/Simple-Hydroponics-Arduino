@@ -35,7 +35,7 @@ public:
     HydroCrop(Hydro_CropType cropType,
               hposi_t cropIndex,
               Hydro_SubstrateType substrateType,
-              DateTime sowDate,
+              DateTime sowTime,
               int classType = Unknown);
     HydroCrop(const HydroCropData *dataIn);
     virtual ~HydroCrop();
@@ -55,7 +55,7 @@ public:
     inline Hydro_CropType getCropType() const { return _id.objTypeAs.cropType; }
     inline hposi_t getCropIndex() const { return _id.posIndex; }
     inline Hydro_SubstrateType getSubstrateType() const { return _substrateType; }
-    inline DateTime getSowDate() const { return DateTime((uint32_t)_sowDate); }
+    inline DateTime getSowTime() const { return localTime(_sowTime); }
 
     inline const HydroCropsLibData *getCropsLibData() const { return _cropsData; }
     inline int getGrowWeek() const { return _growWeek; }
@@ -68,7 +68,7 @@ public:
 
 protected:
     Hydro_SubstrateType _substrateType;                     // Substrate type
-    time_t _sowDate;                                        // Sow date (UTC)
+    time_t _sowTime;                                        // Sow date (UTC)
     HydroAttachment _feedReservoir;                         // Feed reservoir attachment
     const HydroCropsLibData *_cropsData;                    // Crops library data (checked out iff !nullptr)
     int _growWeek;                                          // Current grow week
@@ -101,7 +101,7 @@ public:
     HydroTimedCrop(Hydro_CropType cropType,
                    hposi_t cropIndex,
                    Hydro_SubstrateType substrateType,
-                   DateTime sowDate,
+                   DateTime sowTime,
                    TimeSpan timeOn = TimeSpan(0,0,15,0), TimeSpan timeOff = TimeSpan(0,0,45,0),
                    int classType = Timed);
     HydroTimedCrop(const HydroTimedCropData *dataIn);
@@ -116,7 +116,7 @@ public:
     inline TimeSpan getFeedTimeOff() const { return TimeSpan(_feedTimingMins[1] * SECS_PER_MIN); }
 
 protected:
-    time_t _lastFeedingDate;                                // Last feeding date (UTC)
+    time_t _lastFeedingTime;                                // Last feeding date (UTC)
     uint8_t _feedTimingMins[2];                             // Feed timing (on/off), in minutes
 
     virtual void saveToData(HydroData *dataOut) override;
@@ -130,7 +130,7 @@ public:
     HydroAdaptiveCrop(Hydro_CropType cropType,
                       hposi_t cropIndex,
                       Hydro_SubstrateType substrateType,
-                      DateTime sowDate,
+                      DateTime sowTime,
                       int classType = Adaptive);
     HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn);
 
@@ -139,16 +139,16 @@ public:
 
     virtual bool getNeedsFeeding() override;
 
-    void setMoistureUnits(Hydro_UnitsType moistureUnits);
-    Hydro_UnitsType getMoistureUnits() const;
+    void setConcentrateUnits(Hydro_UnitsType concentrateUnits);
+    Hydro_UnitsType getConcentrateUnits() const;
 
     virtual HydroSensorAttachment &getSoilMoisture(bool poll = false) override;
 
-    template<typename T> inline void setFeedingTrigger(T feedingTrigger) { _feedingTrigger = feedingTrigger; }
+    template<typename T> inline void setFeedingTrigger(T feedingTrigger) { _feedingTrigger.setObject(feedingTrigger); }
     inline SharedPtr<HydroTrigger> getFeedingTrigger() { return _feedingTrigger.getObject(); }
 
 protected:
-    Hydro_UnitsType _moistureUnits;                         // Moisture units preferred
+    Hydro_UnitsType _concentrateUnits;                      // Moisture units preferred
     HydroSensorAttachment _soilMoisture;                    // Soil moisture sensor attachment
     HydroTriggerAttachment _feedingTrigger;                 // Feeding trigger attachment
 
@@ -160,7 +160,7 @@ protected:
 struct HydroCropData : public HydroObjectData
 {
     Hydro_SubstrateType substrateType;
-    time_t sowDate;
+    time_t sowTime;
     char feedReservoir[HYDRO_NAME_MAXSIZE];
     float feedingWeight;
 
@@ -172,7 +172,7 @@ struct HydroCropData : public HydroObjectData
 // Timed Crop Serialization Data
 struct HydroTimedCropData : public HydroCropData
 {
-    time_t lastFeedingDate;
+    time_t lastFeedingTime;
     uint8_t feedTimingMins[2];
 
     HydroTimedCropData();
@@ -183,7 +183,7 @@ struct HydroTimedCropData : public HydroCropData
 // Adaptive Crop Serialization Data
 struct HydroAdaptiveCropData : public HydroCropData
 {
-    Hydro_UnitsType moistureUnits;
+    Hydro_UnitsType concentrateUnits;
     char moistureSensor[HYDRO_NAME_MAXSIZE];
     HydroTriggerSubData feedingTrigger;
 

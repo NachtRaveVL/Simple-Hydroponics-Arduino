@@ -274,7 +274,7 @@ void setup() {
             hydroController.setEthernetConnection(_SETUP_ETHERNET_MAC);
         }
         #endif
-        getLoggerInstance()->setLogLevel(JOIN(Hydro_LogLevel,SETUP_SYS_LOGLEVEL));
+        getLogger()->setLogLevel(JOIN(Hydro_LogLevel,SETUP_SYS_LOGLEVEL));
         #if SETUP_LOG_SD_ENABLE
             hydroController.enableSysLoggingToSDCard(F(SETUP_LOG_FILE_PREFIX));
         #endif

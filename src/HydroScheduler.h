@@ -112,8 +112,8 @@ struct HydroProcess {
 struct HydroFeeding : public HydroProcess {
     enum : signed char {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
 
-    time_t canFeedAfter;                                    // Time next feeding can occur (UTC)
-    time_t lastAirReport;                                   // Last time an air report was generated (UTC)
+    time_t canFeedAfter;                                    // Time next feeding can occur (unix/UTC)
+    time_t lastAirReport;                                   // Last time an air report was generated (unix/UTC)
 
     float phSetpoint;                                       // Calculated pH setpoint for attached crops
     float tdsSetpoint;                                      // Calculated TDS setpoint for attached crops
@@ -138,9 +138,9 @@ private:
 struct HydroLighting : public HydroProcess {
     enum : signed char {Init,Spray,Light,Done,Unknown = -1} stage; // Current lighting stage
 
-    time_t sprayStart;                                      // Time when spraying should start (TZ)
-    time_t lightStart;                                      // Time when lighting should start / spraying should end (TZ, same as sprayStart when no spraying needed)
-    time_t lightEnd;                                        // Time when lighting should finish (TZ)
+    time_t sprayStart;                                      // Time when spraying should start (TZ offset)
+    time_t lightStart;                                      // Time when lighting should start / spraying should end (TZ offset, same as sprayStart when no spraying needed)
+    time_t lightEnd;                                        // Time when lighting should finish (TZ offset)
 
     float lightHours;                                       // Calculated light hours for attached crops
 

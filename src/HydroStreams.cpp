@@ -8,7 +8,7 @@
 HydroEEPROMStream::HydroEEPROMStream()
     : Stream(), _eeprom(nullptr), _readAddress(0), _writeAddress(0), _endAddress(0)
 {
-    if (getHydroInstance() && (_eeprom = getHydroInstance()->getEEPROM())) {
+    if (getController() && (_eeprom = getController()->getEEPROM())) {
         _endAddress = _eeprom->getDeviceSize();
     }
     HYDRO_HARD_ASSERT(_eeprom, SFP(HStr_Err_UnsupportedOperation));
@@ -17,8 +17,8 @@ HydroEEPROMStream::HydroEEPROMStream()
 HydroEEPROMStream::HydroEEPROMStream(uint16_t dataAddress, size_t dataSize)
       : Stream(), _eeprom(nullptr), _readAddress(dataAddress), _writeAddress(dataAddress), _endAddress(dataAddress + dataSize)
 {
-    if (getHydroInstance()) {
-        _eeprom = getHydroInstance()->getEEPROM();
+    if (getController()) {
+        _eeprom = getController()->getEEPROM();
     }
     HYDRO_HARD_ASSERT(_eeprom, SFP(HStr_Err_UnsupportedOperation));
 }

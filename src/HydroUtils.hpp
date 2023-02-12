@@ -113,6 +113,35 @@ bool arrayElementsEqual(const T *arrayIn, size_t length, T value)
 }
 
 
+inline bool convertUnits(float *valueInOut, Hydro_UnitsType *unitsInOut, Hydro_UnitsType outUnits, float convertParam)
+{
+    if (tryConvertUnits(*valueInOut, *unitsInOut, valueInOut, outUnits, convertParam)) {
+        *unitsInOut = outUnits;
+        return true;
+    }
+    return false;
+}
+
+inline bool convertUnits(float valueIn, float *valueOut, Hydro_UnitsType unitsIn, Hydro_UnitsType outUnits, Hydro_UnitsType *unitsOut, float convertParam)
+{
+    if (tryConvertUnits(valueIn, unitsIn, valueOut, outUnits, convertParam)) {
+        if (unitsOut) { *unitsOut = outUnits; }
+        return true;
+    }
+    return false;
+}
+
+inline bool convertUnits(HydroSingleMeasurement *measureInOut, Hydro_UnitsType outUnits, float convertParam)
+{
+    return convertUnits(&measureInOut->value, &measureInOut->units, outUnits, convertParam);
+}
+
+inline bool convertUnits(const HydroSingleMeasurement *measureIn, HydroSingleMeasurement *measureOut, Hydro_UnitsType outUnits, float convertParam)
+{
+    return convertUnits(measureIn->value, &measureOut->value, measureIn->units, outUnits, &measureOut->units, convertParam);
+}
+
+
 template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 Vector<HydroObject *, N> linksFilterActuators(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links)
 {
@@ -232,45 +261,70 @@ void linksResolveActuatorsWithRateByType(Vector<HydroObject *, N> &actuatorsIn, 
 }
 
 
-inline Hydruino *getHydroInstance()
+inline Hydruino *getController()
 {
     return Hydruino::_activeInstance;
 }
 
-inline HydroScheduler *getSchedulerInstance()
+inline HydroScheduler *getScheduler()
 {
     return Hydruino::_activeInstance ? &Hydruino::_activeInstance->scheduler : nullptr;
 }
 
-inline HydroLogger *getLoggerInstance()
+inline HydroLogger *getLogger()
 {
     return Hydruino::_activeInstance ? &Hydruino::_activeInstance->logger : nullptr;
 }
 
-inline HydroPublisher *getPublisherInstance()
+inline HydroPublisher *getPublisher()
 {
     return Hydruino::_activeInstance ? &Hydruino::_activeInstance->publisher : nullptr;
 }
 
 #ifdef HYDRO_USE_GUI
 
-inline HydruinoUIInterface *getUIInstance()
+inline HydruinoUIInterface *getUI()
 {
     return Hydruino::_activeInstance ? Hydruino::_activeInstance->_activeUIInstance : nullptr;
 }
 
 #endif
 
-inline DateTime getCurrentTime(time_t time)
+
+inline time_t unixTime(DateTime localTime)
 {
-    return DateTime((uint32_t)(time + (getHydroInstance() ? getHydroInstance()->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
+    return localTime.unixtime() - (getController() ? getController()->getTimeZoneOffset() * SECS_PER_HOUR : 0L);
 }
 
-inline time_t getCurrentDayStartTime(time_t time)
+inline DateTime localTime(time_t unixTime)
 {
-    DateTime currTime = getCurrentTime(time);
+    return DateTime((uint32_t)(unixTime + (getController() ? getController()->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
+}
+
+inline time_t unixDayStart(time_t unixTime)
+{
+    DateTime currTime = DateTime((uint32_t)unixTime);
     return DateTime(currTime.year(), currTime.month(), currTime.day()).unixtime();
 }
+
+inline DateTime localDayStart(time_t unixTime)
+{
+    DateTime currTime = localTime(unixTime);
+    return DateTime(currTime.year(), currTime.month(), currTime.day());
+}
+
+extern bool setUnixTime(DateTime unixTime);
+
+inline bool setUnixTime(time_t unixTime)
+{
+    return setUnixTime(DateTime((uint32_t)unixTime));
+}
+
+inline bool setLocalTime(DateTime localTime)
+{
+    return setUnixTime(unixTime(localTime));
+}
+
 
 inline bool checkPinIsDigital(pintype_t pin)
 {

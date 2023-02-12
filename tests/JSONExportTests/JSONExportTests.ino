@@ -272,7 +272,7 @@ void setup() {
 
     hydroController.init();
 
-    getLoggerInstance()->logMessage(F("=BEGIN="));
+    getLogger()->logMessage(F("=BEGIN="));
 
     testActuators();
     testSensors();
@@ -280,7 +280,7 @@ void setup() {
     testReservoirs();
     testRails();
 
-    getLoggerInstance()->logMessage(F("=FINISH="));
+    getLogger()->logMessage(F("=FINISH="));
 }
 
 void loop()
