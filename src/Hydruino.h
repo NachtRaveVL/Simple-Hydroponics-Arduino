@@ -160,11 +160,7 @@ typedef Adafruit_GPS GPSClass;
 #include "MQTT.h"                       // MQTT library
 #define HYDRO_USE_MQTT
 #endif
-#if defined(ARDUINO_ARCH_STM32) && 1
-#include <OneWireSTM.h>                 // STM32 version of OneWire (via stm32duino)
-#else
 #include "OneWire.h"                    // OneWire library
-#endif
 #include "RTClib.h"                     // i2c RTC library
 #include "SolarCalculator.h"            // Solar calculator library
 #include "TimeLib.h"                    // Time library
@@ -207,6 +203,7 @@ using namespace arx::stdx;
 template <typename T> using SharedPtr = arx::stdx::shared_ptr<T>;
 
 inline time_t unixNow();
+inline DateTime localNow();
 inline millis_t nzMillis();
 extern void handleInterrupt(pintype_t);
 extern hkey_t stringHash(String);
@@ -421,8 +418,6 @@ public:
 
     // Accessors.
 
-    // Currently active Hydruino instance
-    static inline Hydruino *getActiveInstance() { return _activeInstance; }
     // EEPROM device size, in bytes (default: 0)
     inline uint32_t getEEPROMSize() const { return _eepromType != Hydro_EEPROMType_None ? (((int)_eepromType) << 7) : 0; }
     // EEPROM device setup configuration
@@ -611,12 +606,12 @@ protected:
     void checkFreeSpace();
     void checkAutosave();
 
-    friend Hydruino *::getHydroInstance();
-    friend HydroScheduler *::getSchedulerInstance();
-    friend HydroLogger *::getLoggerInstance();
-    friend HydroPublisher *::getPublisherInstance();
+    friend Hydruino *::getController();
+    friend HydroScheduler *::getScheduler();
+    friend HydroLogger *::getLogger();
+    friend HydroPublisher *::getPublisher();
 #ifdef HYDRO_USE_GUI
-    friend HydruinoUIInterface *::getUIInstance();
+    friend HydruinoUIInterface *::getUI();
 #endif
     friend class HydroCalibrations;
     friend class HydroCropsLibrary;

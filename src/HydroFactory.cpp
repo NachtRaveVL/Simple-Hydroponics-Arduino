@@ -8,7 +8,7 @@
 SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_GrowLights));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_GrowLights));
     HYDRO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
 
     if (outputPinIsDigital && isValidIndex(positionIndex)) {
@@ -17,7 +17,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputP
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
         ));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -26,7 +26,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputP
 SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterPump));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterPump));
     HYDRO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -36,7 +36,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outp
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
         ));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -45,7 +45,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outp
 SharedPtr<HydroRelayActuator> HydroFactory::addWaterHeaterRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterHeater));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterHeater));
     HYDRO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -55,7 +55,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterHeaterRelay(pintype_t output
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
         ));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -64,7 +64,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterHeaterRelay(pintype_t output
 SharedPtr<HydroRelayActuator> HydroFactory::addWaterSprayerRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterSprayer));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterSprayer));
     HYDRO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -74,7 +74,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterSprayerRelay(pintype_t outpu
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
         ));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -83,7 +83,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterSprayerRelay(pintype_t outpu
 SharedPtr<HydroRelayActuator> HydroFactory::addWaterAeratorRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterAerator));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterAerator));
     HYDRO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -93,7 +93,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterAeratorRelay(pintype_t outpu
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
         ));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -102,7 +102,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterAeratorRelay(pintype_t outpu
 SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_FanExhaust));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_FanExhaust));
     HYDRO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -112,7 +112,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputP
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
         ));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -128,7 +128,7 @@ SharedPtr<HydroVariableActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t 
 )
 {
     bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_FanExhaust));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_FanExhaust));
     HYDRO_HARD_ASSERT(outputPinIsPWM, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -144,7 +144,7 @@ SharedPtr<HydroVariableActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t 
                            , pwmFrequency
 #endif
         )));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -153,7 +153,7 @@ SharedPtr<HydroVariableActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t 
 SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_t outputPin)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_PeristalticPump));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_PeristalticPump));
     HYDRO_HARD_ASSERT(outputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -163,7 +163,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_
             positionIndex,
             HydroDigitalPin(outputPin, OUTPUT)
         ));
-        if (getHydroInstance()->registerObject(actuator)) { return actuator; }
+        if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
@@ -172,7 +172,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_
 SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterLevel));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterLevel));
     HYDRO_HARD_ASSERT(inputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -182,7 +182,7 @@ SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin)
             positionIndex,
             HydroDigitalPin(inputPin, INPUT_PULLUP)
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -191,7 +191,7 @@ SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin)
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPhMeter(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PotentialHydrogen));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PotentialHydrogen));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -201,7 +201,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPhMeter(pintype_t inputPin, 
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -210,7 +210,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPhMeter(pintype_t inputPin, 
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t inputPin, int ppmScale, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_TotalDissolvedSolids));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_TotalDissolvedSolids));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -220,7 +220,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t input
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
-        if (getHydroInstance()->registerObject(sensor)) {
+        if (getController()->registerObject(sensor)) {
             if (ppmScale != 500) {
                 HydroCalibrationData userCalibData(sensor->getId());
                 userCalibData.setFromScale(ppmScale / 500.0f);
@@ -238,7 +238,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t input
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTemperatureSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterTemperature));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterTemperature));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -248,7 +248,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTemperatureSensor(pintype_t 
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -257,7 +257,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTemperatureSensor(pintype_t 
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogCO2Sensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_AirCarbonDioxide));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_AirCarbonDioxide));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -268,7 +268,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogCO2Sensor(pintype_t inputPin
             HydroAnalogPin(inputPin, INPUT, inputBitRes),
             true
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -277,7 +277,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogCO2Sensor(pintype_t inputPin
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_SoilMoisture));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_SoilMoisture));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -288,7 +288,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inp
             HydroAnalogPin(inputPin, INPUT, inputBitRes),
             true
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -297,7 +297,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inp
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPWMPumpFlowSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PumpFlow));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PumpFlow));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -307,7 +307,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPWMPumpFlowSensor(pintype_t 
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -316,7 +316,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPWMPumpFlowSensor(pintype_t 
 SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -326,7 +326,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t i
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -335,7 +335,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t i
 SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -346,7 +346,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t
             HydroAnalogPin(inputPin, INPUT, inputBitRes),
             true
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -355,7 +355,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t
 SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin, bool isWattageBased, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PowerLevel));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PowerLevel));
     HYDRO_HARD_ASSERT(inputPinIsAnalog, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -365,8 +365,8 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin
             positionIndex,
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
-        if (getHydroInstance()->registerObject(sensor)) {
-            if (!isWattageBased) { sensor->setMeasurementUnits(Hydro_UnitsType_Power_Amperage); }
+        if (getController()->registerObject(sensor)) {
+            if (!isWattageBased) { sensor->setMeasureUnits(Hydro_UnitsType_Power_Amperage); }
             return sensor;
         }
     }
@@ -377,7 +377,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin
 SharedPtr<HydroDHTTempHumiditySensor> HydroFactory::addDHTTempHumiditySensor(pintype_t inputPin, Hydro_DHTType dhtType)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_AirTempHumidity));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_AirTempHumidity));
     HYDRO_HARD_ASSERT(inputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -387,7 +387,7 @@ SharedPtr<HydroDHTTempHumiditySensor> HydroFactory::addDHTTempHumiditySensor(pin
             HydroDigitalPin(inputPin, INPUT_PULLUP),
             dhtType
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
@@ -396,7 +396,7 @@ SharedPtr<HydroDHTTempHumiditySensor> HydroFactory::addDHTTempHumiditySensor(pin
 SharedPtr<HydroDSTemperatureSensor> HydroFactory::addDSTemperatureSensor(pintype_t inputPin, uint8_t inputBitRes, pintype_t pullupPin)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterTemperature));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterTemperature));
     HYDRO_HARD_ASSERT(inputPinIsDigital, SFP(HStr_Err_InvalidPinOrType));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
@@ -406,77 +406,75 @@ SharedPtr<HydroDSTemperatureSensor> HydroFactory::addDSTemperatureSensor(pintype
             HydroDigitalPin(inputPin, INPUT_PULLUP), inputBitRes,
             HydroDigitalPin(pullupPin, INPUT_PULLUP)
         ));
-        if (getHydroInstance()->registerObject(sensor)) { return sensor; }
+        if (getController()->registerObject(sensor)) { return sensor; }
     }
 
     return nullptr;
 }
 
-SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime sowDate, uint8_t minsOn, uint8_t minsOff)
+SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime sowTime, uint8_t minsOn, uint8_t minsOff)
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(cropType));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(cropType));
     HYDRO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydro_CropType_Count, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count, SFP(HStr_Err_InvalidParameter));
-    HYDRO_SOFT_ASSERT(sowDate.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
-    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && sowDate.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
+    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
         auto crop = SharedPtr<HydroTimedCrop>(new HydroTimedCrop(
             cropType,
             positionIndex,
             substrateType,
-            sowDate,
+            sowTime,
             TimeSpan(0,0,minsOn,0),
             TimeSpan(0,0,minsOff,0)
         ));
-        if (getHydroInstance()->registerObject(crop)) { return crop; }
+        if (getController()->registerObject(crop)) { return crop; }
     }
 
     return nullptr;
 }
 
-SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedPerennialCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime lastHarvestDate, uint8_t minsOn, uint8_t minsOff)
+SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedPerennialCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime lastHarvestTime, uint8_t minsOn, uint8_t minsOff)
 {
     auto cropData = hydroCropsLib.checkoutCropsData(cropType);
-    time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
-    auto crop = addTimerFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate), minsOn, minsOff);
+    auto crop = addTimerFedCrop(cropType, substrateType, lastHarvestTime - TimeSpan(cropData->totalGrowWeeks * SECS_PER_WEEK), minsOn, minsOff);
     hydroCropsLib.returnCropsData(cropData);
     return crop;
 }
 
-SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime sowDate)
+SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime sowTime)
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(cropType));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(cropType));
     HYDRO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydro_CropType_Count, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count, SFP(HStr_Err_InvalidParameter));
-    HYDRO_SOFT_ASSERT(sowDate.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
-    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && sowDate.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
+    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
         auto crop = SharedPtr<HydroAdaptiveCrop>(new HydroAdaptiveCrop(
             cropType,
             positionIndex,
             substrateType,
-            sowDate
+            sowTime
         ));
-        if (getHydroInstance()->registerObject(crop)) { return crop; }
+        if (getController()->registerObject(crop)) { return crop; }
     }
 
     return nullptr;
 }
 
-SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedPerennialCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime lastHarvestDate)
+SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedPerennialCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime lastHarvestTime)
 {
     auto cropData = hydroCropsLib.checkoutCropsData(cropType);
-    time_t sowDate = lastHarvestDate.unixtime() - (cropData->totalGrowWeeks * SECS_PER_WEEK);
-    auto crop = addAdaptiveFedCrop(cropType, substrateType, DateTime((uint32_t)sowDate));
+    auto crop = addAdaptiveFedCrop(cropType, substrateType, lastHarvestTime - TimeSpan(cropData->totalGrowWeeks * SECS_PER_WEEK));
     hydroCropsLib.returnCropsData(cropData);
     return crop;
 }
 
 SharedPtr<HydroFluidReservoir> HydroFactory::addFluidReservoir(Hydro_ReservoirType reservoirType, float maxVolume, bool beginFilled)
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(reservoirType));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(reservoirType));
     HYDRO_SOFT_ASSERT((int)reservoirType >= 0 && reservoirType <= Hydro_ReservoirType_Count, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(maxVolume > FLT_EPSILON, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
@@ -487,7 +485,7 @@ SharedPtr<HydroFluidReservoir> HydroFactory::addFluidReservoir(Hydro_ReservoirTy
             positionIndex,
             maxVolume
         ));
-        if (getHydroInstance()->registerObject(reservoir)) {
+        if (getController()->registerObject(reservoir)) {
             if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume()); }
             return reservoir;
         }
@@ -496,21 +494,21 @@ SharedPtr<HydroFluidReservoir> HydroFactory::addFluidReservoir(Hydro_ReservoirTy
     return nullptr;
 }
 
-SharedPtr<HydroFeedReservoir> HydroFactory::addFeedWaterReservoir(float maxVolume, bool beginFilled, DateTime lastChangeDate, DateTime lastPruningDate)
+SharedPtr<HydroFeedReservoir> HydroFactory::addFeedWaterReservoir(float maxVolume, bool beginFilled, DateTime lastChangeTime, DateTime lastPruningTime)
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ReservoirType_FeedWater));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ReservoirType_FeedWater));
     HYDRO_SOFT_ASSERT(maxVolume > FLT_EPSILON, SFP(HStr_Err_InvalidParameter));
-    HYDRO_SOFT_ASSERT(lastChangeDate.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(lastChangeTime.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
-    if (maxVolume > FLT_EPSILON && lastChangeDate.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
+    if (maxVolume > FLT_EPSILON && lastChangeTime.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
         auto reservoir = SharedPtr<HydroFeedReservoir>(new HydroFeedReservoir(
             positionIndex,
             maxVolume,
-            lastChangeDate,
-            lastPruningDate
+            lastChangeTime,
+            lastPruningTime
         ));
-        if (getHydroInstance()->registerObject(reservoir)) {
+        if (getController()->registerObject(reservoir)) {
             if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume() * HYDRO_FEEDRES_FRACTION_FILLED); }
             return reservoir;
         }
@@ -521,7 +519,7 @@ SharedPtr<HydroFeedReservoir> HydroFactory::addFeedWaterReservoir(float maxVolum
 
 SharedPtr<HydroInfiniteReservoir> HydroFactory::addDrainagePipe()
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ReservoirType_DrainageWater));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ReservoirType_DrainageWater));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
     if (isValidIndex(positionIndex)) {
@@ -530,7 +528,7 @@ SharedPtr<HydroInfiniteReservoir> HydroFactory::addDrainagePipe()
             positionIndex,
             false
         ));
-        if (getHydroInstance()->registerObject(reservoir)) { return reservoir; }
+        if (getController()->registerObject(reservoir)) { return reservoir; }
     }
 
     return nullptr;
@@ -538,7 +536,7 @@ SharedPtr<HydroInfiniteReservoir> HydroFactory::addDrainagePipe()
 
 SharedPtr<HydroInfiniteReservoir> HydroFactory::addFreshWaterMain()
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(Hydro_ReservoirType_FreshWater));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ReservoirType_FreshWater));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
     if (isValidIndex(positionIndex)) {
@@ -547,7 +545,7 @@ SharedPtr<HydroInfiniteReservoir> HydroFactory::addFreshWaterMain()
             positionIndex,
             true
         ));
-        if (getHydroInstance()->registerObject(reservoir)) { return reservoir; }
+        if (getController()->registerObject(reservoir)) { return reservoir; }
     }
 
     return nullptr;
@@ -555,7 +553,7 @@ SharedPtr<HydroInfiniteReservoir> HydroFactory::addFreshWaterMain()
 
 SharedPtr<HydroSimpleRail> HydroFactory::addSimplePowerRail(Hydro_RailType railType, int maxActiveAtOnce)
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(railType));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(railType));
     HYDRO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydro_RailType_Count, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(maxActiveAtOnce > 0, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
@@ -566,7 +564,7 @@ SharedPtr<HydroSimpleRail> HydroFactory::addSimplePowerRail(Hydro_RailType railT
             positionIndex,
             maxActiveAtOnce
         ));
-        if (getHydroInstance()->registerObject(rail)) { return rail; }
+        if (getController()->registerObject(rail)) { return rail; }
     }
 
     return nullptr;
@@ -574,7 +572,7 @@ SharedPtr<HydroSimpleRail> HydroFactory::addSimplePowerRail(Hydro_RailType railT
 
 SharedPtr<HydroRegulatedRail> HydroFactory::addRegulatedPowerRail(Hydro_RailType railType, float maxPower)
 {
-    hposi_t positionIndex = getHydroInstance()->firstPositionOpen(HydroIdentity(railType));
+    hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(railType));
     HYDRO_SOFT_ASSERT((int)railType >= 0 && railType <= Hydro_RailType_Count, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(maxPower > FLT_EPSILON, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
@@ -585,7 +583,7 @@ SharedPtr<HydroRegulatedRail> HydroFactory::addRegulatedPowerRail(Hydro_RailType
             positionIndex,
             maxPower
         ));
-        if (getHydroInstance()->registerObject(rail)) { return rail; }
+        if (getController()->registerObject(rail)) { return rail; }
     }
 
     return nullptr;

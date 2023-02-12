@@ -31,7 +31,7 @@ void HydroScheduler::update()
         #endif
 
         {   time_t time = unixNow();
-            DateTime currTime = getCurrentTime(time);
+            DateTime currTime = localTime(time);
             bool daytimeMode = _dailyTwilight.isDaytime(time);
 
             if (_inDaytimeMode != daytimeMode) {
@@ -42,8 +42,8 @@ void HydroScheduler::update()
 
             if (_lastDayNum != currTime.day()) {
                 // only log uptime upon actual day change and if uptime has been at least 1d
-                if (getLoggerInstance()->getSystemUptime() >= SECS_PER_DAY) {
-                    getLoggerInstance()->logSystemUptime();
+                if (getLogger()->getSystemUptime() >= SECS_PER_DAY) {
+                    getLogger()->logSystemUptime();
                 }
                 broadcastDayChange();
             }
@@ -446,9 +446,9 @@ TimeSpan HydroScheduler::getAirReportInterval() const
 void HydroScheduler::updateDayTracking()
 {
     time_t time = unixNow();
-    _lastDayNum = getCurrentTime(time).day();
+    _lastDayNum = localTime(time).day();
 
-    Location loc = getHydroInstance()->getSystemLocation();
+    Location loc = getController()->getSystemLocation();
     if (loc.hasPosition()) {
         double transit;
         calcSunriseSunset((unsigned long)time, loc.latitude, loc.longitude, transit, _dailyTwilight.sunrise, _dailyTwilight.sunset,
@@ -537,28 +537,28 @@ void HydroScheduler::broadcastDayChange()
     #ifdef HYDRO_USE_MULTITASKING
         // these can take a while to complete
         taskManager.scheduleOnce(0, []{
-            if (getHydroInstance()) {
-                getHydroInstance()->notifyDayChanged();
+            if (getController()) {
+                getController()->notifyDayChanged();
             }
             yield();
-            if (getLoggerInstance()) {
-                getLoggerInstance()->notifyDayChanged();
+            if (getLogger()) {
+                getLogger()->notifyDayChanged();
             }
             yield();
-            if (getPublisherInstance()) {
-                getPublisherInstance()->notifyDayChanged();
+            if (getPublisher()) {
+                getPublisher()->notifyDayChanged();
             }
             yield();
         });
     #else
-        if (getHydroInstance()) {
-            getHydroInstance()->notifyDayChanged();
+        if (getController()) {
+            getController()->notifyDayChanged();
         }
-        if (getLoggerInstance()) {
-            getLoggerInstance()->notifyDayChanged();
+        if (getLogger()) {
+            getLogger()->notifyDayChanged();
         }
-        if (getPublisherInstance()) {
-            getPublisherInstance()->notifyDayChanged();
+        if (getPublisher()) {
+            getPublisher()->notifyDayChanged();
         }
     #endif
 }
@@ -636,10 +636,10 @@ void HydroFeeding::recalcFeeding()
                 totalWeights += weight;
 
                 float feedRate = ((cropsLibData->tdsRange[0] + cropsLibData->tdsRange[1]) * 0.5);
-                if (!getSchedulerInstance()->inDaytimeMode()) {
+                if (!getScheduler()->inDaytimeMode()) {
                     feedRate *= cropsLibData->nightlyFeedRate;
                 }
-                feedRate *= getSchedulerInstance()->getBaseFeedMultiplier();
+                feedRate *= getScheduler()->getBaseFeedMultiplier();
 
                 totalSetpoints[0] += feedRate * weight;
                 totalSetpoints[1] += ((cropsLibData->phRange[0] + cropsLibData->phRange[1]) * 0.5) * weight;
@@ -687,12 +687,12 @@ void HydroFeeding::setupStaging()
             if (!phBalancer) {
                 phBalancer = SharedPtr<HydroTimedDosingBalancer>(new HydroTimedDosingBalancer(feedRes->getWaterPHSensor(), phSetpoint, HYDRO_RANGE_PH_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits()));
                 HYDRO_SOFT_ASSERT(phBalancer, SFP(HStr_Err_AllocationFailure));
-                getSchedulerInstance()->setupWaterPHBalancer(feedRes.get(), phBalancer);
+                getScheduler()->setupWaterPHBalancer(feedRes.get(), phBalancer);
                 feedRes->setWaterPHBalancer(phBalancer);
             }
             if (phBalancer) {
                 phBalancer->setTargetSetpoint(phSetpoint);
-                phBalancer->setTargetUnits(Hydro_UnitsType_Alkalinity_pH_0_14);
+                phBalancer->setMeasureUnits(Hydro_UnitsType_Alkalinity_pH_0_14);
                 phBalancer->setEnabled(true);
             }
         }
@@ -701,12 +701,12 @@ void HydroFeeding::setupStaging()
             if (!tdsBalancer) {
                 tdsBalancer = SharedPtr<HydroTimedDosingBalancer>(new HydroTimedDosingBalancer(feedRes->getWaterTDSSensor(), tdsSetpoint, HYDRO_RANGE_EC_HALF, feedRes->getMaxVolume(), feedRes->getVolumeUnits()));
                 HYDRO_SOFT_ASSERT(tdsBalancer, SFP(HStr_Err_AllocationFailure));
-                getSchedulerInstance()->setupWaterTDSBalancer(feedRes.get(), tdsBalancer);
+                getScheduler()->setupWaterTDSBalancer(feedRes.get(), tdsBalancer);
                 feedRes->setWaterTDSBalancer(tdsBalancer);
             }
             if (tdsBalancer) {
                 tdsBalancer->setTargetSetpoint(tdsSetpoint);
-                tdsBalancer->setTargetUnits(Hydro_UnitsType_Concentration_EC);
+                tdsBalancer->setMeasureUnits(Hydro_UnitsType_Concentration_EC);
                 tdsBalancer->setEnabled(true);
             }
         }
@@ -722,12 +722,12 @@ void HydroFeeding::setupStaging()
         if (!waterTempBalancer) {
             waterTempBalancer = SharedPtr<HydroLinearEdgeBalancer>(new HydroLinearEdgeBalancer(feedRes->getWaterTemperatureSensor(), waterTempSetpoint, HYDRO_RANGE_TEMP_HALF, -HYDRO_RANGE_TEMP_HALF * 0.25f, HYDRO_RANGE_TEMP_HALF * 0.5f));
             HYDRO_SOFT_ASSERT(waterTempBalancer, SFP(HStr_Err_AllocationFailure));
-            getSchedulerInstance()->setupWaterTemperatureBalancer(feedRes.get(), waterTempBalancer);
+            getScheduler()->setupWaterTemperatureBalancer(feedRes.get(), waterTempBalancer);
             feedRes->setWaterTemperatureBalancer(waterTempBalancer);
         }
         if (waterTempBalancer) {
             waterTempBalancer->setTargetSetpoint(waterTempSetpoint);
-            waterTempBalancer->setTargetUnits(Hydro_UnitsType_Temperature_Celsius);
+            waterTempBalancer->setMeasureUnits(Hydro_UnitsType_Temperature_Celsius);
             waterTempBalancer->setEnabled(true);
         }
     } else {
@@ -740,12 +740,12 @@ void HydroFeeding::setupStaging()
         if (!airTempBalancer) {
             airTempBalancer = SharedPtr<HydroLinearEdgeBalancer>(new HydroLinearEdgeBalancer(feedRes->getAirTemperatureSensor(), airTempSetpoint, HYDRO_RANGE_TEMP_HALF, -HYDRO_RANGE_TEMP_HALF * 0.25f, HYDRO_RANGE_TEMP_HALF * 0.5f));
             HYDRO_SOFT_ASSERT(airTempBalancer, SFP(HStr_Err_AllocationFailure));
-            getSchedulerInstance()->setupAirTemperatureBalancer(feedRes.get(), airTempBalancer);
+            getScheduler()->setupAirTemperatureBalancer(feedRes.get(), airTempBalancer);
             feedRes->setAirTemperatureBalancer(airTempBalancer);
         }
         if (airTempBalancer) {
             airTempBalancer->setTargetSetpoint(airTempSetpoint);
-            airTempBalancer->setTargetUnits(Hydro_UnitsType_Temperature_Celsius);
+            airTempBalancer->setMeasureUnits(Hydro_UnitsType_Temperature_Celsius);
             airTempBalancer->setEnabled(true);
         }
     } else {
@@ -758,12 +758,12 @@ void HydroFeeding::setupStaging()
         if (!co2Balancer) {
             co2Balancer = SharedPtr<HydroLinearEdgeBalancer>(new HydroLinearEdgeBalancer(feedRes->getAirCO2Sensor(), co2Setpoint, HYDRO_RANGE_CO2_HALF, -HYDRO_RANGE_CO2_HALF * 0.25f, HYDRO_RANGE_CO2_HALF * 0.5f));
             HYDRO_SOFT_ASSERT(co2Balancer, SFP(HStr_Err_AllocationFailure));
-            getSchedulerInstance()->setupAirCO2Balancer(feedRes.get(), co2Balancer);
+            getScheduler()->setupAirCO2Balancer(feedRes.get(), co2Balancer);
             feedRes->setAirCO2Balancer(co2Balancer);
         }
         if (co2Balancer) {
             co2Balancer->setTargetSetpoint(co2Setpoint);
-            co2Balancer->setTargetUnits(Hydro_UnitsType_Concentration_PPM);
+            co2Balancer->setMeasureUnits(Hydro_UnitsType_Concentration_PPM);
             co2Balancer->setEnabled(true);
         }
     } else {
@@ -773,14 +773,14 @@ void HydroFeeding::setupStaging()
 
     switch (stage) {
         case Init: {
-            auto maxFeedingsDay = getSchedulerInstance()->getTotalFeedingsDay();
+            auto maxFeedingsDay = getScheduler()->getTotalFeedingsDay();
             auto feedingsToday = feedRes->getFeedingsToday();
 
             if (!maxFeedingsDay) {
                 canFeedAfter = (time_t)0;
             } else if (feedingsToday < maxFeedingsDay) {
                 // this will force feedings to be spread out during the entire day
-                canFeedAfter = getCurrentDayStartTime() + (time_t)(((float)SECS_PER_DAY / (maxFeedingsDay + 1)) * feedingsToday);
+                canFeedAfter = unixDayStart() + (time_t)(((float)SECS_PER_DAY / (maxFeedingsDay + 1)) * feedingsToday);
             } else {
                 canFeedAfter = (time_t)UINT32_MAX; // no more feedings today
             }
@@ -822,7 +822,7 @@ void HydroFeeding::setupStaging()
                 linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // feed water pump
             }
 
-            if (!newActuatorReqs.size() && getHydroInstance()->getSystemMode() == Hydro_SystemMode_DrainToWaste) { // prefers feed water pumps, else direct to waste is feed
+            if (!newActuatorReqs.size() && getController()->getSystemMode() == Hydro_SystemMode_DrainToWaste) { // prefers feed water pumps, else direct to waste is feed
                 auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
 
                 linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // DTW feed water pump
@@ -871,10 +871,10 @@ void HydroFeeding::update()
         Serial.print(F("Feeding::update stage: ")); Serial.println((_stageFU1 = (int8_t)stage)); flushYield(); } }
     #endif
 
-    if ((!lastAirReport || unixNow() >= lastAirReport + getSchedulerInstance()->getAirReportInterval().totalseconds()) &&
-        (getSchedulerInstance()->getAirReportInterval().totalseconds() > 0) && // 0 disables
+    if ((!lastAirReport || unixNow() >= lastAirReport + getScheduler()->getAirReportInterval().totalseconds()) &&
+        (getScheduler()->getAirReportInterval().totalseconds() > 0) && // 0 disables
         (feedRes->getAirTemperatureSensor() || feedRes->getAirCO2Sensor())) {
-        getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_AirReport));
+        getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_AirReport));
         logFeeding(HydroFeedingLogType_AirSetpoints);
         logFeeding(HydroFeedingLogType_AirMeasures);
         lastAirReport = unixNow();
@@ -898,7 +898,7 @@ void HydroFeeding::update()
                     setupStaging();
 
                     if (actuatorReqs.size()) {
-                        getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_PreFeedTopOff), SFP(HStr_Log_HasBegan));
+                        getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_PreFeedTopOff), SFP(HStr_Log_HasBegan));
                     }
                 }
             }
@@ -910,14 +910,14 @@ void HydroFeeding::update()
                 canFeedAfter = 0; // will be used to track how long balancers stay balanced
                 setupStaging();
 
-                getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_PreFeedBalancing), SFP(HStr_Log_HasBegan));
+                getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_PreFeedBalancing), SFP(HStr_Log_HasBegan));
                 if (actuatorReqs.size()) {
-                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Aerator_Duration), String(getSchedulerInstance()->getPreFeedAeratorMins()), String('m'));
+                    getLogger()->logMessage(SFP(HStr_Log_Field_Aerator_Duration), String(getScheduler()->getPreFeedAeratorMins()), String('m'));
                 }
                 if (feedRes->getWaterPHBalancer() || feedRes->getWaterTDSBalancer()) {
                     auto balancer = static_pointer_cast<HydroTimedDosingBalancer>(feedRes->getWaterPHBalancer() ? feedRes->getWaterPHBalancer() : feedRes->getWaterTDSBalancer());
                     if (balancer) {
-                        getLoggerInstance()->logMessage(SFP(HStr_Log_Field_MixTime_Duration), timeSpanToString(TimeSpan(balancer->getMixTime())));
+                        getLogger()->logMessage(SFP(HStr_Log_Field_MixTime_Duration), timeSpanToString(TimeSpan(balancer->getMixTime())));
                     }
                 }
                 logFeeding(HydroFeedingLogType_WaterSetpoints);
@@ -926,7 +926,7 @@ void HydroFeeding::update()
         } break;
 
         case PreFeed: {
-            if (!actuatorReqs.size() || unixNow() >= stageStart + (getSchedulerInstance()->getPreFeedAeratorMins() * SECS_PER_MIN)) {
+            if (!actuatorReqs.size() || unixNow() >= stageStart + (getScheduler()->getPreFeedAeratorMins() * SECS_PER_MIN)) {
                 auto phBalancer = feedRes->getWaterPHBalancer();
                 auto tdsBalancer = feedRes->getWaterTDSBalancer();
                 auto waterTempBalancer = feedRes->getWaterTemperatureBalancer();
@@ -961,7 +961,7 @@ void HydroFeeding::update()
 
             if (!cropsCount || cropsFed / (float)cropsCount >= HYDRO_SCH_FEED_FRACTION - FLT_EPSILON ||
                 feedRes->isEmpty()) {
-                stage = (getHydroInstance()->getSystemMode() == Hydro_SystemMode_DrainToWaste ? Drain : Done);
+                stage = (getController()->getSystemMode() == Hydro_SystemMode_DrainToWaste ? Drain : Done);
                 stageStart = unixNow();
                 setupStaging();
 
@@ -970,7 +970,7 @@ void HydroFeeding::update()
         } break;
 
         case Drain: {
-            if (getHydroInstance()->getSystemMode() != Hydro_SystemMode_DrainToWaste ||
+            if (getController()->getSystemMode() != Hydro_SystemMode_DrainToWaste ||
                 feedRes->isEmpty()) {
                 stage = Done; stageStart = unixNow();
                 setupStaging();
@@ -1003,15 +1003,15 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
     switch (logType) {
         case HydroFeedingLogType_WaterSetpoints:
             {   auto ph = HydroSingleMeasurement(phSetpoint, Hydro_UnitsType_Alkalinity_pH_0_14);
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_pH_Setpoint), measurementToString(ph));
+                getLogger()->logMessage(SFP(HStr_Log_Field_pH_Setpoint), measurementToString(ph));
             }
             {   auto tds = HydroSingleMeasurement(tdsSetpoint, Hydro_UnitsType_Concentration_TDS);
-                convertUnits(&tds, feedRes->getTDSUnits());
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
+                convertUnits(&tds, feedRes->getConcentrateUnits());
+                getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
             }
             {   auto temp = HydroSingleMeasurement(waterTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
             }
             break;
 
@@ -1026,27 +1026,27 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
             #endif
              if (feedRes->getWaterPHSensor()) {
                 auto ph = feedRes->getWaterPH().getMeasurement(true);
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_pH_Measured), measurementToString(ph));
+                getLogger()->logMessage(SFP(HStr_Log_Field_pH_Measured), measurementToString(ph));
             }
             if (feedRes->getWaterTDSSensor()) {
                 auto tds = feedRes->getWaterTDS().getMeasurement(true);
-                convertUnits(&tds, feedRes->getTDSUnits());
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_TDS_Measured), measurementToString(tds, 1));
+                convertUnits(&tds, feedRes->getConcentrateUnits());
+                getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Measured), measurementToString(tds, 1));
             }
             if (feedRes->getWaterTemperatureSensor()) {
                 auto temp = feedRes->getWaterTemperature().getMeasurement(true);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
             break;
 
         case HydroFeedingLogType_AirSetpoints:
             {   auto temp = HydroSingleMeasurement(airTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
             }
             {   auto co2 = HydroSingleMeasurement(co2Setpoint, Hydro_UnitsType_Concentration_PPM);
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_CO2_Setpoint), measurementToString(co2));
+                getLogger()->logMessage(SFP(HStr_Log_Field_CO2_Setpoint), measurementToString(co2));
             }
             break;
 
@@ -1061,11 +1061,11 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
             if (feedRes->getAirTemperatureSensor()) {
                 auto temp = feedRes->getAirTemperature().getMeasurement(true);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
             if (feedRes->getAirCO2Sensor()) {
                 auto co2 = feedRes->getAirCO2().getMeasurement(true);
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_CO2_Measured), measurementToString(co2));
+                getLogger()->logMessage(SFP(HStr_Log_Field_CO2_Measured), measurementToString(co2));
             }
             break;
     }
@@ -1073,7 +1073,7 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
 
 void HydroFeeding::broadcastFeeding(HydroFeedingBroadcastType broadcastType)
 {
-    getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_FeedingSequence),
+    getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_FeedingSequence),
                                     SFP(broadcastType == HydroFeedingBroadcastType_Began ? HStr_Log_HasBegan : HStr_Log_HasEnded));
     logFeeding(HydroFeedingLogType_WaterMeasures);
 
@@ -1138,10 +1138,10 @@ void HydroLighting::recalcLighting()
 
         time_t daySprayerSecs = 0;
         if (sprayingNeeded && linksCountActuatorsByReservoirAndType(feedRes->getLinkages(), feedRes.get(), Hydro_ActuatorType_WaterSprayer)) {
-            daySprayerSecs = getSchedulerInstance()->getPreLightSprayMins() * SECS_PER_MIN;
+            daySprayerSecs = getScheduler()->getPreLightSprayMins() * SECS_PER_MIN;
         }
 
-        time_t dayStart = getCurrentDayStartTime();
+        time_t dayStart = localDayStart().unixtime();
         lightStart = dayStart + ((SECS_PER_DAY - dayLightSecs) >> 1);
         sprayStart = max(dayStart, lightStart - daySprayerSecs);
         lightStart = sprayStart + daySprayerSecs;
@@ -1211,30 +1211,30 @@ void HydroLighting::update()
 
     switch (stage) {
         case Init: {
-            time_t currTime = getCurrentTime().unixtime();
+            time_t currTime = localNow().unixtime();
 
             if (currTime >= sprayStart && currTime < lightEnd) {
                 stage = Spray; stageStart = unixNow();
                 setupStaging();
 
                 if (lightStart > sprayStart) {
-                    getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_PreLightSpraying), SFP(HStr_Log_HasBegan));
-                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Sprayer_Duration), String(getSchedulerInstance()->getPreLightSprayMins()), String('m'));
-                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)sprayStart).timestamp(DateTime::TIMESTAMP_TIME));
-                    getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
+                    getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_PreLightSpraying), SFP(HStr_Log_HasBegan));
+                    getLogger()->logMessage(SFP(HStr_Log_Field_Sprayer_Duration), String(getScheduler()->getPreLightSprayMins()), String('m'));
+                    getLogger()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)sprayStart).timestamp(DateTime::TIMESTAMP_TIME));
+                    getLogger()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
                 }
             }
         } break;
 
         case Spray: {
-            if (getCurrentTime().unixtime() >= lightStart) {
+            if (localNow().unixtime() >= lightStart) {
                 stage = Light; stageStart = unixNow();
                 setupStaging();
 
-                getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_LightingSequence), SFP(HStr_Log_HasBegan));
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Light_Duration), roundToString(lightHours), String('h'));
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)lightEnd).timestamp(DateTime::TIMESTAMP_TIME));
+                getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_LightingSequence), SFP(HStr_Log_HasBegan));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Light_Duration), roundToString(lightHours), String('h'));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)lightEnd).timestamp(DateTime::TIMESTAMP_TIME));
             } else {
                 stage = Done; stageStart = unixNow();
                 setupStaging();
@@ -1242,13 +1242,13 @@ void HydroLighting::update()
         } break;
 
         case Light: {
-            if (getCurrentTime().unixtime() >= lightEnd) {
+            if (localNow().unixtime() >= lightEnd) {
                 TimeSpan elapsedTime(unixNow() - stageStart);
                 stage = Done; stageStart = unixNow();
                 setupStaging();
 
-                getLoggerInstance()->logProcess(feedRes.get(), SFP(HStr_Log_LightingSequence), SFP(HStr_Log_HasEnded));
-                getLoggerInstance()->logMessage(SFP(HStr_Log_Field_Time_Measured), timeSpanToString(elapsedTime));
+                getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_LightingSequence), SFP(HStr_Log_HasEnded));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Measured), timeSpanToString(elapsedTime));
             }
         } break;
 

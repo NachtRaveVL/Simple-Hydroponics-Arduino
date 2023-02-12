@@ -31,8 +31,8 @@ bool HydroAdditives::setCustomAdditiveData(const HydroCustomAdditiveData *custom
         }
 
         if (retVal) {
-            if (getSchedulerInstance()) {
-                getSchedulerInstance()->setNeedsScheduling();
+            if (getScheduler()) {
+                getScheduler()->setNeedsScheduling();
             }
             return true;
         }
@@ -58,8 +58,8 @@ bool HydroAdditives::dropCustomAdditiveData(const HydroCustomAdditiveData *custo
         }
 
         if (retVal) {
-            if (getSchedulerInstance()) {
-                getSchedulerInstance()->setNeedsScheduling();
+            if (getScheduler()) {
+                getScheduler()->setNeedsScheduling();
             }
             return true;
         }

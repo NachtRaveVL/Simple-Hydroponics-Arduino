@@ -42,13 +42,13 @@ inline String getStringsFilename()
 
 String stringFromPGM(Hydro_String strNum)
 {    
-    static Hydro_String _lookupStrNum = Hydro_Strings_Count; // Simple LRU cache reduces a lot of lookup access
+    static Hydro_String _lookupStrNum = HStr_Count; // Simple LRU cache reduces a lot of lookup access
     static String _lookupCachedRes;
     if (strNum == _lookupStrNum && _lookupCachedRes.length()) { return _lookupCachedRes; }
     else { _lookupStrNum = strNum; } // _lookupCachedRes set below
 
     if (_strDataAddress != (uint16_t)-1) {
-        auto eeprom = getHydroInstance()->getEEPROM();
+        auto eeprom = getController()->getEEPROM();
 
         if (eeprom) {
             uint16_t lookupOffset = 0;
@@ -81,7 +81,7 @@ String stringFromPGM(Hydro_String strNum)
         #if HYDRO_SYS_LEAVE_FILES_OPEN
             static
         #endif
-        auto sd = getHydroInstance()->getSDCard();
+        auto sd = getController()->getSDCard();
 
         if (sd) {
             String retVal;
@@ -116,7 +116,7 @@ String stringFromPGM(Hydro_String strNum)
             }
 
             #if !HYDRO_SYS_LEAVE_FILES_OPEN
-                getHydroInstance()->endSDCard(sd);
+                getController()->endSDCard(sd);
             #endif
             if (retVal.length()) {
                 return (_lookupCachedRes = retVal);
@@ -477,13 +477,17 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_ComputeHeatIndex[] PROGMEM = {"computeHeatIndex"};
             return flashStr_Key_ComputeHeatIndex;
         } break;
-        case HStr_Key_ContinousFlowRate: {
-            static const char flashStr_Key_ContinousFlowRate[] PROGMEM = {"contFlowRate"};
-            return flashStr_Key_ContinousFlowRate;
+        case HStr_Key_Concentration: {
+            static const char flashStr_Key_Concentration[] PROGMEM = {"Concentration"};
+            return flashStr_Key_Concentration;
         } break;
-        case HStr_Key_ContinousPowerUsage: {
-            static const char flashStr_Key_ContinousPowerUsage[] PROGMEM = {"contPowerUsage"};
-            return flashStr_Key_ContinousPowerUsage;
+        case HStr_Key_ContinuousFlowRate: {
+            static const char flashStr_Key_ContinuousFlowRate[] PROGMEM = {"contFlowRate"};
+            return flashStr_Key_ContinuousFlowRate;
+        } break;
+        case HStr_Key_ContinuousPowerUsage: {
+            static const char flashStr_Key_ContinuousPowerUsage[] PROGMEM = {"contPowerUsage"};
+            return flashStr_Key_ContinuousPowerUsage;
         } break;
         case HStr_Key_CO2Levels: {
             static const char flashStr_Key_CO2Levels[] PROGMEM = {"co2Levels"};
@@ -581,17 +585,17 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_Large[] PROGMEM = {"large"};
             return flashStr_Key_Large;
         } break;
-        case HStr_Key_LastChangeDate: {
-            static const char flashStr_Key_LastChangeDate[] PROGMEM = {"lastChangeDate"};
-            return flashStr_Key_LastChangeDate;
+        case HStr_Key_LastChangeTime: {
+            static const char flashStr_Key_LastChangeTime[] PROGMEM = {"lastChangeTime"};
+            return flashStr_Key_LastChangeTime;
         } break;
-        case HStr_Key_LastFeedingDate: {
-            static const char flashStr_Key_LastFeedingDate[] PROGMEM = {"lastFeedingDate"};
-            return flashStr_Key_LastFeedingDate;
+        case HStr_Key_LastFeedingTime: {
+            static const char flashStr_Key_LastFeedingTime[] PROGMEM = {"lastFeedingTime"};
+            return flashStr_Key_LastFeedingTime;
         } break;
-        case HStr_Key_LastPruningDate: {
-            static const char flashStr_Key_LastPruningDate[] PROGMEM = {"lastPruningDate"};
-            return flashStr_Key_LastPruningDate;
+        case HStr_Key_LastPruningTime: {
+            static const char flashStr_Key_LastPruningTime[] PROGMEM = {"lastPruningTime"};
+            return flashStr_Key_LastPruningTime;
         } break;
         case HStr_Key_Latitude: {
             static const char flashStr_Key_Latitude[] PROGMEM = {"latitude"};
@@ -649,13 +653,13 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_MeasureMode[] PROGMEM = {"measureMode"};
             return flashStr_Key_MeasureMode;
         } break;
-        case HStr_Key_MeasurementRow: {
-            static const char flashStr_Key_MeasurementRow[] PROGMEM = {"measurementRow"};
-            return flashStr_Key_MeasurementRow;
+        case HStr_Key_MeasureRow: {
+            static const char flashStr_Key_MeasureRow[] PROGMEM = {"measureRow"};
+            return flashStr_Key_MeasureRow;
         } break;
-        case HStr_Key_MeasurementUnits: {
-            static const char flashStr_Key_MeasurementUnits[] PROGMEM = {"measurementUnits"};
-            return flashStr_Key_MeasurementUnits;
+        case HStr_Key_MeasureUnits: {
+            static const char flashStr_Key_MeasureUnits[] PROGMEM = {"measureUnits"};
+            return flashStr_Key_MeasureUnits;
         } break;
         case HStr_Key_Mode: {
             static const char flashStr_Key_Mode[] PROGMEM = {"mode"};
@@ -665,9 +669,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_MoistureSensor[] PROGMEM = {"moistureSensor"};
             return flashStr_Key_MoistureSensor;
         } break;
-        case HStr_Key_MoistureUnits: {
-            static const char flashStr_Key_MoistureUnits[] PROGMEM = {"moistureUnits"};
-            return flashStr_Key_MoistureUnits;
+        case HStr_Key_ConcentrateUnits: {
+            static const char flashStr_Key_ConcentrateUnits[] PROGMEM = {"concentrateUnits"};
+            return flashStr_Key_ConcentrateUnits;
         } break;
         case HStr_Key_Multiplier: {
             static const char flashStr_Key_Multiplier[] PROGMEM = {"multiplier"};
@@ -785,9 +789,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_SignalPin[] PROGMEM = {"signalPin"};
             return flashStr_Key_SignalPin;
         } break;
-        case HStr_Key_SowDate: {
-            static const char flashStr_Key_SowDate[] PROGMEM = {"sowDate"};
-            return flashStr_Key_SowDate;
+        case HStr_Key_SowTime: {
+            static const char flashStr_Key_SowTime[] PROGMEM = {"sowTime"};
+            return flashStr_Key_SowTime;
         } break;
         case HStr_Key_Spraying: {
             static const char flashStr_Key_Spraying[] PROGMEM = {"spraying"};
@@ -821,13 +825,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_TDSSensor[] PROGMEM = {"tdsSensor"};
             return flashStr_Key_TDSSensor;
         } break;
-        case HStr_Key_TDSUnits: {
-            static const char flashStr_Key_TDSUnits[] PROGMEM = {"tdsUnits"};
-            return flashStr_Key_TDSUnits;
-        } break;
-        case HStr_Key_TempUnits: {
-            static const char flashStr_Key_TempUnits[] PROGMEM = {"tempUnits"};
-            return flashStr_Key_TempUnits;
+        case HStr_Key_TemperatureUnits: {
+            static const char flashStr_Key_TemperatureUnits[] PROGMEM = {"temperatureUnits"};
+            return flashStr_Key_TemperatureUnits;
         } break;
         case HStr_Key_TemperatureSensor: {
             static const char flashStr_Key_TemperatureSensor[] PROGMEM = {"tempSensor"};
@@ -852,10 +852,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_ToleranceLow: {
             static const char flashStr_Key_ToleranceLow[] PROGMEM = {"toleranceLow"};
             return flashStr_Key_ToleranceLow;
-        } break;
-        case HStr_Key_ToleranceUnits: {
-            static const char flashStr_Key_ToleranceUnits[] PROGMEM = {"toleranceUnits"};
-            return flashStr_Key_ToleranceUnits;
         } break;
         case HStr_Key_TotalFeedingsDay: {
             static const char flashStr_Key_TotalFeedingsDay[] PROGMEM = {"totalFeedingsDay"};
@@ -986,20 +982,12 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_AirConcentration[] PROGMEM = {"AirConcentration"};
             return flashStr_Enum_AirConcentration;
         } break;
-        case HStr_Enum_AirHeatIndex: {
-            static const char flashStr_Enum_AirHeatIndex[] PROGMEM = {"AirHeatIndex"};
-            return flashStr_Enum_AirHeatIndex;
-        } break;
-        case HStr_Enum_AirHumidity: {
-            static const char flashStr_Enum_AirHumidity[] PROGMEM = {"AirHumidity"};
-            return flashStr_Enum_AirHumidity;
-        } break;
         case HStr_Enum_AirTemperature: {
             static const char flashStr_Enum_AirTemperature[] PROGMEM = {"AirTemperature"};
             return flashStr_Enum_AirTemperature;
         } break;
         case HStr_Enum_AirTemperatureHumidity: {
-            static const char flashStr_Enum_AirTemperatureHumidity[] PROGMEM = {"AirTempHumid"};
+            static const char flashStr_Enum_AirTemperatureHumidity[] PROGMEM = {"AirTempHumidity"};
             return flashStr_Enum_AirTemperatureHumidity;
         } break;
         case HStr_Enum_Alkalinity: {
@@ -1286,10 +1274,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Dill[] PROGMEM = {"Dill"};
             return flashStr_Enum_Dill;
         } break;
-        case HStr_Enum_DissolvedSolids: {
-            static const char flashStr_Enum_DissolvedSolids[] PROGMEM = {"DissolvedSolids"};
-            return flashStr_Enum_DissolvedSolids;
-        } break;
         case HStr_Enum_Distance: {
             static const char flashStr_Enum_Distance[] PROGMEM = {"Distance"};
             return flashStr_Enum_Distance;
@@ -1377,6 +1361,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_Lettuce: {
             static const char flashStr_Enum_Lettuce[] PROGMEM = {"Lettuce"};
             return flashStr_Enum_Lettuce;
+        } break;
+        case HStr_Enum_LiqConcentration: {
+            static const char flashStr_Enum_LiqConcentration[] PROGMEM = {"LiqConcentration"};
+            return flashStr_Enum_LiqConcentration;
         } break;
         case HStr_Enum_LiqDilution: {
             static const char flashStr_Enum_LiqDilution[] PROGMEM = {"LiqDilution"};
@@ -1469,6 +1457,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_PeppersHot: {
             static const char flashStr_Enum_PeppersHot[] PROGMEM = {"PeppersHot"};
             return flashStr_Enum_PeppersHot;
+        } break;
+        case HStr_Enum_Percentile: {
+            static const char flashStr_Enum_Percentile[] PROGMEM = {"Percentile"};
+            return flashStr_Enum_Percentile;
         } break;
         case HStr_Enum_PeristalticPump: {
             static const char flashStr_Enum_PeristalticPump[] PROGMEM = {"PeristalticPump"};
@@ -1643,10 +1635,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             return flashStr_Enum_Zucchini;
         } break;
 
-        case HStr_Unit_Amperage: {
-            static const char flashStr_Unit_Amperage[] PROGMEM = {"A"};
-            return flashStr_Unit_Amperage;
-        } break;
         case HStr_Unit_Celsius: {
             static const char flashStr_Unit_Celsius[] PROGMEM = {"°C"};
             return flashStr_Unit_Celsius;
@@ -1671,33 +1659,13 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Unit_Gallons[] PROGMEM = {"gal"};
             return flashStr_Unit_Gallons;
         } break;
-        case HStr_Unit_GallonsPerMin: {
-            static const char flashStr_Unit_GallonsPerMin[] PROGMEM = {"gal/min"};
-            return flashStr_Unit_GallonsPerMin;
-        } break;
-        case HStr_Unit_JoulesPerSecond: {
-            static const char flashStr_Unit_JoulesPerSecond[] PROGMEM = {"J/sec"};
-            return flashStr_Unit_JoulesPerSecond;
-        } break;
         case HStr_Unit_Kelvin: {
             static const char flashStr_Unit_Kelvin[] PROGMEM = {"°K"};
             return flashStr_Unit_Kelvin;
         } break;
-        case HStr_Unit_Kilogram: {
-            static const char flashStr_Unit_Kilogram[] PROGMEM = {"Kg"};
-            return flashStr_Unit_Kilogram;
-        } break;
-        case HStr_Unit_Liters: {
-            static const char flashStr_Unit_Liters[] PROGMEM = {"L"};
-            return flashStr_Unit_Liters;
-        } break;
-        case HStr_Unit_LitersPerMin: {
-            static const char flashStr_Unit_LitersPerMin[] PROGMEM = {"L/min"};
-            return flashStr_Unit_LitersPerMin;
-        } break;
-        case HStr_Unit_Meters: {
-            static const char flashStr_Unit_Meters[] PROGMEM = {"m"};
-            return flashStr_Unit_Meters;
+        case HStr_Unit_Kilograms: {
+            static const char flashStr_Unit_Kilograms[] PROGMEM = {"Kg"};
+            return flashStr_Unit_Kilograms;
         } break;
         case HStr_Unit_MilliLiterPerGallon: {
             static const char flashStr_Unit_MilliLiterPerGallon[] PROGMEM = {"mL/gal"};
@@ -1707,13 +1675,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Unit_MilliLiterPerLiter[] PROGMEM = {"mL/L"};
             return flashStr_Unit_MilliLiterPerLiter;
         } break;
-        case HStr_Unit_MilliSiemensPerCentimeter: {
-            static const char flashStr_Unit_MilliSiemensPerCentimeter[] PROGMEM = {"mS/cm"};
-            return flashStr_Unit_MilliSiemensPerCentimeter;
-        } break;
-        case HStr_Unit_Percentile: {
-            static const char flashStr_Unit_Percentile[] PROGMEM = {"%"};
-            return flashStr_Unit_Percentile;
+        case HStr_Unit_PerMinute: {
+            static const char flashStr_Unit_PerMinute[] PROGMEM = {"/min"};
+            return flashStr_Unit_PerMinute;
         } break;
         case HStr_Unit_pH: {
             static const char flashStr_Unit_pH[] PROGMEM = {"pH"};
@@ -1722,10 +1686,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Unit_Pounds: {
             static const char flashStr_Unit_Pounds[] PROGMEM = {"lbs"};
             return flashStr_Unit_Pounds;
-        } break;
-        case HStr_Unit_PPM: {
-            static const char flashStr_Unit_PPM[] PROGMEM = {"ppm"};
-            return flashStr_Unit_PPM;
         } break;
         case HStr_Unit_PPM500: {
             static const char flashStr_Unit_PPM500[] PROGMEM = {"ppm(500)"};
@@ -1739,21 +1699,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Unit_PPM700[] PROGMEM = {"ppm(700)"};
             return flashStr_Unit_PPM700;
         } break;
-        case HStr_Unit_TDS: {
-            static const char flashStr_Unit_TDS[] PROGMEM = {"TDS"};
-            return flashStr_Unit_TDS;
-        } break;
         case HStr_Unit_Undefined: {
             static const char flashStr_Unit_Undefined[] PROGMEM = {"undef"};
             return flashStr_Unit_Undefined;
         } break;
-        case HStr_Unit_Wattage: {
-            static const char flashStr_Unit_Wattage[] PROGMEM = {"W"};
-            return flashStr_Unit_Wattage;
-        } break;
-
-        default:
-            return nullptr;
     }
 }
 

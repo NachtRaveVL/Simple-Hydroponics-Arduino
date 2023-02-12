@@ -39,7 +39,7 @@ void setup() {
 
     hydroController.init();
 
-    getLoggerInstance()->logMessage(F("Writing crops library..."));
+    getLogger()->logMessage(F("Writing crops library..."));
 
     String spacing(F("            "));
     String indent = spacing + F("    ");
@@ -88,7 +88,7 @@ void setup() {
         yield();
     }
 
-    getLoggerInstance()->logMessage(F("Done!"));
+    getLogger()->logMessage(F("Done!"));
 }
 
 void loop()

@@ -31,10 +31,10 @@ public:
     inline bool isUnknownType() const { return type <= Unknown; }
 
     HydroTrigger(HydroIdentity sensorId,
-                 uint8_t measurementRow = 0,
+                 uint8_t measureRow = 0,
                  int type = Unknown);
     HydroTrigger(SharedPtr<HydroSensor> sensor,
-                 uint8_t measurementRow = 0,
+                 uint8_t measureRow = 0,
                  int type = Unknown);
     HydroTrigger(const HydroTriggerSubData *dataIn);
 
@@ -45,11 +45,11 @@ public:
 
     virtual Hydro_TriggerState getTriggerState() const override;
 
-    inline void setToleranceUnits(Hydro_UnitsType toleranceUnits) { _sensor.setMeasurementUnits(toleranceUnits); }
-    inline Hydro_UnitsType getToleranceUnits() const { return _sensor.getMeasurementUnits(); }
+    inline void setMeasureUnits(Hydro_UnitsType measureUnits) { _sensor.setMeasureUnits(measureUnits); }
+    inline Hydro_UnitsType getMeasureUnits() const { return _sensor.getMeasureUnits(); }
 
     inline SharedPtr<HydroSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
-    inline uint8_t getMeasurementRow() const { return _sensor.getMeasurementRow(); }
+    inline uint8_t getMeasureRow() const { return _sensor.getMeasureRow(); }
 
     Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> &getTriggerSignal();
 
@@ -74,12 +74,12 @@ public:
                                  float triggerTol,
                                  bool triggerBelow = true,
                                  float detriggerTol = 0,
-                                 uint8_t measurementRow = 0);
+                                 uint8_t measureRow = 0);
     HydroMeasurementValueTrigger(SharedPtr<HydroSensor> sensor,
                                  float triggerTol,
                                  bool triggerBelow = true,
                                  float detriggerTol = 0,
-                                 uint8_t measurementRow = 0);
+                                 uint8_t measureRow = 0);
     HydroMeasurementValueTrigger(const HydroTriggerSubData *dataIn);
 
     virtual void saveToData(HydroTriggerSubData *dataOut) const override;
@@ -114,13 +114,13 @@ public:
                                  float toleranceHigh,
                                  bool triggerOutside = true,
                                  float detriggerTol = 0,
-                                 uint8_t measurementRow = 0);
+                                 uint8_t measureRow = 0);
     HydroMeasurementRangeTrigger(SharedPtr<HydroSensor> sensor,
                                  float toleranceLow,
                                  float toleranceHigh,
                                  bool triggerOutside = true,
                                  float detriggerTol = 0,
-                                 uint8_t measurementRow = 0);
+                                 uint8_t measureRow = 0);
     HydroMeasurementRangeTrigger(const HydroTriggerSubData *dataIn);
 
     virtual void saveToData(HydroTriggerSubData *dataOut) const override;
@@ -146,7 +146,7 @@ protected:
 // Combined Trigger Serialization Sub Data
 struct HydroTriggerSubData : public HydroSubData {
     char sensorName[HYDRO_NAME_MAXSIZE];
-    int8_t measurementRow;
+    int8_t measureRow;
     union {
         struct {
             float tolerance;
@@ -159,7 +159,7 @@ struct HydroTriggerSubData : public HydroSubData {
         } measureRange;
     } dataAs;
     float detriggerTol;
-    Hydro_UnitsType toleranceUnits;
+    Hydro_UnitsType measureUnits;
 
     HydroTriggerSubData();
     virtual void toJSONObject(JsonObject &objectOut) const;

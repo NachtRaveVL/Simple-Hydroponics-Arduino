@@ -93,7 +93,7 @@ bool HydroPin::tryEnableMuxer()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid() && isMuxed()) {
-            SharedPtr<HydroPinMuxer> muxer = getHydroInstance() ? getHydroInstance()->getPinMuxer(pin) : nullptr;
+            SharedPtr<HydroPinMuxer> muxer = getController() ? getController()->getPinMuxer(pin) : nullptr;
             if (muxer) {
                 muxer->selectChannel(channel);
                 return true;
@@ -427,7 +427,7 @@ void HydroPinMuxer::selectChannel(uint8_t channelNumber)
         // While we could be a bit smarter about which muxers we disable, storing that
         // wouldn't necessarily be worth the gain. The assumption is all that muxers in
         // system occupy the same channel select bus, even if that isn't the case.
-        if (getHydroInstance()) { getHydroInstance()->deselectPinMuxers(); }
+        if (getController()) { getController()->deselectPinMuxers(); }
 
         if (isValidPin(_channelPins[0])) {
             ::digitalWrite(_channelPins[0], (channelNumber >> 0) & 1 ? HIGH : LOW);

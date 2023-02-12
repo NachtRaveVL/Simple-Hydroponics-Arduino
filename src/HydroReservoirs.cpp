@@ -28,13 +28,13 @@ HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 
 HydroReservoir::HydroReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, int classTypeIn)
     : HydroObject(HydroIdentity(reservoirType, reservoirIndex)), classType((typeof(classType))classTypeIn),
-      _volumeUnits(defaultLiquidVolumeUnits()),
+      _volumeUnits(defaultVolumeUnits()),
       _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
 HydroReservoir::HydroReservoir(const HydroReservoirData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      _volumeUnits(definedUnitsElse(dataIn->volumeUnits, defaultLiquidVolumeUnits())),
+      _volumeUnits(definedUnitsElse(dataIn->volumeUnits, defaultVolumeUnits())),
       _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
@@ -195,7 +195,7 @@ void HydroFluidReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
     if (_volumeUnits != volumeUnits) {
         _volumeUnits = volumeUnits;
 
-        _waterVolume.setMeasurementUnits(volumeUnits);
+        _waterVolume.setMeasureUnits(volumeUnits);
     }
 }
 
@@ -242,26 +242,29 @@ void HydroFluidReservoir::handleEmpty(Hydro_TriggerState emptyState)
 }
 
 
-HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, DateTime lastChangeDate, DateTime lastPruningDate, int classType)
+HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, DateTime lastChangeTime, DateTime lastPruningTime, int classType)
     : HydroFluidReservoir(Hydro_ReservoirType_FeedWater, reservoirIndex, maxVolume, classType),
-       _lastChangeDate(lastChangeDate.unixtime()), _lastPruningDate(lastPruningDate.unixtime()), _lastFeedingDate(0), _numFeedingsToday(0),
-       _tdsUnits(Hydro_UnitsType_Concentration_TDS), _tempUnits(defaultTemperatureUnits()),
-       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
-       _waterPHBalancer(this), _waterTDSBalancer(this), _waterTempBalancer(this), _airTempBalancer(this), _airCO2Balancer(this)
+      HydroConcentrateUnitsInterface(Hydro_UnitsType_Concentration_TDS),
+      HydroTemperatureUnitsInterface(),
+      _lastChangeTime(unixTime(lastChangeTime)), _lastPruningTime(unixTime(lastPruningTime)), _lastFeedingTime(0), _numFeedingsToday(0),
+      _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
+      _waterPHBalancer(this), _waterTDSBalancer(this), _waterTempBalancer(this), _airTempBalancer(this), _airCO2Balancer(this)
 { ; }
 
 HydroFeedReservoir::HydroFeedReservoir(const HydroFeedReservoirData *dataIn)
     : HydroFluidReservoir(dataIn),
-      _lastChangeDate(dataIn->lastChangeDate), _lastPruningDate(dataIn->lastPruningDate),
-      _lastFeedingDate(dataIn->lastFeedingDate), _numFeedingsToday(dataIn->numFeedingsToday),
-      _tdsUnits(definedUnitsElse(dataIn->tdsUnits, Hydro_UnitsType_Concentration_TDS)),
-      _tempUnits(definedUnitsElse(dataIn->tempUnits, defaultTemperatureUnits())),
+      HydroConcentrateUnitsInterface(dataIn->concentrateUnits),
+      HydroTemperatureUnitsInterface(dataIn->temperatureUnits),
+      _lastChangeTime(dataIn->lastChangeTime), _lastPruningTime(dataIn->lastPruningTime),
+      _lastFeedingTime(dataIn->lastFeedingTime), _numFeedingsToday(dataIn->numFeedingsToday),
       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
       _waterPHBalancer(this), _waterTDSBalancer(this), _waterTempBalancer(this), _airTempBalancer(this), _airCO2Balancer(this)
 {
-    if (_lastFeedingDate) {
-        auto lastFeeding = DateTime((uint32_t)(_lastFeedingDate + (getHydroInstance() ? getHydroInstance()->getTimeZoneOffset() * SECS_PER_HOUR : 0)));
-        auto currTime = getCurrentTime();
+    setTemperatureUnits(dataIn->temperatureUnits);
+
+    if (_lastFeedingTime) {
+        auto lastFeeding = localTime(_lastFeedingTime);
+        auto currTime = localNow();
 
         if (currTime.year() != lastFeeding.year() ||
             currTime.month() != lastFeeding.month() ||
@@ -307,22 +310,22 @@ void HydroFeedReservoir::handleLowMemory()
     if (_airCO2Balancer && !_airCO2Balancer->isEnabled()) { _airCO2Balancer.setObject(nullptr); }
 }
 
-void HydroFeedReservoir::setTDSUnits(Hydro_UnitsType tdsUnits)
+void HydroFeedReservoir::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
 {
-    if (_tdsUnits != tdsUnits) {
-        _tdsUnits = tdsUnits;
+    if (_concentrateUnits != concentrateUnits) {
+        _concentrateUnits = concentrateUnits;
 
-        _waterTDS.setMeasurementUnits(getTDSUnits());
+        _waterTDS.setMeasureUnits(getConcentrateUnits());
     }
 }
 
-void HydroFeedReservoir::setTemperatureUnits(Hydro_UnitsType tempUnits)
+void HydroFeedReservoir::setTemperatureUnits(Hydro_UnitsType temperatureUnits)
 {
-    if (_tempUnits != tempUnits) {
-        _tempUnits = tempUnits;
+    if (_temperatureUnits != temperatureUnits) {
+        _temperatureUnits = temperatureUnits;
 
-        _waterTemp.setMeasurementUnits(getTemperatureUnits());
-        _airTemp.setMeasurementUnits(getTemperatureUnits());
+        _waterTemp.setMeasureUnits(getTemperatureUnits());
+        _airTemp.setMeasureUnits(getTemperatureUnits());
     }
 }
 
@@ -360,12 +363,12 @@ void HydroFeedReservoir::saveToData(HydroData *dataOut)
 {
     HydroFluidReservoir::saveToData(dataOut);
 
-    ((HydroFeedReservoirData *)dataOut)->lastChangeDate = _lastChangeDate;
-    ((HydroFeedReservoirData *)dataOut)->lastPruningDate = _lastPruningDate;
-    ((HydroFeedReservoirData *)dataOut)->lastFeedingDate = _lastFeedingDate;
+    ((HydroFeedReservoirData *)dataOut)->lastChangeTime = _lastChangeTime;
+    ((HydroFeedReservoirData *)dataOut)->lastPruningTime = _lastPruningTime;
+    ((HydroFeedReservoirData *)dataOut)->lastFeedingTime = _lastFeedingTime;
     ((HydroFeedReservoirData *)dataOut)->numFeedingsToday = _numFeedingsToday;
-    ((HydroFeedReservoirData *)dataOut)->tdsUnits = _tdsUnits;
-    ((HydroFeedReservoirData *)dataOut)->tempUnits = _tempUnits;
+    ((HydroFeedReservoirData *)dataOut)->concentrateUnits = _concentrateUnits;
+    ((HydroFeedReservoirData *)dataOut)->temperatureUnits = _temperatureUnits;
     if (_waterPH.getId()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->waterPHSensor, _waterPH.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -408,7 +411,7 @@ HydroSensorAttachment &HydroInfiniteReservoir::getWaterVolume(bool poll)
         _alwaysFilled ? FLT_UNDEF : 0.0f,
         getVolumeUnits(),
         unixNow(),
-        getHydroInstance() ? getHydroInstance()->getPollingFrame() : 1
+        getController() ? getController()->getPollingFrame() : 1
     ));
     return _waterVolume;
 }
@@ -477,8 +480,8 @@ void HydroFluidReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroFeedReservoirData::HydroFeedReservoirData()
-    : HydroFluidReservoirData(), lastChangeDate(0), lastPruningDate(0), lastFeedingDate(0), numFeedingsToday(0),
-      tdsUnits(Hydro_UnitsType_Undefined), tempUnits(Hydro_UnitsType_Undefined),
+    : HydroFluidReservoirData(), lastChangeTime(0), lastPruningTime(0), lastFeedingTime(0), numFeedingsToday(0),
+      concentrateUnits(Hydro_UnitsType_Undefined), temperatureUnits(Hydro_UnitsType_Undefined),
       waterPHSensor{0}, waterTDSSensor{0}, waterTempSensor{0}, airTempSensor{0}, airCO2Sensor{0}
 {
     _size = sizeof(*this);
@@ -488,12 +491,12 @@ void HydroFeedReservoirData::toJSONObject(JsonObject &objectOut) const
 {
     HydroFluidReservoirData::toJSONObject(objectOut);
 
-    if (lastChangeDate) { objectOut[SFP(HStr_Key_LastChangeDate)] = lastChangeDate; }
-    if (lastPruningDate) { objectOut[SFP(HStr_Key_LastPruningDate)] = lastPruningDate; }
-    if (lastFeedingDate) { objectOut[SFP(HStr_Key_LastFeedingDate)] = lastFeedingDate; }
+    if (lastChangeTime) { objectOut[SFP(HStr_Key_LastChangeTime)] = lastChangeTime; }
+    if (lastPruningTime) { objectOut[SFP(HStr_Key_LastPruningTime)] = lastPruningTime; }
+    if (lastFeedingTime) { objectOut[SFP(HStr_Key_LastFeedingTime)] = lastFeedingTime; }
     if (numFeedingsToday > 0) { objectOut[SFP(HStr_Key_NumFeedingsToday)] = numFeedingsToday; }
-    if (tdsUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_TDSUnits)] = unitsTypeToSymbol(tdsUnits); }
-    if (tempUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_TempUnits)] = unitsTypeToSymbol(tempUnits); }
+    if (concentrateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_Concentration)] = unitsTypeToSymbol(concentrateUnits); }
+    if (temperatureUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_TemperatureUnits)] = unitsTypeToSymbol(temperatureUnits); }
     if (waterPHSensor[0]) { objectOut[SFP(HStr_Key_PHSensor)] = charsToString(waterPHSensor, HYDRO_NAME_MAXSIZE); }
     if (waterTDSSensor[0]) { objectOut[SFP(HStr_Key_TDSSensor)] = charsToString(waterTDSSensor, HYDRO_NAME_MAXSIZE); }
     if (waterTempSensor[0]) {
@@ -507,12 +510,12 @@ void HydroFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroFluidReservoirData::fromJSONObject(objectIn);
 
-    lastChangeDate = objectIn[SFP(HStr_Key_LastChangeDate)] | lastChangeDate;
-    lastPruningDate = objectIn[SFP(HStr_Key_LastPruningDate)] | lastPruningDate;
-    lastFeedingDate = objectIn[SFP(HStr_Key_LastFeedingDate)] | lastFeedingDate;
+    lastChangeTime = objectIn[SFP(HStr_Key_LastChangeTime)] | lastChangeTime;
+    lastPruningTime = objectIn[SFP(HStr_Key_LastPruningTime)] | lastPruningTime;
+    lastFeedingTime = objectIn[SFP(HStr_Key_LastFeedingTime)] | lastFeedingTime;
     numFeedingsToday = objectIn[SFP(HStr_Key_NumFeedingsToday)] | numFeedingsToday;
-    tdsUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_TDSUnits)]);
-    tempUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_TempUnits)]);
+    concentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_Concentration)]);
+    temperatureUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_TemperatureUnits)]);
     const char *waterPHSensorStr = objectIn[SFP(HStr_Key_PHSensor)];
     if (waterPHSensorStr && waterPHSensorStr[0]) { strncpy(waterPHSensor, waterPHSensorStr, HYDRO_NAME_MAXSIZE); }
     const char *waterTDSSensorStr = objectIn[SFP(HStr_Key_TDSSensor)];

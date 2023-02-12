@@ -192,16 +192,16 @@ void HydroActuatorAttachment::applySetup()
 }
 
 
-HydroSensorAttachment::HydroSensorAttachment(HydroObjInterface *parent, uint8_t measurementRow)
+HydroSensorAttachment::HydroSensorAttachment(HydroObjInterface *parent, uint8_t measureRow)
     : HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS>(parent, &HydroSensor::getMeasurementSignal),
-      _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
+      _measureRow(measureRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
 {
     setHandleMethod(&HydroSensorAttachment::handleMeasurement);
 }
 
 HydroSensorAttachment::HydroSensorAttachment(const HydroSensorAttachment &attachment)
     : HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS>(attachment),
-      _measurement(attachment._measurement), _measurementRow(attachment._measurementRow),
+      _measurement(attachment._measurement), _measureRow(attachment._measureRow),
       _convertParam(attachment._convertParam), _needsMeasurement(attachment._needsMeasurement)
 {
     setHandleSlot(*attachment._handleSlot);
@@ -237,7 +237,7 @@ void HydroSensorAttachment::updateIfNeeded(bool poll)
 
 void HydroSensorAttachment::setMeasurement(HydroSingleMeasurement measurement)
 {
-    auto outUnits = definedUnitsElse(getMeasurementUnits(), measurement.units);
+    auto outUnits = definedUnitsElse(getMeasureUnits(), measurement.units);
     _measurement = measurement;
     _measurement.setMinFrame(1);
 
@@ -245,16 +245,16 @@ void HydroSensorAttachment::setMeasurement(HydroSingleMeasurement measurement)
     _needsMeasurement = false;
 }
 
-void HydroSensorAttachment::setMeasurementRow(uint8_t measurementRow)
+void HydroSensorAttachment::setMeasureRow(uint8_t measureRow)
 {
-    if (_measurementRow != measurementRow) {
-        _measurementRow = measurementRow;
+    if (_measureRow != measureRow) {
+        _measureRow = measureRow;
 
         setNeedsMeasurement();
     }
 }
 
-void HydroSensorAttachment::setMeasurementUnits(Hydro_UnitsType units, float convertParam)
+void HydroSensorAttachment::setMeasureUnits(Hydro_UnitsType units, float convertParam)
 {
     if (_measurement.units != units || !isFPEqual(_convertParam, convertParam)) {
         _convertParam = convertParam;
@@ -267,7 +267,7 @@ void HydroSensorAttachment::setMeasurementUnits(Hydro_UnitsType units, float con
 void HydroSensorAttachment::handleMeasurement(const HydroMeasurement *measurement)
 {
     if (measurement && measurement->frame) {
-        setMeasurement(getAsSingleMeasurement(measurement, _measurementRow));
+        setMeasurement(getAsSingleMeasurement(measurement, _measureRow));
     }
 }
 

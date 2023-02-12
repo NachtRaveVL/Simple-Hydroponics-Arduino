@@ -215,18 +215,6 @@ inline SharedPtr<U> HydroAirTemperatureSensorAttachmentInterface::getAirTemperat
 }
 
 template <class U>
-inline void HydroAirHumiditySensorAttachmentInterface::setAirHumiditySensor(U sensor)
-{
-    getAirHumidity(false).setObject(sensor);
-}
-
-template <class U>
-inline SharedPtr<U> HydroAirHumiditySensorAttachmentInterface::getAirHumiditySensor(bool poll)
-{
-    return static_pointer_cast<U>(getAirHumidity(poll).getObject());
-}
-
-template <class U>
 inline void HydroAirCO2SensorAttachmentInterface::setAirCO2Sensor(U sensor)
 {
     getAirCO2(false).setObject(sensor);

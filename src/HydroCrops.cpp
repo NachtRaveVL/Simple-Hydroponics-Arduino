@@ -24,9 +24,9 @@ HydroCrop *newCropObjectFromData(const HydroCropData *dataIn)
 }
 
 
-HydroCrop::HydroCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowDate, int classTypeIn)
+HydroCrop::HydroCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, int classTypeIn)
     : HydroObject(HydroIdentity(cropType, cropIndex)), classType((typeof(classType))classTypeIn),
-      _substrateType(substrateType), _sowDate(sowDate.unixtime()), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
+      _substrateType(substrateType), _sowTime(unixTime(sowTime)), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
       _cropPhase(Hydro_CropPhase_Undefined), _feedingState(Hydro_TriggerState_NotTriggered)
 {
     allocateLinkages(HYDRO_CROPS_LINKS_BASESIZE);
@@ -36,7 +36,7 @@ HydroCrop::HydroCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_Substrate
 
 HydroCrop::HydroCrop(const HydroCropData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      _substrateType(dataIn->substrateType), _sowDate(dataIn->sowDate), _feedReservoir(this),
+      _substrateType(dataIn->substrateType), _sowTime(dataIn->sowTime), _feedReservoir(this),
       _cropsData(nullptr), _growWeek(0), _feedingWeight(dataIn->feedingWeight),
       _cropPhase(Hydro_CropPhase_Undefined), _feedingState(Hydro_TriggerState_NotTriggered)
 {
@@ -83,7 +83,7 @@ void HydroCrop::setFeedingWeight(float weight)
     if (!isFPEqual(_feedingWeight, weight)) {
         _feedingWeight = weight;
 
-        getSchedulerInstance()->setNeedsScheduling();
+        getScheduler()->setNeedsScheduling();
     }
 }
 
@@ -108,7 +108,7 @@ void HydroCrop::saveToData(HydroData *dataOut)
 
     dataOut->id.object.classType = (int8_t)classType;
     ((HydroCropData *)dataOut)->substrateType = _substrateType;
-    ((HydroCropData *)dataOut)->sowDate = _sowDate;
+    ((HydroCropData *)dataOut)->sowTime = _sowTime;
     if (_feedReservoir.getId()) {
         strncpy(((HydroCropData *)dataOut)->feedReservoir, _feedReservoir.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -132,7 +132,7 @@ void HydroCrop::handleFeeding(Hydro_TriggerState feedingState)
 
 void HydroCrop::recalcCropGrowthParams()
 {
-    TimeSpan dateSpan(unixNow() - _sowDate);
+    TimeSpan dateSpan(unixNow() - _sowTime);
     _growWeek = dateSpan.days() / DAYS_PER_WEEK;
 
     if (!_cropsData) { checkoutCropsLibData(); }
@@ -169,37 +169,37 @@ void HydroCrop::handleCustomCropUpdated(Hydro_CropType cropType)
         returnCropsLibData(); // forces re-checkout
         recalcCropGrowthParams();
 
-        if (getSchedulerInstance()) {
-            getSchedulerInstance()->setNeedsScheduling();
+        if (getScheduler()) {
+            getScheduler()->setNeedsScheduling();
         }
     }
 }
 
 
-HydroTimedCrop::HydroTimedCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowDate, TimeSpan timeOn, TimeSpan timeOff, int classType)
-    : HydroCrop(cropType, cropIndex, substrateType, sowDate, classType),
-      _lastFeedingDate(),
+HydroTimedCrop::HydroTimedCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, TimeSpan timeOn, TimeSpan timeOff, int classType)
+    : HydroCrop(cropType, cropIndex, substrateType, sowTime, classType),
+      _lastFeedingTime(),
       _feedTimingMins{timeOn.totalseconds() / SECS_PER_MIN, timeOff.totalseconds() / SECS_PER_MIN}
 { ; }
 
 HydroTimedCrop::HydroTimedCrop(const HydroTimedCropData *dataIn)
     : HydroCrop(dataIn),
-      _lastFeedingDate(dataIn->lastFeedingDate),
+      _lastFeedingTime(dataIn->lastFeedingTime),
       _feedTimingMins{dataIn->feedTimingMins[0], dataIn->feedTimingMins[1]}
 { ; }
 
 bool HydroTimedCrop::getNeedsFeeding()
 {
     time_t time = unixNow();
-    return time >= _lastFeedingDate + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
-           time < _lastFeedingDate + (_feedTimingMins[0] * SECS_PER_MIN);
+    return time >= _lastFeedingTime + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
+           time < _lastFeedingTime + (_feedTimingMins[0] * SECS_PER_MIN);
 }
 
 void HydroTimedCrop::notifyFeedingBegan()
 {
     HydroCrop::notifyFeedingBegan();
 
-    _lastFeedingDate = unixNow();
+    _lastFeedingTime = unixNow();
 }
 
 void HydroTimedCrop::setFeedTimeOn(TimeSpan timeOn)
@@ -216,26 +216,26 @@ void HydroTimedCrop::saveToData(HydroData *dataOut)
 {
     HydroCrop::saveToData(dataOut);
 
-    ((HydroTimedCropData *)dataOut)->lastFeedingDate = _lastFeedingDate;
+    ((HydroTimedCropData *)dataOut)->lastFeedingTime = _lastFeedingTime;
     ((HydroTimedCropData *)dataOut)->feedTimingMins[0] = _feedTimingMins[0];
     ((HydroTimedCropData *)dataOut)->feedTimingMins[1] = _feedTimingMins[1];
 }
 
 
-HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowDate, int classType)
-    : HydroCrop(cropType, cropIndex, substrateType, sowDate, classType),
-      _moistureUnits(Hydro_UnitsType_Concentration_EC), _soilMoisture(this), _feedingTrigger(this)
+HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, int classType)
+    : HydroCrop(cropType, cropIndex, substrateType, sowTime, classType),
+      _concentrateUnits(Hydro_UnitsType_Concentration_EC), _soilMoisture(this), _feedingTrigger(this)
 {
-    _soilMoisture.setMeasurementUnits(getMoistureUnits());
+    _soilMoisture.setMeasureUnits(getConcentrateUnits());
 
     _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
 }
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn)
     : HydroCrop(dataIn), _soilMoisture(this), _feedingTrigger(this),
-      _moistureUnits(definedUnitsElse(dataIn->moistureUnits, Hydro_UnitsType_Concentration_EC))
+      _concentrateUnits(definedUnitsElse(dataIn->concentrateUnits, Hydro_UnitsType_Concentration_EC))
 {
-    _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->moistureUnits, getMoistureUnits()));
+    _soilMoisture.setMeasureUnits(definedUnitsElse(dataIn->concentrateUnits, getConcentrateUnits()));
     _soilMoisture.setObject(dataIn->moistureSensor);
 
     _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
@@ -264,18 +264,18 @@ bool HydroAdaptiveCrop::getNeedsFeeding()
     return _feedingTrigger.resolve() && triggerStateToBool(_feedingTrigger.getTriggerState());
 }
 
-void HydroAdaptiveCrop::setMoistureUnits(Hydro_UnitsType moistureUnits)
+void HydroAdaptiveCrop::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
 {
-    if (_moistureUnits != moistureUnits) {
-        _moistureUnits = moistureUnits;
+    if (_concentrateUnits != concentrateUnits) {
+        _concentrateUnits = concentrateUnits;
 
-        _soilMoisture.setMeasurementUnits(getMoistureUnits());
+        _soilMoisture.setMeasureUnits(getConcentrateUnits());
     }
 }
 
-Hydro_UnitsType HydroAdaptiveCrop::getMoistureUnits() const
+Hydro_UnitsType HydroAdaptiveCrop::getConcentrateUnits() const
 {
-    return definedUnitsElse(_moistureUnits, Hydro_UnitsType_Concentration_EC);
+    return definedUnitsElse(_concentrateUnits, Hydro_UnitsType_Concentration_EC);
 }
 
 HydroSensorAttachment &HydroAdaptiveCrop::getSoilMoisture(bool poll)
@@ -288,7 +288,7 @@ void HydroAdaptiveCrop::saveToData(HydroData *dataOut)
 {
     HydroCrop::saveToData(dataOut);
 
-    ((HydroAdaptiveCropData *)dataOut)->moistureUnits = _moistureUnits;
+    ((HydroAdaptiveCropData *)dataOut)->concentrateUnits = _concentrateUnits;
     if (_soilMoisture.getId()) {
         strncpy(((HydroAdaptiveCropData *)dataOut)->moistureSensor, _soilMoisture.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -299,7 +299,7 @@ void HydroAdaptiveCrop::saveToData(HydroData *dataOut)
 
 
 HydroCropData::HydroCropData()
-    : HydroObjectData(), substrateType(Hydro_SubstrateType_Undefined), sowDate(0), feedReservoir{0}, feedingWeight(1.0f)
+    : HydroObjectData(), substrateType(Hydro_SubstrateType_Undefined), sowTime(0), feedReservoir{0}, feedingWeight(1.0f)
 {
     _size = sizeof(*this);
 }
@@ -309,7 +309,7 @@ void HydroCropData::toJSONObject(JsonObject &objectOut) const
     HydroObjectData::toJSONObject(objectOut);
 
     if (substrateType != Hydro_SubstrateType_Undefined) { objectOut[SFP(HStr_Key_SubstrateType)] = substrateTypeToString(substrateType); }
-    if (sowDate) { objectOut[SFP(HStr_Key_SowDate)] = sowDate; }
+    if (sowTime) { objectOut[SFP(HStr_Key_SowTime)] = sowTime; }
     if (feedReservoir[0]) { objectOut[SFP(HStr_Key_FeedReservoir)] = charsToString(feedReservoir, HYDRO_NAME_MAXSIZE); }
     if (!isFPEqual(feedingWeight, 1.0f)) { objectOut[SFP(HStr_Key_FeedingWeight)] = feedingWeight; }
 }
@@ -318,14 +318,14 @@ void HydroCropData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroObjectData::fromJSONObject(objectIn);
     substrateType = substrateTypeFromString(objectIn[SFP(HStr_Key_SubstrateType)]);
-    sowDate = objectIn[SFP(HStr_Key_SowDate)] | sowDate;
+    sowTime = objectIn[SFP(HStr_Key_SowTime)] | sowTime;
     const char *feedReservoirStr = objectIn[SFP(HStr_Key_FeedReservoir)];
     if (feedReservoirStr && feedReservoirStr[0]) { strncpy(feedReservoir, feedReservoirStr, HYDRO_NAME_MAXSIZE); }
     feedingWeight = objectIn[SFP(HStr_Key_FeedingWeight)] | feedingWeight;
 }
 
 HydroTimedCropData::HydroTimedCropData()
-    : HydroCropData(), lastFeedingDate(0), feedTimingMins{0}
+    : HydroCropData(), lastFeedingTime(0), feedTimingMins{0}
 {
     _size = sizeof(*this);
 }
@@ -334,20 +334,20 @@ void HydroTimedCropData::toJSONObject(JsonObject &objectOut) const
 {
     HydroCropData::toJSONObject(objectOut);
 
-    if (lastFeedingDate) { objectOut[SFP(HStr_Key_LastFeedingDate)] = lastFeedingDate; }
+    if (lastFeedingTime) { objectOut[SFP(HStr_Key_LastFeedingTime)] = lastFeedingTime; }
     objectOut[SFP(HStr_Key_FeedTimingMins)] = commaStringFromArray(feedTimingMins, 2);
 }
 
 void HydroTimedCropData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroCropData::fromJSONObject(objectIn);
-    lastFeedingDate = objectIn[SFP(HStr_Key_LastFeedingDate)] | lastFeedingDate;
+    lastFeedingTime = objectIn[SFP(HStr_Key_LastFeedingTime)] | lastFeedingTime;
     JsonVariantConst feedTimingMinsVar = objectIn[SFP(HStr_Key_FeedTimingMins)];
     commaStringToArray(feedTimingMinsVar, feedTimingMins, 2);
 }
 
 HydroAdaptiveCropData::HydroAdaptiveCropData()
-    : HydroCropData(), moistureUnits(Hydro_UnitsType_Undefined), moistureSensor{0}
+    : HydroCropData(), concentrateUnits(Hydro_UnitsType_Undefined), moistureSensor{0}
 {
     _size = sizeof(*this);
 }
@@ -356,7 +356,7 @@ void HydroAdaptiveCropData::toJSONObject(JsonObject &objectOut) const
 {
     HydroCropData::toJSONObject(objectOut);
 
-    if (moistureUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_MoistureUnits)] = unitsTypeToSymbol(moistureUnits); }
+    if (concentrateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_ConcentrateUnits)] = unitsTypeToSymbol(concentrateUnits); }
     if (moistureSensor[0]) { objectOut[SFP(HStr_Key_MoistureSensor)] = charsToString(moistureSensor, HYDRO_NAME_MAXSIZE); }
     if (isValidType(feedingTrigger.type)) {
         JsonObject feedingTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_FeedingTrigger));
@@ -368,7 +368,7 @@ void HydroAdaptiveCropData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroCropData::fromJSONObject(objectIn);
 
-    moistureUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_MoistureUnits)]);
+    concentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_ConcentrateUnits)]);
     const char *moistureSensorStr = objectIn[SFP(HStr_Key_MoistureSensor)];
     if (moistureSensorStr && moistureSensorStr[0]) { strncpy(moistureSensor, moistureSensorStr, HYDRO_NAME_MAXSIZE); }
     JsonObjectConst feedingTriggerObj = objectIn[SFP(HStr_Key_FeedingTrigger)];

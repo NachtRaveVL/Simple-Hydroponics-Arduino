@@ -26,10 +26,10 @@ struct HydroDSTemperatureSensorData;
 // Creates sensor object from passed sensor data (return ownership transfer - user code *must* delete returned object)
 extern HydroSensor *newSensorObjectFromData(const HydroSensorData *dataIn);
 
-// Returns default measurement units to use based on sensorType, optional row index, and measureMode (if undefined then uses active Hydruino instance's measurement mode, else default mode).
-extern Hydro_UnitsType defaultMeasureUnitsForSensorType(Hydro_SensorType sensorType, uint8_t measurementRow = 0, Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
-// Returns default measurement category to use based on sensorType and optional row index (note: this may not accurately produce the correct category, e.g. an ultrasonic distance sensor being used for distance and not volume).
-extern Hydro_UnitsCategory defaultMeasureCategoryForSensorType(Hydro_SensorType sensorType, uint8_t measurementRow = 0);
+// Returns default measurement units based on sensorType, optional row index, and measureMode (if undefined then uses active controller's measurement mode, else default measurement mode).
+extern Hydro_UnitsType defaultUnitsForSensor(Hydro_SensorType sensorType, uint8_t measureRow = 0, Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
+// Returns default measurement category based on sensorType and optional row index (note: this may not accurately produce the correct category, e.g. an ultrasonic distance sensor being used for distance and not volume).
+extern Hydro_UnitsCategory defaultCategoryForSensor(Hydro_SensorType sensorType, uint8_t measureRow = 0);
 
 
 // Sensor Base
@@ -58,8 +58,8 @@ public:
     virtual bool isTakingMeasurement() const override;
     virtual bool getNeedsPolling(hframe_t allowance = 0) const override;
 
-    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) = 0;
-    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const = 0;
+    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) = 0;
+    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const = 0;
 
     virtual HydroAttachment &getParentCrop(bool resolve = true) override;
     virtual HydroAttachment &getParentReservoir(bool resolve = true) override;
@@ -111,8 +111,8 @@ public:
     virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroMeasurement *getLatestMeasurement() const override;
 
-    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
-    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
+    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
+    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
 
     bool tryRegisterAsISR();
 
@@ -126,7 +126,7 @@ protected:
     HydroDigitalPin _inputPin;                              // Digital input pin
     bool _usingISR;                                         // Using ISR flag
     HydroBinaryMeasurement _lastMeasurement;                // Latest successful measurement
-    Signal<bool, HYDRO_SENSOR_SIGNAL_SLOTS> _stateSignal; // State changed signal
+    Signal<bool, HYDRO_SENSOR_SIGNAL_SLOTS> _stateSignal;   // State changed signal
 
     virtual void saveToData(HydroData *dataOut) override;
 };
@@ -148,8 +148,8 @@ public:
     virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroMeasurement *getLatestMeasurement() const override;
 
-    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
-    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
+    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
+    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
 
     inline const HydroAnalogPin &getInputPin() const { return _inputPin; }
     inline bool getInputInversion() const { return _inputInversion; }
@@ -158,7 +158,7 @@ protected:
     HydroAnalogPin _inputPin;                               // Analog input pin
     bool _inputInversion;                                   // Analog input inversion
     HydroSingleMeasurement _lastMeasurement;                // Latest successful measurement
-    Hydro_UnitsType _measurementUnits;                      // Measurement units preferred
+    Hydro_UnitsType _measureUnits;                          // Measurement units preferred
 
     void _takeMeasurement(unsigned int taskId);
 
@@ -190,7 +190,7 @@ protected:
     HydroDigitalPin _inputPin;                              // Digital input pin
     OneWire *_oneWire;                                      // OneWire comm instance (strong, nullptr when not used)
     uint8_t _wireBitRes;                                    // OneWire bit resolution
-    hposi_t _wirePosIndex;                      // OneWire sensor position index
+    hposi_t _wirePosIndex;                                  // OneWire sensor position index
     uint8_t _wireDevAddress[8];                             // OneWire sensor device address
 
     void resolveDeviceAddress();
@@ -214,12 +214,12 @@ public:
     virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroMeasurement *getLatestMeasurement() const override;
 
-    inline uint8_t getMeasurementRowForTemperature() const { return 0; }
-    inline uint8_t getMeasurementRowForHumidity() const { return 1; }
-    inline uint8_t getMeasurementRowForHeatIndex() const { return 2; }
+    inline uint8_t getMeasureRowForTemperature() const { return 0; }
+    inline uint8_t getMeasureRowForHumidity() const { return 1; }
+    inline uint8_t getMeasureRowForHeatIndex() const { return 2; }
 
-    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow) override;
-    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
+    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow) override;
+    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
 
     virtual bool setWirePositionIndex(hposi_t wirePosIndex) override; // disabled
     virtual hposi_t getWirePositionIndex() const override; // disabled
@@ -235,7 +235,7 @@ protected:
     DHT *_dht;                                              // DHT sensor instance (owned)
     bool _computeHeatIndex;                                 // Flag to compute heat index
     HydroTripleMeasurement _lastMeasurement;                // Latest successful measurement
-    Hydro_UnitsType _measurementUnits[3];                   // Measurement units preferred
+    Hydro_UnitsType _measureUnits[3];                       // Measurement units preferred
 
     void _takeMeasurement(unsigned int taskId);
 
@@ -258,10 +258,10 @@ public:
     virtual bool takeMeasurement(bool force = false) override;
     virtual const HydroMeasurement *getLatestMeasurement() const override;
 
-    inline uint8_t getMeasurementRowForTemperature() const { return 0; }
+    inline uint8_t getMeasureRowForTemperature() const { return 0; }
 
-    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
-    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
+    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
+    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
 
     inline const HydroDigitalPin &getPullupPin() const { return _pullupPin; }
 
@@ -269,7 +269,7 @@ protected:
     DallasTemperature *_dt;                                 // DallasTemperature instance (owned)
     HydroDigitalPin _pullupPin;                             // Pullup pin, if used
     HydroSingleMeasurement _lastMeasurement;                // Latest successful measurement
-    Hydro_UnitsType _measurementUnits;                      // Measurement units preferred
+    Hydro_UnitsType _measureUnits;                          // Measurement units preferred
 
     void _takeMeasurement(unsigned int taskId);
 
@@ -300,7 +300,7 @@ struct HydroBinarySensorData : public HydroSensorData {
 // Analog Sensor Serialization Data
 struct HydroAnalogSensorData : public HydroSensorData {
     bool inputInversion;
-    Hydro_UnitsType measurementUnits;
+    Hydro_UnitsType measureUnits;
 
     HydroAnalogSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -322,7 +322,7 @@ struct HydroDigitalSensorData : public HydroSensorData {
 struct HydroDHTTempHumiditySensorData : public HydroDigitalSensorData {
     Hydro_DHTType dhtType;
     bool computeHeatIndex;
-    Hydro_UnitsType measurementUnits;
+    Hydro_UnitsType measureUnits;
 
     HydroDHTTempHumiditySensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -332,7 +332,7 @@ struct HydroDHTTempHumiditySensorData : public HydroDigitalSensorData {
 // DS Temp Sensor Serialization Data
 struct HydroDSTemperatureSensorData : public HydroDigitalSensorData {
     HydroPinData pullupPin;
-    Hydro_UnitsType measurementUnits;
+    Hydro_UnitsType measureUnits;
 
     HydroDSTemperatureSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
