@@ -27,15 +27,15 @@ struct HydroDSTemperatureSensorData;
 extern HydroSensor *newSensorObjectFromData(const HydroSensorData *dataIn);
 
 // Returns default measurement units based on sensorType, optional row index, and measureMode (if undefined then uses active controller's measurement mode, else default measurement mode).
-extern Hydro_UnitsType defaultUnitsForSensor(Hydro_SensorType sensorType, uint8_t measureRow = 0, Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
+extern Hydro_UnitsType defaultUnitsForSensor(Hydro_SensorType sensorType, uint8_t measurementRow = 0, Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
 // Returns default measurement category based on sensorType and optional row index (note: this may not accurately produce the correct category, e.g. an ultrasonic distance sensor being used for distance and not volume).
-extern Hydro_UnitsCategory defaultCategoryForSensor(Hydro_SensorType sensorType, uint8_t measureRow = 0);
+extern Hydro_UnitsCategory defaultCategoryForSensor(Hydro_SensorType sensorType, uint8_t measurementRow = 0);
 
 
 // Sensor Base
 // This is the base class for all sensors, which defines how the sensor is identified,
 // where it lives, and what it's attached to.
-class HydroSensor : public HydroObject, public HydroSensorObjectInterface, public HydroMeasureUnitsInterface, public HydroParentCropAttachmentInterface, public HydroParentReservoirAttachmentInterface {
+class HydroSensor : public HydroObject, public HydroSensorObjectInterface, public HydroMeasurementUnitsInterface, public HydroParentCropAttachmentInterface, public HydroParentReservoirAttachmentInterface {
 public:
     const enum : signed char { Binary, Analog, Digital, DHT1W, DS1W, Unknown = -1 } classType; // Sensor class type (custom RTTI)
     inline bool isBinaryClass() const { return classType == Binary; }
@@ -54,12 +54,12 @@ public:
     virtual void update() override;
 
     virtual bool takeMeasurement(bool force = false) = 0;
-    virtual const HydroMeasurement *getLatestMeasurement() const = 0;
+    virtual const HydroMeasurement *getMeasurement(bool poll = false) = 0;
     virtual bool isTakingMeasurement() const override;
-    virtual bool getNeedsPolling(hframe_t allowance = 0) const override;
+    virtual bool needsPolling(hframe_t allowance = 0) const = 0;
 
-    virtual HydroAttachment &getParentCrop() override;
-    virtual HydroAttachment &getParentReservoir() override;
+    virtual HydroAttachment &getParentCropAttachment() override;
+    virtual HydroAttachment &getParentReservoirAttachment() override;
 
     void setUserCalibrationData(HydroCalibrationData *userCalibrationData);
     inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
@@ -83,8 +83,8 @@ public:
 
 protected:
     bool _isTakingMeasure;                                  // Taking measurement flag
-    HydroAttachment _crop;                                  // Crop attachment
-    HydroAttachment _reservoir;                             // Reservoir attachment
+    HydroAttachment _parentCrop;                            // Parent crop attachment
+    HydroAttachment _parentReservoir;                       // Parent reservoir attachment
     const HydroCalibrationData *_calibrationData;           // Calibration data
     Signal<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> _measureSignal; // New measurement signal
 
@@ -106,10 +106,11 @@ public:
     virtual ~HydroBinarySensor();
 
     virtual bool takeMeasurement(bool force = false) override;
-    virtual const HydroMeasurement *getLatestMeasurement() const override;
+    virtual const HydroMeasurement *getMeasurement(bool poll = false) override;
+    virtual bool needsPolling(hframe_t allowance = 0) const override;
 
-    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
-    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
 
     bool tryRegisterAsISR();
 
@@ -133,7 +134,7 @@ protected:
 // The ever reliant master of the analog read, this class manages polling an analog input
 // signal and converting it into the proper figures for use. Examples include everything
 // from TDS EC meters to PWM based flow sensors.
-class HydroAnalogSensor : public HydroSensor, public HydroMeasureUnitsStorage<1> {
+class HydroAnalogSensor : public HydroSensor, public HydroMeasurementUnitsInterfaceStorageSingle {
 public:
     HydroAnalogSensor(Hydro_SensorType sensorType,
                       hposi_t sensorIndex,
@@ -143,10 +144,11 @@ public:
     HydroAnalogSensor(const HydroAnalogSensorData *dataIn);
 
     virtual bool takeMeasurement(bool force = false) override;
-    virtual const HydroMeasurement *getLatestMeasurement() const override;
+    virtual const HydroMeasurement *getMeasurement(bool poll = false) override;
+    virtual bool needsPolling(hframe_t allowance = 0) const override;
 
-    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
-    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
 
     inline const HydroAnalogPin &getInputPin() const { return _inputPin; }
     inline bool getInputInversion() const { return _inputInversion; }
@@ -197,7 +199,7 @@ protected:
 
 // Digital DHT* Temperature & Humidity Sensor
 // This class is for working with DHT* OneWire-based air temperature and humidity sensors.
-class HydroDHTTempHumiditySensor : public HydroDigitalSensor, public HydroMeasureUnitsStorage<3> {
+class HydroDHTTempHumiditySensor : public HydroDigitalSensor, public HydroMeasurementUnitsInterfaceStorageTriple {
 public:
     HydroDHTTempHumiditySensor(hposi_t sensorIndex,
                                HydroDigitalPin inputPin,
@@ -208,14 +210,15 @@ public:
     virtual ~HydroDHTTempHumiditySensor();
 
     virtual bool takeMeasurement(bool force = false) override;
-    virtual const HydroMeasurement *getLatestMeasurement() const override;
+    virtual const HydroMeasurement *getMeasurement(bool poll = false) override;
+    virtual bool needsPolling(hframe_t allowance = 0) const override;
 
-    inline uint8_t getMeasureRowForTemperature() const { return 0; }
-    inline uint8_t getMeasureRowForHumidity() const { return 1; }
-    inline uint8_t getMeasureRowForHeatIndex() const { return 2; }
+    inline uint8_t getMeasurementRowForTemperature() const { return 0; }
+    inline uint8_t getMeasurementRowForHumidity() const { return 1; }
+    inline uint8_t getMeasurementRowForHeatIndex() const { return 2; }
 
-    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
-    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
 
     virtual bool setWirePositionIndex(hposi_t wirePosIndex) override; // disabled
     virtual hposi_t getWirePositionIndex() const override; // disabled
@@ -240,7 +243,7 @@ protected:
 
 // Digital DS18* Submersible Temperature Sensor
 // This class is for working with DS18* OneWire-based submersible temperature sensors.
-class HydroDSTemperatureSensor : public HydroDigitalSensor, public HydroMeasureUnitsStorage<1> {
+class HydroDSTemperatureSensor : public HydroDigitalSensor, public HydroMeasurementUnitsInterfaceStorageSingle {
 public:
     HydroDSTemperatureSensor(hposi_t sensorIndex,
                              HydroDigitalPin inputPin,
@@ -251,12 +254,13 @@ public:
     virtual ~HydroDSTemperatureSensor();
 
     virtual bool takeMeasurement(bool force = false) override;
-    virtual const HydroMeasurement *getLatestMeasurement() const override;
+    virtual const HydroMeasurement *getMeasurement(bool poll = false) override;
+    virtual bool needsPolling(hframe_t allowance = 0) const override;
 
-    inline uint8_t getMeasureRowForTemperature() const { return 0; }
+    inline uint8_t getMeasurementRowForTemperature() const { return 0; }
 
-    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
-    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
 
     inline const HydroDigitalPin &getPullupPin() const { return _pullupPin; }
 
@@ -294,7 +298,7 @@ struct HydroBinarySensorData : public HydroSensorData {
 // Analog Sensor Serialization Data
 struct HydroAnalogSensorData : public HydroSensorData {
     bool inputInversion;
-    Hydro_UnitsType measureUnits;
+    Hydro_UnitsType measurementUnits;
 
     HydroAnalogSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -316,7 +320,7 @@ struct HydroDigitalSensorData : public HydroSensorData {
 struct HydroDHTTempHumiditySensorData : public HydroDigitalSensorData {
     Hydro_DHTType dhtType;
     bool computeHeatIndex;
-    Hydro_UnitsType measureUnits;
+    Hydro_UnitsType measurementUnits;
 
     HydroDHTTempHumiditySensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -326,7 +330,7 @@ struct HydroDHTTempHumiditySensorData : public HydroDigitalSensorData {
 // DS Temp Sensor Serialization Data
 struct HydroDSTemperatureSensorData : public HydroDigitalSensorData {
     HydroPinData pullupPin;
-    Hydro_UnitsType measureUnits;
+    Hydro_UnitsType measurementUnits;
 
     HydroDSTemperatureSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

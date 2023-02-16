@@ -17,14 +17,17 @@ struct HydroDigitalOutputPinInterface;
 struct HydroAnalogInputPinInterface;
 struct HydroAnalogOutputPinInterface;
 
-class HydroConcentrateUnitsInterface;
-class HydroDilutionUnitsInterface;
-class HydroFlowRateUnitsInterface;
-class HydroMeasureUnitsInterface;
-template <size_t N = 1> class HydroMeasureUnitsStorage;
-class HydroPowerUnitsInterface;
-class HydroTemperatureUnitsInterface;
-class HydroVolumeUnitsInterface;
+class HydroConcentrateUnitsInterfaceStorage;
+class HydroDilutionUnitsInterfaceStorage;
+class HydroFlowRateUnitsInterfaceStorage;
+class HydroMeasurementUnitsInterface;
+template <size_t N = 1> class HydroMeasurementUnitsStorage;
+class HydroMeasurementUnitsInterfaceStorageSingle;
+class HydroMeasurementUnitsInterfaceStorageDouble;
+class HydroMeasurementUnitsInterfaceStorageTriple;
+class HydroPowerUnitsInterfaceStorage;
+class HydroTemperatureUnitsInterfaceStorage;
+class HydroVolumeUnitsInterfaceStorage;
 
 class HydroActuatorObjectInterface;
 class HydroSensorObjectInterface;
@@ -44,6 +47,7 @@ class HydroParentRailAttachmentInterface;
 
 class HydroFeedReservoirAttachmentInterface;
 
+class HydroSensorAttachmentInterface;
 class HydroAirCO2SensorAttachmentInterface;
 class HydroAirTemperatureSensorAttachmentInterface;
 class HydroPowerProductionSensorAttachmentInterface;
@@ -55,6 +59,7 @@ class HydroWaterTDSSensorAttachmentInterface;
 class HydroWaterTemperatureSensorAttachmentInterface;
 class HydroWaterVolumeSensorAttachmentInterface;
 
+class HydroTriggerAttachmentInterface;
 class HydroFilledTriggerAttachmentInterface;
 class HydroEmptyTriggerAttachmentInterface;
 class HydroFeedingTriggerAttachmentInterface;
@@ -134,18 +139,18 @@ struct HydroAnalogOutputPinInterface {
 
 
 // Concentrate Units Interface + Storage
-class HydroConcentrateUnitsInterface {
+class HydroConcentrateUnitsInterfaceStorage {
 public:
     virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) = 0;
     inline Hydro_UnitsType getConcentrateUnits() const { return _concUnits; }
 
 protected:
     Hydro_UnitsType _concUnits;
-    inline HydroConcentrateUnitsInterface(Hydro_UnitsType concentrateUnits) : _concUnits(concentrateUnits) { ; }
+    inline HydroConcentrateUnitsInterfaceStorage(Hydro_UnitsType concentrateUnits = Hydro_UnitsType_Undefined) : _concUnits(concentrateUnits) { ; }
 };
 
 // Dilution Units Interface + Storage
-class HydroDilutionUnitsInterface {
+class HydroDilutionUnitsInterfaceStorage {
 public:
     virtual void setDilutionUnits(Hydro_UnitsType dilutionUnits) = 0;
     inline Hydro_UnitsType getDilutionUnits() const { return _dilutionUnits; }
@@ -153,11 +158,11 @@ public:
 
 protected:
     Hydro_UnitsType _dilutionUnits;
-    inline HydroDilutionUnitsInterface(Hydro_UnitsType dilutionUnits) : _dilutionUnits(dilutionUnits) { ; }
+    inline HydroDilutionUnitsInterfaceStorage(Hydro_UnitsType dilutionUnits = Hydro_UnitsType_Undefined) : _dilutionUnits(dilutionUnits) { ; }
 };
 
 // Flow Rate Units Interface + Storage
-class HydroFlowRateUnitsInterface {
+class HydroFlowRateUnitsInterfaceStorage {
 public:
     virtual void setFlowRateUnits(Hydro_UnitsType flowRateUnits) = 0;
     inline Hydro_UnitsType getFlowRateUnits() const { return _flowRateUnits; }
@@ -165,50 +170,68 @@ public:
 
 protected:
     Hydro_UnitsType _flowRateUnits;
-    inline HydroFlowRateUnitsInterface(Hydro_UnitsType flowRateUnits) : _flowRateUnits(flowRateUnits) { ; }
+    inline HydroFlowRateUnitsInterfaceStorage(Hydro_UnitsType flowRateUnits = Hydro_UnitsType_Undefined) : _flowRateUnits(flowRateUnits) { ; }
 };
 
 // Measure Units Interface
-class HydroMeasureUnitsInterface {
+class HydroMeasurementUnitsInterface {
 public:
-    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) = 0;
-    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const = 0;
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) = 0;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const = 0;
 
-    inline Hydro_UnitsType getRateUnits(uint8_t measureRow = 0) const;
-    inline Hydro_UnitsType getBaseUnits(uint8_t measureRow = 0) const;
+    inline Hydro_UnitsType getRateUnits(uint8_t measurementRow = 0) const;
+    inline Hydro_UnitsType getBaseUnits(uint8_t measurementRow = 0) const;
 };
 
 // Measure Units Storage
-template <size_t N> class HydroMeasureUnitsStorage {
+template <size_t N> class HydroMeasurementUnitsStorage {
 protected:
-    Hydro_UnitsType _measureUnits[N];
-    inline HydroMeasureUnitsStorage(Hydro_UnitsType measureUnits = Hydro_UnitsType_Undefined) { for (hposi_t i = 0; i < N; ++i) { _measureUnits[i] = measureUnits; } }
+    Hydro_UnitsType _measurementUnits[N];
+    inline HydroMeasurementUnitsStorage(Hydro_UnitsType measurementUnits = Hydro_UnitsType_Undefined) { for (hposi_t i = 0; i < N; ++i) { _measurementUnits[i] = measurementUnits; } }
+};
+
+// Single Measure Units Interface + Storage
+class HydroMeasurementUnitsInterfaceStorageSingle : public HydroMeasurementUnitsInterface, public HydroMeasurementUnitsStorage<1> {
+protected:
+    inline HydroMeasurementUnitsInterfaceStorageSingle(Hydro_UnitsType measurementUnits = Hydro_UnitsType_Undefined) : HydroMeasurementUnitsStorage<1>(measurementUnits) { ; }
+};
+
+// Double Measure Units Interface + Storage
+class HydroMeasurementUnitsInterfaceStorageDouble : public HydroMeasurementUnitsInterface, public HydroMeasurementUnitsStorage<2> {
+protected:
+    inline HydroMeasurementUnitsInterfaceStorageDouble(Hydro_UnitsType measurementUnits = Hydro_UnitsType_Undefined) : HydroMeasurementUnitsStorage<2>(measurementUnits) { ; }
+};
+
+// Triple Measure Units Interface + Storage
+class HydroMeasurementUnitsInterfaceStorageTriple : public HydroMeasurementUnitsInterface, public HydroMeasurementUnitsStorage<3> {
+protected:
+    inline HydroMeasurementUnitsInterfaceStorageTriple(Hydro_UnitsType measurementUnits = Hydro_UnitsType_Undefined) : HydroMeasurementUnitsStorage<3>(measurementUnits) { ; }
 };
 
 // Power Units Interface + Storage
-class HydroPowerUnitsInterface {
+class HydroPowerUnitsInterfaceStorage {
 public:
     virtual void setPowerUnits(Hydro_UnitsType powerUnits) = 0;
     inline Hydro_UnitsType getPowerUnits() const { return _powerUnits; }
 
 protected:
     Hydro_UnitsType _powerUnits;
-    inline HydroPowerUnitsInterface(Hydro_UnitsType powerUnits) : _powerUnits(powerUnits) { ; }
+    inline HydroPowerUnitsInterfaceStorage(Hydro_UnitsType powerUnits = Hydro_UnitsType_Undefined) : _powerUnits(powerUnits) { ; }
 };
 
 // Temperature Units Interface + Storage
-class HydroTemperatureUnitsInterface {
+class HydroTemperatureUnitsInterfaceStorage {
 public:
     virtual void setTemperatureUnits(Hydro_UnitsType temperatureUnits) = 0;
     inline Hydro_UnitsType getTemperatureUnits() const { return _tempUnits; }
 
 protected:
     Hydro_UnitsType _tempUnits;
-    inline HydroTemperatureUnitsInterface(Hydro_UnitsType temperatureUnits) : _tempUnits(temperatureUnits) { ; }
+    inline HydroTemperatureUnitsInterfaceStorage(Hydro_UnitsType temperatureUnits = Hydro_UnitsType_Undefined) : _tempUnits(temperatureUnits) { ; }
 };
 
 // Volume Units Interface + Storage
-class HydroVolumeUnitsInterface {
+class HydroVolumeUnitsInterfaceStorage {
 public:
     virtual void setVolumeUnits(Hydro_UnitsType volumeUnits) = 0;
     inline Hydro_UnitsType getVolumeUnits() const { return _volumeUnits; }
@@ -217,7 +240,7 @@ public:
 
 protected:
     Hydro_UnitsType _volumeUnits;
-    inline HydroVolumeUnitsInterface(Hydro_UnitsType volumeUnits) : _volumeUnits(volumeUnits) { ; }
+    inline HydroVolumeUnitsInterfaceStorage(Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) : _volumeUnits(volumeUnits) { ; }
 };
 
 
@@ -241,9 +264,9 @@ protected:
 class HydroSensorObjectInterface {
 public:
     virtual bool takeMeasurement(bool force = false) = 0;
-    virtual const HydroMeasurement *getLatestMeasurement() const = 0;
+    virtual const HydroMeasurement *getMeasurement(bool poll = false) = 0;
     virtual bool isTakingMeasurement() const = 0;
-    virtual bool getNeedsPolling(hframe_t allowance = 0) const = 0;
+    virtual bool needsPolling(hframe_t allowance = 0) const = 0;
 };
 
 // Crop Object Interface
@@ -281,7 +304,7 @@ public:
 class HydroTriggerObjectInterface {
 public:
     virtual Hydro_TriggerState getTriggerState(bool poll = false) = 0;
-    inline bool isTriggered(bool poll = false) { return triggerStateToBool(getTriggerState(poll)); }
+    inline bool isTriggered(bool poll = false) { return getTriggerState(poll) == Hydro_TriggerState_Triggered; }
 };
 
 
@@ -293,20 +316,22 @@ public:
     virtual bool canPump(millis_t time) = 0;
     virtual HydroActivationHandle pump(millis_t time) = 0;
 
-    virtual HydroAttachment &getParentReservoir() = 0;
-    template<class U> inline void setInputReservoir(U reservoir);
-    template<class U = HydroReservoir> inline SharedPtr<U> getInputReservoir();
+    virtual HydroAttachment &getSourceReservoirAttachment() = 0;
+    template<class U> inline void setSourceReservoir(U reservoir);
+    template<class U = HydroReservoir> inline SharedPtr<U> getSourceReservoir();
 
-    virtual HydroAttachment &getDestinationReservoir() = 0;
-    template<class U> inline void setOutputReservoir(U reservoir);
-    template<class U = HydroReservoir> inline SharedPtr<U> getOutputReservoir();
+    virtual HydroAttachment &getDestinationReservoirAttachment() = 0;
+    template<class U> inline void setDestinationReservoir(U reservoir);
+    template<class U = HydroReservoir> inline SharedPtr<U> getDestinationReservoir();
 
     virtual void setContinuousFlowRate(HydroSingleMeasurement contFlowRate) = 0;
     virtual const HydroSingleMeasurement &getContinuousFlowRate() = 0;
     inline void setContinuousFlowRate(float contFlowRate, Hydro_UnitsType contFlowRateUnits = Hydro_UnitsType_Undefined);
 
+    inline bool isSourceReservoirEmpty(bool poll = false);
+    inline bool isDestinationReservoirFilled(bool poll = false);
+
 protected:
-    virtual void pollPumpingSensors() = 0;
     virtual void handlePumpTime(millis_t time) = 0;
 };
 
@@ -314,63 +339,71 @@ protected:
 // Parent Actuator Attachment Interface
 class HydroParentActuatorAttachmentInterface {
 public:
-    virtual HydroAttachment &getParentActuator() = 0;
+    virtual HydroAttachment &getParentActuatorAttachment() = 0;
 
-    template<class U> inline void setActuator(U actuator);
-    template<class U = HydroActuator> inline SharedPtr<U> getActuator();
+    template<class U> inline void setParentActuator(U actuator);
+    template<class U = HydroActuator> inline SharedPtr<U> getParentActuator();
 };
 
 // Parent Sensor Attachment Interface
 class HydroParentSensorAttachmentInterface {
 public:
-    virtual HydroAttachment &getParentSensor() = 0;
+    virtual HydroAttachment &getParentSensorAttachment() = 0;
 
-    template<class U> inline void setSensor(U sensor);
-    template<class U = HydroSensor> inline SharedPtr<U> getSensor();
+    template<class U> inline void setParentSensor(U sensor);
+    template<class U = HydroSensor> inline SharedPtr<U> getParentSensor();
 };
 
 // Parent Crop Attachment Interface
 class HydroParentCropAttachmentInterface {
 public:
-    virtual HydroAttachment &getParentCrop() = 0;
+    virtual HydroAttachment &getParentCropAttachment() = 0;
 
-    template<class U> inline void setCrop(U crop);
-    template<class U = HydroCrop> inline SharedPtr<U> getCrop();
+    template<class U> inline void setParentCrop(U crop);
+    template<class U = HydroCrop> inline SharedPtr<U> getParentCrop();
 };
 
 // Parent Reservoir Attachment Interface
 class HydroParentReservoirAttachmentInterface {
 public:
-    virtual HydroAttachment &getParentReservoir() = 0;
+    virtual HydroAttachment &getParentReservoirAttachment() = 0;
 
-    template<class U> inline void setReservoir(U reservoir);
-    template<class U = HydroReservoir> inline SharedPtr<U> getReservoir();
+    template<class U> inline void setParentReservoir(U reservoir);
+    template<class U = HydroReservoir> inline SharedPtr<U> getParentReservoir();
 };
 
 // Parent Rail Attachment Interface
 class HydroParentRailAttachmentInterface {
 public:
-    virtual HydroAttachment &getParentRail() = 0;
+    virtual HydroAttachment &getParentRailAttachment() = 0;
 
-    template<class U> inline void setRail(U rail);
-    template<class U = HydroRail> inline SharedPtr<U> getRail();
+    template<class U> inline void setParentRail(U rail);
+    template<class U = HydroRail> inline SharedPtr<U> getParentRail();
 };
 
 
 // Feed Reservoir Attachment Interface
 class HydroFeedReservoirAttachmentInterface {
 public:
-    virtual HydroAttachment &getFeed() = 0;
+    virtual HydroAttachment &getFeedReservoirAttachment() = 0;
 
     template<class U> inline void setFeedReservoir(U reservoir);
-    template<class U = HydroFeedReservoir> inline SharedPtr<U> getFeedReservoir();
+    template<class U = HydroFeedReservoir> inline SharedPtr<U> getFeedReservoir(bool poll = false);
 };
 
+
+// Abstract Sensor Attachment Interface
+class HydroSensorAttachmentInterface {
+    virtual HydroSensorAttachment &getSensorAttachment() = 0;
+
+    template<class U> inline void setSensor(U sensor);
+    template<class U = HydroSensor> inline SharedPtr<U> getSensor(bool poll = false);
+};
 
 // Air CO2 Sensor Attachment Interface
 class HydroAirCO2SensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getAirCO2() = 0;
+    virtual HydroSensorAttachment &getAirCO2SensorAttachment() = 0;
 
     template<class U> inline void setAirCO2Sensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getAirCO2Sensor(bool poll = false);
@@ -379,7 +412,7 @@ public:
 // Air Temperature Sensor Attachment Interface
 class HydroAirTemperatureSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getAirTemperature() = 0;
+    virtual HydroSensorAttachment &getAirTemperatureSensorAttachment() = 0;
 
     template<class U> inline void setAirTemperatureSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getAirTemperatureSensor(bool poll = false);
@@ -388,7 +421,7 @@ public:
 // Power Production Sensor Attachment Interface
 class HydroPowerProductionSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getPowerProduction() = 0;
+    virtual HydroSensorAttachment &getPowerProductionSensorAttachment() = 0;
 
     template<class U> inline void setPowerProductionSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getPowerProductionSensor(bool poll = false);
@@ -397,7 +430,7 @@ public:
 // Power Usage Sensor Attachment Interface
 class HydroPowerUsageSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getPowerUsage() = 0;
+    virtual HydroSensorAttachment &getPowerUsageSensorAttachment() = 0;
 
     template<class U> inline void setPowerUsageSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getPowerUsageSensor(bool poll = false);
@@ -406,7 +439,7 @@ public:
 // Soil Moisture Sensor Attachment Interface
 class HydroSoilMoistureSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getSoilMoisture() = 0;
+    virtual HydroSensorAttachment &getSoilMoistureSensorAttachment() = 0;
 
     template<class U> inline void setSoilMoistureSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getSoilMoistureSensor(bool poll = false);
@@ -415,7 +448,7 @@ public:
 // Liquid Flow Rate Sensor Attachment Interface
 class HydroWaterFlowRateSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getFlowRate() = 0;
+    virtual HydroSensorAttachment &getFlowRateSensorAttachment() = 0;
 
     template<class U> inline void setFlowRateSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getFlowRateSensor(bool poll = false);
@@ -424,7 +457,7 @@ public:
 // Water pH/Alkalinity Sensor Attachment Interface
 class HydroWaterPHSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getWaterPH() = 0;
+    virtual HydroSensorAttachment &getWaterPHSensorAttachment() = 0;
 
     template<class U> inline void setWaterPHSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getWaterPHSensor(bool poll = false);
@@ -433,7 +466,7 @@ public:
 // Water TDS/Concentration Sensor Attachment Interface
 class HydroWaterTDSSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getWaterTDS() = 0;
+    virtual HydroSensorAttachment &getWaterTDSSensorAttachment() = 0;
 
     template<class U> inline void setWaterTDSSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getWaterTDSSensor(bool poll = false);
@@ -442,7 +475,7 @@ public:
 // Water Temperature Sensor Attachment Interface
 class HydroWaterTemperatureSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getWaterTemperature() = 0;
+    virtual HydroSensorAttachment &getWaterTemperatureSensorAttachment() = 0;
 
     template<class U> inline void setWaterTemperatureSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getWaterTemperatureSensor(bool poll = false);
@@ -451,17 +484,25 @@ public:
 // Liquid Volume Sensor Attachment Interface
 class HydroWaterVolumeSensorAttachmentInterface {
 public:
-    virtual HydroSensorAttachment &getWaterVolume() = 0;
+    virtual HydroSensorAttachment &getWaterVolumeSensorAttachment() = 0;
 
     template<class U> inline void setWaterVolumeSensor(U sensor);
     template<class U = HydroSensor> inline SharedPtr<U> getWaterVolumeSensor(bool poll = false);
 };
 
 
+// Abstract Trigger Attachment Interface
+class HydroTriggerAttachmentInterface {
+    virtual HydroTriggerAttachment &getTriggerAttachment() = 0;
+
+    template<class U> inline void setTrigger(U trigger);
+    template<class U = HydroTrigger> inline SharedPtr<U> getTrigger(bool poll = false);
+};
+
 // Filled Trigger Attachment Interface
 class HydroFilledTriggerAttachmentInterface {
 public:
-    virtual HydroTriggerAttachment &getFilled() = 0;
+    virtual HydroTriggerAttachment &getFilledTriggerAttachment() = 0;
 
     template<class U> inline void setFilledTrigger(U trigger);
     template<class U = HydroTrigger> inline SharedPtr<U>getFilledTrigger(bool poll = false);
@@ -470,7 +511,7 @@ public:
 // Empty Trigger Attachment Interface
 class HydroEmptyTriggerAttachmentInterface {
 public:
-    virtual HydroTriggerAttachment &getEmpty() = 0;
+    virtual HydroTriggerAttachment &getEmptyTriggerAttachment() = 0;
 
     template<class U> inline void setEmptyTrigger(U trigger);
     template<class U = HydroTrigger> inline SharedPtr<U>getEmptyTrigger(bool poll = false);
@@ -479,7 +520,7 @@ public:
 // Feeding Trigger Attachment Interface
 class HydroFeedingTriggerAttachmentInterface {
 public:
-    virtual HydroTriggerAttachment &getFeeding() = 0;
+    virtual HydroTriggerAttachment &getFeedingAttachment() = 0;
 
     template<class U> inline void setFeedingTrigger(U trigger);
     template<class U = HydroTrigger> inline SharedPtr<U>getFeedingTrigger(bool poll = false);
@@ -488,7 +529,7 @@ public:
 // Limit Trigger Attachment Interface
 class HydroLimitTriggerAttachmentInterface {
 public:
-    virtual HydroTriggerAttachment &getLimit() = 0;
+    virtual HydroTriggerAttachment &getLimitAttachment() = 0;
 
     template<class U> inline void setLimitTrigger(U trigger);
     template<class U = HydroTrigger> inline SharedPtr<U>getLimitTrigger(bool poll = false);

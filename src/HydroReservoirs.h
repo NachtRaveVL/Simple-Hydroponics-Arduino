@@ -27,7 +27,7 @@ extern HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *data
 // This is the base class for all reservoirs, which defines how the reservoir is
 // identified, where it lives, what's attached to it, if it is full or empty, and
 // who can activate under it.
-class HydroReservoir : public HydroObject, public HydroReservoirObjectInterface, public HydroVolumeUnitsInterface {
+class HydroReservoir : public HydroObject, public HydroReservoirObjectInterface, public HydroVolumeUnitsInterfaceStorage {
 public:
     const enum : signed char { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
     inline bool isFluidClass() const { return classType == Fluid; }
@@ -49,7 +49,7 @@ public:
 
     virtual void setVolumeUnits(Hydro_UnitsType volumeUnits) override;
 
-    virtual HydroSensorAttachment &getWaterVolume() = 0;
+    virtual HydroSensorAttachment &getWaterVolumeSensorAttachment() = 0;
 
     inline Hydro_ReservoirType getReservoirType() const { return _id.objTypeAs.reservoirType; }
     inline hposi_t getReservoirIndex() const { return _id.posIndex; }
@@ -58,8 +58,8 @@ public:
     Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &getEmptySignal();
 
 protected:
-    Hydro_TriggerState _filledState;                        // Current filled state
-    Hydro_TriggerState _emptyState;                         // Current empty state
+    Hydro_TriggerState _filledState;                        // Filled state (last handled)
+    Hydro_TriggerState _emptyState;                         // Empty state (last handled)
 
     Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> _filledSignal; // Filled state signal
     Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> _emptySignal; // Empty state signal
@@ -92,11 +92,11 @@ public:
 
     virtual void setVolumeUnits(Hydro_UnitsType volumeUnits) override;
 
-    virtual HydroSensorAttachment &getWaterVolume() override;
+    virtual HydroSensorAttachment &getWaterVolumeSensorAttachment() override;
 
-    virtual HydroTriggerAttachment &getFilled() override;
+    virtual HydroTriggerAttachment &getFilledTriggerAttachment() override;
 
-    virtual HydroTriggerAttachment &getEmpty() override;
+    virtual HydroTriggerAttachment &getEmptyTriggerAttachment() override;
 
     inline float getMaxVolume() const { return _maxVolume; }
 
@@ -109,14 +109,14 @@ protected:
     virtual void saveToData(HydroData *dataOut) override;
 
     virtual void handleFilled(Hydro_TriggerState filledState) override;
-    virtual void handleEmpty(Hydro_TriggerState filledState) override;
+    virtual void handleEmpty(Hydro_TriggerState emptyState) override;
 };
 
 
 // Feed Water Reservoir
 // The feed water reservoir can be thought of as an entire feeding channel hub, complete
 // with sensors to automate the variety of tasks associated with feeding crops.
-class HydroFeedReservoir : public HydroFluidReservoir, public HydroConcentrateUnitsInterface, public HydroTemperatureUnitsInterface, public HydroWaterPHSensorAttachmentInterface, public HydroWaterTDSSensorAttachmentInterface, public HydroWaterTemperatureSensorAttachmentInterface,  public HydroAirTemperatureSensorAttachmentInterface, public HydroAirCO2SensorAttachmentInterface {
+class HydroFeedReservoir : public HydroFluidReservoir, public HydroConcentrateUnitsInterfaceStorage, public HydroTemperatureUnitsInterfaceStorage, public HydroWaterPHSensorAttachmentInterface, public HydroWaterTDSSensorAttachmentInterface, public HydroWaterTemperatureSensorAttachmentInterface,  public HydroAirTemperatureSensorAttachmentInterface, public HydroAirCO2SensorAttachmentInterface {
 public:
     HydroFeedReservoir(hposi_t reservoirIndex,
                        float maxVolume,
@@ -131,11 +131,11 @@ public:
     virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
     virtual void setTemperatureUnits(Hydro_UnitsType temperatureUnits) override;
 
-    virtual HydroSensorAttachment &getWaterPH() override;
-    virtual HydroSensorAttachment &getWaterTDS() override;
-    virtual HydroSensorAttachment &getWaterTemperature() override;
-    virtual HydroSensorAttachment &getAirTemperature() override;
-    virtual HydroSensorAttachment &getAirCO2() override;
+    virtual HydroSensorAttachment &getWaterPHSensorAttachment() override;
+    virtual HydroSensorAttachment &getWaterTDSSensorAttachment() override;
+    virtual HydroSensorAttachment &getWaterTemperatureSensorAttachment() override;
+    virtual HydroSensorAttachment &getAirTemperatureSensorAttachment() override;
+    virtual HydroSensorAttachment &getAirCO2SensorAttachment() override;
 
     template<typename T> inline void setWaterPHBalancer(T phBalancer) { _waterPHBalancer.setObject(phBalancer); }
     inline SharedPtr<HydroBalancer> getWaterPHBalancer() { return _waterPHBalancer.getObject(); }
@@ -203,7 +203,7 @@ public:
     virtual bool isFilled(bool poll = false) override;
     virtual bool isEmpty(bool poll = false) override;
 
-    virtual HydroSensorAttachment &getWaterVolume() override;
+    virtual HydroSensorAttachment &getWaterVolumeSensorAttachment() override;
 
 protected:
     HydroSensorAttachment _waterVolume;                     // Water volume sensor attachment (defunct)

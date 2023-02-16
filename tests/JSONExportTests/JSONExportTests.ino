@@ -11,8 +11,8 @@ void testActuators()
     Serial.println(); Serial.println("-- Actuators --");
 
     {   auto relay = SharedPtr<HydroRelayActuator>(new HydroRelayActuator(Hydro_ActuatorType_GrowLights, 0, HydroDigitalPin(7, OUTPUT)));
-        relay->setRail(HydroIdentity(String(F("ASDF"))));
-        relay->setReservoir(HydroIdentity(String(F("JKL"))));
+        relay->setParentRail(HydroIdentity(String(F("ASDF"))));
+        relay->setParentReservoir(HydroIdentity(String(F("JKL"))));
 
         auto data = (HydroActuatorData *)(relay->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -28,8 +28,8 @@ void testActuators()
     }
 
     {   auto pumpRelay = SharedPtr<HydroRelayPumpActuator>(new HydroRelayPumpActuator(Hydro_ActuatorType_WaterPump, 0, HydroDigitalPin(7, OUTPUT)));
-        pumpRelay->setRail(HydroIdentity(String(F("ASDF"))));
-        pumpRelay->setReservoir(HydroIdentity(String(F("JKL"))));
+        pumpRelay->setParentRail(HydroIdentity(String(F("ASDF"))));
+        pumpRelay->setParentReservoir(HydroIdentity(String(F("JKL"))));
 
         auto data = (HydroPumpActuatorData *)(pumpRelay->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -45,8 +45,8 @@ void testActuators()
     }
 
     {   auto pwmFan = SharedPtr<HydroVariableActuator>(new HydroVariableActuator(Hydro_ActuatorType_FanExhaust, 0, HydroAnalogPin(7, OUTPUT)));
-        pwmFan->setRail(HydroIdentity(String(F("ASDF"))));
-        pwmFan->setReservoir(HydroIdentity(String(F("JKL"))));
+        pwmFan->setParentRail(HydroIdentity(String(F("ASDF"))));
+        pwmFan->setParentReservoir(HydroIdentity(String(F("JKL"))));
 
         auto data = (HydroActuatorData *)(pwmFan->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -67,8 +67,8 @@ void testSensors()
     Serial.println(); Serial.println("-- Sensors --");
 
     {   auto binarySensor = SharedPtr<HydroBinarySensor>(new HydroBinarySensor(Hydro_SensorType_WaterLevel, 0, 0));
-        binarySensor->setCrop(HydroIdentity(String(F("ASDF"))));
-        binarySensor->setReservoir(HydroIdentity(String(F("JKL"))));
+        binarySensor->setParentCrop(HydroIdentity(String(F("ASDF"))));
+        binarySensor->setParentReservoir(HydroIdentity(String(F("JKL"))));
 
         auto data = (HydroBinarySensorData *)(binarySensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -84,8 +84,8 @@ void testSensors()
     }
 
     {   auto analogSensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(Hydro_SensorType_WaterHeight, 0, 0));
-        analogSensor->setCrop(HydroIdentity(String(F("ASDF"))));
-        analogSensor->setReservoir(HydroIdentity(String(F("JKL"))));
+        analogSensor->setParentCrop(HydroIdentity(String(F("ASDF"))));
+        analogSensor->setParentReservoir(HydroIdentity(String(F("JKL"))));
 
         auto data = (HydroAnalogSensorData *)(analogSensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -101,8 +101,8 @@ void testSensors()
     }
 
     {   auto dhtSensor = SharedPtr<HydroDHTTempHumiditySensor>(new HydroDHTTempHumiditySensor(0, 0, Hydro_DHTType_DHT12));
-        dhtSensor->setCrop(HydroIdentity(String(F("ASDF"))));
-        dhtSensor->setReservoir(HydroIdentity(String(F("JKL"))));
+        dhtSensor->setParentCrop(HydroIdentity(String(F("ASDF"))));
+        dhtSensor->setParentReservoir(HydroIdentity(String(F("JKL"))));
 
         auto data = (HydroDHTTempHumiditySensorData *)(dhtSensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;
@@ -118,8 +118,8 @@ void testSensors()
     }
 
     {   auto dsSensor = SharedPtr<HydroDSTemperatureSensor>(new HydroDSTemperatureSensor(0, 0));
-        dsSensor->setCrop(HydroIdentity(String(F("ASDF"))));
-        dsSensor->setReservoir(HydroIdentity(String(F("JKL"))));
+        dsSensor->setParentCrop(HydroIdentity(String(F("ASDF"))));
+        dsSensor->setParentReservoir(HydroIdentity(String(F("JKL"))));
 
         auto data = (HydroDSTemperatureSensorData *)(dsSensor->newSaveData());
         StaticJsonDocument<JSONDocSize> doc;

@@ -68,7 +68,7 @@ void HydroScheduler::setupWaterPHBalancer(HydroReservoir *reservoir, SharedPtr<H
 {
     if (reservoir && waterPHBalancer) {
         {   Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> incActuators;
-            auto phUpPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_PhUpSolution);
+            auto phUpPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_PhUpSolution);
             float dosingRate = getCombinedDosingRate(reservoir, Hydro_ReservoirType_PhUpSolution);
 
             linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phUpPumps, waterPHBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
@@ -80,7 +80,7 @@ void HydroScheduler::setupWaterPHBalancer(HydroReservoir *reservoir, SharedPtr<H
         }
 
         {   Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> decActuators;
-            auto phDownPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_PhDownSolution);
+            auto phDownPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_PhDownSolution);
             float dosingRate = getCombinedDosingRate(reservoir, Hydro_ReservoirType_PhDownSolution);
 
             linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(phDownPumps, waterPHBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_PeristalticPump);
@@ -100,7 +100,7 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
             float dosingRate = getCombinedDosingRate(reservoir, Hydro_ReservoirType_NutrientPremix);
 
             if (dosingRate > FLT_EPSILON) {
-                auto nutrientPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_NutrientPremix);
+                auto nutrientPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_NutrientPremix);
 
                 linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
                 if (!incActuators.size()) { // prefer peristaltic, else use full pump
@@ -116,7 +116,7 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
                         dosingRate = getCombinedDosingRate(reservoir, (Hydro_ReservoirType)reservoirType);
 
                         if (dosingRate > FLT_EPSILON) {
-                            auto nutrientPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, (Hydro_ReservoirType)reservoirType);
+                            auto nutrientPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, (Hydro_ReservoirType)reservoirType);
 
                             linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(nutrientPumps, waterTDSBalancer.get(), dosingRate, incActuators, Hydro_ActuatorType_PeristalticPump);
                             if (incActuators.size() == prevIncSize) { // prefer peristaltic, else use full pump
@@ -136,7 +136,7 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
             float dosingRate = getCombinedDosingRate(reservoir, Hydro_ReservoirType_FreshWater);
 
             if (dosingRate > FLT_EPSILON) {
-                auto dilutionPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_NutrientPremix);
+                auto dilutionPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_NutrientPremix);
 
                 linksResolveActuatorsWithRateByType<HYDRO_BAL_ACTUATORS_MAXSIZE>(dilutionPumps, waterTDSBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_PeristalticPump);
                 if (!decActuators.size()) { // prefer peristaltic, else use full pump
@@ -692,7 +692,7 @@ void HydroFeeding::setupStaging()
             }
             if (phBalancer) {
                 phBalancer->setTargetSetpoint(phSetpoint);
-                phBalancer->setMeasureUnits(Hydro_UnitsType_Alkalinity_pH_14);
+                phBalancer->setMeasurementUnits(Hydro_UnitsType_Alkalinity_pH_14);
                 phBalancer->setEnabled(true);
             }
         }
@@ -706,7 +706,7 @@ void HydroFeeding::setupStaging()
             }
             if (tdsBalancer) {
                 tdsBalancer->setTargetSetpoint(tdsSetpoint);
-                tdsBalancer->setMeasureUnits(Hydro_UnitsType_Concentration_EC_5);
+                tdsBalancer->setMeasurementUnits(Hydro_UnitsType_Concentration_EC_5);
                 tdsBalancer->setEnabled(true);
             }
         }
@@ -727,7 +727,7 @@ void HydroFeeding::setupStaging()
         }
         if (waterTempBalancer) {
             waterTempBalancer->setTargetSetpoint(waterTempSetpoint);
-            waterTempBalancer->setMeasureUnits(Hydro_UnitsType_Temperature_Celsius);
+            waterTempBalancer->setMeasurementUnits(Hydro_UnitsType_Temperature_Celsius);
             waterTempBalancer->setEnabled(true);
         }
     } else {
@@ -745,7 +745,7 @@ void HydroFeeding::setupStaging()
         }
         if (airTempBalancer) {
             airTempBalancer->setTargetSetpoint(airTempSetpoint);
-            airTempBalancer->setMeasureUnits(Hydro_UnitsType_Temperature_Celsius);
+            airTempBalancer->setMeasurementUnits(Hydro_UnitsType_Temperature_Celsius);
             airTempBalancer->setEnabled(true);
         }
     } else {
@@ -763,7 +763,7 @@ void HydroFeeding::setupStaging()
         }
         if (co2Balancer) {
             co2Balancer->setTargetSetpoint(co2Setpoint);
-            co2Balancer->setMeasureUnits(Hydro_UnitsType_Concentration_PPM);
+            co2Balancer->setMeasurementUnits(Hydro_UnitsType_Concentration_PPM);
             co2Balancer->setEnabled(true);
         }
     } else {
@@ -791,7 +791,7 @@ void HydroFeeding::setupStaging()
         case TopOff: {
             if (!feedRes->isFilled()) {
                 Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
-                auto topOffPumps = linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FreshWater);
+                auto topOffPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FreshWater);
 
                 linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(topOffPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // fresh water pumps
                 if (!newActuatorReqs.size()) {
@@ -817,13 +817,13 @@ void HydroFeeding::setupStaging()
         case Feed: {
             Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
 
-            {   auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FeedWater);
+            {   auto feedPumps = linksFilterPumpActuatorsBySourceReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_FeedWater);
 
                 linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // feed water pump
             }
 
             if (!newActuatorReqs.size() && getController()->getSystemMode() == Hydro_SystemMode_DrainToWaste) { // prefers feed water pumps, else direct to waste is feed
-                auto feedPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
+                auto feedPumps = linksFilterPumpActuatorsBySourceReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
 
                 linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(feedPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // DTW feed water pump
             }
@@ -842,7 +842,7 @@ void HydroFeeding::setupStaging()
 
         case Drain: {
             Vector<HydroActuatorAttachment, HYDRO_SCH_REQACTS_MAXSIZE> newActuatorReqs;
-            auto drainPumps = linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
+            auto drainPumps = linksFilterPumpActuatorsBySourceReservoirAndOutputReservoirType<HYDRO_SCH_REQACTS_MAXSIZE>(feedRes->getLinkages(), feedRes.get(), Hydro_ReservoirType_DrainageWater);
 
             linksResolveActuatorsByType<HYDRO_SCH_REQACTS_MAXSIZE>(drainPumps, newActuatorReqs, Hydro_ActuatorType_WaterPump); // drainage water pump
 
@@ -1018,23 +1018,23 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
         case HydroFeedingLogType_WaterMeasures:
             #ifdef HYDRO_USE_MULTITASKING
                 // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
-                if ((feedRes->getWaterPHSensor() && !feedRes->getWaterPH().getMeasurementFrame()) ||
-                    (feedRes->getWaterTDSSensor() && !feedRes->getWaterTDS().getMeasurementFrame()) ||
-                    (feedRes->getWaterTemperatureSensor() && !feedRes->getWaterTemperature().getMeasurementFrame())) {
+                if ((feedRes->getWaterPHSensor() && !feedRes->getWaterPHSensorAttachment().getMeasurementFrame()) ||
+                    (feedRes->getWaterTDSSensor() && !feedRes->getWaterTDSSensorAttachment().getMeasurementFrame()) ||
+                    (feedRes->getWaterTemperatureSensor() && !feedRes->getWaterTemperatureSensorAttachment().getMeasurementFrame())) {
                     yield();
                 }
             #endif
              if (feedRes->getWaterPHSensor()) {
-                auto ph = feedRes->getWaterPH().getMeasurement(true);
+                auto ph = feedRes->getWaterPHSensorAttachment().getMeasurement(true);
                 getLogger()->logMessage(SFP(HStr_Log_Field_pH_Measured), measurementToString(ph));
             }
             if (feedRes->getWaterTDSSensor()) {
-                auto tds = feedRes->getWaterTDS().getMeasurement(true);
+                auto tds = feedRes->getWaterTDSSensorAttachment().getMeasurement(true);
                 convertUnits(&tds, feedRes->getConcentrateUnits());
                 getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Measured), measurementToString(tds, 1));
             }
             if (feedRes->getWaterTemperatureSensor()) {
-                auto temp = feedRes->getWaterTemperature().getMeasurement(true);
+                auto temp = feedRes->getWaterTemperatureSensorAttachment().getMeasurement(true);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
                 getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
@@ -1053,18 +1053,18 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
         case HydroFeedingLogType_AirMeasures:
             #ifdef HYDRO_USE_MULTITASKING
                 // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
-                if ((feedRes->getAirTemperatureSensor() && !feedRes->getAirTemperature().getMeasurementFrame()) ||
-                    (feedRes->getAirCO2Sensor() && !feedRes->getAirCO2().getMeasurementFrame())) {
+                if ((feedRes->getAirTemperatureSensor() && !feedRes->getAirTemperatureSensorAttachment().getMeasurementFrame()) ||
+                    (feedRes->getAirCO2Sensor() && !feedRes->getAirCO2SensorAttachment().getMeasurementFrame())) {
                     yield();
                 }
             #endif
             if (feedRes->getAirTemperatureSensor()) {
-                auto temp = feedRes->getAirTemperature().getMeasurement(true);
+                auto temp = feedRes->getAirTemperatureSensorAttachment().getMeasurement(true);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
                 getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
             if (feedRes->getAirCO2Sensor()) {
-                auto co2 = feedRes->getAirCO2().getMeasurement(true);
+                auto co2 = feedRes->getAirCO2SensorAttachment().getMeasurement(true);
                 getLogger()->logMessage(SFP(HStr_Log_Field_CO2_Measured), measurementToString(co2));
             }
             break;

@@ -25,24 +25,25 @@ HydroTrigger *newTriggerObjectFromSubData(const HydroTriggerSubData *dataIn)
 }
 
 
-HydroTrigger::HydroTrigger(HydroIdentity sensorId, uint8_t measureRow, int typeIn)
+HydroTrigger::HydroTrigger(HydroIdentity sensorId, uint8_t measurementRow, int typeIn)
     : type((typeof(type))typeIn), _sensor(this), _triggerState(Hydro_TriggerState_Disabled)
 {
-    _sensor.setMeasureRow(measureRow);
+    _sensor.setMeasurementRow(measurementRow);
     _sensor.setObject(sensorId);
 }
 
-HydroTrigger::HydroTrigger(SharedPtr<HydroSensor> sensor, uint8_t measureRow, int typeIn)
+HydroTrigger::HydroTrigger(SharedPtr<HydroSensor> sensor, uint8_t measurementRow, int typeIn)
     : type((typeof(type))typeIn), _sensor(this), _triggerState(Hydro_TriggerState_Disabled)
 {
-    _sensor.setMeasureRow(measureRow);
+    _sensor.setMeasurementRow(measurementRow);
     _sensor.setObject(sensor);
 }
 
 HydroTrigger::HydroTrigger(const HydroTriggerSubData *dataIn)
     : type((typeof(type))(dataIn->type)), _sensor(this), _triggerState(Hydro_TriggerState_Disabled)
 {
-    setMeasureUnits(dataIn->measureUnits);
+    _sensor.setMeasurementRow(dataIn->measurementRow);
+    _sensor.setMeasurementUnits(dataIn->measurementUnits);
     _sensor.setObject(dataIn->sensorName);
 }
 
@@ -52,8 +53,8 @@ void HydroTrigger::saveToData(HydroTriggerSubData *dataOut) const
     if (_sensor.getId()) {
         strncpy(((HydroTriggerSubData *)dataOut)->sensorName, _sensor.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    ((HydroTriggerSubData *)dataOut)->measureRow = _sensor.getMeasureRow();
-    ((HydroTriggerSubData *)dataOut)->measureUnits = getMeasureUnits();
+    ((HydroTriggerSubData *)dataOut)->measurementRow = getMeasurementRow();
+    ((HydroTriggerSubData *)dataOut)->measurementUnits = getMeasurementUnits();
 }
 
 void HydroTrigger::update()
@@ -70,21 +71,31 @@ Hydro_TriggerState HydroTrigger::getTriggerState(bool poll)
     return _triggerState;
 }
 
+void HydroTrigger::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow)
+{
+    _sensor.setMeasurementUnits(measurementUnits);
+}
+
+Hydro_UnitsType HydroTrigger::getMeasurementUnits(uint8_t measurementRow) const
+{
+    return _sensor.getMeasurementUnits();
+}
+
 Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> &HydroTrigger::getTriggerSignal()
 {
     return _triggerSignal;
 }
 
 
-HydroMeasurementValueTrigger::HydroMeasurementValueTrigger(HydroIdentity sensorId, float tolerance, bool triggerBelow, float detriggerTol, uint8_t measureRow)
-    : HydroTrigger(sensorId, measureRow, MeasureValue),
+HydroMeasurementValueTrigger::HydroMeasurementValueTrigger(HydroIdentity sensorId, float tolerance, bool triggerBelow, float detriggerTol, uint8_t measurementRow)
+    : HydroTrigger(sensorId, measurementRow, MeasureValue),
       _triggerTol(tolerance), _detriggerTol(detriggerTol), _triggerBelow(triggerBelow)
 {
     _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement);
 }
 
-HydroMeasurementValueTrigger::HydroMeasurementValueTrigger(SharedPtr<HydroSensor> sensor, float tolerance, bool triggerBelow, float detriggerTol, uint8_t measureRow)
-    : HydroTrigger(sensor, measureRow, MeasureValue),
+HydroMeasurementValueTrigger::HydroMeasurementValueTrigger(SharedPtr<HydroSensor> sensor, float tolerance, bool triggerBelow, float detriggerTol, uint8_t measurementRow)
+    : HydroTrigger(sensor, measurementRow, MeasureValue),
       _triggerTol(tolerance), _detriggerTol(detriggerTol), _triggerBelow(triggerBelow)
 {
     _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement);
@@ -123,10 +134,10 @@ void HydroMeasurementValueTrigger::handleMeasurement(const HydroMeasurement *mea
 
         if (measurement->isBinaryType()) {
             nextState = ((HydroBinaryMeasurement *)measurement)->state != _triggerBelow;
-            _sensor.setMeasurement(getAsSingleMeasurement(measurement, _sensor.getMeasureRow()));
+            _sensor.setMeasurement(getAsSingleMeasurement(measurement, getMeasurementRow()));
         } else {
-            auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasureRow());
-            convertUnits(&measure, getMeasureUnits(), _sensor.getMeasurementConvertParam());
+            auto measure = getAsSingleMeasurement(measurement, getMeasurementRow());
+            convertUnits(&measure, getMeasurementUnits(), getMeasurementConvertParam());
             _sensor.setMeasurement(measure);
 
             float tolAdditive = (nextState ? _detriggerTol : 0);
@@ -148,16 +159,16 @@ void HydroMeasurementValueTrigger::handleMeasurement(const HydroMeasurement *mea
 }
 
 
-HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(HydroIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, uint8_t measureRow)
-    : HydroTrigger(sensorId, measureRow, MeasureRange),
+HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(HydroIdentity sensorId, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, uint8_t measurementRow)
+    : HydroTrigger(sensorId, measurementRow, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)
 {
     _sensor.setHandleMethod(&HydroMeasurementRangeTrigger::handleMeasurement);
 }
 
-HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(SharedPtr<HydroSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, uint8_t measureRow)
-    : HydroTrigger(sensor, measureRow, MeasureRange),
+HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(SharedPtr<HydroSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, float detriggerTol, uint8_t measurementRow)
+    : HydroTrigger(sensor, measurementRow, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _detriggerTol(detriggerTol),
       _triggerOutside(triggerOutside)
 {
@@ -201,8 +212,8 @@ void HydroMeasurementRangeTrigger::handleMeasurement(const HydroMeasurement *mea
     if (measurement && measurement->frame) {
         bool nextState = triggerStateToBool(_triggerState);
 
-        auto measure = getAsSingleMeasurement(measurement, _sensor.getMeasureRow());
-        convertUnits(&measure, getMeasureUnits(), _sensor.getMeasurementConvertParam());
+        auto measure = getAsSingleMeasurement(measurement, getMeasurementRow());
+        convertUnits(&measure, getMeasurementUnits(), getMeasurementConvertParam());
         _sensor.setMeasurement(measure);
 
         float tolAdditive = (nextState ? _detriggerTol : 0);
@@ -230,7 +241,7 @@ void HydroMeasurementRangeTrigger::handleMeasurement(const HydroMeasurement *mea
 
 
 HydroTriggerSubData::HydroTriggerSubData()
-    : HydroSubData(), sensorName{0}, measureRow(0), dataAs{.measureRange={0.0f,0.0f,false}}, detriggerTol(0), measureUnits(Hydro_UnitsType_Undefined)
+    : HydroSubData(), sensorName{0}, measurementRow(0), dataAs{.measureRange={0.0f,0.0f,false}}, detriggerTol(0), measurementUnits(Hydro_UnitsType_Undefined)
 { ; }
 
 void HydroTriggerSubData::toJSONObject(JsonObject &objectOut) const
@@ -238,7 +249,7 @@ void HydroTriggerSubData::toJSONObject(JsonObject &objectOut) const
     HydroSubData::toJSONObject(objectOut);
 
     if (sensorName[0]) { objectOut[SFP(HStr_Key_SensorName)] = charsToString(sensorName, HYDRO_NAME_MAXSIZE); }
-    if (measureRow > 0) { objectOut[SFP(HStr_Key_MeasureRow)] = measureRow; }
+    if (measurementRow > 0) { objectOut[SFP(HStr_Key_MeasurementRow)] = measurementRow; }
     switch (type) {
         case (int8_t)HydroTrigger::MeasureValue:
             objectOut[SFP(HStr_Key_Tolerance)] = dataAs.measureValue.tolerance;
@@ -252,7 +263,7 @@ void HydroTriggerSubData::toJSONObject(JsonObject &objectOut) const
         default: break;
     }
     if (detriggerTol > 0) { objectOut[SFP(HStr_Key_DetriggerTol)] = detriggerTol; }
-    if (measureUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_MeasureUnits)] = unitsTypeToSymbol(measureUnits); }
+    if (measurementUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_MeasurementUnits)] = unitsTypeToSymbol(measurementUnits); }
 }
 
 void HydroTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
@@ -261,7 +272,7 @@ void HydroTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
 
     const char *sensorNameStr = objectIn[SFP(HStr_Key_SensorName)];
     if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRO_NAME_MAXSIZE); }
-    measureRow = objectIn[SFP(HStr_Key_MeasureRow)] | measureRow;
+    measurementRow = objectIn[SFP(HStr_Key_MeasurementRow)] | measurementRow;
     switch (type) {
         case (int8_t)HydroTrigger::MeasureValue:
             dataAs.measureValue.tolerance = objectIn[SFP(HStr_Key_Tolerance)] | dataAs.measureValue.tolerance;
@@ -275,5 +286,5 @@ void HydroTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
         default: break;
     }
     detriggerTol = objectIn[SFP(HStr_Key_DetriggerTol)] | detriggerTol;
-    measureUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_MeasureUnits)]);
+    measurementUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_MeasurementUnits)]);
 }

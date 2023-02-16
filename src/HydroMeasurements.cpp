@@ -27,7 +27,7 @@ HydroMeasurement *newMeasurementObjectFromSubData(const HydroMeasurementData *da
     return nullptr;
 }
 
-float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measureRow, float binTrue)
+float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measurementRow, float binTrue)
 {
     if (measurement) {
         switch (measurement->type) {
@@ -36,16 +36,16 @@ float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measureRo
             case HydroMeasurement::Single:
                 return ((HydroSingleMeasurement *)measurement)->value;
             case HydroMeasurement::Double:
-                return ((HydroDoubleMeasurement *)measurement)->value[measureRow];
+                return ((HydroDoubleMeasurement *)measurement)->value[measurementRow];
             case HydroMeasurement::Triple:
-                return ((HydroTripleMeasurement *)measurement)->value[measureRow];
+                return ((HydroTripleMeasurement *)measurement)->value[measurementRow];
             default: break;
         }
     }
     return 0.0f;
 }
 
-Hydro_UnitsType getMeasureUnits(const HydroMeasurement *measurement, uint8_t measureRow, Hydro_UnitsType binUnits)
+Hydro_UnitsType getMeasurementUnits(const HydroMeasurement *measurement, uint8_t measurementRow, Hydro_UnitsType binUnits)
 {
     if (measurement) {
         switch (measurement->type) {
@@ -54,21 +54,21 @@ Hydro_UnitsType getMeasureUnits(const HydroMeasurement *measurement, uint8_t mea
             case HydroMeasurement::Single:
                 return ((HydroSingleMeasurement *)measurement)->units;
             case HydroMeasurement::Double:
-                return ((HydroDoubleMeasurement *)measurement)->units[measureRow];
+                return ((HydroDoubleMeasurement *)measurement)->units[measurementRow];
             case HydroMeasurement::Triple:
-                return ((HydroTripleMeasurement *)measurement)->units[measureRow];
+                return ((HydroTripleMeasurement *)measurement)->units[measurementRow];
             default: break;
         }
     }
     return Hydro_UnitsType_Undefined;
 }
 
-uint8_t getMeasureRowCount(const HydroMeasurement *measurement)
+uint8_t getMeasurementRowCount(const HydroMeasurement *measurement)
 {
     return measurement ? max(1, (int)(measurement->type)) : 0;
 }
 
-HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measureRow, float binTrue, Hydro_UnitsType binUnits)
+HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measurementRow, float binTrue, Hydro_UnitsType binUnits)
 {
     if (measurement) {
         switch (measurement->type) {
@@ -77,9 +77,9 @@ HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measuremen
             case HydroMeasurement::Single:
                 return *((const HydroSingleMeasurement *)measurement);
             case HydroMeasurement::Double:
-                return ((HydroDoubleMeasurement *)measurement)->getAsSingleMeasurement(measureRow);
+                return ((HydroDoubleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow);
             case HydroMeasurement::Triple:
-                return ((HydroTripleMeasurement *)measurement)->getAsSingleMeasurement(measureRow);
+                return ((HydroTripleMeasurement *)measurement)->getAsSingleMeasurement(measurementRow);
             default: break;
         }
     }
@@ -101,10 +101,10 @@ HydroMeasurement::HydroMeasurement(const HydroMeasurementData *dataIn)
     updateFrame(1);
 }
 
-void HydroMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measureRow, unsigned int additionalDecPlaces) const
+void HydroMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow, unsigned int additionalDecPlaces) const
 {
     dataOut->type = (int8_t)type;
-    dataOut->measureRow = measureRow;
+    dataOut->measurementRow = measurementRow;
     dataOut->timestamp = timestamp;
 }
 
@@ -128,15 +128,15 @@ HydroBinaryMeasurement::HydroBinaryMeasurement(bool stateIn, time_t timestamp, h
 
 HydroBinaryMeasurement::HydroBinaryMeasurement(const HydroMeasurementData *dataIn)
     : HydroMeasurement(dataIn),
-      state(dataIn->measureRow == 0 && dataIn->value >= 0.5f - FLT_EPSILON)
+      state(dataIn->measurementRow == 0 && dataIn->value >= 0.5f - FLT_EPSILON)
 { ; }
 
-void HydroBinaryMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measureRow, unsigned int additionalDecPlaces) const
+void HydroBinaryMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroMeasurement::saveToData(dataOut, measureRow, additionalDecPlaces);
+    HydroMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->value = measureRow == 0 && state ? 1.0f : 0.0f;
-    dataOut->units = measureRow == 0 ? Hydro_UnitsType_Raw_1 : Hydro_UnitsType_Undefined;
+    dataOut->value = measurementRow == 0 && state ? 1.0f : 0.0f;
+    dataOut->units = measurementRow == 0 ? Hydro_UnitsType_Raw_1 : Hydro_UnitsType_Undefined;
 }
 
 
@@ -154,16 +154,16 @@ HydroSingleMeasurement::HydroSingleMeasurement(float valueIn, Hydro_UnitsType un
 
 HydroSingleMeasurement::HydroSingleMeasurement(const HydroMeasurementData *dataIn)
     : HydroMeasurement(dataIn),
-      value(dataIn->measureRow == 0 ? dataIn->value : 0.0f),
-      units(dataIn->measureRow == 0 ? dataIn->units : Hydro_UnitsType_Undefined)
+      value(dataIn->measurementRow == 0 ? dataIn->value : 0.0f),
+      units(dataIn->measurementRow == 0 ? dataIn->units : Hydro_UnitsType_Undefined)
 { ; }
 
-void HydroSingleMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measureRow, unsigned int additionalDecPlaces) const
+void HydroSingleMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroMeasurement::saveToData(dataOut, measureRow, additionalDecPlaces);
+    HydroMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->value = measureRow == 0 ? roundForExport(value, additionalDecPlaces) : 0.0f;
-    dataOut->units = measureRow == 0 ? units : Hydro_UnitsType_Undefined;
+    dataOut->value = measurementRow == 0 ? roundForExport(value, additionalDecPlaces) : 0.0f;
+    dataOut->units = measurementRow == 0 ? units : Hydro_UnitsType_Undefined;
 }
 
 
@@ -185,20 +185,20 @@ HydroDoubleMeasurement::HydroDoubleMeasurement(float value1, Hydro_UnitsType uni
 
 HydroDoubleMeasurement::HydroDoubleMeasurement(const HydroMeasurementData *dataIn)
     : HydroMeasurement(dataIn),
-      value{dataIn->measureRow == 0 ? dataIn->value : 0.0f,
-            dataIn->measureRow == 1 ? dataIn->value : 0.0f
+      value{dataIn->measurementRow == 0 ? dataIn->value : 0.0f,
+            dataIn->measurementRow == 1 ? dataIn->value : 0.0f
       },
-      units{dataIn->measureRow == 0 ? dataIn->units : Hydro_UnitsType_Undefined,
-            dataIn->measureRow == 1 ? dataIn->units : Hydro_UnitsType_Undefined
+      units{dataIn->measurementRow == 0 ? dataIn->units : Hydro_UnitsType_Undefined,
+            dataIn->measurementRow == 1 ? dataIn->units : Hydro_UnitsType_Undefined
       }
 { ; }
 
-void HydroDoubleMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measureRow, unsigned int additionalDecPlaces) const
+void HydroDoubleMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroMeasurement::saveToData(dataOut, measureRow, additionalDecPlaces);
+    HydroMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->value = measureRow >= 0 && measureRow < 2 ? roundForExport(value[measureRow], additionalDecPlaces) : 0.0f;
-    dataOut->units = measureRow >= 0 && measureRow < 2 ? units[measureRow] : Hydro_UnitsType_Undefined;
+    dataOut->value = measurementRow >= 0 && measurementRow < 2 ? roundForExport(value[measurementRow], additionalDecPlaces) : 0.0f;
+    dataOut->units = measurementRow >= 0 && measurementRow < 2 ? units[measurementRow] : Hydro_UnitsType_Undefined;
 }
 
 
@@ -222,27 +222,27 @@ HydroTripleMeasurement::HydroTripleMeasurement(float value1, Hydro_UnitsType uni
 
 HydroTripleMeasurement::HydroTripleMeasurement(const HydroMeasurementData *dataIn)
     : HydroMeasurement(dataIn),
-      value{dataIn->measureRow == 0 ? dataIn->value : 0.0f,
-            dataIn->measureRow == 1 ? dataIn->value : 0.0f,
-            dataIn->measureRow == 2 ? dataIn->value : 0.0f,
+      value{dataIn->measurementRow == 0 ? dataIn->value : 0.0f,
+            dataIn->measurementRow == 1 ? dataIn->value : 0.0f,
+            dataIn->measurementRow == 2 ? dataIn->value : 0.0f,
       },
-      units{dataIn->measureRow == 0 ? dataIn->units : Hydro_UnitsType_Undefined,
-            dataIn->measureRow == 1 ? dataIn->units : Hydro_UnitsType_Undefined,
-            dataIn->measureRow == 2 ? dataIn->units : Hydro_UnitsType_Undefined,
+      units{dataIn->measurementRow == 0 ? dataIn->units : Hydro_UnitsType_Undefined,
+            dataIn->measurementRow == 1 ? dataIn->units : Hydro_UnitsType_Undefined,
+            dataIn->measurementRow == 2 ? dataIn->units : Hydro_UnitsType_Undefined,
       }
 { ; }
 
-void HydroTripleMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measureRow, unsigned int additionalDecPlaces) const
+void HydroTripleMeasurement::saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow, unsigned int additionalDecPlaces) const
 {
-    HydroMeasurement::saveToData(dataOut, measureRow, additionalDecPlaces);
+    HydroMeasurement::saveToData(dataOut, measurementRow, additionalDecPlaces);
 
-    dataOut->value = measureRow >= 0 && measureRow < 3 ? roundForExport(value[measureRow], additionalDecPlaces) : 0.0f;
-    dataOut->units = measureRow >= 0 && measureRow < 3 ? units[measureRow] : Hydro_UnitsType_Undefined;
+    dataOut->value = measurementRow >= 0 && measurementRow < 3 ? roundForExport(value[measurementRow], additionalDecPlaces) : 0.0f;
+    dataOut->units = measurementRow >= 0 && measurementRow < 3 ? units[measurementRow] : Hydro_UnitsType_Undefined;
 }
 
 
 HydroMeasurementData::HydroMeasurementData()
-    : HydroSubData(), measureRow(0), value(0.0f), units(Hydro_UnitsType_Undefined), timestamp(0)
+    : HydroSubData(), measurementRow(0), value(0.0f), units(Hydro_UnitsType_Undefined), timestamp(0)
 {
     type = 0; // no type differentiation
 }
@@ -251,7 +251,7 @@ void HydroMeasurementData::toJSONObject(JsonObject &objectOut) const
 {
     //HydroSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
-    objectOut[SFP(HStr_Key_MeasureRow)] = measureRow;
+    objectOut[SFP(HStr_Key_MeasurementRow)] = measurementRow;
     objectOut[SFP(HStr_Key_Value)] = value;
     objectOut[SFP(HStr_Key_Units)] = unitsTypeToSymbol(units);
     objectOut[SFP(HStr_Key_Timestamp)] = timestamp;
@@ -261,7 +261,7 @@ void HydroMeasurementData::fromJSONObject(JsonObjectConst &objectIn)
 {
     //HydroSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
 
-    measureRow = objectIn[SFP(HStr_Key_MeasureRow)] | measureRow;
+    measurementRow = objectIn[SFP(HStr_Key_MeasurementRow)] | measurementRow;
     value = objectIn[SFP(HStr_Key_Value)] | value;
     units = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_Units)]);
     timestamp = objectIn[SFP(HStr_Key_Timestamp)] | timestamp;

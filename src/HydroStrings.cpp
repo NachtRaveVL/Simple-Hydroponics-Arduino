@@ -653,13 +653,13 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_MeasureMode[] PROGMEM = {"measureMode"};
             return flashStr_Key_MeasureMode;
         } break;
-        case HStr_Key_MeasureRow: {
-            static const char flashStr_Key_MeasureRow[] PROGMEM = {"measureRow"};
-            return flashStr_Key_MeasureRow;
+        case HStr_Key_MeasurementRow: {
+            static const char flashStr_Key_MeasurementRow[] PROGMEM = {"measurementRow"};
+            return flashStr_Key_MeasurementRow;
         } break;
-        case HStr_Key_MeasureUnits: {
-            static const char flashStr_Key_MeasureUnits[] PROGMEM = {"measureUnits"};
-            return flashStr_Key_MeasureUnits;
+        case HStr_Key_MeasurementUnits: {
+            static const char flashStr_Key_MeasurementUnits[] PROGMEM = {"measurementUnits"};
+            return flashStr_Key_MeasurementUnits;
         } break;
         case HStr_Key_Mode: {
             static const char flashStr_Key_Mode[] PROGMEM = {"mode"};

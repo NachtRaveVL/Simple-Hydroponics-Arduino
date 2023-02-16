@@ -352,9 +352,9 @@ template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterC
 // Returns linkages list filtered down to just actuators of a certain type that operate on a specific reservoir.
 template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType);
 // Returns linkages list filtered down to just pump actuators that pump from a specific reservoir to a certain reservoir type.
-template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterPumpActuatorsByInputReservoirAndOutputReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ReservoirType destReservoirType);
+template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterPumpActuatorsBySourceReservoirAndOutputReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ReservoirType destReservoirType);
 // Returns linkages list filtered down to just pump actuators that pump to a specific reservoir from a certain reservoir type.
-template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndInputReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *destReservoir, Hydro_ReservoirType srcReservoirType);
+template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *destReservoir, Hydro_ReservoirType srcReservoirType);
 
 // Returns the # of crops found in the linkages list.
 extern int linksCountCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links);

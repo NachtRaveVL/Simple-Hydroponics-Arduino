@@ -5,32 +5,32 @@
 
 #include "Hydruino.h"
 
-inline Hydro_UnitsType HydroDilutionUnitsInterface::getVolumeUnits() const
+inline Hydro_UnitsType HydroDilutionUnitsInterfaceStorage::getVolumeUnits() const
 {
     return baseUnits(getDilutionUnits());
 }
 
-inline Hydro_UnitsType HydroFlowRateUnitsInterface::getVolumeUnits() const
+inline Hydro_UnitsType HydroFlowRateUnitsInterfaceStorage::getVolumeUnits() const
 {
     return baseUnits(getFlowRateUnits());
 }
 
-inline Hydro_UnitsType HydroMeasureUnitsInterface::getRateUnits(uint8_t measureRow) const
+inline Hydro_UnitsType HydroMeasurementUnitsInterface::getRateUnits(uint8_t measurementRow) const
 {
-    return rateUnits(getMeasureUnits(measureRow));
+    return rateUnits(getMeasurementUnits(measurementRow));
 }
 
-inline Hydro_UnitsType HydroMeasureUnitsInterface::getBaseUnits(uint8_t measureRow) const
+inline Hydro_UnitsType HydroMeasurementUnitsInterface::getBaseUnits(uint8_t measurementRow) const
 {
-    return baseUnits(getMeasureUnits(measureRow));
+    return baseUnits(getMeasurementUnits(measurementRow));
 }
 
-inline Hydro_UnitsType HydroVolumeUnitsInterface::getFlowRateUnits() const
+inline Hydro_UnitsType HydroVolumeUnitsInterfaceStorage::getFlowRateUnits() const
 {
     return rateUnits(_volumeUnits);
 }
 
-inline Hydro_UnitsType HydroVolumeUnitsInterface::getDilutionUnits() const
+inline Hydro_UnitsType HydroVolumeUnitsInterfaceStorage::getDilutionUnits() const
 {
     return dilutionUnits(_volumeUnits);
 }
@@ -43,27 +43,27 @@ inline void HydroActuatorObjectInterface::setContinuousPowerUsage(float contPowe
 
 
 template <class U>
-inline void HydroPumpObjectInterface::setInputReservoir(U reservoir)
+inline void HydroPumpObjectInterface::setSourceReservoir(U reservoir)
 {
-    getParentReservoir().setObject(reservoir);
+    getSourceReservoirAttachment().setObject(reservoir);
 }
 
 template <class U>
-inline SharedPtr<U> HydroPumpObjectInterface::getInputReservoir()
+inline SharedPtr<U> HydroPumpObjectInterface::getSourceReservoir()
 {
-    return getParentReservoir().HydroAttachment::getObject<U>();
+    return getSourceReservoirAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
-inline void HydroPumpObjectInterface::setOutputReservoir(U reservoir)
+inline void HydroPumpObjectInterface::setDestinationReservoir(U reservoir)
 {
-    getDestinationReservoir().setObject(reservoir);
+    getDestinationReservoirAttachment().setObject(reservoir);
 }
 
 template <class U>
-inline SharedPtr<U> HydroPumpObjectInterface::getOutputReservoir()
+inline SharedPtr<U> HydroPumpObjectInterface::getDestinationReservoir()
 {
-    return getDestinationReservoir().HydroAttachment::getObject<U>();
+    return getDestinationReservoirAttachment().HydroAttachment::getObject<U>();
 }
 
 inline void HydroPumpObjectInterface::setContinuousFlowRate(float contFlowRate, Hydro_UnitsType contFlowRateUnits)
@@ -71,260 +71,297 @@ inline void HydroPumpObjectInterface::setContinuousFlowRate(float contFlowRate, 
     setContinuousFlowRate(HydroSingleMeasurement(contFlowRate, contFlowRateUnits));
 }
 
+inline bool HydroPumpObjectInterface::isSourceReservoirEmpty(bool poll)
+{
+    return getSourceReservoir() && getSourceReservoir()->isEmpty(poll);
+}
+
+inline bool HydroPumpObjectInterface::isDestinationReservoirFilled(bool poll)
+{
+    return getDestinationReservoir() && getDestinationReservoir()->isFilled(poll);
+}
+
 
 template <class U>
-inline void HydroParentActuatorAttachmentInterface::setActuator(U actuator)
+inline void HydroParentActuatorAttachmentInterface::setParentActuator(U actuator)
 {
-    getParentActuator().setObject(actuator);
+    getParentActuatorAttachment().setObject(actuator);
 }
 
 template <class U>
-inline SharedPtr<U> HydroParentActuatorAttachmentInterface::getActuator()
+inline SharedPtr<U> HydroParentActuatorAttachmentInterface::getParentActuator()
 {
-    return getParentActuator().HydroAttachment::getObject<U>();
+    return getParentActuatorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
-inline void HydroParentSensorAttachmentInterface::setSensor(U sensor)
+inline void HydroParentSensorAttachmentInterface::setParentSensor(U sensor)
 {
-    getParentSensor().setObject(sensor);
+    getParentSensorAttachment().setObject(sensor);
 }
 
 template <class U>
-inline SharedPtr<U> HydroParentSensorAttachmentInterface::getSensor()
+inline SharedPtr<U> HydroParentSensorAttachmentInterface::getParentSensor()
 {
-    return getParentSensor().HydroAttachment::getObject<U>();
+    return getParentSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
-inline void HydroParentCropAttachmentInterface::setCrop(U crop)
+inline void HydroParentCropAttachmentInterface::setParentCrop(U crop)
 {
-    getParentCrop().setObject(crop);
+    getParentCropAttachment().setObject(crop);
 }
 
 template <class U>
-inline SharedPtr<U> HydroParentCropAttachmentInterface::getCrop()
+inline SharedPtr<U> HydroParentCropAttachmentInterface::getParentCrop()
 {
-    return getParentCrop().HydroAttachment::getObject<U>();
+    return getParentCropAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
-inline void HydroParentReservoirAttachmentInterface::setReservoir(U reservoir)
+inline void HydroParentReservoirAttachmentInterface::setParentReservoir(U reservoir)
 {
-    getParentReservoir().setObject(reservoir);
+    getParentReservoirAttachment().setObject(reservoir);
 }
 
 template <class U>
-inline SharedPtr<U> HydroParentReservoirAttachmentInterface::getReservoir()
+inline SharedPtr<U> HydroParentReservoirAttachmentInterface::getParentReservoir()
 {
-    return getParentReservoir().HydroAttachment::getObject<U>();
+    return getParentReservoirAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
-inline void HydroParentRailAttachmentInterface::setRail(U rail)
+inline void HydroParentRailAttachmentInterface::setParentRail(U rail)
 {
-    getParentRail().setObject(rail);
+    getParentRailAttachment().setObject(rail);
 }
 
 template <class U>
-inline SharedPtr<U> HydroParentRailAttachmentInterface::getRail()
+inline SharedPtr<U> HydroParentRailAttachmentInterface::getParentRail()
 {
-    return getParentRail().HydroAttachment::getObject<U>();
+    return getParentRailAttachment().HydroAttachment::getObject<U>();
 }
 
 
 template <class U>
 inline void HydroFeedReservoirAttachmentInterface::setFeedReservoir(U reservoir)
 {
-    getFeed().setObject(reservoir);
+    getFeedReservoirAttachment().setObject(reservoir);
 }
 
 template <class U>
-inline SharedPtr<U> HydroFeedReservoirAttachmentInterface::getFeedReservoir()
+inline SharedPtr<U> HydroFeedReservoirAttachmentInterface::getFeedReservoir(bool poll)
 {
-    return getFeed().HydroAttachment::getObject<U>();
+    getFeedReservoirAttachment().updateIfNeeded(poll);
+    return getFeedReservoirAttachment().HydroAttachment::getObject<U>();
 }
 
+
+template <class U>
+inline void HydroSensorAttachmentInterface::setSensor(U sensor)
+{
+    getSensorAttachment().setObject(sensor);
+}
+
+template <class U>
+inline SharedPtr<U> HydroSensorAttachmentInterface::getSensor(bool poll)
+{
+    getSensorAttachment().updateIfNeeded(poll);
+    return getSensorAttachment().HydroAttachment::getObject<U>();
+}
 
 template <class U>
 inline void HydroAirCO2SensorAttachmentInterface::setAirCO2Sensor(U sensor)
 {
-    getAirCO2().setObject(sensor);
+    getAirCO2SensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroAirCO2SensorAttachmentInterface::getAirCO2Sensor(bool poll)
 {
-    getAirCO2().updateIfNeeded(poll);
-    return getAirCO2().HydroAttachment::getObject<U>();
+    getAirCO2SensorAttachment().updateIfNeeded(poll);
+    return getAirCO2SensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroAirTemperatureSensorAttachmentInterface::setAirTemperatureSensor(U sensor)
 {
-    getAirTemperature().setObject(sensor);
+    getAirTemperatureSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroAirTemperatureSensorAttachmentInterface::getAirTemperatureSensor(bool poll)
 {
-    getAirTemperature().updateIfNeeded(poll);
-    return getAirTemperature().HydroAttachment::getObject<U>();
+    getAirTemperatureSensorAttachment().updateIfNeeded(poll);
+    return getAirTemperatureSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroPowerProductionSensorAttachmentInterface::setPowerProductionSensor(U sensor)
 {
-    getPowerProduction().setObject(sensor);
+    getPowerProductionSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroPowerProductionSensorAttachmentInterface::getPowerProductionSensor(bool poll)
 {
-    getPowerProduction().updateIfNeeded(poll);
-    return getPowerProduction().HydroAttachment::getObject<U>();
+    getPowerProductionSensorAttachment().updateIfNeeded(poll);
+    return getPowerProductionSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroPowerUsageSensorAttachmentInterface::setPowerUsageSensor(U sensor)
 {
-    getPowerUsage().setObject(sensor);
+    getPowerUsageSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroPowerUsageSensorAttachmentInterface::getPowerUsageSensor(bool poll)
 {
-    getPowerUsage().updateIfNeeded(poll);
-    return getPowerUsage().HydroAttachment::getObject<U>();
+    getPowerUsageSensorAttachment().updateIfNeeded(poll);
+    return getPowerUsageSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroSoilMoistureSensorAttachmentInterface::setSoilMoistureSensor(U sensor)
 {
-    getSoilMoisture().setObject(sensor);
+    getSoilMoistureSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroSoilMoistureSensorAttachmentInterface::getSoilMoistureSensor(bool poll)
 {
-    getSoilMoisture().updateIfNeeded(poll);
-    return getSoilMoisture().HydroAttachment::getObject<U>();
+    getSoilMoistureSensorAttachment().updateIfNeeded(poll);
+    return getSoilMoistureSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroWaterFlowRateSensorAttachmentInterface::setFlowRateSensor(U sensor)
 {
-    getFlowRate().setObject(sensor);
+    getFlowRateSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroWaterFlowRateSensorAttachmentInterface::getFlowRateSensor(bool poll)
 {
-    getFlowRate().updateIfNeeded(poll);
-    return getFlowRate().HydroAttachment::getObject<U>();
+    getFlowRateSensorAttachment().updateIfNeeded(poll);
+    return getFlowRateSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroWaterPHSensorAttachmentInterface::setWaterPHSensor(U sensor)
 {
-    getWaterPH().setObject(sensor);
+    getWaterPHSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroWaterPHSensorAttachmentInterface::getWaterPHSensor(bool poll)
 {
-    getWaterPH().updateIfNeeded(poll);
-    return getWaterPH().HydroAttachment::getObject<U>();
+    getWaterPHSensorAttachment().updateIfNeeded(poll);
+    return getWaterPHSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroWaterTDSSensorAttachmentInterface::setWaterTDSSensor(U sensor)
 {
-    getWaterTDS().setObject(sensor);
+    getWaterTDSSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroWaterTDSSensorAttachmentInterface::getWaterTDSSensor(bool poll)
 {
-    getWaterTDS().updateIfNeeded(poll);
-    return getWaterTDS().HydroAttachment::getObject<U>();
+    getWaterTDSSensorAttachment().updateIfNeeded(poll);
+    return getWaterTDSSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroWaterTemperatureSensorAttachmentInterface::setWaterTemperatureSensor(U sensor)
 {
-    getWaterTemperature().setObject(sensor);
+    getWaterTemperatureSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroWaterTemperatureSensorAttachmentInterface::getWaterTemperatureSensor(bool poll)
 {
-    getWaterTemperature().updateIfNeeded(poll);
-    return getWaterTemperature().HydroAttachment::getObject<U>();
+    getWaterTemperatureSensorAttachment().updateIfNeeded(poll);
+    return getWaterTemperatureSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroWaterVolumeSensorAttachmentInterface::setWaterVolumeSensor(U sensor)
 {
-    getWaterVolume().setObject(sensor);
+    getWaterVolumeSensorAttachment().setObject(sensor);
 }
 
 template <class U>
 inline SharedPtr<U> HydroWaterVolumeSensorAttachmentInterface::getWaterVolumeSensor(bool poll)
 {
-    getWaterVolume().updateIfNeeded(poll);
-    return getWaterVolume().HydroAttachment::getObject<U>();
+    getWaterVolumeSensorAttachment().updateIfNeeded(poll);
+    return getWaterVolumeSensorAttachment().HydroAttachment::getObject<U>();
 }
 
 
 template <class U>
+inline void HydroTriggerAttachmentInterface::setTrigger(U trigger)
+{
+    getTriggerAttachment().setObject(trigger);
+}
+
+template <class U>
+inline SharedPtr<U> HydroTriggerAttachmentInterface::getTrigger(bool poll)
+{
+    getTriggerAttachment().updateIfNeeded(poll);
+    return getTriggerAttachment().HydroAttachment::getObject<U>();
+}
+
+template <class U>
 inline void HydroFilledTriggerAttachmentInterface::setFilledTrigger(U trigger)
 {
-    getFilled().setObject(trigger);
+    getFilledTriggerAttachment().setObject(trigger);
 }
 
 template <class U>
 inline SharedPtr<U> HydroFilledTriggerAttachmentInterface::getFilledTrigger(bool poll)
 {
-    getFilled().updateIfNeeded(poll);
-    return getFilled().HydroAttachment::getObject<U>();
+    getFilledTriggerAttachment().updateIfNeeded(poll);
+    return getFilledTriggerAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroEmptyTriggerAttachmentInterface::setEmptyTrigger(U trigger)
 {
-    getEmpty().setObject(trigger);
+    getEmptyTriggerAttachment().setObject(trigger);
 }
 
 template <class U>
 inline SharedPtr<U> HydroEmptyTriggerAttachmentInterface::getEmptyTrigger(bool poll)
 {
-    getEmpty().updateIfNeeded(poll);
-    return getEmpty().HydroAttachment::getObject<U>();
+    getEmptyTriggerAttachment().updateIfNeeded(poll);
+    return getEmptyTriggerAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroFeedingTriggerAttachmentInterface::setFeedingTrigger(U trigger)
 {
-    getFeeding().setObject(trigger);
+    getFeedingAttachment().setObject(trigger);
 }
 
 template <class U>
 inline SharedPtr<U> HydroFeedingTriggerAttachmentInterface::getFeedingTrigger(bool poll)
 {
-    getFeeding().updateIfNeeded(poll);
-    return getFeeding().HydroAttachment::getObject<U>();
+    getFeedingAttachment().updateIfNeeded(poll);
+    return getFeedingAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroLimitTriggerAttachmentInterface::setLimitTrigger(U trigger)
 {
-    getLimit().setObject(trigger);
+    getLimitAttachment().setObject(trigger);
 }
 
 template <class U>
 inline SharedPtr<U> HydroLimitTriggerAttachmentInterface::getLimitTrigger(bool poll)
 {
-    getLimit().updateIfNeeded(poll);
-    return getLimit().HydroAttachment::getObject<U>();
+    getLimitAttachment().updateIfNeeded(poll);
+    return getLimitAttachment().HydroAttachment::getObject<U>();
 }

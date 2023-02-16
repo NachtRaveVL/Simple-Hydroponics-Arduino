@@ -122,13 +122,13 @@ void publishData(HydroSensor *sensor)
     HYDRO_HARD_ASSERT(sensor, SFP(HStr_Err_InvalidParameter));
 
     if (getPublisher()) {
-        auto measurement = sensor->getLatestMeasurement();
-        hposi_t rows = getMeasureRowCount(measurement);
+        auto measurement = sensor->getMeasurement();
+        hposi_t rows = getMeasurementRowCount(measurement);
         hposi_t columnIndexStart = getPublisher()->getColumnIndexStart(sensor->getKey());
 
         if (columnIndexStart >= 0) {
-            for (uint8_t measureRow = 0; measureRow < rows; ++measureRow) {
-                getPublisher()->publishData(columnIndexStart + measureRow, getAsSingleMeasurement(measurement, measureRow));
+            for (uint8_t measurementRow = 0; measurementRow < rows; ++measurementRow) {
+                getPublisher()->publishData(columnIndexStart + measurementRow, getAsSingleMeasurement(measurement, measurementRow));
             }
         }
     }
@@ -1026,7 +1026,7 @@ int linksCountActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8
         if (links.second[linksIndex].first->isActuatorType()) {
             auto actuator = static_cast<HydroActuator *>(links.second[linksIndex].first);
 
-            if (actuator->getActuatorType() == actuatorType && actuator->getReservoir().get() == srcReservoir) {
+            if (actuator->getActuatorType() == actuatorType && actuator->getParentReservoir().get() == srcReservoir) {
                 retVal++;
             }
         }
