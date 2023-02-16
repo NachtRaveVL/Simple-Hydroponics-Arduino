@@ -75,18 +75,13 @@
 #define F_SPD 32000000U
 #endif
 #endif
-#if defined(__AVR__) && !defined(ARDUINO_AVR_FIO) && !(defined(ARDUINO_AVR_PRO) && F_CPU == 8000000L)
-#define V_MCU                           5.0                 // 5v MCU
+#ifndef V_MCU                                               // Alias for standard MCU voltage
+#if (defined(__AVR__) || defined(__STM8__)) && !defined(ARDUINO_AVR_FIO) && !(defined(ARDUINO_AVR_PRO) && F_CPU == 8000000L)
+#define V_MCU                           5.0                 // 5v MCU (assumed/tolerant)
 #else
-#define V_MCU                           3.3                 // 3v3 MCU
+#define V_MCU                           3.3                 // 3v3 MCU (assumed)
 #endif
-
-#define PER_SEC_TO_PER_MIN(t)   ((t) * (SECS_PER_MIN))      // Per seconds to per minutes
-#define PER_SEC_TO_PER_HR(t)    ((t) * (SECS_PER_HOUR))     // Per seconds to per hour
-#define PER_MIN_TO_PER_SEC(t)   ((t) / (SECS_PER_MIN))      // Per minutes to per seconds
-#define PER_MIN_TO_PER_HR(t)    ((t) * (SECS_PER_MIN))      // Per minutes to per hour
-#define PER_HR_TO_PER_SEC(t)    ((t) / (SECS_PER_HOUR))     // Per hour to per seconds
-#define PER_HR_TO_PER_MIN(t)    ((t) / (SECS_PER_MIN))      // Per hour to per minutes
+#endif
 
 typedef typeof(millis()) millis_t;                          // Time millis type
 typedef int8_t hposi_t;                                     // Position indexing type alias
@@ -589,15 +584,13 @@ enum Hydro_DirectionMode : signed char {
 // Units Category
 // Unit of measurement category. Specifies the kind of unit.
 enum Hydro_UnitsCategory : signed char {
-    Hydro_UnitsCategory_AirConcentration,                   // Air particle concentration based unit
-    Hydro_UnitsCategory_AirTemperature,                     // Air temperature based unit
     Hydro_UnitsCategory_Alkalinity,                         // Alkalinity based unit
+    Hydro_UnitsCategory_Concentration,                      // Concentration based unit
     Hydro_UnitsCategory_Distance,                           // Distance/position based unit
-    Hydro_UnitsCategory_LiqConcentration,                   // Liquid concentration based unit
     Hydro_UnitsCategory_LiqDilution,                        // Liquid dilution based unit
     Hydro_UnitsCategory_LiqFlowRate,                        // Liquid flow rate based unit
-    Hydro_UnitsCategory_LiqTemperature,                     // Liquid temperature based unit
-    Hydro_UnitsCategory_LiqVolume,                          // Liquid volume based unit
+    Hydro_UnitsCategory_LiqVolume,                          // Liquid Volume based unit
+    Hydro_UnitsCategory_Temperature,                        // Temperature based unit
     Hydro_UnitsCategory_Percentile,                         // Percentile based unit
     Hydro_UnitsCategory_Power,                              // Power based unit
     Hydro_UnitsCategory_Weight,                             // Weight based unit
@@ -610,13 +603,13 @@ enum Hydro_UnitsCategory : signed char {
 // Unit of measurement type. Specifies the unit type associated with a measured value.
 // Note: Rate units may only be in per minute, use PER_X_TO_PER_Y defines to convert.
 enum Hydro_UnitsType : signed char {
-    Hydro_UnitsType_Raw_0_1,                                // Normalized raw value [0.0,1.0] mode
-    Hydro_UnitsType_Percentile_0_100,                       // Percentile [0.0,100.0] mode
-    Hydro_UnitsType_Alkalinity_pH_0_14,                     // pH value [0.0,14.0] alkalinity mode
-    Hydro_UnitsType_Concentration_EC,                       // Siemens electrical conductivity mode
-    Hydro_UnitsType_Concentration_PPM500,                   // Parts-per-million 500 (NaCl) concentration mode (US)
-    Hydro_UnitsType_Concentration_PPM640,                   // Parts-per-million 640 concentration mode (EU)
-    Hydro_UnitsType_Concentration_PPM700,                   // Parts-per-million 700 (KCl) concentration mode (AU)
+    Hydro_UnitsType_Raw_1,                                  // Normalized raw value mode [0,1=aRef]
+    Hydro_UnitsType_Percentile_100,                         // Percentile mode [0,100]
+    Hydro_UnitsType_Alkalinity_pH_14,                       // pH value alkalinity mode [0,14]
+    Hydro_UnitsType_Concentration_EC_5,                     // Siemens electrical conductivity concentration mode [0,5] (aka mS/cm)
+    Hydro_UnitsType_Concentration_PPM_500,                  // Parts-per-million 500 concentration mode [0,2500] (NaCl-based, common for US)
+    Hydro_UnitsType_Concentration_PPM_640,                  // Parts-per-million 640 concentration mode [0,3200] (common for EU)
+    Hydro_UnitsType_Concentration_PPM_700,                  // Parts-per-million 700 concentration mode [0,3500] (KCl-based, common for AU)
     Hydro_UnitsType_Distance_Feet,                          // Feet distance mode
     Hydro_UnitsType_Distance_Meters,                        // Meters distance mode
     Hydro_UnitsType_LiqDilution_MilliLiterPerGallon,        // Milli liter per gallon dilution mode
@@ -634,11 +627,18 @@ enum Hydro_UnitsType : signed char {
     Hydro_UnitsType_Weight_Pounds,                          // Pounds weight mode
 
     Hydro_UnitsType_Count,                                  // Placeholder
-    Hydro_UnitsType_Concentration_TDS = Hydro_UnitsType_Concentration_EC, // Standard TDS concentration mode alias
-    Hydro_UnitsType_Concentration_PPM = Hydro_UnitsType_Concentration_PPM500, // Standard PPM concentration mode alias
+    Hydro_UnitsType_Concentration_TDS = Hydro_UnitsType_Concentration_EC_5, // Standard TDS concentration mode alias
+    Hydro_UnitsType_Concentration_PPM = Hydro_UnitsType_Concentration_PPM_500, // Standard PPM concentration mode alias
     Hydro_UnitsType_Power_JoulesPerSecond = Hydro_UnitsType_Power_Wattage, // Joules per second power mode alias
     Hydro_UnitsType_Undefined = -1                          // Placeholder
 };
+
+#define PER_SEC_TO_PER_MIN(t)       ((t) * (SECS_PER_MIN))  // Per seconds to per minutes
+#define PER_SEC_TO_PER_HR(t)        ((t) * (SECS_PER_HOUR)) // Per seconds to per hour
+#define PER_MIN_TO_PER_SEC(t)       ((t) / (SECS_PER_MIN))  // Per minutes to per seconds
+#define PER_MIN_TO_PER_HR(t)        ((t) * (SECS_PER_MIN))  // Per minutes to per hour
+#define PER_HR_TO_PER_SEC(t)        ((t) / (SECS_PER_HOUR)) // Per hour to per seconds
+#define PER_HR_TO_PER_MIN(t)        ((t) / (SECS_PER_MIN))  // Per hour to per minutes
 
 // Common forward decls
 class Hydruino;

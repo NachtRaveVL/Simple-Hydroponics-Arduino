@@ -158,7 +158,7 @@ bool HydroObject::hasLinkage(HydroObject *obj) const
 
 void HydroObject::unresolveAny(HydroObject *obj)
 {
-    if (_links) {
+    if (this == obj && _links) {
         HydroObject *lastObject = nullptr;
         for (hposi_t linksIndex = 0; linksIndex < _linksSize && _links[linksIndex].first; ++linksIndex) {
             HydroObject *object = _links[linksIndex].first;

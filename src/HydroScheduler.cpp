@@ -692,7 +692,7 @@ void HydroFeeding::setupStaging()
             }
             if (phBalancer) {
                 phBalancer->setTargetSetpoint(phSetpoint);
-                phBalancer->setMeasureUnits(Hydro_UnitsType_Alkalinity_pH_0_14);
+                phBalancer->setMeasureUnits(Hydro_UnitsType_Alkalinity_pH_14);
                 phBalancer->setEnabled(true);
             }
         }
@@ -706,7 +706,7 @@ void HydroFeeding::setupStaging()
             }
             if (tdsBalancer) {
                 tdsBalancer->setTargetSetpoint(tdsSetpoint);
-                tdsBalancer->setMeasureUnits(Hydro_UnitsType_Concentration_EC);
+                tdsBalancer->setMeasureUnits(Hydro_UnitsType_Concentration_EC_5);
                 tdsBalancer->setEnabled(true);
             }
         }
@@ -889,7 +889,7 @@ void HydroFeeding::update()
                 {   auto crops = linksFilterCrops(feedRes->getLinkages());
                     cropsCount = crops.size();
                     for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                        if (((HydroCrop *)(*cropIter))->getNeedsFeeding()) { cropsHungry++; }
+                        if (((HydroCrop *)(*cropIter))->needsFeeding()) { cropsHungry++; }
                     }
                 }
 
@@ -955,7 +955,7 @@ void HydroFeeding::update()
             {   auto crops = linksFilterCrops(feedRes->getLinkages());
                 cropsCount = crops.size();
                 for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
-                    if (!((HydroCrop *)(*cropIter))->getNeedsFeeding()) { cropsFed++; }
+                    if (!((HydroCrop *)(*cropIter))->needsFeeding()) { cropsFed++; }
                 }
             }
 
@@ -1002,7 +1002,7 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
 {
     switch (logType) {
         case HydroFeedingLogType_WaterSetpoints:
-            {   auto ph = HydroSingleMeasurement(phSetpoint, Hydro_UnitsType_Alkalinity_pH_0_14);
+            {   auto ph = HydroSingleMeasurement(phSetpoint, Hydro_UnitsType_Alkalinity_pH_14);
                 getLogger()->logMessage(SFP(HStr_Log_Field_pH_Setpoint), measurementToString(ph));
             }
             {   auto tds = HydroSingleMeasurement(tdsSetpoint, Hydro_UnitsType_Concentration_TDS);

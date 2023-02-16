@@ -227,7 +227,7 @@ void HydroSensorAttachment::detachObject()
 
 void HydroSensorAttachment::updateIfNeeded(bool poll)
 {
-    if (resolve() && (_needsMeasurement || poll)) {
+    if ((_needsMeasurement || poll) && resolve()) {
         if (_handleSlot) { _handleSlot->operator()(get()->getLatestMeasurement()); }
         else { handleMeasurement(get()->getLatestMeasurement()); }
 
@@ -285,7 +285,7 @@ HydroTriggerAttachment::~HydroTriggerAttachment()
 
 void HydroTriggerAttachment::updateIfNeeded(bool poll)
 {
-    if (resolve()) { get()->update(); }
+    if (poll && resolve()) { get()->update(); }
 }
 
 
@@ -302,5 +302,5 @@ HydroBalancerAttachment::~HydroBalancerAttachment()
 
 void HydroBalancerAttachment::updateIfNeeded(bool poll)
 {
-    if (resolve()) { get()->update(); }
+    if (poll && resolve()) { get()->update(); }
 }

@@ -165,7 +165,7 @@ void HydroCropsLibrary::updateCropsOfType(Hydro_CropType cropType)
                     }
 
                     crop->returnCropsLibData(); // forces new data checkout
-                    crop->recalcCropGrowthParams();
+                    crop->recalcGrowthParams();
 
                     if (incCount) {
                         _cropsData[cropType]->count--;

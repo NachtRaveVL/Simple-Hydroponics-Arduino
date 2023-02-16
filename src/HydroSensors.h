@@ -35,7 +35,7 @@ extern Hydro_UnitsCategory defaultCategoryForSensor(Hydro_SensorType sensorType,
 // Sensor Base
 // This is the base class for all sensors, which defines how the sensor is identified,
 // where it lives, and what it's attached to.
-class HydroSensor : public HydroObject, public HydroSensorObjectInterface, public HydroCropAttachmentInterface, public HydroReservoirAttachmentInterface {
+class HydroSensor : public HydroObject, public HydroSensorObjectInterface, public HydroMeasureUnitsInterface, public HydroParentCropAttachmentInterface, public HydroParentReservoirAttachmentInterface {
 public:
     const enum : signed char { Binary, Analog, Digital, DHT1W, DS1W, Unknown = -1 } classType; // Sensor class type (custom RTTI)
     inline bool isBinaryClass() const { return classType == Binary; }
@@ -58,11 +58,8 @@ public:
     virtual bool isTakingMeasurement() const override;
     virtual bool getNeedsPolling(hframe_t allowance = 0) const override;
 
-    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) = 0;
-    virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const = 0;
-
-    virtual HydroAttachment &getParentCrop(bool resolve = true) override;
-    virtual HydroAttachment &getParentReservoir(bool resolve = true) override;
+    virtual HydroAttachment &getParentCrop() override;
+    virtual HydroAttachment &getParentReservoir() override;
 
     void setUserCalibrationData(HydroCalibrationData *userCalibrationData);
     inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
@@ -70,13 +67,13 @@ public:
     // Transformation methods that convert from normalized reading intensity/driver value to calibration units
     inline float calibrationTransform(float value) const { return _calibrationData ? _calibrationData->transform(value) : value; }
     inline void calibrationTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->transform(valueInOut, unitsOut); } }
-    inline HydroSingleMeasurement calibrationTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline HydroSingleMeasurement calibrationTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibrationUnits, measurement.timestamp, measurement.frame) : measurement; }
     inline void calibrationTransform(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->transform(&measurementInOut->value, &measurementInOut->units); } }
 
     // Transformation methods that convert from calibration units to normalized reading intensity/driver value
     inline float calibrationInvTransform(float value) const { return _calibrationData ? _calibrationData->inverseTransform(value) : value; }
     inline void calibrationInvTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->inverseTransform(valueInOut, unitsOut); } }
-    inline HydroSingleMeasurement calibrationInvTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline HydroSingleMeasurement calibrationInvTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibrationUnits, measurement.timestamp, measurement.frame) : measurement; }
     inline void calibrationInvTransform(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->inverseTransform(&measurementInOut->value, &measurementInOut->units); } }
 
     inline Hydro_SensorType getSensorType() const { return _id.objTypeAs.sensorType; }
@@ -136,7 +133,7 @@ protected:
 // The ever reliant master of the analog read, this class manages polling an analog input
 // signal and converting it into the proper figures for use. Examples include everything
 // from TDS EC meters to PWM based flow sensors.
-class HydroAnalogSensor : public HydroSensor {
+class HydroAnalogSensor : public HydroSensor, public HydroMeasureUnitsStorage<1> {
 public:
     HydroAnalogSensor(Hydro_SensorType sensorType,
                       hposi_t sensorIndex,
@@ -158,7 +155,6 @@ protected:
     HydroAnalogPin _inputPin;                               // Analog input pin
     bool _inputInversion;                                   // Analog input inversion
     HydroSingleMeasurement _lastMeasurement;                // Latest successful measurement
-    Hydro_UnitsType _measureUnits;                          // Measurement units preferred
 
     void _takeMeasurement(unsigned int taskId);
 
@@ -201,7 +197,7 @@ protected:
 
 // Digital DHT* Temperature & Humidity Sensor
 // This class is for working with DHT* OneWire-based air temperature and humidity sensors.
-class HydroDHTTempHumiditySensor : public HydroDigitalSensor {
+class HydroDHTTempHumiditySensor : public HydroDigitalSensor, public HydroMeasureUnitsStorage<3> {
 public:
     HydroDHTTempHumiditySensor(hposi_t sensorIndex,
                                HydroDigitalPin inputPin,
@@ -218,7 +214,7 @@ public:
     inline uint8_t getMeasureRowForHumidity() const { return 1; }
     inline uint8_t getMeasureRowForHeatIndex() const { return 2; }
 
-    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow) override;
+    virtual void setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow = 0) override;
     virtual Hydro_UnitsType getMeasureUnits(uint8_t measureRow = 0) const override;
 
     virtual bool setWirePositionIndex(hposi_t wirePosIndex) override; // disabled
@@ -235,7 +231,6 @@ protected:
     DHT *_dht;                                              // DHT sensor instance (owned)
     bool _computeHeatIndex;                                 // Flag to compute heat index
     HydroTripleMeasurement _lastMeasurement;                // Latest successful measurement
-    Hydro_UnitsType _measureUnits[3];                       // Measurement units preferred
 
     void _takeMeasurement(unsigned int taskId);
 
@@ -245,7 +240,7 @@ protected:
 
 // Digital DS18* Submersible Temperature Sensor
 // This class is for working with DS18* OneWire-based submersible temperature sensors.
-class HydroDSTemperatureSensor : public HydroDigitalSensor {
+class HydroDSTemperatureSensor : public HydroDigitalSensor, public HydroMeasureUnitsStorage<1> {
 public:
     HydroDSTemperatureSensor(hposi_t sensorIndex,
                              HydroDigitalPin inputPin,
@@ -269,7 +264,6 @@ protected:
     DallasTemperature *_dt;                                 // DallasTemperature instance (owned)
     HydroDigitalPin _pullupPin;                             // Pullup pin, if used
     HydroSingleMeasurement _lastMeasurement;                // Latest successful measurement
-    Hydro_UnitsType _measureUnits;                          // Measurement units preferred
 
     void _takeMeasurement(unsigned int taskId);
 

@@ -37,7 +37,7 @@ public:
     virtual void update();
 
     virtual void setTargetSetpoint(float targetSetpoint) override;
-    virtual Hydro_BalancingState getBalancingState() const override;
+    virtual Hydro_BalancingState getBalancingState(bool poll = false) override;
 
     inline void setMeasureUnits(Hydro_UnitsType measureUnits) { _sensor.setMeasureUnits(measureUnits); }
     inline Hydro_UnitsType getMeasureUnits() const { return _sensor.getMeasureUnits(); }

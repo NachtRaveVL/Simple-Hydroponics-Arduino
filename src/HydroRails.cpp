@@ -26,15 +26,16 @@ HydroRail *newRailObjectFromData(const HydroRailData *dataIn)
 
 HydroRail::HydroRail(Hydro_RailType railType, hposi_t railIndex, int classTypeIn)
     : HydroObject(HydroIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
-      _powerUnits(defaultPowerUnits()), _limitState(Hydro_TriggerState_Undefined)
+      HydroPowerUnitsInterface(defaultPowerUnits()),
+      _limitState(Hydro_TriggerState_Undefined)
 {
     allocateLinkages(HYDRO_RAILS_LINKS_BASESIZE);
 }
 
 HydroRail::HydroRail(const HydroRailData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      _limitState(Hydro_TriggerState_Undefined),
-      _powerUnits(definedUnitsElse(dataIn->powerUnits, defaultPowerUnits()))
+      HydroPowerUnitsInterface(definedUnitsElse(dataIn->powerUnits, defaultPowerUnits())),
+      _limitState(Hydro_TriggerState_Undefined)
 {
     allocateLinkages(HYDRO_RAILS_LINKS_BASESIZE);
 }
@@ -51,7 +52,7 @@ void HydroRail::update()
 {
     HydroObject::update();
 
-    handleLimit(triggerStateFromBool(getCapacity() >= 1.0f - FLT_EPSILON));
+    handleLimit(triggerStateFromBool(getCapacity(true) >= 1.0f - FLT_EPSILON));
 }
 
 bool HydroRail::addLinkage(HydroObject *object)
@@ -88,23 +89,6 @@ bool HydroRail::removeLinkage(HydroObject *object)
         return true;
     }
     return false;
-}
-
-void HydroRail::setPowerUnits(Hydro_UnitsType powerUnits)
-{
-    if (_powerUnits != powerUnits) {
-        _powerUnits = powerUnits;
-    }
-}
-
-Hydro_UnitsType HydroRail::getPowerUnits() const
-{
-    return definedUnitsElse(_powerUnits, defaultPowerUnits());
-}
-
-float HydroRail::getRailVoltage() const
-{
-    return getRailVoltageFromType(_id.objTypeAs.railType);
 }
 
 Signal<HydroRail *, HYDRO_RAIL_SIGNAL_SLOTS> &HydroRail::getCapacitySignal()
@@ -157,9 +141,16 @@ bool HydroSimpleRail::canActivate(HydroActuator *actuator)
     return _activeCount < _maxActiveAtOnce;
 }
 
-float HydroSimpleRail::getCapacity()
+float HydroSimpleRail::getCapacity(bool poll)
 {
     return _activeCount / (float)_maxActiveAtOnce;
+}
+
+void HydroSimpleRail::setPowerUnits(Hydro_UnitsType powerUnits)
+{
+    if (_powerUnits != powerUnits) {
+        _powerUnits = powerUnits;
+    }
 }
 
 void HydroSimpleRail::saveToData(HydroData *dataOut)
@@ -203,7 +194,7 @@ HydroRegulatedRail::HydroRegulatedRail(const HydroRegulatedRailData *dataIn)
       _maxPower(dataIn->maxPower),
       _powerUsage(this), _limitTrigger(this)
 {
-    _powerUsage.setMeasureUnits(HydroRail::getPowerUnits(), getRailVoltage());
+    _powerUsage.setMeasureUnits(getPowerUnits(), getRailVoltage());
     _powerUsage.setHandleMethod(&HydroRegulatedRail::handlePower);
     _powerUsage.setObject(dataIn->powerSensor);
 
@@ -238,10 +229,10 @@ bool HydroRegulatedRail::canActivate(HydroActuator *actuator)
     return _powerUsage.getMeasurementValue() + powerReq.value < _maxPower - FLT_EPSILON;
 }
 
-float HydroRegulatedRail::getCapacity()
+float HydroRegulatedRail::getCapacity(bool poll)
 {
-    if (_limitTrigger.resolve() && triggerStateToBool(_limitTrigger.getTriggerState())) { return 1.0f; }
-    float retVal = _powerUsage.getMeasurementValue() / _maxPower;
+    if (_limitTrigger.resolve() && triggerStateToBool(_limitTrigger.getTriggerState(poll))) { return 1.0f; }
+    float retVal = _powerUsage.getMeasurementValue(poll) / _maxPower;
     return constrain(retVal, 0.0f, 1.0f);
 }
 
@@ -254,10 +245,14 @@ void HydroRegulatedRail::setPowerUnits(Hydro_UnitsType powerUnits)
     }
 }
 
-HydroSensorAttachment &HydroRegulatedRail::getPowerUsage(bool poll)
+HydroSensorAttachment &HydroRegulatedRail::getPowerUsage()
 {
-    _powerUsage.updateIfNeeded(poll);
     return _powerUsage;
+}
+
+HydroTriggerAttachment &HydroRegulatedRail::getLimit()
+{
+    return _limitTrigger;
 }
 
 void HydroRegulatedRail::saveToData(HydroData *dataOut)
@@ -305,7 +300,7 @@ void HydroRegulatedRail::handlePower(const HydroMeasurement *measurement)
     if (measurement && measurement->frame) {
         float capacityBefore = getCapacity();
 
-        getPowerUsage().setMeasurement(getAsSingleMeasurement(measurement, _powerUsage.getMeasureRow(), _maxPower, _powerUnits));
+        getPowerUsage().setMeasurement(getAsSingleMeasurement(measurement, _powerUsage.getMeasureRow(), _maxPower, getPowerUnits()));
 
         if (getCapacity() < capacityBefore - FLT_EPSILON) {
             #ifdef HYDRO_USE_MULTITASKING

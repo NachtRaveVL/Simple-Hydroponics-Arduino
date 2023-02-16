@@ -33,24 +33,24 @@ Hydro_UnitsType defaultUnitsForSensor(Hydro_SensorType sensorType, uint8_t measu
     measureMode = (measureMode == Hydro_MeasurementMode_Undefined && getController() ? getController()->getMeasurementMode() : measureMode);
 
     switch (sensorType) {
-        case Hydro_SensorType_PotentialHydrogen:
-            return Hydro_UnitsType_Alkalinity_pH_0_14;
-        case Hydro_SensorType_TotalDissolvedSolids:
-            return Hydro_UnitsType_Concentration_TDS;
-        case Hydro_SensorType_SoilMoisture:
-            return Hydro_UnitsType_Concentration_EC;
+        case Hydro_SensorType_AirCarbonDioxide:
+            return Hydro_UnitsType_Concentration_PPM;
         case Hydro_SensorType_AirTempHumidity:
         case Hydro_SensorType_WaterTemperature:
             return defaultTemperatureUnits(measureMode);
-        case Hydro_SensorType_AirCarbonDioxide:
-            return Hydro_UnitsType_Concentration_PPM;
-        case Hydro_SensorType_PumpFlow:
-            return defaultFlowRateUnits(measureMode);
-        case Hydro_SensorType_WaterLevel:
-        case Hydro_SensorType_WaterHeight:
-            return defaultDistanceUnits(measureMode);
+        case Hydro_SensorType_PotentialHydrogen:
+            return Hydro_UnitsType_Alkalinity_pH_14;
         case Hydro_SensorType_PowerLevel:
             return defaultPowerUnits(measureMode);
+        case Hydro_SensorType_PumpFlow:
+            return defaultFlowRateUnits(measureMode);
+        case Hydro_SensorType_SoilMoisture:
+            return Hydro_UnitsType_Concentration_EC_5;
+        case Hydro_SensorType_TotalDissolvedSolids:
+            return Hydro_UnitsType_Concentration_TDS;
+        case Hydro_SensorType_WaterHeight:
+        case Hydro_SensorType_WaterLevel:
+            return defaultDistanceUnits(measureMode);
         default:
             return Hydro_UnitsType_Undefined;
     }
@@ -59,30 +59,29 @@ Hydro_UnitsType defaultUnitsForSensor(Hydro_SensorType sensorType, uint8_t measu
 Hydro_UnitsCategory defaultCategoryForSensor(Hydro_SensorType sensorType, uint8_t measureRow)
 {
     switch (sensorType) {
+        case Hydro_SensorType_AirCarbonDioxide:
+            return Hydro_UnitsCategory_Concentration;
         case Hydro_SensorType_PotentialHydrogen:
             return Hydro_UnitsCategory_Alkalinity;
-        case Hydro_SensorType_TotalDissolvedSolids:
-            return Hydro_UnitsCategory_LiqConcentration;
-        case Hydro_SensorType_SoilMoisture:
-            return Hydro_UnitsCategory_LiqConcentration;
-        case Hydro_SensorType_WaterTemperature:
-            return Hydro_UnitsCategory_LiqTemperature;
+        case Hydro_SensorType_PowerLevel:
+            return Hydro_UnitsCategory_Power;
         case Hydro_SensorType_PumpFlow:
             return Hydro_UnitsCategory_LiqFlowRate;
-        case Hydro_SensorType_WaterLevel:
+        case Hydro_SensorType_SoilMoisture:
+        case Hydro_SensorType_TotalDissolvedSolids:
+            return Hydro_UnitsCategory_Concentration;
+        case Hydro_SensorType_WaterTemperature:
+            return Hydro_UnitsCategory_Temperature;
         case Hydro_SensorType_WaterHeight:
+        case Hydro_SensorType_WaterLevel:
             return Hydro_UnitsCategory_LiqVolume;
         case Hydro_SensorType_AirTempHumidity:
             switch (measureRow) {
-                case 0: return Hydro_UnitsCategory_AirTemperature;
+                case 0: return Hydro_UnitsCategory_Temperature;
                 case 1: return Hydro_UnitsCategory_Percentile; // humidity
-                case 2: return Hydro_UnitsCategory_AirTemperature; // heat index
+                case 2: return Hydro_UnitsCategory_Temperature; // heat index
                 default: break;
             }
-        case Hydro_SensorType_AirCarbonDioxide:
-            return Hydro_UnitsCategory_AirConcentration;
-        case Hydro_SensorType_PowerLevel:
-            return Hydro_UnitsCategory_Power;
         default:
             return Hydro_UnitsCategory_Undefined;
     }
@@ -129,15 +128,13 @@ bool HydroSensor::getNeedsPolling(hframe_t allowance) const
     return getController() && latestMeasurement ? getController()->isPollingFrameOld(latestMeasurement->frame, allowance) : false;
 }
 
-HydroAttachment &HydroSensor::getParentCrop(bool resolve)
+HydroAttachment &HydroSensor::getParentCrop()
 {
-    if (resolve) { _crop.resolve(); }
     return _crop;
 }
 
-HydroAttachment &HydroSensor::getParentReservoir(bool resolve)
+HydroAttachment &HydroSensor::getParentReservoir()
 {
-    if (resolve) { _reservoir.resolve(); }
     return _reservoir;
 }
 
@@ -242,7 +239,7 @@ void HydroBinarySensor::setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t me
 
 Hydro_UnitsType HydroBinarySensor::getMeasureUnits(uint8_t measureRow) const
 {
-    return Hydro_UnitsType_Raw_0_1;
+    return Hydro_UnitsType_Raw_1;
 }
 
 bool HydroBinarySensor::tryRegisterAsISR()
@@ -272,7 +269,8 @@ void HydroBinarySensor::saveToData(HydroData *dataOut)
 
 HydroAnalogSensor::HydroAnalogSensor(Hydro_SensorType sensorType, hposi_t sensorIndex, HydroAnalogPin inputPin, bool inputInversion, int classType)
     : HydroSensor(sensorType, sensorIndex, classType),
-      _inputPin(inputPin), _inputInversion(inputInversion), _measureUnits(defaultUnitsForSensor(sensorType))
+      HydroMeasureUnitsStorage<1>(defaultUnitsForSensor(sensorType)),
+      _inputPin(inputPin), _inputInversion(inputInversion)
 {
     HYDRO_HARD_ASSERT(_inputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
     _inputPin.init();
@@ -280,8 +278,8 @@ HydroAnalogSensor::HydroAnalogSensor(Hydro_SensorType sensorType, hposi_t sensor
 
 HydroAnalogSensor::HydroAnalogSensor(const HydroAnalogSensorData *dataIn)
     : HydroSensor(dataIn),
-      _inputPin(&dataIn->inputPin), _inputInversion(dataIn->inputInversion),
-      _measureUnits(definedUnitsElse(dataIn->measureUnits, defaultUnitsForSensor((Hydro_SensorType)(dataIn->id.object.objType))))
+      HydroMeasureUnitsStorage<1>(definedUnitsElse(dataIn->measureUnits, defaultUnitsForSensor((Hydro_SensorType)(dataIn->id.object.objType)))),
+      _inputPin(&dataIn->inputPin), _inputInversion(dataIn->inputInversion)
 {
     HYDRO_HARD_ASSERT(_inputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
     _inputPin.init();
@@ -310,8 +308,8 @@ void HydroAnalogSensor::_takeMeasurement(unsigned int taskId)
 {
     if (_isTakingMeasure && _inputPin.isValid()) {
         if (getController()->tryGetPinLock(_inputPin.pin, 5)) {
-            Hydro_UnitsType outUnits = definedUnitsElse(_measureUnits,
-                                                        _calibrationData ? _calibrationData->calibUnits : Hydro_UnitsType_Undefined,
+            Hydro_UnitsType outUnits = definedUnitsElse(_measureUnits[0],
+                                                        _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Undefined,
                                                         defaultUnitsForSensor(_id.objTypeAs.sensorType));
 
             unsigned int rawRead = 0;
@@ -331,7 +329,7 @@ void HydroAnalogSensor::_takeMeasurement(unsigned int taskId)
 
             HydroSingleMeasurement newMeasurement(
                 _inputPin.bitRes.transform(rawRead),
-                Hydro_UnitsType_Raw_0_1,
+                Hydro_UnitsType_Raw_1,
                 timestamp
             );
 
@@ -360,18 +358,18 @@ const HydroMeasurement *HydroAnalogSensor::getLatestMeasurement() const
 
 void HydroAnalogSensor::setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow)
 {
-    if (_measureUnits != measureUnits) {
-        _measureUnits = measureUnits;
+    if (_measureUnits[0] != measureUnits) {
+        _measureUnits[0] = measureUnits;
 
         if (_lastMeasurement.frame) {
-            convertUnits(&_lastMeasurement, _measureUnits);
+            convertUnits(&_lastMeasurement, _measureUnits[0]);
         }
     }
 }
 
 Hydro_UnitsType HydroAnalogSensor::getMeasureUnits(uint8_t measureRow) const
 {
-    return _measureUnits;
+    return _measureUnits[0];
 }
 
 void HydroAnalogSensor::saveToData(HydroData *dataOut)
@@ -380,7 +378,7 @@ void HydroAnalogSensor::saveToData(HydroData *dataOut)
 
     _inputPin.saveToData(&((HydroAnalogSensorData *)dataOut)->inputPin);
     ((HydroAnalogSensorData *)dataOut)->inputInversion = _inputInversion;
-    ((HydroAnalogSensorData *)dataOut)->measureUnits = _measureUnits;
+    ((HydroAnalogSensorData *)dataOut)->measureUnits = _measureUnits[0];
 }
 
 
@@ -497,9 +495,10 @@ void HydroDigitalSensor::saveToData(HydroData *dataOut)
 
 HydroDHTTempHumiditySensor::HydroDHTTempHumiditySensor(hposi_t sensorIndex, HydroDigitalPin inputPin, Hydro_DHTType dhtType, bool computeHeatIndex, int classType)
     : HydroDigitalSensor(Hydro_SensorType_AirTempHumidity, sensorIndex, inputPin, 9, false, classType),
-      _dht(new DHT(inputPin.pin, dhtType)), _dhtType(dhtType), _computeHeatIndex(computeHeatIndex),
-      _measureUnits{defaultTemperatureUnits(), Hydro_UnitsType_Percentile_0_100, defaultTemperatureUnits()}
+      HydroMeasureUnitsStorage<3>(defaultUnitsForSensor(Hydro_SensorType_AirTempHumidity)),
+      _dht(new DHT(inputPin.pin, dhtType)), _dhtType(dhtType), _computeHeatIndex(computeHeatIndex)
 {
+    _measureUnits[1] = Hydro_UnitsType_Percentile_100;
     HYDRO_SOFT_ASSERT(_dht, SFP(HStr_Err_AllocationFailure));
     if (_inputPin.isValid() && _dht) { _dht->begin(); }
     else if (_dht) { delete _dht; _dht = nullptr; }
@@ -507,11 +506,10 @@ HydroDHTTempHumiditySensor::HydroDHTTempHumiditySensor(hposi_t sensorIndex, Hydr
 
 HydroDHTTempHumiditySensor::HydroDHTTempHumiditySensor(const HydroDHTTempHumiditySensorData *dataIn)
     : HydroDigitalSensor(dataIn, false),
-      _dht(new DHT(dataIn->inputPin.pin, dataIn->dhtType)), _dhtType(dataIn->dhtType), _computeHeatIndex(dataIn->computeHeatIndex),
-      _measureUnits{definedUnitsElse(dataIn->measureUnits, defaultTemperatureUnits()),
-                        Hydro_UnitsType_Percentile_0_100,
-                        definedUnitsElse(dataIn->measureUnits, defaultTemperatureUnits())}
+      HydroMeasureUnitsStorage<3>(definedUnitsElse(dataIn->measureUnits, defaultUnitsForSensor(Hydro_SensorType_AirTempHumidity))),
+      _dht(new DHT(dataIn->inputPin.pin, dataIn->dhtType)), _dhtType(dataIn->dhtType), _computeHeatIndex(dataIn->computeHeatIndex)
 {
+    _measureUnits[1] = Hydro_UnitsType_Percentile_100;
     HYDRO_SOFT_ASSERT(_dht, SFP(HStr_Err_AllocationFailure));
     if (_inputPin.isValid() && _dht) { _dht->begin(); }
     else if (_dht) { delete _dht; _dht = nullptr; }
@@ -546,12 +544,12 @@ void HydroDHTTempHumiditySensor::_takeMeasurement(unsigned int taskId)
     if (_isTakingMeasure && _dht) {
         if (getController()->tryGetPinLock(_inputPin.pin, 5)) {
             Hydro_UnitsType outUnits[3] = { definedUnitsElse(_measureUnits[0],
-                                                             _calibrationData ? _calibrationData->calibUnits : Hydro_UnitsType_Undefined,
+                                                             _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Undefined,
                                                              defaultTemperatureUnits()),
                                             definedUnitsElse(_measureUnits[1],
-                                                             Hydro_UnitsType_Percentile_0_100),
+                                                             Hydro_UnitsType_Percentile_100),
                                             definedUnitsElse(_measureUnits[2],
-                                                             _calibrationData ? _calibrationData->calibUnits : Hydro_UnitsType_Undefined,
+                                                             _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Undefined,
                                                              defaultTemperatureUnits()) };
             bool readInFahrenheit = outUnits[0] == Hydro_UnitsType_Temperature_Fahrenheit;
             Hydro_UnitsType readUnits = readInFahrenheit ? Hydro_UnitsType_Temperature_Fahrenheit
@@ -563,7 +561,7 @@ void HydroDHTTempHumiditySensor::_takeMeasurement(unsigned int taskId)
 
             HydroTripleMeasurement newMeasurement(
                 tempRead, readUnits,
-                humidRead, Hydro_UnitsType_Percentile_0_100,
+                humidRead, Hydro_UnitsType_Percentile_100,
                 0.0f, Hydro_UnitsType_Undefined,
                 timestamp
             );
@@ -653,7 +651,8 @@ void HydroDHTTempHumiditySensor::saveToData(HydroData *dataOut)
 
 HydroDSTemperatureSensor::HydroDSTemperatureSensor(hposi_t sensorIndex, HydroDigitalPin inputPin, uint8_t bitRes1W, HydroDigitalPin pullupPin, int classType)
     : HydroDigitalSensor(Hydro_SensorType_WaterTemperature, sensorIndex, inputPin, bitRes1W, true, classType),
-      _dt(new DallasTemperature()), _pullupPin(pullupPin), _measureUnits(defaultTemperatureUnits())
+      HydroMeasureUnitsStorage<1>(defaultUnitsForSensor(Hydro_SensorType_WaterTemperature)),
+      _dt(new DallasTemperature()), _pullupPin(pullupPin)
 {
     HYDRO_SOFT_ASSERT(_dt, SFP(HStr_Err_AllocationFailure));
 
@@ -669,8 +668,8 @@ HydroDSTemperatureSensor::HydroDSTemperatureSensor(hposi_t sensorIndex, HydroDig
 
 HydroDSTemperatureSensor::HydroDSTemperatureSensor(const HydroDSTemperatureSensorData *dataIn)
     : HydroDigitalSensor(dataIn, true),
-      _dt(new DallasTemperature()), _pullupPin(&dataIn->pullupPin),
-      _measureUnits(definedUnitsElse(dataIn->measureUnits, defaultTemperatureUnits()))
+      HydroMeasureUnitsStorage<1>(definedUnitsElse(dataIn->measureUnits, defaultUnitsForSensor(Hydro_SensorType_WaterTemperature))),
+      _dt(new DallasTemperature()), _pullupPin(&dataIn->pullupPin)
 {
     HYDRO_SOFT_ASSERT(_dt, SFP(HStr_Err_AllocationFailure));
 
@@ -715,10 +714,10 @@ void HydroDSTemperatureSensor::_takeMeasurement(unsigned int taskId)
     if (_isTakingMeasure && _dt) {
         if (getController()->tryGetPinLock(_inputPin.pin, 5)) {
             if (_dt->requestTemperaturesByAddress(_wireDevAddress)) {
-                Hydro_UnitsType outUnits = definedUnitsElse(_measureUnits,
-                                                            _calibrationData ? _calibrationData->calibUnits : Hydro_UnitsType_Undefined,
+                Hydro_UnitsType outUnits = definedUnitsElse(_measureUnits[0],
+                                                            _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Undefined,
                                                             defaultTemperatureUnits());
-                bool readInFahrenheit = _measureUnits == Hydro_UnitsType_Temperature_Fahrenheit;
+                bool readInFahrenheit = _measureUnits[0] == Hydro_UnitsType_Temperature_Fahrenheit;
                 Hydro_UnitsType readUnits = readInFahrenheit ? Hydro_UnitsType_Temperature_Fahrenheit
                                                              : Hydro_UnitsType_Temperature_Celsius;
 
@@ -766,18 +765,18 @@ const HydroMeasurement *HydroDSTemperatureSensor::getLatestMeasurement() const
 
 void HydroDSTemperatureSensor::setMeasureUnits(Hydro_UnitsType measureUnits, uint8_t measureRow)
 {
-    if (_measureUnits != measureUnits) {
-        _measureUnits = measureUnits;
+    if (_measureUnits[0] != measureUnits) {
+        _measureUnits[0] = measureUnits;
 
         if (_lastMeasurement.frame) {
-            convertUnits(&_lastMeasurement, _measureUnits);
+            convertUnits(&_lastMeasurement, _measureUnits[0]);
         }
     }
 }
 
 Hydro_UnitsType HydroDSTemperatureSensor::getMeasureUnits(uint8_t measureRow) const
 {
-    return _measureUnits;
+    return _measureUnits[0];
 }
 
 void HydroDSTemperatureSensor::saveToData(HydroData *dataOut)
@@ -785,7 +784,7 @@ void HydroDSTemperatureSensor::saveToData(HydroData *dataOut)
     HydroDigitalSensor::saveToData(dataOut);
 
     _pullupPin.saveToData(&((HydroDSTemperatureSensorData *)dataOut)->pullupPin);
-    ((HydroDSTemperatureSensorData *)dataOut)->measureUnits = _measureUnits;
+    ((HydroDSTemperatureSensorData *)dataOut)->measureUnits = _measureUnits[0];
 }
 
 
