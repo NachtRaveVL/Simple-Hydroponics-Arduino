@@ -201,15 +201,13 @@ const HydroSingleMeasurement &HydroActuator::getContinuousPowerUsage()
     return _contPowerUsage;
 }
 
-HydroAttachment &HydroActuator::getParentRail(bool resolve)
+HydroAttachment &HydroActuator::getParentRail()
 {
-    if (resolve) { _rail.resolve(); }
     return _rail;
 }
 
-HydroAttachment &HydroActuator::getParentReservoir(bool resolve)
+HydroAttachment &HydroActuator::getParentReservoir()
 {
-    if (resolve) { _reservoir.resolve(); }
     return _reservoir;
 }
 
@@ -352,15 +350,17 @@ void HydroRelayActuator::saveToData(HydroData *dataOut)
 
 HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, HydroDigitalPin outputPin, int classType)
     : HydroRelayActuator(actuatorType, actuatorIndex, outputPin, classType),
-       _flowRateUnits(defaultFlowRateUnits()), _flowRate(this), _destReservoir(this),
-       _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0)
+      HydroFlowRateUnitsInterface(defaultFlowRateUnits()),
+      _flowRate(this), _destReservoir(this),
+      _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0)
 {
     _flowRate.setMeasureUnits(getFlowRateUnits());
 }
 
 HydroRelayPumpActuator::HydroRelayPumpActuator(const HydroPumpActuatorData *dataIn)
-    : HydroRelayActuator(dataIn), _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0),
-      _flowRateUnits(definedUnitsElse(dataIn->flowRateUnits, defaultFlowRateUnits())),
+    : HydroRelayActuator(dataIn),
+      HydroFlowRateUnitsInterface(definedUnitsElse(dataIn->flowRateUnits, defaultFlowRateUnits())),
+      _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0),
       _contFlowRate(&(dataIn->contFlowRate)),
       _flowRate(this), _destReservoir(this)
 {
@@ -473,14 +473,13 @@ HydroActivationHandle HydroRelayPumpActuator::pump(millis_t time)
     }
 }
 
-HydroAttachment &HydroRelayPumpActuator::getParentReservoir(bool resolve)
+HydroAttachment &HydroRelayPumpActuator::getParentReservoir()
 {
-    return HydroActuator::getParentReservoir(resolve);
+    return HydroActuator::getParentReservoir();
 }
 
-HydroAttachment &HydroRelayPumpActuator::getDestinationReservoir(bool resolve)
+HydroAttachment &HydroRelayPumpActuator::getDestinationReservoir()
 {
-    if (resolve) { _destReservoir.resolve(); }
     return _destReservoir;
 }
 
@@ -492,11 +491,6 @@ void HydroRelayPumpActuator::setFlowRateUnits(Hydro_UnitsType flowRateUnits)
         convertUnits(&_contFlowRate, getFlowRateUnits());
         _flowRate.setMeasureUnits(getFlowRateUnits());
     }
-}
-
-Hydro_UnitsType HydroRelayPumpActuator::getFlowRateUnits() const
-{
-    return definedUnitsElse(_flowRateUnits, defaultFlowRateUnits());
 }
 
 void HydroRelayPumpActuator::setContinuousFlowRate(HydroSingleMeasurement contFlowRate)
@@ -512,9 +506,8 @@ const HydroSingleMeasurement &HydroRelayPumpActuator::getContinuousFlowRate()
     return _contFlowRate;
 }
 
-HydroSensorAttachment &HydroRelayPumpActuator::getFlowRate(bool poll)
+HydroSensorAttachment &HydroRelayPumpActuator::getFlowRate()
 {
-    _flowRate.updateIfNeeded(poll);
     return _flowRate;
 }
 

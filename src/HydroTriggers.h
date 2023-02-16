@@ -43,7 +43,7 @@ public:
     virtual void update();
     virtual void handleLowMemory();
 
-    virtual Hydro_TriggerState getTriggerState() const override;
+    virtual Hydro_TriggerState getTriggerState(bool poll = false) override;
 
     inline void setMeasureUnits(Hydro_UnitsType measureUnits) { _sensor.setMeasureUnits(measureUnits); }
     inline Hydro_UnitsType getMeasureUnits() const { return _sensor.getMeasureUnits(); }
@@ -54,8 +54,8 @@ public:
     Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> &getTriggerSignal();
 
 protected:
-    HydroSensorAttachment _sensor;                    // Sensor attachment
-    Hydro_TriggerState _triggerState;                 // Current trigger state
+    HydroSensorAttachment _sensor;                          // Sensor attachment
+    Hydro_TriggerState _triggerState;                       // Current trigger state
     Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> _triggerSignal; // Trigger signal
 
     virtual void handleMeasurement(const HydroMeasurement *measurement) = 0;

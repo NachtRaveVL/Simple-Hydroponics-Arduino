@@ -202,16 +202,16 @@ void HydroSystemData::fromJSONObject(JsonObjectConst &objectIn)
 
 HydroCalibrationData::HydroCalibrationData()
     : HydroData('H','C','A','L', 1),
-      ownerName{0}, calibUnits(Hydro_UnitsType_Undefined),
+      ownerName{0}, calibrationUnits(Hydro_UnitsType_Undefined),
       multiplier(1.0f), offset(0.0f)
 {
     _size = sizeof(*this);
     HYDRO_HARD_ASSERT(isCalibrationData(), SFP(HStr_Err_OperationFailure));
 }
 
-HydroCalibrationData::HydroCalibrationData(HydroIdentity ownerId, Hydro_UnitsType calibUnitsIn)
+HydroCalibrationData::HydroCalibrationData(HydroIdentity ownerId, Hydro_UnitsType calibrationUnitsIn)
     : HydroData('H','C','A','L', 1),
-      ownerName{0}, calibUnits(calibUnitsIn),
+      ownerName{0}, calibrationUnits(calibrationUnitsIn),
       multiplier(1.0f), offset(0.0f)
 {
     _size = sizeof(*this);
@@ -226,7 +226,7 @@ void HydroCalibrationData::toJSONObject(JsonObject &objectOut) const
     HydroData::toJSONObject(objectOut);
 
     if (ownerName[0]) { objectOut[SFP(HStr_Key_SensorName)] = charsToString(ownerName, HYDRO_NAME_MAXSIZE); }
-    if (calibUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_CalibUnits)] = unitsTypeToSymbol(calibUnits); }
+    if (calibrationUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_CalibrationUnits)] = unitsTypeToSymbol(calibrationUnits); }
     objectOut[SFP(HStr_Key_Multiplier)] = multiplier;
     objectOut[SFP(HStr_Key_Offset)] = offset;
 }
@@ -237,7 +237,7 @@ void HydroCalibrationData::fromJSONObject(JsonObjectConst &objectIn)
 
     const char *ownerNameStr = objectIn[SFP(HStr_Key_SensorName)];
     if (ownerNameStr && ownerNameStr[0]) { strncpy(ownerName, ownerNameStr, HYDRO_NAME_MAXSIZE); }
-    calibUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_CalibUnits)]);
+    calibrationUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_CalibrationUnits)]);
     multiplier = objectIn[SFP(HStr_Key_Multiplier)] | multiplier;
     offset = objectIn[SFP(HStr_Key_Offset)] | offset;
 }

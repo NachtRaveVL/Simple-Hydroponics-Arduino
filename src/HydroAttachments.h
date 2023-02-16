@@ -217,6 +217,7 @@ public:
 
     inline const HydroActivationHandle &getHandle() const { return _actHandle; }
     inline const HydroActivation &getSetup() const { return _actSetup; }
+
     inline SharedPtr<HydroActuator> getObject() { return HydroAttachment::getObject<HydroActuator>(); }
     inline HydroActuator *get() { return HydroAttachment::get<HydroActuator>(); }
 
@@ -307,7 +308,7 @@ public:
     // Updates owned trigger attachment.
     virtual void updateIfNeeded(bool poll = false) override;
 
-    inline Hydro_TriggerState getTriggerState();
+    inline Hydro_TriggerState getTriggerState(bool poll = false);
 
     inline SharedPtr<HydroTrigger> getObject() { return HydroAttachment::getObject<HydroTrigger>(); }
     inline HydroTrigger *get() { return HydroAttachment::get<HydroTrigger>(); }
@@ -335,7 +336,7 @@ public:
     // Updates owned balancer attachment.
     virtual void updateIfNeeded(bool poll = false) override;
 
-    inline Hydro_BalancingState getBalancingState();
+    inline Hydro_BalancingState getBalancingState(bool poll = false);
 
     inline SharedPtr<HydroBalancer> getObject() { return HydroAttachment::getObject<HydroBalancer>(); }
     inline HydroBalancer *get() { return HydroAttachment::get<HydroBalancer>(); }

@@ -26,7 +26,7 @@ extern HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 // Actuator Base
 // This is the base class for all actuators, which defines how the actuator is identified,
 // where it lives, and what it's attached to.
-class HydroActuator : public HydroObject, public HydroActuatorObjectInterface, public HydroRailAttachmentInterface, public HydroReservoirAttachmentInterface {
+class HydroActuator : public HydroObject, public HydroActuatorObjectInterface, public HydroParentRailAttachmentInterface, public HydroParentReservoirAttachmentInterface {
 public:
     const enum : signed char { Relay, RelayPump, Variable, VariablePump, Unknown = -1 } classType; // Actuator class type (custom RTTI)
     inline bool isRelayClass() const { return classType == Relay; }
@@ -66,8 +66,8 @@ public:
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) override;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() override;
 
-    virtual HydroAttachment &getParentRail(bool resolve = true) override;
-    virtual HydroAttachment &getParentReservoir(bool resolve = true) override;
+    virtual HydroAttachment &getParentRail() override;
+    virtual HydroAttachment &getParentReservoir() override;
 
     void setUserCalibrationData(HydroCalibrationData *userCalibrationData);
     inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
@@ -75,13 +75,13 @@ public:
     // Transformation methods that convert from normalized driving intensity/driver value to calibration units
     inline float calibrationTransform(float value) const { return _calibrationData ? _calibrationData->transform(value) : value; }
     inline void calibrationTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->transform(valueInOut, unitsOut); } }
-    inline HydroSingleMeasurement calibrationTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline HydroSingleMeasurement calibrationTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->transform(measurement.value), _calibrationData->calibrationUnits, measurement.timestamp, measurement.frame) : measurement; }
     inline void calibrationTransform(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->transform(&measurementInOut->value, &measurementInOut->units); } }
 
     // Transformation methods that convert from calibration units to normalized driving intensity/driver value
     inline float calibrationInvTransform(float value) const { return _calibrationData ? _calibrationData->inverseTransform(value) : value; }
     inline void calibrationInvTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { if (valueInOut && _calibrationData) { _calibrationData->inverseTransform(valueInOut, unitsOut); } }
-    inline HydroSingleMeasurement calibrationInvTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibUnits, measurement.timestamp, measurement.frame) : measurement; }
+    inline HydroSingleMeasurement calibrationInvTransform(HydroSingleMeasurement measurement) { return _calibrationData ? HydroSingleMeasurement(_calibrationData->inverseTransform(measurement.value), _calibrationData->calibrationUnits, measurement.timestamp, measurement.frame) : measurement; }
     inline void calibrationInvTransform(HydroSingleMeasurement *measurementInOut) const { if (measurementInOut && _calibrationData) { _calibrationData->inverseTransform(&measurementInOut->value, &measurementInOut->units); } }
 
     inline float getCalibratedValue() const { return calibrationTransform(getDriveIntensity()); }
@@ -108,7 +108,7 @@ protected:
     virtual HydroData *allocateData() const override;
     virtual void saveToData(HydroData *dataOut) override;
 
-    virtual void handleActivation() override;
+    virtual void handleActivation();
 
     friend struct HydroActivationHandle;
 };
@@ -146,7 +146,7 @@ protected:
 // This actuator acts as a water pump and attaches to both an input and output reservoir.
 // Pumps using this class are either on/off and do not contain any variable flow control,
 // but can be paired with a flow sensor for more precise pumping calculations.
-class HydroRelayPumpActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
+class HydroRelayPumpActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowRateUnitsInterface, public HydroWaterFlowRateSensorAttachmentInterface {
 public:
     HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
                            hposi_t actuatorIndex,
@@ -164,18 +164,16 @@ public:
     virtual HydroActivationHandle pump(millis_t time) override;
 
     virtual void setFlowRateUnits(Hydro_UnitsType flowRateUnits) override;
-    virtual Hydro_UnitsType getFlowRateUnits() const override;
 
-    virtual HydroAttachment &getParentReservoir(bool resolve = true) override;
-    virtual HydroAttachment &getDestinationReservoir(bool resolve = true) override;
+    virtual HydroAttachment &getParentReservoir() override;
+    virtual HydroAttachment &getDestinationReservoir() override;
 
     virtual void setContinuousFlowRate(HydroSingleMeasurement contFlowRate) override;
     virtual const HydroSingleMeasurement &getContinuousFlowRate() override;
 
-    virtual HydroSensorAttachment &getFlowRate(bool poll = false) override;
+    virtual HydroSensorAttachment &getFlowRate() override;
 
 protected:
-    Hydro_UnitsType _flowRateUnits;                         // Flow rate units preferred
     HydroSingleMeasurement _contFlowRate;                   // Continuous flow rate
     HydroSensorAttachment _flowRate;                        // Flow rate sensor attachment
     HydroAttachment _destReservoir;                         // Destination output reservoir
@@ -229,7 +227,7 @@ protected:
 // This actuator acts as a throttleable water pump and attaches to both an input and output
 // reservoir. Pumps using this class have variable flow control but also can be paired with
 // a flow sensor for more precise pumping calculations.
-//class HydroVariablePumpActuator : public HydroVariableActuator, public HydroPumpObjectInterface, public HydroFlowSensorAttachmentInterface {
+//class HydroVariablePumpActuator : public HydroVariableActuator, public HydroPumpObjectInterface, public HydroWaterFlowRateSensorAttachmentInterface {
 // TODO
 //};
 

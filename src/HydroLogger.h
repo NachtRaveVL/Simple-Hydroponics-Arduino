@@ -76,7 +76,7 @@ public:
     inline Hydro_LogLevel getLogLevel() const;
 
     inline bool isLoggingEnabled() const;
-    inline time_t getSystemUptime() const { return unixNow() - (_initDate ?: SECONDS_FROM_1970_TO_2000); }
+    inline time_t getSystemUptime() const { return unixNow() - (_initTime ?: SECONDS_FROM_1970_TO_2000); }
 
     Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> &getLogSignal();
 
@@ -90,7 +90,7 @@ protected:
 #endif
 #endif
     String _logFilename;                                    // Resolved log file name (based on day)
-    time_t _initDate;                                       // Init date (UTC)
+    time_t _initTime;                                       // Time of init, for uptime (UTC)
     time_t _lastSpaceCheck;                                 // Last time enough space was checked (UTC)
 
     Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> _logSignal; // Logging signal
@@ -100,7 +100,7 @@ protected:
     inline HydroLoggerSubData *loggerData() const;
     inline bool hasLoggerData() const;
 
-    inline void updateInitTracking() { _initDate = unixNow(); }
+    inline void updateInitTracking() { _initTime = unixNow(); }
     void log(const HydroLogEvent &event);
     void cleanupOldestLogs(bool force = false);
 };

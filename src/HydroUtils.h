@@ -319,7 +319,7 @@ extern Hydro_UnitsType dilutionUnits(Hydro_UnitsType units);
 extern Hydro_UnitsType defaultUnits(Hydro_UnitsCategory unitsCategory, Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined);
 
 // Returns default concentrate units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
-inline Hydro_UnitsType defaultConcentrateUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqConcentration, measureMode); }
+inline Hydro_UnitsType defaultConcentrateUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_Concentration, measureMode); }
 // Returns default distance units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
 inline Hydro_UnitsType defaultDistanceUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_Distance, measureMode); }
 // Returns default liquid flow rate units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
@@ -329,7 +329,7 @@ inline Hydro_UnitsType defaultDilutionUnits(Hydro_MeasurementMode measureMode = 
 // Returns default power units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
 inline Hydro_UnitsType defaultPowerUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_Power, measureMode); }
 // Returns default temperature units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
-inline Hydro_UnitsType defaultTemperatureUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqTemperature, measureMode); }
+inline Hydro_UnitsType defaultTemperatureUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_Temperature, measureMode); }
 // Returns default liquid volume units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).
 inline Hydro_UnitsType defaultVolumeUnits(Hydro_MeasurementMode measureMode = Hydro_MeasurementMode_Undefined) { return defaultUnits(Hydro_UnitsCategory_LiqVolume, measureMode); }
 // Returns default weight units based on measurement mode (if undefined then uses active controller's measurement mode, else default measurement mode).

@@ -43,11 +43,11 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool getNeedsFeeding() = 0;
+    virtual bool needsFeeding(bool poll = false) = 0;
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 
-    virtual HydroAttachment &getFeedingReservoir(bool resolve = true) override;
+    virtual HydroAttachment &getFeed() override;
 
     void setFeedingWeight(float weight);
     inline float getFeedingWeight() const { return _feedingWeight; }
@@ -84,7 +84,7 @@ protected:
     void handleFeeding(Hydro_TriggerState feedingState);
     friend class HydroAdaptiveCrop;
 
-    void recalcCropGrowthParams();
+    void recalcGrowthParams();
     void checkoutCropsLibData();
     void returnCropsLibData();
     friend class HydroCropsLibrary;
@@ -106,7 +106,7 @@ public:
                    int classType = Timed);
     HydroTimedCrop(const HydroTimedCropData *dataIn);
 
-    virtual bool getNeedsFeeding() override;
+    virtual bool needsFeeding(bool poll = false) override;
     virtual void notifyFeedingBegan() override;
 
     void setFeedTimeOn(TimeSpan timeOn);
@@ -125,7 +125,7 @@ protected:
 
 // Adaptive Sensing Crop
 // Crop type that can manage feedings based on sensor readings of the nearby soil.
-class HydroAdaptiveCrop : public HydroCrop, public HydroSoilMoistureSensorAttachmentInterface {
+class HydroAdaptiveCrop : public HydroCrop, HydroConcentrateUnitsInterface, public HydroSoilMoistureSensorAttachmentInterface, public HydroFeedingTriggerAttachmentInterface {
 public:
     HydroAdaptiveCrop(Hydro_CropType cropType,
                       hposi_t cropIndex,
@@ -137,18 +137,15 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool getNeedsFeeding() override;
+    virtual bool needsFeeding(bool poll = false) override;
 
-    void setConcentrateUnits(Hydro_UnitsType concentrateUnits);
-    Hydro_UnitsType getConcentrateUnits() const;
+    virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
 
-    virtual HydroSensorAttachment &getSoilMoisture(bool poll = false) override;
+    virtual HydroSensorAttachment &getSoilMoisture() override;
 
-    template<typename T> inline void setFeedingTrigger(T feedingTrigger) { _feedingTrigger.setObject(feedingTrigger); }
-    inline SharedPtr<HydroTrigger> getFeedingTrigger() { return _feedingTrigger.getObject(); }
+    virtual HydroTriggerAttachment &getFeeding() override;
 
 protected:
-    Hydro_UnitsType _concentrateUnits;                      // Moisture units preferred
     HydroSensorAttachment _soilMoisture;                    // Soil moisture sensor attachment
     HydroTriggerAttachment _feedingTrigger;                 // Feeding trigger attachment
 

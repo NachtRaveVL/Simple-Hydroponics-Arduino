@@ -235,13 +235,13 @@ inline float HydroActuatorAttachment::getSetupCalibratedValue()
 }
 
 
-inline Hydro_TriggerState HydroTriggerAttachment::getTriggerState()
+inline Hydro_TriggerState HydroTriggerAttachment::getTriggerState(bool poll)
 {
-    return resolve() ? get()->getTriggerState() : Hydro_TriggerState_Undefined;
+    return resolve() ? get()->getTriggerState(poll) : Hydro_TriggerState_Undefined;
 }
 
 
-inline Hydro_BalancingState HydroBalancerAttachment::getBalancingState()
+inline Hydro_BalancingState HydroBalancerAttachment::getBalancingState(bool poll)
 {
-    return resolve() ? get()->getBalancingState() : Hydro_BalancingState_Undefined;
+    return resolve() ? get()->getBalancingState(poll) : Hydro_BalancingState_Undefined;
 }

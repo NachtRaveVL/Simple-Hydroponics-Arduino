@@ -67,12 +67,12 @@ struct HydroSystemData : public HydroData {
 // See setFrom* methods to set calibrated data in various formats.
 struct HydroCalibrationData : public HydroData {
     char ownerName[HYDRO_NAME_MAXSIZE];                     // Owner object name this calibration belongs to (actuator/sensor)
-    Hydro_UnitsType calibUnits;                             // Calibration output units
+    Hydro_UnitsType calibrationUnits;                             // Calibration output units
     float multiplier, offset;                               // Ax + B value transform coefficients
 
     HydroCalibrationData();
     HydroCalibrationData(HydroIdentity ownerId,
-                         Hydro_UnitsType calibUnits = Hydro_UnitsType_Undefined);
+                         Hydro_UnitsType calibrationUnits = Hydro_UnitsType_Undefined);
 
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
@@ -81,9 +81,9 @@ struct HydroCalibrationData : public HydroData {
     inline float transform(float value) const { return (value * multiplier) + offset; }
     // Transforms value in-place from raw (or initial) value into calibrated (or transformed) value, with optional units write out.
     inline void transform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { *valueInOut = transform(*valueInOut);
-                                                                                          if (unitsOut) { *unitsOut = calibUnits; } }
+                                                                                          if (unitsOut) { *unitsOut = calibrationUnits; } }
     // Transforms measurement from raw (or initial) measurement into calibrated (or transformed) measurement.
-    inline HydroSingleMeasurement transform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(transform(measurement.value), calibUnits, measurement.timestamp, measurement.frame); }
+    inline HydroSingleMeasurement transform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(transform(measurement.value), calibrationUnits, measurement.timestamp, measurement.frame); }
     // Transforms measurement in-place from raw (or initial) measurement into calibrated (or transformed) measurement.
     inline void transform(HydroSingleMeasurement *measurementInOut) const { transform(&measurementInOut->value, &measurementInOut->units); }
 
@@ -91,9 +91,9 @@ struct HydroCalibrationData : public HydroData {
     inline float inverseTransform(float value) const { return (value - offset) / multiplier; }
     // Inverse transforms value in-place from calibrated (or transformed) value back into raw (or initial) value, with optional units write out.
     inline void inverseTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { *valueInOut = inverseTransform(*valueInOut);
-                                                                                                 if (unitsOut) { *unitsOut = Hydro_UnitsType_Raw_0_1; } }
+                                                                                                 if (unitsOut) { *unitsOut = Hydro_UnitsType_Raw_1; } }
     // Inverse transforms measurement from calibrated (or transformed) measurement back into raw (or initial) measurement.
-    inline HydroSingleMeasurement inverseTransform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(inverseTransform(measurement.value), calibUnits, measurement.timestamp, measurement.frame); }
+    inline HydroSingleMeasurement inverseTransform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(inverseTransform(measurement.value), calibrationUnits, measurement.timestamp, measurement.frame); }
     // Inverse transforms measurement in-place from calibrated (or transformed) measurement back into raw (or initial) measurement.
     inline void inverseTransform(HydroSingleMeasurement *measurementInOut) const { inverseTransform(&measurementInOut->value, &measurementInOut->units); }
 

@@ -27,7 +27,7 @@ extern HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *data
 // This is the base class for all reservoirs, which defines how the reservoir is
 // identified, where it lives, what's attached to it, if it is full or empty, and
 // who can activate under it.
-class HydroReservoir : public HydroObject, public HydroReservoirObjectInterface {
+class HydroReservoir : public HydroObject, public HydroReservoirObjectInterface, public HydroVolumeUnitsInterface {
 public:
     const enum : signed char { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
     inline bool isFluidClass() const { return classType == Fluid; }
@@ -44,13 +44,12 @@ public:
     virtual void update() override;
 
     virtual bool canActivate(HydroActuator *actuator);
-    virtual bool isFilled() = 0;
-    virtual bool isEmpty() = 0;
+    virtual bool isFilled(bool poll = false) = 0;
+    virtual bool isEmpty(bool poll = false) = 0;
 
-    virtual void setVolumeUnits(Hydro_UnitsType volumeUnits);
-    inline Hydro_UnitsType getVolumeUnits() const { return definedUnitsElse(_volumeUnits, defaultVolumeUnits()); }
+    virtual void setVolumeUnits(Hydro_UnitsType volumeUnits) override;
 
-    virtual HydroSensorAttachment &getWaterVolume(bool poll = false) = 0;
+    virtual HydroSensorAttachment &getWaterVolume() = 0;
 
     inline Hydro_ReservoirType getReservoirType() const { return _id.objTypeAs.reservoirType; }
     inline hposi_t getReservoirIndex() const { return _id.posIndex; }
@@ -59,8 +58,6 @@ public:
     Signal<HydroReservoir *, HYDRO_RESERVOIR_SIGNAL_SLOTS> &getEmptySignal();
 
 protected:
-    Hydro_UnitsType _volumeUnits;                           // Volume units preferred
-
     Hydro_TriggerState _filledState;                        // Current filled state
     Hydro_TriggerState _emptyState;                         // Current empty state
 
@@ -79,7 +76,7 @@ protected:
 // Simple Fluid Reservoir
 // Basic fluid reservoir that contains a volume of liquid and the ability to track such.
 // Crude, but effective.
-class HydroFluidReservoir : public HydroReservoir, public HydroVolumeSensorAttachmentInterface {
+class HydroFluidReservoir : public HydroReservoir, public HydroWaterVolumeSensorAttachmentInterface, public HydroFilledTriggerAttachmentInterface, public HydroEmptyTriggerAttachmentInterface {
 public:
     HydroFluidReservoir(Hydro_ReservoirType reservoirType,
                         hposi_t reservoirIndex,
@@ -90,18 +87,16 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool isFilled() override;
-    virtual bool isEmpty() override;
+    virtual bool isFilled(bool poll = false) override;
+    virtual bool isEmpty(bool poll = false) override;
 
     virtual void setVolumeUnits(Hydro_UnitsType volumeUnits) override;
 
-    virtual HydroSensorAttachment &getWaterVolume(bool poll = false) override;
+    virtual HydroSensorAttachment &getWaterVolume() override;
 
-    template<typename T> inline void setFilledTrigger(T filledTrigger) { _filledTrigger.setObject(filledTrigger); }
-    inline SharedPtr<HydroTrigger> getFilledTrigger() { return _filledTrigger.getObject(); }
+    virtual HydroTriggerAttachment &getFilled() override;
 
-    template<typename T> inline void setEmptyTrigger(T emptyTrigger) { _emptyTrigger.setObject(emptyTrigger); }
-    inline SharedPtr<HydroTrigger> getEmptyTrigger() { return _emptyTrigger.getObject(); }
+    virtual HydroTriggerAttachment &getEmpty() override;
 
     inline float getMaxVolume() const { return _maxVolume; }
 
@@ -136,11 +131,11 @@ public:
     virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
     virtual void setTemperatureUnits(Hydro_UnitsType temperatureUnits) override;
 
-    virtual HydroSensorAttachment &getWaterPH(bool poll = false) override;
-    virtual HydroSensorAttachment &getWaterTDS(bool poll = false) override;
-    virtual HydroSensorAttachment &getWaterTemperature(bool poll = false) override;
-    virtual HydroSensorAttachment &getAirTemperature(bool poll = false) override;
-    virtual HydroSensorAttachment &getAirCO2(bool poll = false) override;
+    virtual HydroSensorAttachment &getWaterPH() override;
+    virtual HydroSensorAttachment &getWaterTDS() override;
+    virtual HydroSensorAttachment &getWaterTemperature() override;
+    virtual HydroSensorAttachment &getAirTemperature() override;
+    virtual HydroSensorAttachment &getAirCO2() override;
 
     template<typename T> inline void setWaterPHBalancer(T phBalancer) { _waterPHBalancer.setObject(phBalancer); }
     inline SharedPtr<HydroBalancer> getWaterPHBalancer() { return _waterPHBalancer.getObject(); }
@@ -205,10 +200,10 @@ public:
                            int classType = Pipe);
     HydroInfiniteReservoir(const HydroInfiniteReservoirData *dataIn);
 
-    virtual bool isFilled() override;
-    virtual bool isEmpty() override;
+    virtual bool isFilled(bool poll = false) override;
+    virtual bool isEmpty(bool poll = false) override;
 
-    virtual HydroSensorAttachment &getWaterVolume(bool poll = false) override;
+    virtual HydroSensorAttachment &getWaterVolume() override;
 
 protected:
     HydroSensorAttachment _waterVolume;                     // Water volume sensor attachment (defunct)

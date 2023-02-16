@@ -224,7 +224,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t input
             if (ppmScale != 500) {
                 HydroCalibrationData userCalibData(sensor->getId());
                 userCalibData.setFromScale(ppmScale / 500.0f);
-                userCalibData.calibUnits = Hydro_UnitsType_Concentration_EC;
+                userCalibData.calibrationUnits = Hydro_UnitsType_Concentration_EC_5;
                 sensor->setUserCalibrationData(&userCalibData);
             }
 

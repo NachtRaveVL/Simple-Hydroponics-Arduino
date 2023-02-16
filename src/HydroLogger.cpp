@@ -11,7 +11,7 @@ HydroLogEvent::HydroLogEvent(Hydro_LogLevel levelIn, const String &prefixIn, con
 
 
 HydroLogger::HydroLogger()
-    : _logFilename(), _initDate(0), _lastSpaceCheck(0)
+    : _logFilename(), _initTime(0), _lastSpaceCheck(0)
 { ; }
 
 HydroLogger::~HydroLogger()

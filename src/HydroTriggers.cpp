@@ -64,8 +64,9 @@ void HydroTrigger::update()
 void HydroTrigger::handleLowMemory()
 { ; }
 
-Hydro_TriggerState HydroTrigger::getTriggerState() const
+Hydro_TriggerState HydroTrigger::getTriggerState(bool poll)
 {
+    _sensor.updateIfNeeded(poll);
     return _triggerState;
 }
 

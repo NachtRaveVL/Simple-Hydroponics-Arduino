@@ -34,8 +34,9 @@ void HydroBalancer::setTargetSetpoint(float targetSetpoint)
     }
 }
 
-Hydro_BalancingState HydroBalancer::getBalancingState() const
+Hydro_BalancingState HydroBalancer::getBalancingState(bool poll)
 {
+    _sensor.updateIfNeeded(poll);
     return _balancingState;
 }
 

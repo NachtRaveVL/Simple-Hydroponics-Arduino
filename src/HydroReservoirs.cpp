@@ -28,13 +28,13 @@ HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 
 HydroReservoir::HydroReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, int classTypeIn)
     : HydroObject(HydroIdentity(reservoirType, reservoirIndex)), classType((typeof(classType))classTypeIn),
-      _volumeUnits(defaultVolumeUnits()),
+      HydroVolumeUnitsInterface(defaultVolumeUnits()),
       _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
 HydroReservoir::HydroReservoir(const HydroReservoirData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      _volumeUnits(definedUnitsElse(dataIn->volumeUnits, defaultVolumeUnits())),
+      HydroVolumeUnitsInterface(definedUnitsElse(dataIn->volumeUnits, defaultVolumeUnits())),
       _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
@@ -164,8 +164,8 @@ void HydroFluidReservoir::update()
 
     _waterVolume.updateIfNeeded(true);
 
-    _filledTrigger.updateIfNeeded();
-    _emptyTrigger.updateIfNeeded();
+    _filledTrigger.updateIfNeeded(true);
+    _emptyTrigger.updateIfNeeded(true);
 }
 
 void HydroFluidReservoir::handleLowMemory()
@@ -176,18 +176,18 @@ void HydroFluidReservoir::handleLowMemory()
     if (_emptyTrigger) { _emptyTrigger->handleLowMemory(); }
 }
 
-bool HydroFluidReservoir::isFilled()
+bool HydroFluidReservoir::isFilled(bool poll)
 {
-    if (_filledTrigger.resolve() && triggerStateToBool(_filledTrigger.getTriggerState())) { return true; }
-    return _waterVolume.getMeasurementValue() >= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
-                                                                                                               : _maxVolume) - FLT_EPSILON;
+    if (_filledTrigger.resolve() && triggerStateToBool(_filledTrigger.getTriggerState(poll))) { return true; }
+    return _waterVolume.getMeasurementValue(poll) >= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
+                                                                                                                   : _maxVolume) - FLT_EPSILON;
 }
 
-bool HydroFluidReservoir::isEmpty()
+bool HydroFluidReservoir::isEmpty(bool poll)
 {
-    if (_emptyTrigger.resolve() && triggerStateToBool(_emptyTrigger.getTriggerState())) { return true; }
-    return _waterVolume.getMeasurementValue() <= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
-                                                                                                               : 0) + FLT_EPSILON;
+    if (_emptyTrigger.resolve() && triggerStateToBool(_emptyTrigger.getTriggerState(poll))) { return true; }
+    return _waterVolume.getMeasurementValue(poll) <= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
+                                                                                                                   : 0) + FLT_EPSILON;
 }
 
 void HydroFluidReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
@@ -199,10 +199,19 @@ void HydroFluidReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
     }
 }
 
-HydroSensorAttachment &HydroFluidReservoir::getWaterVolume(bool poll)
+HydroSensorAttachment &HydroFluidReservoir::getWaterVolume()
 {
-    _waterVolume.updateIfNeeded(poll);
     return _waterVolume;
+}
+
+HydroTriggerAttachment &HydroFluidReservoir::getFilled()
+{
+    return _filledTrigger;
+}
+
+HydroTriggerAttachment &HydroFluidReservoir::getEmpty()
+{
+    return _emptyTrigger;
 }
 
 void HydroFluidReservoir::saveToData(HydroData *dataOut)
@@ -245,7 +254,7 @@ void HydroFluidReservoir::handleEmpty(Hydro_TriggerState emptyState)
 HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, DateTime lastChangeTime, DateTime lastPruningTime, int classType)
     : HydroFluidReservoir(Hydro_ReservoirType_FeedWater, reservoirIndex, maxVolume, classType),
       HydroConcentrateUnitsInterface(Hydro_UnitsType_Concentration_TDS),
-      HydroTemperatureUnitsInterface(),
+      HydroTemperatureUnitsInterface(defaultTemperatureUnits()),
       _lastChangeTime(unixTime(lastChangeTime)), _lastPruningTime(unixTime(lastPruningTime)), _lastFeedingTime(0), _numFeedingsToday(0),
       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
       _waterPHBalancer(this), _waterTDSBalancer(this), _waterTempBalancer(this), _airTempBalancer(this), _airCO2Balancer(this)
@@ -253,8 +262,8 @@ HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, 
 
 HydroFeedReservoir::HydroFeedReservoir(const HydroFeedReservoirData *dataIn)
     : HydroFluidReservoir(dataIn),
-      HydroConcentrateUnitsInterface(dataIn->concentrateUnits),
-      HydroTemperatureUnitsInterface(dataIn->temperatureUnits),
+      HydroConcentrateUnitsInterface(definedUnitsElse(dataIn->concentrateUnits, Hydro_UnitsType_Concentration_TDS)),
+      HydroTemperatureUnitsInterface(definedUnitsElse(dataIn->temperatureUnits, defaultTemperatureUnits())),
       _lastChangeTime(dataIn->lastChangeTime), _lastPruningTime(dataIn->lastPruningTime),
       _lastFeedingTime(dataIn->lastFeedingTime), _numFeedingsToday(dataIn->numFeedingsToday),
       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
@@ -312,8 +321,8 @@ void HydroFeedReservoir::handleLowMemory()
 
 void HydroFeedReservoir::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
 {
-    if (_concentrateUnits != concentrateUnits) {
-        _concentrateUnits = concentrateUnits;
+    if (_concUnits != concentrateUnits) {
+        _concUnits = concentrateUnits;
 
         _waterTDS.setMeasureUnits(getConcentrateUnits());
     }
@@ -321,41 +330,36 @@ void HydroFeedReservoir::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
 
 void HydroFeedReservoir::setTemperatureUnits(Hydro_UnitsType temperatureUnits)
 {
-    if (_temperatureUnits != temperatureUnits) {
-        _temperatureUnits = temperatureUnits;
+    if (_tempUnits != temperatureUnits) {
+        _tempUnits = temperatureUnits;
 
         _waterTemp.setMeasureUnits(getTemperatureUnits());
         _airTemp.setMeasureUnits(getTemperatureUnits());
     }
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getWaterPH(bool poll)
+HydroSensorAttachment &HydroFeedReservoir::getWaterPH()
 {
-    _waterPH.updateIfNeeded(poll);
     return _waterPH;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getWaterTDS(bool poll)
+HydroSensorAttachment &HydroFeedReservoir::getWaterTDS()
 {
-    _waterTDS.updateIfNeeded(poll);
     return _waterTDS;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getWaterTemperature(bool poll)
+HydroSensorAttachment &HydroFeedReservoir::getWaterTemperature()
 {
-    _waterTemp.updateIfNeeded(poll);
     return _waterTemp;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getAirTemperature(bool poll)
+HydroSensorAttachment &HydroFeedReservoir::getAirTemperature()
 {
-    _airTemp.updateIfNeeded(poll);
     return _airTemp;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getAirCO2(bool poll)
+HydroSensorAttachment &HydroFeedReservoir::getAirCO2()
 {
-    _airCO2.updateIfNeeded(poll);
     return _airCO2;
 }
 
@@ -367,8 +371,8 @@ void HydroFeedReservoir::saveToData(HydroData *dataOut)
     ((HydroFeedReservoirData *)dataOut)->lastPruningTime = _lastPruningTime;
     ((HydroFeedReservoirData *)dataOut)->lastFeedingTime = _lastFeedingTime;
     ((HydroFeedReservoirData *)dataOut)->numFeedingsToday = _numFeedingsToday;
-    ((HydroFeedReservoirData *)dataOut)->concentrateUnits = _concentrateUnits;
-    ((HydroFeedReservoirData *)dataOut)->temperatureUnits = _temperatureUnits;
+    ((HydroFeedReservoirData *)dataOut)->concentrateUnits = _concUnits;
+    ((HydroFeedReservoirData *)dataOut)->temperatureUnits = _tempUnits;
     if (_waterPH.getId()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->waterPHSensor, _waterPH.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -395,17 +399,17 @@ HydroInfiniteReservoir::HydroInfiniteReservoir(const HydroInfiniteReservoirData 
     : HydroReservoir(dataIn), _alwaysFilled(dataIn->alwaysFilled), _waterVolume(this)
 { ; }
 
-bool HydroInfiniteReservoir::isFilled()
+bool HydroInfiniteReservoir::isFilled(bool poll)
 {
     return _alwaysFilled;
 }
 
-bool HydroInfiniteReservoir::isEmpty()
+bool HydroInfiniteReservoir::isEmpty(bool poll)
 {
     return !_alwaysFilled;
 }
 
-HydroSensorAttachment &HydroInfiniteReservoir::getWaterVolume(bool poll)
+HydroSensorAttachment &HydroInfiniteReservoir::getWaterVolume()
 {
     _waterVolume.setMeasurement(HydroSingleMeasurement(
         _alwaysFilled ? FLT_UNDEF : 0.0f,
@@ -495,7 +499,7 @@ void HydroFeedReservoirData::toJSONObject(JsonObject &objectOut) const
     if (lastPruningTime) { objectOut[SFP(HStr_Key_LastPruningTime)] = lastPruningTime; }
     if (lastFeedingTime) { objectOut[SFP(HStr_Key_LastFeedingTime)] = lastFeedingTime; }
     if (numFeedingsToday > 0) { objectOut[SFP(HStr_Key_NumFeedingsToday)] = numFeedingsToday; }
-    if (concentrateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_Concentration)] = unitsTypeToSymbol(concentrateUnits); }
+    if (concentrateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_ConcentrateUnits)] = unitsTypeToSymbol(concentrateUnits); }
     if (temperatureUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_TemperatureUnits)] = unitsTypeToSymbol(temperatureUnits); }
     if (waterPHSensor[0]) { objectOut[SFP(HStr_Key_PHSensor)] = charsToString(waterPHSensor, HYDRO_NAME_MAXSIZE); }
     if (waterTDSSensor[0]) { objectOut[SFP(HStr_Key_TDSSensor)] = charsToString(waterTDSSensor, HYDRO_NAME_MAXSIZE); }
@@ -514,7 +518,7 @@ void HydroFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)
     lastPruningTime = objectIn[SFP(HStr_Key_LastPruningTime)] | lastPruningTime;
     lastFeedingTime = objectIn[SFP(HStr_Key_LastFeedingTime)] | lastFeedingTime;
     numFeedingsToday = objectIn[SFP(HStr_Key_NumFeedingsToday)] | numFeedingsToday;
-    concentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_Concentration)]);
+    concentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_ConcentrateUnits)]);
     temperatureUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_TemperatureUnits)]);
     const char *waterPHSensorStr = objectIn[SFP(HStr_Key_PHSensor)];
     if (waterPHSensorStr && waterPHSensorStr[0]) { strncpy(waterPHSensor, waterPHSensorStr, HYDRO_NAME_MAXSIZE); }

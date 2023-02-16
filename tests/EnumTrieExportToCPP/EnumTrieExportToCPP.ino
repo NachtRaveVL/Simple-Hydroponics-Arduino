@@ -316,7 +316,7 @@ void buildUnitsTypeTree() {
         }
         // aliases
         if (charIndex == 'J') { _root->insert(nullptr, F("J/s"), Hydro_UnitsType_Power_Wattage); }
-        if (charIndex == 'M') { _root->insert(nullptr, F("mS/cm"), Hydro_UnitsType_Concentration_EC); }
+        if (charIndex == 'M') { _root->insert(nullptr, F("mS/cm"), Hydro_UnitsType_Concentration_EC_5); }
         if (charIndex == 'P') { _root->insert(nullptr, F("ppm"), Hydro_UnitsType_Concentration_PPM); }
         if (charIndex == 'T') { _root->insert(nullptr, F("TDS"), Hydro_UnitsType_Concentration_TDS); }
     }
