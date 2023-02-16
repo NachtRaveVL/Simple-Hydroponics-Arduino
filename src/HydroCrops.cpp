@@ -72,7 +72,7 @@ void HydroCrop::notifyFeedingBegan()
 void HydroCrop::notifyFeedingEnded()
 { ; }
 
-HydroAttachment &HydroCrop::getFeed()
+HydroAttachment &HydroCrop::getFeedReservoirAttachment()
 {
     return _feedReservoir;
 }
@@ -223,19 +223,19 @@ void HydroTimedCrop::saveToData(HydroData *dataOut)
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, int classType)
     : HydroCrop(cropType, cropIndex, substrateType, sowTime, classType),
-      HydroConcentrateUnitsInterface(defaultConcentrateUnits()),
+      HydroConcentrateUnitsInterfaceStorage(defaultConcentrateUnits()),
       _soilMoisture(this), _feedingTrigger(this)
 {
-    _soilMoisture.setMeasureUnits(getConcentrateUnits());
+    _soilMoisture.setMeasurementUnits(getConcentrateUnits());
 
     _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
 }
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn)
     : HydroCrop(dataIn), _soilMoisture(this), _feedingTrigger(this),
-    HydroConcentrateUnitsInterface(definedUnitsElse(dataIn->concentrateUnits, defaultConcentrateUnits()))
+    HydroConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, defaultConcentrateUnits()))
 {
-    _soilMoisture.setMeasureUnits(definedUnitsElse(dataIn->concentrateUnits, getConcentrateUnits()));
+    _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->concentrateUnits, getConcentrateUnits()));
     _soilMoisture.setObject(dataIn->moistureSensor);
 
     _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
@@ -270,16 +270,16 @@ void HydroAdaptiveCrop::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
     if (_concUnits != concentrateUnits) {
         _concUnits = concentrateUnits;
 
-        _soilMoisture.setMeasureUnits(getConcentrateUnits());
+        _soilMoisture.setMeasurementUnits(getConcentrateUnits());
     }
 }
 
-HydroSensorAttachment &HydroAdaptiveCrop::getSoilMoisture()
+HydroSensorAttachment &HydroAdaptiveCrop::getSoilMoistureSensorAttachment()
 {
     return _soilMoisture;
 }
 
-HydroTriggerAttachment &HydroAdaptiveCrop::getFeeding()
+HydroTriggerAttachment &HydroAdaptiveCrop::getFeedingAttachment()
 {
     return _feedingTrigger;
 }

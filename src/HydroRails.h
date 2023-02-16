@@ -23,7 +23,7 @@ extern HydroRail *newRailObjectFromData(const HydroRailData *dataIn);
 // Power Rail Base
 // This is the base class for all power rails, which defines how the rail is identified,
 // where it lives, what's attached to it, and who can activate under it.
-class HydroRail : public HydroObject, public HydroRailObjectInterface, public HydroPowerUnitsInterface {
+class HydroRail : public HydroObject, public HydroRailObjectInterface, public HydroPowerUnitsInterfaceStorage {
 public:
     const enum : signed char { Simple, Regulated, Unknown = -1 } classType; // Power rail class (custom RTTI)
     inline bool isSimpleClass() const { return classType == Simple; }
@@ -51,7 +51,7 @@ public:
     Signal<HydroRail *, HYDRO_RAIL_SIGNAL_SLOTS> &getCapacitySignal();
 
 protected:
-    Hydro_TriggerState _limitState;                         // Current limit state
+    Hydro_TriggerState _limitState;                         // Limit state (last handled)
 
     Signal<HydroRail *, HYDRO_RAIL_SIGNAL_SLOTS> _capacitySignal; // Capacity changed signal
 
@@ -110,9 +110,9 @@ public:
 
     virtual void setPowerUnits(Hydro_UnitsType powerUnits) override;
 
-    virtual HydroSensorAttachment &getPowerUsage() override;
+    virtual HydroSensorAttachment &getPowerUsageSensorAttachment() override;
 
-    virtual HydroTriggerAttachment &getLimit() override;
+    virtual HydroTriggerAttachment &getLimitAttachment() override;
 
     inline float getMaxPower() const { return _maxPower; }
 

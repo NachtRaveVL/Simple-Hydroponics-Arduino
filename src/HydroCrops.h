@@ -47,7 +47,7 @@ public:
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 
-    virtual HydroAttachment &getFeed() override;
+    virtual HydroAttachment &getFeedReservoirAttachment() override;
 
     void setFeedingWeight(float weight);
     inline float getFeedingWeight() const { return _feedingWeight; }
@@ -67,14 +67,14 @@ public:
     void notifyDayChanged();
 
 protected:
-    Hydro_SubstrateType _substrateType;                     // Substrate type
-    time_t _sowTime;                                        // Sow date (UTC)
+    Hydro_SubstrateType _substrateType;                     // Substrate type (fixme: currently unused)
+    time_t _sowTime;                                        // Sow date (UTC), may be past or future date
     HydroAttachment _feedReservoir;                         // Feed reservoir attachment
-    const HydroCropsLibData *_cropsData;                    // Crops library data (checked out iff !nullptr)
-    int _growWeek;                                          // Current grow week
-    int _totalGrowWeeks;                                    // Total grow weeks (cached)
-    Hydro_CropPhase _cropPhase;                             // Current crop phase
-    Hydro_TriggerState _feedingState;                       // Current feeding signal state
+    const HydroCropsLibData *_cropsData;                    // Crops library data (checked out if !nullptr)
+    hposi_t _growWeek;                                      // Current grow week (cached)
+    hposi_t _totalGrowWeeks;                                // Total grow weeks (cached)
+    Hydro_CropPhase _cropPhase;                             // Current crop phase (cached)
+    Hydro_TriggerState _feedingState;                       // Feeding state (last handled)
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)
     Signal<HydroCrop *, HYDRO_FEEDING_SIGNAL_SLOTS> _feedingSignal; // Feeding requested signal
 
@@ -125,7 +125,7 @@ protected:
 
 // Adaptive Sensing Crop
 // Crop type that can manage feedings based on sensor readings of the nearby soil.
-class HydroAdaptiveCrop : public HydroCrop, HydroConcentrateUnitsInterface, public HydroSoilMoistureSensorAttachmentInterface, public HydroFeedingTriggerAttachmentInterface {
+class HydroAdaptiveCrop : public HydroCrop, HydroConcentrateUnitsInterfaceStorage, public HydroSoilMoistureSensorAttachmentInterface, public HydroFeedingTriggerAttachmentInterface {
 public:
     HydroAdaptiveCrop(Hydro_CropType cropType,
                       hposi_t cropIndex,
@@ -141,9 +141,9 @@ public:
 
     virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
 
-    virtual HydroSensorAttachment &getSoilMoisture() override;
+    virtual HydroSensorAttachment &getSoilMoistureSensorAttachment() override;
 
-    virtual HydroTriggerAttachment &getFeeding() override;
+    virtual HydroTriggerAttachment &getFeedingAttachment() override;
 
 protected:
     HydroSensorAttachment _soilMoisture;                    // Soil moisture sensor attachment

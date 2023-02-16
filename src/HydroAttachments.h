@@ -172,7 +172,7 @@ public:
 
     // A rate multiplier is used to adjust either the intensity or duration of activations,
     // which depends on whenever they operate in binary mode (on/off) or variably (ranged).
-    inline void setRateMultiplier(float rateMultiplier) { _rateMultiplier = rateMultiplier; applySetup(); }
+    inline void setRateMultiplier(float rateMultiplier) { if (!isFPEqual(_rateMultiplier, rateMultiplier)) { _rateMultiplier = rateMultiplier; applySetup(); } }
     inline float getRateMultiplier() const { return _rateMultiplier; }
 
     // Activations are set up first by calling one of these methods. This configures the
@@ -247,7 +247,7 @@ protected:
 // Custom handle method is responsible for calling setMeasurement() to update measurement.
 class HydroSensorAttachment : public HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> {
 public:
-    HydroSensorAttachment(HydroObjInterface *parent = nullptr, uint8_t measureRow = 0);
+    HydroSensorAttachment(HydroObjInterface *parent = nullptr, uint8_t measurementRow = 0);
     HydroSensorAttachment(const HydroSensorAttachment &attachment);
     virtual ~HydroSensorAttachment();
 
@@ -260,18 +260,18 @@ public:
     // Sets the current measurement associated with this process. Required to be called by custom handlers.
     void setMeasurement(HydroSingleMeasurement measurement);
     inline void setMeasurement(float value, Hydro_UnitsType units = Hydro_UnitsType_Undefined) { setMeasurement(HydroSingleMeasurement(value, units)); }
-    void setMeasureRow(uint8_t measureRow);
-    void setMeasureUnits(Hydro_UnitsType units, float convertParam = FLT_UNDEF);
-
-    inline void setNeedsMeasurement() { _needsMeasurement = true; }
-    inline bool needsMeasurement() { return _needsMeasurement; }
+    void setMeasurementRow(uint8_t measurementRow);
+    void setMeasurementUnits(Hydro_UnitsType units, float convertParam = FLT_UNDEF);
 
     inline const HydroSingleMeasurement &getMeasurement(bool poll = false) { updateIfNeeded(poll); return _measurement; }
     inline uint16_t getMeasurementFrame(bool poll = false) { updateIfNeeded(poll); return _measurement.frame; }
     inline float getMeasurementValue(bool poll = false) { updateIfNeeded(poll); return _measurement.value; }
-    inline Hydro_UnitsType getMeasureUnits() const { return _measurement.units; }
+    inline Hydro_UnitsType getMeasurementUnits() const { return _measurement.units; }
 
-    inline uint8_t getMeasureRow() const { return _measureRow; }
+    inline void setNeedsMeasurement() { _needsMeasurement = true; }
+    inline bool needsMeasurement() { return _needsMeasurement; }
+
+    inline uint8_t getMeasurementRow() const { return _measurementRow; }
     inline float getMeasurementConvertParam() const { return _convertParam; }
 
     inline SharedPtr<HydroSensor> getObject() { return HydroAttachment::getObject<HydroSensor>(); }
@@ -287,7 +287,7 @@ public:
 
 protected:
     HydroSingleMeasurement _measurement;                    // Local measurement (converted to measure units)
-    uint8_t _measureRow;                                    // Measurement row
+    uint8_t _measurementRow;                                // Measurement row
     float _convertParam;                                    // Convert param (default: FLT_UNDEF)
     bool _needsMeasurement;                                 // Stale measurement tracking flag
 

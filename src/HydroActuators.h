@@ -66,8 +66,8 @@ public:
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) override;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() override;
 
-    virtual HydroAttachment &getParentRail() override;
-    virtual HydroAttachment &getParentReservoir() override;
+    virtual HydroAttachment &getParentRailAttachment() override;
+    virtual HydroAttachment &getParentReservoirAttachment() override;
 
     void setUserCalibrationData(HydroCalibrationData *userCalibrationData);
     inline const HydroCalibrationData *getUserCalibrationData() const { return _calibrationData; }
@@ -100,8 +100,8 @@ protected:
     Hydro_EnableMode _enableMode;                           // Handle activation mode
     Vector<HydroActivationHandle *> _handles;               // Activation handles array
     HydroSingleMeasurement _contPowerUsage;                 // Continuous power draw
-    HydroAttachment _rail;                                  // Power rail attachment
-    HydroAttachment _reservoir;                             // Reservoir attachment
+    HydroAttachment _parentRail;                            // Parent power rail attachment
+    HydroAttachment _parentReservoir;                       // Parent reservoir attachment
     const HydroCalibrationData *_calibrationData;           // Calibration data
     Signal<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS> _activateSignal; // Activation update signal
 
@@ -146,7 +146,7 @@ protected:
 // This actuator acts as a water pump and attaches to both an input and output reservoir.
 // Pumps using this class are either on/off and do not contain any variable flow control,
 // but can be paired with a flow sensor for more precise pumping calculations.
-class HydroRelayPumpActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowRateUnitsInterface, public HydroWaterFlowRateSensorAttachmentInterface {
+class HydroRelayPumpActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowRateUnitsInterfaceStorage, public HydroWaterFlowRateSensorAttachmentInterface {
 public:
     HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
                            hposi_t actuatorIndex,
@@ -165,13 +165,13 @@ public:
 
     virtual void setFlowRateUnits(Hydro_UnitsType flowRateUnits) override;
 
-    virtual HydroAttachment &getParentReservoir() override;
-    virtual HydroAttachment &getDestinationReservoir() override;
+    virtual HydroAttachment &getSourceReservoirAttachment() override;
+    virtual HydroAttachment &getDestinationReservoirAttachment() override;
 
     virtual void setContinuousFlowRate(HydroSingleMeasurement contFlowRate) override;
     virtual const HydroSingleMeasurement &getContinuousFlowRate() override;
 
-    virtual HydroSensorAttachment &getFlowRate() override;
+    virtual HydroSensorAttachment &getFlowRateSensorAttachment() override;
 
 protected:
     HydroSingleMeasurement _contFlowRate;                   // Continuous flow rate
@@ -186,7 +186,6 @@ protected:
 
     virtual void handleActivation() override;
 
-    virtual void pollPumpingSensors() override;
     virtual void handlePumpTime(millis_t time) override;
 };
 

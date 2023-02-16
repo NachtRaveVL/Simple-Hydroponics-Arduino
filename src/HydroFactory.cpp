@@ -366,7 +366,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin
             HydroAnalogPin(inputPin, INPUT, inputBitRes)
         ));
         if (getController()->registerObject(sensor)) {
-            if (!isWattageBased) { sensor->setMeasureUnits(Hydro_UnitsType_Power_Amperage); }
+            if (!isWattageBased) { sensor->setMeasurementUnits(Hydro_UnitsType_Power_Amperage); }
             return sensor;
         }
     }
@@ -486,7 +486,7 @@ SharedPtr<HydroFluidReservoir> HydroFactory::addFluidReservoir(Hydro_ReservoirTy
             maxVolume
         ));
         if (getController()->registerObject(reservoir)) {
-            if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume()); }
+            if (beginFilled) { reservoir->getWaterVolumeSensorAttachment().setMeasurement(reservoir->getMaxVolume()); }
             return reservoir;
         }
     }
@@ -509,7 +509,7 @@ SharedPtr<HydroFeedReservoir> HydroFactory::addFeedWaterReservoir(float maxVolum
             lastPruningTime
         ));
         if (getController()->registerObject(reservoir)) {
-            if (beginFilled) { reservoir->getWaterVolume().setMeasurement(reservoir->getMaxVolume() * HYDRO_FEEDRES_FRACTION_FILLED); }
+            if (beginFilled) { reservoir->getWaterVolumeSensorAttachment().setMeasurement(reservoir->getMaxVolume() * HYDRO_FEEDRES_FRACTION_FILLED); }
             return reservoir;
         }
     }

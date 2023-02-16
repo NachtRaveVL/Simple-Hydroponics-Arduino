@@ -20,7 +20,7 @@ class HydroTimedDosingBalancer;
 // environment via a set of actuators that can affect a measured value. Balancers allow
 // for a set-point to be used to drive such tasks, with different balancers specializing
 // the manner in which they operate.
-class HydroBalancer : public HydroSubObject, public HydroBalancerObjectInterface {
+class HydroBalancer : public HydroSubObject, public HydroBalancerObjectInterface, public HydroMeasurementUnitsInterface, public HydroSensorAttachmentInterface {
 public:
     const enum : signed char { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)
     inline bool isLinearEdgeType() const { return type == LinearEdge; }
@@ -30,7 +30,7 @@ public:
     HydroBalancer(SharedPtr<HydroSensor> sensor,
                   float targetSetpoint,
                   float targetRange,
-                  uint8_t measureRow = 0,
+                  uint8_t measurementRow = 0,
                   int type = Unknown);
     virtual ~HydroBalancer();
 
@@ -39,29 +39,31 @@ public:
     virtual void setTargetSetpoint(float targetSetpoint) override;
     virtual Hydro_BalancingState getBalancingState(bool poll = false) override;
 
-    inline void setMeasureUnits(Hydro_UnitsType measureUnits) { _sensor.setMeasureUnits(measureUnits); }
-    inline Hydro_UnitsType getMeasureUnits() const { return _sensor.getMeasureUnits(); }
-
     void setIncrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &incActuators);
     inline const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &getIncrementActuators() { return _incActuators; }
 
     void setDecrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &decActuators);
     inline const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &getDecrementActuators() { return _decActuators; }
 
-    inline void setEnabled(bool enabled) { _enabled = enabled; }
-    inline bool isEnabled() const { return _enabled; }
-
     inline float getTargetSetpoint() const { return _targetSetpoint; }
     inline float getTargetRange() const { return _targetRange; }
 
-    inline SharedPtr<HydroSensor> getSensor(bool poll = false) { _sensor.updateIfNeeded(poll); return _sensor.getObject(); }
-    inline uint8_t getMeasureRow() const { return _sensor.getMeasureRow(); }
+    inline void setEnabled(bool enabled) { _enabled = enabled; }
+    inline bool isEnabled() const { return _enabled; }
+
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
+
+    inline uint8_t getMeasurementRow() const { return _sensor.getMeasurementRow(); }
+    inline float getMeasurementConvertParam() const { return _sensor.getMeasurementConvertParam(); }
+
+    virtual HydroSensorAttachment &getSensorAttachment() override;
 
     Signal<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> &getBalancingSignal();
 
 protected:
     HydroSensorAttachment _sensor;                          // Sensor attachment
-    Hydro_BalancingState _balancingState;                   // Current balancing state
+    Hydro_BalancingState _balancingState;                   // Balancing state (last handled)
     float _targetSetpoint;                                  // Target set-point value
     float _targetRange;                                     // Target range value
     bool _enabled;                                          // Enabled flag
@@ -89,7 +91,7 @@ public:
                             float targetRange,
                             float edgeOffset = 0,
                             float edgeLength = 0,
-                            uint8_t measureRow = 0);
+                            uint8_t measurementRow = 0);
 
     virtual void update() override;
 
@@ -115,13 +117,13 @@ public:
                              float targetRange,
                              millis_t baseDosing,
                              time_t mixTime,
-                             uint8_t measureRow = 0);
+                             uint8_t measurementRow = 0);
     HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor,
                              float targetSetpoint,
                              float targetRange,
                              float reservoirVolume,
                              Hydro_UnitsType volumeUnits,
-                             uint8_t measureRow = 0);
+                             uint8_t measurementRow = 0);
 
     virtual void update() override;
 

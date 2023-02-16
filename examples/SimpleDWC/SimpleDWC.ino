@@ -44,13 +44,13 @@ void setup() {
 
     // Adds a water aerator at SETUP_WATER_AERATOR_PIN, and links it to the feed water reservoir and the relay power rail.
     auto aerator = hydroController.addWaterAeratorRelay(SETUP_WATER_AERATOR_PIN);
-    aerator->setRail(relayPower);
-    aerator->setReservoir(feedReservoir);
+    aerator->setParentRail(relayPower);
+    aerator->setParentReservoir(feedReservoir);
 
     // Add grow lights relay at SETUP_GROW_LIGHTS_PIN, and links it to the feed water reservoir and the relay power rail.
     auto lights = hydroController.addGrowLightsRelay(SETUP_GROW_LIGHTS_PIN);
-    lights->setRail(relayPower);
-    lights->setReservoir(feedReservoir);
+    lights->setParentRail(relayPower);
+    lights->setParentReservoir(feedReservoir);
 
     // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
     auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),

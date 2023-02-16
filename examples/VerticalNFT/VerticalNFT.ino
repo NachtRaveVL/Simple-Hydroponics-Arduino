@@ -475,7 +475,7 @@ void setup() {
         #if SETUP_FEED_PUMP_PIN >= 0
         {   auto feedPump = hydroController.addWaterPumpRelay(SETUP_FEED_PUMP_PIN);
             feedPump->setRail(acRelayPower);
-            feedPump->setInputReservoir(feedReservoir);
+            feedPump->setSourceReservoir(feedReservoir);
             #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
                 feedPump->setFlowRateSensor(HydroIdentity(Hydro_SensorType_PumpFlow, 1)); // delayed ref (auto-resolves on launch)
             #endif
@@ -516,7 +516,7 @@ void setup() {
         {   auto nutrientMix = hydroController.addFluidReservoir(Hydro_ReservoirType_NutrientPremix, 1, true);
             auto nutrientPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             nutrientPump->setRail(dcRelayPower);
-            nutrientPump->setInputReservoir(nutrientMix);
+            nutrientPump->setSourceReservoir(nutrientMix);
             nutrientPump->setOutputReservoir(feedReservoir);
             nutrientPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
@@ -525,7 +525,7 @@ void setup() {
         {   auto freshWater = hydroController.addFluidReservoir(Hydro_ReservoirType_FreshWater, 1, true);
             auto dilutionPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             dilutionPump->setRail(dcRelayPower);
-            dilutionPump->setInputReservoir(freshWater);
+            dilutionPump->setSourceReservoir(freshWater);
             dilutionPump->setOutputReservoir(feedReservoir);
             dilutionPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
@@ -534,7 +534,7 @@ void setup() {
         {   auto phUpSolution = hydroController.addFluidReservoir(Hydro_ReservoirType_PhUpSolution, 1, true);
             auto pHUpPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             pHUpPump->setRail(dcRelayPower);
-            pHUpPump->setInputReservoir(phUpSolution);
+            pHUpPump->setSourceReservoir(phUpSolution);
             pHUpPump->setOutputReservoir(feedReservoir);
             pHUpPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }
@@ -543,7 +543,7 @@ void setup() {
         {   auto phDownSolution = hydroController.addFluidReservoir(Hydro_ReservoirType_PhDownSolution, 1, true);
             auto pHDownPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
             pHDownPump->setRail(dcRelayPower);
-            pHDownPump->setInputReservoir(phDownSolution);
+            pHDownPump->setSourceReservoir(phDownSolution);
             pHDownPump->setOutputReservoir(feedReservoir);
             pHDownPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
         }

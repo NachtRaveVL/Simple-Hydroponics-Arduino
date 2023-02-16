@@ -21,13 +21,13 @@ struct HydroMeasurementData;
 extern HydroMeasurement *newMeasurementObjectFromSubData(const HydroMeasurementData *dataIn);
 
 // Gets the value of a measurement at a specified row (with optional binary true value).
-extern float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measureRow = 0, float binTrue = 1.0f);
+extern float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measurementRow = 0, float binTrue = 1.0f);
 // Gets the units of a measurement at a specified row (with optional binary units).
-extern Hydro_UnitsType getMeasureUnits(const HydroMeasurement *measurement, uint8_t measureRow = 0, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1);
+extern Hydro_UnitsType getMeasurementUnits(const HydroMeasurement *measurement, uint8_t measurementRow = 0, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1);
 // Gets the number of rows of data that a measurement holds.
-extern uint8_t getMeasureRowCount(const HydroMeasurement *measurement);
+extern uint8_t getMeasurementRowCount(const HydroMeasurement *measurement);
 // Gets the single measurement of a measurement (with optional binary true value / units).
-extern HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measureRow = 0, float binTrue = 1.0f, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1);
+extern HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measurementRow = 0, float binTrue = 1.0f, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1);
 
 // Sensor Data Measurement Base
 struct HydroMeasurement {
@@ -46,7 +46,7 @@ struct HydroMeasurement {
     HydroMeasurement(int classType, time_t timestamp = 0);
     HydroMeasurement(const HydroMeasurementData *dataIn);
 
-    void saveToData(HydroMeasurementData *dataOut, uint8_t measureRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
     inline void updateTimestamp() { timestamp = unixNow(); }
     void updateFrame(hframe_t minFrame = 0);
@@ -63,7 +63,7 @@ struct HydroSingleMeasurement : public HydroMeasurement {
     HydroSingleMeasurement(float value, Hydro_UnitsType units, time_t timestamp, hframe_t frame);
     HydroSingleMeasurement(const HydroMeasurementData *dataIn);
 
-    void saveToData(HydroMeasurementData *dataOut, uint8_t measureRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 };
 
 // Binary Value Sensor Data Measurement
@@ -75,7 +75,7 @@ struct HydroBinaryMeasurement : public HydroMeasurement {
     HydroBinaryMeasurement(bool state, time_t timestamp, hframe_t frame);
     HydroBinaryMeasurement(const HydroMeasurementData *dataIn);
 
-    void saveToData(HydroMeasurementData *dataOut, uint8_t measureRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
     inline HydroSingleMeasurement getAsSingleMeasurement(float binTrue = 1.0f, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1) { return HydroSingleMeasurement(state ? binTrue : 0.0f, binUnits, timestamp, frame); }
 };
@@ -94,9 +94,9 @@ struct HydroDoubleMeasurement : public HydroMeasurement {
                            time_t timestamp, hframe_t frame);
     HydroDoubleMeasurement(const HydroMeasurementData *dataIn);
 
-    void saveToData(HydroMeasurementData *dataOut, uint8_t measureRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroSingleMeasurement getAsSingleMeasurement(uint8_t measureRow) { return HydroSingleMeasurement(value[measureRow], units[measureRow], timestamp, frame); }
+    inline HydroSingleMeasurement getAsSingleMeasurement(uint8_t measurementRow) { return HydroSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
 };
 
 // Triple Value Sensor Data Measurement
@@ -115,16 +115,16 @@ struct HydroTripleMeasurement : public HydroMeasurement {
                            time_t timestamp, hframe_t frame);
     HydroTripleMeasurement(const HydroMeasurementData *dataIn);
 
-    void saveToData(HydroMeasurementData *dataOut, uint8_t measureRow = 0, unsigned int additionalDecPlaces = 0) const;
+    void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroSingleMeasurement getAsSingleMeasurement(uint8_t measureRow) { return HydroSingleMeasurement(value[measureRow], units[measureRow], timestamp, frame); }
-    inline HydroDoubleMeasurement getAsDoubleMeasurement(uint8_t measureRow1, uint8_t measureRow2) { return HydroDoubleMeasurement(value[measureRow1], units[measureRow1], value[measureRow2], units[measureRow2], timestamp, frame); }
+    inline HydroSingleMeasurement getAsSingleMeasurement(uint8_t measurementRow) { return HydroSingleMeasurement(value[measurementRow], units[measurementRow], timestamp, frame); }
+    inline HydroDoubleMeasurement getAsDoubleMeasurement(uint8_t measurementRow1, uint8_t measurementRow2) { return HydroDoubleMeasurement(value[measurementRow1], units[measurementRow1], value[measurementRow2], units[measurementRow2], timestamp, frame); }
 };
 
 
 // Combined Measurement Serialization Sub Data
 struct HydroMeasurementData : public HydroSubData {
-    uint8_t measureRow;                                     // Source measurement row index that data is from
+    uint8_t measurementRow;                                 // Source measurement row index that data is from
     float value;                                            // Value
     Hydro_UnitsType units;                                  // Units of value
     time_t timestamp;                                       // Timestamp

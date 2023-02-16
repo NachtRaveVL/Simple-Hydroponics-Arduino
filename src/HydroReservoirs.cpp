@@ -28,13 +28,13 @@ HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 
 HydroReservoir::HydroReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, int classTypeIn)
     : HydroObject(HydroIdentity(reservoirType, reservoirIndex)), classType((typeof(classType))classTypeIn),
-      HydroVolumeUnitsInterface(defaultVolumeUnits()),
+      HydroVolumeUnitsInterfaceStorage(defaultVolumeUnits()),
       _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
 HydroReservoir::HydroReservoir(const HydroReservoirData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      HydroVolumeUnitsInterface(definedUnitsElse(dataIn->volumeUnits, defaultVolumeUnits())),
+      HydroVolumeUnitsInterfaceStorage(definedUnitsElse(dataIn->volumeUnits, defaultVolumeUnits())),
       _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
@@ -52,7 +52,7 @@ bool HydroReservoir::canActivate(HydroActuator *actuator)
     bool doEmptyCheck;
 
     if (actuator->isPumpType()) {
-        doEmptyCheck = (actuator->getReservoir().get() == this);
+        doEmptyCheck = (actuator->getParentReservoir().get() == this);
     } else if (getActuatorInWaterFromType(actuator->getActuatorType())) {
         doEmptyCheck = true;
     } else {
@@ -60,9 +60,9 @@ bool HydroReservoir::canActivate(HydroActuator *actuator)
     }
 
     if (doEmptyCheck) {
-        return !isEmpty();
+        return !isEmpty(true);
     } else {
-        return !isFilled();
+        return !isFilled(true);
     }
 }
 
@@ -178,14 +178,14 @@ void HydroFluidReservoir::handleLowMemory()
 
 bool HydroFluidReservoir::isFilled(bool poll)
 {
-    if (_filledTrigger.resolve() && triggerStateToBool(_filledTrigger.getTriggerState(poll))) { return true; }
+    if (triggerStateToBool(_filledTrigger.getTriggerState(poll))) { return true; }
     return _waterVolume.getMeasurementValue(poll) >= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
                                                                                                                    : _maxVolume) - FLT_EPSILON;
 }
 
 bool HydroFluidReservoir::isEmpty(bool poll)
 {
-    if (_emptyTrigger.resolve() && triggerStateToBool(_emptyTrigger.getTriggerState(poll))) { return true; }
+    if (triggerStateToBool(_emptyTrigger.getTriggerState(poll))) { return true; }
     return _waterVolume.getMeasurementValue(poll) <= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
                                                                                                                    : 0) + FLT_EPSILON;
 }
@@ -195,21 +195,21 @@ void HydroFluidReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
     if (_volumeUnits != volumeUnits) {
         _volumeUnits = volumeUnits;
 
-        _waterVolume.setMeasureUnits(volumeUnits);
+        _waterVolume.setMeasurementUnits(volumeUnits);
     }
 }
 
-HydroSensorAttachment &HydroFluidReservoir::getWaterVolume()
+HydroSensorAttachment &HydroFluidReservoir::getWaterVolumeSensorAttachment()
 {
     return _waterVolume;
 }
 
-HydroTriggerAttachment &HydroFluidReservoir::getFilled()
+HydroTriggerAttachment &HydroFluidReservoir::getFilledTriggerAttachment()
 {
     return _filledTrigger;
 }
 
-HydroTriggerAttachment &HydroFluidReservoir::getEmpty()
+HydroTriggerAttachment &HydroFluidReservoir::getEmptyTriggerAttachment()
 {
     return _emptyTrigger;
 }
@@ -235,8 +235,8 @@ void HydroFluidReservoir::handleFilled(Hydro_TriggerState filledState)
     HydroReservoir::handleFilled(filledState);
 
     if (triggerStateToBool(_filledState) && !getWaterVolumeSensor()) {
-        getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
-                                                                                                     : _maxVolume, _volumeUnits);
+        getWaterVolumeSensorAttachment().setMeasurement(_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
+                                                                                                                     : _maxVolume, _volumeUnits);
     }
 }
 
@@ -245,16 +245,16 @@ void HydroFluidReservoir::handleEmpty(Hydro_TriggerState emptyState)
     HydroReservoir::handleEmpty(emptyState);
 
     if (triggerStateToBool(_emptyState) && !getWaterVolumeSensor()) {
-        getWaterVolume().setMeasurement(_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
-                                                                                                     : 0, _volumeUnits);
+        getWaterVolumeSensorAttachment().setMeasurement(_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
+                                                                                                                     : 0, _volumeUnits);
     }
 }
 
 
 HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, DateTime lastChangeTime, DateTime lastPruningTime, int classType)
     : HydroFluidReservoir(Hydro_ReservoirType_FeedWater, reservoirIndex, maxVolume, classType),
-      HydroConcentrateUnitsInterface(Hydro_UnitsType_Concentration_TDS),
-      HydroTemperatureUnitsInterface(defaultTemperatureUnits()),
+      HydroConcentrateUnitsInterfaceStorage(Hydro_UnitsType_Concentration_TDS),
+      HydroTemperatureUnitsInterfaceStorage(defaultTemperatureUnits()),
       _lastChangeTime(unixTime(lastChangeTime)), _lastPruningTime(unixTime(lastPruningTime)), _lastFeedingTime(0), _numFeedingsToday(0),
       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
       _waterPHBalancer(this), _waterTDSBalancer(this), _waterTempBalancer(this), _airTempBalancer(this), _airCO2Balancer(this)
@@ -262,8 +262,8 @@ HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, 
 
 HydroFeedReservoir::HydroFeedReservoir(const HydroFeedReservoirData *dataIn)
     : HydroFluidReservoir(dataIn),
-      HydroConcentrateUnitsInterface(definedUnitsElse(dataIn->concentrateUnits, Hydro_UnitsType_Concentration_TDS)),
-      HydroTemperatureUnitsInterface(definedUnitsElse(dataIn->temperatureUnits, defaultTemperatureUnits())),
+      HydroConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, Hydro_UnitsType_Concentration_TDS)),
+      HydroTemperatureUnitsInterfaceStorage(definedUnitsElse(dataIn->temperatureUnits, defaultTemperatureUnits())),
       _lastChangeTime(dataIn->lastChangeTime), _lastPruningTime(dataIn->lastPruningTime),
       _lastFeedingTime(dataIn->lastFeedingTime), _numFeedingsToday(dataIn->numFeedingsToday),
       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
@@ -324,7 +324,7 @@ void HydroFeedReservoir::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
     if (_concUnits != concentrateUnits) {
         _concUnits = concentrateUnits;
 
-        _waterTDS.setMeasureUnits(getConcentrateUnits());
+        _waterTDS.setMeasurementUnits(getConcentrateUnits());
     }
 }
 
@@ -333,32 +333,32 @@ void HydroFeedReservoir::setTemperatureUnits(Hydro_UnitsType temperatureUnits)
     if (_tempUnits != temperatureUnits) {
         _tempUnits = temperatureUnits;
 
-        _waterTemp.setMeasureUnits(getTemperatureUnits());
-        _airTemp.setMeasureUnits(getTemperatureUnits());
+        _waterTemp.setMeasurementUnits(getTemperatureUnits());
+        _airTemp.setMeasurementUnits(getTemperatureUnits());
     }
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getWaterPH()
+HydroSensorAttachment &HydroFeedReservoir::getWaterPHSensorAttachment()
 {
     return _waterPH;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getWaterTDS()
+HydroSensorAttachment &HydroFeedReservoir::getWaterTDSSensorAttachment()
 {
     return _waterTDS;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getWaterTemperature()
+HydroSensorAttachment &HydroFeedReservoir::getWaterTemperatureSensorAttachment()
 {
     return _waterTemp;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getAirTemperature()
+HydroSensorAttachment &HydroFeedReservoir::getAirTemperatureSensorAttachment()
 {
     return _airTemp;
 }
 
-HydroSensorAttachment &HydroFeedReservoir::getAirCO2()
+HydroSensorAttachment &HydroFeedReservoir::getAirCO2SensorAttachment()
 {
     return _airCO2;
 }
@@ -409,7 +409,7 @@ bool HydroInfiniteReservoir::isEmpty(bool poll)
     return !_alwaysFilled;
 }
 
-HydroSensorAttachment &HydroInfiniteReservoir::getWaterVolume()
+HydroSensorAttachment &HydroInfiniteReservoir::getWaterVolumeSensorAttachment()
 {
     _waterVolume.setMeasurement(HydroSingleMeasurement(
         _alwaysFilled ? FLT_UNDEF : 0.0f,
