@@ -246,7 +246,7 @@ bool HydroBinarySensor::tryRegisterAsISR()
 {
     #ifdef HYDRO_USE_MULTITASKING
         if (!_usingISR && checkPinCanInterrupt(_inputPin.pin)) {
-            taskManager.addInterrupt(&interruptImpl, _inputPin.pin, CHANGE);
+            taskManager.addInterrupt(&interruptImpl, _inputPin.pin, _inputPin.activeLow ? FALLING : RISING);
             _usingISR = true;
         }
     #endif

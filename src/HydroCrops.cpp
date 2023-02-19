@@ -262,7 +262,12 @@ void HydroAdaptiveCrop::handleLowMemory()
 bool HydroAdaptiveCrop::needsFeeding(bool poll)
 {
     if (_feedingTrigger.resolve() && triggerStateToBool(_feedingTrigger.getTriggerState(poll))) { return true; }
-    return _soilMoisture.resolve() && _soilMoisture.getMeasurementValue(poll) <= 0; // FIXME: Default value for soil moisture.
+    if (_soilMoisture.resolve()) {
+        auto soilMoisture = _soilMoisture.getMeasurement(poll).asUnits(Hydro_UnitsType_Raw_1);
+
+        return soilMoisture.value <= HYDRO_CROPS_FRACTION_DEHYD + FLT_EPSILON;
+    }
+    return false;
 }
 
 void HydroAdaptiveCrop::setConcentrateUnits(Hydro_UnitsType concentrateUnits)

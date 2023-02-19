@@ -123,8 +123,8 @@ protected:
 
 
 // Signal Attachment Point
-// This attachment registers the parent object with a Signal getter off the linked object
-// upon dereference / unregisters the parent object from the Signal at time of
+// This attachment registers the parent object with a signal getter off the linked object
+// upon dereference / unregisters the parent object from the signal at time of
 // destruction or reassignment.
 template<class ParameterType, int Slots = 8>
 class HydroSignalAttachment : public HydroAttachment {
@@ -159,8 +159,8 @@ protected:
 
 // Actuator Attachment Point
 // This attachment interfaces with actuator activation handles for actuator control, and
-// registers the parent object with an Actuator upon dereference / unregisters the parent
-// object from the Actuator at time of destruction or reassignment.
+// registers the parent object with an actuator upon dereference / unregisters the parent
+// object from the actuator at time of destruction or reassignment.
 class HydroActuatorAttachment : public HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS> {
 public:
     HydroActuatorAttachment(HydroObjInterface *parent = nullptr);
@@ -179,34 +179,37 @@ public:
     // direction, intensity, duration, and any run flags that the actuator will operate
     // upon once enabled, pending any rate offsetting. These methods are re-entrant.
     // The most recently used setup values are used for repeat activations.
-    inline void setupActivation(const HydroActivation &activation);
-    inline void setupActivation(const HydroActivationHandle &handle);
-    inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false);
-    inline void setupActivation(millis_t duration, bool force = false);
-    inline void setupActivation(bool force, millis_t duration = -1);
+    inline void setupActivation(const HydroActivation &activation) { _actSetup = activation; applySetup(); }
+    inline void setupActivation(const HydroActivationHandle &handle) { setupActivation(handle.activation); }
+    inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { setupActivation(HydroActivation(direction, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
+    inline void setupActivation(millis_t duration, bool force = false) { setupActivation(HydroActivation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
+    inline void setupActivation(bool force, millis_t duration = -1) { setupActivation(HydroActivation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
     // These activation methods take into account actuator settings such as user
     // calibration data and type checks in determining how to interpret passed value.
     void setupActivation(float value, millis_t duration = -1, bool force = false);
-    inline void setupActivation(const HydroSingleMeasurement &measurement, millis_t duration = -1, bool force = false);
+    inline void setupActivation(const HydroSingleMeasurement &measurement, millis_t duration = -1, bool force = false) { setupActivation(measurement.value, duration, force); }
+
+    // Gets what units are expected to be used in setupActivation methods
+    inline Hydro_UnitsType getActivationUnits() { if (resolve()) { return get()->getUserCalibrationData() ? get()->getUserCalibrationData()->calibrationUnits : Hydro_UnitsType_Raw_1; } }
 
     // Enables activation handle with current setup, if not already active.
     // Repeat activations will reuse most recent setupActivation() values.
     void enableActivation();
     // Disables activation handle, if not already inactive.
-    inline void disableActivation();
+    inline void disableActivation() { _actHandle.unset(); }
 
     // Activation status based on handle activation
-    inline bool isActivated() const;
-    inline millis_t getTimeLeft() const;
-    inline millis_t getTimeActive(millis_t time = nzMillis()) const;
+    inline bool isActivated() const { return _actHandle.isActive(); }
+    inline millis_t getTimeLeft() const { return _actHandle.getTimeLeft(); }
+    inline millis_t getTimeActive(millis_t time = nzMillis()) const { return _actHandle.getTimeActive(time); }
 
     // Currently active driving intensity [-1.0,1.0] / calibrated value [calibMin,calibMax], from actuator
-    inline float getActiveDriveIntensity();
-    inline float getActiveCalibratedValue();
+    inline float getActiveDriveIntensity() { return resolve() ? get()->getDriveIntensity() : 0.0f; }
+    inline float getActiveCalibratedValue() { return resolve() ? get()->getCalibratedValue() : 0.0f; }
 
     // Currently setup driving intensity [-1.0,1.0] / calibrated value [calibMin,calibMax], from activation
-    inline float getSetupDriveIntensity() const;
-    inline float getSetupCalibratedValue();
+    inline float getSetupDriveIntensity() const { return _actSetup.intensity; }
+    inline float getSetupCalibratedValue() { return resolve() ? get()->calibrationTransform(_actSetup.intensity) : 0.0f; }
 
     // Sets an update slot to run during execution of actuator that can further refine duration/intensity.
     // Useful for rate-based or variable activations. Slot receives actuator attachment pointer as parameter.
@@ -241,8 +244,8 @@ protected:
 
 
 // Sensor Measurement Attachment Point
-// This attachment registers the parent object with a Sensor's new measurement Signal
-// upon dereference / unregisters the parent object from the Sensor at time of
+// This attachment registers the parent object with a sensor's new measurement signal
+// upon dereference / unregisters the parent object from the sensor at time of
 // destruction or reassignment.
 // Custom handle method is responsible for calling setMeasurement() to update measurement.
 class HydroSensorAttachment : public HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS> {
@@ -296,8 +299,8 @@ protected:
 
 
 // Trigger State Attachment Point
-// This attachment registers the parent object with a Triggers's trigger Signal
-// upon dereference / unregisters the parent object from the Trigger at time of
+// This attachment registers the parent object with a triggers's trigger signal
+// upon dereference / unregisters the parent object from the trigger at time of
 // destruction or reassignment.
 class HydroTriggerAttachment  : public HydroSignalAttachment<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> {
 public:
@@ -324,8 +327,8 @@ public:
 
 
 // Balancer Attachment Point
-// This attachment registers the parent object with a Balancer's balancing Signal
-// upon dereference / unregisters the parent object from the Balancer at time of
+// This attachment registers the parent object with a balancer's balancing signal
+// upon dereference / unregisters the parent object from the balancer at time of
 // destruction or reassignment.
 class HydroBalancerAttachment : public HydroSignalAttachment<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> {
 public:

@@ -71,9 +71,9 @@ protected:
     time_t _sowTime;                                        // Sow date (UTC), may be past or future date
     HydroAttachment _feedReservoir;                         // Feed reservoir attachment
     const HydroCropsLibData *_cropsData;                    // Crops library data (checked out if !nullptr)
-    hposi_t _growWeek;                                      // Current grow week (cached)
-    hposi_t _totalGrowWeeks;                                // Total grow weeks (cached)
-    Hydro_CropPhase _cropPhase;                             // Current crop phase (cached)
+    hposi_t _growWeek;                                      // Current grow week
+    hposi_t _totalGrowWeeks;                                // Total grow weeks
+    Hydro_CropPhase _cropPhase;                             // Current crop phase
     Hydro_TriggerState _feedingState;                       // Feeding state (last handled)
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)
     Signal<HydroCrop *, HYDRO_FEEDING_SIGNAL_SLOTS> _feedingSignal; // Feeding requested signal

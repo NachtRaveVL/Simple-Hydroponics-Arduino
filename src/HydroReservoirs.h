@@ -167,7 +167,7 @@ public:
     inline void notifyDayChanged() { _numFeedingsToday = 0; }
 
 protected:
-    time_t _lastChangeTime;                                 // Last water change date (recycling systems only, UTC)
+    time_t _lastChangeTime;                                 // Last water change/maintenance date (recycling systems only, UTC)
     time_t _lastPruningTime;                                // Last pruning date (pruning crops only, UTC)
     time_t _lastFeedingTime;                                // Last feeding date (UTC)
     int8_t _numFeedingsToday;                               // Number of feedings performed today

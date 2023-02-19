@@ -398,7 +398,7 @@ void setup() {
         }
         #endif
         #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
-        {   auto flowSensor = hydroController.addAnalogPWMPumpFlowSensor(SETUP_FLOW_RATE_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
+        {   auto flowSensor = hydroController.addAnalogPumpFlowSensor(SETUP_FLOW_RATE_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
             flowSensor->setReservoir(feedReservoir);
             // will be set to main feed pump later via delayed ref
         }
@@ -501,7 +501,7 @@ void setup() {
         #endif
         #if SETUP_FAN_EXHAUST_PIN >= 0
         if (checkPinIsPWMOutput(SETUP_FAN_EXHAUST_PIN)) {
-            auto fanExhaust = hydroController.addAnalogPWMFanExhaust(SETUP_FAN_EXHAUST_PIN, SETUP_USE_ANALOG_BITRES);
+            auto fanExhaust = hydroController.addAnalogFanExhaust(SETUP_FAN_EXHAUST_PIN, SETUP_USE_ANALOG_BITRES);
             fanExhaust->setRail(dcRelayPower);          // PWM fans use DC relay
             fanExhaust->setReservoir(feedReservoir);
         } else {

@@ -96,6 +96,7 @@ protected:
 // Simple Binary Sensor
 // This class can both read from and assign interrupt routines to a digital input signal,
 // allowing it to act as an on/off switch of sorts. Examples include water level indicators.
+// Registering as an ISR allows faster attachment responses than interval polling.
 class HydroBinarySensor : public HydroSensor {
 public:
     HydroBinarySensor(Hydro_SensorType sensorType,
@@ -112,6 +113,10 @@ public:
     virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
     virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
 
+    // ISR registration requires an interruptable pin, i.e. a valid digitalPinToInterrupt().
+    // Active-low input pins interrupt on falling-edge, while active-high pins interrupt on rising-edge.
+    // Interrupt routine does little but create an async Task via TaskManager, eliminating most/if-not-all race conditions.
+    // Once registered, the ISR cannot be unregistered/changed. It is advised to use a lowered numbered pin # if able ([1-15,18]).
     bool tryRegisterAsISR();
 
     inline const HydroDigitalPin &getInputPin() const { return _inputPin; }
@@ -131,7 +136,7 @@ protected:
 
 
 // Standard Analog Sensor
-// The ever reliant master of the analog read, this class manages polling an analog input
+// The ever reliant master of the analogRead(), this class manages polling an analog input
 // signal and converting it into the proper figures for use. Examples include everything
 // from TDS EC meters to PWM based flow sensors.
 class HydroAnalogSensor : public HydroSensor, public HydroMeasurementUnitsInterfaceStorageSingle {

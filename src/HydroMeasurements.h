@@ -20,14 +20,14 @@ struct HydroMeasurementData;
 // Creates measurement object from passed trigger sub data (return ownership transfer - user code *must* delete returned object)
 extern HydroMeasurement *newMeasurementObjectFromSubData(const HydroMeasurementData *dataIn);
 
-// Gets the value of a measurement at a specified row (with optional binary true value).
-extern float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measurementRow = 0, float binTrue = 1.0f);
+// Gets the value of a measurement at a specified row (with optional binary true scaling value).
+extern float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measurementRow = 0, float binScale = 1.0f);
 // Gets the units of a measurement at a specified row (with optional binary units).
 extern Hydro_UnitsType getMeasurementUnits(const HydroMeasurement *measurement, uint8_t measurementRow = 0, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1);
 // Gets the number of rows of data that a measurement holds.
 extern uint8_t getMeasurementRowCount(const HydroMeasurement *measurement);
-// Gets the single measurement of a measurement (with optional binary true value / units).
-extern HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measurementRow = 0, float binTrue = 1.0f, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1);
+// Gets the single measurement of a measurement (with optional binary true scaling value / units).
+extern HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measurementRow = 0, float binScale = 1.0f, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1);
 
 // Sensor Data Measurement Base
 struct HydroMeasurement {
@@ -63,6 +63,8 @@ struct HydroSingleMeasurement : public HydroMeasurement {
     HydroSingleMeasurement(float value, Hydro_UnitsType units, time_t timestamp, hframe_t frame);
     HydroSingleMeasurement(const HydroMeasurementData *dataIn);
 
+    inline HydroSingleMeasurement asUnits(Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF) const; // in utils
+
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 };
 
@@ -77,7 +79,7 @@ struct HydroBinaryMeasurement : public HydroMeasurement {
 
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
 
-    inline HydroSingleMeasurement getAsSingleMeasurement(float binTrue = 1.0f, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1) { return HydroSingleMeasurement(state ? binTrue : 0.0f, binUnits, timestamp, frame); }
+    inline HydroSingleMeasurement getAsSingleMeasurement(float binScale = 1.0f, Hydro_UnitsType binUnits = Hydro_UnitsType_Raw_1) { return HydroSingleMeasurement(state ? binScale : 0.0f, binUnits, timestamp, frame); }
 };
 
 // Double Value Sensor Data Measurement

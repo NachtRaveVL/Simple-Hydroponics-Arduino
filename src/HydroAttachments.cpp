@@ -256,7 +256,6 @@ void HydroSensorAttachment::setMeasurementRow(uint8_t measurementRow)
 
 void HydroSensorAttachment::setMeasurementUnits(Hydro_UnitsType units, float convertParam)
 {
-    if (convertParam == FLT_UNDEF) { convertParam = _convertParam; }
     if (_measurement.units != units || !isFPEqual(_convertParam, convertParam)) {
         _convertParam = convertParam;
         convertUnits(&_measurement, units, _convertParam);
