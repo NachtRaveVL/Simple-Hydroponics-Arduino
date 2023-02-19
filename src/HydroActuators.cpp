@@ -419,9 +419,8 @@ void HydroRelayPumpActuator::handleActivation()
 
 bool HydroRelayPumpActuator::canPump(float volume, Hydro_UnitsType volumeUnits)
 {
-    if (getParentReservoir() && _contFlowRate.value > FLT_EPSILON) {
-        auto waterVolume = getParentReservoir()->getWaterVolumeSensorAttachment().getMeasurement();
-        convertUnits(&volume, &volumeUnits, getVolumeUnits());
+    if (getSourceReservoir() && _contFlowRate.value > FLT_EPSILON) {
+        auto waterVolume = getSourceReservoir()->getWaterVolumeSensorAttachment().getMeasurement().asUnits(getVolumeUnits());
         return volume <= waterVolume.value + FLT_EPSILON;
     }
     return false;
@@ -429,7 +428,7 @@ bool HydroRelayPumpActuator::canPump(float volume, Hydro_UnitsType volumeUnits)
 
 HydroActivationHandle HydroRelayPumpActuator::pump(float volume, Hydro_UnitsType volumeUnits)
 {
-    if (getParentReservoir() && _contFlowRate.value > FLT_EPSILON) {
+    if (getSourceReservoir() && _contFlowRate.value > FLT_EPSILON) {
         convertUnits(&volume, &volumeUnits, getVolumeUnits());
         return pump((millis_t)((volume / _contFlowRate.value) * secondsToMillis(SECS_PER_MIN)));
     }
@@ -438,7 +437,7 @@ HydroActivationHandle HydroRelayPumpActuator::pump(float volume, Hydro_UnitsType
 
 bool HydroRelayPumpActuator::canPump(millis_t time)
 {
-    if (getParentReservoir() && _contFlowRate.value > FLT_EPSILON) {
+    if (getSourceReservoir() && _contFlowRate.value > FLT_EPSILON) {
         return canPump(_contFlowRate.value * (time / (float)secondsToMillis(SECS_PER_MIN)), getVolumeUnits());
     }
     return false;
@@ -446,7 +445,7 @@ bool HydroRelayPumpActuator::canPump(millis_t time)
 
 HydroActivationHandle HydroRelayPumpActuator::pump(millis_t time)
 {
-    if (getParentReservoir()) {
+    if (getSourceReservoir()) {
         #ifdef HYDRO_USE_MULTITASKING
             getLogger()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
             if (getSourceReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getSourceReservoir()->getKeyString()); }
@@ -473,7 +472,7 @@ HydroActivationHandle HydroRelayPumpActuator::pump(millis_t time)
 
 HydroAttachment &HydroRelayPumpActuator::getSourceReservoirAttachment()
 {
-    return HydroActuator::getParentReservoirAttachment();
+    return _parentReservoir;
 }
 
 HydroAttachment &HydroRelayPumpActuator::getDestinationReservoirAttachment()
@@ -527,30 +526,34 @@ void HydroRelayPumpActuator::saveToData(HydroData *dataOut)
 
 void HydroRelayPumpActuator::handlePumpTime(millis_t time)
 {
-    if (getSourceReservoir() != getDestinationReservoir()) {
-        auto flowRate = getFlowRateSensor(true) ? _flowRate.getMeasurement() : _contFlowRate;
-        convertUnits(&flowRate, definedUnitsElse(getFlowRateUnits(), flowRate.units), _flowRate.getMeasurementConvertParam());
-        flowRate.value = max(_contFlowRate.value * HYDRO_ACT_PUMPCALC_MINFLOWRATE, flowRate.value);
-        float volumePumped = flowRate.value * ((time - _pumpTimeAccum) / (float)secondsToMillis(SECS_PER_MIN));
-        _pumpVolumeAccum += volumePumped;
+    auto flowRate = getFlowRateSensor(true) ? _flowRate.getMeasurement() : _contFlowRate;
 
-        if (getSourceReservoir() && _parentReservoir.get<HydroReservoir>()->isAnyFluidClass()) {
-            auto sourceFluidRes = getSourceReservoir<HydroFluidReservoir>();
-            if (sourceFluidRes && !sourceFluidRes->getWaterVolumeSensorAttachment()) { // only report if there isn't a volume sensor already doing it
-                auto volume = sourceFluidRes->getWaterVolumeSensorAttachment().getMeasurement(true);
-                convertUnits(&volume, baseUnits(getFlowRateUnits()));
-                volume.value -= volumePumped;
-                sourceFluidRes->getWaterVolumeSensorAttachment().setMeasurement(volume);
+    if (flowRate.value >= (_contFlowRate.value * HYDRO_ACT_PUMPCALC_MINFLOWRATE) - FLT_EPSILON) {
+        auto timeDelta = (time - _pumpTimeAccum) / (float)secondsToMillis(SECS_PER_MIN);
+        auto volDelta = flowRate.value * timeDelta;
+        _pumpVolumeAccum += volDelta;
+
+        auto srcRes = getSourceReservoir();
+        auto destRes = getDestinationReservoir();
+        if (srcRes != destRes) {
+            if (srcRes && srcRes->isAnyFluidClass()) {
+                auto srcFluidRes = static_pointer_cast<HydroFluidReservoir>(srcRes);
+
+                if (srcFluidRes && !srcFluidRes->getWaterVolumeSensorAttachment()) { // only report if there isn't a volume sensor already doing it
+                    auto volume = srcFluidRes->getWaterVolumeSensorAttachment().getMeasurement(true).asUnits(getVolumeUnits());
+                    volume.value -= volDelta;
+                    srcFluidRes->getWaterVolumeSensorAttachment().setMeasurement(volume);
+                }
             }
-        }
 
-        if (getDestinationReservoir() && _destReservoir.get<HydroReservoir>()->isAnyFluidClass()) {
-            auto destFluidRes = getDestinationReservoir<HydroFluidReservoir>();
-            if (destFluidRes && !destFluidRes->getWaterVolumeSensorAttachment()) { // only report if there isn't a volume sensor already doing it
-                auto volume = destFluidRes->getWaterVolumeSensorAttachment().getMeasurement(true);
-                convertUnits(&volume, baseUnits(getFlowRateUnits()));
-                volume.value += volumePumped;
-                destFluidRes->getWaterVolumeSensorAttachment().setMeasurement(volume);
+            if (destRes && destRes->isAnyFluidClass()) {
+                auto destFluidRes = static_pointer_cast<HydroFluidReservoir>(destRes);
+
+                if (destFluidRes && !destFluidRes->getWaterVolumeSensorAttachment()) { // only report if there isn't a volume sensor already doing it
+                    auto volume = destFluidRes->getWaterVolumeSensorAttachment().getMeasurement(true).asUnits(getVolumeUnits());
+                    volume.value += volDelta;
+                    destFluidRes->getWaterVolumeSensorAttachment().setMeasurement(volume);
+                }
             }
         }
     }

@@ -8,6 +8,14 @@
 
 #include "Hydruino.h"
 
+inline HydroSingleMeasurement HydroSingleMeasurement::asUnits(Hydro_UnitsType outUnits, float convertParam) const
+{
+    HydroSingleMeasurement out(*this);
+    convertUnits(&out, outUnits, convertParam);
+    return out;
+}
+
+
 #ifdef HYDRO_USE_MULTITASKING
 
 template<typename ParameterType, int Slots>
@@ -233,7 +241,7 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndSourceReser
 }
 
 template<size_t N>
-void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
+void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = getSharedPtr<HydroActuator>(*actIter);
@@ -246,7 +254,7 @@ void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<H
 }
 
 template<size_t N>
-void linksResolveActuatorsWithRateByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
+void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
         auto actuator = getSharedPtr<HydroActuator>(*actIter);

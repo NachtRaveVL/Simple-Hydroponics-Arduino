@@ -488,7 +488,7 @@ public:
     uint16_t getPollingInterval() const;
     // System polling frame number for sensor frame tracking
     inline hframe_t getPollingFrame() const { return _pollingFrame; }
-    // Determines if a given frame # if out of date (true) or current (false), with optional frame # difference allowance
+    // Determines if a given frame # is out of date (true) or current (false), with optional frame # allowance
     bool isPollingFrameOld(hframe_t frame, hframe_t allowance = 0) const;
     // Returns if system autosaves are enabled or not
     bool isAutosaveEnabled() const;

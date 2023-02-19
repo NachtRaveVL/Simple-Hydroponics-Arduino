@@ -27,12 +27,12 @@ HydroMeasurement *newMeasurementObjectFromSubData(const HydroMeasurementData *da
     return nullptr;
 }
 
-float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measurementRow, float binTrue)
+float getMeasurementValue(const HydroMeasurement *measurement, uint8_t measurementRow, float binScale)
 {
     if (measurement) {
         switch (measurement->type) {
             case HydroMeasurement::Binary:
-                return ((HydroBinaryMeasurement *)measurement)->state ? binTrue : 0.0f;
+                return ((HydroBinaryMeasurement *)measurement)->state ? binScale : 0.0f;
             case HydroMeasurement::Single:
                 return ((HydroSingleMeasurement *)measurement)->value;
             case HydroMeasurement::Double:
@@ -68,12 +68,12 @@ uint8_t getMeasurementRowCount(const HydroMeasurement *measurement)
     return measurement ? max(1, (int)(measurement->type)) : 0;
 }
 
-HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measurementRow, float binTrue, Hydro_UnitsType binUnits)
+HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measurement, uint8_t measurementRow, float binScale, Hydro_UnitsType binUnits)
 {
     if (measurement) {
         switch (measurement->type) {
             case HydroMeasurement::Binary:
-                return ((HydroBinaryMeasurement *)measurement)->getAsSingleMeasurement(binTrue, binUnits);
+                return ((HydroBinaryMeasurement *)measurement)->getAsSingleMeasurement(binScale, binUnits);
             case HydroMeasurement::Single:
                 return *((const HydroSingleMeasurement *)measurement);
             case HydroMeasurement::Double:
@@ -84,7 +84,7 @@ HydroSingleMeasurement getAsSingleMeasurement(const HydroMeasurement *measuremen
         }
     }
     HydroSingleMeasurement retVal;
-    retVal.frame = 0; // force fails frame checks
+    retVal.frame = hframe_none; // meant to fail frame checks
     return retVal;
 }
 

@@ -212,7 +212,7 @@ void HydroTimedDosingBalancer::update()
         }
 
         float dosing = _baseDosing;
-        auto dosingValue = getMeasurementValue(_sensor->getMeasurement(true), getMeasurementRow());
+        auto dosingValue = _sensor.getMeasurementValue(true);
         if (_dosing) {
             auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosing;
             dosing = (_targetSetpoint - dosingValue) * dosingRatePerMs;

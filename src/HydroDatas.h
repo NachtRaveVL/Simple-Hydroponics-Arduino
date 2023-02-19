@@ -67,7 +67,7 @@ struct HydroSystemData : public HydroData {
 // See setFrom* methods to set calibrated data in various formats.
 struct HydroCalibrationData : public HydroData {
     char ownerName[HYDRO_NAME_MAXSIZE];                     // Owner object name this calibration belongs to (actuator/sensor)
-    Hydro_UnitsType calibrationUnits;                             // Calibration output units
+    Hydro_UnitsType calibrationUnits;                       // Calibration output units
     float multiplier, offset;                               // Ax + B value transform coefficients
 
     HydroCalibrationData();

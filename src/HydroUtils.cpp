@@ -1005,13 +1005,17 @@ Hydro_UnitsType defaultUnits(Hydro_UnitsCategory unitsCategory, Hydro_Measuremen
 }
 
 
-int linksCountCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links)
+int linksCountSowableCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links)
 {
     int retVal = 0;
 
     for (hposi_t linksIndex = 0; linksIndex < links.first && links.second[linksIndex].first; ++linksIndex) {
         if (links.second[linksIndex].first->isCropType()) {
-            retVal++;
+            auto crop = static_cast<HydroCrop *>(links.second[linksIndex].first);
+
+            if (localNow() >= crop->getSowTime()) {
+                retVal++;
+            }
         }
     }
 

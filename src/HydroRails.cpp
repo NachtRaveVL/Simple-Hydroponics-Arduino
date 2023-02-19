@@ -223,17 +223,15 @@ bool HydroRegulatedRail::canActivate(HydroActuator *actuator)
 {
     if (_limitTrigger.resolve() && triggerStateToBool(_limitTrigger.getTriggerState())) { return false; }
 
-    HydroSingleMeasurement powerReq = actuator->getContinuousPowerUsage();
-    convertUnits(&powerReq, getPowerUnits(), getRailVoltage());
+    HydroSingleMeasurement powerReq = actuator->getContinuousPowerUsage().asUnits(getPowerUnits(), getRailVoltage());
 
-    return _powerUsage.getMeasurementValue() + powerReq.value < _maxPower - FLT_EPSILON;
+    return _powerUsage.getMeasurementValue(true) + powerReq.value < (HYDRO_RAILS_FRACTION_SATURATED * _maxPower) - FLT_EPSILON;
 }
 
 float HydroRegulatedRail::getCapacity(bool poll)
 {
     if (_limitTrigger.resolve() && triggerStateToBool(_limitTrigger.getTriggerState(poll))) { return 1.0f; }
-    float retVal = _powerUsage.getMeasurementValue(poll) / _maxPower;
-    return constrain(retVal, 0.0f, 1.0f);
+    return _powerUsage.getMeasurementValue(poll) / (HYDRO_RAILS_FRACTION_SATURATED * _maxPower);
 }
 
 void HydroRegulatedRail::setPowerUnits(Hydro_UnitsType powerUnits)
@@ -270,12 +268,10 @@ void HydroRegulatedRail::saveToData(HydroData *dataOut)
 
 void HydroRegulatedRail::handleActivation(HydroActuator *actuator)
 {
-    if (!getPowerUsageSensorAttachment() && actuator) {
-        auto powerReq = actuator->getContinuousPowerUsage();
+    if (!getPowerUsageSensor(true) && actuator) {
+        auto powerReq = actuator->getContinuousPowerUsage().asUnits(getPowerUnits(), getRailVoltage());
         auto powerUsage = getPowerUsageSensorAttachment().getMeasurement(true);
         bool enabled = actuator->isEnabled();
-
-        convertUnits(&powerReq, getPowerUnits(), getRailVoltage());
 
         if (enabled) {
             powerUsage.value += powerReq.value;

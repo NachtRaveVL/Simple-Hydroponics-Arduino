@@ -356,15 +356,15 @@ template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterP
 // Returns linkages list filtered down to just pump actuators that pump to a specific reservoir from a certain reservoir type.
 template<size_t N = HYDRO_DEFAULT_MAXSIZE> Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *destReservoir, Hydro_ReservoirType srcReservoirType);
 
-// Returns the # of crops found in the linkages list.
-extern int linksCountCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links);
-// Returns the # of actuators of a certain type that operate on a specific reservoir.
+// Returns the # of crops that are currently sowable as found in the linkages list. Deprecated: needs merged into Scheduler, not used elsewhere.
+extern int linksCountSowableCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links);
+// Returns the # of actuators of a certain type that operate on a specific reservoir. Deprecated: needs merged into Scheduler, not used elsewhere.
 extern int linksCountActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType);
 
 // Recombines filtered object list back into SharedPtr actuator list.
-template<size_t N> void linksResolveActuatorsByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
+template<size_t N> void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
 // Recombines filtered object list back into SharedPtr actuator list paired with rate value.
-template<size_t N> void linksResolveActuatorsWithRateByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
+template<size_t N> void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
 
 // Pins & Checks
 

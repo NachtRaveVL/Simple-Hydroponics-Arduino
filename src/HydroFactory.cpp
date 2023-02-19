@@ -118,7 +118,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputP
     return nullptr;
 }
 
-SharedPtr<HydroVariableActuator> HydroFactory::addAnalogPWMFanExhaust(pintype_t outputPin, uint8_t outputBitRes
+SharedPtr<HydroVariableActuator> HydroFactory::addAnalogFanExhaust(pintype_t outputPin, uint8_t outputBitRes
 #ifdef ESP32
                                                                  , uint8_t pwmChannel
 #endif
@@ -294,7 +294,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inp
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPWMPumpFlowSensor(pintype_t inputPin, uint8_t inputBitRes)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPumpFlowSensor(pintype_t inputPin, uint8_t inputBitRes)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PumpFlow));
@@ -435,10 +435,12 @@ SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedCrop(Hydro_CropType cropType,
     return nullptr;
 }
 
-SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedPerennialCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime lastHarvestTime, uint8_t minsOn, uint8_t minsOff)
+SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedCropByHarvest(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime harvestTime, uint8_t minsOn, uint8_t minsOff)
 {
     auto cropData = hydroCropsLib.checkoutCropsData(cropType);
-    auto crop = addTimerFedCrop(cropType, substrateType, lastHarvestTime - TimeSpan(cropData->totalGrowWeeks * SECS_PER_WEEK), minsOn, minsOff);
+    DateTime sowTime = harvestTime - TimeSpan(cropData->totalGrowWeeks * SECS_PER_WEEK);
+    sowTime = DateTime(localNow().year(), sowTime.month(), sowTime.day());
+    auto crop = addTimerFedCrop(cropType, substrateType, sowTime, minsOn, minsOff);
     hydroCropsLib.returnCropsData(cropData);
     return crop;
 }
@@ -464,10 +466,12 @@ SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedCrop(Hydro_CropType cro
     return nullptr;
 }
 
-SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedPerennialCrop(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime lastHarvestTime)
+SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedCropByHarvest(Hydro_CropType cropType, Hydro_SubstrateType substrateType, DateTime harvestTime)
 {
     auto cropData = hydroCropsLib.checkoutCropsData(cropType);
-    auto crop = addAdaptiveFedCrop(cropType, substrateType, lastHarvestTime - TimeSpan(cropData->totalGrowWeeks * SECS_PER_WEEK));
+    DateTime sowTime = harvestTime - TimeSpan(cropData->totalGrowWeeks * SECS_PER_WEEK);
+    sowTime = DateTime(localNow().year(), sowTime.month(), sowTime.day());
+    auto crop = addAdaptiveFedCrop(cropType, substrateType, sowTime);
     hydroCropsLib.returnCropsData(cropData);
     return crop;
 }
