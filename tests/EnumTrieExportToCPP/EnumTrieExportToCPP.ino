@@ -129,7 +129,10 @@ struct TreeNode {
                 Serial.print(F("switch (")); Serial.print(varName); Serial.print(F(".length() >= ")); Serial.print(index + 1); Serial.print(F(" ? ")); Serial.print(varName); Serial.print(F("[")); Serial.print(index); Serial.println(F("] : '\\0') {"));
             }
             printSpacer(level + 1);
-            Serial.print(F("case '")); Serial.print(iter->first); Serial.println(F("':"));
+            Serial.print(F("case '"));
+            if (iter->first >= ' ') { Serial.print(iter->first); }
+            else { Serial.print('\\'); Serial.print((int)iter->first); }
+            Serial.println(F("':"));
 
             iter->second->printCode(level + 2, varName, typeCast, index + iter->second->piece.length());
 
