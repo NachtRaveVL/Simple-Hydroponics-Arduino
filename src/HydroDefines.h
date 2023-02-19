@@ -166,7 +166,7 @@ typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin statu
 #define HYDRO_SCH_AERATORS_FEEDRUN      ENABLED             // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
 #define HYDRO_SENSOR_ANALOGREAD_SAMPLES 5                   // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
-#define HYDRO_SENSOR_ANALOGREAD_DELAY   0                   // Delay time between samples, or 0 to disable delay
+#define HYDRO_SENSOR_ANALOGREAD_DELAYMS 0                   // Delay time between samples, or 0 to disable delay, in milliseconds
 
 #define HYDRO_SYS_AUTOSAVE_INTERVAL     120                 // Default autosave interval, in minutes
 #define HYDRO_SYS_I2CEEPROM_BASEADDR    0x50                // Base address of I2C EEPROM (bitwise or'ed with passed address)

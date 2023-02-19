@@ -235,11 +235,13 @@ bool HydroBinarySensor::needsPolling(hframe_t allowance) const
 }
 
 void HydroBinarySensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow)
-{ ; }
+{
+    HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
+}
 
 Hydro_UnitsType HydroBinarySensor::getMeasurementUnits(uint8_t measurementRow) const
 {
-    return Hydro_UnitsType_Raw_1;
+    return _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Raw_1;
 }
 
 bool HydroBinarySensor::tryRegisterAsISR()
@@ -315,8 +317,8 @@ void HydroAnalogSensor::_takeMeasurement(unsigned int taskId)
             unsigned int rawRead = 0;
             #if HYDRO_SENSOR_ANALOGREAD_SAMPLES > 1
                 for (int sampleIndex = 0; sampleIndex < HYDRO_SENSOR_ANALOGREAD_SAMPLES; ++sampleIndex) {
-                    #if HYDRO_SENSOR_ANALOGREAD_DELAY > 0
-                        if (sampleIndex) { delay(HYDRO_SENSOR_ANALOGREAD_DELAY); }
+                    #if HYDRO_SENSOR_ANALOGREAD_DELAYMS > 0
+                        if (sampleIndex) { delay(HYDRO_SENSOR_ANALOGREAD_DELAYMS); }
                     #endif
                     rawRead += _inputPin.analogRead_raw();
                 }
