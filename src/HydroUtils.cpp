@@ -1782,13 +1782,15 @@ hposi_t positionIndexFromString(String positionIndexStr)
 
 Hydro_SystemMode systemModeFromString(String systemModeStr)
 {
-    switch (systemModeStr.length() >= 1 ? systemModeStr[0] : '\0') {
-        case 'R':
-            return (Hydro_SystemMode)0;
-        case 'D':
-            return (Hydro_SystemMode)1;
+        switch (systemModeStr.length() >= 1 ? systemModeStr[0] : '\0') {
         case 'C':
             return (Hydro_SystemMode)2;
+        case 'D':
+            return (Hydro_SystemMode)1;
+        case 'R':
+            return (Hydro_SystemMode)0;
+        case 'U':
+            return (Hydro_SystemMode)-1;
     }
     return Hydro_SystemMode_Undefined;
 }
@@ -1796,14 +1798,16 @@ Hydro_SystemMode systemModeFromString(String systemModeStr)
 Hydro_MeasurementMode measurementModeFromString(String measurementModeStr)
 {
     switch (measurementModeStr.length() >= 1 ? measurementModeStr[0] : '\0') {
+        case 'C':
+            return (Hydro_MeasurementMode)3;
         case 'I':
             return (Hydro_MeasurementMode)0;
         case 'M':
             return (Hydro_MeasurementMode)1;
         case 'S':
             return (Hydro_MeasurementMode)2;
-        case 'C':
-            return (Hydro_MeasurementMode)3;
+        case 'U':
+            return (Hydro_MeasurementMode)-1;
     }
     return Hydro_MeasurementMode_Undefined;
 }
@@ -1811,16 +1815,6 @@ Hydro_MeasurementMode measurementModeFromString(String measurementModeStr)
 Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
 {
     switch (displayOutModeStr.length() >= 1 ? displayOutModeStr[0] : '\0') {
-        case 'D':
-            return (Hydro_DisplayOutputMode)0;
-        case '2':
-            switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
-                case '\0':
-                    return (Hydro_DisplayOutputMode)1;
-                case 'S':
-                    return (Hydro_DisplayOutputMode)2;
-            }
-            break;
         case '1':
             switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
                 case '\0':
@@ -1829,8 +1823,20 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
                     return (Hydro_DisplayOutputMode)4;
             }
             break;
+        case '2':
+            switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
+                case '\0':
+                    return (Hydro_DisplayOutputMode)1;
+                case 'S':
+                    return (Hydro_DisplayOutputMode)2;
+            }
+            break;
         case 'C':
             return (Hydro_DisplayOutputMode)5;
+        case 'D':
+            return (Hydro_DisplayOutputMode)0;
+        case 'U':
+            return (Hydro_DisplayOutputMode)-1;
     }
     return Hydro_DisplayOutputMode_Undefined;
 }
@@ -1838,18 +1844,20 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
 Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
 {
     switch (controlInModeStr.length() >= 1 ? controlInModeStr[0] : '\0') {
-        case 'D':
-            return (Hydro_ControlInputMode)0;
         case '2':
             return (Hydro_ControlInputMode)1;
         case '4':
             return (Hydro_ControlInputMode)2;
         case '6':
             return (Hydro_ControlInputMode)3;
-        case 'R':
-            return (Hydro_ControlInputMode)4;
         case 'C':
             return (Hydro_ControlInputMode)5;
+        case 'D':
+            return (Hydro_ControlInputMode)0;
+        case 'R':
+            return (Hydro_ControlInputMode)4;
+        case 'U':
+            return (Hydro_ControlInputMode)-1;
     }
     return Hydro_ControlInputMode_Undefined;
 }
@@ -1857,26 +1865,28 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
 Hydro_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 {
     switch (actuatorTypeStr.length() >= 1 ? actuatorTypeStr[0] : '\0') {
-        case 'G':
-            return (Hydro_ActuatorType)0;
-        case 'W':
-            switch (actuatorTypeStr.length() >= 6 ? actuatorTypeStr[5] : '\0') {
-                case 'P':
-                    return (Hydro_ActuatorType)1;
-                case 'H':
-                    return (Hydro_ActuatorType)3;
-                case 'A':
-                    return (Hydro_ActuatorType)4;
-                case 'S':
-                    return (Hydro_ActuatorType)5;
-            }
-            break;
-        case 'P':
-            return (Hydro_ActuatorType)2;
-        case 'F':
-            return (Hydro_ActuatorType)6;
         case 'C':
             return (Hydro_ActuatorType)7;
+        case 'F':
+            return (Hydro_ActuatorType)0;
+        case 'G':
+            return (Hydro_ActuatorType)1;
+        case 'P':
+            return (Hydro_ActuatorType)2;
+        case 'U':
+            return (Hydro_ActuatorType)-1;
+        case 'W':
+            switch (actuatorTypeStr.length() >= 6 ? actuatorTypeStr[5] : '\0') {
+                case 'A':
+                    return (Hydro_ActuatorType)3;
+                case 'H':
+                    return (Hydro_ActuatorType)4;
+                case 'P':
+                    return (Hydro_ActuatorType)5;
+                case 'S':
+                    return (Hydro_ActuatorType)6;
+            }
+            break;
     }
     return Hydro_ActuatorType_Undefined;
 }
@@ -1884,44 +1894,46 @@ Hydro_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 Hydro_SensorType sensorTypeFromString(String sensorTypeStr)
 {
     switch (sensorTypeStr.length() >= 1 ? sensorTypeStr[0] : '\0') {
-        case 'W':
-            switch (sensorTypeStr.length() >= 6 ? sensorTypeStr[5] : '\0') {
-                case 'P':
-                    return (Hydro_SensorType)0;
-                case 'T':
-                    switch (sensorTypeStr.length() >= 7 ? sensorTypeStr[6] : '\0') {
-                        case 'D':
-                            return (Hydro_SensorType)1;
-                        case 'e':
-                            return (Hydro_SensorType)3;
-                    }
-                    break;
-                case 'H':
-                    return (Hydro_SensorType)6;
-            }
-            break;
-        case 'S':
-            return (Hydro_SensorType)2;
-        case 'P':
-            switch (sensorTypeStr.length() >= 2 ? sensorTypeStr[1] : '\0') {
-                case 'u':
-                    return (Hydro_SensorType)4;
-                case 'o':
-                    return (Hydro_SensorType)9;
-            }
-            break;
-        case 'L':
-            return (Hydro_SensorType)5;
         case 'A':
             switch (sensorTypeStr.length() >= 4 ? sensorTypeStr[3] : '\0') {
-                case 'T':
-                    return (Hydro_SensorType)7;
                 case 'C':
-                    return (Hydro_SensorType)8;
+                    return (Hydro_SensorType)0;
+                case 'T':
+                    return (Hydro_SensorType)1;
             }
             break;
         case 'C':
             return (Hydro_SensorType)10;
+        case 'L':
+            return (Hydro_SensorType)8;
+        case 'P':
+            switch (sensorTypeStr.length() >= 2 ? sensorTypeStr[1] : '\0') {
+                case 'o':
+                    return (Hydro_SensorType)3;
+                case 'u':
+                    return (Hydro_SensorType)4;
+            }
+            break;
+        case 'S':
+            return (Hydro_SensorType)5;
+        case 'U':
+            return (Hydro_SensorType)-1;
+        case 'W':
+            switch (sensorTypeStr.length() >= 6 ? sensorTypeStr[5] : '\0') {
+                case 'H':
+                    return (Hydro_SensorType)7;
+                case 'P':
+                    return (Hydro_SensorType)2;
+                case 'T':
+                    switch (sensorTypeStr.length() >= 7 ? sensorTypeStr[6] : '\0') {
+                        case 'D':
+                            return (Hydro_SensorType)6;
+                        case 'e':
+                            return (Hydro_SensorType)9;
+                    }
+                    break;
+            }
+            break;
     }
     return Hydro_SensorType_Undefined;
 }
@@ -2077,10 +2089,10 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
                 case 'e':
                     return (Hydro_CropType)31;
-                case 'o':
-                    return (Hydro_CropType)32;
                 case 'l':
                     return (Hydro_CropType)33;
+                case 'o':
+                    return (Hydro_CropType)32;
             }
             break;
         case 'G':
@@ -2205,10 +2217,10 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                     return (Hydro_CropType)64;
                 case 'q':
                     return (Hydro_CropType)65;
-                case 'u':
-                    return (Hydro_CropType)66;
                 case 't':
                     return (Hydro_CropType)67;
+                case 'u':
+                    return (Hydro_CropType)66;
                 case 'w':
                     return (Hydro_CropType)68;
             }
@@ -2231,6 +2243,8 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                     return (Hydro_CropType)73;
             }
             break;
+        case 'U':
+            return (Hydro_CropType)-1;
         case 'W':
             switch (cropTypeStr.length() >= 6 ? cropTypeStr[5] : '\0') {
                 case 'c':
@@ -2247,7 +2261,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
 
 Hydro_SubstrateType substrateTypeFromString(String substrateTypeStr)
 {
-    switch (substrateTypeStr.length() >= 1 ? substrateTypeStr[0] : '\0') {
+        switch (substrateTypeStr.length() >= 1 ? substrateTypeStr[0] : '\0') {
         case 'C':
             switch (substrateTypeStr.length() >= 2 ? substrateTypeStr[1] : '\0') {
                 case 'l':
@@ -2264,35 +2278,19 @@ Hydro_SubstrateType substrateTypeFromString(String substrateTypeStr)
             break;
         case 'R':
             return (Hydro_SubstrateType)2;
+        case 'U':
+            return (Hydro_SubstrateType)-1;
     }
     return Hydro_SubstrateType_Undefined;
 }
 
 Hydro_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
 {
-    switch (reservoirTypeStr.length() >= 1 ? reservoirTypeStr[0] : '\0') {
-        case 'F':
-            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\0') {
-                case 'e':
-                    return (Hydro_ReservoirType)0;
-                case 'r':
-                    return (Hydro_ReservoirType)3;
-            }
-            break;
-        case 'D':
-            return (Hydro_ReservoirType)1;
-        case 'N':
-            return (Hydro_ReservoirType)2;
-        case 'P':
-            switch (reservoirTypeStr.length() >= 3 ? reservoirTypeStr[2] : '\0') {
-                case 'U':
-                    return (Hydro_ReservoirType)4;
-                case 'D':
-                    return (Hydro_ReservoirType)5;
-            }
-            break;
+     switch (reservoirTypeStr.length() >= 1 ? reservoirTypeStr[0] : '\0') {
         case 'C':
             switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\0') {
+                case 'o':
+                    return (Hydro_ReservoirType)22;
                 case 'u':
                     switch (reservoirTypeStr.length() >= 15 ? reservoirTypeStr[14] : '\0') {
                         case '1':
@@ -2333,10 +2331,30 @@ Hydro_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
                             return (Hydro_ReservoirType)14;
                     }
                     break;
-                case 'o':
-                    return (Hydro_ReservoirType)22;
             }
             break;
+        case 'D':
+            return (Hydro_ReservoirType)1;
+        case 'F':
+            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\0') {
+                case 'e':
+                    return (Hydro_ReservoirType)0;
+                case 'r':
+                    return (Hydro_ReservoirType)3;
+            }
+            break;
+        case 'N':
+            return (Hydro_ReservoirType)2;
+        case 'P':
+            switch (reservoirTypeStr.length() >= 3 ? reservoirTypeStr[2] : '\0') {
+                case 'D':
+                    return (Hydro_ReservoirType)5;
+                case 'U':
+                    return (Hydro_ReservoirType)4;
+            }
+            break;
+        case 'U':
+            return (Hydro_ReservoirType)-1;
     }
     return Hydro_ReservoirType_Undefined;
 }
@@ -2352,84 +2370,142 @@ Hydro_RailType railTypeFromString(String railTypeStr) {
             }
             break;
         case 'C':
-            return (Hydro_RailType)4;
+            return (Hydro_RailType)7;
         case 'D':
             switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\0') {
-                case '5':
-                    return (Hydro_RailType)2;
                 case '1':
+                    return (Hydro_RailType)4;
+                case '2':
+                    return (Hydro_RailType)5;
+                case '3':
+                    return (Hydro_RailType)2;
+                case '4':
+                    return (Hydro_RailType)6;
+                case '5':
                     return (Hydro_RailType)3;
             }
             break;
+        case 'U':
+            return (Hydro_RailType)-1;
     }
     return Hydro_RailType_Undefined;
 }
 
 Hydro_PinMode pinModeFromString(String pinModeStr)
 {
-    // TODO
-    return (Hydro_PinMode)pinModeStr.toInt();
-}
-
-Hydro_EnableMode enableModeFromString(String enableModeStr)
-{
-    // TODO
-    return (Hydro_EnableMode)enableModeStr.toInt();
-}
-
-Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
-{
-    switch (unitsCategoryStr.length() >= 1 ? unitsCategoryStr[0] : '\0') {
+    switch (pinModeStr.length() >= 1 ? pinModeStr[0] : '\0') {
         case 'A':
-            switch (unitsCategoryStr.length() >= 2 ? unitsCategoryStr[1] : '\0') {
-                case 'l':
-                    return (Hydro_UnitsCategory)0;
-                case 'i':
-                    switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\0') {
-                        case 'T':
-                            return (Hydro_UnitsCategory)7;
-                        case 'H':
-                            switch (unitsCategoryStr.length() >= 5 ? unitsCategoryStr[4] : '\0') {
-                                case 'u':
-                                    return (Hydro_UnitsCategory)8;
-                                case 'e':
-                                    return (Hydro_UnitsCategory)9;
+            switch (pinModeStr.length() >= 7 ? pinModeStr[6] : '\0') {
+                case 'I':
+                    return (Hydro_PinMode)5;
+                case 'O':
+                    return (Hydro_PinMode)6;
+            }
+            break;
+        case 'C':
+            return (Hydro_PinMode)7;
+        case 'D':
+            switch (pinModeStr.length() >= 8 ? pinModeStr[7] : '\0') {
+                case 'I':
+                    switch (pinModeStr.length() >= 13 ? pinModeStr[12] : '\0') {
+                        case '\0':
+                            return (Hydro_PinMode)0;
+                        case 'P':
+                            switch (pinModeStr.length() >= 17 ? pinModeStr[16] : '\0') {
+                                case 'D':
+                                    return (Hydro_PinMode)2;
+                                case 'U':
+                                    return (Hydro_PinMode)1;
                             }
                             break;
-                        case 'C':
-                            return (Hydro_UnitsCategory)10;
+                    }
+                    break;
+                case 'O':
+                    switch (pinModeStr.length() >= 14 ? pinModeStr[13] : '\0') {
+                        case '\0':
+                            return (Hydro_PinMode)3;
+                        case 'P':
+                            return (Hydro_PinMode)4;
                     }
                     break;
             }
             break;
-        case 'D':
-            switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\0') {
+        case 'U':
+            return (Hydro_PinMode)-1;
+    }
+    return Hydro_PinMode_Undefined;
+}
+
+Hydro_EnableMode enableModeFromString(String enableModeStr)
+{
+    switch (enableModeStr.length() >= 1 ? enableModeStr[0] : '\0') {
+        case 'A':
+            switch (enableModeStr.length() >= 2 ? enableModeStr[1] : '\0') {
                 case 's':
-                    return (Hydro_UnitsCategory)1;
-                case 't':
-                    return (Hydro_UnitsCategory)11;
+                    return (Hydro_EnableMode)7;
+                case 'v':
+                    return (Hydro_EnableMode)2;
             }
             break;
-        case 'S':
+        case 'C':
+            return (Hydro_EnableMode)8;
+        case 'D':
+            return (Hydro_EnableMode)6;
+        case 'H':
+            return (Hydro_EnableMode)0;
+        case 'I':
+            return (Hydro_EnableMode)4;
+        case 'L':
+            return (Hydro_EnableMode)1;
+        case 'M':
+            return (Hydro_EnableMode)3;
+        case 'R':
+            return (Hydro_EnableMode)5;
+        case 'U':
+            return (Hydro_EnableMode)-1;
+    }
+    return Hydro_EnableMode_Undefined;
+}
+
+Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
+{
+     switch (unitsCategoryStr.length() >= 1 ? unitsCategoryStr[0] : '\0') {
+        case 'A':
+            return (Hydro_UnitsCategory)0;
+        case 'C':
+            switch (unitsCategoryStr.length() >= 3 ? unitsCategoryStr[2] : '\0') {
+                case 'n':
+                    return (Hydro_UnitsCategory)1;
+                case 'u':
+                    return (Hydro_UnitsCategory)10;
+            }
+            break;
+        case 'D':
             return (Hydro_UnitsCategory)2;
         case 'L':
             switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\0') {
-                case 'T':
-                    return (Hydro_UnitsCategory)3;
-                case 'V':
-                    return (Hydro_UnitsCategory)4;
-                case 'F':
-                    return (Hydro_UnitsCategory)5;
                 case 'D':
-                    return (Hydro_UnitsCategory)6;
+                    return (Hydro_UnitsCategory)3;
+                case 'F':
+                    return (Hydro_UnitsCategory)4;
+                case 'V':
+                    return (Hydro_UnitsCategory)5;
             }
             break;
-        case 'W':
-            return (Hydro_UnitsCategory)12;
         case 'P':
-            return (Hydro_UnitsCategory)13;
-        case 'C':
-            return (Hydro_UnitsCategory)14;
+            switch (unitsCategoryStr.length() >= 2 ? unitsCategoryStr[1] : '\0') {
+                case 'e':
+                    return (Hydro_UnitsCategory)7;
+                case 'o':
+                    return (Hydro_UnitsCategory)8;
+            }
+            break;
+        case 'T':
+            return (Hydro_UnitsCategory)6;
+        case 'U':
+            return (Hydro_UnitsCategory)-1;
+        case 'W':
+            return (Hydro_UnitsCategory)9;
     }
     return Hydro_UnitsCategory_Undefined;
 }
@@ -2437,85 +2513,92 @@ Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
 Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
 {
     switch (unitsSymbolStr.length() >= 1 ? unitsSymbolStr[0] : '\0') {
+        case '%':
+            return (Hydro_UnitsType)1;
         case 'A':
-            return (Hydro_UnitsType)21;
+            return (Hydro_UnitsType)15;
         case 'E':
             return (Hydro_UnitsType)3;
-        case 'f':
-            return (Hydro_UnitsType)17;
-        case 'g':
-            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
-                case '\0':
-                    return (Hydro_UnitsType)8;
-                case '/':
-                    return (Hydro_UnitsType)10;
-            }
-            break;
         case 'J':
-            return (Hydro_UnitsType)20;
+            return (Hydro_UnitsType)16;
         case 'K':
-            return (Hydro_UnitsType)18;
+            return (Hydro_UnitsType)20;
         case 'L':
             switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
                 case '\0':
-                    return (Hydro_UnitsType)7;
+                    return (Hydro_UnitsType)14;
                 case '/':
-                    return (Hydro_UnitsType)9;
+                    return (Hydro_UnitsType)12;
+            }
+            break;
+        case 'T':
+            return (Hydro_UnitsType)3;
+        case 'W':
+            return (Hydro_UnitsType)16;
+        case '[':
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
+                case 'p':
+                    return (Hydro_UnitsType)2;
+                case 'q':
+                    return (Hydro_UnitsType)22;
+                case 'u':
+                    return (Hydro_UnitsType)-1;
+            }
+            break;
+        case 'f':
+            return (Hydro_UnitsType)7;
+        case 'g':
+            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
+                case '\0':
+                    return (Hydro_UnitsType)13;
+                case '/':
+                    return (Hydro_UnitsType)11;
             }
             break;
         case 'l':
-            return (Hydro_UnitsType)19;
+            return (Hydro_UnitsType)21;
         case 'm':
             switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
+                case '\0':
+                    return (Hydro_UnitsType)8;
                 case 'L':
                     switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
                         case 'L':
-                            return (Hydro_UnitsType)11;
+                            return (Hydro_UnitsType)10;
                         case 'g':
-                            return (Hydro_UnitsType)12;
+                            return (Hydro_UnitsType)9;
                     }
                     break;
                 case 'S':
                     return (Hydro_UnitsType)3;
-                case '\0':
-                    return (Hydro_UnitsType)16;
             }
             break;
         case 'p':
-            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
-                case 'H':
-                    return (Hydro_UnitsType)2;
-                case 'p':
+            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
+                case '\0':
+                    return (Hydro_UnitsType)4;
+                case '(':
                     switch (unitsSymbolStr.length() >= 5 ? unitsSymbolStr[4] : '\0') {
-                        case '\0':
                         case '5':
-                            return (Hydro_UnitsType)13;
+                            return (Hydro_UnitsType)4;
                         case '6':
-                            return (Hydro_UnitsType)14;
+                            return (Hydro_UnitsType)5;
                         case '7':
-                            return (Hydro_UnitsType)15;
+                            return (Hydro_UnitsType)6;
                     }
                     break;
             }
             break;
-        case 'q':
-            return (Hydro_UnitsType)22;
         case 'r':
             return (Hydro_UnitsType)0;
-        case 'T':
-            return (Hydro_UnitsType)3;
-        case 'W':
-            return (Hydro_UnitsType)20;
-        case '%':
-            return (Hydro_UnitsType)1;
-        default:
+        case '°':
             switch (unitsSymbolStr.length() >= 3 ? unitsSymbolStr[2] : '\0') {
                 case 'C':
-                    return (Hydro_UnitsType)4;
+                    return (Hydro_UnitsType)17;
                 case 'F':
-                    return (Hydro_UnitsType)5;
+                    return (Hydro_UnitsType)18;
                 case 'K':
-                    return (Hydro_UnitsType)6;
+                    return (Hydro_UnitsType)19;
             }
             break;
     }
