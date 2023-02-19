@@ -191,7 +191,7 @@ public:
     inline void setupActivation(const HydroSingleMeasurement &measurement, millis_t duration = -1, bool force = false) { setupActivation(measurement.value, duration, force); }
 
     // Gets what units are expected to be used in setupActivation() methods
-    inline Hydro_UnitsType getActivationUnits() { if (resolve()) { return get()->getUserCalibrationData() ? get()->getUserCalibrationData()->calibrationUnits : Hydro_UnitsType_Raw_1; } }
+    inline Hydro_UnitsType getActivationUnits();
 
     // Enables activation handle with current setup, if not already active.
     // Repeat activations will reuse most recent setupActivation() values.
@@ -205,12 +205,12 @@ public:
     inline millis_t getTimeActive(millis_t time = nzMillis()) const { return _actHandle.getTimeActive(time); }
 
     // Currently active driving intensity [-1.0,1.0] / calibrated value [calibMin,calibMax], from actuator
-    inline float getActiveDriveIntensity() { return resolve() ? get()->getDriveIntensity() : 0.0f; }
-    inline float getActiveCalibratedValue() { return resolve() ? get()->getCalibratedValue() : 0.0f; }
+    inline float getActiveDriveIntensity();
+    inline float getActiveCalibratedValue();
 
     // Currently setup driving intensity [-1.0,1.0] / calibrated value [calibMin,calibMax], from activation
-    inline float getSetupDriveIntensity() const { return _actSetup.intensity; }
-    inline float getSetupCalibratedValue() { return resolve() ? get()->calibrationTransform(_actSetup.intensity) : 0.0f; }
+    inline float getSetupDriveIntensity() const;
+    inline float getSetupCalibratedValue();
 
     // Sets an update slot to run during execution of actuator that can further refine duration/intensity.
     // Useful for rate-based or variable activations. Slot receives actuator attachment pointer as parameter.

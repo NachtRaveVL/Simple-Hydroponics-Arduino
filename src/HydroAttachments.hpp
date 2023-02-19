@@ -163,6 +163,34 @@ void HydroSignalAttachment<ParameterType,Slots>::setHandleSlot(const Slot<Parame
 }
 
 
+inline Hydro_UnitsType HydroActuatorAttachment::getActivationUnits()
+{
+    if (resolve()) {
+        return get()->getUserCalibrationData() ? get()->getUserCalibrationData()->calibrationUnits : Hydro_UnitsType_Raw_1;
+    }
+}
+
+inline float HydroActuatorAttachment::getActiveDriveIntensity()
+{
+    return resolve() ? get()->getDriveIntensity() : 0.0f;
+}
+
+inline float HydroActuatorAttachment::getActiveCalibratedValue()
+{
+    return resolve() ? get()->getCalibratedValue() : 0.0f;
+}
+
+inline float HydroActuatorAttachment::getSetupDriveIntensity() const
+{
+    return _actSetup.intensity;
+}
+
+inline float HydroActuatorAttachment::getSetupCalibratedValue()
+{
+    return resolve() ? get()->calibrationTransform(_actSetup.intensity) : 0.0f;
+}
+
+
 inline Hydro_TriggerState HydroTriggerAttachment::getTriggerState(bool poll)
 {
     return resolve() ? get()->getTriggerState(poll) : Hydro_TriggerState_Undefined;
