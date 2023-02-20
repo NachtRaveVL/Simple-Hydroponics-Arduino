@@ -1623,21 +1623,17 @@ const char *pgmAddrForStr(Hydro_String strNum)
             return flashStr_Enum_Zucchini;
         } break;
 
-        case HStr_Unit_Celsius: {
-            static const char flashStr_Unit_Celsius[] PROGMEM = {"°C"};
-            return flashStr_Unit_Celsius;
-        } break;
         case HStr_Unit_Count: {
             static const char flashStr_Unit_Count[] PROGMEM = {"[qty]"};
             return flashStr_Unit_Count;
         } break;
+        case HStr_Unit_Degree: {
+            static const char flashStr_Unit_Degree[] PROGMEM = {"\xC2\xB0"};
+            return flashStr_Unit_Degree;
+        } break;
         case HStr_Unit_EC5: {
             static const char flashStr_Unit_EC5[] PROGMEM = {"EC(5)"};
             return flashStr_Unit_EC5;
-        } break;
-        case HStr_Unit_Fahrenheit: {
-            static const char flashStr_Unit_Fahrenheit[] PROGMEM = {"°F"};
-            return flashStr_Unit_Fahrenheit;
         } break;
         case HStr_Unit_Feet: {
             static const char flashStr_Unit_Feet[] PROGMEM = {"ft"};
@@ -1646,10 +1642,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Unit_Gallons: {
             static const char flashStr_Unit_Gallons[] PROGMEM = {"gal"};
             return flashStr_Unit_Gallons;
-        } break;
-        case HStr_Unit_Kelvin: {
-            static const char flashStr_Unit_Kelvin[] PROGMEM = {"°K"};
-            return flashStr_Unit_Kelvin;
         } break;
         case HStr_Unit_Kilograms: {
             static const char flashStr_Unit_Kilograms[] PROGMEM = {"Kg"};

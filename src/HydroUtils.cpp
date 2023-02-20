@@ -1717,14 +1717,26 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
             return SFP(HStr_Unit_Feet);
         case Hydro_UnitsType_Distance_Meters:
             return String('m');
-        case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon:
-            return SFP(HStr_Unit_MilliLiterPer) + SFP(HStr_Unit_Gallons);
-        case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter:
-            return SFP(HStr_Unit_MilliLiterPer) + String('L');
-        case Hydro_UnitsType_LiqFlowRate_GallonsPerMin:
-            return SFP(HStr_Unit_Gallons) + SFP(HStr_Unit_PerMinute);
-        case Hydro_UnitsType_LiqFlowRate_LitersPerMin:
-            return String('L') + SFP(HStr_Unit_PerMinute);
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon: {
+            String retVal(SFP(HStr_Unit_MilliLiterPer));
+            retVal.concat(SFP(HStr_Unit_Gallons));
+            return retVal;
+        }
+        case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter: {
+            String retVal(SFP(HStr_Unit_MilliLiterPer));
+            retVal.concat('L');
+            return retVal;
+        }
+        case Hydro_UnitsType_LiqFlowRate_GallonsPerMin: {
+            String retVal(SFP(HStr_Unit_Gallons));
+            retVal.concat(SFP(HStr_Unit_PerMinute));
+            return retVal;
+        }
+        case Hydro_UnitsType_LiqFlowRate_LitersPerMin: {
+            String retVal('L');
+            retVal.concat(SFP(HStr_Unit_PerMinute));
+            return retVal;
+        }
         case Hydro_UnitsType_LiqVolume_Gallons:
             return SFP(HStr_Unit_Gallons);
         case Hydro_UnitsType_LiqVolume_Liters:
@@ -1733,12 +1745,21 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
             return String('A');
         case Hydro_UnitsType_Power_Wattage:
             return String('W'); // alt: J/s
-        case Hydro_UnitsType_Temperature_Celsius:
-            return SFP(HStr_Unit_Celsius);
-        case Hydro_UnitsType_Temperature_Fahrenheit:
-            return SFP(HStr_Unit_Fahrenheit);
-        case Hydro_UnitsType_Temperature_Kelvin:
-            return SFP(HStr_Unit_Kelvin);
+        case Hydro_UnitsType_Temperature_Celsius: {
+            String retVal(SFP(HStr_Unit_Degree));
+            retVal.concat('C');
+            return retVal;
+        }
+        case Hydro_UnitsType_Temperature_Fahrenheit: {
+            String retVal(SFP(HStr_Unit_Degree));
+            retVal.concat('F');
+            return retVal;
+        }
+        case Hydro_UnitsType_Temperature_Kelvin: {
+            String retVal(SFP(HStr_Unit_Degree));
+            retVal.concat('K');
+            return retVal;
+        }
         case Hydro_UnitsType_Weight_Kilograms:
             return SFP(HStr_Unit_Kilograms);
         case Hydro_UnitsType_Weight_Pounds:
@@ -2591,7 +2612,7 @@ Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             break;
         case 'r':
             return (Hydro_UnitsType)0;
-        case '°':
+        default: // degree symbol
             switch (unitsSymbolStr.length() >= 3 ? unitsSymbolStr[2] : '\0') {
                 case 'C':
                     return (Hydro_UnitsType)17;

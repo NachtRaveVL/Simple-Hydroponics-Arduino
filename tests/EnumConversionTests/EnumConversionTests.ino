@@ -147,6 +147,30 @@ void testRailTypeEnums()
     }
 }
 
+void testPinModeEnums()
+{
+    for (int typeIndex = -1; typeIndex <= Hydro_PinMode_Count; ++typeIndex) {
+        String typeString = pinModeToString((Hydro_PinMode)typeIndex);
+        int retTypeIndex = (int)pinModeFromString(typeString);
+        if (typeIndex != retTypeIndex) {
+            getLogger()->logError(F("testPinModeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+        }
+    }
+}
+
+void testEnableModeEnums()
+{
+    for (int typeIndex = -1; typeIndex <= Hydro_EnableMode_Count; ++typeIndex) {
+        String typeString = enableModeToString((Hydro_EnableMode)typeIndex);
+        int retTypeIndex = (int)enableModeFromString(typeString);
+        if (typeIndex != retTypeIndex) {
+            getLogger()->logError(F("testEnableModeEnums: Conversion failure: "), String(typeIndex));
+            getLogger()->logError(F("  Invalid return: "), String(retTypeIndex), String(F(" (")) + typeString + String(F(")")));
+        }
+    }
+}
+
 void testUnitsCategoryEnums()
 {
     for (int typeIndex = -1; typeIndex <= Hydro_UnitsCategory_Count; ++typeIndex) {
@@ -195,6 +219,8 @@ void setup() {
     testSubstrateTypeEnums();
     testReservoirTypeEnums();
     testRailTypeEnums();
+    testPinModeEnums();
+    testEnableModeEnums();
     testUnitsCategoryEnums();
     testUnitsTypeEnums();
 
