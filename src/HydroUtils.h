@@ -178,15 +178,15 @@ inline HydruinoUIInterface *getUI();
 // Publishes latest data from sensor to Publisher output.
 extern void publishData(HydroSensor *sensor);
 
-// Converts from local DateTime (offset by system TZ) back into unix/UTC time.
+// Converts from local DateTime (offset by system TZ) back into unix/UTC time_t.
 inline time_t unixTime(DateTime localTime);
-// Converts from unix/UTC time into local DateTime (offset by system TZ).
+// Converts from unix/UTC time_t into local DateTime (offset by system TZ).
 inline DateTime localTime(time_t unixTime);
-// Returns unix/UTC time of when today started.
+// Returns unix/UTC time_t of when today started.
 inline time_t unixDayStart(time_t unixTime = unixNow());
 // Returns local DateTime (offset by system TZ) of when today started.
 inline DateTime localDayStart(time_t unixTime = unixNow());
-// Sets global RTC current time to passed unix/UTC time.
+// Sets global RTC current time to passed unix/UTC time_t.
 // Returns update success after calling appropriate system notifiers.
 inline bool setUnixTime(time_t unixTime);
 // Sets global RTC current time to passed local DateTime (offset by system TZ).
@@ -259,9 +259,11 @@ extern void delayFine(millis_t time);
 // This will query the active RTC sync device for the current time.
 extern time_t rtcNow();
 
-// This will return the current time in unix/UTC time (secs since 1970). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
+// This will return the current time as unix/UTC time_t (secs since 1970). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
+// Default storage format. Do not use for data display/night-day-calcs - use localNow() or localTime() for local DateTime (offset by system TZ).
 inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
-// This will return the current time in local DateTime (offset by system TZ). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
+// This will return the current time as local DateTime (offset by system TZ). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
+// Meant to be used as a temporary or for runtime only. Do not use for data storage - use unixNow() or unixTime() for unix/UTC time_t (secs since 1970).
 inline DateTime localNow() { return localTime(unixNow()); }
 
 // This will return a non-zero millis time value, so that 0 time values can be reserved for other use.

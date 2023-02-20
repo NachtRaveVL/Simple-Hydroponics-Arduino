@@ -64,7 +64,7 @@ public:
 
     Signal<HydroCrop *, HYDRO_FEEDING_SIGNAL_SLOTS> &getFeedingSignal();
 
-    void notifyDayChanged();
+    inline void notifyDayChanged() { recalcGrowthParams(); }
 
 protected:
     Hydro_SubstrateType _substrateType;                     // Substrate type (fixme: currently unused)
@@ -156,10 +156,10 @@ protected:
 // Crop Serialization Data
 struct HydroCropData : public HydroObjectData
 {
-    Hydro_SubstrateType substrateType;
-    time_t sowTime;
-    char feedReservoir[HYDRO_NAME_MAXSIZE];
-    float feedingWeight;
+    Hydro_SubstrateType substrateType;                      // Substrate type
+    time_t sowTime;                                         // Sow date (UTC)
+    char feedReservoir[HYDRO_NAME_MAXSIZE];                 // Feed reservoir
+    float feedingWeight;                                    // Feeding weight
 
     HydroCropData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -169,8 +169,8 @@ struct HydroCropData : public HydroObjectData
 // Timed Crop Serialization Data
 struct HydroTimedCropData : public HydroCropData
 {
-    time_t lastFeedingTime;
-    uint8_t feedTimingMins[2];
+    time_t lastFeedingTime;                                 // Last feeding (UTC)
+    uint8_t feedTimingMins[2];                              // Timing minutes (on/off)
 
     HydroTimedCropData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -180,9 +180,9 @@ struct HydroTimedCropData : public HydroCropData
 // Adaptive Crop Serialization Data
 struct HydroAdaptiveCropData : public HydroCropData
 {
-    Hydro_UnitsType concentrateUnits;
-    char moistureSensor[HYDRO_NAME_MAXSIZE];
-    HydroTriggerSubData feedingTrigger;
+    Hydro_UnitsType concentrateUnits;                       // Concentration units
+    char moistureSensor[HYDRO_NAME_MAXSIZE];                // Soil moisture sensor
+    HydroTriggerSubData feedingTrigger;                     // Feeding trigger
 
     HydroAdaptiveCropData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

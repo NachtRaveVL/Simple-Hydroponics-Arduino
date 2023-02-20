@@ -63,9 +63,15 @@ struct HydroSingleMeasurement : public HydroMeasurement {
     HydroSingleMeasurement(float value, Hydro_UnitsType units, time_t timestamp, hframe_t frame);
     HydroSingleMeasurement(const HydroMeasurementData *dataIn);
 
-    inline HydroSingleMeasurement asUnits(Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF) const; // in utils
-
     void saveToData(HydroMeasurementData *dataOut, uint8_t measurementRow = 0, unsigned int additionalDecPlaces = 0) const;
+
+    // Modifiers (in utils)
+
+    inline HydroSingleMeasurement &toUnits(Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF);
+
+    // Copiers (in utils)
+
+    inline HydroSingleMeasurement asUnits(Hydro_UnitsType outUnits, float convertParam = FLT_UNDEF) const;
 };
 
 // Binary Value Sensor Data Measurement
