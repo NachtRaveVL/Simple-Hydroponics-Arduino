@@ -15,6 +15,12 @@ inline HydroSingleMeasurement HydroSingleMeasurement::asUnits(Hydro_UnitsType ou
     return out;
 }
 
+inline HydroSingleMeasurement &HydroSingleMeasurement::toUnits(Hydro_UnitsType outUnits, float convertParam)
+{
+    convertUnits(&value, &units, outUnits, convertParam);
+    return *this;
+}
+
 
 #ifdef HYDRO_USE_MULTITASKING
 

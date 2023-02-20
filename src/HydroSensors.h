@@ -282,9 +282,9 @@ protected:
 
 // Sensor Serialization Data
 struct HydroSensorData : public HydroObjectData {
-    HydroPinData inputPin;
-    char cropName[HYDRO_NAME_MAXSIZE];
-    char reservoirName[HYDRO_NAME_MAXSIZE];
+    HydroPinData inputPin;                                  // Input pin
+    char cropName[HYDRO_NAME_MAXSIZE];                      // Parent crop
+    char reservoirName[HYDRO_NAME_MAXSIZE];                 // Parent reservoir
 
     HydroSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -293,7 +293,7 @@ struct HydroSensorData : public HydroObjectData {
 
 // Binary Sensor Serialization Data
 struct HydroBinarySensorData : public HydroSensorData {
-    bool usingISR;
+    bool usingISR;                                          // Using ISR flag
 
     HydroBinarySensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -302,8 +302,8 @@ struct HydroBinarySensorData : public HydroSensorData {
 
 // Analog Sensor Serialization Data
 struct HydroAnalogSensorData : public HydroSensorData {
-    bool inputInversion;
-    Hydro_UnitsType measurementUnits;
+    bool inputInversion;                                    // Input inversion flag
+    Hydro_UnitsType measurementUnits;                       // Measurement units
 
     HydroAnalogSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -312,9 +312,9 @@ struct HydroAnalogSensorData : public HydroSensorData {
 
 // Digital Sensor Serialization Data
 struct HydroDigitalSensorData : public HydroSensorData {
-    uint8_t wireBitRes;
-    hposi_t wirePosIndex;
-    uint8_t wireDevAddress[8];
+    uint8_t wireBitRes;                                     // 1-Wire bit resolution
+    hposi_t wirePosIndex;                                   // 1-Wire position index
+    uint8_t wireDevAddress[8];                              // 1-Wire device address
 
     HydroDigitalSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -323,9 +323,9 @@ struct HydroDigitalSensorData : public HydroSensorData {
 
 // DHT TempHumid Sensor Serialization Data
 struct HydroDHTTempHumiditySensorData : public HydroDigitalSensorData {
-    Hydro_DHTType dhtType;
-    bool computeHeatIndex;
-    Hydro_UnitsType measurementUnits;
+    Hydro_DHTType dhtType;                                  // DHT sensor type
+    bool computeHeatIndex;                                  // Compute heat index
+    Hydro_UnitsType measurementUnits;                       // Measurement units
 
     HydroDHTTempHumiditySensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -334,8 +334,8 @@ struct HydroDHTTempHumiditySensorData : public HydroDigitalSensorData {
 
 // DS Temp Sensor Serialization Data
 struct HydroDSTemperatureSensorData : public HydroDigitalSensorData {
-    HydroPinData pullupPin;
-    Hydro_UnitsType measurementUnits;
+    HydroPinData pullupPin;                                 // Strong pullup pin
+    Hydro_UnitsType measurementUnits;                       // Measurement units
 
     HydroDSTemperatureSensorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

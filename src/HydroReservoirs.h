@@ -162,6 +162,7 @@ public:
 
     inline DateTime getLastFeedingTime() const { return localTime(_lastFeedingTime); }
     inline int8_t getFeedingsToday() const { return _numFeedingsToday; }
+
     inline void notifyFeedingBegan() { _numFeedingsToday++; _lastFeedingTime = unixNow(); }
     inline void notifyFeedingEnded() { ; }
     inline void notifyDayChanged() { _numFeedingsToday = 0; }
@@ -215,7 +216,7 @@ protected:
 
 // Reservoir Serialization Data
 struct HydroReservoirData : public HydroObjectData {
-    Hydro_UnitsType volumeUnits;
+    Hydro_UnitsType volumeUnits;                            // Volume units
 
     HydroReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -224,10 +225,10 @@ struct HydroReservoirData : public HydroObjectData {
 
 // Fluid Reservoir Serialization Data
 struct HydroFluidReservoirData : public HydroReservoirData {
-    float maxVolume;
-    char volumeSensor[HYDRO_NAME_MAXSIZE];
-    HydroTriggerSubData filledTrigger;
-    HydroTriggerSubData emptyTrigger;
+    float maxVolume;                                        // Maximum volume
+    char volumeSensor[HYDRO_NAME_MAXSIZE];                  // Volume sensor
+    HydroTriggerSubData filledTrigger;                      // Filled trigger
+    HydroTriggerSubData emptyTrigger;                       // Empty trigger
 
     HydroFluidReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -236,17 +237,17 @@ struct HydroFluidReservoirData : public HydroReservoirData {
 
 // Feed Water Reservoir Serialization Data
 struct HydroFeedReservoirData : public HydroFluidReservoirData {
-    time_t lastChangeTime;
-    time_t lastPruningTime;
-    time_t lastFeedingTime;
-    uint8_t numFeedingsToday;
-    Hydro_UnitsType concentrateUnits;
-    Hydro_UnitsType temperatureUnits;
-    char waterPHSensor[HYDRO_NAME_MAXSIZE];
-    char waterTDSSensor[HYDRO_NAME_MAXSIZE];
-    char waterTempSensor[HYDRO_NAME_MAXSIZE];
-    char airTempSensor[HYDRO_NAME_MAXSIZE];
-    char airCO2Sensor[HYDRO_NAME_MAXSIZE];
+    time_t lastChangeTime;                                  // Last water change/maintenance time (UTC)
+    time_t lastPruningTime;                                 // Last pruning time (UTC)
+    time_t lastFeedingTime;                                 // Last feeding time
+    uint8_t numFeedingsToday;                               // Number feedings on the day
+    Hydro_UnitsType concentrateUnits;                       // Concentration units
+    Hydro_UnitsType temperatureUnits;                       // Temperature units
+    char waterPHSensor[HYDRO_NAME_MAXSIZE];                 // pH sensor
+    char waterTDSSensor[HYDRO_NAME_MAXSIZE];                // TDS sensor
+    char waterTempSensor[HYDRO_NAME_MAXSIZE];               // Water temp sensor
+    char airTempSensor[HYDRO_NAME_MAXSIZE];                 // Air temp sensor
+    char airCO2Sensor[HYDRO_NAME_MAXSIZE];                  // Air CO2 sensor
 
     HydroFeedReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -255,7 +256,7 @@ struct HydroFeedReservoirData : public HydroFluidReservoirData {
 
 // Infinite Pipe Reservoir Serialization Data
 struct HydroInfiniteReservoirData : public HydroReservoirData {
-    bool alwaysFilled;
+    bool alwaysFilled;                                      // Always filled flag
 
     HydroInfiniteReservoirData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

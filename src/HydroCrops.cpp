@@ -91,11 +91,6 @@ Signal<HydroCrop *, HYDRO_FEEDING_SIGNAL_SLOTS> &HydroCrop::getFeedingSignal()
     return _feedingSignal;
 }
 
-void HydroCrop::notifyDayChanged()
-{
-    recalcGrowthParams();
-}
-
 HydroData *HydroCrop::allocateData() const
 {
     return _allocateDataForObjType((int8_t)_id.type, (int8_t)classType);

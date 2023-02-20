@@ -234,11 +234,11 @@ protected:
 // Actuator Serialization Data
 struct HydroActuatorData : public HydroObjectData
 {
-    HydroPinData outputPin;
-    Hydro_EnableMode enableMode;
-    HydroMeasurementData contPowerUsage;
-    char railName[HYDRO_NAME_MAXSIZE];
-    char reservoirName[HYDRO_NAME_MAXSIZE];
+    HydroPinData outputPin;                                 // Output pin
+    Hydro_EnableMode enableMode;                            // Activation enablement mode
+    HydroMeasurementData contPowerUsage;                    // Continuous power usage
+    char railName[HYDRO_NAME_MAXSIZE];                      // Parent rail
+    char reservoirName[HYDRO_NAME_MAXSIZE];                 // Parent reservoir
 
     HydroActuatorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -248,10 +248,10 @@ struct HydroActuatorData : public HydroObjectData
 // Pump Actuator Serialization Data
 struct HydroPumpActuatorData : public HydroActuatorData
 {
-    Hydro_UnitsType flowRateUnits;
-    HydroMeasurementData contFlowRate;
-    char destReservoir[HYDRO_NAME_MAXSIZE];
-    char flowRateSensor[HYDRO_NAME_MAXSIZE];
+    Hydro_UnitsType flowRateUnits;                          // Flow rate units
+    HydroMeasurementData contFlowRate;                      // Continuous flow rate
+    char destReservoir[HYDRO_NAME_MAXSIZE];                 // Destination reservoir
+    char flowRateSensor[HYDRO_NAME_MAXSIZE];                // Flow rate sensor
 
     HydroPumpActuatorData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

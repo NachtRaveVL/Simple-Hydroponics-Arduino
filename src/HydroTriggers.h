@@ -147,21 +147,21 @@ protected:
 
 // Combined Trigger Serialization Sub Data
 struct HydroTriggerSubData : public HydroSubData {
-    char sensorName[HYDRO_NAME_MAXSIZE];
-    int8_t measurementRow;
+    char sensorName[HYDRO_NAME_MAXSIZE];                    // Sensor name
+    int8_t measurementRow;                                  // Measurement row
     union {
         struct {
-            float tolerance;
-            bool triggerBelow;
-        } measureValue;
+            float tolerance;                                // Value tolerance
+            bool triggerBelow;                              // Trigger below flag
+        } measureValue;                                     // Measure value type
         struct {
-            float toleranceLow;
-            float toleranceHigh;
-            bool triggerOutside;
+            float toleranceLow;                             // Low value tolerance
+            float toleranceHigh;                            // High value tolerance
+            bool triggerOutside;                            // Trigger outside flag
         } measureRange;
-    } dataAs;
-    float detriggerTol;
-    Hydro_UnitsType measurementUnits;
+    } dataAs;                                               // Data type union
+    float detriggerTol;                                     // De-trigger tolerance
+    Hydro_UnitsType measurementUnits;                       // Measurement units
 
     HydroTriggerSubData();
     virtual void toJSONObject(JsonObject &objectOut) const;

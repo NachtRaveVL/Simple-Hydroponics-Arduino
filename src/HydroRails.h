@@ -133,7 +133,7 @@ protected:
 // Rail Serialization Data
 struct HydroRailData : public HydroObjectData
 {
-    Hydro_UnitsType powerUnits;
+    Hydro_UnitsType powerUnits;                             // Power units
 
     HydroRailData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -143,7 +143,7 @@ struct HydroRailData : public HydroObjectData
 // Simple Rail Serialization Data
 struct HydroSimpleRailData : public HydroRailData
 {
-    int maxActiveAtOnce;
+    int maxActiveAtOnce;                                    // Max active count
 
     HydroSimpleRailData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
@@ -153,9 +153,9 @@ struct HydroSimpleRailData : public HydroRailData
 // Regulated Rail Serialization Data
 struct HydroRegulatedRailData : public HydroRailData
 {
-    float maxPower;
-    char powerSensor[HYDRO_NAME_MAXSIZE];
-    HydroTriggerSubData limitTrigger;
+    float maxPower;                                         // Maximum power
+    char powerSensor[HYDRO_NAME_MAXSIZE];                   // Power usage sensor
+    HydroTriggerSubData limitTrigger;                       // Power limit trigger
 
     HydroRegulatedRailData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
