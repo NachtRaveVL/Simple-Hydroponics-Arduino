@@ -6,6 +6,25 @@
 #ifndef HydroDefines_H
 #define HydroDefines_H
 
+#ifndef JOIN                                                // Define joiner
+#define JOIN_(X,Y) X##_##Y
+#define JOIN(X,Y) JOIN_(X,Y)
+#endif
+
+#define ACTIVE_HIGH                     false               // Active high (convenience)
+#define ACTIVE_ABOVE                    false               // Active above (convenience)
+#define ACTIVE_LOW                      true                // Active low (convenience)
+#define ACTIVE_BELOW                    true                // Active below (convenience)
+#define PULL_DOWN                       false               // Pull down (convenience)
+#define PULL_UP                         true                // Pull up (convenience)
+#define RAW                             false               // Raw mode (convenience)
+#define JSON                            true                // JSON mode (convenience)
+#ifndef ENABLED
+#define ENABLED                         0x1                 // Enabled define (convenience)
+#endif
+#ifndef DISABLED
+#define DISABLED                        0x0                 // Disabled define (convenience)
+#endif
 #ifndef FLT_EPSILON
 #define FLT_EPSILON                     0.00001f            // Single-precision floating point error tolerance
 #endif
@@ -18,49 +37,34 @@
 #ifndef DBL_UNDEF
 #define DBL_UNDEF                       __DBL_MAX__         // Double-precision floating point value to stand in for "undefined"
 #endif
-#ifndef ENABLED
-#define ENABLED                         0x1                 // Enabled define (convenience)
-#endif
-#ifndef DISABLED
-#define DISABLED                        0x0                 // Disabled define (convenience)
-#endif
-#define ACTIVE_HIGH                     false               // Active high (convenience)
-#define ACTIVE_ABOVE                    false               // Active above (convenience)
-#define ACTIVE_LOW                      true                // Active low (convenience)
-#define ACTIVE_BELOW                    true                // Active below (convenience)
-#define RAW                             false               // Raw mode (convenience)
-#define JSON                            true                // JSON mode (convenience)
-#ifndef JOIN                                                // Define joiner
-#define JOIN_(X,Y) X##_##Y
-#define JOIN(X,Y) JOIN_(X,Y)
+#ifndef MIN_PER_DAY
+#define MIN_PER_DAY                     1440                // Minutes per day
 #endif
 
-#ifndef TWO_PI                                              // Missing 2pi
+#ifndef TWO_PI                                              // Resolving 2pi
 #define TWO_PI                          6.283185307179586476925286766559
 #endif
-#ifndef RANDOM_MAX                                          // Missing random max
+#ifndef RANDOM_MAX                                          // Resolving random max
 #if defined(RAND_MAX)
 #define RANDOM_MAX                      RAND_MAX
-#elif defined(INTPTR_MAX)
-#define RANDOM_MAX                      INTPTR_MAX
 #else
 #define RANDOM_MAX                      __INT_MAX__
 #endif
 #endif
-#if (defined(ESP32) || defined(ESP8266)) && !defined(ESP_PLATFORM) // Missing ESP_PLATFORM
+#if (defined(ESP32) || defined(ESP8266)) && !defined(ESP_PLATFORM) // Resolving ESP_PLATFORM
 #define ESP_PLATFORM
 #endif
-#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32)    // Missing min/max
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32)    // Resolving min/max
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 #endif
-#if !defined(ADC_RESOLUTION) && defined(IOA_ANALOGIN_RES)   // Missing ADC resolution
+#if !defined(ADC_RESOLUTION) && defined(IOA_ANALOGIN_RES)   // Resolving ADC resolution
 #define ADC_RESOLUTION IOA_ANALOGIN_RES
 #endif
 #if !defined(ADC_RESOLUTION)
 #define ADC_RESOLUTION 10
 #endif
-#if !defined(DAC_RESOLUTION) && defined(IOA_ANALOGOUT_RES)  // Missing DAC resolution
+#if !defined(DAC_RESOLUTION) && defined(IOA_ANALOGOUT_RES)  // Resolving DAC resolution
 #define DAC_RESOLUTION IOA_ANALOGOUT_RES
 #endif
 #if !defined(DAC_RESOLUTION)
@@ -71,7 +75,7 @@
 #define F_SPD F_CPU
 #elif defined(F_BUS)                                        // Teensy/etc support
 #define F_SPD F_BUS
-#else                                                       // Fast/good enough
+#else                                                       // Fast/good enough (32MHz)
 #define F_SPD 32000000U
 #endif
 #endif
@@ -83,23 +87,23 @@
 #endif
 #endif
 
-typedef typeof(millis()) millis_t;                          // Time millis type
-typedef int8_t hposi_t;                                     // Position indexing type alias
-typedef uint32_t hkey_t;                                    // Key type alias, for hashing
-typedef int8_t hid_t;                                       // Id type alias, for RTTI
-typedef uint16_t hframe_t;                                  // Polling frame type, for sync
+typedef typeof(millis())                millis_t;           // Millisecond time type
+typedef int8_t                          hposi_t;            // Position indexing type alias
+typedef uint32_t                        hkey_t;             // Key type alias, for hashing
+typedef int8_t                          hid_t;              // Id type alias, for RTTI
+typedef uint16_t                        hframe_t;           // Polling frame type, for sync
 #define millis_none                     ((millis_t)0)       // No millis defined/invalid placeholder
 #define hposi_none                      ((hposi_t)-1)       // No position defined/invalid placeholder
 #define hkey_none                       ((hkey_t)-1)        // No key defined/invalid placeholder
 #define hid_none                        ((hid_t)-1)         // No id defined/invalid placeholder
 #define hframe_none                     ((hframe_t)0)       // No frame defined/invalid placeholder
-typedef typeof(INPUT) ard_pinmode_t;                        // Arduino pin mode type alias
-typedef typeof(LOW) ard_pinstatus_t;                        // Arduino pin status type alias
+typedef typeof(INPUT)                   ard_pinmode_t;      // Arduino pin mode type alias
+typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin status type alias
 
 // The following slot sizes apply to all architectures
-#define HYDRO_NAME_MAXSIZE              32                  // Naming character maximum size (system name, crop name, etc.)
-#define HYDRO_URL_MAXSIZE               64                  // URL string maximum size (max url length)
+#define HYDRO_NAME_MAXSIZE              24                  // Naming character maximum size (system name, crop name, etc.)
 #define HYDRO_POS_MAXSIZE               32                  // Position indicies maximum size (max # of objs of same type)
+#define HYDRO_URL_MAXSIZE               64                  // URL string maximum size (max url length)
 #define HYDRO_JSON_DOC_SYSSIZE          256                 // JSON document chunk data bytes for reading in main system data (serialization buffer size)
 #define HYDRO_JSON_DOC_DEFSIZE          192                 // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRO_STRING_BUFFER_SIZE        32                  // Size in bytes of string serialization buffers
@@ -532,28 +536,6 @@ enum Hydro_PinMode : signed char {
     Hydro_PinMode_Digital_Output = Hydro_PinMode_Digital_Output_OpenDrain // Default digital output (alias for OpenDrain, type for OUTPUT)
 };
 
-// Trigger Status
-// Common trigger statuses. Specifies enablement and tripped state.
-enum Hydro_TriggerState : signed char {
-    Hydro_TriggerState_Disabled,                            // Triggers disabled (not hooked up)
-    Hydro_TriggerState_NotTriggered,                        // Not triggered
-    Hydro_TriggerState_Triggered,                           // Triggered
-
-    Hydro_TriggerState_Count,                               // Placeholder
-    Hydro_TriggerState_Undefined = -1                       // Placeholder
-};
-
-// Balancing State
-// Common balancing states. Specifies balance or which direction of imbalance.
-enum Hydro_BalancingState : signed char {
-    Hydro_BalancingState_TooLow,                            // Too low / reading needs to go higher
-    Hydro_BalancingState_Balanced,                          // Balanced state
-    Hydro_BalancingState_TooHigh,                           // Too high / reading needs to go lower
-
-    Hydro_BalancingState_Count,                             // Placeholder
-    Hydro_BalancingState_Undefined = -1                     // Placeholder
-};
-
 // Enable Mode
 // Actuator intensity/enablement calculation mode. Specifies how multiple activations get used together.
 enum Hydro_EnableMode : signed char {
@@ -581,6 +563,28 @@ enum Hydro_DirectionMode : signed char {
 
     Hydro_DirectionMode_Count,                              // Placeholder
     Hydro_DirectionMode_Undefined = -1                      // Placeholder
+};
+
+// Trigger Status
+// Common trigger statuses. Specifies enablement and tripped state.
+enum Hydro_TriggerState : signed char {
+    Hydro_TriggerState_Disabled,                            // Triggers disabled (not hooked up)
+    Hydro_TriggerState_NotTriggered,                        // Not triggered
+    Hydro_TriggerState_Triggered,                           // Triggered
+
+    Hydro_TriggerState_Count,                               // Placeholder
+    Hydro_TriggerState_Undefined = -1                       // Placeholder
+};
+
+// Balancing State
+// Common balancing states. Specifies balance or which direction of imbalance.
+enum Hydro_BalancingState : signed char {
+    Hydro_BalancingState_TooLow,                            // Too low / reading needs to go higher
+    Hydro_BalancingState_Balanced,                          // Balanced state
+    Hydro_BalancingState_TooHigh,                           // Too high / reading needs to go lower
+
+    Hydro_BalancingState_Count,                             // Placeholder
+    Hydro_BalancingState_Undefined = -1                     // Placeholder
 };
 
 // Units Category
