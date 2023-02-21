@@ -608,7 +608,7 @@ void HydroProcess::setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_S
 
 
 HydroFeeding::HydroFeeding(SharedPtr<HydroFeedReservoir> feedRes)
-    : HydroProcess(feedRes), stage(Unknown), canFeedAfter(0), lastAirReport(0),
+    : HydroProcess(feedRes), stage(Unknown), canProcessAfter(0), lastAirReport(0),
       phSetpoint(0), tdsSetpoint(0), waterTempSetpoint(0), airTempSetpoint(0), co2Setpoint(0)
 {
     reset();
@@ -782,15 +782,15 @@ void HydroFeeding::setupStaging()
             auto feedingsToday = feedRes->getFeedingsToday();
 
             if (!maxFeedingsDay) {
-                canFeedAfter = (time_t)0;
+                canProcessAfter = (time_t)0;
             } else if (feedingsToday < maxFeedingsDay) {
                 // this will force feedings to be spread out during the entire day
-                canFeedAfter = unixDayStart() + (time_t)(((float)SECS_PER_DAY / (maxFeedingsDay + 1)) * feedingsToday);
+                canProcessAfter = unixDayStart() + (time_t)(((float)SECS_PER_DAY / (maxFeedingsDay + 1)) * feedingsToday);
             } else {
-                canFeedAfter = (time_t)UINT32_MAX; // no more feedings today
+                canProcessAfter = (time_t)UINT32_MAX; // no more feedings today
             }
 
-            if (canFeedAfter > unixNow()) { clearActuatorReqs(); } // clear on wait
+            if (canProcessAfter > unixNow()) { clearActuatorReqs(); } // clear on wait
         } break;
 
         case TopOff: {
@@ -887,7 +887,7 @@ void HydroFeeding::update()
 
     switch (stage) {
         case Init: {
-            if (!canFeedAfter || unixNow() >= canFeedAfter) {
+            if (!canProcessAfter || unixNow() >= canProcessAfter) {
                 int cropsCount = 0;
                 int cropsHungry = 0;
 
@@ -912,7 +912,7 @@ void HydroFeeding::update()
         case TopOff: {
             if (feedRes->isFilled() || !actuatorReqs.size()) {
                 stage = PreFeed; stageStart = unixNow();
-                canFeedAfter = 0; // will be used to track how long balancers stay balanced
+                canProcessAfter = 0; // will be used to track how long balancers stay balanced
                 setupStaging();
 
                 getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_PreFeedBalancing), SFP(HStr_Log_HasBegan));
@@ -940,15 +940,15 @@ void HydroFeeding::update()
                     (!tdsBalancer || (tdsBalancer->isEnabled() && tdsBalancer->isBalanced())) &&
                     (!waterTempBalancer || (waterTempBalancer->isEnabled() && waterTempBalancer->isBalanced()))) {
                     // Can proceed after above are marked balanced for min time
-                    if (!canFeedAfter) { canFeedAfter = unixNow() + HYDRO_SCH_BALANCE_MINTIME; }
-                    else if (unixNow() >= canFeedAfter) {
+                    if (!canProcessAfter) { canProcessAfter = unixNow() + HYDRO_SCH_BALANCE_MINTIME; }
+                    else if (unixNow() >= canProcessAfter) {
                         stage = Feed; stageStart = unixNow();
                         setupStaging();
 
                         broadcastFeeding(HydroFeedingBroadcastType_Began);
                     }
                 } else {
-                    canFeedAfter = 0;
+                    canProcessAfter = 0;
                 }
             }
         } break;

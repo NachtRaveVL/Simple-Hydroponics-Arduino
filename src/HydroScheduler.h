@@ -112,7 +112,7 @@ struct HydroProcess {
 struct HydroFeeding : public HydroProcess {
     enum : signed char {Init,TopOff,PreFeed,Feed,Drain,Done,Unknown = -1} stage; // Current feeding stage
 
-    time_t canFeedAfter;                                    // Time next feeding can occur (unix/UTC)
+    time_t canProcessAfter;                                 // Time next processing can occur (unix/UTC), else 0/disabled
     time_t lastAirReport;                                   // Last time an air report was generated (unix/UTC)
 
     float phSetpoint;                                       // Calculated pH setpoint for attached crops
