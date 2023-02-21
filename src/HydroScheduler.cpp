@@ -6,7 +6,7 @@
 #include "Hydruino.h"
 
 HydroScheduler::HydroScheduler()
-    : _needsScheduling(false), _inDaytimeMode(false), _lastDayNum(-1)
+    : _needsScheduling(false), _inDaytimeMode(false), _lastDay{0}
 { ; }
 
 HydroScheduler::~HydroScheduler()
@@ -40,7 +40,9 @@ void HydroScheduler::update()
                 Hydruino::_activeInstance->setNeedsLayout();
             }
 
-            if (_lastDayNum != currTime.day()) {
+            if (!(_lastDay[0] == currTime.year() &&
+                  _lastDay[1] == currTime.month() &&
+                  _lastDay[2] == currTime.day())) {
                 // only log uptime upon actual day change and if uptime has been at least 1d
                 if (getLogger()->getSystemUptime() >= SECS_PER_DAY) {
                     getLogger()->logSystemUptime();
@@ -446,7 +448,10 @@ TimeSpan HydroScheduler::getAirReportInterval() const
 void HydroScheduler::updateDayTracking()
 {
     time_t time = unixNow();
-    _lastDayNum = localTime(time).day();
+    DateTime currTime = localTime(time);
+    _lastDay[0] = currTime.year();
+    _lastDay[1] = currTime.month();
+    _lastDay[2] = currTime.day();
 
     Location loc = getController()->getSystemLocation();
     if (loc.hasPosition()) {
@@ -480,7 +485,7 @@ void HydroScheduler::performScheduling()
                         }
                     } else {
                         #ifdef HYDRO_USE_VERBOSE_OUTPUT
-                            Serial.print(F("Scheduler::performScheduling Crop linkages found for: ")); Serial.print(iter->second->getKeyString());
+                            Serial.print(F("Scheduler::performScheduling Sowable crop linkages found for: ")); Serial.print(iter->second->getKeyString());
                             Serial.print(':'); Serial.print(' '); Serial.println(linksCountSowableCrops(feedReservoir->getLinkages())); flushYield();
                         #endif
 
@@ -488,9 +493,9 @@ void HydroScheduler::performScheduling()
                         HYDRO_SOFT_ASSERT(feeding, SFP(HStr_Err_AllocationFailure));
                         if (feeding) { _feedings[feedReservoir->getKey()] = feeding; }
                     }
-                } else if (feedingIter != _feedings.end()) { // No crops to warrant process -> delete if exists
+                } else if (feedingIter != _feedings.end()) { // No sowable crops to warrant process -> delete if exists
                     #ifdef HYDRO_USE_VERBOSE_OUTPUT
-                        Serial.print(F("Scheduler::performScheduling NO more crop linkages found for: ")); Serial.println(iter->second->getKeyString()); flushYield();
+                        Serial.print(F("Scheduler::performScheduling NO sowable crop linkages found for: ")); Serial.println(iter->second->getKeyString()); flushYield();
                     #endif
                     if (feedingIter->second) { delete feedingIter->second; }
                     _feedings.erase(feedingIter);

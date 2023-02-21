@@ -139,7 +139,7 @@ void HydroActuatorAttachment::setupActivation(float value, millis_t duration, bo
     if (resolve()) {
         value = get()->calibrationInvTransform(value);
 
-        if (get()->isDirectionalType()) {
+        if (get()->isBidirectionalType()) {
             setupActivation(HydroActivation(value > FLT_EPSILON ? Hydro_DirectionMode_Forward : value < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(value), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
             return;
         }

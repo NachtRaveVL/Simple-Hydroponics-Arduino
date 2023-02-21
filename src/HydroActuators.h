@@ -61,7 +61,7 @@ public:
 
     inline bool isSerialMode() { return getActuatorIsSerialFromMode(getEnableMode()); }
     inline bool isPumpType() { return getActuatorIsPumpFromType(getActuatorType()); }
-    inline bool isDirectionalType() { return false; }
+    inline bool isBidirectionalType() { return false; }
 
     virtual void setContinuousPowerUsage(HydroSingleMeasurement contPowerUsage) override;
     virtual const HydroSingleMeasurement &getContinuousPowerUsage() override;

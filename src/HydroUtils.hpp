@@ -253,8 +253,9 @@ void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuator
         auto actuator = getSharedPtr<HydroActuator>(*actIter);
         HYDRO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
-            activationsOut.push_back(HydroActuatorAttachment(nullptr));
+            activationsOut.push_back(HydroActuatorAttachment());
             activationsOut.back().setObject(actuator);
+            activationsOut.back().setupActivation(false);
         }
     }
 }
@@ -266,10 +267,11 @@ void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &a
         auto actuator = getSharedPtr<HydroActuator>(*actIter);
         HYDRO_HARD_ASSERT(actuator, SFP(HStr_Err_OperationFailure));
         if (actuator->getActuatorType() == actuatorType) {
-            activationsOut.push_back(HydroActuatorAttachment(nullptr));
+            activationsOut.push_back(HydroActuatorAttachment());
             activationsOut.back().setParent(parent);
-            activationsOut.back().setRateMultiplier(rateMultiplier);
             activationsOut.back().setObject(actuator);
+            activationsOut.back().setRateMultiplier(rateMultiplier);
+            activationsOut.back().setupActivation(false);
         }
     }
 }
