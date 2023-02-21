@@ -18,10 +18,10 @@ struct HydroLighting;
 // Scheduler
 // The Scheduler acts as the system's main scheduling attendant, who looks through all
 // the various equipment and crops you have programmed in, and figures out the best
-// case feeding and lighting sequences that should occur to support them. It is also
+// case feeding and lighting processes that should occur to support them. It is also
 // responsible for setting up and maintaining the system balancers that get assigned to
-// feed reservoirs, which drives the various balancing processes in use, as well as
-// determining when significant time changes have occurred and broadcasting such out.
+// feed reservoirs (such as the various dosing actuators in use), as well as determining
+// when significant time or event changes have occurred and broadcasting such out.
 class HydroScheduler {
 public:
     HydroScheduler();
@@ -64,7 +64,7 @@ protected:
     Twilight _dailyTwilight;                                // Daily twilight settings
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
     bool _inDaytimeMode;                                    // Daytime mode flag
-    int _lastDayNum;                                        // Last day number tracking for daily rescheduling tracking
+    hposi_t _lastDay[3];                                    // Last day tracking for rescheduling (Y,M,D)
     Map<hkey_t, HydroFeeding *, HYDRO_SCH_PROCS_MAXSIZE> _feedings; // Feedings in progress
     Map<hkey_t, HydroLighting *, HYDRO_SCH_PROCS_MAXSIZE> _lightings; // Lightings in progress
 
