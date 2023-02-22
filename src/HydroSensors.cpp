@@ -12,14 +12,14 @@ HydroSensor *newSensorObjectFromData(const HydroSensorData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case (int8_t)HydroSensor::Binary:
+            case (hid_t)HydroSensor::Binary:
                 return new HydroBinarySensor((const HydroBinarySensorData *)dataIn);
-            case (int8_t)HydroSensor::Analog:
+            case (hid_t)HydroSensor::Analog:
                 return new HydroAnalogSensor((const HydroAnalogSensorData *)dataIn);
             //case 2: // Digital (not instance-able)
-            case (int8_t)HydroSensor::DHT1W:
+            case (hid_t)HydroSensor::DHT1W:
                 return new HydroDHTTempHumiditySensor((const HydroDHTTempHumiditySensorData *)dataIn);
-            case (int8_t)HydroSensor::DS1W:
+            case (hid_t)HydroSensor::DS1W:
                 return new HydroDSTemperatureSensor((const HydroDSTemperatureSensorData *)dataIn);
             default: break;
         }
@@ -160,10 +160,10 @@ void HydroSensor::saveToData(HydroData *dataOut)
     HydroObject::saveToData(dataOut);
 
     dataOut->id.object.classType = (int8_t)classType;
-    if (_parentReservoir.getId()) {
+    if (_parentReservoir.isSet()) {
         strncpy(((HydroSensorData *)dataOut)->reservoirName, _parentReservoir.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_parentCrop.getId()) {
+    if (_parentCrop.isSet()) {
         strncpy(((HydroSensorData *)dataOut)->cropName, _parentCrop.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
 }
@@ -369,7 +369,7 @@ void HydroAnalogSensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, ui
     if (_measurementUnits[measurementRow] != measurementUnits) {
         _measurementUnits[measurementRow] = measurementUnits;
 
-        if (_lastMeasurement.frame) {
+        if (_lastMeasurement.isSet()) {
             convertUnits(&_lastMeasurement, _measurementUnits[measurementRow]);
         }
     }
@@ -615,7 +615,7 @@ void HydroDHTTempHumiditySensor::setMeasurementUnits(Hydro_UnitsType measurement
     if (_measurementUnits[measurementRow] != measurementUnits) {
         _measurementUnits[measurementRow] = measurementUnits;
 
-        if (_lastMeasurement.frame) {
+        if (_lastMeasurement.isSet()) {
             convertUnits(&_lastMeasurement.value[measurementRow], &_lastMeasurement.units[measurementRow], _measurementUnits[measurementRow]);
         }
     }
@@ -788,7 +788,7 @@ void HydroDSTemperatureSensor::setMeasurementUnits(Hydro_UnitsType measurementUn
     if (_measurementUnits[measurementRow] != measurementUnits) {
         _measurementUnits[measurementRow] = measurementUnits;
 
-        if (_lastMeasurement.frame) {
+        if (_lastMeasurement.isSet()) {
             convertUnits(&_lastMeasurement, _measurementUnits[measurementRow]);
         }
     }

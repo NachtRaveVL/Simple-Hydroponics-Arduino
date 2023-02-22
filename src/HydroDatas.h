@@ -156,7 +156,6 @@ struct HydroCropsLibData : public HydroData {
     Hydro_CropType cropType;                                // Crop type
     char cropName[HYDRO_NAME_MAXSIZE];                      // Name of crop
     uint8_t totalGrowWeeks;                                 // How long it takes to grow until harvestable, in weeks (default: 14)
-    uint8_t lifeCycleWeeks;                                 // How long a perennials life cycle lasts, in weeks (default: 0)
     uint8_t phaseDurationWeeks[Hydro_CropPhase_MainCount];  // How many weeks each main crop phase lasts (seed,veg,bloom&> - default: 2,4,8)
     uint8_t dailyLightHours[Hydro_CropPhase_MainCount];     // How many light hours per day is needed per main stages (seed,veg,bloom&> or all - default: 20,18,12)
     float phRange[2];                                       // Ideal pH range (min,max or mid - default: 6)

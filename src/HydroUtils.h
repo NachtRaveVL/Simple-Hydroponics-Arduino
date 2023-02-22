@@ -364,9 +364,9 @@ extern int linksCountSowableCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> l
 extern int linksCountActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType);
 
 // Recombines filtered object list back into SharedPtr actuator list.
-template<size_t N> void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
+template<size_t N = HYDRO_DEFAULT_MAXSIZE> void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
 // Recombines filtered object list back into SharedPtr actuator list paired with rate value.
-template<size_t N> void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
+template<size_t N = HYDRO_DEFAULT_MAXSIZE> void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType);
 
 // Pins & Checks
 

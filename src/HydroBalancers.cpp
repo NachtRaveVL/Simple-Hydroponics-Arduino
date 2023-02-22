@@ -48,6 +48,9 @@ void HydroBalancer::setIncrementActuators(const Vector<HydroActuatorAttachment, 
 
         for (auto attachInIter = incActuators.begin(); attachInIter != incActuators.end(); ++attachInIter) {
             if (key == attachInIter->getKey()) {
+                auto activation = *attachInIter;
+                activation.setupActivation(attachIter->getActivationSetup());
+                if (attachIter->getUpdateSlot()) { activation.setUpdateSlot(*attachIter->getUpdateSlot()); }
                 found = true;
                 break;
             }
@@ -74,6 +77,9 @@ void HydroBalancer::setDecrementActuators(const Vector<HydroActuatorAttachment, 
 
         for (auto attachInIter = decActuators.begin(); attachInIter != decActuators.end(); ++attachInIter) {
             if (key == attachInIter->getKey()) {
+                auto activation = *attachInIter;
+                activation.setupActivation(attachIter->getActivationSetup());
+                if (attachIter->getUpdateSlot()) { activation.setUpdateSlot(*attachIter->getUpdateSlot()); }
                 found = true;
                 break;
             }

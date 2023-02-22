@@ -12,9 +12,9 @@ HydroCrop *newCropObjectFromData(const HydroCropData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case (int8_t)HydroCrop::Timed:
+            case (hid_t)HydroCrop::Timed:
                 return new HydroTimedCrop((const HydroTimedCropData *)dataIn);
-            case (int8_t)HydroCrop::Adaptive:
+            case (hid_t)HydroCrop::Adaptive:
                 return new HydroAdaptiveCrop((const HydroAdaptiveCropData *)dataIn);
             default: break;
         }
@@ -103,7 +103,7 @@ void HydroCrop::saveToData(HydroData *dataOut)
     dataOut->id.object.classType = (int8_t)classType;
     ((HydroCropData *)dataOut)->substrateType = _substrateType;
     ((HydroCropData *)dataOut)->sowTime = _sowTime;
-    if (_feedReservoir.getId()) {
+    if (_feedReservoir.isSet()) {
         strncpy(((HydroCropData *)dataOut)->feedReservoir, _feedReservoir.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
     ((HydroCropData *)dataOut)->feedingWeight = _feedingWeight;
@@ -289,10 +289,10 @@ void HydroAdaptiveCrop::saveToData(HydroData *dataOut)
     HydroCrop::saveToData(dataOut);
 
     ((HydroAdaptiveCropData *)dataOut)->concentrateUnits = _concUnits;
-    if (_soilMoisture.getId()) {
+    if (_soilMoisture.isSet()) {
         strncpy(((HydroAdaptiveCropData *)dataOut)->moistureSensor, _soilMoisture.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_feedingTrigger) {
+    if (_feedingTrigger.isSet()) {
         _feedingTrigger->saveToData(&(((HydroAdaptiveCropData *)dataOut)->feedingTrigger));
     }
 }
@@ -358,7 +358,7 @@ void HydroAdaptiveCropData::toJSONObject(JsonObject &objectOut) const
 
     if (concentrateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_ConcentrateUnits)] = unitsTypeToSymbol(concentrateUnits); }
     if (moistureSensor[0]) { objectOut[SFP(HStr_Key_MoistureSensor)] = charsToString(moistureSensor, HYDRO_NAME_MAXSIZE); }
-    if (isValidType(feedingTrigger.type)) {
+    if (feedingTrigger.isSet()) {
         JsonObject feedingTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_FeedingTrigger));
         feedingTrigger.toJSONObject(feedingTriggerObj);
     }

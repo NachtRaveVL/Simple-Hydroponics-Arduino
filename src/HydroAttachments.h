@@ -30,7 +30,7 @@ public:
 
     inline bool isUnresolved() const { return !_obj; }
     inline bool isResolved() const { return (bool)_obj; }
-    inline bool needsResolved() const { return isUnresolved() && _key != hkey_none; }
+    inline bool needsResolved() const { return isUnresolved() && isSet(); }
     inline bool resolve() { return isResolved() || (bool)getObject(); }
     void unresolve();
     template<class U> inline void unresolveIf(U obj) { if (operator==(obj)) { unresolve(); } }
@@ -42,6 +42,7 @@ public:
     inline HydroIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroIdentity(_keyStr) : HydroIdentity(_key)); }
     inline hkey_t getKey() const { return _key; }
     inline String getKeyString() const { return _keyStr ? String(_keyStr) : (_obj ? _obj->getKeyString() : addressToString((uintptr_t)_key)); }
+    inline bool isSet() const { return _key != hkey_none; }
 
     inline operator bool() const { return isResolved(); }
     inline HydroObjInterface *operator->() { return get(); }
@@ -103,6 +104,7 @@ public:
     inline HydroIdentity getId() const { return _obj.getId(); }
     inline hkey_t getKey() const { return _obj.getKey(); }
     inline String getKeyString() const { return _obj.getKeyString(); }
+    inline bool isSet() const { return _obj.isSet(); }
 
     inline operator bool() const { return isResolved(); }
     inline HydroObjInterface *operator->() { return get<HydroObjInterface>(); }
@@ -218,9 +220,10 @@ public:
     void setUpdateSlot(const Slot<HydroActuatorAttachment *> &updateSlot);
     inline void setUpdateFunction(void (*updateFunctionPtr)(HydroActuatorAttachment *)) { setUpdateSlot(FunctionSlot<HydroActuatorAttachment *>(updateFunctionPtr)); }
     template<class U> inline void setUpdateMethod(void (U::*updateMethodPtr)(HydroActivationHandle *), U *updateClassInst = nullptr) { setUpdateSlot(MethodSlot<U,HydroActuatorAttachment *>(updateClassInst ? updateClassInst : reinterpret_cast<U *>(_parent), updateMethodPtr)); }
+    const Slot<HydroActuatorAttachment *> *getUpdateSlot() const { return _updateSlot; }
 
-    inline const HydroActivationHandle &getHandle() const { return _actHandle; }
-    inline const HydroActivation &getSetup() const { return _actSetup; }
+    inline const HydroActivationHandle &getActivationHandle() const { return _actHandle; }
+    inline const HydroActivation &getActivationSetup() const { return _actSetup; }
 
     inline SharedPtr<HydroActuator> getObject() { return HydroAttachment::getObject<HydroActuator>(); }
     inline HydroActuator *get() { return HydroAttachment::get<HydroActuator>(); }

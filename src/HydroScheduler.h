@@ -43,7 +43,7 @@ public:
     void setFlushWeek(int weekIndex);
     void setTotalFeedingsDay(unsigned int feedingsDay);
     void setPreFeedAeratorMins(unsigned int aeratorMins);
-    void setPreLightSprayMins(unsigned int sprayMins);
+    void setPreDawnSprayMins(unsigned int sprayMins);
     void setAirReportInterval(TimeSpan interval);
 
     inline void setNeedsScheduling();
@@ -57,18 +57,21 @@ public:
     bool isFlushWeek(int weekIndex);
     unsigned int getTotalFeedingsDay() const;
     unsigned int getPreFeedAeratorMins() const;
-    unsigned int getPreLightSprayMins() const;
+    unsigned int getPreDawnSprayMins() const;
     TimeSpan getAirReportInterval() const;
 
 protected:
     Twilight _dailyTwilight;                                // Daily twilight settings
     bool _needsScheduling;                                  // Needs rescheduling tracking flag
     bool _inDaytimeMode;                                    // Daytime mode flag
-    hposi_t _lastDay[3];                                    // Last day tracking for rescheduling (Y,M,D)
-    Map<hkey_t, HydroFeeding *, HYDRO_SCH_PROCS_MAXSIZE> _feedings; // Feedings in progress
-    Map<hkey_t, HydroLighting *, HYDRO_SCH_PROCS_MAXSIZE> _lightings; // Lightings in progress
+    hposi_t _lastDay[3];                                    // Last day tracking for rescheduling (Y-2k,M,D)
+    Map<hkey_t, HydroFeeding *, HYDRO_SCH_PROCS_MAXSIZE> _feedings; // Feed reservoir feeding processes
+    Map<hkey_t, HydroLighting *, HYDRO_SCH_PROCS_MAXSIZE> _lightings; // Feed reservoir lighting processes
 
     friend class Hydruino;
+    friend struct HydroProcess;
+    friend struct HydroFeeding;
+    friend struct HydroLighting;
 
     inline HydroSchedulerSubData *schedulerData() const;
     inline bool hasSchedulerData() const;
@@ -160,8 +163,8 @@ struct HydroSchedulerSubData : public HydroSubData {
     float weeklyDosingRates[HYDRO_CROPS_GROWWEEKS_MAX];     // Nutrient dosing rate percentages (applies to any nutrient premixes in use - default: 1)
     float stdDosingRates[3];                                // Standard dosing rates for fresh water, pH up, and pH down (default: 1,1/2,1/2)
     uint8_t totalFeedingsDay;                               // Total number of feedings per day, if any (else 0 for disable - default: 0)
-    uint8_t preFeedAeratorMins;                             // Minimum time to run aerators (if present) before feed pumps turn on, in minutes (default: 30)
-    uint8_t preLightSprayMins;                              // Minimum time to run sprayers/sprinklers (if present/needed) before grow lights turn on, in minutes (default: 60)
+    uint8_t preFeedAeratorMins;                             // Time to run aerators (if present) before feed pumps turn on, in minutes (default: 30)
+    uint8_t preDawnSprayMins;                               // Time to run sprayers/sprinklers (if present/needed) before grow lights turn on, in minutes (default: 60)
     time_t airReportInterval;                               // Interval between air sensor reports, in seconds (default: 8hrs)
 
     HydroSchedulerSubData();

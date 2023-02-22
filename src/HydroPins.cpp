@@ -89,14 +89,18 @@ void HydroPin::init()
     #endif
 }
 
-bool HydroPin::tryEnableMuxer()
+bool HydroPin::enableMuxer(int step)
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid() && isMuxed()) {
             SharedPtr<HydroPinMuxer> muxer = getController() ? getController()->getPinMuxer(pin) : nullptr;
             if (muxer) {
-                muxer->selectChannel(channel);
-                return true;
+                switch (step) {
+                    case 0: muxer->selectChannel(channel); muxer->activate(); return true;
+                    case 1: muxer->selectChannel(channel); return true;
+                    case 2: muxer->activate(); return true;
+                    default: return false;
+                }
             }
         }
         return false;
@@ -149,7 +153,7 @@ void HydroDigitalPin::saveToData(HydroPinData *dataOut) const
 ard_pinstatus_t HydroDigitalPin::digitalRead()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || tryEnableMuxer())) {
+        if (isValid() && (!isMuxed() || selectAndActivateMuxer())) {
             return ::digitalRead(pin);
         }
     #endif
@@ -159,8 +163,9 @@ ard_pinstatus_t HydroDigitalPin::digitalRead()
 void HydroDigitalPin::digitalWrite(ard_pinstatus_t status)
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || tryEnableMuxer())) {
+        if (isValid() && (!isMuxed() || selectMuxer())) {
             ::digitalWrite(pin, status);
+            if (isMuxed()) { activateMuxer(); }
         }
     #endif
 }
@@ -256,7 +261,7 @@ float HydroAnalogPin::analogRead()
 int HydroAnalogPin::analogRead_raw()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || tryEnableMuxer())) {
+        if (isValid() && (!isMuxed() || selectAndActivateMuxer())) {
             #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
                 analogReadResolution(bitRes.bits);
             #endif
@@ -274,7 +279,7 @@ void HydroAnalogPin::analogWrite(float amount)
 void HydroAnalogPin::analogWrite_raw(int amount)
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || tryEnableMuxer())) {
+        if (isValid() && (!isMuxed() || selectMuxer())) {
             #ifdef ESP32
                 ledcWrite(pwmChannel, val);
             #else
@@ -286,6 +291,7 @@ void HydroAnalogPin::analogWrite_raw(int amount)
                 #endif
                 ::analogWrite(pin, amount);
             #endif
+            if (isMuxed()) { activateMuxer(); }
         }
     #endif
 }
@@ -427,7 +433,7 @@ void HydroPinMuxer::selectChannel(uint8_t channelNumber)
         // While we could be a bit smarter about which muxers we disable, storing that
         // wouldn't necessarily be worth the gain. The assumption is all that muxers in
         // system occupy the same channel select bus, even if that isn't the case.
-        if (getController()) { getController()->deselectPinMuxers(); }
+        if (getController()) { getController()->deactivatePinMuxers(); }
 
         if (isValidPin(_channelPins[0])) {
             ::digitalWrite(_channelPins[0], (channelNumber >> 0) & 1 ? HIGH : LOW);
@@ -450,15 +456,17 @@ void HydroPinMuxer::selectChannel(uint8_t channelNumber)
         }
         _channelSelect = channelNumber;
     }
-
-    _signal.init();
-    _chipEnable.activate();
 }
 
-void HydroPinMuxer::deselect()
+void HydroPinMuxer::setIsActive(bool isActive)
 {
-    _chipEnable.deactivate();
-    _signal.deinit();
+    if (isActive) {
+        _signal.init();
+        _chipEnable.activate();
+    } else {
+        _chipEnable.deactivate();
+        _signal.deinit();
+    }
 }
 
 

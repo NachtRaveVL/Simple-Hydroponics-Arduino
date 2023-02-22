@@ -36,62 +36,62 @@ HydroData *_allocateDataFromBaseDecode(const HydroData &baseDecode)
 HydroData *_allocateDataForObjType(int8_t idType, int8_t classType)
 {
     switch (idType) {
-        case (int8_t)HydroIdentity::Actuator:
+        case (hid_t)HydroIdentity::Actuator:
             switch (classType) {
-                case (int8_t)HydroActuator::Relay:
+                case (hid_t)HydroActuator::Relay:
                     return new HydroActuatorData();
-                case (int8_t)HydroActuator::RelayPump:
+                case (hid_t)HydroActuator::RelayPump:
                     return new HydroPumpActuatorData();
-                case (int8_t)HydroActuator::Variable:
+                case (hid_t)HydroActuator::Variable:
                     return new HydroActuatorData();
-                case (int8_t)HydroActuator::VariablePump:
+                case (hid_t)HydroActuator::VariablePump:
                     return new HydroPumpActuatorData();
                 default: break;
             }
             break;
 
-        case (int8_t)HydroIdentity::Sensor:
+        case (hid_t)HydroIdentity::Sensor:
             switch (classType) {
-                case (int8_t)HydroSensor::Binary:
+                case (hid_t)HydroSensor::Binary:
                     return new HydroBinarySensorData();
-                case (int8_t)HydroSensor::Analog:
+                case (hid_t)HydroSensor::Analog:
                     return new HydroAnalogSensorData();
                 //case 2: // Digital (not instance-able)
-                case (int8_t)HydroSensor::DHT1W:
+                case (hid_t)HydroSensor::DHT1W:
                     return new HydroDHTTempHumiditySensorData();
-                case (int8_t)HydroSensor::DS1W:
+                case (hid_t)HydroSensor::DS1W:
                     return new HydroDSTemperatureSensorData();
                 default: break;
             }
             break;
 
-        case (int8_t)HydroIdentity::Crop:
+        case (hid_t)HydroIdentity::Crop:
             switch (classType) {
-                case (int8_t)HydroCrop::Timed:
+                case (hid_t)HydroCrop::Timed:
                     return new HydroTimedCropData();
-                case (int8_t)HydroCrop::Adaptive:
+                case (hid_t)HydroCrop::Adaptive:
                     return new HydroAdaptiveCropData();
                 default: break;
             }
             break;
 
-        case (int8_t)HydroIdentity::Reservoir:
+        case (hid_t)HydroIdentity::Reservoir:
             switch (classType) {
-                case (int8_t)HydroReservoir::Fluid:
+                case (hid_t)HydroReservoir::Fluid:
                     return new HydroFluidReservoirData();
-                case (int8_t)HydroReservoir::Feed:
+                case (hid_t)HydroReservoir::Feed:
                     return new HydroFeedReservoirData();
-                case (int8_t)HydroReservoir::Pipe:
+                case (hid_t)HydroReservoir::Pipe:
                     return new HydroInfiniteReservoirData();
                 default: break;
             }
             break;
 
-        case (int8_t)HydroIdentity::Rail:
+        case (hid_t)HydroIdentity::Rail:
             switch (classType) {
-                case (int8_t)HydroRail::Simple:
+                case (hid_t)HydroRail::Simple:
                     return new HydroSimpleRailData();
-                case (int8_t)HydroRail::Regulated:
+                case (hid_t)HydroRail::Regulated:
                     return new HydroRegulatedRailData();
                 default: break;
             }
@@ -259,8 +259,7 @@ void HydroCalibrationData::setFromTwoPoints(float point1MeasuredAt, float point1
 HydroCropsLibData::HydroCropsLibData()
     : HydroData('H','C','L','D', 1),
       cropType(Hydro_CropType_Undefined), cropName{0},
-      totalGrowWeeks(14), lifeCycleWeeks(0),
-      dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
+      totalGrowWeeks(14), dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
       phRange{6,6}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
       flags(Hydro_CropsDataFlag_None)
@@ -272,8 +271,7 @@ HydroCropsLibData::HydroCropsLibData()
 HydroCropsLibData::HydroCropsLibData(const Hydro_CropType cropTypeIn)
     : HydroData('H','C','L','D', 1),
       cropType(cropTypeIn), cropName{0},
-      totalGrowWeeks(14), lifeCycleWeeks(0),
-      dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
+      totalGrowWeeks(14), dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
       phRange{6,6}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
       flags(Hydro_CropsDataFlag_None)
@@ -302,9 +300,6 @@ void HydroCropsLibData::toJSONObject(JsonObject &objectOut) const
         objectOut[SFP(HStr_Key_TotalGrowWeeks)] = totalGrowWeeks;
     } else if (!totalGrowWeeks && mainPhaseTotalWeeks && mainPhaseTotalWeeks != 14) {
         objectOut[SFP(HStr_Key_TotalGrowWeeks)] = mainPhaseTotalWeeks;
-    }
-    if (lifeCycleWeeks) {
-        objectOut[SFP(HStr_Key_LifeCycleWeeks)] = lifeCycleWeeks;
     }
 
     if (!(dailyLightHours[0] == 20 && dailyLightHours[1] == 18 && dailyLightHours[2] == 12)) {
@@ -386,7 +381,6 @@ void HydroCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
     if (cropStr && cropStr[0]) { strncpy(cropName, cropStr, HYDRO_NAME_MAXSIZE); }
 
     totalGrowWeeks = objectIn[SFP(HStr_Key_TotalGrowWeeks)] | totalGrowWeeks;
-    lifeCycleWeeks = objectIn[SFP(HStr_Key_LifeCycleWeeks)] | lifeCycleWeeks;
 
     {   HYDRO_SOFT_ASSERT(Hydro_CropPhase_MainCount == 3, SFP(HStr_Err_ImportFailure));
         JsonVariantConst dailyLightHoursVar = objectIn[SFP(HStr_Key_DailyLightHours)];

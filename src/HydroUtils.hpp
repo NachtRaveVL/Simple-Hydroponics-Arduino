@@ -246,7 +246,7 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndSourceReser
     return retVal;
 }
 
-template<size_t N>
+template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
@@ -255,12 +255,11 @@ void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuator
         if (actuator->getActuatorType() == actuatorType) {
             activationsOut.push_back(HydroActuatorAttachment());
             activationsOut.back().setObject(actuator);
-            activationsOut.back().setupActivation(false);
         }
     }
 }
 
-template<size_t N>
+template<size_t N = HYDRO_DEFAULT_MAXSIZE>
 void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
@@ -271,7 +270,6 @@ void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &a
             activationsOut.back().setParent(parent);
             activationsOut.back().setObject(actuator);
             activationsOut.back().setRateMultiplier(rateMultiplier);
-            activationsOut.back().setupActivation(false);
         }
     }
 }

@@ -33,21 +33,6 @@ inline DateTime Twilight::hourToLocalTime(double hour, bool isUTC)
 }
 
 
-inline void Hydruino::returnPinLock(pintype_t pin)
-{
-    _pinLocks.erase(pin);
-}
-
-inline SharedPtr<HydroPinMuxer> Hydruino::getPinMuxer(pintype_t pin)
-{
-    return _pinMuxers[pin];
-}
-
-inline void Hydruino::setPinMuxer(pintype_t pin, SharedPtr<HydroPinMuxer> pinMuxer)
-{
-    _pinMuxers[pin] = pinMuxer;
-}
-
 #ifdef HYDRO_USE_WIFI
 
 inline WiFiClass *Hydruino::getWiFi(bool begin)

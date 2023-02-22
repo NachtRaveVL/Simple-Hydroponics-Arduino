@@ -12,13 +12,13 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case (int8_t)HydroActuator::Relay:
+            case (hid_t)HydroActuator::Relay:
                 return new HydroRelayActuator((const HydroActuatorData *)dataIn);
-            case (int8_t)HydroActuator::RelayPump:
+            case (hid_t)HydroActuator::RelayPump:
                 return new HydroRelayPumpActuator((const HydroPumpActuatorData *)dataIn);
-            case (int8_t)HydroActuator::Variable:
+            case (hid_t)HydroActuator::Variable:
                 return new HydroVariableActuator((const HydroActuatorData *)dataIn);
-            case (int8_t)HydroActuator::VariablePump:
+            case (hid_t)HydroActuator::VariablePump:
                 //return new HydroVariablePumpActuator((const HydroPumpActuatorData *)dataIn);
             default: break;
         }
@@ -239,13 +239,13 @@ void HydroActuator::saveToData(HydroData *dataOut)
     HydroObject::saveToData(dataOut);
 
     dataOut->id.object.classType = (int8_t)classType;
-    if (_contPowerUsage.frame) {
+    if (_contPowerUsage.isSet()) {
         _contPowerUsage.saveToData(&(((HydroActuatorData *)dataOut)->contPowerUsage));
     }
-    if (_parentReservoir.getId()) {
+    if (_parentReservoir.isSet()) {
         strncpy(((HydroActuatorData *)dataOut)->reservoirName, _parentReservoir.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_parentRail.getId()) {
+    if (_parentRail.isSet()) {
         strncpy(((HydroActuatorData *)dataOut)->railName, _parentRail.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
     ((HydroActuatorData *)dataOut)->enableMode = _enableMode;
@@ -513,13 +513,13 @@ void HydroRelayPumpActuator::saveToData(HydroData *dataOut)
     HydroRelayActuator::saveToData(dataOut);
 
     ((HydroPumpActuatorData *)dataOut)->flowRateUnits = _flowRateUnits;
-    if (_contFlowRate.frame) {
+    if (_contFlowRate.isSet()) {
         _contFlowRate.saveToData(&(((HydroPumpActuatorData *)dataOut)->contFlowRate));
     }
-    if (_destReservoir.getId()) {
+    if (_destReservoir.isSet()) {
         strncpy(((HydroPumpActuatorData *)dataOut)->destReservoir, _destReservoir.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_flowRate.getId()) {
+    if (_flowRate.isSet()) {
         strncpy(((HydroPumpActuatorData *)dataOut)->flowRateSensor, _flowRate.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
 }

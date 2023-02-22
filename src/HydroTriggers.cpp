@@ -13,9 +13,9 @@ HydroTrigger *newTriggerObjectFromSubData(const HydroTriggerSubData *dataIn)
 
     if (dataIn) {
         switch (dataIn->type) {
-            case (int8_t)HydroTrigger::MeasureValue:
+            case (hid_t)HydroTrigger::MeasureValue:
                 return new HydroMeasurementValueTrigger(dataIn);
-            case (int8_t)HydroTrigger::MeasureRange:
+            case (hid_t)HydroTrigger::MeasureRange:
                 return new HydroMeasurementRangeTrigger(dataIn);
             default: break;
         }
@@ -50,7 +50,7 @@ HydroTrigger::HydroTrigger(const HydroTriggerSubData *dataIn)
 void HydroTrigger::saveToData(HydroTriggerSubData *dataOut) const
 {
     ((HydroTriggerSubData *)dataOut)->type = (int8_t)type;
-    if (_sensor.getId()) {
+    if (_sensor.isSet()) {
         strncpy(((HydroTriggerSubData *)dataOut)->sensorName, _sensor.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
     ((HydroTriggerSubData *)dataOut)->measurementRow = getMeasurementRow();
@@ -251,11 +251,11 @@ void HydroTriggerSubData::toJSONObject(JsonObject &objectOut) const
     if (sensorName[0]) { objectOut[SFP(HStr_Key_SensorName)] = charsToString(sensorName, HYDRO_NAME_MAXSIZE); }
     if (measurementRow > 0) { objectOut[SFP(HStr_Key_MeasurementRow)] = measurementRow; }
     switch (type) {
-        case (int8_t)HydroTrigger::MeasureValue:
+        case (hid_t)HydroTrigger::MeasureValue:
             objectOut[SFP(HStr_Key_Tolerance)] = dataAs.measureValue.tolerance;
             objectOut[SFP(HStr_Key_TriggerBelow)] = dataAs.measureValue.triggerBelow;
             break;
-        case (int8_t)HydroTrigger::MeasureRange:
+        case (hid_t)HydroTrigger::MeasureRange:
             objectOut[SFP(HStr_Key_ToleranceLow)] = dataAs.measureRange.toleranceLow;
             objectOut[SFP(HStr_Key_ToleranceHigh)] = dataAs.measureRange.toleranceHigh;
             objectOut[SFP(HStr_Key_TriggerOutside)] = dataAs.measureRange.triggerOutside;
@@ -274,11 +274,11 @@ void HydroTriggerSubData::fromJSONObject(JsonObjectConst &objectIn)
     if (sensorNameStr && sensorNameStr[0]) { strncpy(sensorName, sensorNameStr, HYDRO_NAME_MAXSIZE); }
     measurementRow = objectIn[SFP(HStr_Key_MeasurementRow)] | measurementRow;
     switch (type) {
-        case (int8_t)HydroTrigger::MeasureValue:
+        case (hid_t)HydroTrigger::MeasureValue:
             dataAs.measureValue.tolerance = objectIn[SFP(HStr_Key_Tolerance)] | dataAs.measureValue.tolerance;
             dataAs.measureValue.triggerBelow = objectIn[SFP(HStr_Key_TriggerBelow)] | dataAs.measureValue.triggerBelow;
             break;
-        case (int8_t)HydroTrigger::MeasureRange:
+        case (hid_t)HydroTrigger::MeasureRange:
             dataAs.measureRange.toleranceLow = objectIn[SFP(HStr_Key_ToleranceLow)] | dataAs.measureRange.toleranceLow;
             dataAs.measureRange.toleranceHigh = objectIn[SFP(HStr_Key_ToleranceHigh)] | dataAs.measureRange.toleranceHigh;
             dataAs.measureRange.triggerOutside = objectIn[SFP(HStr_Key_TriggerOutside)] | dataAs.measureRange.triggerOutside;
