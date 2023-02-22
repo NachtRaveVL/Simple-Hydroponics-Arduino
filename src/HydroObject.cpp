@@ -12,15 +12,15 @@ HydroObject *newObjectFromData(const HydroData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.idType) {
-            case (int8_t)HydroIdentity::Actuator:
+            case (hid_t)HydroIdentity::Actuator:
                 return newActuatorObjectFromData((HydroActuatorData *)dataIn);
-            case (int8_t)HydroIdentity::Sensor:
+            case (hid_t)HydroIdentity::Sensor:
                 return newSensorObjectFromData((HydroSensorData *)dataIn);
-            case (int8_t)HydroIdentity::Crop:
+            case (hid_t)HydroIdentity::Crop:
                 return newCropObjectFromData((HydroCropData *)dataIn);
-            case (int8_t)HydroIdentity::Reservoir:
+            case (hid_t)HydroIdentity::Reservoir:
                 return newReservoirObjectFromData((HydroReservoirData *)dataIn);
-            case (int8_t)HydroIdentity::Rail:
+            case (hid_t)HydroIdentity::Rail:
                 return newRailObjectFromData((HydroRailData *)dataIn);
             default: // Unable
                 return nullptr;

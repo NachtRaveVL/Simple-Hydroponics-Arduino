@@ -163,7 +163,7 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_RANGE_CO2_HALF            100.0f              // How far to go, in either direction, to form a range when CO2 is expressed as a single number, in PPM (note: this also controls auto-balancer ranges)
 
 #define HYDRO_RAILS_LINKS_BASESIZE      4                   // Base array size for rail's linkage list
-#define HYDRO_RAILS_FRACTION_SATURATED  0.75f               // What fraction of maximum power is allowed to be used in canActivate() checks (aka maximum saturation point), used in addition to regulated rail's limitTrigger
+#define HYDRO_RAILS_FRACTION_SATURATED  0.8f                // What fraction of maximum power is allowed to be used in canActivate() checks (aka maximum saturation point), used in addition to regulated rail's limitTrigger
 
 #define HYDRO_SCH_FEED_FRACTION         0.8f                // What percentage of crops need to have their feeding signal turned on/off for scheduler to act on such as a whole
 #define HYDRO_SCH_BALANCE_MINTIME       30                  // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed

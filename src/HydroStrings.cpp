@@ -298,9 +298,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Log_PreFeedTopOff[] PROGMEM = {" pre-feed top-off"};
             return flashStr_Log_PreFeedTopOff;
         } break;
-        case HStr_Log_PreLightSpraying: {
-            static const char flashStr_Log_PreLightSpraying[] PROGMEM = {" dawntime spraying"};
-            return flashStr_Log_PreLightSpraying;
+        case HStr_Log_PreDawnSpraying: {
+            static const char flashStr_Log_PreDawnSpraying[] PROGMEM = {" pre-dawn spraying"};
+            return flashStr_Log_PreDawnSpraying;
         } break;
         case HStr_Log_RTCBatteryFailure: {
             static const char flashStr_Log_RTCBatteryFailure[] PROGMEM = {"RTC battery failure, time needs reset."};
@@ -601,10 +601,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_Latitude[] PROGMEM = {"latitude"};
             return flashStr_Key_Latitude;
         } break;
-        case HStr_Key_LifeCycleWeeks: {
-            static const char flashStr_Key_LifeCycleWeeks[] PROGMEM = {"lifeCycleWeeks"};
-            return flashStr_Key_LifeCycleWeeks;
-        } break;
         case HStr_Key_LimitTrigger: {
             static const char flashStr_Key_LimitTrigger[] PROGMEM = {"limitTrigger"};
             return flashStr_Key_LimitTrigger;
@@ -729,9 +725,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_PreFeedAeratorMins[] PROGMEM = {"preFeedAeratorMins"};
             return flashStr_Key_PreFeedAeratorMins;
         } break;
-        case HStr_Key_PreLightSprayMins: {
-            static const char flashStr_Key_PreLightSprayMins[] PROGMEM = {"preLightSprayMins"};
-            return flashStr_Key_PreLightSprayMins;
+        case HStr_Key_PreDawnSprayMins: {
+            static const char flashStr_Key_PreDawnSprayMins[] PROGMEM = {"preDawnSprayMins"};
+            return flashStr_Key_PreDawnSprayMins;
         } break;
         case HStr_Key_Pruning: {
             static const char flashStr_Key_Pruning[] PROGMEM = {"pruning"};

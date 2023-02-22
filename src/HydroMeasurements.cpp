@@ -12,13 +12,13 @@ HydroMeasurement *newMeasurementObjectFromSubData(const HydroMeasurementData *da
 
     if (dataIn) {
         switch (dataIn->type) {
-            case (int8_t)HydroMeasurement::Binary:
+            case (hid_t)HydroMeasurement::Binary:
                 return new HydroBinaryMeasurement(dataIn);
-            case (int8_t)HydroMeasurement::Single:
+            case (hid_t)HydroMeasurement::Single:
                 return new HydroSingleMeasurement(dataIn);
-            case (int8_t)HydroMeasurement::Double:
+            case (hid_t)HydroMeasurement::Double:
                 return new HydroDoubleMeasurement(dataIn);
-            case (int8_t)HydroMeasurement::Triple:
+            case (hid_t)HydroMeasurement::Triple:
                 return new HydroTripleMeasurement(dataIn);
             default: break;
         }

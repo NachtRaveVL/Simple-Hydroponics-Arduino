@@ -51,6 +51,7 @@ struct HydroMeasurement {
     inline void updateTimestamp() { timestamp = unixNow(); }
     void updateFrame(hframe_t minFrame = 0);
     inline void setMinFrame(hframe_t minFrame = 0) { frame = max(minFrame, frame); }
+    inline bool isSet() const { return frame != hframe_none; }
 };
 
 // Single Value Sensor Data Measurement

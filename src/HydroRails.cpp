@@ -12,9 +12,9 @@ HydroRail *newRailObjectFromData(const HydroRailData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case (int8_t)HydroRail::Simple:
+            case (hid_t)HydroRail::Simple:
                 return new HydroSimpleRail((const HydroSimpleRailData *)dataIn);
-            case (int8_t)HydroRail::Regulated:
+            case (hid_t)HydroRail::Regulated:
                 return new HydroRegulatedRail((const HydroRegulatedRailData *)dataIn);
             default: break;
         }
@@ -258,10 +258,10 @@ void HydroRegulatedRail::saveToData(HydroData *dataOut)
     HydroRail::saveToData(dataOut);
 
     ((HydroRegulatedRailData *)dataOut)->maxPower = roundForExport(_maxPower, 1);
-    if (_powerUsage.getId()) {
+    if (_powerUsage.isSet()) {
         strncpy(((HydroRegulatedRailData *)dataOut)->powerSensor, _powerUsage.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_limitTrigger) {
+    if (_limitTrigger.isSet()) {
         _limitTrigger->saveToData(&(((HydroRegulatedRailData *)dataOut)->limitTrigger));
     }
 }
@@ -361,7 +361,7 @@ void HydroRegulatedRailData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[SFP(HStr_Key_MaxPower)] = maxPower;
     if (powerSensor[0]) { objectOut[SFP(HStr_Key_PowerSensor)] = charsToString(powerSensor, HYDRO_NAME_MAXSIZE); }
-    if (isValidType(limitTrigger.type)) {
+    if (limitTrigger.isSet()) {
         JsonObject limitTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_LimitTrigger));
         limitTrigger.toJSONObject(limitTriggerObj);
     }

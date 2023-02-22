@@ -155,10 +155,10 @@ public:
     inline hposi_t getChannelNumber() const { return _id.posIndex; }
 
     inline DateTime getLastWaterChangeTime() const { return localTime(_lastChangeTime); }
-    inline void notifyWaterChanged() { _lastChangeTime = unixNow(); }
+    inline void notifyWaterChanged() { _lastChangeTime = unixTime(localDayStart()); }
 
     inline DateTime getLastPruningTime() const { return localTime(_lastPruningTime); }
-    inline void notifyPruningCompleted() { _lastPruningTime = unixNow(); }
+    inline void notifyPruningCompleted() { _lastPruningTime = unixTime(localDayStart()); }
 
     inline DateTime getLastFeedingTime() const { return localTime(_lastFeedingTime); }
     inline int8_t getFeedingsToday() const { return _numFeedingsToday; }

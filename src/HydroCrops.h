@@ -72,7 +72,7 @@ protected:
     HydroAttachment _feedReservoir;                         // Feed reservoir attachment
     const HydroCropsLibData *_cropsData;                    // Crops library data (checked out if !nullptr)
     hposi_t _growWeek;                                      // Current grow week
-    hposi_t _totalGrowWeeks;                                // Total grow weeks
+    hposi_t _totalGrowWeeks;                                // Cached copy of total grow weeks
     Hydro_CropPhase _cropPhase;                             // Current crop phase
     Hydro_TriggerState _feedingState;                       // Feeding state (last handled)
     float _feedingWeight;                                   // Feeding weight (if used, default: 1)

@@ -12,11 +12,11 @@ HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 
     if (dataIn && dataIn->isObjectData()) {
         switch (dataIn->id.object.classType) {
-            case (int8_t)HydroReservoir::Fluid:
+            case (hid_t)HydroReservoir::Fluid:
                 return new HydroFluidReservoir((const HydroFluidReservoirData *)dataIn);
-            case (int8_t)HydroReservoir::Feed:
+            case (hid_t)HydroReservoir::Feed:
                 return new HydroFeedReservoir((const HydroFeedReservoirData *)dataIn);
-            case (int8_t)HydroReservoir::Pipe:
+            case (hid_t)HydroReservoir::Pipe:
                 return new HydroInfiniteReservoir((const HydroInfiniteReservoirData *)dataIn);
             default: break;
         }
@@ -219,13 +219,13 @@ void HydroFluidReservoir::saveToData(HydroData *dataOut)
     HydroReservoir::saveToData(dataOut);
 
     ((HydroFluidReservoirData *)dataOut)->maxVolume = roundForExport(_maxVolume, 1);
-    if (_waterVolume.getId()) {
+    if (_waterVolume.isSet()) {
         strncpy(((HydroFluidReservoirData *)dataOut)->volumeSensor, _waterVolume.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_filledTrigger) {
+    if (_filledTrigger.isSet()) {
         _filledTrigger->saveToData(&(((HydroFluidReservoirData *)dataOut)->filledTrigger));
     }
-    if (_emptyTrigger) {
+    if (_emptyTrigger.isSet()) {
         _emptyTrigger->saveToData(&(((HydroFluidReservoirData *)dataOut)->emptyTrigger));
     }
 }
@@ -373,19 +373,19 @@ void HydroFeedReservoir::saveToData(HydroData *dataOut)
     ((HydroFeedReservoirData *)dataOut)->numFeedingsToday = _numFeedingsToday;
     ((HydroFeedReservoirData *)dataOut)->concentrateUnits = _concUnits;
     ((HydroFeedReservoirData *)dataOut)->temperatureUnits = _tempUnits;
-    if (_waterPH.getId()) {
+    if (_waterPH.isSet()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->waterPHSensor, _waterPH.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_waterTDS.getId()) {
+    if (_waterTDS.isSet()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->waterTDSSensor, _waterTDS.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_waterTemp.getId()) {
+    if (_waterTemp.isSet()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->waterTempSensor, _waterTemp.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_airTemp.getId()) {
+    if (_airTemp.isSet()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->airTempSensor, _airTemp.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
-    if (_airCO2.getId()) {
+    if (_airCO2.isSet()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->airCO2Sensor, _airCO2.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
 }
@@ -460,11 +460,11 @@ void HydroFluidReservoirData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[SFP(HStr_Key_MaxVolume)] = maxVolume;
     if (volumeSensor[0]) { objectOut[SFP(HStr_Key_VolumeSensor)] = charsToString(volumeSensor, HYDRO_NAME_MAXSIZE); }
-    if (isValidType(filledTrigger.type)) {
+    if (filledTrigger.isSet()) {
         JsonObject filledTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_FilledTrigger));
         filledTrigger.toJSONObject(filledTriggerObj);
     }
-    if (isValidType(emptyTrigger.type)) {
+    if (emptyTrigger.isSet()) {
         JsonObject emptyTriggerObj = objectOut.createNestedObject(SFP(HStr_Key_EmptyTrigger));
         emptyTrigger.toJSONObject(emptyTriggerObj);
     }

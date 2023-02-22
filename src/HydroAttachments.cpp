@@ -42,8 +42,7 @@ void HydroDLinkObject::unresolve()
 
 SharedPtr<HydroObjInterface> HydroDLinkObject::_getObject()
 {
-    if (_obj) { return _obj; }
-    if (_key == hkey_none) { return nullptr; }
+    if (_obj || !isSet()) { return _obj; }
     if (Hydruino::_activeInstance) {
         _obj = static_pointer_cast<HydroObjInterface>(Hydruino::_activeInstance->_objects[_key]);
     }

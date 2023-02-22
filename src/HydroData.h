@@ -84,6 +84,8 @@ struct HydroSubData {
     HydroSubData(hid_t dataType);
     void toJSONObject(JsonObject &objectOut) const;
     void fromJSONObject(JsonObjectConst &objectIn);
+
+    inline bool isSet() const { return isValidType(type); }
 };
 
 
