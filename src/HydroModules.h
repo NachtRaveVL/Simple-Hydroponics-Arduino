@@ -85,6 +85,11 @@ protected:
 };
 
 
+// Pin Handlers Storage
+// Stores various pin-related system data on a shared pin # basis. Covers:
+// - Pin locks: used for async shared resource management
+// - Pin muxers: used for i/o pin multiplexing across a shared address bus
+// - Pin OneWire: used for digital sensor pin's OneWire owner
 class HydroPinHandlers {
 public:
     // Attempts to get a lock on pin #, to prevent multi-device comm overlap (e.g. for OneWire comms).
