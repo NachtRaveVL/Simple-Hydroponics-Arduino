@@ -654,46 +654,42 @@ void Hydruino::commonPreInit()
             digitalWrite(_piezoBuzzerPin, 0);
         #endif
     }
-    if (_eepromSetup.cfgType == DeviceSetup::I2CSetup) {
+    if (_eepromType != Hydro_EEPROMType_None && _eepromSetup.cfgType == DeviceSetup::I2CSetup) {
         if (began.find((uintptr_t)_eepromSetup.cfgAs.i2c.wire) == began.end() || _eepromSetup.cfgAs.i2c.speed < began[(uintptr_t)_eepromSetup.cfgAs.i2c.wire]) {
             _eepromSetup.cfgAs.i2c.wire->begin();
             _eepromSetup.cfgAs.i2c.wire->setClock((began[(uintptr_t)_eepromSetup.cfgAs.i2c.wire] = _eepromSetup.cfgAs.i2c.speed));
         }
     }
-    if (_rtcSetup.cfgType == DeviceSetup::I2CSetup) {
+    if (_rtcType != Hydro_RTCType_None && _rtcSetup.cfgType == DeviceSetup::I2CSetup) {
         if (began.find((uintptr_t)_rtcSetup.cfgAs.i2c.wire) == began.end() || _rtcSetup.cfgAs.i2c.speed < began[(uintptr_t)_rtcSetup.cfgAs.i2c.wire]) {
             _rtcSetup.cfgAs.i2c.wire->begin();
             _rtcSetup.cfgAs.i2c.wire->setClock((began[(uintptr_t)_rtcSetup.cfgAs.i2c.wire] = _rtcSetup.cfgAs.i2c.speed));
         }
     }
     #ifdef HYDRO_USE_GUI
-        if (_lcdSetup.cfgType == DeviceSetup::I2CSetup) {
+        if (getDisplayOutputMode() != Hydro_DisplayOutputMode_Disabled && _lcdSetup.cfgType == DeviceSetup::I2CSetup) {
             if (began.find((uintptr_t)_lcdSetup.cfgAs.i2c.wire) == began.end() || _lcdSetup.cfgAs.i2c.speed < began[(uintptr_t)_lcdSetup.cfgAs.i2c.wire]) {
                 _lcdSetup.cfgAs.i2c.wire->begin();
                 _lcdSetup.cfgAs.i2c.wire->setClock((began[(uintptr_t)_lcdSetup.cfgAs.i2c.wire] = _lcdSetup.cfgAs.i2c.speed));
             }
         }
     #endif
-    if (_sdSetup.cfgType == DeviceSetup::SPISetup) {
+    if (_sdSetup.cfgType == DeviceSetup::SPISetup && isValidPin(_sdSetup.cfgAs.spi.cs)) {
         if (began.find((uintptr_t)_rtcSetup.cfgAs.spi.spi) == began.end()) {
             _sdSetup.cfgAs.spi.spi->begin();
             began[(uintptr_t)_rtcSetup.cfgAs.spi.spi] = 0;
         }
-        if (isValidPin(_sdSetup.cfgAs.spi.cs)) {
-            pinMode(_sdSetup.cfgAs.spi.cs, OUTPUT);
-            digitalWrite(_sdSetup.cfgAs.spi.cs, HIGH);
-        }
+        pinMode(_sdSetup.cfgAs.spi.cs, OUTPUT);
+        digitalWrite(_sdSetup.cfgAs.spi.cs, HIGH);
     }
     #ifdef HYDRO_USE_NET
-        if (_netSetup.cfgType == DeviceSetup::SPISetup) {
+        if (_netSetup.cfgType == DeviceSetup::SPISetup && isValidPin(_netSetup.cfgAs.spi.cs)) {
             if (began.find((uintptr_t)_netSetup.cfgAs.spi.spi) == began.end()) {
                 _netSetup.cfgAs.spi.spi->begin();
                 began[(uintptr_t)_netSetup.cfgAs.spi.spi] = 0;
             }
-            if (isValidPin(_netSetup.cfgAs.spi.cs)) {
-                pinMode(_netSetup.cfgAs.spi.cs, OUTPUT);
-                digitalWrite(_netSetup.cfgAs.spi.cs, HIGH);
-            }
+            pinMode(_netSetup.cfgAs.spi.cs, OUTPUT);
+            digitalWrite(_netSetup.cfgAs.spi.cs, HIGH);
             #ifdef HYDRO_USE_ETHERNET
                 Ethernet.init(_netSetup.cfgAs.spi.cs);
             #endif

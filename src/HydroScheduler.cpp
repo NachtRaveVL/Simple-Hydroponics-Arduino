@@ -881,8 +881,7 @@ void HydroFeeding::update()
         (feedRes->getAirTemperatureSensor() ||
          feedRes->getAirCO2Sensor())) {
         getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_AirReport));
-        logFeeding(HydroFeedingLogType_AirSetpoints);
-        logFeeding(HydroFeedingLogType_AirMeasures);
+        logFeeding(HydroFeedingLogType_AirReport);
         lastAirReport = unixNow();
     }
 
@@ -926,8 +925,7 @@ void HydroFeeding::update()
                         getLogger()->logMessage(SFP(HStr_Log_Field_MixTime_Duration), timeSpanToString(TimeSpan(balancer->getMixTime())));
                     }
                 }
-                logFeeding(HydroFeedingLogType_WaterSetpoints);
-                logFeeding(HydroFeedingLogType_WaterMeasures);
+                logFeeding(HydroFeedingLogType_WaterReport);
             }
         } break;
 
@@ -1005,24 +1003,10 @@ void HydroFeeding::update()
     #endif
 }
 
-void HydroFeeding::logFeeding(HydroFeedingLogType logType)
+void HydroFeeding::logFeeding(HydroFeedingLogType logType, bool withSetpoints)
 {
     switch (logType) {
-        case HydroFeedingLogType_WaterSetpoints:
-            {   auto ph = HydroSingleMeasurement(phSetpoint, Hydro_UnitsType_Alkalinity_pH_14);
-                getLogger()->logMessage(SFP(HStr_Log_Field_pH_Setpoint), measurementToString(ph));
-            }
-            {   auto tds = HydroSingleMeasurement(tdsSetpoint, Hydro_UnitsType_Concentration_TDS);
-                convertUnits(&tds, feedRes->getConcentrateUnits());
-                getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
-            }
-            {   auto temp = HydroSingleMeasurement(waterTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
-                convertUnits(&temp, feedRes->getTemperatureUnits());
-                getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
-            }
-            break;
-
-        case HydroFeedingLogType_WaterMeasures:
+        case HydroFeedingLogType_WaterReport:
             #ifdef HYDRO_USE_MULTITASKING
                 // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
                 if ((feedRes->getWaterPHSensor() && !feedRes->getWaterPHSensorAttachment().getMeasurementFrame()) ||
@@ -1031,7 +1015,20 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
                     yield();
                 }
             #endif
-             if (feedRes->getWaterPHSensor()) {
+            if (withSetpoints) {
+                {   auto ph = HydroSingleMeasurement(phSetpoint, Hydro_UnitsType_Alkalinity_pH_14);
+                    getLogger()->logMessage(SFP(HStr_Log_Field_pH_Setpoint), measurementToString(ph));
+                }
+                {   auto tds = HydroSingleMeasurement(tdsSetpoint, Hydro_UnitsType_Concentration_TDS);
+                    convertUnits(&tds, feedRes->getConcentrateUnits());
+                    getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
+                }
+                {   auto temp = HydroSingleMeasurement(waterTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
+                    convertUnits(&temp, feedRes->getTemperatureUnits());
+                    getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
+                }
+            }
+            if (feedRes->getWaterPHSensor()) {
                 auto ph = feedRes->getWaterPHSensorAttachment().getMeasurement(true);
                 getLogger()->logMessage(SFP(HStr_Log_Field_pH_Measured), measurementToString(ph));
             }
@@ -1047,17 +1044,7 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
             }
             break;
 
-        case HydroFeedingLogType_AirSetpoints:
-            {   auto temp = HydroSingleMeasurement(airTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
-                convertUnits(&temp, feedRes->getTemperatureUnits());
-                getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
-            }
-            {   auto co2 = HydroSingleMeasurement(co2Setpoint, Hydro_UnitsType_Concentration_PPM);
-                getLogger()->logMessage(SFP(HStr_Log_Field_CO2_Setpoint), measurementToString(co2));
-            }
-            break;
-
-        case HydroFeedingLogType_AirMeasures:
+        case HydroFeedingLogType_AirReport:
             #ifdef HYDRO_USE_MULTITASKING
                 // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
                 if ((feedRes->getAirTemperatureSensor() && !feedRes->getAirTemperatureSensorAttachment().getMeasurementFrame()) ||
@@ -1065,6 +1052,15 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType)
                     yield();
                 }
             #endif
+            if (withSetpoints) {
+                {   auto temp = HydroSingleMeasurement(airTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
+                    convertUnits(&temp, feedRes->getTemperatureUnits());
+                    getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
+                }
+                {   auto co2 = HydroSingleMeasurement(co2Setpoint, Hydro_UnitsType_Concentration_PPM);
+                    getLogger()->logMessage(SFP(HStr_Log_Field_CO2_Setpoint), measurementToString(co2));
+                }
+            }
             if (feedRes->getAirTemperatureSensor()) {
                 auto temp = feedRes->getAirTemperatureSensorAttachment().getMeasurement(true);
                 convertUnits(&temp, feedRes->getTemperatureUnits());
@@ -1082,7 +1078,7 @@ void HydroFeeding::broadcastFeeding(HydroFeedingBroadcastType broadcastType)
 {
     getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_FeedingSequence),
                             SFP(broadcastType == HydroFeedingBroadcastType_Began ? HStr_Log_HasBegan : HStr_Log_HasEnded));
-    logFeeding(HydroFeedingLogType_WaterMeasures);
+    logFeeding(HydroFeedingLogType_WaterReport, false);
 
     broadcastType == HydroFeedingBroadcastType_Began ? feedRes->notifyFeedingBegan() : feedRes->notifyFeedingEnded();
 
