@@ -42,9 +42,9 @@ inline String getStringsFilename()
 
 String stringFromPGM(Hydro_String strNum)
 {    
-    static Hydro_String _lookupStrNum = HStr_Count; // Simple LRU cache reduces a lot of lookup access
+    static Hydro_String _lookupStrNum = (Hydro_String)-1; // Simple LRU cache reduces a lot of lookup access
     static String _lookupCachedRes;
-    if (strNum == _lookupStrNum && _lookupCachedRes.length()) { return _lookupCachedRes; }
+    if (strNum == _lookupStrNum) { return _lookupCachedRes; }
     else { _lookupStrNum = strNum; } // _lookupCachedRes set below
 
     if (_strDataAddress != (uint16_t)-1) {
@@ -72,10 +72,6 @@ String stringFromPGM(Hydro_String strNum)
             }
         }
     }
-
-    #ifndef HYDRO_DISABLE_BUILTIN_DATA
-        return (_lookupCachedRes = stringFromPGMAddr(pgmAddrForStr(strNum)));
-    #endif
 
     if (_strDataFilePrefix.length()) {
         #if HYDRO_SYS_LEAVE_FILES_OPEN
@@ -124,7 +120,11 @@ String stringFromPGM(Hydro_String strNum)
         }
     }
 
-    return (_lookupCachedRes = String());
+    #ifndef HYDRO_DISABLE_BUILTIN_DATA
+        return (_lookupCachedRes = stringFromPGMAddr(pgmAddrForStr(strNum)));
+    #else
+        return (_lookupCachedRes = String());
+    #endif
 }
 
 String stringFromPGMAddr(const char *flashStr) {

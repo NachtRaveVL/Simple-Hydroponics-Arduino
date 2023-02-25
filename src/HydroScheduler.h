@@ -84,10 +84,8 @@ protected:
 
 // Scheduler Feeding Process Log Type
 enum HydroFeedingLogType : signed char {
-    HydroFeedingLogType_WaterSetpoints,                     // Water setpoints
-    HydroFeedingLogType_WaterMeasures,                      // Water measurements
-    HydroFeedingLogType_AirSetpoints,                       // Air setpoints
-    HydroFeedingLogType_AirMeasures                         // Air measurements
+    HydroFeedingLogType_WaterReport,                        // Water report
+    HydroFeedingLogType_AirReport                           // Air report
 };
 
 // Scheduler Feeding Process Broadcast Type
@@ -97,7 +95,7 @@ enum HydroFeedingBroadcastType : signed char {
 };
 
 // Scheduler Process Base
-// Processes are created and managed by Scheduler to manage the feeding and lighting
+// Processes are created and managed by Scheduler to manage the daily control
 // sequences necessary for crops to grow.
 struct HydroProcess {
     SharedPtr<HydroFeedReservoir> feedRes;                  // Feed reservoir
@@ -133,7 +131,7 @@ struct HydroFeeding : public HydroProcess {
 
 private:
     void reset();
-    void logFeeding(HydroFeedingLogType logType);
+    void logFeeding(HydroFeedingLogType logType, bool withSetpoints = true);
     void broadcastFeeding(HydroFeedingBroadcastType broadcastType);
 };
 

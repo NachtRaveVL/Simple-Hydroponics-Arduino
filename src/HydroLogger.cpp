@@ -115,21 +115,21 @@ void HydroLogger::logSystemUptime()
 
 void HydroLogger::logMessage(const String &msg, const String &suffix1, const String &suffix2)
 {
-    if (hasLoggerData() && loggerData()->logLevel != Hydro_LogLevel_None && loggerData()->logLevel <= Hydro_LogLevel_All) {
+    if (!hasLoggerData() || (loggerData()->logLevel != Hydro_LogLevel_None && loggerData()->logLevel <= Hydro_LogLevel_All)) {
         log(HydroLogEvent(Hydro_LogLevel_Info, SFP(HStr_Log_Prefix_Info), msg, suffix1, suffix2));
     }
 }
 
 void HydroLogger::logWarning(const String &warn, const String &suffix1, const String &suffix2)
 {
-    if (hasLoggerData() && loggerData()->logLevel != Hydro_LogLevel_None && loggerData()->logLevel <= Hydro_LogLevel_Warnings) {
+    if (!hasLoggerData() || (loggerData()->logLevel != Hydro_LogLevel_None && loggerData()->logLevel <= Hydro_LogLevel_Warnings)) {
         log(HydroLogEvent(Hydro_LogLevel_Warnings, SFP(HStr_Log_Prefix_Warning), warn, suffix1, suffix2));
     }
 }
 
 void HydroLogger::logError(const String &err, const String &suffix1, const String &suffix2)
 {
-    if (hasLoggerData() && loggerData()->logLevel != Hydro_LogLevel_None && loggerData()->logLevel <= Hydro_LogLevel_Errors) {
+    if (!hasLoggerData() || (loggerData()->logLevel != Hydro_LogLevel_None && loggerData()->logLevel <= Hydro_LogLevel_Errors)) {
         log(HydroLogEvent(Hydro_LogLevel_Errors, SFP(HStr_Log_Prefix_Error), err, suffix1, suffix2));
     }
 }
