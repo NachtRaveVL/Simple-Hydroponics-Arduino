@@ -94,9 +94,22 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
 {
     if (!cond) {
         String assertMsg = makeAssertMsg(file, func, line);
-        getLogger()->logWarning(SFP(HStr_Err_AssertionFailure), SFP(HStr_ColonSpace), assertMsg);
-        getLogger()->logWarning(SFP(HStr_DoubleSpace), msg);
-        getLogger()->flush();
+        if (getLogger()) {
+            getLogger()->logWarning(SFP(HStr_Err_AssertionFailure), SFP(HStr_ColonSpace), assertMsg);
+            getLogger()->logWarning(SFP(HStr_DoubleSpace), msg);
+            getLogger()->flush();
+        }
+        #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+            else if (Serial) {
+                Serial.print(localNow().timestamp(DateTime::TIMESTAMP_FULL));
+                Serial.print(' ');
+                Serial.print(SFP(HStr_Log_Prefix_Warning));
+                Serial.print(SFP(HStr_Err_AssertionFailure));
+                Serial.print(SFP(HStr_ColonSpace));
+                Serial.println(assertMsg);
+                Serial.flush(); yield();
+            }
+        #endif
     }
 }
 
@@ -104,9 +117,23 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
 {
     if (!cond) {
         String assertMsg = makeAssertMsg(file, func, line);
-        getLogger()->logError(SFP(HStr_Err_AssertionFailure), String(F(" HARD")) + SFP(HStr_ColonSpace), assertMsg);
-        getLogger()->logError(SFP(HStr_DoubleSpace), msg);
-        getLogger()->flush();
+        String colonSpace = String(F(" HARD")) + SFP(HStr_ColonSpace);
+        if (getLogger()) {
+            getLogger()->logError(SFP(HStr_Err_AssertionFailure), colonSpace, assertMsg);
+            getLogger()->logError(SFP(HStr_DoubleSpace), msg);
+            getLogger()->flush();
+        }
+        #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+            else if (Serial) {
+                Serial.print(localNow().timestamp(DateTime::TIMESTAMP_FULL));
+                Serial.print(' ');
+                Serial.print(SFP(HStr_Log_Prefix_Error));
+                Serial.print(SFP(HStr_Err_AssertionFailure));
+                Serial.print(colonSpace);
+                Serial.println(assertMsg);
+                Serial.flush(); yield();
+            }
+        #endif
 
         if (getController()) { getController()->suspend(); }
         yield(); delay(10);
