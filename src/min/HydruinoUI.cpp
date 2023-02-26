@@ -6,8 +6,10 @@
 #include "Hydruino.h"
 #include "HydruinoUI.h"
 
-void HydruinoMinUI::begin()
-{ }
+bool HydruinoMinUI::begin()
+{
+    return false;
+}
 
 void HydruinoMinUI::setNeedsLayout()
 { }

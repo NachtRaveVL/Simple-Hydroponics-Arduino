@@ -66,12 +66,9 @@ struct I2CDeviceSetup {
     uint32_t speed;                     // I2C max data speed (Hz)
     uint8_t address;                    // I2C device address
 
-    inline I2CDeviceSetup(TwoWire *i2cWire = HYDRO_USE_WIRE, uint32_t i2cSpeed = 100000U, uint8_t i2cAddress = B000) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(TwoWire *i2cWire, uint8_t i2cAddress, uint32_t i2cSpeed = 100000U) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(uint32_t i2cSpeed, TwoWire *i2cWire, uint8_t i2cAddress = B000) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(uint32_t i2cSpeed, uint8_t i2cAddress = B000, TwoWire *i2cWire = HYDRO_USE_WIRE) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(uint8_t i2cAddress, TwoWire *i2cWire, uint32_t i2cSpeed = 100000U) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
-    inline I2CDeviceSetup(uint8_t i2cAddress, uint32_t i2cSpeed = 100000U, TwoWire *i2cWire = HYDRO_USE_WIRE) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
+    inline I2CDeviceSetup(TwoWire *i2cWire = HYDRO_USE_WIRE, uint32_t i2cSpeed = 100000U, uint8_t i2cAddress = 0b000) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
+    inline I2CDeviceSetup(uint32_t i2cSpeed, uint8_t i2cAddress = 0b000, TwoWire *i2cWire = HYDRO_USE_WIRE) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
+    inline I2CDeviceSetup(uint8_t i2cAddress, TwoWire *i2cWire = HYDRO_USE_WIRE, uint32_t i2cSpeed = 100000U) : wire(i2cWire), speed(i2cSpeed), address(i2cAddress) { ; }
 };
 
 // SPI Device Setup
@@ -82,11 +79,8 @@ struct SPIDeviceSetup {
     pintype_t cs;                       // SPI cable select pin (active-low)
 
     inline SPIDeviceSetup(SPIClass *spiClass = HYDRO_USE_SPI, uint32_t spiSpeed = F_SPD, pintype_t spiCS = -1) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
-    inline SPIDeviceSetup(SPIClass *spiClass, pintype_t spiCS, uint32_t spiSpeed = F_SPD) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
-    inline SPIDeviceSetup(uint32_t spiSpeed, SPIClass *spiClass, pintype_t spiCS = -1) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
     inline SPIDeviceSetup(uint32_t spiSpeed, pintype_t spiCS = -1, SPIClass *spiClass = HYDRO_USE_SPI) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
-    inline SPIDeviceSetup(pintype_t spiCS, SPIClass *spiClass, uint32_t spiSpeed = F_SPD) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
-    inline SPIDeviceSetup(pintype_t spiCS, uint32_t spiSpeed = F_SPD, SPIClass *spiClass = HYDRO_USE_SPI) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
+    inline SPIDeviceSetup(pintype_t spiCS, SPIClass *spiClass = HYDRO_USE_SPI, uint32_t spiSpeed = F_SPD) : spi(spiClass), speed(spiSpeed), cs(spiCS) { ; }
 };
 
 // UART Device Setup

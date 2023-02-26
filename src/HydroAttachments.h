@@ -184,8 +184,7 @@ public:
     inline void setupActivation(const HydroActivation &activation) { _actSetup = activation; applySetup(); }
     inline void setupActivation(const HydroActivationHandle &handle) { setupActivation(handle.activation); }
     inline void setupActivation(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { setupActivation(HydroActivation(direction, intensity, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
-    inline void setupActivation(millis_t duration, bool force = false) { setupActivation(HydroActivation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
-    inline void setupActivation(bool force, millis_t duration = -1) { setupActivation(HydroActivation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
+    inline void setupActivation(millis_t duration = -1, bool force = false) { setupActivation(HydroActivation(Hydro_DirectionMode_Forward, 1.0f, duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None))); }
     // These activation methods take a variable value that gets transformed by any user
     // curvature calibration data before being used, assuming units to be the same. It is
     // otherwise assumed the value is a normalized driving intensity ([0,1] or [-1,1]).

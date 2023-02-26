@@ -10,7 +10,6 @@ struct HydroActivation;
 struct HydroActivationHandle;
 
 #include "Hydruino.h"
-#include "HydroDatas.h"
 
 // Activation Flags
 enum Hydro_ActivationFlags : unsigned char {

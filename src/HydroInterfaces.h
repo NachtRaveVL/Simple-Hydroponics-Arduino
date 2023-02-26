@@ -94,7 +94,7 @@ public:
 // UI Interface
 class HydruinoUIInterface {
 public:
-    virtual void begin() = 0;
+    virtual bool begin() = 0;
 
     virtual void setNeedsLayout() = 0;
 };

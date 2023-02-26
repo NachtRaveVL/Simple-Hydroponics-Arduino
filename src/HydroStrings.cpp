@@ -1676,6 +1676,7 @@ const char *pgmAddrForStr(Hydro_String strNum)
             return flashStr_Unit_Undefined;
         } break;
     }
+    return nullptr;
 }
 
 #endif

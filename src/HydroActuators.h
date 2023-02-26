@@ -53,8 +53,7 @@ public:
     // applied output is. See HydroActuatorAttachment for an abstraction of this process.
     inline HydroActivationHandle enableActuator(Hydro_DirectionMode direction, float intensity = 1.0f, millis_t duration = -1, bool force = false) { return HydroActivationHandle(::getSharedPtr<HydroActuator>(this), direction, intensity, duration, force); }
     inline HydroActivationHandle enableActuator(float value, millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, calibrationInvTransform(value), duration, force); }
-    inline HydroActivationHandle enableActuator(millis_t duration, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
-    inline HydroActivationHandle enableActuator(bool force, millis_t duration = -1) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
+    inline HydroActivationHandle enableActuator(millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
 
     inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; setNeedsUpdate(); }
     inline Hydro_EnableMode getEnableMode() { return _enableMode; }
