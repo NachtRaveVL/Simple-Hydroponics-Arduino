@@ -112,7 +112,7 @@ public:
 
     virtual HydroSensorAttachment &getPowerUsageSensorAttachment() override;
 
-    virtual HydroTriggerAttachment &getLimitAttachment() override;
+    virtual HydroTriggerAttachment &getLimitTriggerAttachment() override;
 
     inline float getMaxPower() const { return _maxPower; }
 

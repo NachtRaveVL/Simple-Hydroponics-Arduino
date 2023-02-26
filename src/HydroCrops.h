@@ -143,7 +143,7 @@ public:
 
     virtual HydroSensorAttachment &getSoilMoistureSensorAttachment() override;
 
-    virtual HydroTriggerAttachment &getFeedingAttachment() override;
+    virtual HydroTriggerAttachment &getFeedingTriggerAttachment() override;
 
 protected:
     HydroSensorAttachment _soilMoisture;                    // Soil moisture sensor attachment

@@ -248,7 +248,7 @@ HydroSensorAttachment &HydroRegulatedRail::getPowerUsageSensorAttachment()
     return _powerUsage;
 }
 
-HydroTriggerAttachment &HydroRegulatedRail::getLimitAttachment()
+HydroTriggerAttachment &HydroRegulatedRail::getLimitTriggerAttachment()
 {
     return _limitTrigger;
 }
