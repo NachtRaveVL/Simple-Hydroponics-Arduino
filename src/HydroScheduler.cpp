@@ -992,7 +992,7 @@ void HydroFeeding::update()
 
     if (actuatorReqs.size()) {
         for (auto attachIter = actuatorReqs.begin(); attachIter != actuatorReqs.end(); ++attachIter) {
-            attachIter->setupActivation(false);
+            attachIter->setupActivation();
             attachIter->enableActivation();
         }
     }

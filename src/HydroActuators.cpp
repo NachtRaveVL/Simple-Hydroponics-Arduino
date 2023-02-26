@@ -468,6 +468,7 @@ HydroActivationHandle HydroRelayPumpActuator::pump(millis_t time)
             return enableActuator(time);
         #endif
     }
+    return HydroActivationHandle();
 }
 
 HydroAttachment &HydroRelayPumpActuator::getSourceReservoirAttachment()

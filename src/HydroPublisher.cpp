@@ -316,9 +316,9 @@ void HydroPublisher::publish(time_t timestamp)
 #endif
 
     #ifdef HYDRO_USE_MULTITASKING
-        scheduleSignalFireOnce<Pair<uint8_t, const HydroDataColumn *>>(_publishSignal, make_pair(_columnCount, &_dataColumns[0]));
+        scheduleSignalFireOnce<Pair<uint8_t, const HydroDataColumn *>>(_publishSignal, make_pair(_columnCount, (const HydroDataColumn *)_dataColumns));
     #else
-        _publishSignal.fire(make_pair(_columnCount, &_dataColumns[0]));
+        _publishSignal.fire(make_pair(_columnCount, (const HydroDataColumn *)_dataColumns));
     #endif
 }
 

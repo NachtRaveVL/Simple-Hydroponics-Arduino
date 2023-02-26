@@ -87,7 +87,6 @@ typedef SoftwareSerial SerialClass;
 typedef SDFileSystemClass SDClass;
 #endif
 #ifdef ESP8266
-using namespace sdfat;
 typedef SerialConfig uartmode_t;
 #else
 typedef int uartmode_t;
@@ -342,7 +341,7 @@ public:
     // Minimal UI only allows the user to edit existing objects, not create nor delete them.
     // Full UI allows the user to add/remove system objects, customize features, change settings, etc.
     // Note: Be sure to manually include the appropriate UI system header file (e.g. #include "min/HydruinoUI.h") in Arduino sketch.
-    inline bool enableUI(HydruinoUIInterface *ui) { _activeUIInstance = ui; ui->begin(); }
+    inline bool enableUI(HydruinoUIInterface *ui) { _activeUIInstance = ui; return ui->begin(); }
 #endif
 
     // Mutators.

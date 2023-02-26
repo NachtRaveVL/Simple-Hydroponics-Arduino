@@ -458,22 +458,28 @@ bool arrayElementsEqual<double>(const double *arrayIn, size_t length, double val
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
 extern "C" char* sbrk(int incr);
-#elif !defined(ESP32)
+#elif !defined(ESP_PLATFORM)
 extern char *__brkval;
-#endif  // __arm__
+#elif defined(ESP8266)
+extern "C" {
+#include "user_interface.h"
+}
+#endif
 
 unsigned int freeMemory() {
-    #ifdef ESP32
+    #if defined(ESP32)
         return esp_get_free_heap_size();
+    #elif defined(ESP8266)
+        return system_get_free_heap_size();
     #else
         char top;
         #ifdef __arm__
             return &top - reinterpret_cast<char*>(sbrk(0));
         #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
             return &top - __brkval;
-        #else  // __arm__
+        #else
             return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-        #endif  // #ifdef __arm__
+        #endif
         return 0;
     #endif
 }
@@ -1002,6 +1008,7 @@ Hydro_UnitsType defaultUnits(Hydro_UnitsCategory unitsCategory, Hydro_Measuremen
         case Hydro_UnitsCategory_Undefined:
             return Hydro_UnitsType_Undefined;
     }
+    return Hydro_UnitsType_Undefined;
 }
 
 

@@ -9,7 +9,7 @@ class HydruinoFullUI;
 
 class HydruinoFullUI : HydruinoUIInterface {
 public:
-    virtual void begin() override;
+    virtual bool begin() override;
 
     virtual void setNeedsLayout() override;
 

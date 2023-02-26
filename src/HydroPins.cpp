@@ -25,7 +25,7 @@ HydroPin *newPinObjectFromSubData(const HydroPinData *dataIn)
 
 
 HydroPin::HydroPin()
-    : type(Unknown), pin(-1), mode(Hydro_PinMode_Undefined), channel(-1)
+    : type(Unknown), pin((pintype_t)-1), mode(Hydro_PinMode_Undefined), channel(-1)
 { ; }
 
 HydroPin::HydroPin(int classType, pintype_t pinNumber, Hydro_PinMode pinMode, uint8_t muxChannel)
@@ -220,10 +220,10 @@ HydroAnalogPin::HydroAnalogPin(pintype_t pinNumber, Hydro_PinMode pinMode, uint8
 HydroAnalogPin::HydroAnalogPin(const HydroPinData *dataIn)
     : HydroPin(dataIn), bitRes(dataIn->dataAs.analogPin.bitRes)
 #ifdef ESP32
-      , pinPWMChannel(dataIn->dataAs.analogPin.pwmChannel)
+      , pwmChannel(dataIn->dataAs.analogPin.pwmChannel)
 #endif
 #ifdef ESP_PLATFORM
-      , pinPWMFrequency(dataIn->dataAs.analogPin.pwmFrequency)
+      , pwmFrequency(dataIn->dataAs.analogPin.pwmFrequency)
 #endif
 { ; }
 
@@ -281,7 +281,7 @@ void HydroAnalogPin::analogWrite_raw(int amount)
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid() && (!isMuxed() || selectMuxer())) {
             #ifdef ESP32
-                ledcWrite(pwmChannel, val);
+                ledcWrite(pwmChannel, amount);
             #else
                 #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
                     analogWriteResolution(bitRes.bits);
@@ -298,7 +298,7 @@ void HydroAnalogPin::analogWrite_raw(int amount)
 
 
 HydroPinData::HydroPinData()
-    : HydroSubData((int8_t)HydroPin::Unknown), pin(-1), mode(Hydro_PinMode_Undefined), channel(-1), dataAs{0}
+    : HydroSubData((int8_t)HydroPin::Unknown), pin((pintype_t)-1), mode(Hydro_PinMode_Undefined), channel(-1), dataAs{0}
 { ; }
 
 void HydroPinData::toJSONObject(JsonObject &objectOut) const
@@ -353,18 +353,18 @@ void HydroPinData::fromJSONObject(JsonObjectConst &objectIn)
 
 
 HydroPinMuxer::HydroPinMuxer()
-    : _signal(), _chipEnable(), _channelPins{-1,-1,-1,-1,-1}, _channelSelect(0)
+    : _signal(), _chipEnable(), _channelPins{(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1}, _channelSelect(0)
 { ; }
 
 HydroPinMuxer::HydroPinMuxer(HydroPin signalPin,
                              pintype_t *muxChannelPins, uint8_t muxChannelBits,
                              HydroDigitalPin chipEnablePin)
     : _signal(signalPin), _chipEnable(chipEnablePin),
-      _channelPins{ muxChannelBits > 0 ? muxChannelPins[0] : -1,
-                    muxChannelBits > 1 ? muxChannelPins[1] : -1,
-                    muxChannelBits > 2 ? muxChannelPins[2] : -1,
-                    muxChannelBits > 3 ? muxChannelPins[3] : -1,
-                    muxChannelBits > 4 ? muxChannelPins[4] : -1 },
+      _channelPins{ muxChannelBits > 0 ? muxChannelPins[0] : (pintype_t)-1,
+                    muxChannelBits > 1 ? muxChannelPins[1] : (pintype_t)-1,
+                    muxChannelBits > 2 ? muxChannelPins[2] : (pintype_t)-1,
+                    muxChannelBits > 3 ? muxChannelPins[3] : (pintype_t)-1,
+                    muxChannelBits > 4 ? muxChannelPins[4] : (pintype_t)-1 },
       _channelBits(muxChannelBits), _channelSelect(0)
 {
     _signal.channel = -1; // unused
@@ -471,7 +471,7 @@ void HydroPinMuxer::setIsActive(bool isActive)
 
 
 HydroPinMuxerData::HydroPinMuxerData()
-    : HydroSubData(0), signal(), chipEnable(), channelPins{-1,-1,-1,-1,-1}, channelBits(0)
+    : HydroSubData(0), signal(), chipEnable(), channelPins{(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1}, channelBits(0)
 { ; }
 
 void HydroPinMuxerData::toJSONObject(JsonObject &objectOut) const

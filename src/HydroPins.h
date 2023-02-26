@@ -102,8 +102,6 @@ struct HydroDigitalPin : public HydroPin, public HydroDigitalInputPinInterface, 
                     uint8_t muxChannel = -1);               // Muxing channel select (else -1 if unused)
     HydroDigitalPin(const HydroPinData *dataIn);
 
-    inline operator HydroPin() const { return HydroPin((int)type, pin, mode, channel); }
-
     void saveToData(HydroPinData *dataOut) const;
 
     virtual ard_pinstatus_t digitalRead() override;
@@ -147,8 +145,6 @@ struct HydroAnalogPin : public HydroPin, public HydroAnalogInputPinInterface, pu
 #endif
                    uint8_t muxChannel = -1);                // Muxing channel select (else -1 if unused)
     HydroAnalogPin(const HydroPinData *dataIn);
-
-    inline operator HydroPin() const { return HydroPin((int)type, pin, mode, channel); }
 
     void init();
 

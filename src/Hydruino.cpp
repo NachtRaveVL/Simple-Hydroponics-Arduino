@@ -116,7 +116,7 @@ void Hydruino::allocateRTC()
         }
         _rtcBegan = false;
         HYDRO_SOFT_ASSERT(_rtc, SFP(HStr_Err_AllocationFailure));
-        HYDRO_HARD_ASSERT(_rtcSetup.cfgAs.i2c.address == B000, F("RTClib does not support i2c multi-addressing, only i2c address B000 may be used"));
+        HYDRO_HARD_ASSERT(_rtcSetup.cfgAs.i2c.address == 0b000, F("RTClib does not support i2c multi-addressing, only i2c address 0b000 may be used"));
     }
 }
 
@@ -1222,7 +1222,7 @@ SDClass *Hydruino::getSDCard(bool begin)
     if (_sd && begin) {
         if (!_sdBegan) {
             #if defined(ESP32)
-                _sdBegan = _sd->begin(_sdSetup.cfgAs.spi.cs, _sdSetup.cfgAs.spi.spi, _sdSetup.cfgAs.spi.speed);
+                _sdBegan = _sd->begin(_sdSetup.cfgAs.spi.cs, *_sdSetup.cfgAs.spi.spi, _sdSetup.cfgAs.spi.speed);
             #elif defined(CORE_TEENSY)
                 _sdBegan = _sd->begin(_sdSetup.cfgAs.spi.cs); // card speed not possible to set on teensy
             #else
