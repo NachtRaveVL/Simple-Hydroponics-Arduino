@@ -279,7 +279,7 @@ HydroSensorAttachment &HydroAdaptiveCrop::getSoilMoistureSensorAttachment()
     return _soilMoisture;
 }
 
-HydroTriggerAttachment &HydroAdaptiveCrop::getFeedingAttachment()
+HydroTriggerAttachment &HydroAdaptiveCrop::getFeedingTriggerAttachment()
 {
     return _feedingTrigger;
 }

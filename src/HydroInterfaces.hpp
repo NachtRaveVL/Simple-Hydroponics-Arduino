@@ -343,25 +343,25 @@ inline SharedPtr<U> HydroEmptyTriggerAttachmentInterface::getEmptyTrigger(bool p
 template <class U>
 inline void HydroFeedingTriggerAttachmentInterface::setFeedingTrigger(U trigger)
 {
-    getFeedingAttachment().setObject(trigger);
+    getFeedingTriggerAttachment().setObject(trigger);
 }
 
 template <class U>
 inline SharedPtr<U> HydroFeedingTriggerAttachmentInterface::getFeedingTrigger(bool poll)
 {
-    getFeedingAttachment().updateIfNeeded(poll);
-    return getFeedingAttachment().HydroAttachment::getObject<U>();
+    getFeedingTriggerAttachment().updateIfNeeded(poll);
+    return getFeedingTriggerAttachment().HydroAttachment::getObject<U>();
 }
 
 template <class U>
 inline void HydroLimitTriggerAttachmentInterface::setLimitTrigger(U trigger)
 {
-    getLimitAttachment().setObject(trigger);
+    getLimitTriggerAttachment().setObject(trigger);
 }
 
 template <class U>
 inline SharedPtr<U> HydroLimitTriggerAttachmentInterface::getLimitTrigger(bool poll)
 {
-    getLimitAttachment().updateIfNeeded(poll);
-    return getLimitAttachment().HydroAttachment::getObject<U>();
+    getLimitTriggerAttachment().updateIfNeeded(poll);
+    return getLimitTriggerAttachment().HydroAttachment::getObject<U>();
 }

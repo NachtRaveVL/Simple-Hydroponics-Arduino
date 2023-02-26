@@ -520,7 +520,7 @@ public:
 // Feeding Trigger Attachment Interface
 class HydroFeedingTriggerAttachmentInterface {
 public:
-    virtual HydroTriggerAttachment &getFeedingAttachment() = 0;
+    virtual HydroTriggerAttachment &getFeedingTriggerAttachment() = 0;
 
     template<class U> inline void setFeedingTrigger(U trigger);
     template<class U = HydroTrigger> inline SharedPtr<U>getFeedingTrigger(bool poll = false);
@@ -529,7 +529,7 @@ public:
 // Limit Trigger Attachment Interface
 class HydroLimitTriggerAttachmentInterface {
 public:
-    virtual HydroTriggerAttachment &getLimitAttachment() = 0;
+    virtual HydroTriggerAttachment &getLimitTriggerAttachment() = 0;
 
     template<class U> inline void setLimitTrigger(U trigger);
     template<class U = HydroTrigger> inline SharedPtr<U>getLimitTrigger(bool poll = false);
