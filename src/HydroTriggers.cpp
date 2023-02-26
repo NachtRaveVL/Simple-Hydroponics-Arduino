@@ -81,6 +81,11 @@ Hydro_UnitsType HydroTrigger::getMeasurementUnits(uint8_t measurementRow) const
     return _sensor.getMeasurementUnits();
 }
 
+HydroSensorAttachment &HydroTrigger::getSensorAttachment()
+{
+    return _sensor;
+}
+
 Signal<Hydro_TriggerState, HYDRO_TRIGGER_SIGNAL_SLOTS> &HydroTrigger::getTriggerSignal()
 {
     return _triggerSignal;

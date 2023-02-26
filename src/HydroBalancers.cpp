@@ -108,6 +108,11 @@ Hydro_UnitsType HydroBalancer::getMeasurementUnits(uint8_t measurementRow) const
     return _sensor.getMeasurementUnits();
 }
 
+HydroSensorAttachment &HydroBalancer::getSensorAttachment()
+{
+    return _sensor;
+}
+
 Signal<Hydro_BalancingState, HYDRO_BALANCER_SIGNAL_SLOTS> &HydroBalancer::getBalancingSignal()
 {
     return _balancingSignal;
