@@ -141,12 +141,12 @@ void setup() {
 
             {   getLogger()->logMessage(F("=== Writing string data to SD card ==="));
 
-                uint16_t lookupTable[Hydro_Strings_Count];
+                uint16_t lookupTable[HStr_Count];
 
                 // Initializes lookup table with proper locations
                 {   uint16_t writeAddr = sizeof(lookupTable);
 
-                    for (int stringNum = 0; stringNum < Hydro_Strings_Count; ++stringNum) {
+                    for (int stringNum = 0; stringNum < HStr_Count; ++stringNum) {
                         String string = SFP((Hydro_String)stringNum);
                         lookupTable[stringNum] = writeAddr;
                         writeAddr += string.length() + 1;
@@ -168,7 +168,7 @@ void setup() {
                     // Lookup table constructed first to avoid random seeking
                     bytesWritten += file.write((const uint8_t *)lookupTable, sizeof(lookupTable));
 
-                    for (int stringNum = 0; stringNum < Hydro_Strings_Count; ++stringNum) {
+                    for (int stringNum = 0; stringNum < HStr_Count; ++stringNum) {
                         String string = SFP((Hydro_String)stringNum);
                         bytesWritten += file.write((const uint8_t *)string.c_str(), string.length() + 1); // +1 to also write out null terminator
                     }
@@ -207,7 +207,7 @@ void setup() {
 
             {   getLogger()->logMessage(F("=== Writing Crops Library data to EEPROM ==="));
 
-                // A lookup table similar to uint16_t lookupTable[Hydro_Strings_Count] is created
+                // A lookup table similar to uint16_t lookupTable[HStr_Count] is created
                 // manually here, which is used for crop data lookup. The first uint16_t value will be
                 // reserved for the total chunk size (hence the +1).
                 uint16_t writeAddr = cropsLibBegAddr + ((Hydro_CropType_Count + 1) * sizeof(uint16_t));
@@ -257,9 +257,9 @@ void setup() {
             {   getLogger()->logMessage(F("=== Writing strings data to EEPROM ==="));
 
                 // Similar to above, same deal with a lookup table.
-                uint16_t writeAddr = stringsBegAddr + ((Hydro_Strings_Count + 1) * sizeof(uint16_t));
+                uint16_t writeAddr = stringsBegAddr + ((HStr_Count + 1) * sizeof(uint16_t));
 
-                for (int stringNum = 0; stringNum < Hydro_Strings_Count; ++stringNum) {
+                for (int stringNum = 0; stringNum < HStr_Count; ++stringNum) {
                     String string = SFP((Hydro_String)stringNum);
 
                     getLogger()->logMessage(F("Writing String: #"), String(stringNum) + String(F(" \"")), string + String(F("\"")));
@@ -278,7 +278,7 @@ void setup() {
                 }
 
                 sysDataBegAddr = stringsBegAddr;
-                if (writeAddr > stringsBegAddr + ((Hydro_Strings_Count + 1) * sizeof(uint16_t))) {
+                if (writeAddr > stringsBegAddr + ((HStr_Count + 1) * sizeof(uint16_t))) {
                     uint16_t totalBytesWritten = writeAddr - stringsBegAddr;
 
                     if (eeprom->updateBlockVerify(stringsBegAddr, (const uint8_t *)&totalBytesWritten, sizeof(uint16_t))) {
