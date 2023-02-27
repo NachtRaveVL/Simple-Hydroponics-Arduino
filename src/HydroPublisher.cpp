@@ -6,7 +6,7 @@
 #include "Hydruino.h"
 
 HydroPublisher::HydroPublisher()
-    : _dataFilename(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnCount(0)
+    : _dataFilename(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnSize(0)
 #if HYDRO_SYS_LEAVE_FILES_OPEN
       , _dataFileSD(nullptr)
 #ifdef HYDRO_USE_WIFI_STORAGE
@@ -40,7 +40,7 @@ void HydroPublisher::update()
     if (hasPublisherData()) {
         if (_needsTabulation) { performTabulation(); }
 
-        checkCanPublish();
+        publishIfNeeded();
     }
 }
 
@@ -66,7 +66,7 @@ bool HydroPublisher::beginPublishingToSDCard(String dataFilePrefix)
                     Hydruino::_activeInstance->endSDCard(sd);
                 #endif
 
-                Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+                Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
                 strncpy(publisherData()->dataFilePrefix, dataFilePrefix.c_str(), 16);
                 publisherData()->pubToSDCard = true;
                 _dataFilename = dataFilename;
@@ -104,7 +104,7 @@ bool HydroPublisher::beginPublishingToWiFiStorage(String dataFilePrefix)
                 dataFile.close();
             #endif
 
-            Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
             strncpy(publisherData()->dataFilePrefix, dataFilePrefix.c_str(), 16);
             publisherData()->pubToWiFiStorage = true;
             _dataFilename = dataFilename;
@@ -151,18 +151,18 @@ bool HydroPublisher::beginPublishingToMQTTClient(MQTTClient &client)
 
 void HydroPublisher::publishData(hposi_t columnIndex, HydroSingleMeasurement measurement)
 {
-    HYDRO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnCount, SFP(HStr_Err_NotYetInitialized));
-    if (_dataColumns && _columnCount && columnIndex >= 0 && columnIndex < _columnCount) {
+    HYDRO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnSize, SFP(HStr_Err_NotYetInitialized));
+    if (_dataColumns && _columnSize && columnIndex >= 0 && columnIndex < _columnSize) {
         _dataColumns[columnIndex].measurement = measurement;
-        checkCanPublish();
+        publishIfNeeded();
     }
 }
 
 hposi_t HydroPublisher::getColumnIndexStart(hkey_t sensorKey)
 {
-    HYDRO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnCount, SFP(HStr_Err_NotYetInitialized));
-    if (_dataColumns && _columnCount) {
-        for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+    HYDRO_SOFT_ASSERT(hasPublisherData() && _dataColumns && _columnSize, SFP(HStr_Err_NotYetInitialized));
+    if (_dataColumns && _columnSize) {
+        for (int columnIndex = 0; columnIndex < _columnSize; ++columnIndex) {
             if (_dataColumns[columnIndex].sensorKey == sensorKey) {
                 return (hposi_t)columnIndex;
             }
@@ -208,12 +208,12 @@ void HydroPublisher::advancePollingFrame()
     Hydruino::_activeInstance->_pollingFrame = pollingFrame;
 }
 
-void HydroPublisher::checkCanPublish()
+void HydroPublisher::publishIfNeeded()
 {
-    if (_dataColumns && _columnCount && Hydruino::_activeInstance->isPollingFrameOld(_pollingFrame)) {
+    if (_dataColumns && _columnSize && Hydruino::_activeInstance->isPollingFrameOld(_pollingFrame)) {
         bool allCurrent = true;
 
-        for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+        for (int columnIndex = 0; columnIndex < _columnSize; ++columnIndex) {
             if (Hydruino::_activeInstance->isPollingFrameOld(_dataColumns[columnIndex].measurement.frame)) {
                 allCurrent = false;
                 break;
@@ -251,7 +251,7 @@ void HydroPublisher::publish(time_t timestamp)
             if (dataFile) {
                 dataFile.print(timestamp);
 
-                for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+                for (int columnIndex = 0; columnIndex < _columnSize; ++columnIndex) {
                     dataFile.print(',');
                     dataFile.print(_dataColumns[columnIndex].measurement.value);
                 }
@@ -283,7 +283,7 @@ void HydroPublisher::publish(time_t timestamp)
             auto dataFileStream = HydroWiFiStorageFileStream(dataFile, dataFile.size());
             dataFileStream.print(timestamp);
 
-            for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+            for (int columnIndex = 0; columnIndex < _columnSize; ++columnIndex) {
                 dataFileStream.print(',');
                 dataFileStream.print(_dataColumns[columnIndex].measurement.value);
             }
@@ -300,7 +300,7 @@ void HydroPublisher::publish(time_t timestamp)
 
     if (isPublishingToMQTTClient()) {
         String systemName = Hydruino::_activeInstance->getSystemName();
-        for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+        for (int columnIndex = 0; columnIndex < _columnSize; ++columnIndex) {
             auto sensor = (HydroSensor *)(Hydruino::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
             if (sensor) {
                 String topic; topic.reserve(systemName.length() + 1 + sensor->getKeyString().length() + 1);
@@ -316,9 +316,9 @@ void HydroPublisher::publish(time_t timestamp)
 #endif
 
     #ifdef HYDRO_USE_MULTITASKING
-        scheduleSignalFireOnce<Pair<uint8_t, const HydroDataColumn *>>(_publishSignal, make_pair(_columnCount, (const HydroDataColumn *)_dataColumns));
+        scheduleSignalFireOnce<Pair<uint8_t, const HydroDataColumn *>>(_publishSignal, make_pair(_columnSize, (const HydroDataColumn *)_dataColumns));
     #else
-        _publishSignal.fire(make_pair(_columnCount, (const HydroDataColumn *)_dataColumns));
+        _publishSignal.fire(make_pair(_columnSize, (const HydroDataColumn *)_dataColumns));
     #endif
 }
 
@@ -326,8 +326,8 @@ void HydroPublisher::performTabulation()
 {
     HYDRO_SOFT_ASSERT(hasPublisherData(), SFP(HStr_Err_NotYetInitialized));
 
-    bool sameOrder = _dataColumns && _columnCount ? true : false;
-    int columnCount = 0;
+    bool sameOrder = _dataColumns && _columnSize ? true : false;
+    int columnSize = 0;
 
     for (auto iter = Hydruino::_activeInstance->_objects.begin(); iter != Hydruino::_activeInstance->_objects.end(); ++iter) {
         if (iter->second->isSensorType()) {
@@ -335,22 +335,22 @@ void HydroPublisher::performTabulation()
             auto rowCount = getMeasurementRowCount(sensor->getMeasurement());
 
             for (int rowIndex = 0; sameOrder && rowIndex < rowCount; ++rowIndex) {
-                sameOrder = sameOrder && (columnCount + rowIndex + 1 <= _columnCount) &&
-                            (_dataColumns[columnCount + rowIndex].sensorKey == sensor->getKey());
+                sameOrder = sameOrder && (columnSize + rowIndex + 1 <= _columnSize) &&
+                            (_dataColumns[columnSize + rowIndex].sensorKey == sensor->getKey());
             }
 
-            columnCount += rowCount;
+            columnSize += rowCount;
         }
     }
-    sameOrder = sameOrder && (columnCount == _columnCount);
+    sameOrder = sameOrder && (columnSize == _columnSize);
 
     if (!sameOrder) {
-        if (_dataColumns && _columnCount != columnCount) { delete [] _dataColumns; _dataColumns = nullptr; }
-        _columnCount = columnCount;
+        if (_dataColumns && _columnSize != columnSize) { delete [] _dataColumns; _dataColumns = nullptr; }
+        _columnSize = columnSize;
 
-        if (_columnCount) {
+        if (_columnSize) {
             if (!_dataColumns) {
-                _dataColumns = new HydroDataColumn[_columnCount];
+                _dataColumns = new HydroDataColumn[_columnSize];
                 HYDRO_SOFT_ASSERT(_dataColumns, SFP(HStr_Err_AllocationFailure));
             }
             if (_dataColumns) {
@@ -363,7 +363,7 @@ void HydroPublisher::performTabulation()
                         auto rowCount = getMeasurementRowCount(measurement);
 
                         for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-                            HYDRO_HARD_ASSERT(columnIndex < _columnCount, SFP(HStr_Err_OperationFailure));
+                            HYDRO_HARD_ASSERT(columnIndex < _columnSize, SFP(HStr_Err_OperationFailure));
                             _dataColumns[columnIndex].measurement = getAsSingleMeasurement(measurement, rowIndex);
                             _dataColumns[columnIndex].sensorKey = sensor->getKey();
                             columnIndex++;
@@ -404,7 +404,7 @@ void HydroPublisher::resetDataFile()
 
                 dataFile.print(SFP(HStr_Key_Timestamp));
 
-                for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+                for (int columnIndex = 0; columnIndex < _columnSize; ++columnIndex) {
                     dataFile.print(',');
 
                     auto sensor = (HydroSensor *)(Hydruino::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
@@ -459,7 +459,7 @@ void HydroPublisher::resetDataFile()
 
             dataFileStream.print(SFP(HStr_Key_Timestamp));
 
-            for (int columnIndex = 0; columnIndex < _columnCount; ++columnIndex) {
+            for (int columnIndex = 0; columnIndex < _columnSize; ++columnIndex) {
                 dataFileStream.print(',');
 
                 auto sensor = (HydroSensor *)(Hydruino::_activeInstance->_objects[_dataColumns[columnIndex].sensorKey].get());
@@ -487,7 +487,7 @@ void HydroPublisher::resetDataFile()
 
 void HydroPublisher::cleanupOldestData(bool force)
 {
-    // TODO: Old data cleanup.
+    // TODO: Old data cleanup. #17 in Hydro.
 }
 
 

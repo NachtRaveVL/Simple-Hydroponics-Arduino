@@ -39,8 +39,8 @@ HydroActuator::HydroActuator(const HydroActuatorData *dataIn)
       _contPowerUsage(&(dataIn->contPowerUsage)),
       _parentRail(this), _parentReservoir(this), _needsUpdate(false)
 {
-    _parentRail.setObject(dataIn->railName);
-    _parentReservoir.setObject(dataIn->reservoirName);
+    _parentRail.initObject(dataIn->railName);
+    _parentReservoir.initObject(dataIn->reservoirName);
 }
 
 void HydroActuator::update()
@@ -194,6 +194,7 @@ void HydroActuator::setContinuousPowerUsage(HydroSingleMeasurement contPowerUsag
 {
     _contPowerUsage = contPowerUsage;
     _contPowerUsage.setMinFrame(1);
+    bumpRevisionIfNeeded();
 }
 
 const HydroSingleMeasurement &HydroActuator::getContinuousPowerUsage()
@@ -213,6 +214,7 @@ HydroAttachment &HydroActuator::getParentReservoirAttachment()
 
 void HydroActuator::setUserCalibrationData(HydroCalibrationData *userCalibrationData)
 {
+    if (_calibrationData && _calibrationData != userCalibrationData) { bumpRevisionIfNeeded(); }
     if (getController()) {
         if (userCalibrationData && getController()->setUserCalibrationData(userCalibrationData)) {
             _calibrationData = getController()->getUserCalibrationData(_id.key);
@@ -365,8 +367,8 @@ HydroRelayPumpActuator::HydroRelayPumpActuator(const HydroPumpActuatorData *data
       _flowRate(this), _destReservoir(this)
 {
     _flowRate.setMeasurementUnits(getFlowRateUnits());
-    _destReservoir.setObject(dataIn->destReservoir);
-    _flowRate.setObject(dataIn->flowRateSensor);
+    _destReservoir.initObject(dataIn->destReservoir);
+    _flowRate.initObject(dataIn->flowRateSensor);
 }
 
 void HydroRelayPumpActuator::update()
@@ -488,6 +490,7 @@ void HydroRelayPumpActuator::setFlowRateUnits(Hydro_UnitsType flowRateUnits)
 
         convertUnits(&_contFlowRate, getFlowRateUnits());
         _flowRate.setMeasurementUnits(getFlowRateUnits());
+        bumpRevisionIfNeeded();
     }
 }
 
@@ -497,6 +500,7 @@ void HydroRelayPumpActuator::setContinuousFlowRate(HydroSingleMeasurement contFl
     _contFlowRate.setMinFrame(1);
 
     convertUnits(&_contFlowRate, getFlowRateUnits());
+    bumpRevisionIfNeeded();
 }
 
 const HydroSingleMeasurement &HydroRelayPumpActuator::getContinuousFlowRate()

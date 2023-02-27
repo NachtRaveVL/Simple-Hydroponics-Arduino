@@ -85,7 +85,7 @@ public:
     HydroFluidReservoir(const HydroFluidReservoirData *dataIn);
 
     virtual void update() override;
-    virtual void handleLowMemory() override;
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
 
     virtual bool isFilled(bool poll = false) override;
     virtual bool isEmpty(bool poll = false) override;
@@ -127,6 +127,7 @@ public:
 
     virtual void update() override;
     virtual void handleLowMemory() override;
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
 
     virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
     virtual void setTemperatureUnits(Hydro_UnitsType temperatureUnits) override;

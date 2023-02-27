@@ -58,6 +58,8 @@ public:
     virtual bool isTakingMeasurement() const override;
     virtual bool needsPolling(hframe_t allowance = 0) const = 0;
 
+    void yieldForMeasurement(millis_t timeout = HYDRO_DATA_LOOP_INTERVAL);
+
     virtual HydroAttachment &getParentCropAttachment() override;
     virtual HydroAttachment &getParentReservoirAttachment() override;
 

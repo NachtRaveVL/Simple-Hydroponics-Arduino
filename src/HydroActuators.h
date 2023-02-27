@@ -55,7 +55,7 @@ public:
     inline HydroActivationHandle enableActuator(float value, millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, calibrationInvTransform(value), duration, force); }
     inline HydroActivationHandle enableActuator(millis_t duration = -1, bool force = false) { return enableActuator(Hydro_DirectionMode_Forward, 1.0f, duration, force); }
 
-    inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; setNeedsUpdate(); }
+    inline void setEnableMode(Hydro_EnableMode enableMode) { _enableMode = enableMode; setNeedsUpdate(); bumpRevisionIfNeeded(); }
     inline Hydro_EnableMode getEnableMode() { return _enableMode; }
 
     inline bool isSerialMode() { return getActuatorIsSerialFromMode(getEnableMode()); }
@@ -225,7 +225,7 @@ protected:
 // reservoir. Pumps using this class have variable flow control but also can be paired with
 // a flow sensor for more precise pumping calculations.
 //class HydroVariablePumpActuator : public HydroVariableActuator, public HydroPumpObjectInterface, public HydroWaterFlowRateSensorAttachmentInterface {
-// TODO
+// TODO: #18 in Hydro.
 //};
 
 

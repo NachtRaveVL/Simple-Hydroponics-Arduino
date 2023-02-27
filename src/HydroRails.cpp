@@ -196,7 +196,7 @@ HydroRegulatedRail::HydroRegulatedRail(const HydroRegulatedRailData *dataIn)
 {
     _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());
     _powerUsage.setHandleMethod(&HydroRegulatedRail::handlePower);
-    _powerUsage.setObject(dataIn->powerSensor);
+    _powerUsage.initObject(dataIn->powerSensor);
 
     _limitTrigger.setHandleMethod(&HydroRail::handleLimit);
     _limitTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->limitTrigger)));
@@ -212,11 +212,10 @@ void HydroRegulatedRail::update()
     _limitTrigger.updateIfNeeded();
 }
 
-void HydroRegulatedRail::handleLowMemory()
+SharedPtr<HydroObjInterface> HydroRegulatedRail::getSharedPtrFor(const HydroObjInterface *obj) const
 {
-    HydroRail::handleLowMemory();
-
-    if (_limitTrigger) { _limitTrigger->handleLowMemory(); }
+    return obj->getKey() == _limitTrigger.getKey() ? _limitTrigger.getSharedPtrFor(obj) :
+           HydroObject::getSharedPtrFor(obj);
 }
 
 bool HydroRegulatedRail::canActivate(HydroActuator *actuator)

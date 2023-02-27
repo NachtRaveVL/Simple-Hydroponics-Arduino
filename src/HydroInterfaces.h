@@ -86,6 +86,7 @@ public:
     virtual hkey_t getKey() const = 0;
     virtual String getKeyString() const = 0;
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const = 0;
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const = 0;
 
     virtual bool isObject() const = 0;
     inline bool isSubObject() const { return !isObject(); }

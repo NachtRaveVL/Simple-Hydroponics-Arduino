@@ -40,11 +40,11 @@ void HydroDLinkObject::unresolve()
     _obj = nullptr;
 }
 
-SharedPtr<HydroObjInterface> HydroDLinkObject::_getObject()
+SharedPtr<HydroObjInterface> HydroDLinkObject::resolveObject()
 {
     if (_obj || !isSet()) { return _obj; }
     if (Hydruino::_activeInstance) {
-        _obj = static_pointer_cast<HydroObjInterface>(Hydruino::_activeInstance->_objects[_key]);
+        _obj = reinterpret_pointer_cast<HydroObjInterface>(Hydruino::_activeInstance->_objects[_key]);
     }
     if (_obj && _keyStr) {
         free((void *)_keyStr); _keyStr = nullptr;
@@ -60,7 +60,7 @@ HydroAttachment::HydroAttachment(HydroObjInterface *parent)
 HydroAttachment::HydroAttachment(const HydroAttachment &attachment)
     : HydroSubObject(attachment._parent), _obj()
 {
-    setObject(attachment._obj);
+    initObject(attachment._obj);
 }
 
 HydroAttachment::~HydroAttachment()
@@ -99,6 +99,11 @@ void HydroAttachment::setParent(HydroObjInterface *parent)
 
         if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) { _obj.get<HydroObject>()->addLinkage((HydroObject *)_parent); }
     }
+}
+
+SharedPtr<HydroObjInterface> HydroAttachment::getSharedPtrFor(const HydroObjInterface *obj) const
+{
+    return obj->getKey() == getKey() ? _obj._obj : HydroSubObject::getSharedPtrFor(obj);
 }
 
 

@@ -479,6 +479,7 @@ template<> String commaStringFromArray<float>(const float *arrayIn, size_t lengt
 template<> String commaStringFromArray<double>(const double *arrayIn, size_t length);
 template<> void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length);
 template<> void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length);
+template<> void commaStringToArray<String>(String stringIn, String *arrayOut, size_t length);
 template<> bool arrayElementsEqual<float>(const float *arrayIn, size_t length, float value);
 template<> bool arrayElementsEqual<double>(const double *arrayIn, size_t length, double value);
 

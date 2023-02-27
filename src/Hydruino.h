@@ -551,7 +551,7 @@ protected:
     void commonPostInit();
     void commonPostSave();
 
-    friend SharedPtr<HydroObjInterface> HydroDLinkObject::_getObject();
+    friend SharedPtr<HydroObjInterface> HydroDLinkObject::resolveObject();
     friend void controlLoop();
     friend void dataLoop();
     friend void miscLoop();

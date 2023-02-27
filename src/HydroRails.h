@@ -103,7 +103,7 @@ public:
     HydroRegulatedRail(const HydroRegulatedRailData *dataIn);
 
     virtual void update() override;
-    virtual void handleLowMemory() override;
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
 
     virtual bool canActivate(HydroActuator *actuator) override;
     virtual float getCapacity(bool poll = false) override;

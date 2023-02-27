@@ -192,8 +192,12 @@ String HydroObject::getKeyString() const
 
 SharedPtr<HydroObjInterface> HydroObject::getSharedPtr() const
 {
-    return getController() ? static_pointer_cast<HydroObjInterface>(getController()->objectById(_id))
-                           : SharedPtr<HydroObjInterface>((HydroObjInterface *)this);
+    return getController() ? reinterpret_pointer_cast<HydroObjInterface>(getController()->objectById(_id)) : nullptr;
+}
+
+SharedPtr<HydroObjInterface> HydroObject::getSharedPtrFor(const HydroObjInterface *obj) const
+{
+    return obj->isObject() ? obj->getSharedPtr() : nullptr;
 }
 
 bool HydroObject::isObject() const
@@ -212,6 +216,7 @@ void HydroObject::saveToData(HydroData *dataOut)
     dataOut->id.object.idType = (hid_t)_id.type;
     dataOut->id.object.objType = _id.objTypeAs.idType;
     dataOut->id.object.posIndex = _id.posIndex;
+    dataOut->_revision = getRevision();
     if (_id.keyString.length()) {
         strncpy(((HydroObjectData *)dataOut)->name, _id.keyString.c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -238,7 +243,12 @@ String HydroSubObject::getKeyString() const
 
 SharedPtr<HydroObjInterface> HydroSubObject::getSharedPtr() const
 {
-    return SharedPtr<HydroObjInterface>((HydroObjInterface *)this);
+    return _parent ? _parent->getSharedPtrFor((const HydroObjInterface *)this) : nullptr;
+}
+
+SharedPtr<HydroObjInterface> HydroSubObject::getSharedPtrFor(const HydroObjInterface *obj) const
+{
+    return obj->isObject() ? obj->getSharedPtr() : _parent ? _parent->getSharedPtrFor(obj) : nullptr;
 }
 
 bool HydroSubObject::isObject() const

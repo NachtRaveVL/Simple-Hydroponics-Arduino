@@ -100,8 +100,8 @@ HydroSensor::HydroSensor(const HydroSensorData *dataIn)
       _isTakingMeasure(false), _parentCrop(this), _parentReservoir(this), _calibrationData(nullptr)
 {
     _calibrationData = getController() ? getController()->getUserCalibrationData(_id.key) : nullptr;
-    _parentCrop.setObject(dataIn->cropName);
-    _parentReservoir.setObject(dataIn->reservoirName);
+    _parentCrop.initObject(dataIn->cropName);
+    _parentReservoir.initObject(dataIn->reservoirName);
 }
 
 HydroSensor::~HydroSensor()
@@ -122,6 +122,12 @@ bool HydroSensor::isTakingMeasurement() const
     return _isTakingMeasure;
 }
 
+void HydroSensor::yieldForMeasurement(millis_t timeout)
+{
+    timeout = millis() + timeout;
+    while (isTakingMeasurement() && timeout - millis() > 0) { yield(); }
+}
+
 HydroAttachment &HydroSensor::getParentCropAttachment()
 {
     return _parentCrop;
@@ -134,6 +140,7 @@ HydroAttachment &HydroSensor::getParentReservoirAttachment()
 
 void HydroSensor::setUserCalibrationData(HydroCalibrationData *userCalibrationData)
 {
+    if (_calibrationData && _calibrationData != userCalibrationData) { bumpRevisionIfNeeded(); }
     if (getController()) {
         if (userCalibrationData && getController()->setUserCalibrationData(userCalibrationData)) {
             _calibrationData = getController()->getUserCalibrationData(_id.key);
@@ -237,6 +244,7 @@ bool HydroBinarySensor::needsPolling(hframe_t allowance) const
 void HydroBinarySensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow)
 {
     HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
+    bumpRevisionIfNeeded();
 }
 
 Hydro_UnitsType HydroBinarySensor::getMeasurementUnits(uint8_t measurementRow) const
@@ -317,8 +325,8 @@ void HydroAnalogSensor::_takeMeasurement(unsigned int taskId)
             unsigned int rawRead = 0;
             #if HYDRO_SENSOR_ANALOGREAD_SAMPLES > 1
                 for (int sampleIndex = 0; sampleIndex < HYDRO_SENSOR_ANALOGREAD_SAMPLES; ++sampleIndex) {
-                    #if HYDRO_SENSOR_ANALOGREAD_DELAYMS > 0
-                        if (sampleIndex) { delay(HYDRO_SENSOR_ANALOGREAD_DELAYMS); }
+                    #if HYDRO_SENSOR_ANALOGREAD_DELAY > 0
+                        if (sampleIndex) { delay(HYDRO_SENSOR_ANALOGREAD_DELAY); }
                     #endif
                     rawRead += _inputPin.analogRead_raw();
                 }
@@ -372,6 +380,7 @@ void HydroAnalogSensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, ui
         if (_lastMeasurement.isSet()) {
             convertUnits(&_lastMeasurement, _measurementUnits[measurementRow]);
         }
+        bumpRevisionIfNeeded();
     }
 }
 
@@ -618,6 +627,7 @@ void HydroDHTTempHumiditySensor::setMeasurementUnits(Hydro_UnitsType measurement
         if (_lastMeasurement.isSet()) {
             convertUnits(&_lastMeasurement.value[measurementRow], &_lastMeasurement.units[measurementRow], _measurementUnits[measurementRow]);
         }
+        bumpRevisionIfNeeded();
     }
 }
 
@@ -791,6 +801,7 @@ void HydroDSTemperatureSensor::setMeasurementUnits(Hydro_UnitsType measurementUn
         if (_lastMeasurement.isSet()) {
             convertUnits(&_lastMeasurement, _measurementUnits[measurementRow]);
         }
+        bumpRevisionIfNeeded();
     }
 }
 

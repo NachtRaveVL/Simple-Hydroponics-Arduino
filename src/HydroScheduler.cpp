@@ -206,7 +206,7 @@ void HydroScheduler::setBaseFeedMultiplier(float baseFeedMultiplier)
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
     if (hasSchedulerData()) {
-        Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->baseFeedMultiplier = baseFeedMultiplier;
 
         setNeedsScheduling();
@@ -220,13 +220,13 @@ void HydroScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, Hydro_
 
     if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX) {
         if (reservoirType == Hydro_ReservoirType_NutrientPremix) {
-            Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
             schedulerData()->weeklyDosingRates[weekIndex] = dosingRate;
 
             setNeedsScheduling();
         } else if (reservoirType >= Hydro_ReservoirType_CustomAdditive1 && reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount) {
             HydroCustomAdditiveData newAdditiveData(reservoirType);
-            newAdditiveData._bumpRevIfNotAlreadyModded();
+            newAdditiveData.bumpRevisionIfNeeded();
             newAdditiveData.weeklyDosingRates[weekIndex] = dosingRate;
             Hydruino::_activeInstance->setCustomAdditiveData(&newAdditiveData);
 
@@ -243,7 +243,7 @@ void HydroScheduler::setStandardDosingRate(float dosingRate, Hydro_ReservoirType
     HYDRO_SOFT_ASSERT(!hasSchedulerData() || (reservoirType >= Hydro_ReservoirType_FreshWater && reservoirType < Hydro_ReservoirType_CustomAdditive1), SFP(HStr_Err_InvalidParameter));
 
     if (hasSchedulerData() && (reservoirType >= Hydro_ReservoirType_FreshWater && reservoirType < Hydro_ReservoirType_CustomAdditive1)) {
-        Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->stdDosingRates[reservoirType - Hydro_ReservoirType_FreshWater] = dosingRate;
 
         setNeedsScheduling();
@@ -273,7 +273,7 @@ void HydroScheduler::setFlushWeek(int weekIndex)
             auto additiveData = Hydruino::_activeInstance->getCustomAdditiveData(reservoirType);
             if (additiveData) {
                 HydroCustomAdditiveData newAdditiveData = *additiveData;
-                newAdditiveData._bumpRevIfNotAlreadyModded();
+                newAdditiveData.bumpRevisionIfNeeded();
                 newAdditiveData.weeklyDosingRates[weekIndex] = 0;
                 Hydruino::_activeInstance->setCustomAdditiveData(&newAdditiveData);
             }
@@ -288,7 +288,7 @@ void HydroScheduler::setTotalFeedingsDay(unsigned int feedingsDay)
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasSchedulerData() && schedulerData()->totalFeedingsDay != feedingsDay) {
-        Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->totalFeedingsDay = feedingsDay;
 
         setNeedsScheduling();
@@ -300,7 +300,7 @@ void HydroScheduler::setPreFeedAeratorMins(unsigned int aeratorMins)
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasSchedulerData() && schedulerData()->preFeedAeratorMins != aeratorMins) {
-        Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->preFeedAeratorMins = aeratorMins;
 
         setNeedsScheduling();
@@ -312,7 +312,7 @@ void HydroScheduler::setPreDawnSprayMins(unsigned int sprayMins)
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasSchedulerData() && schedulerData()->preDawnSprayMins != sprayMins) {
-        Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->preDawnSprayMins = sprayMins;
 
         setNeedsScheduling();
@@ -324,7 +324,7 @@ void HydroScheduler::setAirReportInterval(TimeSpan interval)
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasSchedulerData() && schedulerData()->airReportInterval != interval.totalseconds()) {
-        Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->airReportInterval = interval.totalseconds();
     }
 }
@@ -1007,14 +1007,6 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType, bool withSetpoints)
 {
     switch (logType) {
         case HydroFeedingLogType_WaterReport:
-            #ifdef HYDRO_USE_MULTITASKING
-                // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
-                if ((feedRes->getWaterPHSensor() && !feedRes->getWaterPHSensorAttachment().getMeasurementFrame()) ||
-                    (feedRes->getWaterTDSSensor() && !feedRes->getWaterTDSSensorAttachment().getMeasurementFrame()) ||
-                    (feedRes->getWaterTemperatureSensor() && !feedRes->getWaterTemperatureSensorAttachment().getMeasurementFrame())) {
-                    yield();
-                }
-            #endif
             if (withSetpoints) {
                 {   auto ph = HydroSingleMeasurement(phSetpoint, Hydro_UnitsType_Alkalinity_pH_14);
                     getLogger()->logMessage(SFP(HStr_Log_Field_pH_Setpoint), measurementToString(ph));
@@ -1028,30 +1020,33 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType, bool withSetpoints)
                     getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Setpoint), measurementToString(temp));
                 }
             }
-            if (feedRes->getWaterPHSensor()) {
-                auto ph = feedRes->getWaterPHSensorAttachment().getMeasurement(true);
+            if (feedRes->getWaterPHSensor(true)) {
+                #ifdef HYDRO_USE_MULTITASKING
+                    feedRes->getWaterPHSensor()->yieldForMeasurement();
+                #endif
+                auto ph = feedRes->getWaterPHSensorAttachment().getMeasurement();
+                
                 getLogger()->logMessage(SFP(HStr_Log_Field_pH_Measured), measurementToString(ph));
             }
-            if (feedRes->getWaterTDSSensor()) {
-                auto tds = feedRes->getWaterTDSSensorAttachment().getMeasurement(true);
+            if (feedRes->getWaterTDSSensor(true)) {
+                #ifdef HYDRO_USE_MULTITASKING
+                    feedRes->getWaterTDSSensor()->yieldForMeasurement();
+                #endif
+                auto tds = feedRes->getWaterTDSSensorAttachment().getMeasurement();
                 convertUnits(&tds, feedRes->getConcentrateUnits());
                 getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Measured), measurementToString(tds, 1));
             }
-            if (feedRes->getWaterTemperatureSensor()) {
-                auto temp = feedRes->getWaterTemperatureSensorAttachment().getMeasurement(true);
+            if (feedRes->getWaterTemperatureSensor(true)) {
+                #ifdef HYDRO_USE_MULTITASKING
+                    feedRes->getWaterTemperatureSensor()->yieldForMeasurement();
+                #endif
+                auto temp = feedRes->getWaterTemperatureSensorAttachment().getMeasurement();
                 convertUnits(&temp, feedRes->getTemperatureUnits());
                 getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
             break;
 
         case HydroFeedingLogType_AirReport:
-            #ifdef HYDRO_USE_MULTITASKING
-                // Yield will allow measurements to complete, ensures first log out doesn't contain zero'ed values
-                if ((feedRes->getAirTemperatureSensor() && !feedRes->getAirTemperatureSensorAttachment().getMeasurementFrame()) ||
-                    (feedRes->getAirCO2Sensor() && !feedRes->getAirCO2SensorAttachment().getMeasurementFrame())) {
-                    yield();
-                }
-            #endif
             if (withSetpoints) {
                 {   auto temp = HydroSingleMeasurement(airTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
                     convertUnits(&temp, feedRes->getTemperatureUnits());
@@ -1061,13 +1056,19 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType, bool withSetpoints)
                     getLogger()->logMessage(SFP(HStr_Log_Field_CO2_Setpoint), measurementToString(co2));
                 }
             }
-            if (feedRes->getAirTemperatureSensor()) {
-                auto temp = feedRes->getAirTemperatureSensorAttachment().getMeasurement(true);
+            if (feedRes->getAirTemperatureSensor(true)) {
+                #ifdef HYDRO_USE_MULTITASKING
+                    feedRes->getAirTemperatureSensor()->yieldForMeasurement();
+                #endif
+                auto temp = feedRes->getAirTemperatureSensorAttachment().getMeasurement();
                 convertUnits(&temp, feedRes->getTemperatureUnits());
                 getLogger()->logMessage(SFP(HStr_Log_Field_Temp_Measured), measurementToString(temp));
             }
-            if (feedRes->getAirCO2Sensor()) {
-                auto co2 = feedRes->getAirCO2SensorAttachment().getMeasurement(true);
+            if (feedRes->getAirCO2Sensor(true)) {
+                #ifdef HYDRO_USE_MULTITASKING
+                    feedRes->getAirCO2Sensor()->yieldForMeasurement();
+                #endif
+                auto co2 = feedRes->getAirCO2SensorAttachment().getMeasurement();
                 getLogger()->logMessage(SFP(HStr_Log_Field_CO2_Measured), measurementToString(co2));
             }
             break;

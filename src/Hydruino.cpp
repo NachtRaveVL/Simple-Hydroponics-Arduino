@@ -806,27 +806,31 @@ void Hydruino::commonPostSave()
     logger.logSystemSave();
 
     if (_systemData) {
-        _systemData->_unsetModded();
-    }
-
-    if (hasUserCalibrations()) {
-        for (auto iter = _calibrationData.begin(); iter != _calibrationData.end(); ++iter) {
-            iter->second->_unsetModded();
-        }
+        _systemData->unsetModified();
     }
 
     if (hydroCropsLib.hasUserCrops()) {
         for (auto iter = hydroCropsLib._cropsData.begin(); iter != hydroCropsLib._cropsData.end(); ++iter) {
             if (iter->second->userSet) {
-                iter->second->data._unsetModded();
+                iter->second->data.unsetModified();
             }
+        }
+    }
+
+    if (hasUserCalibrations()) {
+        for (auto iter = _calibrationData.begin(); iter != _calibrationData.end(); ++iter) {
+            iter->second->unsetModified();
         }
     }
 
     if (hasCustomAdditives()) {
         for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
-            iter->second->_unsetModded();
+            iter->second->unsetModified();
         }
+    }
+
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        iter->second->unsetModified();
     }
 }
 
@@ -835,7 +839,7 @@ void Hydruino::commonPostSave()
 // Super tight updates (buzzer/gps/etc) that need to be ran often
 inline void tightUpdates()
 {
-    // TODO: put in link to buzzer update here
+    // TODO: put in link to buzzer update here. #5 in Hydro.
     #ifdef HYDRO_USE_GPS
         if (Hydruino::_activeInstance->_gps) { while(Hydruino::_activeInstance->_gps->available()) { Hydruino::_activeInstance->_gps->read(); } }
     #endif
@@ -1025,7 +1029,7 @@ void Hydruino::setSystemName(String systemName)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && !systemName.equals(getSystemName())) {
-        _systemData->_bumpRevIfNotAlreadyModded();
+        _systemData->bumpRevisionIfNeeded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRO_NAME_MAXSIZE);
         setNeedsLayout();
     }
@@ -1035,7 +1039,7 @@ void Hydruino::setTimeZoneOffset(int8_t timeZoneOffset)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && _systemData->timeZoneOffset != timeZoneOffset) {
-        _systemData->_bumpRevIfNotAlreadyModded();
+        _systemData->bumpRevisionIfNeeded();
         _systemData->timeZoneOffset = timeZoneOffset;
         scheduler.broadcastDayChange();
     }
@@ -1045,7 +1049,7 @@ void Hydruino::setPollingInterval(uint16_t pollingInterval)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && _systemData->pollingInterval != pollingInterval) {
-        _systemData->_bumpRevIfNotAlreadyModded();
+        _systemData->bumpRevisionIfNeeded();
         _systemData->pollingInterval = pollingInterval;
 
         #ifdef HYDRO_USE_MULTITASKING
@@ -1067,7 +1071,7 @@ void Hydruino::setAutosaveEnabled(Hydro_Autosave autosaveEnabled, Hydro_Autosave
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && (_systemData->autosaveEnabled != autosaveEnabled || _systemData->autosaveFallback != autosaveFallback || _systemData->autosaveInterval != autosaveInterval)) {
-        _systemData->_bumpRevIfNotAlreadyModded();
+        _systemData->bumpRevisionIfNeeded();
         _systemData->autosaveEnabled = autosaveEnabled;
         _systemData->autosaveFallback = autosaveFallback;
         _systemData->autosaveInterval = autosaveInterval;
@@ -1093,7 +1097,7 @@ void Hydruino::setWiFiConnection(String ssid, String pass)
         bool passChanged = pass.equals(getWiFiPassword());
 
         if (ssidChanged || passChanged || (pass.length() && !_systemData->wifiPasswordSeed)) {
-            _systemData->_bumpRevIfNotAlreadyModded();
+            _systemData->bumpRevisionIfNeeded();
 
             if (ssid.length()) {
                 strncpy(_systemData->wifiSSID, ssid.c_str(), HYDRO_NAME_MAXSIZE);
@@ -1129,7 +1133,7 @@ void Hydruino::setEthernetConnection(const uint8_t *macAddress)
         bool macChanged = memcmp(macAddress, getMACAddress(), sizeof(uint8_t[6])) != 0;
 
         if (macChanged) {
-            _systemData->_bumpRevIfNotAlreadyModded();
+            _systemData->bumpRevisionIfNeeded();
 
             memcpy(_systemData->macAddress, macAddress, sizeof(uint8_t[6]));
 
@@ -1147,7 +1151,7 @@ void Hydruino::setSystemLocation(double latitude, double longitude, double altit
         forceUpdate |= ((latitude - _systemData->latitude) * (latitude - _systemData->latitude)) +
                        ((longitude - _systemData->longitude) * (longitude - _systemData->longitude)) >= HYDRO_SYS_LATLONG_DISTSQRDTOL ||
                        fabs(altitude - _systemData->altitude) >= HYDRO_SYS_ALTITUDE_DISTTOL;
-        if (forceUpdate) { _systemData->_bumpRevIfNotAlreadyModded(); }
+        if (forceUpdate) { _systemData->bumpRevisionIfNeeded(); }
         _systemData->latitude = latitude;
         _systemData->longitude = longitude;
         _systemData->altitude = altitude;

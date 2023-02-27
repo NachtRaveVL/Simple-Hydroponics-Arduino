@@ -83,6 +83,7 @@ void HydroCrop::setFeedingWeight(float weight)
         _feedingWeight = weight;
 
         getScheduler()->setNeedsScheduling();
+        bumpRevisionIfNeeded();
     }
 }
 
@@ -199,11 +200,13 @@ void HydroTimedCrop::notifyFeedingBegan()
 void HydroTimedCrop::setFeedTimeOn(TimeSpan timeOn)
 {
     _feedTimingMins[0] = timeOn.totalseconds() / SECS_PER_MIN;
+    bumpRevisionIfNeeded();
 }
 
 void HydroTimedCrop::setFeedTimeOff(TimeSpan timeOff)
 {
     _feedTimingMins[1] = timeOff.totalseconds() / SECS_PER_MIN;
+    bumpRevisionIfNeeded();
 }
 
 void HydroTimedCrop::saveToData(HydroData *dataOut)
@@ -231,7 +234,7 @@ HydroAdaptiveCrop::HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn)
     HydroConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, defaultConcentrateUnits()))
 {
     _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->concentrateUnits, getConcentrateUnits()));
-    _soilMoisture.setObject(dataIn->moistureSensor);
+    _soilMoisture.initObject(dataIn->moistureSensor);
 
     _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
     _feedingTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->feedingTrigger)));
@@ -247,11 +250,10 @@ void HydroAdaptiveCrop::update()
     _feedingTrigger.updateIfNeeded();
 }
 
-void HydroAdaptiveCrop::handleLowMemory()
+SharedPtr<HydroObjInterface> HydroAdaptiveCrop::getSharedPtrFor(const HydroObjInterface *obj) const
 {
-    HydroCrop::handleLowMemory();
-
-    if (_feedingTrigger) { _feedingTrigger->handleLowMemory(); }
+    return obj->getKey() == _feedingTrigger.getKey() ? _feedingTrigger.getSharedPtrFor(obj) :
+           HydroObject::getSharedPtrFor(obj);
 }
 
 bool HydroAdaptiveCrop::needsFeeding(bool poll)
@@ -271,6 +273,7 @@ void HydroAdaptiveCrop::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
         _concUnits = concentrateUnits;
 
         _soilMoisture.setMeasurementUnits(getConcentrateUnits());
+        bumpRevisionIfNeeded();
     }
 }
 

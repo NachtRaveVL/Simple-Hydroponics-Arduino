@@ -44,7 +44,7 @@ HydroTrigger::HydroTrigger(const HydroTriggerSubData *dataIn)
 {
     _sensor.setMeasurementRow(dataIn->measurementRow);
     _sensor.setMeasurementUnits(dataIn->measurementUnits);
-    _sensor.setObject(dataIn->sensorName);
+    _sensor.initObject(dataIn->sensorName);
 }
 
 void HydroTrigger::saveToData(HydroTriggerSubData *dataOut) const
@@ -61,9 +61,6 @@ void HydroTrigger::update()
 {
     _sensor.updateIfNeeded(true);
 }
-
-void HydroTrigger::handleLowMemory()
-{ ; }
 
 Hydro_TriggerState HydroTrigger::getTriggerState(bool poll)
 {

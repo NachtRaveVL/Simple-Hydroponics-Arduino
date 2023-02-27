@@ -25,7 +25,7 @@ extern HydroData *newDataFromJSONObject(JsonObjectConst &objectIn);
 // Data Base
 // Base class for serializable (JSON+Binary) storage data, used to define the base
 // header of all data stored internally.
-// NOTE: NON-CONST VALUE TYPES ONLY. All data *MUST* be able to use default operator=.
+// NOTE: NON-CONST VALUE TYPES ONLY. All data *MUST* be able to use default operator=, constructor, and destructor.
 struct HydroData : public HydroJSONSerializableInterface {
     union {
         char chars[4];                                      // Standalone data structure 4-char identifier
@@ -38,14 +38,13 @@ struct HydroData : public HydroJSONSerializableInterface {
     } id;                                                   // Identifier union
     uint16_t _size;                                         // The size (in bytes) of the data
     uint8_t _version;                                       // Version # of data container
-    uint8_t _revision;                                      // Revision # of stored data
-    bool _modified;                                         // Flag tracking modified status (reset to false after save)
+    int8_t _revision;                                       // Revision # of stored data (uses -vals for modified flag)
 
     inline bool isStandardData() const { return id.chars[0] == 'H'; }
-    inline bool isSystemData() const { return id.chars[0] == 'H' && id.chars[1] == 'S' && id.chars[2] == 'Y' && id.chars[3] == 'S'; }
-    inline bool isCalibrationData() const { return id.chars[0] == 'H' && id.chars[1] == 'C' && id.chars[2] == 'A' && id.chars[3] == 'L'; }
-    inline bool isCropsLibData() const { return id.chars[0] == 'H' && id.chars[1] == 'C' && id.chars[2] == 'L' && id.chars[3] == 'D'; }
-    inline bool isAdditiveData() const { return id.chars[0] == 'H' && id.chars[1] == 'A' && id.chars[2] == 'D' && id.chars[3] == 'D'; }
+    inline bool isSystemData() const { return isStandardData() && id.chars[1] == 'S' && id.chars[2] == 'Y' && id.chars[3] == 'S'; }
+    inline bool isCalibrationData() const { return isStandardData() && id.chars[1] == 'C' && id.chars[2] == 'A' && id.chars[3] == 'L'; }
+    inline bool isCropsLibData() const { return isStandardData() && id.chars[1] == 'C' && id.chars[2] == 'L' && id.chars[3] == 'D'; }
+    inline bool isAdditiveData() const { return isStandardData() && id.chars[1] == 'A' && id.chars[2] == 'D' && id.chars[3] == 'D'; }
     inline bool isObjectData() const { return !isStandardData() && id.object.idType >= 0; }
 
     HydroData();                                            // Default constructor
@@ -66,10 +65,10 @@ struct HydroData : public HydroJSONSerializableInterface {
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 
-    inline void _bumpRev() { _revision += 1; _setModded(); }
-    inline void _bumpRevIfNotAlreadyModded() { if (!_modified) { _bumpRev(); } } // Should be called before modifying data
-    inline void _setModded() { _modified = true; }          // Should be called after modifying any data
-    inline void _unsetModded() { _modified = false; }       // Should be called after save-out
+    inline uint8_t getRevision() const { return abs(_revision); }
+    inline bool isModified() const { return _revision < 0; }
+    inline void bumpRevisionIfNeeded() { if (!isModified()) { _revision = -(abs(_revision) + 1); } } // Should be called before modifying data
+    inline void unsetModified() { _revision = abs(_revision); } // Should be called after save-out
 };
 
 
