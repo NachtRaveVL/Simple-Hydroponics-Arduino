@@ -380,6 +380,20 @@ void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length
     }
 }
 
+template<>
+void commaStringToArray<String>(String stringIn, String *arrayOut, size_t length)
+{
+    if (!stringIn.length() || !length || stringIn.equalsIgnoreCase(SFP(HStr_null))) { return; }
+    int lastSepPos = -1;
+    for (size_t index = 0; index < length; ++index) {
+        int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
+        if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
+        String subString = stringIn.substring(lastSepPos+1, nextSepPos);
+        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+        arrayOut[index] = subString;
+    }
+}
+
 String hexStringFromBytes(const uint8_t *bytesIn, size_t length)
 {
     if (!bytesIn || !length) { return String(SFP(HStr_null)); }

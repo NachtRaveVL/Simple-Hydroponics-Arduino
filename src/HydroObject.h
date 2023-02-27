@@ -95,44 +95,70 @@ public:
     inline bool isRailType() const { return _id.isRailType(); }
     inline bool isUnknownType() const { return _id.isUnknownType(); }
 
-    inline HydroObject(HydroIdentity id) : _id(id), _linksSize(0), _links(nullptr) { ; }
-    inline HydroObject(const HydroData *data) : _id(data), _linksSize(0), _links(nullptr) { ; }
+    inline HydroObject(HydroIdentity id) : _id(id), _revision(-1), _linksSize(0), _links(nullptr) { ; }
+    inline HydroObject(const HydroData *data) : _id(data), _revision(data->_revision), _linksSize(0), _links(nullptr) { ; }
     virtual ~HydroObject();
 
-    virtual void update();                                  // Called over intervals of time by runloop
-    virtual void handleLowMemory();                         // Called upon low memory condition to try and free memory up
+    // Called over intervals of time by runloop
+    virtual void update();
+    // Called upon low memory condition to try and free memory up
+    virtual void handleLowMemory();
 
-    HydroData *newSaveData();                               // Saves object state to proper backing data
+    // Saves object state to proper backing data
+    HydroData *newSaveData();
 
-    void allocateLinkages(size_t size = 1);                 // Allocates linkage list of specified size (reallocates)
-    virtual bool addLinkage(HydroObject *obj);              // Adds linkage to this object, returns true upon initial add
-    virtual bool removeLinkage(HydroObject *obj);           // Removes linkage from this object, returns true upon last remove
-    bool hasLinkage(HydroObject *obj) const;                // Checks object linkage to this object
+    // (Re)allocates linkage list of specified size
+    void allocateLinkages(size_t size = 1);
+    // Adds linkage to this object, returns true upon initial add
+    virtual bool addLinkage(HydroObject *obj);
+    // Removes linkage from this object, returns true upon last remove
+    virtual bool removeLinkage(HydroObject *obj);
+    // Checks object linkage to this object
+    bool hasLinkage(HydroObject *obj) const;
 
     // Returns the linkages this object contains, along with refcount for how many times it has registered itself as linked (via attachment points).
     // Objects are considered strong pointers, since existence -> SharedPtr ref to this instance exists.
     inline Pair<uint8_t, Pair<HydroObject *, int8_t> *> getLinkages() const { return make_pair(_linksSize, _links); }
 
-    virtual void unresolveAny(HydroObject *obj) override;   // Unresolves any dlinks to obj prior to caching
-    inline void unresolve() { unresolveAny(this); }         // Unresolves this instance from any dlinks
+    // Unresolves any dlinks to obj prior to caching
+    virtual void unresolveAny(HydroObject *obj) override;
+    // Unresolves this instance from any dlinks
+    inline void unresolve() { unresolveAny(this); }
 
-    virtual HydroIdentity getId() const override;           // Returns the unique Identity of the object
-    virtual hkey_t getKey() const override;                 // Returns the unique key of the object
-    virtual String getKeyString() const override;           // Returns the key string of the object
-    virtual SharedPtr<HydroObjInterface> getSharedPtr() const override; // Returns the SharedPtr instance of the object
-    virtual bool isObject() const override;                 // Returns true for object
+    // Returns the unique Identity of the object
+    virtual HydroIdentity getId() const override;
+    // Returns the unique key of the object
+    virtual hkey_t getKey() const override;
+    // Returns the key string of the object
+    virtual String getKeyString() const override;
+    // Returns the SharedPtr instance for this object
+    virtual SharedPtr<HydroObjInterface> getSharedPtr() const override;
+    // Returns the SharedPtr instance for passed object
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
+    // Returns true for object
+    virtual bool isObject() const override;
+
+    // Returns revision #
+    inline uint8_t getRevision() const { return abs(_revision); }
+    // If revision has been modified since last saved
+    inline bool isModified() const { return _revision < 0; }
+    // Bumps revision # if not already modified, and sets modified flag (called after modifying data)
+    inline void bumpRevisionIfNeeded() { if (!isModified()) { _revision = -(abs(_revision) + 1); } }
+    // Unsets modified flag from revision (called after save-out)
+    inline void unsetModified() { _revision = abs(_revision); }
 
 protected:
     HydroIdentity _id;                                      // Object id
-    uint8_t _linksSize;                                     // Size of object linkages
-    Pair<HydroObject *, int8_t> *_links;                    // Object linkages (owned, lazily allocated)
+    int8_t _revision;                                       // Revision # of stored data (uses -vals for modified flag)
+    uint8_t _linksSize;                                     // Number of object linkages
+    Pair<HydroObject *, int8_t> *_links;                    // Object linkages array (owned, lazily allocated/grown/shrunk)
 
     virtual HydroData *allocateData() const;                // Only up to base type classes (sensor, crop, etc.) does this need overriden
     virtual void saveToData(HydroData *dataOut);            // *ALL* derived classes must override and implement
 
 private:
     // Private constructor to disable derived/public access
-    inline HydroObject() : _id(), _linksSize(0), _links(nullptr) { ; }
+    inline HydroObject() : _id(), _revision(-1), _linksSize(0), _links(nullptr) { ; }
 };
 
 
@@ -143,16 +169,23 @@ class HydroSubObject : public HydroObjInterface {
 public:
     inline HydroSubObject(HydroObjInterface *parent = nullptr) : _parent(parent) { ; }
 
+    virtual void setParent(HydroObjInterface *parent);
+    inline HydroObjInterface *getParent() const { return _parent; }
+
     virtual void unresolveAny(HydroObject *obj) override;
 
     virtual HydroIdentity getId() const override;
     virtual hkey_t getKey() const override;
     virtual String getKeyString() const override;
     virtual SharedPtr<HydroObjInterface> getSharedPtr() const override;
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
+
     virtual bool isObject() const override;
 
-    virtual void setParent(HydroObjInterface *parent);
-    inline HydroObjInterface *getParent() const { return _parent; }
+    inline uint8_t getRevision() const { return _parent && _parent->isObject() ? ((HydroObject *)_parent)->getRevision() : 0; }
+    inline bool isModified() const { return _parent && _parent->isObject() ? ((HydroObject *)_parent)->isModified() : false; }
+    inline void bumpRevisionIfNeeded() { if (_parent && _parent->isObject()) { ((HydroObject *)_parent)->bumpRevisionIfNeeded(); } }
+    inline void unsetModified() { ; }
 
 protected:
     HydroObjInterface *_parent;                             // Parent object pointer (reverse ownership)

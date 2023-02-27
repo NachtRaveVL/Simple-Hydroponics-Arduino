@@ -31,6 +31,7 @@ void HydroBalancer::setTargetSetpoint(float targetSetpoint)
         _targetSetpoint = targetSetpoint;
 
         _sensor.setNeedsMeasurement();
+        bumpRevisionIfNeeded();
     }
 }
 

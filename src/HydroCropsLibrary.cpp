@@ -87,7 +87,7 @@ void HydroCropsLibrary::returnCropsData(const HydroCropsLibData *cropData)
         if (book) {
             book->count--;
 
-            if (book->count <= 0 && (!book->userSet || !book->data._modified)) {
+            if (book->count <= 0 && (!book->userSet || !book->data.isModified())) {
                 delete iter->second;
                 _cropsData.erase(iter);
             }

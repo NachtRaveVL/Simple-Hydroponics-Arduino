@@ -36,7 +36,7 @@ public:
     template<class U> inline void unresolveIf(U obj) { if (operator==(obj)) { unresolve(); } }
 
     template<class U> inline void setObject(U obj) { operator=(obj); }
-    template<class U = HydroObjInterface> inline SharedPtr<U> getObject() { return reinterpret_pointer_cast<U>(_getObject()); }
+    template<class U = HydroObjInterface> inline SharedPtr<U> getObject() { return reinterpret_pointer_cast<U>(resolveObject()); }
     template<class U = HydroObjInterface> inline U *get() { return getObject<U>().get(); }
 
     inline HydroIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroIdentity(_keyStr) : HydroIdentity(_key)); }
@@ -66,7 +66,7 @@ protected:
     const char *_keyStr;                                    // Copy of id.keyString (if not resolved, or unresolved)
 
 private:
-    SharedPtr<HydroObjInterface> _getObject();
+    SharedPtr<HydroObjInterface> resolveObject();
     friend class Hydruino;
     friend class HydroAttachment;
 };
@@ -95,7 +95,8 @@ public:
     inline void unresolve() { _obj.unresolve(); } 
     template<class U> inline void unresolveIf(U obj) { _obj.unresolveIf(obj); }
 
-    template<class U> void setObject(U obj);
+    template<class U> void setObject(U obj, bool modify = true);
+    template<class U> inline void initObject(U obj) { setObject(obj, false); }
     template<class U = HydroObjInterface> SharedPtr<U> getObject();
     template<class U = HydroObjInterface> inline U *get() { return getObject<U>().get(); }
 
@@ -105,6 +106,7 @@ public:
     inline hkey_t getKey() const { return _obj.getKey(); }
     inline String getKeyString() const { return _obj.getKeyString(); }
     inline bool isSet() const { return _obj.isSet(); }
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
 
     inline operator bool() const { return isResolved(); }
     inline HydroObjInterface *operator->() { return get<HydroObjInterface>(); }

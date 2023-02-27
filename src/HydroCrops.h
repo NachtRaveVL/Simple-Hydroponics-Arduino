@@ -67,7 +67,7 @@ public:
     inline void notifyDayChanged() { recalcGrowthParams(); }
 
 protected:
-    Hydro_SubstrateType _substrateType;                     // Substrate type (fixme: currently unused)
+    Hydro_SubstrateType _substrateType;                     // Substrate type
     time_t _sowTime;                                        // Sow date (UTC), may be past or future date
     HydroAttachment _feedReservoir;                         // Feed reservoir attachment
     const HydroCropsLibData *_cropsData;                    // Crops library data (checked out if !nullptr)
@@ -135,7 +135,7 @@ public:
     HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn);
 
     virtual void update() override;
-    virtual void handleLowMemory() override;
+    virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
 
     virtual bool needsFeeding(bool poll = false) override;
 

@@ -70,6 +70,7 @@ void HydroReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
 {
     if (_volumeUnits != volumeUnits) {
         _volumeUnits = volumeUnits;
+        bumpRevisionIfNeeded();
     }
 }
 
@@ -147,7 +148,7 @@ HydroFluidReservoir::HydroFluidReservoir(const HydroFluidReservoirData *dataIn)
 {
     allocateLinkages(getReservoirType() == Hydro_ReservoirType_FeedWater ? HYDRO_FEEDRES_LINKS_BASESIZE : HYDRO_FLUIDRES_LINKS_BASESIZE);
 
-    _waterVolume.setObject(dataIn->volumeSensor);
+    _waterVolume.initObject(dataIn->volumeSensor);
 
     _filledTrigger.setHandleMethod(&HydroFluidReservoir::handleFilled);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
@@ -168,12 +169,11 @@ void HydroFluidReservoir::update()
     _emptyTrigger.updateIfNeeded(true);
 }
 
-void HydroFluidReservoir::handleLowMemory()
+SharedPtr<HydroObjInterface> HydroFluidReservoir::getSharedPtrFor(const HydroObjInterface *obj) const
 {
-    HydroObject::handleLowMemory();
-
-    if (_filledTrigger) { _filledTrigger->handleLowMemory(); }
-    if (_emptyTrigger) { _emptyTrigger->handleLowMemory(); }
+    return obj->getKey() == _filledTrigger.getKey() ? _filledTrigger.getSharedPtrFor(obj) :
+           obj->getKey() == _emptyTrigger.getKey() ? _emptyTrigger.getSharedPtrFor(obj) :
+           HydroObject::getSharedPtrFor(obj);
 }
 
 bool HydroFluidReservoir::isFilled(bool poll)
@@ -196,6 +196,7 @@ void HydroFluidReservoir::setVolumeUnits(Hydro_UnitsType volumeUnits)
         _volumeUnits = volumeUnits;
 
         _waterVolume.setMeasurementUnits(volumeUnits);
+        bumpRevisionIfNeeded();
     }
 }
 
@@ -282,12 +283,12 @@ HydroFeedReservoir::HydroFeedReservoir(const HydroFeedReservoirData *dataIn)
         }
     } else { _numFeedingsToday = 0; }
 
-    _waterPH.setObject(dataIn->waterPHSensor);
-    _waterTDS.setObject(dataIn->waterTDSSensor);
-    _waterTemp.setObject(dataIn->waterTempSensor);
+    _waterPH.initObject(dataIn->waterPHSensor);
+    _waterTDS.initObject(dataIn->waterTDSSensor);
+    _waterTemp.initObject(dataIn->waterTempSensor);
 
-    _airTemp.setObject(dataIn->airTempSensor);
-    _airCO2.setObject(dataIn->airCO2Sensor);
+    _airTemp.initObject(dataIn->airTempSensor);
+    _airCO2.initObject(dataIn->airCO2Sensor);
 }
 
 void HydroFeedReservoir::update()
@@ -309,14 +310,24 @@ void HydroFeedReservoir::update()
 
 void HydroFeedReservoir::handleLowMemory()
 {
-    HydroFluidReservoir::handleLowMemory();
-
     if (_waterPHBalancer && !_waterPHBalancer->isEnabled()) { _waterPHBalancer.setObject(nullptr); }
     if (_waterTDSBalancer && !_waterTDSBalancer->isEnabled()) { _waterTDSBalancer.setObject(nullptr); }
     if (_waterTempBalancer && !_waterTempBalancer->isEnabled()) { _waterTempBalancer.setObject(nullptr); }
 
     if (_airTempBalancer && !_airTempBalancer->isEnabled()) { _airTempBalancer.setObject(nullptr); }
     if (_airCO2Balancer && !_airCO2Balancer->isEnabled()) { _airCO2Balancer.setObject(nullptr); }
+
+    HydroObject::handleLowMemory();
+}
+
+SharedPtr<HydroObjInterface> HydroFeedReservoir::getSharedPtrFor(const HydroObjInterface *obj) const
+{
+    return obj->getKey() == _waterPHBalancer.getKey() ? _waterPHBalancer.getSharedPtrFor(obj) :
+           obj->getKey() == _waterTDSBalancer.getKey() ? _waterTDSBalancer.getSharedPtrFor(obj) :
+           obj->getKey() == _waterTempBalancer.getKey() ? _waterTempBalancer.getSharedPtrFor(obj) :
+           obj->getKey() == _airTempBalancer.getKey() ? _airTempBalancer.getSharedPtrFor(obj) :
+           obj->getKey() == _airCO2Balancer.getKey() ? _airCO2Balancer.getSharedPtrFor(obj) :
+           HydroFluidReservoir::getSharedPtrFor(obj);
 }
 
 void HydroFeedReservoir::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
@@ -325,6 +336,7 @@ void HydroFeedReservoir::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
         _concUnits = concentrateUnits;
 
         _waterTDS.setMeasurementUnits(getConcentrateUnits());
+        bumpRevisionIfNeeded();
     }
 }
 
@@ -335,6 +347,7 @@ void HydroFeedReservoir::setTemperatureUnits(Hydro_UnitsType temperatureUnits)
 
         _waterTemp.setMeasurementUnits(getTemperatureUnits());
         _airTemp.setMeasurementUnits(getTemperatureUnits());
+        bumpRevisionIfNeeded();
     }
 }
 

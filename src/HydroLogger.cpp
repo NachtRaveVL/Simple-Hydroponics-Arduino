@@ -55,7 +55,7 @@ bool HydroLogger::beginLoggingToSDCard(String logFilePrefix)
                     Hydruino::_activeInstance->endSDCard(sd);
                 #endif
 
-                Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+                Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
                 strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
                 loggerData()->logToSDCard = true;
                 _logFilename = logFilename;
@@ -91,7 +91,7 @@ bool HydroLogger::beginLoggingToWiFiStorage(String logFilePrefix)
                 logFile.close();
             #endif
 
-            Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
             strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
             loggerData()->logToWiFiStorage = true;
             _logFilename = logFilename;
@@ -228,7 +228,7 @@ void HydroLogger::setLogLevel(Hydro_LogLevel logLevel)
 {
     HYDRO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
     if (hasLoggerData() && loggerData()->logLevel != logLevel) {
-        Hydruino::_activeInstance->_systemData->_bumpRevIfNotAlreadyModded();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         loggerData()->logLevel = logLevel;
     }
 }
@@ -248,7 +248,7 @@ void HydroLogger::notifyDayChanged()
 
 void HydroLogger::cleanupOldestLogs(bool force)
 {
-    // TODO: Old data cleanup.
+    // TODO: Old data cleanup. #17 in Hydro.
 }
 
 

@@ -41,7 +41,6 @@ public:
     virtual void saveToData(HydroTriggerSubData *dataOut) const;
 
     virtual void update();
-    virtual void handleLowMemory();
 
     virtual Hydro_TriggerState getTriggerState(bool poll = false) override;
 

@@ -54,26 +54,26 @@ HydroData *newDataFromJSONObject(JsonObjectConst &objectIn)
 
 
 HydroData::HydroData()
-    : id{.chars={'\0','\0','\0','\0'}}, _version(1), _revision(1), _modified(false)
+    : id{.chars={'\0','\0','\0','\0'}}, _version(1), _revision(-1)
 {
     _size = sizeof(*this);
 }
 
 HydroData::HydroData(char id0, char id1, char id2, char id3, uint8_t version, uint8_t revision)
-    : id{.chars={id0,id1,id2,id3}}, _version(version), _revision(revision), _modified(false)
+    : id{.chars={id0,id1,id2,id3}}, _version(version), _revision((int8_t)revision)
 {
     _size = sizeof(*this);
     HYDRO_HARD_ASSERT(isStandardData(), SFP(HStr_Err_InvalidParameter));
 }
 
 HydroData::HydroData(hid_t idType, hid_t objType, hposi_t posIndex, hid_t classType, uint8_t version, uint8_t revision)
-    : id{.object={idType,objType,posIndex,classType}}, _version(version), _revision(revision), _modified(false)
+    : id{.object={idType,objType,posIndex,classType}}, _version(version), _revision((int8_t)revision)
 {
     _size = sizeof(*this);
 }
 
 HydroData::HydroData(const HydroIdentity &id)
-    : HydroData(id.type, (int8_t)id.objTypeAs.actuatorType, id.posIndex, -1, 1, 1)
+    : HydroData(id.type, id.objTypeAs.idType, id.posIndex, -1, 1, 0)
 {
     _size = sizeof(*this);
 }
@@ -87,7 +87,7 @@ void HydroData::toJSONObject(JsonObject &objectOut) const
         objectOut[SFP(HStr_Key_Type)] = commaStringFromArray(typeVals, 4);
     }
     if (_version > 1) { objectOut[SFP(HStr_Key_Version)] = _version; }
-    if (_revision > 1) { objectOut[SFP(HStr_Key_Revision)] = _revision; }
+    if (getRevision() > 1) { objectOut[SFP(HStr_Key_Revision)] = getRevision(); }
 }
 
 void HydroData::fromJSONObject(JsonObjectConst &objectIn)
@@ -106,6 +106,7 @@ void HydroData::fromJSONObject(JsonObjectConst &objectIn)
     }
     _version = objectIn[SFP(HStr_Key_Version)] | _version;
     _revision = objectIn[SFP(HStr_Key_Revision)] | _revision;
+    _revision = abs(_revision);
 }
 
 
