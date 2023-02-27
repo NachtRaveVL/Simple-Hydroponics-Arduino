@@ -241,13 +241,13 @@ bool HydroBinarySensor::needsPolling(hframe_t allowance) const
     return getController() ? getController()->isPollingFrameOld(_lastMeasurement.frame, allowance) : false;
 }
 
-void HydroBinarySensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow)
+void HydroBinarySensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t)
 {
     HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
     bumpRevisionIfNeeded();
 }
 
-Hydro_UnitsType HydroBinarySensor::getMeasurementUnits(uint8_t measurementRow) const
+Hydro_UnitsType HydroBinarySensor::getMeasurementUnits(uint8_t) const
 {
     return _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Raw_1;
 }
@@ -372,21 +372,21 @@ bool HydroAnalogSensor::needsPolling(hframe_t allowance) const
     return getController() ? getController()->isPollingFrameOld(_lastMeasurement.frame, allowance) : false;
 }
 
-void HydroAnalogSensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow)
+void HydroAnalogSensor::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t)
 {
-    if (_measurementUnits[measurementRow] != measurementUnits) {
-        _measurementUnits[measurementRow] = measurementUnits;
+    if (_measurementUnits[0] != measurementUnits) {
+        _measurementUnits[0] = measurementUnits;
 
         if (_lastMeasurement.isSet()) {
-            convertUnits(&_lastMeasurement, _measurementUnits[measurementRow]);
+            convertUnits(&_lastMeasurement, _measurementUnits[0]);
         }
         bumpRevisionIfNeeded();
     }
 }
 
-Hydro_UnitsType HydroAnalogSensor::getMeasurementUnits(uint8_t measurementRow) const
+Hydro_UnitsType HydroAnalogSensor::getMeasurementUnits(uint8_t) const
 {
-    return _measurementUnits[measurementRow];
+    return _measurementUnits[0];
 }
 
 void HydroAnalogSensor::saveToData(HydroData *dataOut)

@@ -1012,7 +1012,7 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType, bool withSetpoints)
                     getLogger()->logMessage(SFP(HStr_Log_Field_pH_Setpoint), measurementToString(ph));
                 }
                 {   auto tds = HydroSingleMeasurement(tdsSetpoint, Hydro_UnitsType_Concentration_TDS);
-                    convertUnits(&tds, feedRes->getConcentrateUnits());
+                    convertUnits(&tds, feedRes->getAirConcentrateUnits());
                     getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Setpoint), measurementToString(tds, 1));
                 }
                 {   auto temp = HydroSingleMeasurement(waterTempSetpoint, Hydro_UnitsType_Temperature_Celsius);
@@ -1033,7 +1033,7 @@ void HydroFeeding::logFeeding(HydroFeedingLogType logType, bool withSetpoints)
                     feedRes->getWaterTDSSensor()->yieldForMeasurement();
                 #endif
                 auto tds = feedRes->getWaterTDSSensorAttachment().getMeasurement();
-                convertUnits(&tds, feedRes->getConcentrateUnits());
+                convertUnits(&tds, feedRes->getAirConcentrateUnits());
                 getLogger()->logMessage(SFP(HStr_Log_Field_TDS_Measured), measurementToString(tds, 1));
             }
             if (feedRes->getWaterTemperatureSensor(true)) {

@@ -221,19 +221,19 @@ void HydroTimedCrop::saveToData(HydroData *dataOut)
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, int classType)
     : HydroCrop(cropType, cropIndex, substrateType, sowTime, classType),
-      HydroConcentrateUnitsInterfaceStorage(defaultConcentrateUnits()),
+      HydroWaterConcentrateUnitsInterfaceStorage(defaultConcentrateUnits()),
       _soilMoisture(this), _feedingTrigger(this)
 {
-    _soilMoisture.setMeasurementUnits(getConcentrateUnits());
+    _soilMoisture.setMeasurementUnits(getWaterConcentrateUnits());
 
     _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
 }
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn)
     : HydroCrop(dataIn), _soilMoisture(this), _feedingTrigger(this),
-    HydroConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, defaultConcentrateUnits()))
+    HydroWaterConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, defaultConcentrateUnits()))
 {
-    _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->concentrateUnits, getConcentrateUnits()));
+    _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->concentrateUnits, getWaterConcentrateUnits()));
     _soilMoisture.initObject(dataIn->moistureSensor);
 
     _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
@@ -267,12 +267,12 @@ bool HydroAdaptiveCrop::needsFeeding(bool poll)
     return false;
 }
 
-void HydroAdaptiveCrop::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
+void HydroAdaptiveCrop::setWaterConcentrateUnits(Hydro_UnitsType waterConcentrateUnits)
 {
-    if (_concUnits != concentrateUnits) {
-        _concUnits = concentrateUnits;
+    if (_waterConcUnits != waterConcentrateUnits) {
+        _waterConcUnits = waterConcentrateUnits;
 
-        _soilMoisture.setMeasurementUnits(getConcentrateUnits());
+        _soilMoisture.setMeasurementUnits(getWaterConcentrateUnits());
         bumpRevisionIfNeeded();
     }
 }
@@ -291,7 +291,7 @@ void HydroAdaptiveCrop::saveToData(HydroData *dataOut)
 {
     HydroCrop::saveToData(dataOut);
 
-    ((HydroAdaptiveCropData *)dataOut)->concentrateUnits = _concUnits;
+    ((HydroAdaptiveCropData *)dataOut)->concentrateUnits = _waterConcUnits;
     if (_soilMoisture.isSet()) {
         strncpy(((HydroAdaptiveCropData *)dataOut)->moistureSensor, _soilMoisture.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -371,7 +371,7 @@ void HydroAdaptiveCropData::fromJSONObject(JsonObjectConst &objectIn)
 {
     HydroCropData::fromJSONObject(objectIn);
 
-    concentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_ConcentrateUnits)]);
+    concentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_WaterConcentrateUnits)] | objectIn[SFP(HStr_Key_ConcentrateUnits)]);
     const char *moistureSensorStr = objectIn[SFP(HStr_Key_MoistureSensor)];
     if (moistureSensorStr && moistureSensorStr[0]) { strncpy(moistureSensor, moistureSensorStr, HYDRO_NAME_MAXSIZE); }
     JsonObjectConst feedingTriggerObj = objectIn[SFP(HStr_Key_FeedingTrigger)];

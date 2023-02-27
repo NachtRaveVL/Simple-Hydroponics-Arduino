@@ -417,6 +417,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_AdditiveName[] PROGMEM = {"additiveName"};
             return flashStr_Key_AdditiveName;
         } break;
+        case HStr_Key_AirConcentrateUnits: {
+            static const char flashStr_Key_AirConcentrateUnits[] PROGMEM = {"airConcentrateUnits"};
+            return flashStr_Key_AirConcentrateUnits;
+        } break;
         case HStr_Key_AirReportInterval: {
             static const char flashStr_Key_AirReportInterval[] PROGMEM = {"airReportInterval"};
             return flashStr_Key_AirReportInterval;
@@ -512,6 +516,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_DataFilePrefix: {
             static const char flashStr_Key_DataFilePrefix[] PROGMEM = {"dataFilePrefix"};
             return flashStr_Key_DataFilePrefix;
+        } break;
+        case HStr_Key_DetriggerDelay: {
+            static const char flashStr_Key_DetriggerDelay[] PROGMEM = {"detriggerDelay"};
+            return flashStr_Key_DetriggerDelay;
         } break;
         case HStr_Key_DetriggerTol: {
             static const char flashStr_Key_DetriggerTol[] PROGMEM = {"detriggerTol"};
@@ -896,6 +904,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_VolumeUnits: {
             static const char flashStr_Key_VolumeUnits[] PROGMEM = {"volumeUnits"};
             return flashStr_Key_VolumeUnits;
+        } break;
+        case HStr_Key_WaterConcentrateUnits: {
+            static const char flashStr_Key_WaterConcentrateUnits[] PROGMEM = {"waterConcentrateUnits"};
+            return flashStr_Key_WaterConcentrateUnits;
         } break;
         case HStr_Key_WaterTemperatureRange: {
             static const char flashStr_Key_WaterTemperatureRange[] PROGMEM = {"waterTempRange"};

@@ -11,7 +11,7 @@ HydroBalancer::HydroBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint
 {
     _sensor.setMeasurementRow(measurementRow);
     _sensor.setHandleMethod(&HydroBalancer::handleMeasurement);
-    _sensor.setObject(sensor);
+    _sensor.initObject(sensor);
 }
 
 HydroBalancer::~HydroBalancer()
@@ -99,12 +99,14 @@ void HydroBalancer::setDecrementActuators(const Vector<HydroActuatorAttachment, 
     }
 }
 
-void HydroBalancer::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow)
+void HydroBalancer::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t)
 {
-    _sensor.setMeasurementUnits(measurementUnits);
+    if (_sensor.getMeasurementUnits() != measurementUnits) {
+        _sensor.setMeasurementUnits(measurementUnits);
+    }
 }
 
-Hydro_UnitsType HydroBalancer::getMeasurementUnits(uint8_t measurementRow) const
+Hydro_UnitsType HydroBalancer::getMeasurementUnits(uint8_t) const
 {
     return _sensor.getMeasurementUnits();
 }

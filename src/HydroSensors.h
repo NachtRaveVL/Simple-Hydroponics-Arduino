@@ -35,7 +35,11 @@ extern Hydro_UnitsCategory defaultCategoryForSensor(Hydro_SensorType sensorType,
 // Sensor Base
 // This is the base class for all sensors, which defines how the sensor is identified,
 // where it lives, and what it's attached to.
-class HydroSensor : public HydroObject, public HydroSensorObjectInterface, public HydroMeasurementUnitsInterface, public HydroParentCropAttachmentInterface, public HydroParentReservoirAttachmentInterface {
+class HydroSensor : public HydroObject,
+                    public HydroSensorObjectInterface,
+                    public HydroMeasurementUnitsInterface,
+                    public HydroParentCropAttachmentInterface,
+                    public HydroParentReservoirAttachmentInterface {
 public:
     const enum : signed char { Binary, Analog, Digital, DHT1W, DS1W, Unknown = -1 } classType; // Sensor class type (custom RTTI)
     inline bool isBinaryClass() const { return classType == Binary; }
@@ -112,8 +116,8 @@ public:
     virtual const HydroMeasurement *getMeasurement(bool poll = false) override;
     virtual bool needsPolling(hframe_t allowance = 0) const override;
 
-    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
-    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t = 0) override;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t = 0) const override;
 
     // ISR registration requires an interruptable pin, i.e. a valid digitalPinToInterrupt().
     // Active-low input pins interrupt on falling-edge, while active-high pins interrupt on rising-edge.
@@ -141,7 +145,8 @@ protected:
 // The ever reliant master of the analogRead(), this class manages polling an analog input
 // signal and converting it into the proper figures for use. Examples include everything
 // from TDS EC meters to PWM based flow sensors.
-class HydroAnalogSensor : public HydroSensor, public HydroMeasurementUnitsInterfaceStorageSingle {
+class HydroAnalogSensor : public HydroSensor,
+                          public HydroMeasurementUnitsInterfaceStorageSingle {
 public:
     HydroAnalogSensor(Hydro_SensorType sensorType,
                       hposi_t sensorIndex,
@@ -154,8 +159,8 @@ public:
     virtual const HydroMeasurement *getMeasurement(bool poll = false) override;
     virtual bool needsPolling(hframe_t allowance = 0) const override;
 
-    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t measurementRow = 0) override;
-    virtual Hydro_UnitsType getMeasurementUnits(uint8_t measurementRow = 0) const override;
+    virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t = 0) override;
+    virtual Hydro_UnitsType getMeasurementUnits(uint8_t = 0) const override;
 
     inline const HydroAnalogPin &getInputPin() const { return _inputPin; }
     inline bool getInputInversion() const { return _inputInversion; }
@@ -206,7 +211,8 @@ protected:
 
 // Digital DHT* Temperature & Humidity Sensor
 // This class is for working with DHT* OneWire-based air temperature and humidity sensors.
-class HydroDHTTempHumiditySensor : public HydroDigitalSensor, public HydroMeasurementUnitsInterfaceStorageTriple {
+class HydroDHTTempHumiditySensor : public HydroDigitalSensor,
+                                   public HydroMeasurementUnitsInterfaceStorageTriple {
 public:
     HydroDHTTempHumiditySensor(hposi_t sensorIndex,
                                HydroDigitalPin inputPin,
@@ -250,7 +256,8 @@ protected:
 
 // Digital DS18* Submersible Temperature Sensor
 // This class is for working with DS18* OneWire-based submersible temperature sensors.
-class HydroDSTemperatureSensor : public HydroDigitalSensor, public HydroMeasurementUnitsInterfaceStorageSingle {
+class HydroDSTemperatureSensor : public HydroDigitalSensor,
+                                 public HydroMeasurementUnitsInterfaceStorageSingle {
 public:
     HydroDSTemperatureSensor(hposi_t sensorIndex,
                              HydroDigitalPin inputPin,
