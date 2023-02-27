@@ -24,7 +24,7 @@ public:
     // Water pumps are used to feed crops and move liquids around from one reservoir to another.
     SharedPtr<HydroRelayPumpActuator> addWaterPumpRelay(pintype_t outputPin);               // Digital output pin this actuator sits on
 
-// TODO: #18 in Hydro.
+// TODO: #18 in Hydruino.
 //     // Adds a new analog PWM-based water pump to the system using the given parameters.
 //     // Analog water pumps allow a graduated adaptive speed control to manage liquid movement.
 //     SharedPtr<HydroVariablePumpActuator> addAnalogFanExhaust(pintype_t outputPin,           // PWM output pin this actuator sits on

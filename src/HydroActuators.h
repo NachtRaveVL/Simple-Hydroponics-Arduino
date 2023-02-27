@@ -231,7 +231,7 @@ protected:
 // reservoir. Pumps using this class have variable flow control but also can be paired with
 // a flow sensor for more precise pumping calculations.
 //class HydroVariablePumpActuator : public HydroVariableActuator, public HydroPumpObjectInterface, public HydroWaterFlowRateSensorAttachmentInterface {
-// TODO: #18 in Hydro.
+// TODO: #18 in Hydruino.
 //};
 
 
