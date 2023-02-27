@@ -1,21 +1,27 @@
 // Simple-Hydroponics-Arduino Data Writer Example
+//
 // In this example we program an SD card or EEPROM to hold onto the various data items
-// that normally are built into the produced binary. However, this isn't possible on
-// memory constrained devices (e.g. ATMega2560), thus offloading the data is needed.
+// that normally are built into onboard device Flash / non-volatile memory.
+//
 // Since dead code is stripped out of the final binary on most Arduino-like build
 // processes, we can take advantage of that fact to create an "empty" system that only
-// does one thing: programs the SD card or EEPROM attached to it. This sketch can be
-// easily compiled to such constrained device to "prep" said storage, and thus we can
-// offload any program constant data, like Crops Library and strings data. Endianness
-// is also not a concern this way since the same device does both writing & reading.
+// does one thing: programs the SD card or EEPROM attached to it. As such, this sketch
+// can be compiled to run in such a constrained state to "prep" said storage, and thus
+// we can offload any program constant data. Hopefully this is to such a point that it
+// allows another system/example to compile and possibly fit into a constrained device.
 //
-// For EEPROM device writing, keep track of the produced output that defines the various
-// data locations written to the EEPROM chip, as these will be needed to correctly set
-// the various data address locations (e.g. CROP_ADDR, STR_ADDR, etc.).
+// For binary storage, endianness is not a concern this way since the same device does
+// both the writing & reading of data. For SD card storage, we can utilize human-readable
+// JSON in pretty-print mode since that space is relatively cheap.
 //
-// Make sure that any EEPROM Write-Protect jumpers are disabled, and that you have not
-// defined HYDRO_DISABLE_BUILTIN_DATA so that the full data is built into the onboard
-// Flash. You may also enable Serial log output by defining HYDRO_ENABLE_DEBUG_OUTPUT.
+// For EEPROM device writing, make sure that any EEPROM Write-Protect jumpers are disabled,
+// and keep track of the produced output that defines the various data locations written to
+// the EEPROM chip (e.g. SYSDATA_ADDR, STRINGS_ADDR, etc.). These will need to be copied
+// over into other sketches to prep their storage offsets. TODO: Deprecated, #6 in Hydruino.
+//
+// Also, make sure you have not defined HYDRO_DISABLE_BUILTIN_DATA so that the full data
+// is built into the onboard Flash. You may also enable Serial log output by defining
+// HYDRO_ENABLE_DEBUG_OUTPUT.
 // You may refer to: https://forum.arduino.cc/index.php?topic=602603.0 on how to define
 // custom build flags manually via modifying platform[.local].txt.
 //

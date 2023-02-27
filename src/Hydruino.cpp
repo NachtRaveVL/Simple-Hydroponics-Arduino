@@ -839,7 +839,7 @@ void Hydruino::commonPostSave()
 // Super tight updates (buzzer/gps/etc) that need to be ran often
 inline void tightUpdates()
 {
-    // TODO: put in link to buzzer update here. #5 in Hydro.
+    // TODO: put in link to buzzer update here. #5 in Hydruino.
     #ifdef HYDRO_USE_GPS
         if (Hydruino::_activeInstance->_gps) { while(Hydruino::_activeInstance->_gps->available()) { Hydruino::_activeInstance->_gps->read(); } }
     #endif

@@ -1,10 +1,12 @@
 // Simple-Hydroponics-Arduino Simple Deep Water Culture (DWC) Example
+//
 // The Simple DWC Example sketch shows how a simple Hydruino system can be setup using
 // the most minimal of work. In this sketch only that which you actually use is built
 // into the final compiled binary, making it an ideal lean choice for those who don't
 // need anything fancy. This sketch has no UI or input control, but with a simple buzzer
 // and some additional sensors the system can alert you to when the feed is low and more
 // is needed, or when pH is too high, etc.
+//
 // DWC setups are great for beginners and for crops that do not flower, and has the
 // advantage of being able to be built out of commonly available plastic containers.
 // Aeration is important in this setup to oxygenate the non-circulating water.

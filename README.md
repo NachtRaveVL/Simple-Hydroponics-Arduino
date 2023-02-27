@@ -337,11 +337,11 @@ void loop()
 
 ### Main System Examples
 
-There are two main system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. The Vertical NFT example is the recommended starting point for most system builds, and is perfect for those with only intermediate programming knowledge.
+There are two main system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. The Vertical NFT example is the recommended starting point for most system builds, and is perfect for those with only intermediate programming knowledge. It is also the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code.
 
-The Vertical NFT Example sketch is the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code. This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
+This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
 
-The Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for modern MCUs that have plenty of storage space to use such as ESP32, RasPi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where a GUI will be primarily used to create objects with (or done similarly in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
+The Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for modern MCUs that have lots of storage space to use such as ESP32, RasPi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where a GUI will be primarily used to create objects with (or done similarly in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
 
 Included below is the default system setup defines of the Vertical NFT example (of which a smaller similar version is used for the Full System example) to illustrate a variety of the controller features. This is not an exhaustive list of course, as there are many more things the controller is capable of, as documented in its main header file include, GitHub Project Wiki, and elsewhere.
 
@@ -452,8 +452,8 @@ Included below is the default system setup defines of the Vertical NFT example (
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
-#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for actuator relay AC rail (AC110V, AC220V)
-#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump DC rail (DC5V, DC12V)
+#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for actuator AC rail (AC110V, AC220V)
+#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for actuator DC rail (DC3V3, DC5V, DC12V, DC24V, DC48V)
 #define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
@@ -471,7 +471,11 @@ Included below is the default system setup defines of the Vertical NFT example (
 
 ### Data Writer Example
 
-The Data Writer Example can be used on the same system setup to offload all exportable data, such as crop and string data, onto a connected external SD card or EEPROM storage device to help storage constrained MCUs compile system builds. This Example doesn't actually run the Hydruino controller in full, but a code stripped version of it that easily compiles with all extra data built-in. The compiled binary in this Example will include all exportable data stored as compact JSON string text, and typically easily fits in under 256kB compilation size. This data can further be exported into smaller binary chunks with native endianness for EEPROM storage, or into expanded pretty print JSON text files for SD card storage. You can also further customize default and/or extend library data (such as adding custom crops) that will be included in data export.
+The Data Writer Example can be used on the same system setup to offload all exportable data, such as crop and string data, onto a connected external SD card or EEPROM storage device to help storage constrained MCUs compile system builds.
+
+This Example doesn't actually run the Hydruino controller in full, but a code stripped version of it that easily compiles with all extra data built-in. The compiled binary in this Example will include all exportable data stored as compact JSON string text, and typically easily fits in under 256kB compilation size.
+
+This data can further be exported into smaller binary chunks with native endianness for EEPROM storage, or into expanded pretty print JSON text files for SD card storage. You can also further customize default and/or extend library data (such as adding custom crops) that will be included in data export.
 
 Inside of the Data Writer's `setup()` function:
 ```Arduino

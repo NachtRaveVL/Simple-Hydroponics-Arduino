@@ -1,4 +1,5 @@
 // Simple-Hydroponics-Arduino Vertical Nutrient Film Technique (NFT) Example
+//
 // The Vertical NFT Example sketch is the standard implementation for our 3D printed
 // controller enclosure and for most vertical towers that will be used. It can be
 // easily extended to include other functionality if desired.
@@ -115,8 +116,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // Base Setup
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
-#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for actuator relay AC rail (AC110V, AC220V)
-#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for peristaltic pump DC rail (DC5V, DC12V)
+#define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for actuator AC rail (AC110V, AC220V)
+#define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for actuator DC rail (DC3V3, DC5V, DC12V, DC24V, DC48V)
 #define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
