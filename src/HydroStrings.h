@@ -79,6 +79,7 @@ enum Hydro_String : unsigned short {
 
     HStr_Key_ActiveLow,
     HStr_Key_AdditiveName,
+    HStr_Key_AirConcentrateUnits,
     HStr_Key_AirReportInterval,
     HStr_Key_AirTempRange,
     HStr_Key_AirTemperatureSensor,
@@ -103,6 +104,7 @@ enum Hydro_String : unsigned short {
     HStr_Key_CtrlInMode,
     HStr_Key_DailyLightHours,
     HStr_Key_DataFilePrefix,
+    HStr_Key_DetriggerDelay,
     HStr_Key_DetriggerTol,
     HStr_Key_DHTType,
     HStr_Key_DispOutMode,
@@ -199,6 +201,7 @@ enum Hydro_String : unsigned short {
     HStr_Key_Viner,
     HStr_Key_VolumeSensor,
     HStr_Key_VolumeUnits,
+    HStr_Key_WaterConcentrateUnits,
     HStr_Key_WaterTemperatureRange,
     HStr_Key_WaterTemperatureSensor,
     HStr_Key_WeeklyDosingRates,

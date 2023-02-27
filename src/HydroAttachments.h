@@ -226,6 +226,7 @@ public:
     inline const HydroActivationHandle &getActivationHandle() const { return _actHandle; }
     inline const HydroActivation &getActivationSetup() const { return _actSetup; }
 
+    template<class U> inline void setObject(U obj, bool modify = false) { HydroAttachment::setObject(obj, modify); }
     inline SharedPtr<HydroActuator> getObject() { return HydroAttachment::getObject<HydroActuator>(); }
     inline HydroActuator *get() { return HydroAttachment::get<HydroActuator>(); }
 
@@ -346,6 +347,7 @@ public:
 
     inline Hydro_BalancingState getBalancingState(bool poll = false);
 
+    template<class U> inline void setObject(U obj, bool modify = false) { HydroAttachment::setObject(obj, modify); }
     inline SharedPtr<HydroBalancer> getObject() { return HydroAttachment::getObject<HydroBalancer>(); }
     inline HydroBalancer *get() { return HydroAttachment::get<HydroBalancer>(); }
 

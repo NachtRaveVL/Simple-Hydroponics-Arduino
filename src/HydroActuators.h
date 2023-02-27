@@ -26,7 +26,10 @@ extern HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 // Actuator Base
 // This is the base class for all actuators, which defines how the actuator is identified,
 // where it lives, and what it's attached to.
-class HydroActuator : public HydroObject, public HydroActuatorObjectInterface, public HydroParentRailAttachmentInterface, public HydroParentReservoirAttachmentInterface {
+class HydroActuator : public HydroObject,
+                      public HydroActuatorObjectInterface,
+                      public HydroParentRailAttachmentInterface,
+                      public HydroParentReservoirAttachmentInterface {
 public:
     const enum : signed char { Relay, RelayPump, Variable, VariablePump, Unknown = -1 } classType; // Actuator class type (custom RTTI)
     inline bool isRelayClass() const { return classType == Relay; }
@@ -145,7 +148,10 @@ protected:
 // This actuator acts as a water pump and attaches to both an input and output reservoir.
 // Pumps using this class are either on/off and do not contain any variable flow control,
 // but can be paired with a flow sensor for more precise pumping calculations.
-class HydroRelayPumpActuator : public HydroRelayActuator, public HydroPumpObjectInterface, public HydroFlowRateUnitsInterfaceStorage, public HydroWaterFlowRateSensorAttachmentInterface {
+class HydroRelayPumpActuator : public HydroRelayActuator,
+                               public HydroPumpObjectInterface,
+                               public HydroFlowRateUnitsInterfaceStorage,
+                               public HydroWaterFlowRateSensorAttachmentInterface {
 public:
     HydroRelayPumpActuator(Hydro_ActuatorType actuatorType,
                            hposi_t actuatorIndex,

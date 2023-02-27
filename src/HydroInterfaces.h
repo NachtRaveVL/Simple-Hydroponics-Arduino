@@ -17,7 +17,7 @@ struct HydroDigitalOutputPinInterface;
 struct HydroAnalogInputPinInterface;
 struct HydroAnalogOutputPinInterface;
 
-class HydroConcentrateUnitsInterfaceStorage;
+class HydroAirConcentrateUnitsInterfaceStorage;
 class HydroDilutionUnitsInterfaceStorage;
 class HydroFlowRateUnitsInterfaceStorage;
 class HydroMeasurementUnitsInterface;
@@ -28,6 +28,7 @@ class HydroMeasurementUnitsInterfaceStorageTriple;
 class HydroPowerUnitsInterfaceStorage;
 class HydroTemperatureUnitsInterfaceStorage;
 class HydroVolumeUnitsInterfaceStorage;
+class HydroWaterConcentrateUnitsInterfaceStorage;
 
 class HydroActuatorObjectInterface;
 class HydroSensorObjectInterface;
@@ -139,15 +140,15 @@ struct HydroAnalogOutputPinInterface {
 };
 
 
-// Concentrate Units Interface + Storage
-class HydroConcentrateUnitsInterfaceStorage {
+// Air Concentrate Units Interface + Storage
+class HydroAirConcentrateUnitsInterfaceStorage {
 public:
-    virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) = 0;
-    inline Hydro_UnitsType getConcentrateUnits() const { return _concUnits; }
+    virtual void setAirConcentrateUnits(Hydro_UnitsType airConcentrateUnits) = 0;
+    inline Hydro_UnitsType getAirConcentrateUnits() const { return _airConcUnits; }
 
 protected:
-    Hydro_UnitsType _concUnits;
-    inline HydroConcentrateUnitsInterfaceStorage(Hydro_UnitsType concentrateUnits = Hydro_UnitsType_Undefined) : _concUnits(concentrateUnits) { ; }
+    Hydro_UnitsType _airConcUnits;
+    inline HydroAirConcentrateUnitsInterfaceStorage(Hydro_UnitsType airConcentrateUnits = Hydro_UnitsType_Undefined) : _airConcUnits(airConcentrateUnits) { ; }
 };
 
 // Dilution Units Interface + Storage
@@ -242,6 +243,17 @@ public:
 protected:
     Hydro_UnitsType _volumeUnits;
     inline HydroVolumeUnitsInterfaceStorage(Hydro_UnitsType volumeUnits = Hydro_UnitsType_Undefined) : _volumeUnits(volumeUnits) { ; }
+};
+
+// Water Concentrate Units Interface + Storage
+class HydroWaterConcentrateUnitsInterfaceStorage {
+public:
+    virtual void setWaterConcentrateUnits(Hydro_UnitsType waterConcentrateUnits) = 0;
+    inline Hydro_UnitsType getWaterConcentrateUnits() const { return _waterConcUnits; }
+
+protected:
+    Hydro_UnitsType _waterConcUnits;
+    inline HydroWaterConcentrateUnitsInterfaceStorage(Hydro_UnitsType waterConcentrateUnits = Hydro_UnitsType_Undefined) : _waterConcUnits(waterConcentrateUnits) { ; }
 };
 
 

@@ -27,7 +27,9 @@ extern HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *data
 // This is the base class for all reservoirs, which defines how the reservoir is
 // identified, where it lives, what's attached to it, if it is full or empty, and
 // who can activate under it.
-class HydroReservoir : public HydroObject, public HydroReservoirObjectInterface, public HydroVolumeUnitsInterfaceStorage {
+class HydroReservoir : public HydroObject,
+                       public HydroReservoirObjectInterface,
+                       public HydroVolumeUnitsInterfaceStorage {
 public:
     const enum : signed char { Fluid, Feed, Pipe, Unknown = -1 } classType; // Reservoir class type (custom RTTI)
     inline bool isFluidClass() const { return classType == Fluid; }
@@ -76,7 +78,10 @@ protected:
 // Simple Fluid Reservoir
 // Basic fluid reservoir that contains a volume of liquid and the ability to track such.
 // Crude, but effective.
-class HydroFluidReservoir : public HydroReservoir, public HydroWaterVolumeSensorAttachmentInterface, public HydroFilledTriggerAttachmentInterface, public HydroEmptyTriggerAttachmentInterface {
+class HydroFluidReservoir : public HydroReservoir,
+                            public HydroWaterVolumeSensorAttachmentInterface,
+                            public HydroFilledTriggerAttachmentInterface,
+                            public HydroEmptyTriggerAttachmentInterface {
 public:
     HydroFluidReservoir(Hydro_ReservoirType reservoirType,
                         hposi_t reservoirIndex,
@@ -116,7 +121,15 @@ protected:
 // Feed Water Reservoir
 // The feed water reservoir can be thought of as an entire feeding channel hub, complete
 // with sensors to automate the variety of tasks associated with feeding crops.
-class HydroFeedReservoir : public HydroFluidReservoir, public HydroConcentrateUnitsInterfaceStorage, public HydroTemperatureUnitsInterfaceStorage, public HydroWaterPHSensorAttachmentInterface, public HydroWaterTDSSensorAttachmentInterface, public HydroWaterTemperatureSensorAttachmentInterface,  public HydroAirTemperatureSensorAttachmentInterface, public HydroAirCO2SensorAttachmentInterface {
+class HydroFeedReservoir : public HydroFluidReservoir,
+                           public HydroAirConcentrateUnitsInterfaceStorage,
+                           public HydroTemperatureUnitsInterfaceStorage,
+                           public HydroWaterConcentrateUnitsInterfaceStorage,
+                           public HydroWaterPHSensorAttachmentInterface,
+                           public HydroWaterTDSSensorAttachmentInterface,
+                           public HydroWaterTemperatureSensorAttachmentInterface,
+                           public HydroAirTemperatureSensorAttachmentInterface,
+                           public HydroAirCO2SensorAttachmentInterface {
 public:
     HydroFeedReservoir(hposi_t reservoirIndex,
                        float maxVolume,
@@ -129,8 +142,9 @@ public:
     virtual void handleLowMemory() override;
     virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
 
-    virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
+    virtual void setAirConcentrateUnits(Hydro_UnitsType airConcentrateUnits) override;
     virtual void setTemperatureUnits(Hydro_UnitsType temperatureUnits) override;
+    virtual void setWaterConcentrateUnits(Hydro_UnitsType waterConcentrateUnits) override;
 
     virtual HydroSensorAttachment &getWaterPHSensorAttachment() override;
     virtual HydroSensorAttachment &getWaterTDSSensorAttachment() override;
@@ -242,8 +256,9 @@ struct HydroFeedReservoirData : public HydroFluidReservoirData {
     time_t lastPruningTime;                                 // Last pruning time (UTC)
     time_t lastFeedingTime;                                 // Last feeding time
     uint8_t numFeedingsToday;                               // Number feedings on the day
-    Hydro_UnitsType concentrateUnits;                       // Concentration units
+    Hydro_UnitsType airConcentrateUnits;                    // Air concentration units
     Hydro_UnitsType temperatureUnits;                       // Temperature units
+    Hydro_UnitsType waterConcentrateUnits;                  // Water concentration units
     char waterPHSensor[HYDRO_NAME_MAXSIZE];                 // pH sensor
     char waterTDSSensor[HYDRO_NAME_MAXSIZE];                // TDS sensor
     char waterTempSensor[HYDRO_NAME_MAXSIZE];               // Water temp sensor

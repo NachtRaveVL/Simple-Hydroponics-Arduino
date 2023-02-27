@@ -25,7 +25,9 @@ extern HydroCrop *newCropObjectFromData(const HydroCropData *dataIn);
 // This is the base class for all crops, which defines how the crop is identified, at
 // what point it is in the growth cycle, which sensors are attached to it, what reservoir
 // feeds it, etc.
-class HydroCrop : public HydroObject, public HydroCropObjectInterface, public HydroFeedReservoirAttachmentInterface {
+class HydroCrop : public HydroObject,
+                  public HydroCropObjectInterface,
+                  public HydroFeedReservoirAttachmentInterface {
 public:
     const enum : signed char { Timed, Adaptive, Unknown = -1 } classType; // Crop class type (custom RTTI)
     inline bool isTimedClass() const { return classType == Timed; }
@@ -125,7 +127,10 @@ protected:
 
 // Adaptive Sensing Crop
 // Crop type that can manage feedings based on sensor readings of the nearby soil.
-class HydroAdaptiveCrop : public HydroCrop, HydroConcentrateUnitsInterfaceStorage, public HydroSoilMoistureSensorAttachmentInterface, public HydroFeedingTriggerAttachmentInterface {
+class HydroAdaptiveCrop : public HydroCrop,
+                          public HydroWaterConcentrateUnitsInterfaceStorage,
+                          public HydroSoilMoistureSensorAttachmentInterface,
+                          public HydroFeedingTriggerAttachmentInterface {
 public:
     HydroAdaptiveCrop(Hydro_CropType cropType,
                       hposi_t cropIndex,
@@ -139,7 +144,7 @@ public:
 
     virtual bool needsFeeding(bool poll = false) override;
 
-    virtual void setConcentrateUnits(Hydro_UnitsType concentrateUnits) override;
+    virtual void setWaterConcentrateUnits(Hydro_UnitsType waterConcentrateUnits) override;
 
     virtual HydroSensorAttachment &getSoilMoistureSensorAttachment() override;
 

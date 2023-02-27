@@ -254,8 +254,9 @@ void HydroFluidReservoir::handleEmpty(Hydro_TriggerState emptyState)
 
 HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, DateTime lastChangeTime, DateTime lastPruningTime, int classType)
     : HydroFluidReservoir(Hydro_ReservoirType_FeedWater, reservoirIndex, maxVolume, classType),
-      HydroConcentrateUnitsInterfaceStorage(Hydro_UnitsType_Concentration_TDS),
+      HydroAirConcentrateUnitsInterfaceStorage(Hydro_UnitsType_Concentration_PPM),
       HydroTemperatureUnitsInterfaceStorage(defaultTemperatureUnits()),
+      HydroWaterConcentrateUnitsInterfaceStorage(Hydro_UnitsType_Concentration_TDS),
       _lastChangeTime(unixTime(lastChangeTime)), _lastPruningTime(unixTime(lastPruningTime)), _lastFeedingTime(0), _numFeedingsToday(0),
       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
       _waterPHBalancer(this), _waterTDSBalancer(this), _waterTempBalancer(this), _airTempBalancer(this), _airCO2Balancer(this)
@@ -263,8 +264,9 @@ HydroFeedReservoir::HydroFeedReservoir(hposi_t reservoirIndex, float maxVolume, 
 
 HydroFeedReservoir::HydroFeedReservoir(const HydroFeedReservoirData *dataIn)
     : HydroFluidReservoir(dataIn),
-      HydroConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, Hydro_UnitsType_Concentration_TDS)),
+      HydroAirConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->airConcentrateUnits, Hydro_UnitsType_Concentration_PPM)),
       HydroTemperatureUnitsInterfaceStorage(definedUnitsElse(dataIn->temperatureUnits, defaultTemperatureUnits())),
+      HydroWaterConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->waterConcentrateUnits, Hydro_UnitsType_Concentration_TDS)),
       _lastChangeTime(dataIn->lastChangeTime), _lastPruningTime(dataIn->lastPruningTime),
       _lastFeedingTime(dataIn->lastFeedingTime), _numFeedingsToday(dataIn->numFeedingsToday),
       _waterPH(this), _waterTDS(this), _waterTemp(this), _airTemp(this), _airCO2(this),
@@ -330,12 +332,12 @@ SharedPtr<HydroObjInterface> HydroFeedReservoir::getSharedPtrFor(const HydroObjI
            HydroFluidReservoir::getSharedPtrFor(obj);
 }
 
-void HydroFeedReservoir::setConcentrateUnits(Hydro_UnitsType concentrateUnits)
+void HydroFeedReservoir::setAirConcentrateUnits(Hydro_UnitsType airConcentrateUnits)
 {
-    if (_concUnits != concentrateUnits) {
-        _concUnits = concentrateUnits;
+    if (_airConcUnits != airConcentrateUnits) {
+        _airConcUnits = airConcentrateUnits;
 
-        _waterTDS.setMeasurementUnits(getConcentrateUnits());
+        _airCO2.setMeasurementUnits(getAirConcentrateUnits());
         bumpRevisionIfNeeded();
     }
 }
@@ -347,6 +349,16 @@ void HydroFeedReservoir::setTemperatureUnits(Hydro_UnitsType temperatureUnits)
 
         _waterTemp.setMeasurementUnits(getTemperatureUnits());
         _airTemp.setMeasurementUnits(getTemperatureUnits());
+        bumpRevisionIfNeeded();
+    }
+}
+
+void HydroFeedReservoir::setWaterConcentrateUnits(Hydro_UnitsType waterConcentrateUnits)
+{
+    if (_waterConcUnits != waterConcentrateUnits) {
+        _waterConcUnits = waterConcentrateUnits;
+
+        _waterTDS.setMeasurementUnits(getWaterConcentrateUnits());
         bumpRevisionIfNeeded();
     }
 }
@@ -384,8 +396,9 @@ void HydroFeedReservoir::saveToData(HydroData *dataOut)
     ((HydroFeedReservoirData *)dataOut)->lastPruningTime = _lastPruningTime;
     ((HydroFeedReservoirData *)dataOut)->lastFeedingTime = _lastFeedingTime;
     ((HydroFeedReservoirData *)dataOut)->numFeedingsToday = _numFeedingsToday;
-    ((HydroFeedReservoirData *)dataOut)->concentrateUnits = _concUnits;
+    ((HydroFeedReservoirData *)dataOut)->airConcentrateUnits = _airConcUnits;
     ((HydroFeedReservoirData *)dataOut)->temperatureUnits = _tempUnits;
+    ((HydroFeedReservoirData *)dataOut)->waterConcentrateUnits = _waterConcUnits;
     if (_waterPH.isSet()) {
         strncpy(((HydroFeedReservoirData *)dataOut)->waterPHSensor, _waterPH.getKeyString().c_str(), HYDRO_NAME_MAXSIZE);
     }
@@ -498,7 +511,9 @@ void HydroFluidReservoirData::fromJSONObject(JsonObjectConst &objectIn)
 
 HydroFeedReservoirData::HydroFeedReservoirData()
     : HydroFluidReservoirData(), lastChangeTime(0), lastPruningTime(0), lastFeedingTime(0), numFeedingsToday(0),
-      concentrateUnits(Hydro_UnitsType_Undefined), temperatureUnits(Hydro_UnitsType_Undefined),
+      airConcentrateUnits(Hydro_UnitsType_Undefined),
+      temperatureUnits(Hydro_UnitsType_Undefined),
+      waterConcentrateUnits(Hydro_UnitsType_Undefined),
       waterPHSensor{0}, waterTDSSensor{0}, waterTempSensor{0}, airTempSensor{0}, airCO2Sensor{0}
 {
     _size = sizeof(*this);
@@ -512,8 +527,11 @@ void HydroFeedReservoirData::toJSONObject(JsonObject &objectOut) const
     if (lastPruningTime) { objectOut[SFP(HStr_Key_LastPruningTime)] = lastPruningTime; }
     if (lastFeedingTime) { objectOut[SFP(HStr_Key_LastFeedingTime)] = lastFeedingTime; }
     if (numFeedingsToday > 0) { objectOut[SFP(HStr_Key_NumFeedingsToday)] = numFeedingsToday; }
-    if (concentrateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_ConcentrateUnits)] = unitsTypeToSymbol(concentrateUnits); }
+    if (airConcentrateUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_AirConcentrateUnits)] = unitsTypeToSymbol(airConcentrateUnits); }
     if (temperatureUnits != Hydro_UnitsType_Undefined) { objectOut[SFP(HStr_Key_TemperatureUnits)] = unitsTypeToSymbol(temperatureUnits); }
+    if (waterConcentrateUnits != Hydro_UnitsType_Undefined) {
+        objectOut[(airConcentrateUnits != Hydro_UnitsType_Undefined ? SFP(HStr_Key_WaterConcentrateUnits) : SFP(HStr_Key_ConcentrateUnits))] = unitsTypeToSymbol(waterConcentrateUnits);
+    }
     if (waterPHSensor[0]) { objectOut[SFP(HStr_Key_PHSensor)] = charsToString(waterPHSensor, HYDRO_NAME_MAXSIZE); }
     if (waterTDSSensor[0]) { objectOut[SFP(HStr_Key_TDSSensor)] = charsToString(waterTDSSensor, HYDRO_NAME_MAXSIZE); }
     if (waterTempSensor[0]) {
@@ -531,8 +549,9 @@ void HydroFeedReservoirData::fromJSONObject(JsonObjectConst &objectIn)
     lastPruningTime = objectIn[SFP(HStr_Key_LastPruningTime)] | lastPruningTime;
     lastFeedingTime = objectIn[SFP(HStr_Key_LastFeedingTime)] | lastFeedingTime;
     numFeedingsToday = objectIn[SFP(HStr_Key_NumFeedingsToday)] | numFeedingsToday;
-    concentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_ConcentrateUnits)]);
+    airConcentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_AirConcentrateUnits)]);
     temperatureUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_TemperatureUnits)]);
+    waterConcentrateUnits = unitsTypeFromSymbol(objectIn[SFP(HStr_Key_WaterConcentrateUnits)] | objectIn[SFP(HStr_Key_ConcentrateUnits)]);
     const char *waterPHSensorStr = objectIn[SFP(HStr_Key_PHSensor)];
     if (waterPHSensorStr && waterPHSensorStr[0]) { strncpy(waterPHSensor, waterPHSensorStr, HYDRO_NAME_MAXSIZE); }
     const char *waterTDSSensorStr = objectIn[SFP(HStr_Key_TDSSensor)];
