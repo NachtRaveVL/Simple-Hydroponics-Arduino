@@ -120,10 +120,10 @@ SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputP
 
 SharedPtr<HydroVariableActuator> HydroFactory::addAnalogFanExhaust(pintype_t outputPin, uint8_t outputBitRes
 #ifdef ESP32
-                                                                 , uint8_t pwmChannel
+                                                                   , uint8_t pwmChannel
 #endif
 #ifdef ESP_PLATFORM
-                                                                 , float pwmFrequency
+                                                                   , float pwmFrequency
 #endif
 )
 {
