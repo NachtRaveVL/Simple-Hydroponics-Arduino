@@ -249,9 +249,9 @@ void HydroCalibrationData::setFromTwoPoints(float point1MeasuredAt, float point1
     float bTerm = point2MeasuredAt - point1MeasuredAt;
     HYDRO_SOFT_ASSERT(!isFPEqual(bTerm, 0.0f), SFP(HStr_Err_InvalidParameter));
     if (!isFPEqual(bTerm, 0.0f)) {
-        bumpRevisionIfNeeded();
         multiplier = aTerm / bTerm;
         offset = ((aTerm * point2MeasuredAt) + (bTerm * point1CalibratedTo)) / bTerm;
+        bumpRevisionIfNeeded();
     }
 }
 

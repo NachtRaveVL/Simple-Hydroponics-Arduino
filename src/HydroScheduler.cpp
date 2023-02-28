@@ -206,10 +206,10 @@ void HydroScheduler::setBaseFeedMultiplier(float baseFeedMultiplier)
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
     if (hasSchedulerData()) {
-        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->baseFeedMultiplier = baseFeedMultiplier;
 
         setNeedsScheduling();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -220,14 +220,14 @@ void HydroScheduler::setWeeklyDosingRate(int weekIndex, float dosingRate, Hydro_
 
     if (hasSchedulerData() && weekIndex >= 0 && weekIndex < HYDRO_CROPS_GROWWEEKS_MAX) {
         if (reservoirType == Hydro_ReservoirType_NutrientPremix) {
-            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
             schedulerData()->weeklyDosingRates[weekIndex] = dosingRate;
-
+            
             setNeedsScheduling();
+            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         } else if (reservoirType >= Hydro_ReservoirType_CustomAdditive1 && reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount) {
             HydroCustomAdditiveData newAdditiveData(reservoirType);
-            newAdditiveData.bumpRevisionIfNeeded();
             newAdditiveData.weeklyDosingRates[weekIndex] = dosingRate;
+            newAdditiveData.bumpRevisionIfNeeded();
             Hydruino::_activeInstance->setCustomAdditiveData(&newAdditiveData);
 
             setNeedsScheduling();
@@ -243,10 +243,10 @@ void HydroScheduler::setStandardDosingRate(float dosingRate, Hydro_ReservoirType
     HYDRO_SOFT_ASSERT(!hasSchedulerData() || (reservoirType >= Hydro_ReservoirType_FreshWater && reservoirType < Hydro_ReservoirType_CustomAdditive1), SFP(HStr_Err_InvalidParameter));
 
     if (hasSchedulerData() && (reservoirType >= Hydro_ReservoirType_FreshWater && reservoirType < Hydro_ReservoirType_CustomAdditive1)) {
-        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->stdDosingRates[reservoirType - Hydro_ReservoirType_FreshWater] = dosingRate;
 
         setNeedsScheduling();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -273,8 +273,8 @@ void HydroScheduler::setFlushWeek(int weekIndex)
             auto additiveData = Hydruino::_activeInstance->getCustomAdditiveData(reservoirType);
             if (additiveData) {
                 HydroCustomAdditiveData newAdditiveData = *additiveData;
-                newAdditiveData.bumpRevisionIfNeeded();
                 newAdditiveData.weeklyDosingRates[weekIndex] = 0;
+                newAdditiveData.bumpRevisionIfNeeded();
                 Hydruino::_activeInstance->setCustomAdditiveData(&newAdditiveData);
             }
         }
@@ -283,15 +283,15 @@ void HydroScheduler::setFlushWeek(int weekIndex)
     }
 }
 
-void HydroScheduler::setTotalFeedingsDay(unsigned int feedingsDay)
+void HydroScheduler::setTotalFeedingsPerDay(unsigned int feedingsDay)
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
-    if (hasSchedulerData() && schedulerData()->totalFeedingsDay != feedingsDay) {
-        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
-        schedulerData()->totalFeedingsDay = feedingsDay;
+    if (hasSchedulerData() && schedulerData()->totalFeedingsPerDay != feedingsDay) {
+        schedulerData()->totalFeedingsPerDay = feedingsDay;
 
         setNeedsScheduling();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -300,10 +300,10 @@ void HydroScheduler::setPreFeedAeratorMins(unsigned int aeratorMins)
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasSchedulerData() && schedulerData()->preFeedAeratorMins != aeratorMins) {
-        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->preFeedAeratorMins = aeratorMins;
 
         setNeedsScheduling();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -312,20 +312,33 @@ void HydroScheduler::setPreDawnSprayMins(unsigned int sprayMins)
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasSchedulerData() && schedulerData()->preDawnSprayMins != sprayMins) {
-        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         schedulerData()->preDawnSprayMins = sprayMins;
 
         setNeedsScheduling();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
     }
 }
 
-void HydroScheduler::setAirReportInterval(TimeSpan interval)
+void HydroScheduler::setAirReportInterval(TimeSpan reportInterval)
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
-    if (hasSchedulerData() && schedulerData()->airReportInterval != interval.totalseconds()) {
+    if (hasSchedulerData() && schedulerData()->airReportInterval != reportInterval.totalseconds()) {
+        schedulerData()->airReportInterval = reportInterval.totalseconds();
         Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
-        schedulerData()->airReportInterval = interval.totalseconds();
+    }
+}
+
+void HydroScheduler::setUseNaturalLight(bool useNaturalLight, unsigned int twilightOffsetMins)
+{
+    HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
+
+    if (hasSchedulerData() && ((useNaturalLight && schedulerData()->natLightOffsetMins != twilightOffsetMins) ||
+                               (!useNaturalLight && schedulerData()->natLightOffsetMins != -1))) {
+        schedulerData()->natLightOffsetMins = useNaturalLight ? twilightOffsetMins : -1;
+
+        setNeedsScheduling();
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -421,10 +434,10 @@ bool HydroScheduler::isFlushWeek(int weekIndex)
     return false;
 }
 
-unsigned int HydroScheduler::getTotalFeedingsDay() const
+unsigned int HydroScheduler::getTotalFeedingsPerDay() const
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
-    return hasSchedulerData() ? schedulerData()->totalFeedingsDay : 0;
+    return hasSchedulerData() ? schedulerData()->totalFeedingsPerDay : 0;
 }
 
 unsigned int HydroScheduler::getPreFeedAeratorMins() const
@@ -443,6 +456,12 @@ TimeSpan HydroScheduler::getAirReportInterval() const
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
     return TimeSpan(hasSchedulerData() ? schedulerData()->airReportInterval : 0);
+}
+
+int HydroScheduler::getNaturalLightOffsetMins() const
+{
+    HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
+    return hasSchedulerData() && schedulerData()->natLightOffsetMins != -1 ? schedulerData()->natLightOffsetMins : -1;
 }
 
 void HydroScheduler::updateDayTracking()
@@ -514,7 +533,7 @@ void HydroScheduler::performScheduling()
                         #ifdef HYDRO_USE_VERBOSE_OUTPUT
                             Serial.print(F("Scheduler::performScheduling Light linkages found for: ")); Serial.print(iter->second->getKeyString()); Serial.print(':'); Serial.print(' ');
                             Serial.println(linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydro_ActuatorType_WaterSprayer) +
-                                            linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydro_ActuatorType_GrowLights)); flushYield();
+                                           linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydro_ActuatorType_GrowLights)); flushYield();
                         #endif
 
                         HydroLighting *lighting = new HydroLighting(feedReservoir);
@@ -570,12 +589,13 @@ void HydroScheduler::broadcastDayChange()
 
 
 HydroProcess::HydroProcess(SharedPtr<HydroFeedReservoir> feedResIn)
-    : feedRes(feedResIn), stageStart(0)
+    : feedRes(feedResIn), stageStart(unixNow())
 { ; }
 
 void HydroProcess::clearActuatorReqs()
 {
     while (actuatorReqs.size()) {
+        actuatorReqs.begin()->disableActivation();
         actuatorReqs.erase(actuatorReqs.begin());
     }
 }
@@ -585,14 +605,14 @@ void HydroProcess::setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_S
     for (auto attachIter = actuatorReqs.begin(); attachIter != actuatorReqs.end(); ++attachIter) {
         bool found = false;
         auto key = attachIter->getKey();
-    
+
         for (auto attachInIter = actuatorReqsIn.begin(); attachInIter != actuatorReqsIn.end(); ++attachInIter) {
             if (key == attachInIter->getKey()) {
                 found = true;
                 break;
             }
         }
-    
+
         if (!found) { // disables actuators not found in new list
             attachIter->disableActivation();
         }
@@ -608,22 +628,15 @@ void HydroProcess::setActuatorReqs(const Vector<HydroActuatorAttachment, HYDRO_S
 
 
 HydroFeeding::HydroFeeding(SharedPtr<HydroFeedReservoir> feedRes)
-    : HydroProcess(feedRes), stage(Unknown), canProcessAfter(0), lastAirReport(0),
+    : HydroProcess(feedRes), stage(Init), canProcessAfter(0), lastAirReport(0),
       phSetpoint(0), tdsSetpoint(0), waterTempSetpoint(0), airTempSetpoint(0), co2Setpoint(0)
 {
-    reset();
+    recalcFeeding();
 }
 
 HydroFeeding::~HydroFeeding()
 {
     clearActuatorReqs();
-}
-
-void HydroFeeding::reset()
-{
-    clearActuatorReqs();
-    stage = Init; stageStart = unixNow(); canProcessAfter = 0;
-    recalcFeeding();
 }
 
 void HydroFeeding::recalcFeeding()
@@ -778,16 +791,16 @@ void HydroFeeding::setupStaging()
 
     switch (stage) {
         case Init: {
-            auto maxFeedingsDay = getScheduler()->schedulerData()->totalFeedingsDay;
+            auto maxFeedingsDay = getScheduler()->schedulerData()->totalFeedingsPerDay;
             auto feedingsToday = feedRes->getFeedingsToday();
 
             if (!maxFeedingsDay) {
                 canProcessAfter = (time_t)0;
             } else if (feedingsToday < maxFeedingsDay) {
                 // this will force feedings to be spread out during the entire day
-                canProcessAfter = unixDayStart() + (time_t)(((float)SECS_PER_DAY / (maxFeedingsDay + 1)) * feedingsToday);
+                canProcessAfter = unixTime(localDayStart()) + (time_t)(((float)SECS_PER_DAY / (maxFeedingsDay + 1)) * feedingsToday);
             } else {
-                canProcessAfter = (time_t)UINT32_MAX; // no more feedings today
+                canProcessAfter = unixTime(localDayStart()) + SECS_PER_DAY; // no more feedings today
             }
 
             if (canProcessAfter > unixNow()) { clearActuatorReqs(); } // clear on wait
@@ -876,18 +889,20 @@ void HydroFeeding::update()
         Serial.print(F("Feeding::update stage: ")); Serial.println((_stageFU1 = (int8_t)stage)); flushYield(); } }
     #endif
 
-    if ((!lastAirReport || unixNow() >= lastAirReport + getScheduler()->schedulerData()->airReportInterval) &&
+    time_t time = unixNow();
+
+    if ((!lastAirReport || time >= lastAirReport + getScheduler()->schedulerData()->airReportInterval) &&
         (getScheduler()->schedulerData()->airReportInterval > 0) && // 0 disables
         (feedRes->getAirTemperatureSensor() ||
          feedRes->getAirCO2Sensor())) {
         getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_AirReport));
         logFeeding(HydroFeedingLogType_AirReport);
-        lastAirReport = unixNow();
+        lastAirReport = time;
     }
 
     switch (stage) {
         case Init: {
-            if (!canProcessAfter || unixNow() >= canProcessAfter) {
+            if (!canProcessAfter || time >= canProcessAfter) {
                 int cropsCount = 0;
                 int cropsHungry = 0;
 
@@ -899,7 +914,7 @@ void HydroFeeding::update()
                 }
 
                 if (!cropsCount || cropsHungry / (float)cropsCount >= HYDRO_SCH_FEED_FRACTION - FLT_EPSILON) {
-                    stage = TopOff; stageStart = unixNow();
+                    stage = TopOff; stageStart = time;
                     setupStaging();
 
                     if (actuatorReqs.size()) {
@@ -911,7 +926,7 @@ void HydroFeeding::update()
 
         case TopOff: {
             if (feedRes->isFilled() || !actuatorReqs.size()) {
-                stage = PreFeed; stageStart = unixNow();
+                stage = PreFeed; stageStart = time;
                 canProcessAfter = 0; // will be used to track how long balancers stay balanced
                 setupStaging();
 
@@ -930,7 +945,7 @@ void HydroFeeding::update()
         } break;
 
         case PreFeed: {
-            if (!actuatorReqs.size() || unixNow() >= stageStart + (getScheduler()->schedulerData()->preFeedAeratorMins * SECS_PER_MIN)) {
+            if (!actuatorReqs.size() || time >= stageStart + (getScheduler()->schedulerData()->preFeedAeratorMins * SECS_PER_MIN)) {
                 auto phBalancer = feedRes->getWaterPHBalancer();
                 auto tdsBalancer = feedRes->getWaterTDSBalancer();
                 auto waterTempBalancer = feedRes->getWaterTemperatureBalancer();
@@ -939,9 +954,9 @@ void HydroFeeding::update()
                     (!tdsBalancer || (tdsBalancer->isEnabled() && tdsBalancer->isBalanced())) &&
                     (!waterTempBalancer || (waterTempBalancer->isEnabled() && waterTempBalancer->isBalanced()))) {
                     // Can proceed after above are marked balanced for min time
-                    if (!canProcessAfter) { canProcessAfter = unixNow() + HYDRO_SCH_BALANCE_MINTIME; }
-                    else if (unixNow() >= canProcessAfter) {
-                        stage = Feed; stageStart = unixNow();
+                    if (!canProcessAfter) { canProcessAfter = time + HYDRO_SCH_BALANCE_MINTIME; }
+                    else if (time >= canProcessAfter) {
+                        stage = Feed; stageStart = time;
                         setupStaging();
 
                         broadcastFeeding(HydroFeedingBroadcastType_Began);
@@ -966,7 +981,7 @@ void HydroFeeding::update()
             if (!cropsCount || cropsFed / (float)cropsCount >= HYDRO_SCH_FEED_FRACTION - FLT_EPSILON ||
                 feedRes->isEmpty()) {
                 stage = (getController()->getSystemMode() == Hydro_SystemMode_DrainToWaste ? Drain : Done);
-                stageStart = unixNow();
+                stageStart = time;
                 setupStaging();
 
                 broadcastFeeding(HydroFeedingBroadcastType_Ended);
@@ -976,13 +991,13 @@ void HydroFeeding::update()
         case Drain: {
             if (getController()->getSystemMode() != Hydro_SystemMode_DrainToWaste ||
                 feedRes->isEmpty()) {
-                stage = Done; stageStart = unixNow();
+                stage = Done; stageStart = time;
                 setupStaging();
             }
         } break;
 
         case Done: {
-            stage = Init; stageStart = unixNow();
+            stage = Init; stageStart = time;
             setupStaging();
         } break;
 
@@ -1093,9 +1108,8 @@ void HydroFeeding::broadcastFeeding(HydroFeedingBroadcastType broadcastType)
 
 
 HydroLighting::HydroLighting(SharedPtr<HydroFeedReservoir> feedRes)
-    : HydroProcess(feedRes), stage(Init), sprayStart(0), lightStart(0), lightEnd(0), lightHours(0.0f)
+    : HydroProcess(feedRes), stage(Init), sprayStart(0), lightStart(0), lightEnd(0), augNatLightCease(0), augNatLightResume(0), lightTimeOffset(0), lightHours(0.0f)
 {
-    stageStart = unixNow();
     recalcLighting();
 }
 
@@ -1151,6 +1165,18 @@ void HydroLighting::recalcLighting()
         lightStart = sprayStart + daySprayerSecs;
         lightEnd = lightStart + dayLightSecs;
 
+        int natLightOffset = getScheduler()->getNaturalLightOffsetMins();
+        if (natLightOffset >= 0) {
+            time_t sunrise = getScheduler()->getDailyTwilight().getSunriseLocalTime().unixtime() + (natLightOffset * SECS_PER_MIN);
+            time_t sunset = getScheduler()->getDailyTwilight().getSunsetLocalTime().unixtime() - (natLightOffset * SECS_PER_MIN);
+            augNatLightCease = max(sunrise, lightStart);
+            augNatLightResume = min(sunset, lightEnd);
+        } else {
+            augNatLightCease = lightEnd;
+            augNatLightResume = lightEnd;
+            lightTimeOffset = 0;
+        }
+
         #ifdef HYDRO_USE_VERBOSE_OUTPUT // only works for singular feed res in system, otherwise output will be erratic
         {   static float _totalLightHours = 0;
             if (!isFPEqual(_totalLightHours, lightHours)) {
@@ -1192,6 +1218,10 @@ void HydroLighting::setupStaging()
             setActuatorReqs(newActuatorReqs);
         } break;
 
+        case NatLight: {
+            clearActuatorReqs();
+        } break;
+
         case Done: {
             clearActuatorReqs();
         } break;
@@ -1213,12 +1243,13 @@ void HydroLighting::update()
         Serial.print(F("Lighting::update stage: ")); Serial.println((_stageLU1 = (int8_t)stage)); flushYield(); } }
     #endif
 
+    time_t time = unixNow();
+    time_t currTime = localTime(time).unixtime();
+
     switch (stage) {
         case Init: {
-            time_t currTime = localNow().unixtime();
-
             if (currTime >= sprayStart && currTime < lightEnd) {
-                stage = Spray; stageStart = unixNow();
+                stage = Spray; stageStart = time;
                 setupStaging();
 
                 if (lightStart > sprayStart) {
@@ -1231,8 +1262,8 @@ void HydroLighting::update()
         } break;
 
         case Spray: {
-            if (localNow().unixtime() >= lightStart) {
-                stage = Light; stageStart = unixNow();
+            if (currTime >= lightStart) {
+                stage = Light; stageStart = time;
                 setupStaging();
 
                 getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_LightingSequence), SFP(HStr_Log_HasBegan));
@@ -1240,24 +1271,43 @@ void HydroLighting::update()
                 getLogger()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)lightStart).timestamp(DateTime::TIMESTAMP_TIME));
                 getLogger()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)lightEnd).timestamp(DateTime::TIMESTAMP_TIME));
             } else {
-                stage = Done; stageStart = unixNow();
+                stage = Done; stageStart = time;
                 setupStaging();
             }
         } break;
 
         case Light: {
-            if (localNow().unixtime() >= lightEnd) {
-                TimeSpan elapsedTime(unixNow() - stageStart);
-                stage = Done; stageStart = unixNow();
+            if (currTime >= lightEnd) {
+                stage = Done; stageStart = time;
                 setupStaging();
 
                 getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_LightingSequence), SFP(HStr_Log_HasEnded));
-                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Measured), timeSpanToString(elapsedTime));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Measured), timeSpanToString(TimeSpan((time - stageStart) + lightTimeOffset)));
+                lightTimeOffset = 0;
+            } else if (currTime >= augNatLightCease && currTime < augNatLightResume) {
+                lightTimeOffset = time - stageStart;
+                stage = NatLight; stageStart = time;
+                setupStaging();
+
+                getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_NatLightingSequence), SFP(HStr_Log_HasBegan));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Light_Duration), roundToString((augNatLightResume - augNatLightCease) / (float)SECS_PER_HOUR), String('h'));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Start), DateTime((uint32_t)augNatLightCease).timestamp(DateTime::TIMESTAMP_TIME));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Finish), DateTime((uint32_t)augNatLightResume).timestamp(DateTime::TIMESTAMP_TIME));
+            }
+        } break;
+
+        case NatLight: {
+            if (currTime >= augNatLightResume) {
+                stage = Light; stageStart = time;
+                setupStaging();
+
+                getLogger()->logProcess(feedRes.get(), SFP(HStr_Log_NatLightingSequence), SFP(HStr_Log_HasEnded));
+                getLogger()->logMessage(SFP(HStr_Log_Field_Time_Measured), timeSpanToString(TimeSpan(time - stageStart)));
             }
         } break;
 
         case Done: {
-            stage = Init; stageStart = unixNow();
+            stage = Init; stageStart = time;
             setupStaging();
         } break;
 
@@ -1267,6 +1317,7 @@ void HydroLighting::update()
 
     if (actuatorReqs.size()) {
         for (auto attachIter = actuatorReqs.begin(); attachIter != actuatorReqs.end(); ++attachIter) {
+            attachIter->setupActivation();
             attachIter->enableActivation();
         }
     }
@@ -1280,7 +1331,7 @@ void HydroLighting::update()
 
 HydroSchedulerSubData::HydroSchedulerSubData()
     : HydroSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, stdDosingRates{1,0.5,0.5},
-      totalFeedingsDay(0), preFeedAeratorMins(30), preDawnSprayMins(60), airReportInterval(8 * SECS_PER_HOUR)
+      totalFeedingsPerDay(0), preFeedAeratorMins(30), preDawnSprayMins(60), airReportInterval(8 * SECS_PER_HOUR), natLightOffsetMins(-1)
 {
     type = 0; // no type differentiation
 }
@@ -1294,10 +1345,11 @@ void HydroSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     if (hasWeeklyDosings) { objectOut[SFP(HStr_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX); }
     bool hasStandardDosings = !isFPEqual(stdDosingRates[0], 1.0f) || !isFPEqual(stdDosingRates[1], 0.5f) || !isFPEqual(stdDosingRates[2], 0.5f);
     if (hasStandardDosings) { objectOut[SFP(HStr_Key_StdDosingRates)] = commaStringFromArray(stdDosingRates, 3); }
-    if (totalFeedingsDay > 0) { objectOut[SFP(HStr_Key_TotalFeedingsDay)] = totalFeedingsDay; }
+    if (totalFeedingsPerDay > 0) { objectOut[SFP(HStr_Key_TotalFeedingsPerDay)] = totalFeedingsPerDay; }
     if (preFeedAeratorMins != 30) { objectOut[SFP(HStr_Key_PreFeedAeratorMins)] = preFeedAeratorMins; }
     if (preDawnSprayMins != 60) { objectOut[SFP(HStr_Key_PreDawnSprayMins)] = preDawnSprayMins; }
     if (airReportInterval != (8 * SECS_PER_HOUR)) { objectOut[SFP(HStr_Key_AirReportInterval)] = airReportInterval; }
+    if (natLightOffsetMins != -1) { objectOut[SFP(HStr_Key_NaturalLightOffsetMins)] = natLightOffsetMins; }
 }
 
 void HydroSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
@@ -1309,8 +1361,9 @@ void HydroSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)
     commaStringToArray(weeklyDosingRatesVar, weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX);
     JsonVariantConst stdDosingRatesVar = objectIn[SFP(HStr_Key_StdDosingRates)];
     commaStringToArray(stdDosingRatesVar, stdDosingRates, 3);
-    totalFeedingsDay = objectIn[SFP(HStr_Key_TotalFeedingsDay)] | totalFeedingsDay;
+    totalFeedingsPerDay = objectIn[SFP(HStr_Key_TotalFeedingsPerDay)] | totalFeedingsPerDay;
     preFeedAeratorMins = objectIn[SFP(HStr_Key_PreFeedAeratorMins)] | preFeedAeratorMins;
     preDawnSprayMins = objectIn[SFP(HStr_Key_PreDawnSprayMins)] | preDawnSprayMins;
     airReportInterval = objectIn[SFP(HStr_Key_AirReportInterval)] | airReportInterval;
+    natLightOffsetMins = objectIn[SFP(HStr_Key_NaturalLightOffsetMins)] | natLightOffsetMins;
 }

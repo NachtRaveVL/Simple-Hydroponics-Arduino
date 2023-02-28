@@ -1029,9 +1029,10 @@ void Hydruino::setSystemName(String systemName)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && !systemName.equals(getSystemName())) {
-        _systemData->bumpRevisionIfNeeded();
         strncpy(_systemData->systemName, systemName.c_str(), HYDRO_NAME_MAXSIZE);
+
         setNeedsLayout();
+        _systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -1039,9 +1040,10 @@ void Hydruino::setTimeZoneOffset(int8_t timeZoneOffset)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && _systemData->timeZoneOffset != timeZoneOffset) {
-        _systemData->bumpRevisionIfNeeded();
         _systemData->timeZoneOffset = timeZoneOffset;
-        scheduler.broadcastDayChange();
+
+        setNeedsLayout();
+        _systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -1049,8 +1051,8 @@ void Hydruino::setPollingInterval(uint16_t pollingInterval)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && _systemData->pollingInterval != pollingInterval) {
-        _systemData->bumpRevisionIfNeeded();
         _systemData->pollingInterval = pollingInterval;
+        _systemData->bumpRevisionIfNeeded();
 
         #ifdef HYDRO_USE_MULTITASKING
             if (isValidTask(_dataTaskId)) {
@@ -1071,10 +1073,10 @@ void Hydruino::setAutosaveEnabled(Hydro_Autosave autosaveEnabled, Hydro_Autosave
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && (_systemData->autosaveEnabled != autosaveEnabled || _systemData->autosaveFallback != autosaveFallback || _systemData->autosaveInterval != autosaveInterval)) {
-        _systemData->bumpRevisionIfNeeded();
         _systemData->autosaveEnabled = autosaveEnabled;
         _systemData->autosaveFallback = autosaveFallback;
         _systemData->autosaveInterval = autosaveInterval;
+        _systemData->bumpRevisionIfNeeded();
     }
 }
 
@@ -1097,8 +1099,6 @@ void Hydruino::setWiFiConnection(String ssid, String pass)
         bool passChanged = pass.equals(getWiFiPassword());
 
         if (ssidChanged || passChanged || (pass.length() && !_systemData->wifiPasswordSeed)) {
-            _systemData->bumpRevisionIfNeeded();
-
             if (ssid.length()) {
                 strncpy(_systemData->wifiSSID, ssid.c_str(), HYDRO_NAME_MAXSIZE);
             } else {
@@ -1118,6 +1118,8 @@ void Hydruino::setWiFiConnection(String ssid, String pass)
                 memset(_systemData->wifiPassword, '\0', HYDRO_NAME_MAXSIZE);
             }
 
+            _systemData->bumpRevisionIfNeeded();
+
             if (_netBegan && (ssidChanged || passChanged)) { WiFi.disconnect(); _netBegan = false; } // forces re-connect on next getWiFi
         }
     }
@@ -1133,9 +1135,8 @@ void Hydruino::setEthernetConnection(const uint8_t *macAddress)
         bool macChanged = memcmp(macAddress, getMACAddress(), sizeof(uint8_t[6])) != 0;
 
         if (macChanged) {
-            _systemData->bumpRevisionIfNeeded();
-
             memcpy(_systemData->macAddress, macAddress, sizeof(uint8_t[6]));
+            _systemData->bumpRevisionIfNeeded();
 
             if (_netBegan) { Ethernet.setMACAddress(macAddress); }
         }
@@ -1151,11 +1152,10 @@ void Hydruino::setSystemLocation(double latitude, double longitude, double altit
         forceUpdate |= ((latitude - _systemData->latitude) * (latitude - _systemData->latitude)) +
                        ((longitude - _systemData->longitude) * (longitude - _systemData->longitude)) >= HYDRO_SYS_LATLONG_DISTSQRDTOL ||
                        fabs(altitude - _systemData->altitude) >= HYDRO_SYS_ALTITUDE_DISTTOL;
-        if (forceUpdate) { _systemData->bumpRevisionIfNeeded(); }
         _systemData->latitude = latitude;
         _systemData->longitude = longitude;
         _systemData->altitude = altitude;
-        if (forceUpdate) { scheduler.updateDayTracking(); }
+        if (forceUpdate) { _systemData->bumpRevisionIfNeeded(); }
     }
 }
 
@@ -1431,7 +1431,6 @@ void Hydruino::notifyRTCTimeUpdated()
     _rtcBattFail = false;
     _lastAutosave = 0;
     logger.updateInitTracking();
-    scheduler.broadcastDayChange();
 }
 
 void Hydruino::notifyDayChanged()

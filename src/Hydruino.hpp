@@ -167,7 +167,3 @@ inline void HydroScheduler::setLastWeekAsFlush(HydroCrop *crop)
 {
     if (crop) { setFlushWeek(crop->getTotalGrowWeeks() - 1); }
 }
-
-inline void HydroScheduler::setNeedsScheduling() {
-    _needsScheduling = hasSchedulerData();
-}

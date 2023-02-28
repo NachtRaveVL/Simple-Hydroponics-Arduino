@@ -84,7 +84,7 @@ struct HydroIdentity {
 };
 
 
-// Hydroponic Object Base
+// Object Base
 // A simple base class for referring to objects in the Hydruino system.
 class HydroObject : public HydroObjInterface {
 public:

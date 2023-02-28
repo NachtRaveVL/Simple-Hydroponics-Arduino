@@ -290,6 +290,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Log_MeasuredPumping[] PROGMEM = {" pumping result:"};
             return flashStr_Log_MeasuredPumping;
         } break;
+        case HStr_Log_NatLightingSequence: {
+            static const char flashStr_Log_NatLightingSequence[] PROGMEM = {" natural lighting sequence"};
+            return flashStr_Log_NatLightingSequence;
+        } break;
         case HStr_Log_PreFeedBalancing: {
             static const char flashStr_Log_PreFeedBalancing[] PROGMEM = {" pre-feed balancing"};
             return flashStr_Log_PreFeedBalancing;
@@ -677,6 +681,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_Multiplier[] PROGMEM = {"multiplier"};
             return flashStr_Key_Multiplier;
         } break;
+        case HStr_Key_NaturalLightOffsetMins: {
+            static const char flashStr_Key_NaturalLightOffsetMins[] PROGMEM = {"naturalLightOffsetMins"};
+            return flashStr_Key_NaturalLightOffsetMins;
+        } break;
         case HStr_Key_NightlyFeedRate: {
             static const char flashStr_Key_NightlyFeedRate[] PROGMEM = {"nightlyFeedRate"};
             return flashStr_Key_NightlyFeedRate;
@@ -853,9 +861,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_ToleranceLow[] PROGMEM = {"toleranceLow"};
             return flashStr_Key_ToleranceLow;
         } break;
-        case HStr_Key_TotalFeedingsDay: {
-            static const char flashStr_Key_TotalFeedingsDay[] PROGMEM = {"totalFeedingsDay"};
-            return flashStr_Key_TotalFeedingsDay;
+        case HStr_Key_TotalFeedingsPerDay: {
+            static const char flashStr_Key_TotalFeedingsPerDay[] PROGMEM = {"totalFeedingsPerDay"};
+            return flashStr_Key_TotalFeedingsPerDay;
         } break;
         case HStr_Key_TotalGrowWeeks: {
             static const char flashStr_Key_TotalGrowWeeks[] PROGMEM = {"totalGrowWeeks"};

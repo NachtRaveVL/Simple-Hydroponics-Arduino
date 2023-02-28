@@ -21,7 +21,7 @@ struct HydroAdaptiveCropData;
 extern HydroCrop *newCropObjectFromData(const HydroCropData *dataIn);
 
 
-// Hydroponic Crop Base
+// Crop Base
 // This is the base class for all crops, which defines how the crop is identified, at
 // what point it is in the growth cycle, which sensors are attached to it, what reservoir
 // feeds it, etc.
