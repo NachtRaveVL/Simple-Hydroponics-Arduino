@@ -121,6 +121,10 @@ protected:
 // Feed Water Reservoir
 // The feed water reservoir can be thought of as an entire feeding channel hub, complete
 // with sensors to automate the variety of tasks associated with feeding crops.
+// It is recommended to keep crop types and their sow-times similar to one another in any
+// one feeding reservoir, as feeding parameters for attached crops are calculated on a per
+// feeding reservoir basis, and averaged over the attached crops (taking into account any
+// crop weighting offsets).
 class HydroFeedReservoir : public HydroFluidReservoir,
                            public HydroAirConcentrateUnitsInterfaceStorage,
                            public HydroTemperatureUnitsInterfaceStorage,

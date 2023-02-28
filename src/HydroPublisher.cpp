@@ -66,12 +66,12 @@ bool HydroPublisher::beginPublishingToSDCard(String dataFilePrefix)
                     Hydruino::_activeInstance->endSDCard(sd);
                 #endif
 
-                Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
                 strncpy(publisherData()->dataFilePrefix, dataFilePrefix.c_str(), 16);
                 publisherData()->pubToSDCard = true;
                 _dataFilename = dataFilename;
 
                 setNeedsTabulation();
+                Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
 
                 return true;
             }
@@ -104,12 +104,12 @@ bool HydroPublisher::beginPublishingToWiFiStorage(String dataFilePrefix)
                 dataFile.close();
             #endif
 
-            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
             strncpy(publisherData()->dataFilePrefix, dataFilePrefix.c_str(), 16);
             publisherData()->pubToWiFiStorage = true;
             _dataFilename = dataFilename;
 
             setNeedsTabulation();
+            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
 
             return true;
         }

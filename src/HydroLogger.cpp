@@ -55,10 +55,10 @@ bool HydroLogger::beginLoggingToSDCard(String logFilePrefix)
                     Hydruino::_activeInstance->endSDCard(sd);
                 #endif
 
-                Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
                 strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
                 loggerData()->logToSDCard = true;
                 _logFilename = logFilename;
+                Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
 
                 return true;
             }
@@ -91,10 +91,10 @@ bool HydroLogger::beginLoggingToWiFiStorage(String logFilePrefix)
                 logFile.close();
             #endif
 
-            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
             strncpy(loggerData()->logFilePrefix, logFilePrefix.c_str(), 16);
             loggerData()->logToWiFiStorage = true;
             _logFilename = logFilename;
+            Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
 
             return true;
         }
@@ -228,8 +228,8 @@ void HydroLogger::setLogLevel(Hydro_LogLevel logLevel)
 {
     HYDRO_SOFT_ASSERT(hasLoggerData(), SFP(HStr_Err_NotYetInitialized));
     if (hasLoggerData() && loggerData()->logLevel != logLevel) {
-        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
         loggerData()->logLevel = logLevel;
+        Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
     }
 }
 
