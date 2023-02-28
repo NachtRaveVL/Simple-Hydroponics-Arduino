@@ -276,10 +276,9 @@ void setup() {
                              JOIN(Hydro_ControlInputMode,SETUP_CTRL_IN_MODE));
 
         setupOnce();
-        setupAlways();
-    } else {
-        setupAlways();
     }
+
+    setupAlways();
 
     #if defined(HYDRO_USE_GUI) && SETUP_LCD_OUT_MODE != Disabled
         hydroController.enableUI(new HydruinoFullUI());
