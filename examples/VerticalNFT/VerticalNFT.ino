@@ -41,7 +41,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_ETHERNET_SPI              SPI1            // Ethernet SPI class instance
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
-// GPS Settings                                         (note: defined HYDRO_ENABLE_GPS to enable GPS)
+// GPS Settings                                         (note: define HYDRO_ENABLE_GPS to enable GPS)
 #define SETUP_GPS_TYPE                  None            // Type of GPS (Serial, I2C, SPI, None)
 #define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
 #define SETUP_GPS_I2C_ADDR              0b000           // GPS i2c address, if using i2c
@@ -57,6 +57,9 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
+#define SETUP_SYS_STATIC_LAT            DBL_UNDEF       // System static latitude (if not using GPS, else DBL_UNDEF), in degrees
+#define SETUP_SYS_STATIC_LONG           DBL_UNDEF       // System static longitude (if not using GPS, else DBL_UNDEF), in minutes
+#define SETUP_SYS_STATIC_ALT            DBL_UNDEF       // System static altitude (if not using GPS, else DBL_UNDEF), in meters above sea level (msl)
 
 // System Saves Settings                                (note: only one primary and one fallback mechanism may be enabled at a time)
 #define SETUP_SAVES_CONFIG_FILE         "hydruino.cfg"  // System config file name for system saves
@@ -227,8 +230,8 @@ void setup() {
         hydroCropsLib.beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
     #if SETUP_EXTDATA_SD_ENABLE
-        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
-        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
+        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
+        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
     #endif
 
     // Sets system config name used in any of the following inits.
@@ -309,6 +312,8 @@ void setup() {
         #endif
         #ifdef HYDRO_USE_GPS
             hydroController.getGPS()->sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+        #else
+            hydroController.setSystemLocation(SETUP_SYS_STATIC_LAT, SETUP_SYS_STATIC_LONG, SETUP_SYS_STATIC_ALT);
         #endif
         #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
             hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToWiFiStorageJson
@@ -382,25 +387,25 @@ void setup() {
         // Analog Sensors
         #if SETUP_PH_METER_PIN >= 0
         {   auto phMeter = hydroController.addAnalogPhMeter(SETUP_PH_METER_PIN, SETUP_USE_ANALOG_BITRES);
-            phMeter->setReservoir(feedReservoir);
+            phMeter->setParentReservoir(feedReservoir);
             feedReservoir->setWaterPHSensor(phMeter);
         }
         #endif
         #if SETUP_TDS_METER_PIN >= 0
         {   auto tdsElectrode = hydroController.addAnalogTDSElectrode(SETUP_TDS_METER_PIN, SETUP_USE_ANALOG_BITRES);
-            tdsElectrode->setReservoir(feedReservoir);
+            tdsElectrode->setParentReservoir(feedReservoir);
             feedReservoir->setWaterTDSSensor(tdsElectrode);
         }
         #endif
         #if SETUP_CO2_SENSOR_PIN >= 0
         {   auto co2Sensor = hydroController.addAnalogCO2Sensor(SETUP_CO2_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
-            co2Sensor->setReservoir(feedReservoir);
+            co2Sensor->setParentReservoir(feedReservoir);
             feedReservoir->setAirCO2Sensor(co2Sensor);
         }
         #endif
         #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
         {   auto flowSensor = hydroController.addAnalogPumpFlowSensor(SETUP_FLOW_RATE_SENSOR_PIN, SETUP_USE_ANALOG_BITRES);
-            flowSensor->setReservoir(feedReservoir);
+            flowSensor->setParentReservoir(feedReservoir);
             // will be set to main feed pump later via delayed ref
         }
         #endif
@@ -408,13 +413,13 @@ void setup() {
         // Digital Sensors
         #if SETUP_DS18_WATER_TEMP_PIN >= 0
         {   auto dsTemperatureSensor = hydroController.addDSTemperatureSensor(SETUP_DS18_WATER_TEMP_PIN, SETUP_USE_ONEWIRE_BITRES);
-            dsTemperatureSensor->setReservoir(feedReservoir);
+            dsTemperatureSensor->setParentReservoir(feedReservoir);
             feedReservoir->setWaterTemperatureSensor(dsTemperatureSensor);
         }
         #endif
         #if SETUP_DHT_AIR_TEMP_HUMID_PIN >= 0
         {   auto dhtTemperatureSensor = hydroController.addDHTTempHumiditySensor(SETUP_DHT_AIR_TEMP_HUMID_PIN, JOIN(Hydro_DHTType,SETUP_DHT_SENSOR_TYPE));
-            dhtTemperatureSensor->setReservoir(feedReservoir);
+            dhtTemperatureSensor->setParentReservoir(feedReservoir);
             feedReservoir->setAirTemperatureSensor(dhtTemperatureSensor);
         }
         #endif
@@ -422,13 +427,13 @@ void setup() {
         // Binary->Volume Sensors
         #if SETUP_VOL_FILLED_PIN >= 0
         {   auto filledIndicator = hydroController.addLevelIndicator(SETUP_VOL_FILLED_PIN);
-            filledIndicator->setReservoir(feedReservoir);
+            filledIndicator->setParentReservoir(feedReservoir);
             feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(filledIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
         }
         #endif
         #if SETUP_VOL_EMPTY_PIN >= 0
         {   auto emptyIndicator = hydroController.addLevelIndicator(SETUP_VOL_EMPTY_PIN);
-            emptyIndicator->setReservoir(feedReservoir);
+            emptyIndicator->setParentReservoir(feedReservoir);
             feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(emptyIndicator, 0.5, SETUP_VOL_INDICATOR_TYPE));
         }
         #endif
@@ -437,7 +442,7 @@ void setup() {
         #if SETUP_VOL_LEVEL_PIN >= 0
             #if SETUP_VOL_LEVEL_TYPE == Ultrasonic
             {   auto distanceSensor = hydroController.addUltrasonicDistanceSensor(SETUP_VOL_LEVEL_PIN, SETUP_USE_ANALOG_BITRES);
-                distanceSensor->setReservoir(feedReservoir);
+                distanceSensor->setParentReservoir(feedReservoir);
                 feedReservoir->setWaterVolumeSensor(distanceSensor);
                 #if SETUP_VOL_FILLED_PIN < 0
                     feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(distanceSensor, HYDRO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
@@ -448,7 +453,7 @@ void setup() {
             }
             #elif SETUP_VOL_LEVEL_TYPE == AnalogHeight
             {   auto heightMeter = hydroController.addAnalogWaterHeightMeter(SETUP_VOL_LEVEL_PIN, SETUP_USE_ANALOG_BITRES);
-                heightMeter->setReservoir(feedReservoir);
+                heightMeter->setParentReservoir(feedReservoir);
                 feedReservoir->setWaterVolumeSensor(heightMeter);
                 #if SETUP_VOL_FILLED_PIN < 0
                     feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(heightMeter, HYDRO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
@@ -463,19 +468,19 @@ void setup() {
         // AC-Based Actuators
         #if SETUP_GROW_LIGHTS_PIN >= 0
         {   auto growLights = hydroController.addGrowLightsRelay(SETUP_GROW_LIGHTS_PIN);
-            growLights->setRail(acRelayPower);
-            growLights->setReservoir(feedReservoir);
+            growLights->setParentRail(acRelayPower);
+            growLights->setParentReservoir(feedReservoir);
         }
         #endif
         #if SETUP_WATER_AERATOR_PIN >= 0
         {   auto aerator = hydroController.addWaterAeratorRelay(SETUP_WATER_AERATOR_PIN);
-            aerator->setRail(acRelayPower);
-            aerator->setReservoir(feedReservoir);
+            aerator->setParentRail(acRelayPower);
+            aerator->setParentReservoir(feedReservoir);
         }
         #endif
         #if SETUP_FEED_PUMP_PIN >= 0
         {   auto feedPump = hydroController.addWaterPumpRelay(SETUP_FEED_PUMP_PIN);
-            feedPump->setRail(acRelayPower);
+            feedPump->setParentRail(acRelayPower);
             feedPump->setSourceReservoir(feedReservoir);
             #if SETUP_FLOW_RATE_SENSOR_PIN >= 0
                 feedPump->setFlowRateSensor(HydroIdentity(Hydro_SensorType_PumpFlow, 1)); // delayed ref (auto-resolves on launch)
@@ -490,25 +495,25 @@ void setup() {
         #endif
         #if SETUP_WATER_HEATER_PIN >= 0
         {   auto heater = hydroController.addWaterHeaterRelay(SETUP_WATER_HEATER_PIN);
-            heater->setRail(acRelayPower);
-            heater->setReservoir(feedReservoir);
+            heater->setParentRail(acRelayPower);
+            heater->setParentReservoir(feedReservoir);
         }
         #endif
         #if SETUP_WATER_SPRAYER_PIN >= 0
         {   auto sprayer = hydroController.addWaterSprayerRelay(SETUP_WATER_SPRAYER_PIN);
-            sprayer->setRail(acRelayPower);
-            sprayer->setReservoir(feedReservoir);
+            sprayer->setParentRail(acRelayPower);
+            sprayer->setParentReservoir(feedReservoir);
         }
         #endif
         #if SETUP_FAN_EXHAUST_PIN >= 0
         if (checkPinIsPWMOutput(SETUP_FAN_EXHAUST_PIN)) {
             auto fanExhaust = hydroController.addAnalogFanExhaust(SETUP_FAN_EXHAUST_PIN, SETUP_USE_ANALOG_BITRES);
-            fanExhaust->setRail(dcRelayPower);          // PWM fans use DC relay
-            fanExhaust->setReservoir(feedReservoir);
+            fanExhaust->setParentRail(dcRelayPower);          // PWM fans use DC relay
+            fanExhaust->setParentReservoir(feedReservoir);
         } else {
             auto fanExhaust = hydroController.addFanExhaustRelay(SETUP_FAN_EXHAUST_PIN);
-            fanExhaust->setRail(acRelayPower);
-            fanExhaust->setReservoir(feedReservoir);
+            fanExhaust->setParentRail(acRelayPower);
+            fanExhaust->setParentReservoir(feedReservoir);
         }
         #endif
 
@@ -516,7 +521,7 @@ void setup() {
         #if SETUP_NUTRIENT_MIX_PIN >= 0
         {   auto nutrientMix = hydroController.addFluidReservoir(Hydro_ReservoirType_NutrientPremix, 1, true);
             auto nutrientPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
-            nutrientPump->setRail(dcRelayPower);
+            nutrientPump->setParentRail(dcRelayPower);
             nutrientPump->setSourceReservoir(nutrientMix);
             nutrientPump->setOutputReservoir(feedReservoir);
             nutrientPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
@@ -525,7 +530,7 @@ void setup() {
         #if SETUP_FRESH_WATER_PIN >= 0
         {   auto freshWater = hydroController.addFluidReservoir(Hydro_ReservoirType_FreshWater, 1, true);
             auto dilutionPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
-            dilutionPump->setRail(dcRelayPower);
+            dilutionPump->setParentRail(dcRelayPower);
             dilutionPump->setSourceReservoir(freshWater);
             dilutionPump->setOutputReservoir(feedReservoir);
             dilutionPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
@@ -534,7 +539,7 @@ void setup() {
         #if SETUP_PH_UP_PIN >= 0
         {   auto phUpSolution = hydroController.addFluidReservoir(Hydro_ReservoirType_PhUpSolution, 1, true);
             auto pHUpPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
-            pHUpPump->setRail(dcRelayPower);
+            pHUpPump->setParentRail(dcRelayPower);
             pHUpPump->setSourceReservoir(phUpSolution);
             pHUpPump->setOutputReservoir(feedReservoir);
             pHUpPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);
@@ -543,7 +548,7 @@ void setup() {
         #if SETUP_PH_DOWN_PIN >= 0
         {   auto phDownSolution = hydroController.addFluidReservoir(Hydro_ReservoirType_PhDownSolution, 1, true);
             auto pHDownPump = hydroController.addPeristalticPumpRelay(SETUP_NUTRIENT_MIX_PIN);
-            pHDownPump->setRail(dcRelayPower);
+            pHDownPump->setParentRail(dcRelayPower);
             pHDownPump->setSourceReservoir(phDownSolution);
             pHDownPump->setOutputReservoir(feedReservoir);
             pHDownPump->setContinuousFlowRate(SETUP_PERI_PUMP_FLOWRATE, Hydro_UnitsType_LiqFlowRate_LitersPerMin);

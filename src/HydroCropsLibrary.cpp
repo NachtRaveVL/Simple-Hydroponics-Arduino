@@ -176,6 +176,17 @@ void HydroCropsLibrary::updateCropsOfType(Hydro_CropType cropType)
     }
 }
 
+inline String getCropFilename(const String &libSDCropPrefix, Hydro_CropType cropType)
+{
+    String filename; filename.reserve(libSDCropPrefix.length() + 4);
+    filename.concat(libSDCropPrefix);
+    filename.concat('c');
+    filename.concat('r');
+    filename.concat('o');
+    filename.concat('p');
+    return getNNFilename(filename, (unsigned int)cropType, SFP(HStr_dat));
+}
+
 HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropType)
 {
     if (_libSDCropPrefix.length()) {
@@ -183,14 +194,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
         auto sd = getController()->getSDCard();
 
         if (sd) {
-            String filename = getNNFilename(_libSDCropPrefix, (unsigned int)cropType, SFP(HStr_dat));
+            auto file = sd->open(getCropFilename(_libSDCropPrefix, cropType).c_str(), FILE_READ);
 
-            if (sd->exists(filename.c_str())) {
-                auto file = sd->open(filename.c_str(), FILE_READ);
-                if (file) {
-                    retVal = new HydroCropsLibraryBook(file, _libSDJSONFormat);
-                    file.close();
-                }
+            if (file) {
+                retVal = new HydroCropsLibraryBook(file, _libSDJSONFormat);
+                file.close();
             }
 
             getController()->endSDCard(sd);

@@ -546,7 +546,7 @@ enum Hydro_EnableMode : signed char {
 
     Hydro_EnableMode_InOrder,                               // Serial activation using in-order/fifo-queue drive intensities
     Hydro_EnableMode_RevOrder,                              // Serial activation using reverse-order/lifo-stack drive intensities
-    Hydro_EnableMode_DesOrder,                              // Serial activation using highest-to-lowest/descending-order drive intensities
+    Hydro_EnableMode_DescOrder,                             // Serial activation using highest-to-lowest/descending-order drive intensities
     Hydro_EnableMode_AscOrder,                              // Serial activation using lowest-to-highest/ascending-order drive intensities
 
     Hydro_EnableMode_Count,                                 // Placeholder

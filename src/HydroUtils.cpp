@@ -1699,8 +1699,8 @@ String enableModeToString(Hydro_EnableMode enableMode, bool excludeSpecial)
             return SFP(HStr_Enum_InOrder);
         case Hydro_EnableMode_RevOrder:
             return SFP(HStr_Enum_RevOrder);
-        case Hydro_EnableMode_DesOrder:
-            return SFP(HStr_Enum_DesOrder);
+        case Hydro_EnableMode_DescOrder:
+            return SFP(HStr_Enum_DescOrder);
         case Hydro_EnableMode_AscOrder:
             return SFP(HStr_Enum_AscOrder);
         case Hydro_EnableMode_Count:

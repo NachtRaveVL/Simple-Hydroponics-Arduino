@@ -80,7 +80,7 @@ void HydroActuator::update()
         // Determine what driving intensity [-1,1] actuator should use
         switch (_enableMode) {
             case Hydro_EnableMode_Highest:
-            case Hydro_EnableMode_DesOrder: {
+            case Hydro_EnableMode_DescOrder: {
                 drivingIntensity = -__FLT_MAX__;
                 for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
                     if ((*handleIter)->isValid() && !(*handleIter)->isDone()) {
@@ -146,7 +146,7 @@ void HydroActuator::update()
         // Enable/disable activation handles as needed (serial modes only select 1 at a time)
         switch (_enableMode) {
             case Hydro_EnableMode_InOrder:
-            case Hydro_EnableMode_DesOrder: {
+            case Hydro_EnableMode_DescOrder: {
                 bool selected = false;
                 for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
                     if (!selected && (*handleIter)->isValid() && !(*handleIter)->isDone() && isFPEqual((*handleIter)->activation.intensity, getDriveIntensity())) {

@@ -309,13 +309,13 @@ void setup() {
 
     // Adds a water aerator at SETUP_WATER_AERATOR_PIN, and links it to the feed water reservoir and the relay power rail.
     auto aerator = hydroController.addWaterAeratorRelay(SETUP_WATER_AERATOR_PIN);
-    aerator->setRail(relayPower);
-    aerator->setReservoir(feedReservoir);
+    aerator->setParentRail(relayPower);
+    aerator->setParentReservoir(feedReservoir);
 
     // Add grow lights relay at SETUP_GROW_LIGHTS_PIN, and links it to the feed water reservoir and the relay power rail.
     auto lights = hydroController.addGrowLightsRelay(SETUP_GROW_LIGHTS_PIN);
-    lights->setRail(relayPower);
-    lights->setReservoir(feedReservoir);
+    lights->setParentRail(relayPower);
+    lights->setParentReservoir(feedReservoir);
 
     // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
     auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
@@ -377,7 +377,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_ETHERNET_SPI              SPI1            // Ethernet SPI class instance
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
-// GPS Settings                                         (note: defined HYDRO_ENABLE_GPS to enable GPS)
+// GPS Settings                                         (note: define HYDRO_ENABLE_GPS to enable GPS)
 #define SETUP_GPS_TYPE                  None            // Type of GPS (Serial, I2C, SPI, None)
 #define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
 #define SETUP_GPS_I2C_ADDR              0b000           // GPS i2c address, if using i2c
@@ -393,6 +393,9 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
+#define SETUP_SYS_STATIC_LAT            DBL_UNDEF       // System static latitude (if not using GPS, else DBL_UNDEF), in degrees
+#define SETUP_SYS_STATIC_LONG           DBL_UNDEF       // System static longitude (if not using GPS, else DBL_UNDEF), in minutes
+#define SETUP_SYS_STATIC_ALT            DBL_UNDEF       // System static altitude (if not using GPS, else DBL_UNDEF), in meters above sea level (msl)
 
 // System Saves Settings                                (note: only one primary and one fallback mechanism may be enabled at a time)
 #define SETUP_SAVES_CONFIG_FILE         "hydruino.cfg"  // System config file name for system saves

@@ -3,7 +3,7 @@
 // This sketch will build the entire library onto a device, while supporting all of its
 // functionality, and thus has the highest cost. Not meant for constrained devices.
 //
-// TODO: STILL A WIP!
+// TODO: STILL A WIP! #11 in Hydruino.
 
 #ifdef USE_SW_SERIAL
 #include "SoftwareSerial.h"
@@ -48,12 +48,15 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_ETHERNET_SPI              SPI1            // Ethernet SPI class instance
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
-// GPS Settings                                         (note: defined HYDRO_ENABLE_GPS to enable GPS)
+// GPS Settings                                         (note: define HYDRO_ENABLE_GPS to enable GPS)
 #define SETUP_GPS_TYPE                  None            // Type of GPS (Serial, I2C, SPI, None)
 #define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
 #define SETUP_GPS_I2C_ADDR              0b000           // GPS i2c address, if using i2c
 #define SETUP_GPS_SPI                   SPI             // GPS SPI class instance, if using spi
 #define SETUP_GPS_SPI_CS                SS              // GPS CS pin, if using spi
+#define SETUP_SYS_STATIC_LAT            DBL_UNDEF       // System static latitude (if not using GPS, else DBL_UNDEF), in degrees
+#define SETUP_SYS_STATIC_LONG           DBL_UNDEF       // System static longitude (if not using GPS, else DBL_UNDEF), in minutes
+#define SETUP_SYS_STATIC_ALT            DBL_UNDEF       // System static altitude (if not using GPS, else DBL_UNDEF), in meters above sea level (msl)
 
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
@@ -166,8 +169,8 @@ void setup() {
         hydroCropsLib.beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
     #endif
     #if SETUP_EXTDATA_SD_ENABLE
-        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("strings")));
-        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("crop")));
+        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
+        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
     #endif
 
     // Sets system config name used in any of the following inits.
@@ -248,6 +251,8 @@ void setup() {
         #endif
         #ifdef HYDRO_USE_GPS
             hydroController.getGPS()->sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+        #else
+            hydroController.setSystemLocation(SETUP_SYS_STATIC_LAT, SETUP_SYS_STATIC_LONG, SETUP_SYS_STATIC_ALT);
         #endif
         #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
             hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToWiFiStorageJson

@@ -1246,9 +1246,9 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_DC5V[] PROGMEM = {"DC5V"};
             return flashStr_Enum_DC5V;
         } break;
-        case HStr_Enum_DesOrder: {
-            static const char flashStr_Enum_DesOrder[] PROGMEM = {"DesOrder"};
-            return flashStr_Enum_DesOrder;
+        case HStr_Enum_DescOrder: {
+            static const char flashStr_Enum_DescOrder[] PROGMEM = {"DescOrder"};
+            return flashStr_Enum_DescOrder;
         } break;
         case HStr_Enum_DigitalInput: {
             static const char flashStr_Enum_DigitalInput[] PROGMEM = {"DigitalInput"};
