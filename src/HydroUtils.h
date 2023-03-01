@@ -261,7 +261,7 @@ extern time_t rtcNow();
 
 // This will return the current time as unix/UTC time_t (secs since 1970). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
 // Default storage format. Do not use for data display/night-day-calcs - use localNow() or localTime() for local DateTime (offset by system TZ).
-inline time_t unixNow() { return rtcNow() ?: now() + SECONDS_FROM_1970_TO_2000; } // rtcNow returns 0 if not set
+inline time_t unixNow() { return rtcNow() ?: (now() + SECONDS_FROM_1970_TO_2000); } // rtcNow returns 0 if not set
 // This will return the current time as local DateTime (offset by system TZ). Uses rtc time if available, otherwise 2000-Jan-1 + time since turned on.
 // Meant to be used as a temporary or for runtime only. Do not use for data storage - use unixNow() or unixTime() for unix/UTC time_t (secs since 1970).
 inline DateTime localNow() { return localTime(unixNow()); }
