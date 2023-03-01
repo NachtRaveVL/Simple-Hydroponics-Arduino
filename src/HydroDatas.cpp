@@ -147,9 +147,15 @@ void HydroSystemData::toJSONObject(JsonObject &objectOut) const
     if (!arrayElementsEqual<uint8_t>(macAddress, 6, 0)) {
         objectOut[SFP(HStr_Key_MACAddress)] = commaStringFromArray(macAddress, 6);
     }
-    if (latitude != DBL_UNDEF) { objectOut[SFP(HStr_Key_Latitude)] = latitude; }
-    if (longitude != DBL_UNDEF) { objectOut[SFP(HStr_Key_Longitude)] = longitude; }
-    if (altitude != DBL_UNDEF) { objectOut[SFP(HStr_Key_Altitude)] = altitude; }
+    if (latitude != DBL_UNDEF && longitude != DBL_UNDEF) {
+        if (altitude != DBL_UNDEF) {
+            double loc[3] = {latitude,longitude,altitude};
+            objectOut[SFP(HStr_Key_Location)] = commaStringFromArray(loc, 3);
+        } else {
+            double loc[2] = {latitude,longitude};
+            objectOut[SFP(HStr_Key_Location)] = commaStringFromArray(loc, 2);
+        }
+    }
 
     JsonObject schedulerObj = objectOut.createNestedObject(SFP(HStr_Key_Scheduler));
     scheduler.toJSONObject(schedulerObj); if (!schedulerObj.size()) { objectOut.remove(SFP(HStr_Key_Scheduler)); }
@@ -187,9 +193,17 @@ void HydroSystemData::fromJSONObject(JsonObjectConst &objectIn)
     else if (wifiPasswordStr && wifiPasswordStr[0]) { strncpy((char *)wifiPassword, wifiPasswordStr, HYDRO_NAME_MAXSIZE); wifiPasswordSeed = 0; }
     JsonVariantConst macAddressVar = objectIn[SFP(HStr_Key_MACAddress)];
     commaStringToArray(macAddressVar, macAddress, 6);
-    latitude = objectIn[SFP(HStr_Key_Latitude)] | latitude;
-    longitude = objectIn[SFP(HStr_Key_Longitude)] | longitude;
-    altitude = objectIn[SFP(HStr_Key_Altitude)] | altitude;
+    JsonVariantConst locationVar = objectIn[SFP(HStr_Key_Location)];
+    if (!locationVar.isNull()) {
+        auto commaCount = occurrencesInString(locationVar.as<String>(), String(','));
+        if (commaCount == 2) {
+            double loc[3]; commaStringToArray(locationVar, loc, 3);
+            latitude = loc[0]; longitude = loc[1]; altitude = loc[2];
+        } else if (commaCount == 1) {
+            double loc[2]; commaStringToArray(locationVar, loc, 2);
+            latitude = loc[0]; longitude = loc[1];
+        }
+    }
 
     JsonObjectConst schedulerObj = objectIn[SFP(HStr_Key_Scheduler)];
     if (!schedulerObj.isNull()) { scheduler.fromJSONObject(schedulerObj); }

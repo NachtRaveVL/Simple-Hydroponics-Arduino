@@ -437,10 +437,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_AirTemperatureSensor[] PROGMEM = {"airTempSensor"};
             return flashStr_Key_AirTemperatureSensor;
         } break;
-        case HStr_Key_Altitude: {
-            static const char flashStr_Key_Altitude[] PROGMEM = {"altitude"};
-            return flashStr_Key_Altitude;
-        } break;
         case HStr_Key_AlwaysFilled: {
             static const char flashStr_Key_AlwaysFilled[] PROGMEM = {"alwaysFilled"};
             return flashStr_Key_AlwaysFilled;
@@ -609,13 +605,13 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_LastPruningTime[] PROGMEM = {"lastPruningTime"};
             return flashStr_Key_LastPruningTime;
         } break;
-        case HStr_Key_Latitude: {
-            static const char flashStr_Key_Latitude[] PROGMEM = {"latitude"};
-            return flashStr_Key_Latitude;
-        } break;
         case HStr_Key_LimitTrigger: {
             static const char flashStr_Key_LimitTrigger[] PROGMEM = {"limitTrigger"};
             return flashStr_Key_LimitTrigger;
+        } break;
+        case HStr_Key_Location: {
+            static const char flashStr_Key_Location[] PROGMEM = {"location"};
+            return flashStr_Key_Location;
         } break;
         case HStr_Key_LogFilePrefix: {
             static const char flashStr_Key_LogFilePrefix[] PROGMEM = {"logFilePrefix"};
@@ -636,10 +632,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_Logger: {
             static const char flashStr_Key_Logger[] PROGMEM = {"logger"};
             return flashStr_Key_Logger;
-        } break;
-        case HStr_Key_Longitude: {
-            static const char flashStr_Key_Longitude[] PROGMEM = {"longitude"};
-            return flashStr_Key_Longitude;
         } break;
         case HStr_Key_MACAddress: {
             static const char flashStr_Key_MACAddress[] PROGMEM = {"macAddress"};
