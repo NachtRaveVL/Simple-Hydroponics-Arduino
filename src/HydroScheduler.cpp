@@ -504,7 +504,7 @@ void HydroScheduler::performScheduling()
                         }
                     } else {
                         #ifdef HYDRO_USE_VERBOSE_OUTPUT
-                            Serial.print(F("Scheduler::performScheduling Sowable crop linkages found for: ")); Serial.print(iter->second->getKeyString());
+                            Serial.print(F("Scheduler::performScheduling Sowable crop linkages found for: ")); Serial.print(iter->second->getId().getDisplayString());
                             Serial.print(':'); Serial.print(' '); Serial.println(linksCountSowableCrops(feedReservoir->getLinkages())); flushYield();
                         #endif
 
@@ -514,7 +514,7 @@ void HydroScheduler::performScheduling()
                     }
                 } else if (feedingIter != _feedings.end()) { // No sowable crops to warrant process -> delete if exists
                     #ifdef HYDRO_USE_VERBOSE_OUTPUT
-                        Serial.print(F("Scheduler::performScheduling NO sowable crop linkages found for: ")); Serial.println(iter->second->getKeyString()); flushYield();
+                        Serial.print(F("Scheduler::performScheduling NO sowable crop linkages found for: ")); Serial.println(iter->second->getId().getDisplayString()); flushYield();
                     #endif
                     if (feedingIter->second) { delete feedingIter->second; }
                     _feedings.erase(feedingIter);
@@ -531,7 +531,7 @@ void HydroScheduler::performScheduling()
                         }
                     } else {
                         #ifdef HYDRO_USE_VERBOSE_OUTPUT
-                            Serial.print(F("Scheduler::performScheduling Light linkages found for: ")); Serial.print(iter->second->getKeyString()); Serial.print(':'); Serial.print(' ');
+                            Serial.print(F("Scheduler::performScheduling Light linkages found for: ")); Serial.print(iter->second->getId().getDisplayString()); Serial.print(':'); Serial.print(' ');
                             Serial.println(linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydro_ActuatorType_WaterSprayer) +
                                            linksCountActuatorsByReservoirAndType(feedReservoir->getLinkages(), feedReservoir.get(), Hydro_ActuatorType_GrowLights)); flushYield();
                         #endif
@@ -542,7 +542,7 @@ void HydroScheduler::performScheduling()
                     }
                 } else if (lightingIter != _lightings.end()) { // No lights or sprayers to warrant process -> delete if exists
                     #ifdef HYDRO_USE_VERBOSE_OUTPUT
-                        Serial.print(F("Scheduler::performScheduling NO more light linkages found for: ")); Serial.println(iter->second->getKeyString()); flushYield();
+                        Serial.print(F("Scheduler::performScheduling NO more light linkages found for: ")); Serial.println(iter->second->getId().getDisplayString()); flushYield();
                     #endif
                     if (lightingIter->second) { delete lightingIter->second; }
                     _lightings.erase(lightingIter);

@@ -61,8 +61,8 @@ public:
 
     inline void logActivation(const HydroActuator *actuator);
     inline void logDeactivation(const HydroActuator *actuator);
-    inline void logProcess(const HydroObject *obj, const String &processString = String(), const String &statusString = String());
-    inline void logStatus(const HydroObject *obj, const String &statusString = String());
+    inline void logProcess(const HydroObjInterface *obj, const String &processString = String(), const String &statusString = String());
+    inline void logStatus(const HydroObjInterface *obj, const String &statusString = String());
 
     void logSystemUptime();
     inline void logSystemSave() { logMessage(SFP(HStr_Log_SystemDataSaved)); }
@@ -76,7 +76,7 @@ public:
     inline Hydro_LogLevel getLogLevel() const;
 
     inline bool isLoggingEnabled() const;
-    inline time_t getSystemUptime() const { return unixNow() - (_initTime ?: SECONDS_FROM_1970_TO_2000); }
+    inline time_t getSystemUptime() const { return unixNow() - (_initTime ?: SECS_YR_2000); }
 
     Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> &getLogSignal();
 

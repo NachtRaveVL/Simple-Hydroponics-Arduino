@@ -643,6 +643,8 @@ void Hydruino::commonPreInit()
 {
     Map<uintptr_t,uint32_t> began;
 
+    if (rtcNow() == 0) { setTime(12,0,0,1,1,2000); }
+
     if (isValidPin(_piezoBuzzerPin)) {
         pinMode(_piezoBuzzerPin, OUTPUT);
         #ifdef ESP32

@@ -78,6 +78,9 @@ struct HydroIdentity {
     // Used to update key value after modification, returning new key by convenience
     hkey_t regenKey();
 
+    // Returns displayable string associated with this identity (type + name)
+    String getDisplayString();
+
     inline operator bool() const { return key != hkey_none; }
     inline bool operator==(const HydroIdentity &otherId) const { return key == otherId.key; }
     inline bool operator!=(const HydroIdentity &otherId) const { return key != otherId.key; }
