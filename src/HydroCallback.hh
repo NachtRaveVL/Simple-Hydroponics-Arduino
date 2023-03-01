@@ -73,7 +73,7 @@ public:
     // Visits each of its listeners and executes them via operator().
     void fire(ParameterType param) const {
         for (auto iter = _connections.begin(); iter != _connections.end(); ++iter) {
-            if (*iter) { (*iter)->operator()(param); }
+            if (*iter) { (*(*iter))(param); }
         }
     }
 };

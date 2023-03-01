@@ -10,7 +10,6 @@ template<typename RTCType> class HydroRTCWrapper;
 #ifdef HYDRO_USE_MULTITASKING
 template<typename ParameterType, int Slots> class SignalFireTask;
 template<class ObjectType, typename ParameterType> class MethodSlotCallTask;
-class ActuatorTimedEnableTask;
 #endif
 
 #include "Hydruino.h"
@@ -51,14 +50,6 @@ protected:
 // Standard interrupt abstraction
 extern BasicArduinoInterruptAbstraction interruptImpl;
 
-
-// This will schedule an actuator to enable on the next TaskManagerIO runloop using the given intensity and enable time millis.
-// Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, float intensity, time_t enableTime);
-
-// This will schedule an actuator to enable on the next TaskManagerIO runloop using the given enable time millis.
-// Actuator is captured. Returns taskId or TASKMGR_INVALIDID on error.
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, time_t enableTime);
 
 // This will schedule a signal's fire method on the next TaskManagerIO runloop using the given call/fire parameter.
 // Object is captured, if not nullptr. Returns taskId or TASKMGR_INVALIDID on error.
@@ -125,24 +116,6 @@ private:
     friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(SharedPtr<ObjectType> object, void (ObjectType::*method)(taskid_t));
     friend taskid_t scheduleObjectMethodCallWithTaskIdOnce<ObjectType>(ObjectType *object, void (ObjectType::*method)(taskid_t));
 };
-
-
-// Actuator Precise Timed Enable Task
-// This actuator will enable an actuator for a period of time finely, and then deactivate it.
-class ActuatorTimedEnableTask : public Executable {
-public:
-    taskid_t taskId;
-    ActuatorTimedEnableTask(SharedPtr<HydroActuator> actuator,
-                            float intensity,
-                            millis_t duration);
-
-    virtual void exec() override;
-private:
-    SharedPtr<HydroActuator> _actuator;
-    float _intensity;
-    millis_t _duration;
-};
-
 
 #endif // /ifdef HYDRO_USE_MULTITASKING
 
