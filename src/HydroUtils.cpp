@@ -31,40 +31,6 @@ DateTime HydroRTCWrapper<RTC_DS1307>::now()
 
 BasicArduinoInterruptAbstraction interruptImpl;
 
-
-ActuatorTimedEnableTask::ActuatorTimedEnableTask(SharedPtr<HydroActuator> actuator, float intensity, millis_t duration)
-    : taskId(TASKMGR_INVALIDID), _actuator(actuator), _intensity(intensity), _duration(duration)
-{ ; }
-
-void ActuatorTimedEnableTask::exec()
-{
-    HydroActivationHandle handle = _actuator->enableActuator(_intensity, _duration);
-
-    while (!handle.isDone()) {
-        handle.elapseTo();
-        if (handle.getTimeLeft() > HYDRO_SYS_DELAYFINE_SPINMILLIS) { yield(); }
-    }
-
-    // Custom run loop allows calling this method directly - will disable actuator if needed
-    _actuator->update();
-}
-
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, float intensity, time_t enableTime)
-{
-    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, intensity, enableTime) : nullptr;
-    HYDRO_SOFT_ASSERT(!actuator || enableTask, SFP(HStr_Err_AllocationFailure));
-    taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
-    return (enableTask ? (enableTask->taskId = retVal) : retVal);
-}
-
-taskid_t scheduleActuatorTimedEnableOnce(SharedPtr<HydroActuator> actuator, time_t enableTime)
-{
-    ActuatorTimedEnableTask *enableTask = actuator ? new ActuatorTimedEnableTask(actuator, 1.0f, enableTime) : nullptr;
-    HYDRO_SOFT_ASSERT(!actuator || enableTask, SFP(HStr_Err_AllocationFailure));
-    taskid_t retVal = enableTask ? taskManager.scheduleOnce(0, enableTask, TIME_MILLIS, true) : TASKMGR_INVALIDID;
-    return (enableTask ? (enableTask->taskId = retVal) : retVal);
-}
-
 #endif // /ifdef HYDRO_USE_MULTITASKING
 
 
