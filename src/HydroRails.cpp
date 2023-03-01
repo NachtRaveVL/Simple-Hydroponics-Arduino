@@ -220,16 +220,14 @@ SharedPtr<HydroObjInterface> HydroRegulatedRail::getSharedPtrFor(const HydroObjI
 
 bool HydroRegulatedRail::canActivate(HydroActuator *actuator)
 {
-    if (_limitTrigger.resolve() && triggerStateToBool(_limitTrigger.getTriggerState())) { return false; }
-
+    if (_limitTrigger.isTriggered()) { return false; }
     HydroSingleMeasurement powerReq = actuator->getContinuousPowerUsage().asUnits(getPowerUnits(), getRailVoltage());
-
     return _powerUsage.getMeasurementValue(true) + powerReq.value < (HYDRO_RAILS_FRACTION_SATURATED * _maxPower) - FLT_EPSILON;
 }
 
 float HydroRegulatedRail::getCapacity(bool poll)
 {
-    if (_limitTrigger.resolve() && triggerStateToBool(_limitTrigger.getTriggerState(poll))) { return 1.0f; }
+    if (_limitTrigger.isTriggered()) { return 1.0f; }
     return _powerUsage.getMeasurementValue(poll) / (HYDRO_RAILS_FRACTION_SATURATED * _maxPower);
 }
 

@@ -258,7 +258,7 @@ SharedPtr<HydroObjInterface> HydroAdaptiveCrop::getSharedPtrFor(const HydroObjIn
 
 bool HydroAdaptiveCrop::needsFeeding(bool poll)
 {
-    if (_feedingTrigger.resolve() && triggerStateToBool(_feedingTrigger.getTriggerState(poll))) { return true; }
+    if (_feedingTrigger.isTriggered(poll)) { return true; }
     if (_soilMoisture.resolve()) {
         auto soilMoisture = _soilMoisture.getMeasurement(poll).asUnits(Hydro_UnitsType_Raw_1);
 
