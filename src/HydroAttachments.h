@@ -36,7 +36,7 @@ public:
     template<class U> inline void unresolveIf(U obj) { if (operator==(obj)) { unresolve(); } }
 
     template<class U> inline void setObject(U obj) { operator=(obj); }
-    template<class U = HydroObjInterface> inline SharedPtr<U> getObject() { return reinterpret_pointer_cast<U>(resolveObject()); }
+    template<class U = HydroObjInterface> inline SharedPtr<U> getObject() { return static_pointer_cast<U>(resolveObject()); }
     template<class U = HydroObjInterface> inline U *get() { return getObject<U>().get(); }
 
     inline HydroIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroIdentity(_keyStr) : HydroIdentity(_key)); }
@@ -148,7 +148,7 @@ public:
     // Sets a handle slot to run when attached signal fires
     void setHandleSlot(const Slot<ParameterType> &handleSlot);
     inline void setHandleFunction(void (*handleFunctionPtr)(ParameterType)) { setHandleSlot(FunctionSlot<ParameterType>(handleFunctionPtr)); }
-    template<class U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType), U *handleClassInst = nullptr) { setHandleSlot(MethodSlot<U,ParameterType>(handleClassInst ? handleClassInst : reinterpret_cast<U *>(_parent), handleMethodPtr)); }
+    template<class U, class V = U> inline void setHandleMethod(void (U::*handleMethodPtr)(ParameterType), V *handleClassInst = nullptr) { setHandleSlot(MethodSlot<V,ParameterType>(handleClassInst ? handleClassInst : static_cast<V *>(_parent), handleMethodPtr)); }
 
     inline HydroSignalAttachment<ParameterType,Slots> &operator=(const HydroIdentity &rhs) { setObject(rhs); return *this; }
     inline HydroSignalAttachment<ParameterType,Slots> &operator=(const char *rhs) { setObject(HydroIdentity(rhs)); return *this; }

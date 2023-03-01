@@ -10,7 +10,7 @@ HydroBalancer::HydroBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint
       _sensor(this), _balancingState(Hydro_BalancingState_Undefined), _enabled(false)
 {
     _sensor.setMeasurementRow(measurementRow);
-    _sensor.setHandleMethod(&HydroBalancer::handleMeasurement);
+    _sensor.setHandleMethod(&HydroBalancer::handleMeasurement, this);
     _sensor.initObject(sensor);
 }
 

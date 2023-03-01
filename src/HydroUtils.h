@@ -83,12 +83,11 @@ template<typename ParameterType, int Slots>
 class SignalFireTask : public Executable {
 public:
     taskid_t taskId;
-    SignalFireTask(SharedPtr<HydroObjInterface> object,
-                   Signal<ParameterType,Slots> &signal,
-                   ParameterType &param)
+
+    inline SignalFireTask(SharedPtr<HydroObjInterface> object, Signal<ParameterType,Slots> &signal, ParameterType &param)
         : taskId(TASKMGR_INVALIDID), _object(object), _signal(&signal), _param(param) { ; }
 
-    virtual void exec() override { _signal->fire(_param); }
+    virtual void exec() override;
 private:
     SharedPtr<HydroObjInterface> _object;
     Signal<ParameterType, Slots> *_signal;
@@ -104,10 +103,12 @@ public:
     typedef void (ObjectType::*FunctPtr)(ParameterType);
     taskid_t taskId;
 
-    MethodSlotCallTask(SharedPtr<ObjectType> object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
-    MethodSlotCallTask(ObjectType *object, FunctPtr method, ParameterType callParam) : taskId(TASKMGR_INVALIDID), _object(nullptr), _methodSlot(object, method), _callParam(callParam) { ; }
+    inline MethodSlotCallTask(SharedPtr<ObjectType> object, FunctPtr method, ParameterType callParam)
+        : taskId(TASKMGR_INVALIDID), _object(object), _methodSlot(object.get(), method), _callParam(callParam) { ; }
+    inline MethodSlotCallTask(ObjectType *object, FunctPtr method, ParameterType callParam)
+        : taskId(TASKMGR_INVALIDID), _object(nullptr), _methodSlot(object, method), _callParam(callParam) { ; }
 
-    virtual void exec() override { _methodSlot(_callParam); }
+    virtual void exec() override;
 private:
     SharedPtr<ObjectType> _object;
     MethodSlot<ObjectType,ParameterType> _methodSlot;

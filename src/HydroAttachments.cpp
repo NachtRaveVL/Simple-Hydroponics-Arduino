@@ -44,7 +44,7 @@ SharedPtr<HydroObjInterface> HydroDLinkObject::resolveObject()
 {
     if (_obj || !isSet()) { return _obj; }
     if (Hydruino::_activeInstance) {
-        _obj = reinterpret_pointer_cast<HydroObjInterface>(Hydruino::_activeInstance->_objects[_key]);
+        _obj = static_pointer_cast<HydroObjInterface>(Hydruino::_activeInstance->_objects[_key]);
     }
     if (_obj && _keyStr) {
         free((void *)_keyStr); _keyStr = nullptr;
@@ -200,7 +200,7 @@ HydroSensorAttachment::HydroSensorAttachment(HydroObjInterface *parent, uint8_t 
     : HydroSignalAttachment<const HydroMeasurement *, HYDRO_SENSOR_SIGNAL_SLOTS>(parent, &HydroSensor::getMeasurementSignal),
       _measurementRow(measurementRow), _convertParam(FLT_UNDEF), _needsMeasurement(true)
 {
-    setHandleMethod(&HydroSensorAttachment::handleMeasurement);
+    setHandleMethod(&HydroSensorAttachment::handleMeasurement, this);
 }
 
 HydroSensorAttachment::HydroSensorAttachment(const HydroSensorAttachment &attachment)

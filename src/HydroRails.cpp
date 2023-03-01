@@ -184,9 +184,9 @@ HydroRegulatedRail::HydroRegulatedRail(Hydro_RailType railType, hposi_t railInde
     : HydroRail(railType, railIndex, classType), _maxPower(maxPower), _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());
-    _powerUsage.setHandleMethod(&HydroRegulatedRail::handlePower);
+    _powerUsage.setHandleMethod(&HydroRegulatedRail::handlePower, this);
 
-    _limitTrigger.setHandleMethod(&HydroRail::handleLimit);
+    _limitTrigger.setHandleMethod(&HydroRail::handleLimit, this);
 }
 
 HydroRegulatedRail::HydroRegulatedRail(const HydroRegulatedRailData *dataIn)
@@ -195,10 +195,10 @@ HydroRegulatedRail::HydroRegulatedRail(const HydroRegulatedRailData *dataIn)
       _powerUsage(this), _limitTrigger(this)
 {
     _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());
-    _powerUsage.setHandleMethod(&HydroRegulatedRail::handlePower);
+    _powerUsage.setHandleMethod(&HydroRegulatedRail::handlePower, this);
     _powerUsage.initObject(dataIn->powerSensor);
 
-    _limitTrigger.setHandleMethod(&HydroRail::handleLimit);
+    _limitTrigger.setHandleMethod(&HydroRail::handleLimit, this);
     _limitTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->limitTrigger)));
     HYDRO_SOFT_ASSERT(_limitTrigger, SFP(HStr_Err_AllocationFailure));
 }

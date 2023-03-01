@@ -19,7 +19,7 @@ struct HydroObjectData;
 extern HydroObject *newObjectFromData(const HydroData *dataIn);
 
 // Shortcut to get shared pointer for object with static pointer cast built-in.
-template<class T = HydroObjInterface> inline SharedPtr<T> getSharedPtr(const HydroObjInterface *obj) { return obj ? reinterpret_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
+template<class T = HydroObjInterface> inline SharedPtr<T> getSharedPtr(const HydroObjInterface *obj) { return obj ? static_pointer_cast<T>(obj->getSharedPtr()) : nullptr; }
 
 
 // Simple class for referencing an object in the Hydruino system.

@@ -101,21 +101,21 @@ HydroMeasurementValueTrigger::HydroMeasurementValueTrigger(HydroIdentity sensorI
     : HydroTrigger(sensorId, measurementRow, detriggerTol, detriggerDelay, MeasureValue),
       _triggerTol(tolerance), _triggerBelow(triggerBelow)
 {
-    _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement);
+    _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement, this);
 }
 
 HydroMeasurementValueTrigger::HydroMeasurementValueTrigger(SharedPtr<HydroSensor> sensor, float tolerance, bool triggerBelow, uint8_t measurementRow, float detriggerTol, millis_t detriggerDelay)
     : HydroTrigger(sensor, measurementRow, detriggerTol, detriggerDelay, MeasureValue),
       _triggerTol(tolerance), _triggerBelow(triggerBelow)
 {
-    _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement);
+    _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement, this);
 }
 
 HydroMeasurementValueTrigger::HydroMeasurementValueTrigger(const HydroTriggerSubData *dataIn)
     : HydroTrigger(dataIn),
       _triggerTol(dataIn->dataAs.measureValue.tolerance), _triggerBelow(dataIn->dataAs.measureValue.triggerBelow)
 {
-    _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement);
+    _sensor.setHandleMethod(&HydroMeasurementValueTrigger::handleMeasurement, this);
 }
 
 void HydroMeasurementValueTrigger::saveToData(HydroTriggerSubData *dataOut) const
@@ -179,14 +179,14 @@ HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(HydroIdentity sensorI
     : HydroTrigger(sensorId, measurementRow, detriggerTol, detriggerDelay, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _triggerOutside(triggerOutside)
 {
-    _sensor.setHandleMethod(&HydroMeasurementRangeTrigger::handleMeasurement);
+    _sensor.setHandleMethod(&HydroMeasurementRangeTrigger::handleMeasurement, this);
 }
 
 HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(SharedPtr<HydroSensor> sensor, float toleranceLow, float toleranceHigh, bool triggerOutside, uint8_t measurementRow, float detriggerTol, millis_t detriggerDelay)
     : HydroTrigger(sensor, measurementRow, detriggerTol, detriggerDelay, MeasureRange),
       _triggerTolLow(toleranceLow), _triggerTolHigh(toleranceHigh), _triggerOutside(triggerOutside)
 {
-    _sensor.setHandleMethod(&HydroMeasurementRangeTrigger::handleMeasurement);
+    _sensor.setHandleMethod(&HydroMeasurementRangeTrigger::handleMeasurement, this);
 }
 
 HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(const HydroTriggerSubData *dataIn)
@@ -195,7 +195,7 @@ HydroMeasurementRangeTrigger::HydroMeasurementRangeTrigger(const HydroTriggerSub
       _triggerTolHigh(dataIn->dataAs.measureRange.toleranceHigh),
       _triggerOutside(dataIn->dataAs.measureRange.triggerOutside)
 {
-    _sensor.setHandleMethod(&HydroMeasurementRangeTrigger::handleMeasurement);
+    _sensor.setHandleMethod(&HydroMeasurementRangeTrigger::handleMeasurement, this);
 }
 
 void HydroMeasurementRangeTrigger::saveToData(HydroTriggerSubData *dataOut) const

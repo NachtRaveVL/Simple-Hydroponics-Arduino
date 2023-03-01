@@ -192,7 +192,7 @@ String HydroObject::getKeyString() const
 
 SharedPtr<HydroObjInterface> HydroObject::getSharedPtr() const
 {
-    return getController() ? reinterpret_pointer_cast<HydroObjInterface>(getController()->objectById(_id)) : nullptr;
+    return getController() ? static_pointer_cast<HydroObjInterface>(getController()->objectById(_id)) : nullptr;
 }
 
 SharedPtr<HydroObjInterface> HydroObject::getSharedPtrFor(const HydroObjInterface *obj) const
