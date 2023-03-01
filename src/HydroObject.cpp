@@ -59,6 +59,18 @@ hkey_t HydroIdentity::regenKey()
     return key;
 }
 
+String HydroIdentity::getDisplayString()
+{
+    switch (type) {
+        case Actuator: return String(F("Actuator ")) + keyString;
+        case Sensor: return String(F("Sensor ")) + keyString;
+        case Crop: return String(F("Crop ")) + keyString;
+        case Reservoir: return String(F("Reservoir ")) + keyString;
+        case Rail: return String(F("Rail ")) + keyString;
+        default: return String(F("Unknown ")) + keyString;
+    }
+}
+
 
 HydroObject::~HydroObject()
 {

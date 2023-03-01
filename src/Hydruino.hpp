@@ -77,22 +77,22 @@ inline bool HydroLogger::isLoggingToWiFiStorage() const
 
 inline void HydroLogger::logActivation(const HydroActuator *actuator)
 {
-    if (actuator) { logMessage(actuator->getKeyString(), SFP(HStr_Log_HasEnabled)); }
+    if (actuator) { logMessage(actuator->getId().getDisplayString(), SFP(HStr_Log_HasEnabled)); }
 }
 
 inline void HydroLogger::logDeactivation(const HydroActuator *actuator)
 {
-    if (actuator) { logMessage(actuator->getKeyString(), SFP(HStr_Log_HasDisabled)); }
+    if (actuator) { logMessage(actuator->getId().getDisplayString(), SFP(HStr_Log_HasDisabled)); }
 }
 
-inline void HydroLogger::logProcess(const HydroObject *obj, const String &processString, const String &statusString)
+inline void HydroLogger::logProcess(const HydroObjInterface *obj, const String &processString, const String &statusString)
 {
-    if (obj) { logMessage(obj->getKeyString(), processString, statusString); }
+    if (obj) { logMessage(obj->getId().getDisplayString(), processString, statusString); }
 }
 
-inline void HydroLogger::logStatus(const HydroObject *obj, const String &statusString)
+inline void HydroLogger::logStatus(const HydroObjInterface *obj, const String &statusString)
 {
-    if (obj) { logMessage(obj->getKeyString(), statusString); }
+    if (obj) { logMessage(obj->getId().getDisplayString(), statusString); }
 }
 
 inline Hydro_LogLevel HydroLogger::getLogLevel() const

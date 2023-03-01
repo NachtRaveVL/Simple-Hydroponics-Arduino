@@ -412,8 +412,8 @@ void HydroRelayPumpActuator::handleActivation()
         uint8_t addDecPlaces = getActuatorType() == Hydro_ActuatorType_PeristalticPump ? 2 : 1;
 
         getLogger()->logStatus(this, SFP(HStr_Log_MeasuredPumping));
-        if (getSourceReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getSourceReservoir()->getKeyString()); }
-        if (getDestinationReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getDestinationReservoir()->getKeyString()); }
+        if (getSourceReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getSourceReservoir()->getId().getDisplayString()); }
+        if (getDestinationReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getDestinationReservoir()->getId().getDisplayString()); }
         getLogger()->logMessage(SFP(HStr_Log_Field_Vol_Measured), measurementToString(_pumpVolumeAccum, baseUnits(getFlowRateUnits()), addDecPlaces));
         getLogger()->logMessage(SFP(HStr_Log_Field_Time_Measured), roundToString(duration / 1000.0f, 1), String('s'));
     }
@@ -450,8 +450,8 @@ HydroActivationHandle HydroRelayPumpActuator::pump(millis_t time)
     if (getSourceReservoir()) {
         #ifdef HYDRO_USE_MULTITASKING
             getLogger()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
-            if (getSourceReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getSourceReservoir()->getKeyString()); }
-            if (getDestinationReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getDestinationReservoir()->getKeyString()); }
+            if (getSourceReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getSourceReservoir()->getId().getDisplayString()); }
+            if (getDestinationReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getDestinationReservoir()->getId().getDisplayString()); }
             if (_contFlowRate.value > FLT_EPSILON) {
                 uint8_t addDecPlaces = getActuatorType() == Hydro_ActuatorType_PeristalticPump ? 2 : 1;
                 getLogger()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (time / (float)secondsToMillis(SECS_PER_MIN)), baseUnits(getFlowRateUnits()), addDecPlaces));
@@ -460,8 +460,8 @@ HydroActivationHandle HydroRelayPumpActuator::pump(millis_t time)
             return enableActuator(time);
         #else
             getLogger()->logStatus(this, SFP(HStr_Log_CalculatedPumping));
-            if (getSourceReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getSourceReservoir()->getKeyString()); }
-            if (getOutputReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getKeyString()); }
+            if (getSourceReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Source_Reservoir), getSourceReservoir()->getId().getDisplayString()); }
+            if (getOutputReservoir()) { getLogger()->logMessage(SFP(HStr_Log_Field_Destination_Reservoir), getOutputReservoir()->getId().getDisplayString()); }
             if (_contFlowRate.value > FLT_EPSILON) {
                 uint8_t addDecPlaces = getActuatorType() == Hydro_ActuatorType_PeristalticPump ? 2 : 1;
                 getLogger()->logMessage(SFP(HStr_Log_Field_Vol_Calculated), measurementToString(_contFlowRate.value * (time / (float)secondsToMillis(SECS_PER_MIN)), baseUnits(getFlowRateUnits()), addDecPlaces));
