@@ -417,10 +417,9 @@ SharedPtr<HydroTimedCrop> HydroFactory::addTimerFedCrop(Hydro_CropType cropType,
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(cropType));
     HYDRO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydro_CropType_Count, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count, SFP(HStr_Err_InvalidParameter));
-    HYDRO_SOFT_ASSERT(sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
-    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
+    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && isValidIndex(positionIndex)) {
         auto crop = SharedPtr<HydroTimedCrop>(new HydroTimedCrop(
             cropType,
             positionIndex,
@@ -450,10 +449,9 @@ SharedPtr<HydroAdaptiveCrop> HydroFactory::addAdaptiveFedCrop(Hydro_CropType cro
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(cropType));
     HYDRO_SOFT_ASSERT((int)cropType >= 0 && cropType <= Hydro_CropType_Count, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT((int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count, SFP(HStr_Err_InvalidParameter));
-    HYDRO_SOFT_ASSERT(sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
-    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && sowTime.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
+    if ((int)cropType >= 0 && cropType < Hydro_CropType_Count && (int)substrateType >= 0 && substrateType <= Hydro_SubstrateType_Count && isValidIndex(positionIndex)) {
         auto crop = SharedPtr<HydroAdaptiveCrop>(new HydroAdaptiveCrop(
             cropType,
             positionIndex,
@@ -502,10 +500,9 @@ SharedPtr<HydroFeedReservoir> HydroFactory::addFeedWaterReservoir(float maxVolum
 {
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ReservoirType_FeedWater));
     HYDRO_SOFT_ASSERT(maxVolume > FLT_EPSILON, SFP(HStr_Err_InvalidParameter));
-    HYDRO_SOFT_ASSERT(lastChangeTime.unixtime() >= SECONDS_FROM_1970_TO_2000, SFP(HStr_Err_InvalidParameter));
     HYDRO_SOFT_ASSERT(isValidIndex(positionIndex), SFP(HStr_Err_NoPositionsAvailable));
 
-    if (maxVolume > FLT_EPSILON && lastChangeTime.unixtime() >= SECONDS_FROM_1970_TO_2000 && isValidIndex(positionIndex)) {
+    if (maxVolume > FLT_EPSILON && isValidIndex(positionIndex)) {
         auto reservoir = SharedPtr<HydroFeedReservoir>(new HydroFeedReservoir(
             positionIndex,
             maxVolume,
