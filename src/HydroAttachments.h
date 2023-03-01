@@ -36,7 +36,7 @@ public:
     template<class U> inline void unresolveIf(U obj) { if (operator==(obj)) { unresolve(); } }
 
     template<class U> inline void setObject(U obj) { operator=(obj); }
-    template<class U = HydroObjInterface> inline SharedPtr<U> getObject() { return static_pointer_cast<U>(resolveObject()); }
+    template<class U = HydroObjInterface> inline SharedPtr<U> getObject() { return reinterpret_pointer_cast<U>(resolveObject()); }
     template<class U = HydroObjInterface> inline U *get() { return getObject<U>().get(); }
 
     inline HydroIdentity getId() const { return _obj ? _obj->getId() : (_keyStr ? HydroIdentity(_keyStr) : HydroIdentity(_key)); }
