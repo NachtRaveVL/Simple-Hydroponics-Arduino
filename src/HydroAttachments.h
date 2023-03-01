@@ -318,6 +318,7 @@ public:
     virtual void updateIfNeeded(bool poll = false) override;
 
     inline Hydro_TriggerState getTriggerState(bool poll = false);
+    inline bool isTriggered(bool poll = false) { return getTriggerState(poll) == Hydro_TriggerState_Triggered; }
 
     inline SharedPtr<HydroTrigger> getObject() { return HydroAttachment::getObject<HydroTrigger>(); }
     inline HydroTrigger *get() { return HydroAttachment::get<HydroTrigger>(); }

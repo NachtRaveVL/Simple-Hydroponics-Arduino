@@ -178,14 +178,14 @@ SharedPtr<HydroObjInterface> HydroFluidReservoir::getSharedPtrFor(const HydroObj
 
 bool HydroFluidReservoir::isFilled(bool poll)
 {
-    if (triggerStateToBool(_filledTrigger.getTriggerState(poll))) { return true; }
+    if (_filledTrigger.isTriggered(poll)) { return true; }
     return _waterVolume.getMeasurementValue(poll) >= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_FILLED
                                                                                                                    : _maxVolume) - FLT_EPSILON;
 }
 
 bool HydroFluidReservoir::isEmpty(bool poll)
 {
-    if (triggerStateToBool(_emptyTrigger.getTriggerState(poll))) { return true; }
+    if (_emptyTrigger.isTriggered(poll)) { return true; }
     return _waterVolume.getMeasurementValue(poll) <= (_id.objTypeAs.reservoirType == Hydro_ReservoirType_FeedWater ? _maxVolume * HYDRO_FEEDRES_FRACTION_EMPTY
                                                                                                                    : 0) + FLT_EPSILON;
 }
