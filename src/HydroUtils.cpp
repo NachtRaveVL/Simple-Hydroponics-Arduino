@@ -80,6 +80,7 @@ static String makeAssertMsg(const char *file, const char *func, int line)
 {
     String retVal;
 
+    retVal.concat(SFP(HStr_ColonSpace));
     retVal.concat(fileFromFullPath(String(file)));
     retVal.concat(':');
     retVal.concat(line);
@@ -93,10 +94,8 @@ static String makeAssertMsg(const char *file, const char *func, int line)
 void softAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        String assertMsg = makeAssertMsg(file, func, line);
         if (getLogger()) {
-            getLogger()->logWarning(SFP(HStr_Err_AssertionFailure), SFP(HStr_ColonSpace), assertMsg);
-            getLogger()->logWarning(SFP(HStr_DoubleSpace), msg);
+            getLogger()->logWarning(SFP(HStr_Err_AssertionFailure), makeAssertMsg(file, func, line), msg);
             getLogger()->flush();
         }
         #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
@@ -105,8 +104,8 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
                 Serial.print(' ');
                 Serial.print(SFP(HStr_Log_Prefix_Warning));
                 Serial.print(SFP(HStr_Err_AssertionFailure));
-                Serial.print(SFP(HStr_ColonSpace));
-                Serial.println(assertMsg);
+                Serial.print(makeAssertMsg(file, func, line));
+                Serial.println(msg);
                 Serial.flush(); yield();
             }
         #endif
@@ -116,11 +115,10 @@ void softAssert(bool cond, String msg, const char *file, const char *func, int l
 void hardAssert(bool cond, String msg, const char *file, const char *func, int line)
 {
     if (!cond) {
-        String assertMsg = makeAssertMsg(file, func, line);
-        String colonSpace = String(F(" HARD")) + SFP(HStr_ColonSpace);
+        String assertFail = SFP(HStr_Err_AssertionFailure);
+        assertFail.concat(F(" HARD"));
         if (getLogger()) {
-            getLogger()->logError(SFP(HStr_Err_AssertionFailure), colonSpace, assertMsg);
-            getLogger()->logError(SFP(HStr_DoubleSpace), msg);
+            getLogger()->logError(assertFail, makeAssertMsg(file, func, line), msg);
             getLogger()->flush();
         }
         #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
@@ -128,9 +126,9 @@ void hardAssert(bool cond, String msg, const char *file, const char *func, int l
                 Serial.print(localNow().timestamp(DateTime::TIMESTAMP_FULL));
                 Serial.print(' ');
                 Serial.print(SFP(HStr_Log_Prefix_Error));
-                Serial.print(SFP(HStr_Err_AssertionFailure));
-                Serial.print(colonSpace);
-                Serial.println(assertMsg);
+                Serial.print(assertFail);
+                Serial.print(makeAssertMsg(file, func, line));
+                Serial.println(msg);
                 Serial.flush(); yield();
             }
         #endif
