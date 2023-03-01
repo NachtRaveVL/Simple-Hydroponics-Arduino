@@ -78,6 +78,20 @@ taskid_t scheduleObjectMethodCallWithTaskIdOnce(ObjectType *object, void (Object
     return (callTask ? (callTask->taskId = (callTask->_callParam = retVal)) : retVal);
 }
 
+
+template<typename ParameterType, int Slots>
+void SignalFireTask<ParameterType,Slots>::exec() 
+{
+    _signal->fire(_param);
+}
+
+
+template<class ObjectType, typename ParameterType>
+void MethodSlotCallTask<ObjectType,ParameterType>::exec()
+{
+    _methodSlot(_callParam);
+}
+
 #endif // /ifdef HYDRO_USE_MULTITASKING
 
 

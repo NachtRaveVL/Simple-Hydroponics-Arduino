@@ -226,7 +226,7 @@ HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType, hposi_t cropIndex,
 {
     _soilMoisture.setMeasurementUnits(getWaterConcentrateUnits());
 
-    _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
+    _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding, this);
 }
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn)
@@ -236,7 +236,7 @@ HydroAdaptiveCrop::HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn)
     _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->concentrateUnits, getWaterConcentrateUnits()));
     _soilMoisture.initObject(dataIn->moistureSensor);
 
-    _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding);
+    _feedingTrigger.setHandleMethod(&HydroCrop::handleFeeding, this);
     _feedingTrigger.setObject(newTriggerObjectFromSubData(&(dataIn->feedingTrigger)));
     HYDRO_SOFT_ASSERT(_feedingTrigger, SFP(HStr_Err_AllocationFailure));
 }

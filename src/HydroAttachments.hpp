@@ -63,7 +63,7 @@ template<class U>
 inline HydroDLinkObject &HydroDLinkObject::operator=(SharedPtr<U> &rhs)
 {
     _key = rhs ? rhs->getKey() : hkey_none;
-    _obj = rhs ? reinterpret_pointer_cast<HydroObjInterface>(rhs) : nullptr;
+    _obj = rhs ? static_pointer_cast<HydroObjInterface>(rhs) : nullptr;
     if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
 
     return *this;

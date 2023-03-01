@@ -138,8 +138,8 @@ HydroFluidReservoir::HydroFluidReservoir(Hydro_ReservoirType reservoirType, hpos
 {
     allocateLinkages(getReservoirType() == Hydro_ReservoirType_FeedWater ? HYDRO_FEEDRES_LINKS_BASESIZE : HYDRO_FLUIDRES_LINKS_BASESIZE);
 
-    _filledTrigger.setHandleMethod(&HydroFluidReservoir::handleFilled);
-    _emptyTrigger.setHandleMethod(&HydroFluidReservoir::handleEmpty);
+    _filledTrigger.setHandleMethod(&HydroFluidReservoir::handleFilled, this);
+    _emptyTrigger.setHandleMethod(&HydroFluidReservoir::handleEmpty, this);
 }
 
 HydroFluidReservoir::HydroFluidReservoir(const HydroFluidReservoirData *dataIn)
@@ -150,11 +150,11 @@ HydroFluidReservoir::HydroFluidReservoir(const HydroFluidReservoirData *dataIn)
 
     _waterVolume.initObject(dataIn->volumeSensor);
 
-    _filledTrigger.setHandleMethod(&HydroFluidReservoir::handleFilled);
+    _filledTrigger.setHandleMethod(&HydroFluidReservoir::handleFilled, this);
     _filledTrigger = newTriggerObjectFromSubData(&(dataIn->filledTrigger));
     HYDRO_SOFT_ASSERT(_filledTrigger, SFP(HStr_Err_AllocationFailure));
 
-    _emptyTrigger.setHandleMethod(&HydroFluidReservoir::handleEmpty);
+    _emptyTrigger.setHandleMethod(&HydroFluidReservoir::handleEmpty, this);
     _emptyTrigger = newTriggerObjectFromSubData(&(dataIn->emptyTrigger));
     HYDRO_SOFT_ASSERT(_emptyTrigger, SFP(HStr_Err_AllocationFailure));
 }
