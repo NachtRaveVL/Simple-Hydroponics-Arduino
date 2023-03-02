@@ -25,7 +25,7 @@ extern HydroTrigger *newTriggerObjectFromSubData(const HydroTriggerSubData *data
 // to some change in a tracked property.
 class HydroTrigger : public HydroSubObject,
                      public HydroTriggerObjectInterface,
-                     public HydroMeasurementUnitsInterface,
+                     public HydroMeasurementUnitsInterfaceStorageSingle,
                      public HydroSensorAttachmentInterface {
 public:
     const enum : signed char { MeasureValue, MeasureRange, Unknown = -1 } type; // Trigger type (custom RTTI)

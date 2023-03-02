@@ -101,6 +101,7 @@ typedef typeof(INPUT)                   ard_pinmode_t;      // Arduino pin mode 
 typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin status type alias
 
 // The following slot sizes apply to all architectures
+#define HYDRO_PREFIX_MAXSIZE            16                  // Prefix names maximum size (for logging/publishing)
 #define HYDRO_NAME_MAXSIZE              24                  // Naming character maximum size (system name, crop name, etc.)
 #define HYDRO_POS_MAXSIZE               32                  // Position indicies maximum size (max # of objs of same type)
 #define HYDRO_URL_MAXSIZE               64                  // URL string maximum size (max url length)

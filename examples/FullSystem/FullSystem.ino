@@ -19,7 +19,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #error The HYDRO_DISABLE_GUI flag is expected to be undefined in order to run this sketch
 #endif
 
-/// Pins & Class Instances
+// Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
 #define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address
@@ -44,7 +44,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_WIFI_SERIAL               Serial1         // WiFi serial class instance, if using serial
 
 // Ethernet Settings                                    (note: define HYDRO_ENABLE_ETHERNET to enable Ethernet)
-#define SETUP_ETHERNET_MAC              { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED } // Ethernet MAC address
+#define SETUP_ETHERNET_MAC              { (uint8_t)0xDE, (uint8_t)0xAD, (uint8_t)0xBE, (uint8_t)0xEF, (uint8_t)0xFE, (uint8_t)0xED } // Ethernet MAC address
 #define SETUP_ETHERNET_SPI              SPI1            // Ethernet SPI class instance
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
@@ -84,7 +84,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // MQTT Settings                                        (note: define HYDRO_ENABLE_MQTT to enable MQTT)
 #define SETUP_MQTT_BROKER_CONNECT_BY    Hostname        // Which style of address broker uses (Hostname, IPAddress)
 #define SETUP_MQTT_BROKER_HOSTNAME      "hostname"      // Hostname that MQTT broker exists at
-#define SETUP_MQTT_BROKER_IPADDR        { 192, 168, 1, 2 } // IP address that MQTT broker exists at
+#define SETUP_MQTT_BROKER_IPADDR        { (UINT8_T)192, (UINT8_T)168, (UINT8_T)1, (UINT8_T)2 } // IP address that MQTT broker exists at
 #define SETUP_MQTT_BROKER_PORT          1883            // Port number that MQTT broker exists at
 
 // External Data Settings
@@ -113,8 +113,8 @@ MQTTClient mqttClient;
 #if (SETUP_SAVES_SD_CARD_MODE != Disabled || SETUP_DATA_SD_ENABLE || SETUP_LOG_SD_ENABLE || SETUP_EXTDATA_SD_ENABLE) && SETUP_SD_CARD_SPI_CS == -1
 #warning The SETUP_SD_CARD_SPI_CS define is expected to be set to a valid pin in order to run this sketch with SD card features enabled
 #endif
-#if (SETUP_SAVES_EEPROM_MODE != Disabled || SETUP_EXTDATA_EEPROM_ENABLE) && SETUP_EEPROM_DEVICE_SIZE == 0
-#warning The SETUP_EEPROM_DEVICE_SIZE define is expected to be set to a valid size in order to run this sketch with EEPROM features enabled
+#if (SETUP_SAVES_EEPROM_MODE != Disabled || SETUP_EXTDATA_EEPROM_ENABLE) && SETUP_EEPROM_DEVICE_TYPE == None
+#warning The SETUP_EEPROM_DEVICE_TYPE define is expected to be set to a valid size in order to run this sketch with EEPROM features enabled
 #endif
 
 pintype_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
@@ -168,7 +168,7 @@ inline void setupOnce()
         hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToWiFiStorageJson
     #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
         hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToSDCardJson
-    #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Primary
+    #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Primary
         hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToEEPROMRaw
     #else
         hydroController.setAutosaveEnabled(Hydro_Autosave_Disabled
@@ -177,7 +177,7 @@ inline void setupOnce()
         , Hydro_Autosave_EnabledToWiFiStorageJson);
     #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
         , Hydro_Autosave_EnabledToSDCardJson);
-    #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Fallback
+    #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Fallback
         , Hydro_Autosave_EnabledToEEPROMRaw);
     #else
         );
@@ -248,7 +248,7 @@ void setup() {
         hydroController.setSystemConfigFilename(F(SETUP_SAVES_CONFIG_FILE));
     #endif
     // Sets the EEPROM memory address for system data.
-    #if SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE != Disabled
+    #if SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE != Disabled
         hydroController.setSystemDataAddress(SETUP_EEPROM_SYSDATA_ADDR);
     #endif
 
@@ -258,14 +258,14 @@ void setup() {
             || hydroController.initFromWiFiStorage()
         #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
             || hydroController.initFromSDCard()
-        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Primary
+        #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Primary
             || hydroController.initFromEEPROM()
         #endif
         #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
             || hydroController.initFromWiFiStorage()
         #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
             || hydroController.initFromSDCard()
-        #elif SETUP_EEPROM_DEVICE_SIZE && SETUP_SAVES_EEPROM_MODE == Fallback
+        #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Fallback
             || hydroController.initFromEEPROM()
         #endif
         )) {

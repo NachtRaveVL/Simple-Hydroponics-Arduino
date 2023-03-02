@@ -346,9 +346,7 @@ The Full System Example sketch will build an empty system with all object and sy
 Included below is the default system setup defines of the Vertical NFT example (of which a smaller similar version is used for the Full System example) to illustrate a variety of the controller features. This is not an exhaustive list of course, as there are many more things the controller is capable of, as documented in its main header file include, GitHub Project Wiki, and elsewhere.
 
 ```Arduino
-#include <Hydruino.h>
-
-/// Pins & Class Instances
+// Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
 #define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address
@@ -358,7 +356,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
 #define SETUP_LCD_I2C_ADDR              0b000           // LCD i2c address
-#define SETUP_CTRL_INPUT_PINS           {-1}            // Control input pin ribbon, else {-1}
+#define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pin ribbon, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
@@ -373,7 +371,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_WIFI_SERIAL               Serial1         // WiFi serial class instance, if using serial
 
 // Ethernet Settings                                    (note: define HYDRO_ENABLE_ETHERNET to enable Ethernet)
-#define SETUP_ETHERNET_MAC              { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED } // Ethernet MAC address
+#define SETUP_ETHERNET_MAC              { (uint8_t)0xDE, (uint8_t)0xAD, (uint8_t)0xBE, (uint8_t)0xEF, (uint8_t)0xFE, (uint8_t)0xED } // Ethernet MAC address
 #define SETUP_ETHERNET_SPI              SPI1            // Ethernet SPI class instance
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
@@ -414,7 +412,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 // MQTT Settings                                        (note: define HYDRO_ENABLE_MQTT to enable MQTT)
 #define SETUP_MQTT_BROKER_CONNECT_BY    Hostname        // Which style of address broker uses (Hostname, IPAddress)
 #define SETUP_MQTT_BROKER_HOSTNAME      "hostname"      // Hostname that MQTT broker exists at
-#define SETUP_MQTT_BROKER_IPADDR        { 192, 168, 1, 2 } // IP address that MQTT broker exists at
+#define SETUP_MQTT_BROKER_IPADDR        { (UINT8_T)192, (UINT8_T)168, (UINT8_T)1, (UINT8_T)2 } // IP address that MQTT broker exists at
 #define SETUP_MQTT_BROKER_PORT          1883            // Port number that MQTT broker exists at
 
 // External Data Settings
@@ -427,7 +425,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for strings data (from Data Writer output)
 
-// Device Setup
+// Device Pin Setup
 #define SETUP_PH_METER_PIN              -1              // pH meter sensor pin (analog), else -1
 #define SETUP_TDS_METER_PIN             -1              // TDS meter sensor pin (analog), else -1
 #define SETUP_CO2_SENSOR_PIN            -1              // CO2 meter sensor pin (analog), else -1
@@ -452,24 +450,50 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_FRESH_WATER_PIN           -1              // Fresh water peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_UP_PIN                 -1              // pH up solution peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_DOWN_PIN               -1              // pH down solution peristaltic pump relay pin (digital), else -1
+#define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor pin, for adaptive crop
 
-// Base Setup
-#define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
+// Device Multiplexing Setup
+#define SETUP_MUXING_CHANNEL_BITS       -1              // Number of channel bits for multiplexer, else -1
+#define SETUP_MUXING_ADDRESS_PINS       {(pintype_t)-1} // Address channel pins, else {-1}
+#define SETUP_MUXING_ENABLE_PIN         -1              // Chip enable pin for multiplexer (optional), else -1
+#define SETUP_MUXING_ENABLE_TYPE        ACTIVE_LOW      // Chip enable pin type/active level (ACTIVE_HIGH, ACTIVE_LOW)
+#define SETUP_PH_METER_MUXCHN           -1              // pH meter sensor pin muxing channel #, else -1
+#define SETUP_TDS_METER_MUXCHN          -1              // TDS meter sensor pin muxing channel #, else -1
+#define SETUP_CO2_SENSOR_MUXCHN         -1              // CO2 meter sensor pin muxing channel #, else -1
+#define SETUP_AC_USAGE_SENSOR_MUXCHN    -1              // AC power usage meter sensor pin muxing channel #, else -1
+#define SETUP_DC_USAGE_SENSOR_MUXCHN    -1              // DC power usage meter sensor pin muxing channel #, else -1
+#define SETUP_FLOW_RATE_SENSOR_MUXCHN   -1              // Main feed pump flow rate sensor pin muxing channel #, else -1
+#define SETUP_VOL_FILLED_MUXCHN         -1              // Water level filled indicator pin muxing channel #, else -1
+#define SETUP_VOL_EMPTY_MUXCHN          -1              // Water level empty indicator pin muxing channel #, else -1
+#define SETUP_VOL_LEVEL_MUXCHN          -1              // Water level sensor pin muxing channel #, else -1
+#define SETUP_GROW_LIGHTS_MUXCHN        -1              // Grow lights relay pin muxing channel #, else -1
+#define SETUP_WATER_AERATOR_MUXCHN      -1              // Aerator relay pin muxing channel #, else -1
+#define SETUP_FEED_PUMP_MUXCHN          -1              // Water level low indicator pin muxing channel #, else -1
+#define SETUP_WATER_HEATER_MUXCHN       -1              // Water heater relay pin muxing channel #, else -1
+#define SETUP_WATER_SPRAYER_MUXCHN      -1              // Water sprayer relay pin muxing channel #, else -1
+#define SETUP_FAN_EXHAUST_MUXCHN        -1              // Fan exhaust relay pin muxing channel #, else -1
+#define SETUP_NUTRIENT_MIX_MUXCHN       -1              // Nutrient premix peristaltic pump relay pin muxing channel #, else -1
+#define SETUP_FRESH_WATER_MUXCHN        -1              // Fresh water peristaltic pump relay pin muxing channel #, else -1
+#define SETUP_PH_UP_MUXCHN              -1              // pH up solution peristaltic pump relay pin muxing channel #, else -1
+#define SETUP_PH_DOWN_MUXCHN            -1              // pH down solution peristaltic pump relay pin muxing channel #, else -1
+#define SETUP_CROP_SOILM_MUXCHN         -1              // Soil moisture sensor pin muxing channel #, for adaptive crop
+
+// System Setup
 #define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for actuator AC rail (AC110V, AC220V)
 #define SETUP_DC_POWER_RAIL_TYPE        DC12V           // Rail power type used for actuator DC rail (DC3V3, DC5V, DC12V, DC24V, DC48V)
 #define SETUP_AC_SUPPLY_POWER           0               // Maximum AC supply power wattage, else 0 if not known (-> use simple rails)
 #define SETUP_DC_SUPPLY_POWER           0               // Maximum DC supply power wattage, else 0 if not known (-> use simple rails)
+#define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
 #define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
 #define SETUP_PERI_PUMP_FLOWRATE        0.070           // The base continuous flow rate of any peristaltic pumps, in L/min
-
-// Crop Setup
 #define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for (per feeding cycle)
 #define SETUP_CROP_OFF_TIME             45              // Minutes feeding pumps are to be turned off for (per feeding cycle)
 #define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
 #define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate, else Undefined
 #define SETUP_CROP_NUMBER               1               // Number of plants in crop position (aka averaging weight)
 #define SETUP_CROP_SOW_DATE             DateTime(2022, 5, 21) // Date that crop was planted at
-#define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor for adaptive crop
+#define SETUP_CROP_SOILM_FEED_LEVEL     0.1             // Soil moisture feeding trigger needs feeding level, for adaptive crop, in %
+#define SETUP_CROP_SOILM_FED_LEVEL      0.75            // Soil moisture feeding trigger fed level, for adaptive crop, in %
 ```
 
 ### Data Writer Example

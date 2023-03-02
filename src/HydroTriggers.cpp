@@ -75,15 +75,15 @@ Hydro_TriggerState HydroTrigger::getTriggerState(bool poll)
 
 void HydroTrigger::setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t)
 {
-    if (_sensor.getMeasurementUnits() != measurementUnits) {
-        _sensor.setMeasurementUnits(measurementUnits);
+    if (_measurementUnits[0] != measurementUnits) {
+        _measurementUnits[0] = measurementUnits;
         bumpRevisionIfNeeded();
     }
 }
 
 Hydro_UnitsType HydroTrigger::getMeasurementUnits(uint8_t) const
 {
-    return _sensor.getMeasurementUnits();
+    return definedUnitsElse(_measurementUnits[0], _sensor.getMeasurementUnits());
 }
 
 HydroSensorAttachment &HydroTrigger::getSensorAttachment()
