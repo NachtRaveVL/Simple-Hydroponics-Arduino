@@ -421,9 +421,9 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_EXTDATA_EEPROM_ENABLE     false           // If data should be read from an external EEPROM (searched first for strings data)
 
 // External EEPROM Settings
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e50          // System data memory offset for EEPROM saves (from Data Writer output)
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2222          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
-#define SETUP_EEPROM_STRINGS_ADDR       0x1b24          // Start address for strings data (from Data Writer output)
+#define SETUP_EEPROM_STRINGS_ADDR       0x1111          // Start address for strings data (from Data Writer output)
 
 // Device Pin Setup
 #define SETUP_PH_METER_PIN              -1              // pH meter sensor pin (analog), else -1
@@ -527,9 +527,9 @@ In serial monitor (near end):
 2022-08-07T04:24:27 [INFO] Total EEPROM usage: 11856 bytes
 2022-08-07T04:24:27 [INFO] EEPROM capacity used: 36.18% of 32768 bytes
 2022-08-07T04:24:27 [INFO] Use the following EEPROM setup defines in your sketch:
-#define SETUP_EEPROM_SYSDATA_ADDR       0x2e50
+#define SETUP_EEPROM_SYSDATA_ADDR       0x2222
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000
-#define SETUP_EEPROM_STRINGS_ADDR       0x1b24
+#define SETUP_EEPROM_STRINGS_ADDR       0x1111
 2022-08-07T04:24:27 [INFO] Done!
 ```
 
