@@ -34,9 +34,9 @@
             "files": ["FullSystem.ino"]
         },
         {
-            "name": "CropLibWriter",
-            "base": "examples/CropLibWriter",
-            "files": ["CropLibWriter.ino"]
+            "name": "DataWriter",
+            "base": "examples/DataWriter",
+            "files": ["DataWriter.ino"]
         }
     ],
     "frameworks": ["arduino", "espidf", "mbed"],
