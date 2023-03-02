@@ -6,7 +6,7 @@
 #error The HYDRO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
 #endif
 
-/// Pins & Class Instances
+// Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
 #define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address

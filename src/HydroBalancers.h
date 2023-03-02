@@ -22,7 +22,7 @@ class HydroTimedDosingBalancer;
 // the manner in which they operate.
 class HydroBalancer : public HydroSubObject,
                       public HydroBalancerObjectInterface,
-                      public HydroMeasurementUnitsInterface,
+                      public HydroMeasurementUnitsInterfaceStorageSingle,
                       public HydroSensorAttachmentInterface {
 public:
     const enum : signed char { LinearEdge, TimedDosing, Unknown = -1 } type; // Balancer type (custom RTTI)

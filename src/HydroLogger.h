@@ -109,7 +109,7 @@ protected:
 // A part of HSYS system data.
 struct HydroLoggerSubData : public HydroSubData {
     Hydro_LogLevel logLevel;                                // Log level filter (default: All)
-    char logFilePrefix[16];                                 // Base log file name prefix / folder (default: "logs/hy")
+    char logFilePrefix[HYDRO_PREFIX_MAXSIZE];               // Base log file name prefix / folder (default: "logs/hy")
     bool logToSDCard;                                       // If system logging to SD card is enabled (default: false)
     bool logToWiFiStorage;                                  // If system logging to WiFiStorage is enabled (default: false)
 
