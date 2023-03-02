@@ -337,7 +337,7 @@ void loop()
 
 ### Main System Examples
 
-There are two main system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. The Vertical NFT example is the recommended starting point for most system builds, and is perfect for those with only intermediate programming knowledge. It is also the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code.
+There are two main system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. The Vertical NFT example is the recommended starting point for most system builds, and is perfect for those with only basic programming knowledge. It is also the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code.
 
 This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
 
