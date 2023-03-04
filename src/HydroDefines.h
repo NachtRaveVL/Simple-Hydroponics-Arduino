@@ -40,37 +40,41 @@
 #ifndef MIN_PER_DAY
 #define MIN_PER_DAY                     1440                // Minutes per day
 #endif
-
-#ifndef TWO_PI                                              // Resolving 2pi
+#ifndef TWO_PI                                              // Two pi
 #define TWO_PI                          6.283185307179586476925286766559
 #endif
-#ifndef RANDOM_MAX                                          // Resolving random max
+
+// Platform standardizations
+#if (defined(ESP32) || defined(ESP8266)) && !defined(ESP_PLATFORM) // ESP_PLATFORM for any esp
+#define ESP_PLATFORM
+#endif
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32)    // Missing min/max
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+#endif
+#ifndef RANDOM_MAX                                          // Missing RANDOM_MAX
 #if defined(RAND_MAX)
 #define RANDOM_MAX                      RAND_MAX
 #else
 #define RANDOM_MAX                      __INT_MAX__
 #endif
 #endif
-#if (defined(ESP32) || defined(ESP8266)) && !defined(ESP_PLATFORM) // Resolving ESP_PLATFORM
-#define ESP_PLATFORM
-#endif
-#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32)    // Resolving min/max
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
-#endif
-#if !defined(ADC_RESOLUTION) && defined(IOA_ANALOGIN_RES)   // Resolving ADC resolution
+
+#ifndef ADC_RESOLUTION                                      // Resolving ADC resolution, or define manually by build define (see BOARD for example)
+#if defined(IOA_ANALOGIN_RES)                               // From IOAbstraction
 #define ADC_RESOLUTION IOA_ANALOGIN_RES
+#else
+#define ADC_RESOLUTION 10                                   // Default per AVR
 #endif
-#if !defined(ADC_RESOLUTION)
-#define ADC_RESOLUTION 10
 #endif
-#if !defined(DAC_RESOLUTION) && defined(IOA_ANALOGOUT_RES)  // Resolving DAC resolution
+#ifndef DAC_RESOLUTION                                      // Resolving DAC resolution, or define manually by build define (see BOARD for example)
+#if defined(IOA_ANALOGOUT_RES)                              // From IOAbstraction
 #define DAC_RESOLUTION IOA_ANALOGOUT_RES
+#else
+#define DAC_RESOLUTION 8                                    // Default per AVR
 #endif
-#if !defined(DAC_RESOLUTION)
-#define DAC_RESOLUTION 8
 #endif
-#ifndef F_SPD                                               // F_CPU/F_BUS alias for default SPI device speeds
+#ifndef F_SPD                                               // Resolving F_SPD=F_CPU|F_BUS alias (for default SPI device speeds), or define manually by build define (see BOARD for example)
 #if defined(F_CPU)
 #define F_SPD F_CPU
 #elif defined(F_BUS)                                        // Teensy/etc support
@@ -79,11 +83,26 @@
 #define F_SPD 32000000U
 #endif
 #endif
-#ifndef V_MCU                                               // Alias for standard MCU voltage
+#ifndef V_MCU                                               // Resolving MCU voltage, or define manually by build define (see BOARD for example)
 #if (defined(__AVR__) || defined(__STM8__)) && !defined(ARDUINO_AVR_FIO) && !(defined(ARDUINO_AVR_PRO) && F_CPU == 8000000L)
 #define V_MCU                           5.0                 // 5v MCU (assumed/tolerant)
 #else
 #define V_MCU                           3.3                 // 3v3 MCU (assumed)
+#endif
+#endif
+#ifndef BOARD                                               // Resolving board name alias, or define manually by build define via creating platform.local.txt in %applocaldata%\Arduino15\packages\{platform}\hardware\{arch}\{version}\ containing (/w quotes): compiler.cpp.extra_flags="-DBOARD={build.board}"
+#if defined(TEENSYDUINO)                                    // For Teensy, define manually by build define via editing platform.txt directly in %applocaldata%\Arduino15\packages\teensy\hardware\avr\{version}\ and adding (/w space & quotes):  "-DBOARD={build.board}" to end of recipe.cpp.o.pattern=
+#define BOARD "TEENSY"
+#elif defined(ARDUINO_BOARD)
+#define BOARD ARDUINO_BOARD
+#elif defined(BOARD_NAME)
+#define BOARD BOARD_NAME
+#elif defined(ARDUINO_VARIANT)
+#define BOARD ARDUINO_VARIANT
+#elif defined(USB_PRODUCT)
+#define BOARD USB_PRODUCT
+#else
+#define BOARD "OTHER"
 #endif
 #endif
 
