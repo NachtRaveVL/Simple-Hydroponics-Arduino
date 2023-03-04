@@ -1172,13 +1172,28 @@ void Hydruino::setSystemLocation(double latitude, double longitude, double altit
 int Hydruino::getControlInputPins() const
 {
     switch (getControlInputMode()) {
-        case Hydro_ControlInputMode_2x2Matrix:
-        case Hydro_ControlInputMode_4xButton:
-            return 4;
-        case Hydro_ControlInputMode_6xButton:
-            return 6;
         case Hydro_ControlInputMode_RotaryEncoder:
+            return 2;
+        case Hydro_ControlInputMode_RotaryEncoder_Ok:
+            return 3;
+        case Hydro_ControlInputMode_RotaryEncoder_OkLR:
             return 5;
+        case Hydro_ControlInputMode_2x2Matrix:
+            return 4;
+        case Hydro_ControlInputMode_2x2Matrix_Ok:
+            return 5;
+        case Hydro_ControlInputMode_Joystick:
+            return 2;
+        case Hydro_ControlInputMode_Joystick_Ok:
+            return 3;
+        case Hydro_ControlInputMode_3x4Matrix:
+            return 2;
+        case Hydro_ControlInputMode_3x4Matrix_Ok:
+            return 3;
+        case Hydro_ControlInputMode_3x4Matrix_OkLR:
+            return 5;
+        case Hydro_ControlInputMode_ResistiveTouch:
+            return 4;
         default:
             return 0;
     }

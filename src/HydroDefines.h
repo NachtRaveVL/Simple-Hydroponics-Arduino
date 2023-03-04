@@ -433,10 +433,22 @@ enum Hydro_MeasurementMode : signed char {
 // Currently, all ouput devices must ultimately be supported by tcMenu.
 enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_Disabled,                       // No display output
-    Hydro_DisplayOutputMode_20x4LCD,                        // 20x4 i2c LCD (with layout: EN, RW, RS, BL, Data)
-    Hydro_DisplayOutputMode_20x4LCD_Swapped,                // 20x4 i2c LCD (with EN<->RS swapped, layout: RS, RW, EN, BL, Data)
-    Hydro_DisplayOutputMode_16x2LCD,                        // 16x2 i2c LCD (with layout: EN, RW, RS, BL, Data)
-    Hydro_DisplayOutputMode_16x2LCD_Swapped,                // 16x2 i2c LCD (with EN<->RS swapped, layout: RS, RW, EN, BL, Data)
+    Hydro_DisplayOutputMode_16x2LCD,                        // 16x2 text LCD (with pins: {EN,RW,RS,BL,Data})
+    Hydro_DisplayOutputMode_16x2LCD_Swapped,                // 16x2 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data})
+    Hydro_DisplayOutputMode_20x4LCD,                        // 20x4 text LCD (with pins: {EN,RW,RS,BL,Data})
+    Hydro_DisplayOutputMode_20x4LCD_Swapped,                // 20x4 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data})
+    Hydro_DisplayOutputMode_SSD1305,                        // SSD1305 128x32 graphical LCD, requires U8G2
+    Hydro_DisplayOutputMode_SSD1305_x32,                    // SSD1305 128x32 graphical LCD, using Adafruit + U8G2
+    Hydro_DisplayOutputMode_SSD1305_x64,                    // SSD1305 128x64 graphical LCD, using Adafruit + U8G2
+    Hydro_DisplayOutputMode_SSD1306,                        // SSD1306 128x64 graphical LCD, using U8G2
+    Hydro_DisplayOutputMode_SH1106,                         // SH1106 128x64 graphical LCD, using U8G2
+    Hydro_DisplayOutputMode_SSD1607,                        // SSD1607 200x200 graphical LCD, using U8G2
+    Hydro_DisplayOutputMode_IL3820,                         // IL3820 296x128 graphical LCD, using U8G2
+    Hydro_DisplayOutputMode_IL3820_V2,                      // IL3820 V2 296x128 graphical LCD, using U8G2
+    Hydro_DisplayOutputMode_ST7735,                         // ST7735 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_ST7789,                         // ST7789 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_ILI9341,                        // ILI9341 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_PCD8544_Nokia5110,              // PCD8544 or Nokia5110 320x240 graphical LCD, using AdafruitGFX
 
     Hydro_DisplayOutputMode_Count,                          // Placeholder
     Hydro_DisplayOutputMode_Undefined = -1                  // Placeholder
@@ -447,10 +459,18 @@ enum Hydro_DisplayOutputMode : signed char {
 // Currently, all input devices must ultimately be supported by tcMenu.
 enum Hydro_ControlInputMode : signed char {
     Hydro_ControlInputMode_Disabled,                        // No control input
-    Hydro_ControlInputMode_2x2Matrix,                       // 2x2 directional keyboard matrix button array, ribbon: {L1,L2,R1,R2} (L1 = pin 1)
-    Hydro_ControlInputMode_4xButton,                        // 4x standard momentary buttons, ribbon: {U,D,L,R} (U = pin 1)
-    Hydro_ControlInputMode_6xButton,                        // 6x standard momentary buttons, ribbon: {TODO} (X = pin 1)
-    Hydro_ControlInputMode_RotaryEncoder,                   // Rotary encoder, ribbon: {A,B,OK,L,R} (A = pin 1)
+    Hydro_ControlInputMode_RotaryEncoder,                   // Rotary encoder, pins: {A,B} (A = pin 1)
+    Hydro_ControlInputMode_RotaryEncoder_Ok,                // Rotary encoder /w ok button, pins: {A,B,OK} (A = pin 1)
+    Hydro_ControlInputMode_RotaryEncoder_OkLR,              // Rotary encoder /w ok and l/r buttons, pins: {A,B,OK,L,R} (A = pin 1)
+    Hydro_ControlInputMode_2x2Matrix,                       // 2x2 directional keyboard matrix button array, pins: {L1,L2,R1,R2} (L1 = pin 1)
+    Hydro_ControlInputMode_2x2Matrix_Ok,                    // 2x2 directional keyboard matrix button array /w ok button, pins: {L1,L2,R1,R2,OK} (L1 = pin 1)
+    Hydro_ControlInputMode_Joystick,                        // Analog joystick, pins: {X,Y}
+    Hydro_ControlInputMode_Joystick_Ok,                     // Analog joystick /w ok button, pins: {X,Y,OK}
+    Hydro_ControlInputMode_3x4Matrix,                       // 3x4 keyboard matrix (graphical), /w optional rotary encoder
+    Hydro_ControlInputMode_3x4Matrix_Ok,                    // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w ok button
+    Hydro_ControlInputMode_3x4Matrix_OkLR,                  // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w ok and l/r buttons
+    Hydro_ControlInputMode_ResistiveTouch,                  // Resistive touchscreen, pins: {X+,X-,Y+,Y-}
+    Hydro_ControlInputMode_TouchScreen,                     // Full touchscreen (FT6206/XPT2046), pins: {}
 
     Hydro_ControlInputMode_Count,                           // Placeholder
     Hydro_ControlInputMode_Undefined = -1                   // Placeholder

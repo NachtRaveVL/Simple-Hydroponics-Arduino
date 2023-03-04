@@ -946,29 +946,17 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_16x2LCD[] PROGMEM = {"16x2LCD"};
             return flashStr_Enum_16x2LCD;
         } break;
-        case HStr_Enum_16x2LCDSwapped: {
-            static const char flashStr_Enum_16x2LCDSwapped[] PROGMEM = {"16x2LCDSwapped"};
-            return flashStr_Enum_16x2LCDSwapped;
-        } break;
         case HStr_Enum_20x4LCD: {
             static const char flashStr_Enum_20x4LCD[] PROGMEM = {"20x4LCD"};
             return flashStr_Enum_20x4LCD;
-        } break;
-        case HStr_Enum_20x4LCDSwapped: {
-            static const char flashStr_Enum_20x4LCDSwapped[] PROGMEM = {"20x4LCDSwapped"};
-            return flashStr_Enum_20x4LCDSwapped;
         } break;
         case HStr_Enum_2x2Matrix: {
             static const char flashStr_Enum_2x2Matrix[] PROGMEM = {"2x2Matrix"};
             return flashStr_Enum_2x2Matrix;
         } break;
-        case HStr_Enum_4xButton: {
-            static const char flashStr_Enum_4xButton[] PROGMEM = {"4xButton"};
-            return flashStr_Enum_4xButton;
-        } break;
-        case HStr_Enum_6xButton: {
-            static const char flashStr_Enum_6xButton[] PROGMEM = {"6xButton"};
-            return flashStr_Enum_6xButton;
+        case HStr_Enum_3x4Matrix: {
+            static const char flashStr_Enum_3x4Matrix[] PROGMEM = {"3x4Matrix"};
+            return flashStr_Enum_3x4Matrix;
         } break;
         case HStr_Enum_AC110V: {
             static const char flashStr_Enum_AC110V[] PROGMEM = {"AC110V"};
@@ -1334,6 +1322,18 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Highest[] PROGMEM = {"Highest"};
             return flashStr_Enum_Highest;
         } break;
+        case HStr_Enum_IL3820: {
+            static const char flashStr_Enum_IL3820[] PROGMEM = {"IL3820"};
+            return flashStr_Enum_IL3820;
+        } break;
+        case HStr_Enum_IL3820V2: {
+            static const char flashStr_Enum_IL3820V2[] PROGMEM = {"IL3820V2"};
+            return flashStr_Enum_IL3820V2;
+        } break;
+        case HStr_Enum_ILI9341: {
+            static const char flashStr_Enum_ILI9341[] PROGMEM = {"ILI9341"};
+            return flashStr_Enum_ILI9341;
+        } break;
         case HStr_Enum_Imperial: {
             static const char flashStr_Enum_Imperial[] PROGMEM = {"Imperial"};
             return flashStr_Enum_Imperial;
@@ -1341,6 +1341,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_InOrder: {
             static const char flashStr_Enum_InOrder[] PROGMEM = {"InOrder"};
             return flashStr_Enum_InOrder;
+        } break;
+        case HStr_Enum_Joystick: {
+            static const char flashStr_Enum_Joystick[] PROGMEM = {"Joystick"};
+            return flashStr_Enum_Joystick;
         } break;
         case HStr_Enum_Kale: {
             static const char flashStr_Enum_Kale[] PROGMEM = {"Kale"};
@@ -1430,6 +1434,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Parsnip[] PROGMEM = {"Parsnip"};
             return flashStr_Enum_Parsnip;
         } break;
+        case HStr_Enum_PCD8544Nokia5110: {
+            static const char flashStr_Enum_PCD8544Nokia5110[] PROGMEM = {"PCD8544Nokia5110"};
+            return flashStr_Enum_PCD8544Nokia5110;
+        } break;
         case HStr_Enum_Pea: {
             static const char flashStr_Enum_Pea[] PROGMEM = {"Pea"};
             return flashStr_Enum_Pea;
@@ -1498,6 +1506,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Recycling[] PROGMEM = {"Recycling"};
             return flashStr_Enum_Recycling;
         } break;
+        case HStr_Enum_ResistiveTouch: {
+            static const char flashStr_Enum_ResistiveTouch[] PROGMEM = {"ResistiveTouch"};
+            return flashStr_Enum_ResistiveTouch;
+        } break;
         case HStr_Enum_RevOrder: {
             static const char flashStr_Enum_RevOrder[] PROGMEM = {"RevOrder"};
             return flashStr_Enum_RevOrder;
@@ -1526,6 +1538,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Scientific[] PROGMEM = {"Scientific"};
             return flashStr_Enum_Scientific;
         } break;
+        case HStr_Enum_SH1106: {
+            static const char flashStr_Enum_SH1106[] PROGMEM = {"SH1106"};
+            return flashStr_Enum_SH1106;
+        } break;
         case HStr_Enum_Silverbeet: {
             static const char flashStr_Enum_Silverbeet[] PROGMEM = {"Silverbeet"};
             return flashStr_Enum_Silverbeet;
@@ -1542,6 +1558,34 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Squash[] PROGMEM = {"Squash"};
             return flashStr_Enum_Squash;
         } break;
+        case HStr_Enum_SSD1305: {
+            static const char flashStr_Enum_SSD1305[] PROGMEM = {"SSD1305"};
+            return flashStr_Enum_SSD1305;
+        } break;
+        case HStr_Enum_SSD1305x32: {
+            static const char flashStr_Enum_SSD1305x32[] PROGMEM = {"SSD1305x32"};
+            return flashStr_Enum_SSD1305x32;
+        } break;
+        case HStr_Enum_SSD1305x64: {
+            static const char flashStr_Enum_SSD1305x64[] PROGMEM = {"SSD1305x64"};
+            return flashStr_Enum_SSD1305x64;
+        } break;
+        case HStr_Enum_SSD1306: {
+            static const char flashStr_Enum_SSD1306[] PROGMEM = {"SSD1306"};
+            return flashStr_Enum_SSD1306;
+        } break;
+        case HStr_Enum_SSD1607: {
+            static const char flashStr_Enum_SSD1607[] PROGMEM = {"SSD1607"};
+            return flashStr_Enum_SSD1607;
+        } break;
+        case HStr_Enum_ST7735: {
+            static const char flashStr_Enum_ST7735[] PROGMEM = {"ST7735"};
+            return flashStr_Enum_ST7735;
+        } break;
+        case HStr_Enum_ST7789: {
+            static const char flashStr_Enum_ST7789[] PROGMEM = {"ST7789"};
+            return flashStr_Enum_ST7789;
+        } break;
         case HStr_Enum_Strawberries: {
             static const char flashStr_Enum_Strawberries[] PROGMEM = {"Strawberries"};
             return flashStr_Enum_Strawberries;
@@ -1549,6 +1593,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_Sunflower: {
             static const char flashStr_Enum_Sunflower[] PROGMEM = {"Sunflower"};
             return flashStr_Enum_Sunflower;
+        } break;
+        case HStr_Enum_Swapped: {
+            static const char flashStr_Enum_Swapped[] PROGMEM = {"Swapped"};
+            return flashStr_Enum_Swapped;
         } break;
         case HStr_Enum_SwissChard: {
             static const char flashStr_Enum_SwissChard[] PROGMEM = {"SwissChard"};
@@ -1573,6 +1621,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Enum_Tomato: {
             static const char flashStr_Enum_Tomato[] PROGMEM = {"Tomato"};
             return flashStr_Enum_Tomato;
+        } break;
+        case HStr_Enum_TouchScreen: {
+            static const char flashStr_Enum_TouchScreen[] PROGMEM = {"TouchScreen"};
+            return flashStr_Enum_TouchScreen;
         } break;
         case HStr_Enum_Turnip: {
             static const char flashStr_Enum_Turnip[] PROGMEM = {"Turnip"};
