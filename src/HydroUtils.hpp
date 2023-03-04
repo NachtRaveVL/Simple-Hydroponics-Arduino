@@ -321,12 +321,12 @@ inline HydruinoUIInterface *getUI()
 
 inline time_t unixTime(DateTime localTime)
 {
-    return localTime.unixtime() - (getController() ? getController()->getTimeZoneOffset() * SECS_PER_HOUR : 0L);
+    return localTime.unixtime() - (getController() ? getController()->getTimeZoneOffset() : 0);
 }
 
 inline DateTime localTime(time_t unixTime)
 {
-    return DateTime((uint32_t)(unixTime + (getController() ? getController()->getTimeZoneOffset() * SECS_PER_HOUR : 0L)));
+    return DateTime((uint32_t)(unixTime + (getController() ? getController()->getTimeZoneOffset() : 0)));
 }
 
 inline time_t unixDayStart(time_t unixTime)
