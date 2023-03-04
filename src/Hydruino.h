@@ -356,7 +356,7 @@ public:
     // Sets display name of system (HYDRO_NAME_MAXSIZE size limit)
     void setSystemName(String systemName);
     // Sets system time zone offset from UTC
-    void setTimeZoneOffset(int8_t timeZoneOffset);
+    void setTimeZoneOffset(int8_t hoursOffset, int8_t minsOffset = 0);
     // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
     void setPollingInterval(uint16_t pollingInterval);
     // Sets system autosave enable mode and optional fallback mode and interval, in minutes.
@@ -442,8 +442,8 @@ public:
     Hydro_ControlInputMode getControlInputMode() const;
     // System display name (default: "Hydruino")
     String getSystemName() const;
-    // System time zone offset from UTC (default: +0/UTC)
-    int8_t getTimeZoneOffset() const;
+    // System time zone offset from UTC (default: +0/UTC), in total offset seconds
+    time_t getTimeZoneOffset() const;
     // Whenever the system booted up with the RTC battery failure flag set (meaning the time is not set correctly)
     inline bool getRTCBatteryFailure() const { return _rtcBattFail; }
     // System sensor polling interval (time between sensor reads), in milliseconds (default: HYDRO_DATA_LOOP_INTERVAL)
