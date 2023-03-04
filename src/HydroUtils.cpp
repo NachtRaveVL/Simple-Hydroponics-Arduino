@@ -1056,15 +1056,17 @@ bool checkPinIsAnalogInput(pintype_t pin)
 {
     #if !defined(NUM_ANALOG_INPUTS) || NUM_ANALOG_INPUTS == 0
         return false;
+    #elif defined(ESP32)
+        return checkPinIsDigital(pin); // all digital pins are ADC capable
     #else
         switch (pin) {
             #if NUM_ANALOG_INPUTS > 0
                 case (pintype_t)A0:
             #endif
-            #if NUM_ANALOG_INPUTS > 1 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A1))
+            #if NUM_ANALOG_INPUTS > 1 && !(defined(PIN_A0) && !defined(PIN_A1))
                 case (pintype_t)A1:
             #endif
-            #if NUM_ANALOG_INPUTS > 2 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A2))
+            #if NUM_ANALOG_INPUTS > 2 && !(defined(PIN_A0) && !defined(PIN_A2))
                 case (pintype_t)A2:
             #endif
             #if NUM_ANALOG_INPUTS > 3 && !(defined(PIN_A0) && !defined(PIN_A3))
@@ -1082,10 +1084,10 @@ bool checkPinIsAnalogInput(pintype_t pin)
             #if NUM_ANALOG_INPUTS > 7 && !(defined(PIN_A0) && !defined(PIN_A7))
                 case (pintype_t)A7:
             #endif
-            #if NUM_ANALOG_INPUTS > 8 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A8))
+            #if NUM_ANALOG_INPUTS > 8 && !(defined(PIN_A0) && !defined(PIN_A8))
                 case (pintype_t)A8:
             #endif
-            #if NUM_ANALOG_INPUTS > 9 && !defined(ESP32) && !(defined(PIN_A0) && !defined(PIN_A9))
+            #if NUM_ANALOG_INPUTS > 9 && !(defined(PIN_A0) && !defined(PIN_A9))
                 case (pintype_t)A9:
             #endif
             #if NUM_ANALOG_INPUTS > 10 && !(defined(PIN_A0) && !defined(PIN_A10))
@@ -1106,11 +1108,23 @@ bool checkPinIsAnalogInput(pintype_t pin)
             #if NUM_ANALOG_INPUTS > 15 && !(defined(PIN_A0) && !defined(PIN_A15))
                 case (pintype_t)A15:
             #endif
-            #ifdef ESP32
+            #if NUM_ANALOG_INPUTS > 16 && !(defined(PIN_A0) && !defined(PIN_A16))
                 case (pintype_t)A16:
+            #endif
+            #if NUM_ANALOG_INPUTS > 17 && !(defined(PIN_A0) && !defined(PIN_A17))
                 case (pintype_t)A17:
+            #endif
+            #if NUM_ANALOG_INPUTS > 18 && !(defined(PIN_A0) && !defined(PIN_A18))
                 case (pintype_t)A18:
+            #endif
+            #if NUM_ANALOG_INPUTS > 19 && !(defined(PIN_A0) && !defined(PIN_A19))
                 case (pintype_t)A19:
+            #endif
+            #if NUM_ANALOG_INPUTS > 20 && !(defined(PIN_A0) && !defined(PIN_A20))
+                case (pintype_t)A20:
+            #endif
+            #if NUM_ANALOG_INPUTS > 21 && !(defined(PIN_A0) && !defined(PIN_A21))
+                case (pintype_t)A21:
             #endif
                 return true;
 
@@ -1124,6 +1138,8 @@ bool checkPinIsAnalogOutput(pintype_t pin)
 {
     #if !defined(NUM_ANALOG_OUTPUTS) || NUM_ANALOG_OUTPUTS == 0
         return false;
+    #elif defined(ESP32)
+        return checkPinIsDigital(pin); // all digital pins are ADC capable
     #else
         switch (pin) {
             #if NUM_ANALOG_OUTPUTS > 0
