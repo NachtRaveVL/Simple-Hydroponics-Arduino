@@ -97,8 +97,6 @@
 #define BOARD ARDUINO_BOARD
 #elif defined(BOARD_NAME)
 #define BOARD BOARD_NAME
-#elif defined(ARDUINO_VARIANT)
-#define BOARD ARDUINO_VARIANT
 #elif defined(USB_PRODUCT)
 #define BOARD USB_PRODUCT
 #else
@@ -438,17 +436,23 @@ enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_20x4LCD,                        // 20x4 text LCD (with pins: {EN,RW,RS,BL,Data})
     Hydro_DisplayOutputMode_20x4LCD_Swapped,                // 20x4 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data})
     Hydro_DisplayOutputMode_SSD1305,                        // SSD1305 128x32 graphical LCD, requires U8G2
-    Hydro_DisplayOutputMode_SSD1305_x32,                    // SSD1305 128x32 graphical LCD, using Adafruit + U8G2
-    Hydro_DisplayOutputMode_SSD1305_x64,                    // SSD1305 128x64 graphical LCD, using Adafruit + U8G2
+    Hydro_DisplayOutputMode_SSD1305_x32Ada,                 // SSD1305 128x32 graphical LCD, using Adafruit + U8G2
+    Hydro_DisplayOutputMode_SSD1305_x64Ada,                 // SSD1305 128x64 graphical LCD, using Adafruit + U8G2
     Hydro_DisplayOutputMode_SSD1306,                        // SSD1306 128x64 graphical LCD, using U8G2
     Hydro_DisplayOutputMode_SH1106,                         // SH1106 128x64 graphical LCD, using U8G2
     Hydro_DisplayOutputMode_SSD1607,                        // SSD1607 200x200 graphical LCD, using U8G2
     Hydro_DisplayOutputMode_IL3820,                         // IL3820 296x128 graphical LCD, using U8G2
     Hydro_DisplayOutputMode_IL3820_V2,                      // IL3820 V2 296x128 graphical LCD, using U8G2
     Hydro_DisplayOutputMode_ST7735,                         // ST7735 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_ST7735_TFT,                     // ST7735 320x240 graphical LCD, using TFT_eSPI
     Hydro_DisplayOutputMode_ST7789,                         // ST7789 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_ST7789_TFT,                     // ST7789 320x240 graphical LCD, using TFT_eSPI
     Hydro_DisplayOutputMode_ILI9341,                        // ILI9341 320x240 graphical LCD, using AdafruitGFX
-    Hydro_DisplayOutputMode_PCD8544_Nokia5110,              // PCD8544 or Nokia5110 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_ILI9341_TFT,                    // ILI9341 320x240 graphical LCD, using TFT_eSPI
+    Hydro_DisplayOutputMode_PCD8544,                        // PCD8544 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_PCD8544_TFT,                    // PCD8544 320x240 graphical LCD, using TFT_eSPI
+    Hydro_DisplayOutputMode_Nokia5110,                      // Nokia5110 320x240 graphical LCD, using AdafruitGFX
+    Hydro_DisplayOutputMode_Nokia5110_TFT,                  // Nokia5110 320x240 graphical LCD, using TFT_eSPI
 
     Hydro_DisplayOutputMode_Count,                          // Placeholder
     Hydro_DisplayOutputMode_Undefined = -1                  // Placeholder

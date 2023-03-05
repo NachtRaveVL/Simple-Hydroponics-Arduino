@@ -385,8 +385,8 @@ Included below is the default system setup defines of the Vertical NFT example (
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_LCD_OUT_MODE              Disabled        // System LCD output mode (Disabled, 20x4LCD, 20x4LCD_Swapped, 16x2LCD, 16x2LCD_Swapped)
-#define SETUP_CTRL_IN_MODE              Disabled        // System control input mode (Disabled, 2x2Matrix, 4xButton, 6xButton, RotaryEncoder)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, 16x2LCD, 16x2LCD_Swapped, 20x4LCD, 20x4LCD_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607, IL3820, IL3820_V2, ST7735, ST7735_TFT, ST7789, ST7789_TFT, ILI9341, ILI9341_TFT, PCD8544, PCD8544_TFT, Nokia5110, Nokia5110_TFT)
+#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoder, RotaryEncoder_Ok, RotaryEncoder_OkLR, 2x2Matrix, 2x2Matrix_Ok, Joystick, Joystick_Ok, 3x4Matrix, 3x4Matrix_Ok, 3x4Matrix_OkLR, ResistiveTouch, TouchScreen)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
