@@ -1362,6 +1362,12 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
             return SFP(HStr_Enum_ResistiveTouch);
         case Hydro_ControlInputMode_TouchScreen:
             return SFP(HStr_Enum_TouchScreen);
+        case Hydro_ControlInputMode_TouchScreen_XPT: {
+            String retVal(SFP(HStr_Enum_TouchScreen));
+            retVal.reserve(retVal.length() + 3);
+            retVal.concat('X'); retVal.concat('P'); retVal.concat('T');
+            return retVal;
+        }
         case Hydro_ControlInputMode_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_ControlInputMode_Undefined:
@@ -2135,9 +2141,15 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
             }
             break;
         case 'T':
-            return (Hydro_ControlInputMode)12;
+            switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\0') {
+                case '\0':
+                    return (Hydro_ControlInputMode)12;
+                case 'X':
+                    return (Hydro_ControlInputMode)13;
+            }
+            break;
         case 'C':
-            return (Hydro_ControlInputMode)13;
+            return (Hydro_ControlInputMode)14;
     }
     return Hydro_ControlInputMode_Undefined;
 }

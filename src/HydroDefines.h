@@ -464,17 +464,18 @@ enum Hydro_DisplayOutputMode : signed char {
 enum Hydro_ControlInputMode : signed char {
     Hydro_ControlInputMode_Disabled,                        // No control input
     Hydro_ControlInputMode_RotaryEncoder,                   // Rotary encoder, pins: {A,B} (A = pin 1)
-    Hydro_ControlInputMode_RotaryEncoder_Ok,                // Rotary encoder /w ok button, pins: {A,B,OK} (A = pin 1)
-    Hydro_ControlInputMode_RotaryEncoder_OkLR,              // Rotary encoder /w ok and l/r buttons, pins: {A,B,OK,L,R} (A = pin 1)
+    Hydro_ControlInputMode_RotaryEncoder_Ok,                // Rotary encoder /w momentarily ok button, pins: {A,B,OK} (A = pin 1)
+    Hydro_ControlInputMode_RotaryEncoder_OkLR,              // Rotary encoder /w momentarily ok and l/r buttons, pins: {A,B,OK,L,R} (A = pin 1)
     Hydro_ControlInputMode_2x2Matrix,                       // 2x2 directional keyboard matrix button array, pins: {L1,L2,R1,R2} (L1 = pin 1)
-    Hydro_ControlInputMode_2x2Matrix_Ok,                    // 2x2 directional keyboard matrix button array /w ok button, pins: {L1,L2,R1,R2,OK} (L1 = pin 1)
+    Hydro_ControlInputMode_2x2Matrix_Ok,                    // 2x2 directional keyboard matrix button array /w momentarily ok button, pins: {L1,L2,R1,R2,OK} (L1 = pin 1)
     Hydro_ControlInputMode_Joystick,                        // Analog joystick, pins: {X,Y}
-    Hydro_ControlInputMode_Joystick_Ok,                     // Analog joystick /w ok button, pins: {X,Y,OK}
+    Hydro_ControlInputMode_Joystick_Ok,                     // Analog joystick /w momentarily ok button, pins: {X,Y,OK}
     Hydro_ControlInputMode_3x4Matrix,                       // 3x4 keyboard matrix (graphical), /w optional rotary encoder
-    Hydro_ControlInputMode_3x4Matrix_Ok,                    // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w ok button
-    Hydro_ControlInputMode_3x4Matrix_OkLR,                  // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w ok and l/r buttons
+    Hydro_ControlInputMode_3x4Matrix_Ok,                    // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w momentarily ok button
+    Hydro_ControlInputMode_3x4Matrix_OkLR,                  // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w momentarily ok and l/r buttons
     Hydro_ControlInputMode_ResistiveTouch,                  // Resistive touchscreen, pins: {X+,X-,Y+,Y-}
-    Hydro_ControlInputMode_TouchScreen,                     // Full touchscreen (FT6206/XPT2046), pins: {}
+    Hydro_ControlInputMode_TouchScreen,                     // Full touchscreen (Adafruit's FT6206), pins: {}
+    Hydro_ControlInputMode_TouchScreen_XPT,                 // Full touchscreen (Paul Stoffregen's XPT2046), pins: {}
 
     Hydro_ControlInputMode_Count,                           // Placeholder
     Hydro_ControlInputMode_Undefined = -1                   // Placeholder
