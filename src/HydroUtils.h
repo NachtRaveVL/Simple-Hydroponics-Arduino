@@ -246,13 +246,6 @@ inline millis_t nzMillis() { return millis() ?: 1; }
 // This will handle interrupts for task manager.
 extern void handleInterrupt(pintype_t pin);
 
-// Function pointer to pinMode for binary actuators and sensors. Allows an intermediary, such as a port extender or multiplexer, to be used. By default uses pinMode.
-extern void (*hy_bin_pinMode)(pintype_t,uint8_t);
-// Function pointer to digitalWrite for binary actuators. Allows an intermediary, such as a port extender or multiplexer, to be used. By default uses digitalWrite.
-extern void (*hy_bin_digitalWrite)(pintype_t,uint8_t);
-// Function pointer to digitalRead for binary sensors. Allows an intermediary, such as a port extender or multiplexer, to be used. By default uses digitalRead.
-extern uint8_t (*hy_bin_digitalRead)(pintype_t);
-
 // This is used to force debug statements through to serial monitor.
 inline void flushYield() {
     #if defined(HYDRO_ENABLE_DEBUG_OUTPUT) && HYDRO_SYS_DEBUGOUT_FLUSH_YIELD
