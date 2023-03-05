@@ -311,7 +311,7 @@ inline HydroPublisher *getPublisher()
 
 #ifdef HYDRO_USE_GUI
 
-inline HydruinoUIInterface *getUI()
+inline HydoUIInterface *getUI()
 {
     return Hydruino::_activeInstance ? Hydruino::_activeInstance->_activeUIInstance : nullptr;
 }

@@ -1,17 +1,21 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
-    Hydruino Minimal UI
+    Hydruino Minimal/RO UI
 */
 
+#include <Hydruino.h>
+#ifdef HYDRO_USE_GUI
+#ifndef HydroUI_H
+#define HydroUI_H
+
 class HydruinoMinUI;
+typedef HydruinoMinUI HydruinoUI;
 
-#include "Hydruino.h"
+#include "..\shared\HydruinoUI.h"
 
-class HydruinoMinUI : HydruinoUIInterface {
+class HydruinoMinUI : public HydruinoBaseUI {
 public:
-    virtual bool begin() override;
-
-    virtual void setNeedsLayout() override;
-
-protected:
 };
+
+#endif // /ifndef HydroUI_H
+#endif
