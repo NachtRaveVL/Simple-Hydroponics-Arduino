@@ -152,7 +152,7 @@ inline void setupOnce()
     #ifdef HYDRO_USE_WIFI
     {   String wifiSSID = F(SETUP_WIFI_SSID);
         String wifiPassword = F(SETUP_WIFI_PASS);
-        hydroController.setWiFiConnection(wifiSSID, wifiPassword); wifiSSID = wifiPassword = String();
+        hydroController.setWiFiConnection(wifiSSID, wifiPassword);
     }
     #endif
     #ifdef HYDRO_USE_ETHERNET
@@ -161,7 +161,7 @@ inline void setupOnce()
     }
     #endif
     getLogger()->setLogLevel(JOIN(Hydro_LogLevel,SETUP_SYS_LOGLEVEL));
-    #if !defined(HYDRO_USE_GPS)
+    #ifndef HYDRO_USE_GPS
         hydroController.setSystemLocation(SETUP_SYS_STATIC_LAT, SETUP_SYS_STATIC_LONG, SETUP_SYS_STATIC_ALT);
     #endif
     #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
