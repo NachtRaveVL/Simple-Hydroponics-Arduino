@@ -428,7 +428,7 @@ enum Hydro_MeasurementMode : signed char {
 
 // LCD/Display Output Mode
 // Specifies what kind of visual output device is to be used.
-// Currently, all ouput devices must ultimately be supported by tcMenu.
+// Display output mode support provided by tcMenu.
 enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_Disabled,                       // No display output
     Hydro_DisplayOutputMode_16x2LCD,                        // 16x2 text LCD (with pins: {EN,RW,RS,BL,Data})
@@ -460,7 +460,7 @@ enum Hydro_DisplayOutputMode : signed char {
 
 // Control Input Mode
 // Specifies what kind of control input mode is to be used.
-// Currently, all input devices must ultimately be supported by tcMenu.
+// Control input mode support provided by tcMenu.
 enum Hydro_ControlInputMode : signed char {
     Hydro_ControlInputMode_Disabled,                        // No control input
     Hydro_ControlInputMode_RotaryEncoder,                   // Rotary encoder, pins: {A,B} (A = pin 1)
@@ -476,6 +476,7 @@ enum Hydro_ControlInputMode : signed char {
     Hydro_ControlInputMode_ResistiveTouch,                  // Resistive touchscreen, pins: {X+,X-,Y+,Y-}
     Hydro_ControlInputMode_TouchScreen,                     // Full touchscreen (Adafruit's FT6206), pins: {}
     Hydro_ControlInputMode_TouchScreen_XPT,                 // Full touchscreen (Paul Stoffregen's XPT2046), pins: {}
+    Hydro_ControlInputMode_RemoteControl,                   // Fully remote controlled (no input /w possibly disabled display), pins: {}
 
     Hydro_ControlInputMode_Count,                           // Placeholder
     Hydro_ControlInputMode_Undefined = -1                   // Placeholder

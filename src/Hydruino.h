@@ -342,7 +342,7 @@ public:
     // Minimal/RO UI only allows the user to edit existing objects, not create nor delete them.
     // Full/RW UI allows the user to add/remove system objects, customize features, change settings, etc.
     // Note: Be sure to manually include the appropriate UI system header file (e.g. #include "min/HydruinoUI.h") in Arduino sketch.
-    inline bool enableUI(HydoUIInterface *ui) { _activeUIInstance = ui; return ui->begin(); }
+    inline bool enableUI(HydroUIInterface *ui) { _activeUIInstance = ui; return ui->begin(); }
 #endif
 
     // Mutators.
@@ -485,7 +485,7 @@ public:
 protected:
     static Hydruino *_activeInstance;                       // Current active instance (set after init, weak)
 #ifdef HYDRO_USE_GUI
-    HydoUIInterface *_activeUIInstance;                     // Current active UI instance (owned)
+    HydroUIInterface *_activeUIInstance;                     // Current active UI instance (owned)
 #endif
     HydroSystemData *_systemData;                           // System data (owned, saved to storage)
 
@@ -568,7 +568,7 @@ protected:
     friend HydroLogger *::getLogger();
     friend HydroPublisher *::getPublisher();
 #ifdef HYDRO_USE_GUI
-    friend HydoUIInterface *::getUI();
+    friend HydroUIInterface *::getUI();
 #endif
     friend class HydroCalibrations;
     friend class HydroCropsLibrary;

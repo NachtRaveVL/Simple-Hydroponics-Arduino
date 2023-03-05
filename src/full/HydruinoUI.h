@@ -15,6 +15,9 @@ typedef HydruinoFullUI HydruinoUI;
 
 class HydruinoFullUI : public HydruinoBaseUI {
 public:
+    virtual bool isFullUI() override;
+
+protected:
 };
 
 #endif // /ifndef HydroUI_H

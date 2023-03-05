@@ -1510,6 +1510,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Recycling[] PROGMEM = {"Recycling"};
             return flashStr_Enum_Recycling;
         } break;
+        case HStr_Enum_RemoteControl: {
+            static const char flashStr_Enum_RemoteControl[] PROGMEM = {"RemoteControl"};
+            return flashStr_Enum_RemoteControl;
+        } break;
         case HStr_Enum_ResistiveTouch: {
             static const char flashStr_Enum_ResistiveTouch[] PROGMEM = {"ResistiveTouch"};
             return flashStr_Enum_ResistiveTouch;

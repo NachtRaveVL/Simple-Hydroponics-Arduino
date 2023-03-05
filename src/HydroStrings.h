@@ -353,6 +353,7 @@ enum Hydro_String : unsigned short {
     HStr_Enum_Pumpkin,
     HStr_Enum_Radish,
     HStr_Enum_Recycling,
+    HStr_Enum_RemoteControl,
     HStr_Enum_ResistiveTouch,
     HStr_Enum_RevOrder,
     HStr_Enum_Rhubarb,

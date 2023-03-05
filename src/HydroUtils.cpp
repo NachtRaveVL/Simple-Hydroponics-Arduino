@@ -1368,6 +1368,8 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
             retVal.concat('X'); retVal.concat('P'); retVal.concat('T');
             return retVal;
         }
+        case Hydro_ControlInputMode_RemoteControl:
+            return SFP(HStr_Enum_RemoteControl);
         case Hydro_ControlInputMode_Count:
             return !excludeSpecial ? SFP(HStr_Count) : String();
         case Hydro_ControlInputMode_Undefined:
@@ -2107,7 +2109,13 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
                     }
                     break;
                 case 'e':
-                    return (Hydro_ControlInputMode)11;
+                    switch (controlInModeStr.length() >= 3 ? controlInModeStr[2] : '\0') {
+                        case 's':
+                            return (Hydro_ControlInputMode)11;
+                        case 'm':
+                            return (Hydro_ControlInputMode)14;
+                    }
+                    break;
             }
             break;
         case '2':
@@ -2149,7 +2157,7 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
             }
             break;
         case 'C':
-            return (Hydro_ControlInputMode)14;
+            return (Hydro_ControlInputMode)15;
     }
     return Hydro_ControlInputMode_Undefined;
 }

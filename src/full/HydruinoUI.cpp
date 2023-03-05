@@ -5,3 +5,8 @@
 
 #include "Hydruino.h"
 #include "HydruinoUI.h"
+
+bool HydruinoFullUI::isFullUI()
+{
+    return true;
+}
