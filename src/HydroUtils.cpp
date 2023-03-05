@@ -505,25 +505,6 @@ void delayFine(millis_t duration) {
     }
 }
 
-static void hy_bin_pinMode_def(pintype_t pin, uint8_t mode)
-{
-    pinMode(pin, mode);
-}
-
-static void hy_bin_digitalWrite_def(pintype_t pin, uint8_t status)
-{
-    digitalWrite(pin, status);
-}
-
-static uint8_t hy_bin_digitalRead_def(pintype_t pin)
-{
-    return digitalRead(pin);
-}
-
-void (*hy_bin_pinMode)(pintype_t,uint8_t) = &hy_bin_pinMode_def;
-void (*hy_bin_digitalWrite)(pintype_t,uint8_t) = &hy_bin_digitalWrite_def;
-uint8_t (*hy_bin_digitalRead)(pintype_t) = &hy_bin_digitalRead_def;
-
 bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hydro_UnitsType unitsOut, float convertParam)
 {
     if (!valueOut || unitsOut == Hydro_UnitsType_Undefined || unitsIn == unitsOut) return false;
