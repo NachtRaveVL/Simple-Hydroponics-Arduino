@@ -24,17 +24,11 @@
 #include <ScrollChoiceMenuItem.h>
 
 template <class T>
-void AdafruitDrawable<T>::transaction(bool isStarting, bool redrawNeeded) {
-#if DISPLAY_HAS_MEMBUFFER == true
-    if(!isStarting && redrawMeeded) getGfx()->display();
-#endif
-}
-
-template <class T>
 void AdafruitDrawable<T>::internalDrawText(const Coord &where, const void *font, int mag, const char *sz) {
     graphics->setTextWrap(false);
     int baseline=0;
-    Coord exts = textExtents(font, mag, "(;y", &baseline);
+    static String str(F("(;y"));
+    Coord exts = textExtents(font, mag, str.c_str(), &baseline);
     int yCursor = font ? (where.y + (exts.y - baseline)) : where.y;
     graphics->setCursor(where.x, yCursor);
     graphics->setTextColor(drawColor);
@@ -112,7 +106,8 @@ Coord AdafruitDrawable<T>::internalTextExtents(const void *f, int mag, const cha
     }
     else {
         // we need to work out the biggest glyph and maximum extent beyond the baseline, we use 'Ay(' for this
-        const char sz[] = "AgyjK(";
+        static String str(F("AgyjK("));
+        const char* sz = str.c_str();
         int height = 0;
         int bl = 0;
         const char* current = sz;

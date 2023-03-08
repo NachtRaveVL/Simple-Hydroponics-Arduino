@@ -42,8 +42,6 @@
 #include <graphics/GraphicsDeviceRenderer.h>
 #include <AnalogDeviceAbstraction.h>
 
-#define DISPLAY_HAS_MEMBUFFER false
-
 using namespace tcgfx;
 
 // some colour displays don't create this value
@@ -118,6 +116,10 @@ void drawCookieCutBitmap(Adafruit_SPITFT* gfx, int16_t x, int16_t y, const uint8
                          int16_t h, int16_t totalWidth, int16_t xStart, int16_t yStart,
                          uint16_t fgColor, uint16_t bgColor);
 
+void drawCookieCutBitmap(Adafruit_GFX* gfx, int16_t x, int16_t y, const uint8_t *bitmap, int16_t w,
+                         int16_t h, int16_t totalWidth, int16_t xStart, int16_t yStart,
+                         uint16_t fgColor, uint16_t bgColor);
+
 /**
    @brief      Draw a RAM-resident 2-bit image at the specified (x,y) position,
    from image data that may be wider or taller than the desired width and height.
@@ -179,7 +181,7 @@ public:
     }
 
     DeviceDrawable *getSubDeviceFor(const Coord& where, const Coord& size, const color_t *palette, int paletteSize) override;
-    void transaction(bool isStarting, bool redrawNeeded) override;
+    void transaction(bool isStarting, bool redrawNeeded) override {}
     void internalDrawText(const Coord &where, const void *font, int mag, const char *text) override;
     void drawBitmap(const Coord &where, const DrawableIcon *icon, bool selected) override;
     void drawXBitmap(const Coord &where, const Coord &size, const uint8_t *data) override;
@@ -191,6 +193,39 @@ public:
     T* getGfx() { return reinterpret_cast<T*>(graphics); }
 protected:
     explicit AdafruitDrawable() : graphics(nullptr), canvasDrawable(nullptr), spriteHeight(0) {}
+    void setGraphics(Adafruit_GFX* gfx) { graphics = gfx; }
+
+    UnicodeFontHandler *createFontHandler() override;
+};
+
+// Specialization for Adafruit_PCD8544
+template <>
+class AdafruitDrawable<Adafruit_PCD8544> : public DeviceDrawable {
+private:
+    Adafruit_GFX* graphics;
+public:
+    explicit AdafruitDrawable(Adafruit_GFX* graphics, int = 0) : graphics(graphics) {
+        setSubDeviceType(NO_SUB_DEVICE);
+    }
+    ~AdafruitDrawable() override = default;
+
+    Coord getDisplayDimensions() override {
+        return Coord(graphics->width(), graphics->height());
+    }
+
+    DeviceDrawable *getSubDeviceFor(const Coord& where, const Coord& size, const color_t *palette, int paletteSize) override { return nullptr; }
+    void transaction(bool isStarting, bool redrawNeeded) override;
+    void internalDrawText(const Coord &where, const void *font, int mag, const char *text) override;
+    void drawBitmap(const Coord &where, const DrawableIcon *icon, bool selected) override;
+    void drawXBitmap(const Coord &where, const Coord &size, const uint8_t *data) override;
+    void drawBox(const Coord &where, const Coord &size, bool filled) override;
+    void drawCircle(const Coord& where, int radius, bool filled) override;
+    void drawPolygon(const Coord points[], int numPoints, bool filled) override;
+    Coord internalTextExtents(const void *font, int mag, const char *text, int *baseline) override;
+    void drawPixel(uint16_t x, uint16_t y) override;
+    Adafruit_PCD8544* getGfx() { return reinterpret_cast<Adafruit_PCD8544*>(graphics); }
+protected:
+    explicit AdafruitDrawable() : graphics(nullptr) {}
     void setGraphics(Adafruit_GFX* gfx) { graphics = gfx; }
 
     UnicodeFontHandler *createFontHandler() override;
