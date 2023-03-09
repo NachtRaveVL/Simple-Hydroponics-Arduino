@@ -4,6 +4,10 @@
     tcMenu TFT_eSPI Display
 */
 
+// SETUP NOTICE
+// Users should edit TFT_eSPI/User_Setup.h to match the setup used for TFTeSPI display,
+// via TFT_DC, TFT_CS, TFT_RST, and optionally TOUCH_CS for TFTTouch input support.
+
 #include <Hydruino.h>
 #ifdef HYDRO_USE_GUI
 
@@ -23,6 +27,7 @@
 #ifndef TCMENU_PLUGIN_TCMENUTFTESPI_H
 #define TCMENU_PLUGIN_TCMENUTFTESPI_H
 
+#include <User_Setup.h>
 #include <TFT_eSPI.h>
 
 #include <graphics/GraphicsDeviceRenderer.h>
@@ -41,7 +46,7 @@ private:
     TftSpriteAndConfig* spriteWithConfig;
     uint16_t spriteHeight;
 public:
-    TfteSpiDrawable(TFT_eSPI *tft, int maxSpriteHeight);
+    TfteSpiDrawable(TFT_eSPI *tft, int maxSpriteHeight = 0);
 
     DeviceDrawable *getSubDeviceFor(const Coord &where, const Coord& size, const color_t *palette, int paletteSize) override;
 
@@ -87,10 +92,7 @@ public:
     color_t getUnderlyingColor(color_t col) override;
 };
 
-#define TC_TFT_ESPI_NEEDS_TOUCH false
-#if TC_TFT_ESPI_NEEDS_TOUCH == true
-
-#define XPT_2046_MAX 4096
+#define TFTTOUCH_XPT2046_RAW_MAX 4096
 
 namespace iotouch {
 
@@ -115,7 +117,6 @@ namespace iotouch {
     };
 
 }
-#endif // TC_TFT_ESPI_NEEDS_TOUCH == true
 
 #endif //TCMENU_PLUGIN_TCMENUTFTESPI_H
 #endif

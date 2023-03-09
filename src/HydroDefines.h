@@ -7,14 +7,14 @@
 #define HydroDefines_H
 
 #ifndef JOIN                                                // Define joiner
-#define JOIN_(X,Y) X##_##Y
-#define JOIN(X,Y) JOIN_(X,Y)
+#define JOIN_(X,Y)                      X##_##Y
+#define JOIN(X,Y)                       JOIN_(X,Y)
 #endif
 
-#define ACTIVE_HIGH                     false               // Active high (convenience)
-#define ACTIVE_ABOVE                    false               // Active above (convenience)
-#define ACTIVE_LOW                      true                // Active low (convenience)
-#define ACTIVE_BELOW                    true                // Active below (convenience)
+#define ACT_HIGH                        false               // Active high (convenience)
+#define ACT_ABOVE                       false               // Active above (convenience)
+#define ACT_LOW                         true                // Active low (convenience)
+#define ACT_BELOW                       true                // Active below (convenience)
 #define PULL_DOWN                       false               // Pull down (convenience)
 #define PULL_UP                         true                // Pull up (convenience)
 #define RAW                             false               // Raw mode (convenience)
@@ -49,8 +49,8 @@
 #define ESP_PLATFORM
 #endif
 #if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32)    // Missing min/max
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b)                        ((a)<(b)?(a):(b))
+#define max(a,b)                        ((a)>(b)?(a):(b))
 #endif
 #ifndef RANDOM_MAX                                          // Missing RANDOM_MAX
 #if defined(RAND_MAX)
@@ -62,25 +62,25 @@
 
 #ifndef ADC_RESOLUTION                                      // Resolving ADC resolution, or define manually by build define (see BOARD for example)
 #if defined(IOA_ANALOGIN_RES)                               // From IOAbstraction
-#define ADC_RESOLUTION IOA_ANALOGIN_RES
+#define ADC_RESOLUTION                  IOA_ANALOGIN_RES
 #else
-#define ADC_RESOLUTION 10                                   // Default per AVR
+#define ADC_RESOLUTION                  10                  // Default per AVR
 #endif
 #endif
 #ifndef DAC_RESOLUTION                                      // Resolving DAC resolution, or define manually by build define (see BOARD for example)
 #if defined(IOA_ANALOGOUT_RES)                              // From IOAbstraction
-#define DAC_RESOLUTION IOA_ANALOGOUT_RES
+#define DAC_RESOLUTION                  IOA_ANALOGOUT_RES
 #else
-#define DAC_RESOLUTION 8                                    // Default per AVR
+#define DAC_RESOLUTION                  8                   // Default per AVR
 #endif
 #endif
 #ifndef F_SPD                                               // Resolving F_SPD=F_CPU|F_BUS alias (for default SPI device speeds), or define manually by build define (see BOARD for example)
 #if defined(F_CPU)
-#define F_SPD F_CPU
+#define F_SPD                           F_CPU
 #elif defined(F_BUS)                                        // Teensy/etc support
-#define F_SPD F_BUS
+#define F_SPD                           F_BUS
 #else                                                       // Fast/good enough (32MHz)
-#define F_SPD 32000000U
+#define F_SPD                           32000000U
 #endif
 #endif
 #ifndef V_MCU                                               // Resolving MCU voltage, or define manually by build define (see BOARD for example)
@@ -92,15 +92,15 @@
 #endif
 #ifndef BOARD                                               // Resolving board name alias, or define manually by build define via creating platform.local.txt in %applocaldata%\Arduino15\packages\{platform}\hardware\{arch}\{version}\ containing (/w quotes): compiler.cpp.extra_flags="-DBOARD={build.board}"
 #if defined(TEENSYDUINO)                                    // For Teensy, define manually by build define via editing platform.txt directly in %applocaldata%\Arduino15\packages\teensy\hardware\avr\{version}\ and adding (/w space & quotes):  "-DBOARD={build.board}" to end of recipe.cpp.o.pattern=
-#define BOARD "TEENSY"
+#define BOARD                           "TEENSY"
 #elif defined(ARDUINO_BOARD)
-#define BOARD ARDUINO_BOARD
+#define BOARD                           ARDUINO_BOARD
 #elif defined(BOARD_NAME)
-#define BOARD BOARD_NAME
+#define BOARD                           BOARD_NAME
 #elif defined(USB_PRODUCT)
-#define BOARD USB_PRODUCT
+#define BOARD                           USB_PRODUCT
 #else
-#define BOARD "OTHER"
+#define BOARD                           "OTHER"
 #endif
 #endif
 
@@ -126,7 +126,7 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_JSON_DOC_DEFSIZE          192                 // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRO_STRING_BUFFER_SIZE        32                  // Size in bytes of string serialization buffers
 #define HYDRO_WIFISTREAM_BUFFER_SIZE    128                 // Size in bytes of WiFi serialization buffers
-// The following sizes only matter for architectures that do not have STL support
+// The following sizes only matter for architectures that do not have STL support (AVR/SAM)
 #define HYDRO_DEFAULT_MAXSIZE           8                   // Default maximum array/map size
 #define HYDRO_ACTUATOR_SIGNAL_SLOTS     4                   // Maximum number of slots for actuator's activation signal
 #define HYDRO_SENSOR_SIGNAL_SLOTS       6                   // Maximum number of slots for sensor's measurement signal
@@ -431,52 +431,47 @@ enum Hydro_MeasurementMode : signed char {
 // Display output mode support provided by tcMenu.
 enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_Disabled,                       // No display output
-    Hydro_DisplayOutputMode_16x2LCD,                        // 16x2 text LCD (with pins: {EN,RW,RS,BL,Data})
-    Hydro_DisplayOutputMode_16x2LCD_Swapped,                // 16x2 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data})
-    Hydro_DisplayOutputMode_20x4LCD,                        // 20x4 text LCD (with pins: {EN,RW,RS,BL,Data})
-    Hydro_DisplayOutputMode_20x4LCD_Swapped,                // 20x4 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data})
-    Hydro_DisplayOutputMode_SSD1305,                        // SSD1305 128x32 graphical LCD, requires U8G2
-    Hydro_DisplayOutputMode_SSD1305_x32Ada,                 // SSD1305 128x32 graphical LCD, using Adafruit + U8G2
-    Hydro_DisplayOutputMode_SSD1305_x64Ada,                 // SSD1305 128x64 graphical LCD, using Adafruit + U8G2
-    Hydro_DisplayOutputMode_SSD1306,                        // SSD1306 128x64 graphical LCD, using U8G2
-    Hydro_DisplayOutputMode_SH1106,                         // SH1106 128x64 graphical LCD, using U8G2
-    Hydro_DisplayOutputMode_SSD1607,                        // SSD1607 200x200 graphical LCD, using U8G2
-    Hydro_DisplayOutputMode_IL3820,                         // IL3820 296x128 graphical LCD, using U8G2
-    Hydro_DisplayOutputMode_IL3820_V2,                      // IL3820 V2 296x128 graphical LCD, using U8G2
-    Hydro_DisplayOutputMode_ST7735,                         // ST7735 320x240 graphical LCD, using AdafruitGFX
-    Hydro_DisplayOutputMode_ST7735_TFT,                     // ST7735 320x240 graphical LCD, using TFT_eSPI
-    Hydro_DisplayOutputMode_ST7789,                         // ST7789 320x240 graphical LCD, using AdafruitGFX
-    Hydro_DisplayOutputMode_ST7789_TFT,                     // ST7789 320x240 graphical LCD, using TFT_eSPI
-    Hydro_DisplayOutputMode_ILI9341,                        // ILI9341 320x240 graphical LCD, using AdafruitGFX
-    Hydro_DisplayOutputMode_ILI9341_TFT,                    // ILI9341 320x240 graphical LCD, using TFT_eSPI
-    Hydro_DisplayOutputMode_PCD8544,                        // PCD8544 320x240 graphical LCD, using AdafruitGFX
-    Hydro_DisplayOutputMode_PCD8544_TFT,                    // PCD8544 320x240 graphical LCD, using TFT_eSPI
-    Hydro_DisplayOutputMode_Nokia5110,                      // Nokia5110 320x240 graphical LCD, using AdafruitGFX
-    Hydro_DisplayOutputMode_Nokia5110_TFT,                  // Nokia5110 320x240 graphical LCD, using TFT_eSPI
+    Hydro_DisplayOutputMode_16x2LCD,                        // 16x2 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_16x2LCD_Swapped,                // 16x2 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_20x4LCD,                        // 20x4 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_20x4LCD_Swapped,                // 20x4 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_SSD1305,                        // SSD1305 128x32 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_SSD1305_x32Ada,                 // Adafruit SSD1305 128x32 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_SSD1305_x64Ada,                 // Adafruit SSD1305 128x64 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_SSD1306,                        // SSD1306 128x64 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_SH1106,                         // SH1106 128x64 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_SSD1607_GD,                     // SSD1607 GD 200x200 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_SSD1607_WS,                     // SSD1607 WS 200x200 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_IL3820,                         // IL3820 296x128 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_IL3820_V2,                      // IL3820 V2 296x128 OLED, using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_ST7735,                         // ST7735 320x240 graphical LCD, using AdafruitGFX (SPI only)
+    Hydro_DisplayOutputMode_ST7789,                         // ST7789 320x240 graphical LCD, using AdafruitGFX (SPI only)
+    Hydro_DisplayOutputMode_ILI9341,                        // ILI9341 320x240 graphical LCD, using AdafruitGFX (SPI only)
+    Hydro_DisplayOutputMode_PCD8544,                        // PCD8544 (or Nokia5110) 320x240 graphical LCD, using AdafruitGFX (SPI only)
+    Hydro_DisplayOutputMode_TFT,                            // TFT 320x240+ graphical LCD, using TFT_eSPI (SPI only, Note: usage requires editing TFT_eSPI\User_Setup.h & properly defining TFT_CS, TFT_DC, & TFT_RST)
 
     Hydro_DisplayOutputMode_Count,                          // Placeholder
     Hydro_DisplayOutputMode_Undefined = -1                  // Placeholder
 };
 
 // Control Input Mode
-// Specifies what kind of control input mode is to be used.
+// Specifies what kind of control input mode (and pin ribbon set) is to be used.
 // Control input mode support provided by tcMenu.
 enum Hydro_ControlInputMode : signed char {
     Hydro_ControlInputMode_Disabled,                        // No control input
-    Hydro_ControlInputMode_RotaryEncoder,                   // Rotary encoder, pins: {A,B} (A = pin 1)
-    Hydro_ControlInputMode_RotaryEncoder_Ok,                // Rotary encoder /w momentarily ok button, pins: {A,B,OK} (A = pin 1)
-    Hydro_ControlInputMode_RotaryEncoder_OkLR,              // Rotary encoder /w momentarily ok and l/r buttons, pins: {A,B,OK,L,R} (A = pin 1)
-    Hydro_ControlInputMode_2x2Matrix,                       // 2x2 directional keyboard matrix button array, pins: {L1,L2,R1,R2} (L1 = pin 1)
-    Hydro_ControlInputMode_2x2Matrix_Ok,                    // 2x2 directional keyboard matrix button array /w momentarily ok button, pins: {L1,L2,R1,R2,OK} (L1 = pin 1)
-    Hydro_ControlInputMode_Joystick,                        // Analog joystick, pins: {X,Y}
-    Hydro_ControlInputMode_Joystick_Ok,                     // Analog joystick /w momentarily ok button, pins: {X,Y,OK}
-    Hydro_ControlInputMode_3x4Matrix,                       // 3x4 keyboard matrix (graphical), /w optional rotary encoder
-    Hydro_ControlInputMode_3x4Matrix_Ok,                    // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w momentarily ok button
-    Hydro_ControlInputMode_3x4Matrix_OkLR,                  // 3x4 keyboard matrix (graphical), /w optional rotary encoder /w momentarily ok and l/r buttons
+    Hydro_ControlInputMode_RotaryEncoderOk,                 // Rotary encoder /w momentary Ok button, pins: {eA,eB,Ok}
+    Hydro_ControlInputMode_RotaryEncoderOk_LR,              // Rotary encoder /w momentary Ok, Back(L), and Next(R) buttons, pins: {eA,eB,Ok,Bk,Nx}
+    Hydro_ControlInputMode_UpDownOkButtons,                 // Momentary Up, Down, and Ok buttons, pins: {Up,Dw,Ok}
+    Hydro_ControlInputMode_UpDownOkButtons_LR,              // Momentary Up, Down, Ok, Back(L), and Next(R) buttons, pins: {Up,Dw,Ok,Bk,Nx}
+    Hydro_ControlInputMode_AnalogJoystickOk,                // Analog joystick /w momentary Ok button, pins: {aX,aY,Ok} (aX can be unused/-1, else used for back/next)
+    Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOk,   // 3x4 numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok button, pins: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok}
+    Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOkLR, // 3x4 numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok, Back(L), and Next(R) buttons, pins: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok,Bk,Nx}
+    Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOk,   // 4x4 alpha-numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok button, pins: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok}
+    Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOkLR, // 4x4 alpha-numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok, Back(L), and Next(R) buttons, pins: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok,Bk,Nx}
     Hydro_ControlInputMode_ResistiveTouch,                  // Resistive touchscreen, pins: {X+,X-,Y+,Y-}
-    Hydro_ControlInputMode_TouchScreen,                     // Full touchscreen (Adafruit's FT6206), pins: {}
-    Hydro_ControlInputMode_TouchScreen_XPT,                 // Full touchscreen (Paul Stoffregen's XPT2046), pins: {}
-    Hydro_ControlInputMode_RemoteControl,                   // Fully remote controlled (no input /w possibly disabled display), pins: {}
+    Hydro_ControlInputMode_TouchScreen,                     // Full touchscreen (FT6206, or XPT2046 /w setup define), pins: {}
+    Hydro_ControlInputMode_TFTTouch,                        // TFT-based Touch, using TFT_eSPI (Note: usage requires TFT display mode & editing TFT_eSPI\User_Setup.h & properly defining TOUCH_CS), pins: {tCS,tIRQ} (tIRQ can be unused/-1)
+    Hydro_ControlInputMode_RemoteControl,                   // Remote controlled (no input /w possibly disabled display), pins: {}
 
     Hydro_ControlInputMode_Count,                           // Placeholder
     Hydro_ControlInputMode_Undefined = -1                   // Placeholder

@@ -22,7 +22,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
 
-    Simple-Hydroponics-Arduino - Version 0.6.0.1
+    Simple-Hydroponics-Arduino - Version 0.6.5.0
 */
 
 #ifndef Hydruino_H
@@ -52,6 +52,9 @@
 
 // Uncomment or -D this define to enable usage of the Adafruit GPS library, which enables GPS capabilities.
 //#define HYDRO_ENABLE_GPS                        // https://github.com/adafruit/Adafruit_GPS
+
+// Uncomment or -D this define to enable usage of the XPT2046_Touchscreen library, in place of the Adafruit FT6206 library.
+//#define HYDRO_ENABLE_XPT2046TS                  // https://github.com/PaulStoffregen/XPT2046_Touchscreen
 
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, instead relying solely on external storage.
@@ -165,7 +168,6 @@ typedef Adafruit_GPS GPSClass;
 #include "TimeLib.h"                    // Time library
 #ifndef HYDRO_DISABLE_GUI
 #include "tcMenu.h"                     // tcMenu library
-#include "LiquidCrystalIO.h"            // LiquidCrystal IO
 #define HYDRO_USE_GUI
 #endif
 
@@ -377,7 +379,7 @@ public:
     void setEthernetConnection(const uint8_t *macAddress);
 #endif
     // Sets system location (lat/long/alt, note: only triggers update if significant or forced)
-    void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF, bool forceUpdate = false);
+    void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF, bool isSigChange = false);
 
     // Accessors.
 
@@ -400,10 +402,8 @@ public:
 #ifdef HYDRO_USE_GUI
     // LCD output device setup configuration
     inline const DeviceSetup &getLCDSetup() const { return _lcdSetup; }
-    // Total number of pins being used for the current control input ribbon
-    int getControlInputPins() const;
-    // Control input pin mapped to ribbon pin index, or -1 if not used
-    pintype_t getControlInputPin(int ribbonPinIndex) const;
+    // Returns control input pins ribbon
+    Pair<uint8_t, const pintype_t *> getControlInputPins() const;
 #endif
 
     // EEPROM instance (lazily instantiated, nullptr return -> failure/no device)

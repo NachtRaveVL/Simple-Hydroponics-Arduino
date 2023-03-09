@@ -1153,61 +1153,53 @@ void Hydruino::setEthernetConnection(const uint8_t *macAddress)
 
 #endif
 
-void Hydruino::setSystemLocation(double latitude, double longitude, double altitude, bool forceUpdate)
+void Hydruino::setSystemLocation(double latitude, double longitude, double altitude, bool isSigChange)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
     if (_systemData && (!isFPEqual(_systemData->latitude, latitude) || !isFPEqual(_systemData->longitude, longitude) || !isFPEqual(_systemData->altitude, altitude))) {
-        forceUpdate |= ((latitude - _systemData->latitude) * (latitude - _systemData->latitude)) +
-                       ((longitude - _systemData->longitude) * (longitude - _systemData->longitude)) >= HYDRO_SYS_LATLONG_DISTSQRDTOL ||
-                       fabs(altitude - _systemData->altitude) >= HYDRO_SYS_ALTITUDE_DISTTOL;
+        isSigChange = isSigChange || ((latitude - _systemData->latitude) * (latitude - _systemData->latitude)) +
+                                     ((longitude - _systemData->longitude) * (longitude - _systemData->longitude)) >= HYDRO_SYS_LATLONG_DISTSQRDTOL ||
+                                     fabs(altitude - _systemData->altitude) >= HYDRO_SYS_ALTITUDE_DISTTOL;
         _systemData->latitude = latitude;
         _systemData->longitude = longitude;
         _systemData->altitude = altitude;
-        if (forceUpdate) { _systemData->bumpRevisionIfNeeded(); }
+        if (isSigChange) { _systemData->bumpRevisionIfNeeded(); }
     }
 }
 
 #ifdef HYDRO_USE_GUI
 
-int Hydruino::getControlInputPins() const
+Pair<uint8_t, const pintype_t *> Hydruino::getControlInputPins() const
 {
-    switch (getControlInputMode()) {
-        case Hydro_ControlInputMode_RotaryEncoder:
-            return 2;
-        case Hydro_ControlInputMode_RotaryEncoder_Ok:
-            return 3;
-        case Hydro_ControlInputMode_RotaryEncoder_OkLR:
-            return 5;
-        case Hydro_ControlInputMode_2x2Matrix:
-            return 4;
-        case Hydro_ControlInputMode_2x2Matrix_Ok:
-            return 5;
-        case Hydro_ControlInputMode_Joystick:
-            return 2;
-        case Hydro_ControlInputMode_Joystick_Ok:
-            return 3;
-        case Hydro_ControlInputMode_3x4Matrix:
-            return 2;
-        case Hydro_ControlInputMode_3x4Matrix_Ok:
-            return 3;
-        case Hydro_ControlInputMode_3x4Matrix_OkLR:
-            return 5;
-        case Hydro_ControlInputMode_ResistiveTouch:
-            return 4;
-        default:
-            return 0;
+    if (_ctrlInputPins) {
+        switch (getControlInputMode()) {
+            case Hydro_ControlInputMode_RotaryEncoderOk:
+                return make_pair((uint8_t)3, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_RotaryEncoderOk_LR:
+                return make_pair((uint8_t)5, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_UpDownOkButtons:
+                return make_pair((uint8_t)3, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_UpDownOkButtons_LR:
+                return make_pair((uint8_t)5, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_AnalogJoystickOk:
+                return make_pair((uint8_t)3, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOk:
+                return make_pair((uint8_t)10, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOkLR:
+                return make_pair((uint8_t)12, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOk:
+                return make_pair((uint8_t)11, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOkLR:
+                return make_pair((uint8_t)13, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_ResistiveTouch:
+                return make_pair((uint8_t)4, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_TFTTouch:
+                return make_pair((uint8_t)2, (const pintype_t *)_ctrlInputPins);
+            default: break;
+        }
     }
+    return make_pair((uint8_t)0, (const pintype_t *)nullptr);
 }
-
-pintype_t Hydruino::getControlInputPin(int ribbonPinIndex) const
-{
-    int ctrlInPinCount = getControlInputPins();
-    HYDRO_SOFT_ASSERT(ctrlInPinCount > 0, SFP(HStr_Err_UnsupportedOperation));
-    HYDRO_SOFT_ASSERT(ctrlInPinCount <= 0 || (ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount), SFP(HStr_Err_InvalidParameter));
-
-    return ctrlInPinCount && ribbonPinIndex >= 0 && ribbonPinIndex < ctrlInPinCount ? _ctrlInputPins[ribbonPinIndex] : -1;
-}
-
 #endif
 
 I2C_eeprom *Hydruino::getEEPROM(bool begin)

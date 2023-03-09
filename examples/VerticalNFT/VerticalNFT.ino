@@ -51,8 +51,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, 16x2LCD, 16x2LCD_Swapped, 20x4LCD, 20x4LCD_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607, IL3820, IL3820_V2, ST7735, ST7735_TFT, ST7789, ST7789_TFT, ILI9341, ILI9341_TFT, PCD8544, PCD8544_TFT, Nokia5110, Nokia5110_TFT)
-#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoder, RotaryEncoder_Ok, RotaryEncoder_OkLR, 2x2Matrix, 2x2Matrix_Ok, Joystick, Joystick_Ok, 3x4Matrix, 3x4Matrix_Ok, 3x4Matrix_OkLR, ResistiveTouch, TouchScreen)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, 16x2LCD, 16x2LCD_Swapped, 20x4LCD, 20x4LCD_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
+#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, 3x4MatrixKeyboard_OptRotEncOk, 3x4MatrixKeyboard_OptRotEncOkLR, 4x4MatrixKeyboard_OptRotEncOk, 4x4MatrixKeyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset
@@ -103,7 +103,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_DHT_SENSOR_TYPE           None            // DHT sensor type enum (DHT11, DHT12, DHT21, DHT22, AM2301, None)
 #define SETUP_VOL_FILLED_PIN            -1              // Water level filled indicator pin (digital/ISR), else -1
 #define SETUP_VOL_EMPTY_PIN             -1              // Water level empty indicator pin (digital/ISR), else -1
-#define SETUP_VOL_INDICATOR_TYPE        ACTIVE_HIGH     // Water level indicator type/active level (ACTIVE_HIGH, ACTIVE_LOW)
+#define SETUP_VOL_INDICATOR_TYPE        ACT_HIGH        // Water level indicator type/active level (ACT_HIGH, ACT_LOW)
 #define SETUP_VOL_LEVEL_PIN             -1              // Water level sensor pin (analog)
 #define SETUP_VOL_LEVEL_TYPE            Ultrasonic      // Water level device type (Ultrasonic, AnalogHeight)
 #define SETUP_GROW_LIGHTS_PIN           -1              // Grow lights relay pin (digital), else -1
@@ -122,7 +122,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_MUXING_CHANNEL_BITS       -1              // Number of channel bits for multiplexer, else -1
 #define SETUP_MUXING_ADDRESS_PINS       {(pintype_t)-1} // Address channel pins, else {-1}
 #define SETUP_MUXING_ENABLE_PIN         -1              // Chip enable pin for multiplexer (optional), else -1
-#define SETUP_MUXING_ENABLE_TYPE        ACTIVE_LOW      // Chip enable pin type/active level (ACTIVE_HIGH, ACTIVE_LOW)
+#define SETUP_MUXING_ENABLE_TYPE        ACT_LOW         // Chip enable pin type/active level (ACT_HIGH, ACT_LOW)
 #define SETUP_PH_METER_MUXCHN           -1              // pH meter sensor pin muxing channel #, else -1
 #define SETUP_TDS_METER_MUXCHN          -1              // TDS meter sensor pin muxing channel #, else -1
 #define SETUP_CO2_SENSOR_MUXCHN         -1              // CO2 meter sensor pin muxing channel #, else -1
@@ -410,7 +410,7 @@ inline void setupObjects()
                                                                 SETUP_CROP_SOW_DATE);
                 moistureSensor->setParentCrop(crop);
                 crop->setSoilMoistureSensor(moistureSensor);
-                crop->setFeedingTrigger(new HydroMeasurementValueTrigger(moistureSensor, SETUP_CROP_SOILM_FEED_LEVEL, ACTIVE_BELOW, 0, SETUP_CROP_SOILM_FED_LEVEL - SETUP_CROP_SOILM_FEED_LEVEL, 30000));
+                crop->setFeedingTrigger(new HydroMeasurementValueTrigger(moistureSensor, SETUP_CROP_SOILM_FEED_LEVEL, ACT_BELOW, 0, SETUP_CROP_SOILM_FED_LEVEL - SETUP_CROP_SOILM_FEED_LEVEL, 30000));
             #else
                 auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
                                                             JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
@@ -467,13 +467,13 @@ inline void setupObjects()
     #if SETUP_VOL_FILLED_PIN >= 0
     {   auto filledIndicator = hydroController.addLevelIndicator(SETUP_VOL_FILLED_PIN, SETUP_VOL_INDICATOR_TYPE, SETUP_VOL_FILLED_MUXCHN);
         filledIndicator->setParentReservoir(feedReservoir);
-        feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(filledIndicator, 0.5, ACTIVE_ABOVE));
+        feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(filledIndicator, 0.5, ACT_ABOVE));
     }
     #endif
     #if SETUP_VOL_EMPTY_PIN >= 0
     {   auto emptyIndicator = hydroController.addLevelIndicator(SETUP_VOL_EMPTY_PIN, SETUP_VOL_INDICATOR_TYPE, SETUP_VOL_EMPTY_MUXCHN);
         emptyIndicator->setParentReservoir(feedReservoir);
-        feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(emptyIndicator, 0.5, ACTIVE_ABOVE));
+        feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(emptyIndicator, 0.5, ACT_ABOVE));
     }
     #endif
 
@@ -484,10 +484,10 @@ inline void setupObjects()
             distanceSensor->setParentReservoir(feedReservoir);
             feedReservoir->setWaterVolumeSensor(distanceSensor);
             #if SETUP_VOL_FILLED_PIN < 0
-                feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(distanceSensor, HYDRO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
+                feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(distanceSensor, HYDRO_FEEDRES_FRACTION_FILLED, ACT_ABOVE));
             #endif
             #if SETUP_VOL_EMPTY_PIN < 0
-                feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(distanceSensor, HYDRO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
+                feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(distanceSensor, HYDRO_FEEDRES_FRACTION_EMPTY, ACT_BELOW));
             #endif
         }
         #elif SETUP_VOL_LEVEL_TYPE == AnalogHeight
@@ -495,10 +495,10 @@ inline void setupObjects()
             heightMeter->setParentReservoir(feedReservoir);
             feedReservoir->setWaterVolumeSensor(heightMeter);
             #if SETUP_VOL_FILLED_PIN < 0
-                feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(heightMeter, HYDRO_FEEDRES_FRACTION_FILLED, ACTIVE_ABOVE));
+                feedReservoir->setFilledTrigger(new HydroMeasurementValueTrigger(heightMeter, HYDRO_FEEDRES_FRACTION_FILLED, ACT_ABOVE));
             #endif
             #if SETUP_VOL_EMPTY_PIN < 0
-                feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(heightMeter, HYDRO_FEEDRES_FRACTION_EMPTY, ACTIVE_BELOW));
+                feedReservoir->setEmptyTrigger(new HydroMeasurementValueTrigger(heightMeter, HYDRO_FEEDRES_FRACTION_EMPTY, ACT_BELOW));
             #endif
         }
         #endif
