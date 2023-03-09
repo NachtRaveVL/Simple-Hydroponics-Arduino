@@ -87,14 +87,23 @@ void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
     menuMgr.initWithoutInput(renderer, initialItem);
 }
 
+static String get3x4MatrixKBKeys()
+{
+    static const String kb3x4(F(HYDRO_UI_3X4MATRIX_KEYS));
+    return kb3x4;
+}
 
-static String kb3x4(F(HYDRO_UI_3X4MATRIX_KEYS));
+static char getNx4MatrixActions(int charIndex)
+{
+    static const String actNx4(F(HYDRO_UI_NX4MATRIX_ACTIONS));
+    return actNx4[charIndex];
+}
 
 HydroInput3x4Matrix::HydroInput3x4Matrix(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,3,kb3x4.c_str()),
-      _tcMenuKeyListener(HYDRO_UI_NX4MATRIX_ACTIONS),
+      _keyboardLayout(4,3,get3x4MatrixKBKeys().c_str()),
+      _tcMenuKeyListener(getNx4MatrixActions(0), getNx4MatrixActions(1), getNx4MatrixActions(2), getNx4MatrixActions(3)),
       _rotaryEncoder(nullptr)
 {
     // todo expander setup
@@ -124,13 +133,17 @@ void HydroInput3x4Matrix::begin(MenuRenderer *renderer, MenuItem *initialItem)
 }
 
 
-static String kb4x4(F(HYDRO_UI_4X4MATRIX_KEYS));
+static String get4x4MatrixKBKeys()
+{
+    static const String kb4x4(F(HYDRO_UI_4X4MATRIX_KEYS));
+    return kb4x4;
+}
 
 HydroInput4x4Matrix::HydroInput4x4Matrix(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,4,kb4x4.c_str()),
-      _tcMenuKeyListener(HYDRO_UI_NX4MATRIX_ACTIONS),
+      _keyboardLayout(4,4,get4x4MatrixKBKeys().c_str()),
+      _tcMenuKeyListener(getNx4MatrixActions(0), getNx4MatrixActions(1), getNx4MatrixActions(2), getNx4MatrixActions(3)),
       _rotaryEncoder()
 {
     // todo expander setup
