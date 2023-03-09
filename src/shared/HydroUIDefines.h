@@ -24,10 +24,11 @@ extern const ConnectorLocalInfo applicationInfo;
 #define HYDRO_UI_I2CLCD_BASEADDR        0x20                // Base address of I2C LiquidCrystalIO LCDs (bitwise or'ed with passed address)
 #define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
-#define HYDRO_UI_DISPLAYTHEME_GFX       CoolBlue            // Default graphical display theme (CoolBlue, DarkMode)
 #define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // Default 3x4 matrix keyboard keys
 #define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // Default 4x4 matrix keyboard keys
 #define HYDRO_UI_NX4MATRIX_ACTIONS      '*', '#', 'A', 'B'  // Default next char, back char, enter char, and delete char on keyboard
+#define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            // Default graphical display theme base (CoolBlue, DarkMode)
+#define HYDRO_UI_GFXTFT_USES_AN_SLIDER  true                // Default analog slider usage for AdafruitGFX/TFTe_SPI displays
 #define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Default raw touch usage for TFTTouch
 
 

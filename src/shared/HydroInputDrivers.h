@@ -32,6 +32,8 @@ public:
 
     virtual IoAbstractionRef getIoAbstraction() = 0;
 
+    inline const Pair<uint8_t, const pintype_t *> &getPins() const { return _pins; }
+
 protected:
     const Pair<uint8_t, const pintype_t *> _pins;
 };

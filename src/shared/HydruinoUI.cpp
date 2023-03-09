@@ -9,7 +9,8 @@
 const ConnectorLocalInfo applicationInfo = { "Simple-Hydroponics-Arduino", "dfa1e3a9-a13a-4af3-9133-956a6221615b" };
 
 HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiControlSetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
-    : _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _enableUTF8(enableTcUnicodeFonts),
+    : _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _utf8Fonts(enableTcUnicodeFonts),
+      _gfxOrTFT(getController() && getController()->getDisplayOutputMode() >= Hydro_DisplayOutputMode_ST7735 && getController()->getDisplayOutputMode() <= Hydro_DisplayOutputMode_TFT),
       _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr)
 {
     auto controller = getController();
@@ -79,14 +80,20 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
         HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_PCD8544) || (lcdSetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
 
         switch (dispOutMode) {
+            // LiquidCrystalIO
             case Hydro_DisplayOutputMode_16x2LCD:
             case Hydro_DisplayOutputMode_16x2LCD_Swapped:
             case Hydro_DisplayOutputMode_20x4LCD:
             case Hydro_DisplayOutputMode_20x4LCD_Swapped:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::LCD, SFP(HStr_Err_InvalidParameter));
-                _display = new HydroDisplayLiquidCrystalIO(dispOutMode, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlightPin, uiDisplaySetup.dispCfgAs.lcd.blPinMode);
+                if (!uiDisplaySetup.dispCfgAs.lcd.isDFRobotShield) {
+                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlitMode);
+                } else {
+                    _display = new HydroDisplayLiquidCrystalIO(true, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlitMode);
+                }
                 break;
 
+            // U8g2lib
             case Hydro_DisplayOutputMode_SSD1305:
             case Hydro_DisplayOutputMode_SSD1305_x32Ada:
             case Hydro_DisplayOutputMode_SSD1305_x64Ada:
@@ -100,26 +107,25 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
                 _display = new HydroDisplayU8g2lib(dispOutMode, lcdSetup, uiDisplaySetup.dispCfgAs.gfx.dispOrient, uiDisplaySetup.dispCfgAs.gfx.dcPin, uiDisplaySetup.dispCfgAs.gfx.resetPin);
                 break;
 
+            // AdafruitGFX
             case Hydro_DisplayOutputMode_ST7735:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::ST7735, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ST7735>(lcdSetup.cfgAs.spi, uiDisplaySetup.dispCfgAs.st7735.dispOrient, uiDisplaySetup.dispCfgAs.st7735.tabColor, uiDisplaySetup.dispCfgAs.st7735.dcPin, uiDisplaySetup.dispCfgAs.st7735.resetPin);
                 break;
-
             case Hydro_DisplayOutputMode_ST7789:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ST7789>(lcdSetup.cfgAs.spi, uiDisplaySetup.dispCfgAs.gfx.dispOrient, uiDisplaySetup.dispCfgAs.gfx.dcPin, uiDisplaySetup.dispCfgAs.gfx.resetPin);
                 break;
-
             case Hydro_DisplayOutputMode_ILI9341:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ILI9341>(lcdSetup.cfgAs.spi, uiDisplaySetup.dispCfgAs.gfx.dispOrient, uiDisplaySetup.dispCfgAs.gfx.dcPin, uiDisplaySetup.dispCfgAs.gfx.resetPin);
                 break;
-
             case Hydro_DisplayOutputMode_PCD8544:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_PCD8544>(lcdSetup.cfgAs.spi, uiDisplaySetup.dispCfgAs.gfx.dispOrient, uiDisplaySetup.dispCfgAs.gfx.dcPin, uiDisplaySetup.dispCfgAs.gfx.resetPin);
                 break;
 
+            // TFT_eSPI
             case Hydro_DisplayOutputMode_TFT:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::TFT, SFP(HStr_Err_InvalidParameter));
                 HYDRO_SOFT_ASSERT(lcdSetup.cfgAs.spi.spi == HYDRO_USE_SPI, SFP(HStr_Err_NotConfiguredProperly));
@@ -142,6 +148,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
                     _input = new HydroInputResistiveTouch(ctrlInPins, _display);
                     break;
 
+                // TFT_eSPI
                 case Hydro_ControlInputMode_TFTTouch:
                     HYDRO_SOFT_ASSERT(dispOutMode == Hydro_DisplayOutputMode_TFT, SFP(HStr_Err_InvalidParameter));
                     #ifdef TOUCH_CS
@@ -170,26 +177,7 @@ HydruinoBaseUI::~HydruinoBaseUI()
     if (_remoteServer) { delete _remoteServer; }
 }
 
-void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme)
-{
-    commonInit();
-    if (_display) { _display->init(updatesPerSec, displayTheme); }
-}
-
-void HydruinoBaseUI::init()
-{
-    const HydroUIData *uiData = nullptr; // todo
-    if (uiData) {
-        init(uiData->updatesPerSec, uiData->displayTheme);
-    } else if (_display) {
-        commonInit();
-        _display->init();
-    } else {
-        init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
-    }
-}
-
-void HydruinoBaseUI::commonInit()
+void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider)
 {
     SwitchInterruptMode isrMode(SWITCHES_POLL_EVERYTHING);
     if (_allowISR) {
@@ -199,6 +187,20 @@ void HydruinoBaseUI::commonInit()
     }
 
     switches.init(_input->getIoAbstraction() ?: internalDigitalIo(), isrMode, _isActiveLow);
+
+    if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _utf8Fonts); }
+}
+
+void HydruinoBaseUI::init()
+{
+    const HydroUIData *uiData = nullptr; // todo
+    if (uiData) {
+        init(uiData->updatesPerSec, uiData->displayTheme, _gfxOrTFT ? HYDRO_UI_GFXTFT_USES_AN_SLIDER : false);
+    } else if (_display) {
+        _display->init(); // calls back into above init with default settings for display
+    } else {
+        init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
+    }
 }
 
 void HydruinoBaseUI::addRemote(Hydro_RemoteControl rcType, UARTDeviceSetup rcSetup, uint16_t rcServerPort, menuid_t statusMenuId)

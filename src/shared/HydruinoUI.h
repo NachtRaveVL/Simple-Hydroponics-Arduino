@@ -37,10 +37,10 @@ struct HydroUIData;
 // LCD Display Setup
 struct LCDDisplaySetup {
     bool bitInversion;                  // Bit logic inversion (inverts b/w, default: false)
-    pintype_t backlightPin;             // Backlight pin (default: 3, 10 for DFRobot)
-    LiquidCrystal::BackLightPinMode blPinMode; // Backlight pin mode (default: LiquidCrystal::BACKLIGHT_NORMAL)
+    LiquidCrystal::BackLightPinMode backlitMode; // Backlight pin mode (default: LiquidCrystal::BACKLIGHT_NORMAL)
+    bool isDFRobotShield;               // DFRobot shield usage (default: false)
 
-    inline LCDDisplaySetup(bool bitInversionIn = false, pintype_t backlightPinIn = 3, LiquidCrystal::BackLightPinMode blPinModeIn = LiquidCrystal::BACKLIGHT_NORMAL) : bitInversion(bitInversionIn), backlightPin(backlightPinIn), blPinMode(blPinModeIn) { ; }
+    inline LCDDisplaySetup(bool bitInversionIn = false, LiquidCrystal::BackLightPinMode backlitModeIn = LiquidCrystal::BACKLIGHT_NORMAL, bool isDFRobotShieldIn = false) : bitInversion(bitInversionIn), backlitMode(backlitModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
 };
 
 // Standard Pixel Display Setup
@@ -152,7 +152,8 @@ public:
     virtual ~HydruinoBaseUI();
 
     void init(uint8_t updatesPerSec,                                        // Updates per second (1 to 10)
-              Hydro_DisplayTheme displayTheme);                             // Display theme to apply
+              Hydro_DisplayTheme displayTheme,                              // Display theme to apply
+              bool analogSlider = false);                                   // Slider usage for analog items
     void init();                                                            // Standard initializer
 
     void addRemote(Hydro_RemoteControl rcType,                              // Type of remote control
@@ -170,15 +171,14 @@ public:
 protected:
     const bool _isActiveLow;                                // IO pins use active-low signaling logic
     const bool _allowISR;                                   // Perform ISR checks to determine ISR eligibility
-    const bool _enableUTF8;                                 // Using tcUnicode library fonts
+    const bool _utf8Fonts;                                  // Using tcUnicode library fonts
+    const bool _gfxOrTFT;                                   // Display is Adafruit_GFX or TFT_eSPI
 
     MenuItem *_menuRoot;                                    // Menu root item (strong)
     HydroInputDriver *_input;                               // Input driver (owned)
     HydroDisplayDriver *_display;                           // Display driver (owned)
     TcMenuRemoteServer *_remoteServer;                      // Remote control server (owned)
     Vector<HydroRemoteControl *, HYDRO_UI_REMOTECONTROLS_MAXSIZE> _remotes; // Remote controls list (owned)
-
-    void commonInit();
 };
 
 

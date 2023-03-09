@@ -21,8 +21,8 @@ public:
     HydroDisplayDriver(Hydro_DisplayOrientation displayOrientation = Hydro_DisplayOrientation_Undefined);
     virtual ~HydroDisplayDriver() = default;
 
-    void init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme);
- 
+    void commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider = false, bool utf8Fonts = false);
+
     virtual void init() = 0;
     virtual void begin() = 0;
 
@@ -40,7 +40,9 @@ protected:
 
 class HydroDisplayLiquidCrystalIO : public HydroDisplayDriver {
 public:
-    HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup lcdSetup, bool bitInversion = false, pintype_t backlightPin = 3, LiquidCrystal::BackLightPinMode backlightPinMode = LiquidCrystal::BACKLIGHT_NORMAL);
+    HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup lcdSetup, bool bitInversion = false, LiquidCrystal::BackLightPinMode backlightPinMode = LiquidCrystal::BACKLIGHT_NORMAL);
+    // DFRobot 16x2 LCD
+    HydroDisplayLiquidCrystalIO(bool isDFRobot_unused, I2CDeviceSetup lcdSetup, bool bitInversion = false, LiquidCrystal::BackLightPinMode backlightPinMode = LiquidCrystal::BACKLIGHT_NORMAL);
     virtual ~HydroDisplayLiquidCrystalIO() = default;
 
     virtual void init() override;
@@ -61,7 +63,7 @@ protected:
 class HydroDisplayU8g2lib : public HydroDisplayDriver {
 public:
     HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, DeviceSetup lcdSetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    virtual ~HydroDisplayU8g2lib(); // cannot use default because of custom alloc
+    virtual ~HydroDisplayU8g2lib();
 
     virtual void init() override;
     virtual void begin() override;
