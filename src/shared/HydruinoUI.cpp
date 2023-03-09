@@ -128,16 +128,6 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
                 #endif
-                #ifdef TFT_DC
-                    HYDRO_SOFT_ASSERT(_dcPin == TFT_DC, SFP(HStr_Err_NotConfiguredProperly));
-                #else
-                    HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
-                #endif
-                #ifdef TFT_RST
-                    HYDRO_SOFT_ASSERT(_resetPin == TFT_RST, SFP(HStr_Err_NotConfiguredProperly));
-                #else
-                    HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
-                #endif
                 _display = new HydroDisplayTFTeSPI(lcdSetup.cfgAs.spi, uiDisplaySetup.dispCfgAs.tft.dispOrient, uiDisplaySetup.dispCfgAs.tft.screenWidth, uiDisplaySetup.dispCfgAs.tft.screenHeight);
                 break;
 
@@ -154,6 +144,11 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
 
                 case Hydro_ControlInputMode_TFTTouch:
                     HYDRO_SOFT_ASSERT(dispOutMode == Hydro_DisplayOutputMode_TFT, SFP(HStr_Err_InvalidParameter));
+                    #ifdef TOUCH_CS
+                        HYDRO_SOFT_ASSERT(ctrlInPins.second[0] == TOUCH_CS, SFP(HStr_Err_NotConfiguredProperly));
+                    #else
+                        HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
+                    #endif
                     _input = new HydroInputTFTTouch(ctrlInPins, (HydroDisplayTFTeSPI *)_display, HYDRO_UI_TFTTOUCH_USES_RAW);
                     break;
 
