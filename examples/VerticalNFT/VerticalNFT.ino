@@ -755,11 +755,63 @@ void setup() {
         HYDRO_SOFT_ASSERT(ui, SFP(HStr_Err_AllocationFailure));
 
         if (ui) {
-            #if NOT_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Disabled)
-                ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE1_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE1_UART), SETUP_UI_RC_NETWORKING_PORT);
-            #endif
-            #if NOT_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Disabled)
-                ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE2_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE2_UART), SETUP_UI_RC_NETWORKING_PORT);
+            #if IS_SETUP_AS(SETUP_SYS_UI_MODE, Minimal)
+                #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOk_LR) ||\
+                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownOkButtons) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownOkButtons_LR) ||\
+                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, AnalogJoystickOk) ||\
+                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix3x4Keyboard_OptRotEncOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix3x4Keyboard_OptRotEncOkLR) ||\
+                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOkLR)
+                    ui->allocateStandardControls();
+                #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TouchScreen)
+                    ui->allocateTouchscreenControl();
+                #endif
+                #if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_Swapped) ||\
+                    IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_Swapped) ||\
+                    SETUP_UI_IS_DFROBOTSHIELD
+                    ui->allocateLCDDisplay();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1306) ||\
+                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305_x32Ada) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305_x64Ada) ||\
+                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SH1106) ||\
+                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_GD) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_WS) ||\
+                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820_V2)
+                    ui->allocateU8G2Display();      
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789) ||\
+                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, PCD8544)
+                    ui->allocateAdaGFXDisplay();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, TFT)
+                    ui->allocateTFTDisplay();
+                #endif
+                #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, ResistiveTouch)
+                    ui->allocateResistiveControls();
+                #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TFTTouch)
+                    ui->allocateTFTTouchControl();
+                #endif
+
+                #if IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Serial)
+                    ui->addSerialRemote(UARTDeviceSetup(&SETUP_UI_REMOTE1_UART));
+                #elif IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Simhub)
+                    ui->addSimhubRemote(UARTDeviceSetup(&SETUP_UI_REMOTE1_UART));
+                #elif IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, WiFi)
+                    ui->addWiFiRemote(SETUP_UI_RC_NETWORKING_PORT);
+                #elif IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Ethernet)
+                    ui->addEthernetRemote(SETUP_UI_RC_NETWORKING_PORT);
+                #endif
+                #if IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Serial)
+                    ui->addSerialRemote(UARTDeviceSetup(&SETUP_UI_REMOTE2_UART));
+                #elif IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Simhub)
+                    ui->addSimhubRemote(UARTDeviceSetup(&SETUP_UI_REMOTE2_UART));
+                #elif IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, WiFi)
+                    ui->addWiFiRemote(SETUP_UI_RC_NETWORKING_PORT);
+                #elif IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Ethernet)
+                    ui->addEthernetRemote(SETUP_UI_RC_NETWORKING_PORT);
+                #endif
+            #else // Full
+                #if NOT_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Disabled)
+                    ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE1_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE1_UART), SETUP_UI_RC_NETWORKING_PORT);
+                #endif
+                #if NOT_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Disabled)
+                    ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE2_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE2_UART), SETUP_UI_RC_NETWORKING_PORT);
+                #endif
             #endif
             hydroController.enableUI(ui);
         }

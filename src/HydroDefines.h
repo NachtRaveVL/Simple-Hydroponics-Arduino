@@ -758,6 +758,37 @@ class HydroRail;
 #define SETUP_ENUM_Ethernet             19
 #define SETUP_ENUM_Hostname             20
 #define SETUP_ENUM_IPAddress            21
+#define SETUP_ENUM_LCD16x2              100
+#define SETUP_ENUM_LCD16x2_Swapped      101
+#define SETUP_ENUM_LCD20x4              102
+#define SETUP_ENUM_LCD20x4_Swapped      103
+#define SETUP_ENUM_SSD1305              104
+#define SETUP_ENUM_SSD1305_x32Ada       105
+#define SETUP_ENUM_SSD1305_x64Ada       106
+#define SETUP_ENUM_SSD1306              107
+#define SETUP_ENUM_SH1106               108
+#define SETUP_ENUM_SSD1607_GD           109
+#define SETUP_ENUM_SSD1607_WS           110
+#define SETUP_ENUM_IL3820               111
+#define SETUP_ENUM_IL3820_V2            112
+#define SETUP_ENUM_ST7735               113
+#define SETUP_ENUM_ST7789               114
+#define SETUP_ENUM_ILI9341              115
+#define SETUP_ENUM_PCD8544              116
+#define SETUP_ENUM_TFT                  117
+#define SETUP_ENUM_RotaryEncoderOk      118
+#define SETUP_ENUM_RotaryEncoderOk_LR   119
+#define SETUP_ENUM_UpDownOkButtons      120
+#define SETUP_ENUM_UpDownOkButtons_LR   121
+#define SETUP_ENUM_AnalogJoystickOk     122
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk 123
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR 124
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk 125
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR 126
+#define SETUP_ENUM_ResistiveTouch       127
+#define SETUP_ENUM_TouchScreen          128
+#define SETUP_ENUM_TFTTouch             129
+#define SETUP_ENUM_RemoteControl        130
 // Checks setup defines for equality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
 #define IS_SETUP_AS(X,Y)                JOIN(SETUP_ENUM,X) == SETUP_ENUM_##Y
 // Checks setup defines for inequality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)

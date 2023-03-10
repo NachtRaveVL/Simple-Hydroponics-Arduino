@@ -533,6 +533,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_DHTType[] PROGMEM = {"dhtType"};
             return flashStr_Key_DHTType;
         } break;
+        case HStr_Key_DisplayTheme: {
+            static const char flashStr_Key_DisplayTheme[] PROGMEM = {"displayTheme"};
+            return flashStr_Key_DisplayTheme;
+        } break;
         case HStr_Key_DispOutMode: {
             static const char flashStr_Key_DispOutMode[] PROGMEM = {"dispOutMode"};
             return flashStr_Key_DispOutMode;
@@ -592,6 +596,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_Invasive: {
             static const char flashStr_Key_Invasive[] PROGMEM = {"invasive"};
             return flashStr_Key_Invasive;
+        } break;
+        case HStr_Key_JoystickCalib: {
+            static const char flashStr_Key_JoystickCalib[] PROGMEM = {"joystickCalib"};
+            return flashStr_Key_JoystickCalib;
         } break;
         case HStr_Key_Large: {
             static const char flashStr_Key_Large[] PROGMEM = {"large"};
@@ -884,6 +892,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_Units: {
             static const char flashStr_Key_Units[] PROGMEM = {"units"};
             return flashStr_Key_Units;
+        } break;
+        case HStr_Key_UpdatesPerSec: {
+            static const char flashStr_Key_UpdatesPerSec[] PROGMEM = {"updatesPerSec"};
+            return flashStr_Key_UpdatesPerSec;
         } break;
         case HStr_Key_UsingISR: {
             static const char flashStr_Key_UsingISR[] PROGMEM = {"usingISR"};

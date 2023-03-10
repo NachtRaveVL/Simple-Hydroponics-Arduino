@@ -22,6 +22,10 @@ public:
                    bool enableTcUnicodeFonts = true);                       // Enables tcUnicode UTF8 fonts usage instead of library fonts
     virtual ~HydruinoFullUI();
 
+    void addRemote(Hydro_RemoteControl rcType,                              // Type of remote control
+                   UARTDeviceSetup rcSetup = UARTDeviceSetup(),             // Remote control serial setup (if serial based), else ignored
+                   uint16_t rcServerPort = HYDRO_UI_REMOTESERVER_PORT);     // Remote control server listening port (if networking based), else ignored
+
     virtual bool isFullUI() override;
 
 protected:

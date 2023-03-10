@@ -35,7 +35,7 @@ Hydruino::Hydruino(pintype_t piezoBuzzerPin,
                    DeviceSetup netSetup,
                    DeviceSetup gpsSetup,
                    pintype_t *ctrlInputPins,
-                   DeviceSetup lcdSetup)
+                   DeviceSetup dispSetup)
     : _piezoBuzzerPin(piezoBuzzerPin),
       _eepromType(eepromType), _eepromSetup(eepromSetup), _eeprom(nullptr), _eepromBegan(false),
       _rtcType(rtcType), _rtcSetup(rtcSetup), _rtc(nullptr), _rtcBegan(false), _rtcBattFail(false),
@@ -47,7 +47,7 @@ Hydruino::Hydruino(pintype_t piezoBuzzerPin,
       _gpsSetup(gpsSetup), _gps(nullptr), _gpsBegan(false),
 #endif
 #ifdef HYDRO_USE_GUI
-      _activeUIInstance(nullptr), _ctrlInputPins(ctrlInputPins), _lcdSetup(lcdSetup),
+      _activeUIInstance(nullptr), _ctrlInputPins(ctrlInputPins), _dispSetup(dispSetup),
 #endif
 #ifdef HYDRO_USE_MULTITASKING
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
@@ -669,10 +669,10 @@ void Hydruino::commonPreInit()
         }
     }
     #ifdef HYDRO_USE_GUI
-        if (getDisplayOutputMode() != Hydro_DisplayOutputMode_Disabled && _lcdSetup.cfgType == DeviceSetup::I2CSetup) {
-            if (began.find((uintptr_t)_lcdSetup.cfgAs.i2c.wire) == began.end() || _lcdSetup.cfgAs.i2c.speed < began[(uintptr_t)_lcdSetup.cfgAs.i2c.wire]) {
-                _lcdSetup.cfgAs.i2c.wire->begin();
-                _lcdSetup.cfgAs.i2c.wire->setClock((began[(uintptr_t)_lcdSetup.cfgAs.i2c.wire] = _lcdSetup.cfgAs.i2c.speed));
+        if (getDisplayOutputMode() != Hydro_DisplayOutputMode_Disabled && _dispSetup.cfgType == DeviceSetup::I2CSetup) {
+            if (began.find((uintptr_t)_dispSetup.cfgAs.i2c.wire) == began.end() || _dispSetup.cfgAs.i2c.speed < began[(uintptr_t)_dispSetup.cfgAs.i2c.wire]) {
+                _dispSetup.cfgAs.i2c.wire->begin();
+                _dispSetup.cfgAs.i2c.wire->setClock((began[(uintptr_t)_dispSetup.cfgAs.i2c.wire] = _dispSetup.cfgAs.i2c.speed));
             }
         }
     #endif
@@ -788,7 +788,7 @@ void Hydruino::commonPostInit()
                     Serial.print('}');
                 }
                 else { Serial.print(SFP(HStr_Disabled)); }
-                printDeviceSetup(F("lcd"), _lcdSetup);
+                printDeviceSetup(F("displaySetup"), _dispSetup);
             #endif
             Serial.print(F(", systemMode: "));
             Serial.print(systemModeToString(getSystemMode()));

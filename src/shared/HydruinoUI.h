@@ -48,10 +48,6 @@ public:
               bool analogSlider = false);                                   // Slider usage for analog items
     void init();                                                            // Standard initializer
 
-    void addRemote(Hydro_RemoteControl rcType,                              // Type of remote control
-                   UARTDeviceSetup rcSetup = UARTDeviceSetup(),             // Remote control serial setup (if serial based), else ignored
-                   uint16_t rcServerPort = HYDRO_UI_REMOTESERVER_PORT);     // Remote control server listening port (if networking based), else ignored
-
     virtual bool begin() override;                                          // Begins UI
 
     virtual void setNeedsLayout() override;
@@ -59,7 +55,13 @@ public:
     virtual bool isFullUI() = 0;
     inline bool isMinUI() { return !isFullUI(); }
 
+    inline const UIControlSetup &getControlSetup() const { return _uiCtrlSetup; }
+    inline const UIDisplaySetup &getDisplaySetup() const { return _uiDispSetup; }
+    inline bool isActiveLow() const { return _isActiveLow; }
+
 protected:
+    const UIControlSetup _uiCtrlSetup;                      // Control setup
+    const UIDisplaySetup _uiDispSetup;                      // Display setup
     const bool _isActiveLow;                                // IO pins use active-low signaling logic
     const bool _allowISR;                                   // Perform ISR checks to determine ISR eligibility
     const bool _utf8Fonts;                                  // Using tcUnicode library fonts

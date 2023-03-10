@@ -8,12 +8,12 @@
 #include "HydruinoUI.h"
 
 template <class T>
-HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup lcdSetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup dispSetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayOrientation),
     #ifndef ESP8266
-          _gfx(lcdSetup.spi, dcPin, lcdSetup.cs, resetPin),
+          _gfx(dispSetup.spi, dcPin, dispSetup.cs, resetPin),
       #else
-          _gfx(lcdSetup.cs, dcPin, resetPin),
+          _gfx(dispSetup.cs, dcPin, resetPin),
       #endif
       _gfxDrawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, applicationInfo.name, &_gfxDrawable)
