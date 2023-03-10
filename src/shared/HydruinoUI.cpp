@@ -8,7 +8,7 @@
 
 const ConnectorLocalInfo applicationInfo = { "Simple-Hydroponics-Arduino", "dfa1e3a9-a13a-4af3-9133-956a6221615b" };
 
-HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiControlSetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
+HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiDisplaySetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
     : _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _utf8Fonts(enableTcUnicodeFonts),
       _gfxOrTFT(getController() && getController()->getDisplayOutputMode() >= Hydro_DisplayOutputMode_ST7735 && getController()->getDisplayOutputMode() <= Hydro_DisplayOutputMode_TFT),
       _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr)

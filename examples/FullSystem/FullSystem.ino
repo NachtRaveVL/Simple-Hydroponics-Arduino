@@ -102,7 +102,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // UI Settings
 #define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic active level (ACT_LOW, ACT_HIGH)
 #define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interrupt driven I/O if able, else force polling
-#define SEUTP_UI_USE_UNICODE_FONTS      true            // Use tcUnicode fonts instead of default, if using graphical display
+#define SETUP_UI_USE_UNICODE_FONTS      true            // Use tcUnicode fonts instead of default, if using graphical display
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
@@ -165,7 +165,7 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
 #else
                          DeviceSetup(),
 #endif
-#if defined(HYDRO_USE_GPS) && IS_SETUP_AS(SETUP_GPS_TYPE, UART)
+#if defined(HYDRO_USE_GPS) && (IS_SETUP_AS(SETUP_GPS_TYPE, UART) || IS_SETUP_AS(SETUP_GPS_TYPE, Serial))
                          UARTDeviceSetup(&SETUP_GPS_SERIAL, HYDRO_SYS_NMEAGPS_SERIALBAUD),
 #elif defined(HYDRO_USE_GPS) && IS_SETUP_AS(SETUP_GPS_TYPE, I2C)
                          I2CDeviceSetup(SETUP_GPS_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
@@ -318,7 +318,74 @@ void setup() {
     setupAlways();
 
     #if defined(HYDRO_USE_GUI) && NOT_SETUP_AS(SETUP_DISPLAY_OUT_MODE, Disabled)
-        hydroController.enableUI(new HydruinoFullUI());
+        UIControlSetup uiCtrlSetup;
+        UIDisplaySetup uiDispSetup;
+        #if SETUP_UI_IS_DFROBOTSHIELD
+            uiCtrlSetup = UIControlSetup::usingDFRobotShield();
+            uiDispSetup = UIDisplaySetup::usingDFRobotShield();
+        #else
+            switch (hydroController.getControlInputMode()) {
+                case Hydro_ControlInputMode_RotaryEncoderOk:
+                case Hydro_ControlInputMode_RotaryEncoderOk_LR:
+                    uiCtrlSetup = UIControlSetup(RotaryControlSetup(SETUP_UI_ENC_ROTARY_SPEED));
+                    break;
+                case Hydro_ControlInputMode_UpDownOkButtons:
+                case Hydro_ControlInputMode_UpDownOkButtons_LR:
+                    uiCtrlSetup = UIControlSetup(ButtonsControlSetup(SETUP_UI_KEY_REPEAT_SPEED));
+                    break;
+                case Hydro_ControlInputMode_AnalogJoystickOk:
+                    uiCtrlSetup = UIControlSetup(JoystickControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_JS_ACCELERATION));
+                    break;
+                case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:
+                case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
+                case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk:
+                case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR:
+                    uiCtrlSetup = UIControlSetup(MatrixControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_KEY_REPEAT_INTERVAL, SETUP_UI_ENC_ROTARY_SPEED));
+                    break;
+                default: break;
+            }
+            switch (hydroController.getDisplayOutputMode()) {
+                case Hydro_DisplayOutputMode_LCD16x2:
+                case Hydro_DisplayOutputMode_LCD16x2_Swapped:
+                case Hydro_DisplayOutputMode_LCD20x4:
+                case Hydro_DisplayOutputMode_LCD20x4_Swapped:
+                    uiDispSetup = UIDisplaySetup(LCDDisplaySetup(SETUP_UI_LCD_BIT_INVERSION, SETUP_UI_LCD_BACKLIGHT_MODE));
+                    break;
+                case Hydro_DisplayOutputMode_SSD1305:
+                case Hydro_DisplayOutputMode_SSD1305_x32Ada:
+                case Hydro_DisplayOutputMode_SSD1305_x64Ada:
+                case Hydro_DisplayOutputMode_SSD1306:
+                case Hydro_DisplayOutputMode_SH1106:
+                case Hydro_DisplayOutputMode_SSD1607_GD:
+                case Hydro_DisplayOutputMode_SSD1607_WS:
+                case Hydro_DisplayOutputMode_IL3820:
+                case Hydro_DisplayOutputMode_IL3820_V2:
+                case Hydro_DisplayOutputMode_ST7789:
+                case Hydro_DisplayOutputMode_ILI9341:
+                case Hydro_DisplayOutputMode_PCD8544:
+                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_DISP_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
+                    break;
+                case Hydro_DisplayOutputMode_ST7735:
+                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_DISP_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
+                    break;
+                case Hydro_DisplayOutputMode_TFT:
+                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_DISP_ORIENTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT));
+                    break;
+                default: break;
+            }
+        #endif
+        HydruinoUI *ui = new HydruinoUI(uiCtrlSetup, uiDispSetup, SETUP_UI_LOGIC_LEVEL, SETUP_UI_ALLOW_INTERRUPTS, SETUP_UI_USE_UNICODE_FONTS);
+        HYDRO_SOFT_ASSERT(ui, SFP(HStr_Err_AllocationFailure));
+
+        if (ui) {
+            #if NOT_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Disabled)
+                ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE1_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE1_UART), SETUP_UI_RC_NETWORKING_PORT);
+            #endif
+            #if NOT_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Disabled)
+                ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE2_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE2_UART), SETUP_UI_RC_NETWORKING_PORT);
+            #endif
+            hydroController.enableUI(ui);
+        }
     #endif
 
     // Launches controller into main operation.

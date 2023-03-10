@@ -6,6 +6,13 @@
 #include "Hydruino.h"
 #include "HydruinoUI.h"
 
+HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiDisplaySetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
+    : HydruinoBaseUI(uiControlSetup, uiDisplaySetup, isActiveLowIO, allowInterruptableIO, enableTcUnicodeFonts)
+{ ; }
+
+HydruinoFullUI::~HydruinoFullUI()
+{ ; }
+
 bool HydruinoFullUI::isFullUI()
 {
     return true;

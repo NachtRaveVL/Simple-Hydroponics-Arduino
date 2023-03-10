@@ -36,8 +36,8 @@
 // The base class that manages interaction with the tcMenu UI system.
 class HydruinoBaseUI : public HydroUIInterface {
 public:
-    HydruinoBaseUI(UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),        // UI display output setup 
-                   UIControlSetup uiControlSetup = UIControlSetup(),        // UI control input setup
+    HydruinoBaseUI(UIControlSetup uiControlSetup = UIControlSetup(),        // UI control input setup
+                   UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),        // UI display output setup 
                    bool isActiveLowIO = true,                               // Logic level usage for control & display IO pins
                    bool allowInterruptableIO = true,                        // Allows interruptable pins to interrupt, else forces polling
                    bool enableTcUnicodeFonts = true);                       // Enables tcUnicode UTF8 fonts usage instead of library fonts
