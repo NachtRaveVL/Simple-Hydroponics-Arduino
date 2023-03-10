@@ -317,7 +317,7 @@ void setup() {
 
     setupAlways();
 
-    #if defined(HYDRO_USE_GUI) && NOT_SETUP_AS(SETUP_DISPLAY_OUT_MODE, Disabled)
+    #if defined(HYDRO_USE_GUI) && (NOT_SETUP_AS(SETUP_CONTROL_IN_MODE, Disabled) || NOT_SETUP_AS(SETUP_DISPLAY_OUT_MODE, Disabled))
         UIControlSetup uiCtrlSetup;
         UIDisplaySetup uiDispSetup;
         #if SETUP_UI_IS_DFROBOTSHIELD
