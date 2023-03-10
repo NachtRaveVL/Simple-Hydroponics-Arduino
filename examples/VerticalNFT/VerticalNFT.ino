@@ -101,7 +101,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // UI Display Output Settings
 #define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion, if using LCD
-#define SETUP_UI_LCD_BACKLIGHT_MODE     LiquidCrystal::BACKLIGHT_NORMAL // LCD display backlight mode (BACKLIGHT_NORMAL, BACKLIGHT_INVERTED, BACKLIGHT_PWM), if using LCD
+#define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
 #define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
 #define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
 #define SETUP_UI_GFX_RESET_PIN          -1              // Optional reset pin, if using graphical display, else -1
@@ -110,7 +110,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_TFT_SCREEN_HEIGHT      240             // Custom screen height, if using TFT_eSPI
 
 // UI Control Input Settings
-#define SETUP_UI_ENC_ROTARY_SPEED       HALF_CYCLE      // Rotary encoder cycling speed (FULL_CYCLE, HALF_CYCLE, QUARTER_CYCLE)
+#define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
 #define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
 #define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
@@ -704,7 +704,7 @@ void setup() {
             switch (hydroController.getControlInputMode()) {
                 case Hydro_ControlInputMode_RotaryEncoderOk:
                 case Hydro_ControlInputMode_RotaryEncoderOk_LR:
-                    uiCtrlSetup = UIControlSetup(RotaryControlSetup(SETUP_UI_ENC_ROTARY_SPEED));
+                    uiCtrlSetup = UIControlSetup(RotaryControlSetup(JOIN(Hydro_EncoderSpeed,SETUP_UI_ENC_ROTARY_SPEED)));
                     break;
                 case Hydro_ControlInputMode_UpDownOkButtons:
                 case Hydro_ControlInputMode_UpDownOkButtons_LR:
@@ -717,7 +717,7 @@ void setup() {
                 case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
                 case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk:
                 case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR:
-                    uiCtrlSetup = UIControlSetup(MatrixControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_KEY_REPEAT_INTERVAL, SETUP_UI_ENC_ROTARY_SPEED));
+                    uiCtrlSetup = UIControlSetup(MatrixControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_KEY_REPEAT_INTERVAL, JOIN(Hydro_EncoderSpeed,SETUP_UI_ENC_ROTARY_SPEED)));
                     break;
                 default: break;
             }
@@ -726,7 +726,7 @@ void setup() {
                 case Hydro_DisplayOutputMode_LCD16x2_Swapped:
                 case Hydro_DisplayOutputMode_LCD20x4:
                 case Hydro_DisplayOutputMode_LCD20x4_Swapped:
-                    uiDispSetup = UIDisplaySetup(LCDDisplaySetup(SETUP_UI_LCD_BIT_INVERSION, SETUP_UI_LCD_BACKLIGHT_MODE));
+                    uiDispSetup = UIDisplaySetup(LCDDisplaySetup(SETUP_UI_LCD_BIT_INVERSION, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_SSD1305:
                 case Hydro_DisplayOutputMode_SSD1305_x32Ada:

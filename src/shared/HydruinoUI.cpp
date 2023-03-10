@@ -91,9 +91,9 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
             case Hydro_DisplayOutputMode_LCD20x4_Swapped:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::LCD, SFP(HStr_Err_InvalidParameter));
                 if (!uiDisplaySetup.dispCfgAs.lcd.isDFRobotShield) {
-                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlitMode);
+                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlightMode);
                 } else {
-                    _display = new HydroDisplayLiquidCrystalIO(true, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlitMode);
+                    _display = new HydroDisplayLiquidCrystalIO(true, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlightMode);
                 }
                 break;
 

@@ -40,17 +40,17 @@ protected:
 
 class HydroInputRotary : public HydroInputDriver {
 public:
-    HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins, EncoderType encoderSpeed);
+    HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins, Hydro_EncoderSpeed encoderSpeed);
     virtual ~HydroInputRotary() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
-    inline EncoderType getEncoderSpeed() const { return _encoderSpeed; }
+    inline Hydro_EncoderSpeed getEncoderSpeed() const { return _encoderSpeed; }
 
 protected:
-    const EncoderType _encoderSpeed;
+    const Hydro_EncoderSpeed _encoderSpeed;
 };
 
 class HydroInputUpDownButtons : public HydroInputDriver {
@@ -94,7 +94,7 @@ protected:
 
 class HydroInputMatrix3x4 : public HydroInputDriver {
 public:
-    HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed);
+    HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed);
     virtual ~HydroInputMatrix3x4();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
@@ -113,7 +113,7 @@ protected:
 
 class HydroInputMatrix4x4 : public HydroInputDriver {
 public:
-    HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed = HALF_CYCLE);
+    HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed = Hydro_EncoderSpeed_HalfCycle);
     virtual ~HydroInputMatrix4x4();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;

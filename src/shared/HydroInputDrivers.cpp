@@ -14,13 +14,13 @@ HydroInputDriver::HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins)
 { ; }
 
 
-HydroInputRotary::HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins, EncoderType encoderSpeed)
+HydroInputRotary::HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins), _encoderSpeed(encoderSpeed)
 { ; }
 
 void HydroInputRotary::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
-    menuMgr.initForEncoder(renderer, initialItem, _pins.second[0], _pins.second[1], _pins.second[2], _encoderSpeed);
+    menuMgr.initForEncoder(renderer, initialItem, _pins.second[0], _pins.second[1], _pins.second[2], _encoderSpeed == Hydro_EncoderSpeed_FullCycle ? FULL_CYCLE : _encoderSpeed == Hydro_EncoderSpeed_HalfCycle ? HALF_CYCLE : QUARTER_CYCLE);
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);    
 }
@@ -126,7 +126,7 @@ static char getNx4MatrixActions(int charIndex)
     return actNx4[charIndex];
 }
 
-HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
+HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
       _keyboardLayout(4,3,getMatrix3x4KBKeys().c_str()),
@@ -166,7 +166,7 @@ static String getMatrix4x4KBKeys()
     return kb4x4;
 }
 
-HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
+HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
       _keyboardLayout(4,4,getMatrix4x4KBKeys().c_str()),

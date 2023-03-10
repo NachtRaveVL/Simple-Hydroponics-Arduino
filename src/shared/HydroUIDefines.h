@@ -87,6 +87,26 @@ enum Hydro_RemoteControl : signed char {
     Hydro_RemoteControl_Undefined = -1                      // Placeholder
 };
 
+// Rotary Encoder Speed
+enum Hydro_EncoderSpeed : signed char {
+    Hydro_EncoderSpeed_FullCycle,                           // Detent after every full cycle of both signals, A and B
+    Hydro_EncoderSpeed_HalfCycle,                           // Detent on every position where A == B
+    Hydro_EncoderSpeed_QuarterCycle,                        // Detent after every signal change, A or B
+
+    Hydro_EncoderSpeed_Count,                               // Placeholder
+    Hydro_EncoderSpeed_Undefined = -1                       // Placeholder
+};
+
+// LCD Backlight Mode
+enum Hydro_BacklightMode : signed char {
+    Hydro_BacklightMode_Normal,                             // The backlight is active HIGH
+    Hydro_BacklightMode_Inverted,                           // The backlight is active LOW
+    Hydro_BacklightMode_PWM,                                // The backlight is connected directly to a PWM pin
+
+    Hydro_BacklightMode_Count,                              // Placeholder
+    Hydro_BacklightMode_Undefined = -1                      // Placeholder
+};
+
 
 class HydruinoBaseUI;
 class HydroDisplayDriver;

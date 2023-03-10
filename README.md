@@ -440,7 +440,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 
 // UI Display Output Settings
 #define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion, if using LCD
-#define SETUP_UI_LCD_BACKLIGHT_MODE     LiquidCrystal::BACKLIGHT_NORMAL // LCD display backlight mode (BACKLIGHT_NORMAL, BACKLIGHT_INVERTED, BACKLIGHT_PWM), if using LCD
+#define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
 #define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
 #define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
 #define SETUP_UI_GFX_RESET_PIN          -1              // Optional reset pin, if using graphical display, else -1
@@ -449,7 +449,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_UI_TFT_SCREEN_HEIGHT      240             // Custom screen height, if using TFT_eSPI
 
 // UI Control Input Settings
-#define SETUP_UI_ENC_ROTARY_SPEED       HALF_CYCLE      // Rotary encoder cycling speed (FULL_CYCLE, HALF_CYCLE, QUARTER_CYCLE)
+#define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
 #define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
 #define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds

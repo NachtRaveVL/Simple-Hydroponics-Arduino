@@ -21,7 +21,6 @@ struct MatrixControlSetup;
 struct UIControlSetup;
 
 #include "HydruinoUI.h"
-#include <LiquidCrystalIO.h>
 
 // Returns the first theme in parameter list that isn't undefined, allowing defaulting chains to be nicely defined.
 inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_DisplayTheme theme2) {
@@ -32,12 +31,12 @@ inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_Disp
 // LCD Display Setup
 struct LCDDisplaySetup {
     bool bitInversion;                  // Bit logic inversion (inverts b/w, default: false)
-    LiquidCrystal::BackLightPinMode backlitMode; // Backlight pin mode (default: LiquidCrystal::BACKLIGHT_NORMAL)
+    Hydro_BacklightMode backlightMode;  // Backlight pin mode (default: Hydro_BacklightMode_Normal)
     bool isDFRobotShield;               // Using DF robot shield
 
-    inline LCDDisplaySetup(bool bitInversionIn = false, LiquidCrystal::BackLightPinMode backlitModeIn = LiquidCrystal::BACKLIGHT_NORMAL, bool isDFRobotShieldIn = false) : bitInversion(bitInversionIn), backlitMode(backlitModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
+    inline LCDDisplaySetup(bool bitInversionIn = false, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : bitInversion(bitInversionIn), backlightMode(backlightModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
 
-    static inline LCDDisplaySetup usingDFRobotShield() { return LCDDisplaySetup(false, LiquidCrystal::BACKLIGHT_NORMAL, true); }
+    static inline LCDDisplaySetup usingDFRobotShield() { return LCDDisplaySetup(false, Hydro_BacklightMode_Normal, true); }
 };
 
 // Standard Pixel Display Setup
@@ -93,9 +92,9 @@ struct UIDisplaySetup {
 
 // Rotary Encoder Input Setup
 struct RotaryControlSetup {
-    EncoderType encoderSpeed;           // Encoder cycling speed
+    Hydro_EncoderSpeed encoderSpeed;    // Encoder cycling speed
 
-    inline RotaryControlSetup(EncoderType encoderSpeedIn = HALF_CYCLE) : encoderSpeed(encoderSpeedIn) { ; }
+    inline RotaryControlSetup(Hydro_EncoderSpeed encoderSpeedIn = Hydro_EncoderSpeed_HalfCycle) : encoderSpeed(encoderSpeedIn) { ; }
 };
 
 // Up/Down Buttons Input Setup
@@ -120,9 +119,9 @@ struct JoystickControlSetup {
 struct MatrixControlSetup {
     millis_t repeatDelay;               // Repeat delay, in milliseconds
     millis_t repeatInterval;            // Repeat interval, in milliseconds
-    EncoderType encoderSpeed;           // Encoder cycling speed (optional)
+    Hydro_EncoderSpeed encoderSpeed;    // Encoder cycling speed (optional)
 
-    inline MatrixControlSetup(millis_t repeatDelayIn = 850, millis_t repeatIntervalIn = 350, EncoderType encoderSpeedIn = HALF_CYCLE) : repeatDelay(repeatDelayIn), repeatInterval(repeatIntervalIn), encoderSpeed(encoderSpeedIn) { ; }
+    inline MatrixControlSetup(millis_t repeatDelayIn = 850, millis_t repeatIntervalIn = 350, Hydro_EncoderSpeed encoderSpeedIn = Hydro_EncoderSpeed_HalfCycle) : repeatDelay(repeatDelayIn), repeatInterval(repeatIntervalIn), encoderSpeed(encoderSpeedIn) { ; }
 };
 
 // Combined UI Control Setup
