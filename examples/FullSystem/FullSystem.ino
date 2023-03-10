@@ -259,64 +259,8 @@ inline void setupAlways()
     #endif
 }
 
-void setup() {
-    // Setup base interfaces
-    #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
-        Serial.begin(115200);           // Begin USB Serial interface
-        while (!Serial) { ; }           // Wait for USB Serial to connect
-    #endif
-    #if defined(ESP_PLATFORM)
-        SETUP_I2C_WIRE.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
-    #endif
-
-    // Begin external data storage devices for crop, strings, and other data.
-    #if SETUP_EXTDATA_EEPROM_ENABLE
-        beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
-        hydroCropsLib.beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
-    #endif
-    #if SETUP_EXTDATA_SD_ENABLE
-        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
-        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
-    #endif
-
-    // Sets system config name used in any of the following inits.
-    #if (defined(HYDRO_USE_WIFI_STORAGE) && NOT_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Disabled)) || \
-        (SETUP_SD_CARD_SPI_CS >= 0 && NOT_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Disabled))
-        hydroController.setSystemConfigFilename(F(SETUP_SAVES_CONFIG_FILE));
-    #endif
-    // Sets the EEPROM memory address for system data.
-    #if NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && NOT_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Disabled)
-        hydroController.setSystemDataAddress(SETUP_EEPROM_SYSDATA_ADDR);
-    #endif
-
-    // Initializes controller with first initialization method that successfully returns.
-    if (!(false
-        #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Primary)
-            || hydroController.initFromWiFiStorage()
-        #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Primary)
-            || hydroController.initFromSDCard()
-        #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Primary)
-            || hydroController.initFromEEPROM()
-        #endif
-        #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Fallback)
-            || hydroController.initFromWiFiStorage()
-        #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Fallback)
-            || hydroController.initFromSDCard()
-        #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Fallback)
-            || hydroController.initFromEEPROM()
-        #endif
-        )) {
-        // First time running controller, set up default initial empty environment.
-        hydroController.init(JOIN(Hydro_SystemMode,SETUP_SYSTEM_MODE),
-                             JOIN(Hydro_MeasurementMode,SETUP_MEASURE_MODE),
-                             JOIN(Hydro_DisplayOutputMode,SETUP_DISPLAY_OUT_MODE),
-                             JOIN(Hydro_ControlInputMode,SETUP_CONTROL_IN_MODE));
-
-        setupOnce();
-    }
-
-    setupAlways();
-
+inline void setupUI()
+{
     #if defined(HYDRO_USE_GUI) && (NOT_SETUP_AS(SETUP_CONTROL_IN_MODE, Disabled) || NOT_SETUP_AS(SETUP_DISPLAY_OUT_MODE, Disabled))
         UIControlSetup uiCtrlSetup;
         UIDisplaySetup uiDispSetup;
@@ -387,6 +331,67 @@ void setup() {
             hydroController.enableUI(ui);
         }
     #endif
+}
+
+void setup() {
+    // Setup base interfaces
+    #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+        Serial.begin(115200);           // Begin USB Serial interface
+        while (!Serial) { ; }           // Wait for USB Serial to connect
+    #endif
+    #if defined(ESP_PLATFORM)
+        SETUP_I2C_WIRE.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
+    #endif
+
+    // Begin external data storage devices for crop, strings, and other data.
+    #if SETUP_EXTDATA_EEPROM_ENABLE
+        beginStringsFromEEPROM(SETUP_EEPROM_STRINGS_ADDR);
+        hydroCropsLib.beginCropsLibraryFromEEPROM(SETUP_EEPROM_CROPSLIB_ADDR);
+    #endif
+    #if SETUP_EXTDATA_SD_ENABLE
+        beginStringsFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
+        hydroCropsLib.beginCropsLibraryFromSDCard(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)));
+    #endif
+
+    // Sets system config name used in any of the following inits.
+    #if (defined(HYDRO_USE_WIFI_STORAGE) && NOT_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Disabled)) || \
+        (SETUP_SD_CARD_SPI_CS >= 0 && NOT_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Disabled))
+        hydroController.setSystemConfigFilename(F(SETUP_SAVES_CONFIG_FILE));
+    #endif
+    // Sets the EEPROM memory address for system data.
+    #if NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && NOT_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Disabled)
+        hydroController.setSystemDataAddress(SETUP_EEPROM_SYSDATA_ADDR);
+    #endif
+
+    // Initializes controller with first initialization method that successfully returns.
+    if (!(false
+        #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Primary)
+            || hydroController.initFromWiFiStorage()
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Primary)
+            || hydroController.initFromSDCard()
+        #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Primary)
+            || hydroController.initFromEEPROM()
+        #endif
+        #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Fallback)
+            || hydroController.initFromWiFiStorage()
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Fallback)
+            || hydroController.initFromSDCard()
+        #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Fallback)
+            || hydroController.initFromEEPROM()
+        #endif
+        )) {
+        // First time running controller, set up default initial empty environment.
+        hydroController.init(JOIN(Hydro_SystemMode,SETUP_SYSTEM_MODE),
+                             JOIN(Hydro_MeasurementMode,SETUP_MEASURE_MODE),
+                             JOIN(Hydro_DisplayOutputMode,SETUP_DISPLAY_OUT_MODE),
+                             JOIN(Hydro_ControlInputMode,SETUP_CONTROL_IN_MODE));
+
+        setupOnce();
+    }
+
+    setupAlways();
+
+    setupUI();
 
     // Launches controller into main operation.
     hydroController.launch();

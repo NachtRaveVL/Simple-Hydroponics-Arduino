@@ -86,7 +86,7 @@ From Hydruino.h:
 //#define HYDRO_ENABLE_XPT2046TS                  // https://github.com/PaulStoffregen/XPT2046_Touchscreen
 
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, instead relying solely on external storage.
+//#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, see DataWriter example for exporting details
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRO_ENABLE_DEBUG_OUTPUT
