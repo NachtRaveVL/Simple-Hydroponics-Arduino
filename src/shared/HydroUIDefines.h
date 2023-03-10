@@ -27,11 +27,13 @@ extern const ConnectorLocalInfo applicationInfo;
 #define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // Default 3x4 matrix keyboard keys
 #define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // Default 4x4 matrix keyboard keys
 #define HYDRO_UI_NX4MATRIX_ACTIONS      "*#AB"              // Default next char, back char, enter char, and delete char on keyboard
-#define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            // Default graphical display theme base (CoolBlue, DarkMode)
-#define HYDRO_UI_GFX_DISP_THEME_SMLMED  SM                  // Small/medium display theme suffix
-#define HYDRO_UI_GFX_DISP_THEME_MEDLRG  ML                  // Medium/large display theme suffix
 #define HYDRO_UI_GFXTFT_USES_AN_SLIDER  true                // Default analog slider usage for AdafruitGFX/TFTe_SPI displays
 #define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Default raw touch usage for TFTTouch
+
+// Default graphical display theme base (CoolBlue, DarkMode)
+#define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            
+#define HYDRO_UI_GFX_DISP_THEME_SMLMED  SM
+#define HYDRO_UI_GFX_DISP_THEME_MEDLRG  ML
 
 
 // ST77XX Device Tab
@@ -39,10 +41,7 @@ enum Hydro_ST7735Tab : signed char {
     Hydro_ST7735Tab_Green               = 0x00,             // Green tag
     Hydro_ST7735Tab_Red                 = 0x01,             // Red tag
     Hydro_ST7735Tab_Black               = 0x02,             // Black tag
-    Hydro_ST7735Tab_18Green             = 0x00,             // 18Green tag
-    Hydro_ST7735Tab_18Red               = 0x01,             // 18Red tag
-    Hydro_ST7735Tab_18Black             = 0x02,             // 18Black tag
-    Hydro_ST7735Tab_144Green            = 0x01,             // 144Green tag
+    Hydro_ST7735Tab_Green144            = 0x01,             // Green144 tag
     Hydro_ST7735Tab_Mini160x80          = 0x04,             // Mini160x80 tag
     Hydro_ST7735Tab_Hallowing           = 0x05,             // Hallowing tag
     Hydro_ST7735Tab_Mini160x80_Plugin   = 0x06,             // Mini160x80_Plugin tag
@@ -79,10 +78,10 @@ enum Hydro_DisplayTheme : signed char {
 // Remote Control
 enum Hydro_RemoteControl : signed char {
     Hydro_RemoteControl_Disabled,                           // Disabled remote control
-    Hydro_RemoteControl_WiFi,                               // Remote control by WiFi, requires enabled WiFi
-    Hydro_RemoteControl_Ethernet,                           // Remote control by Ethernet, requires enabled Ethernet
     Hydro_RemoteControl_Serial,                             // Remote control by Serial or Bluetooth AT, requires UART setup
     Hydro_RemoteControl_Simhub,                             // Remote control by Simhub serial connector, requires UART setup
+    Hydro_RemoteControl_WiFi,                               // Remote control by WiFi, requires enabled WiFi
+    Hydro_RemoteControl_Ethernet,                           // Remote control by Ethernet, requires enabled Ethernet
 
     Hydro_RemoteControl_Count,                              // Placeholder
     Hydro_RemoteControl_Undefined = -1                      // Placeholder

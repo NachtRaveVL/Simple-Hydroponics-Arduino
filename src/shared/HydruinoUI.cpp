@@ -31,7 +31,11 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
             case Hydro_ControlInputMode_UpDownOkButtons:
             case Hydro_ControlInputMode_UpDownOkButtons_LR:
                 HYDRO_SOFT_ASSERT(uiControlSetup.ctrlCfgType == UIControlSetup::Buttons, SFP(HStr_Err_InvalidParameter));
-                _input = new HydroInputUpDownButtons(ctrlInPins, uiControlSetup.ctrlCfgAs.buttons.repeatSpeed);
+                if (!uiControlSetup.ctrlCfgAs.buttons.isDFRobotShield) {
+                    _input = new HydroInputUpDownButtons(ctrlInPins, uiControlSetup.ctrlCfgAs.buttons.repeatSpeed);
+                } else {
+                    _input = new HydroInputUpDownButtons(true, uiControlSetup.ctrlCfgAs.buttons.repeatSpeed);
+                }
                 break;
 
             case Hydro_ControlInputMode_AnalogJoystickOk:
@@ -110,6 +114,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
             // AdafruitGFX
             case Hydro_DisplayOutputMode_ST7735:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::ST7735, SFP(HStr_Err_InvalidParameter));
+                HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgAs.st7735.tabColor != Hydro_ST7735Tab_Undefined, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ST7735>(lcdSetup.cfgAs.spi, uiDisplaySetup.dispCfgAs.st7735.dispOrient, uiDisplaySetup.dispCfgAs.st7735.tabColor, uiDisplaySetup.dispCfgAs.st7735.dcPin, uiDisplaySetup.dispCfgAs.st7735.resetPin);
                 break;
             case Hydro_DisplayOutputMode_ST7789:
@@ -203,11 +208,22 @@ void HydruinoBaseUI::init()
     }
 }
 
-void HydruinoBaseUI::addRemote(Hydro_RemoteControl rcType, UARTDeviceSetup rcSetup, uint16_t rcServerPort, menuid_t statusMenuId)
+void HydruinoBaseUI::addRemote(Hydro_RemoteControl rcType, UARTDeviceSetup rcSetup, uint16_t rcServerPort)
 {
     HydroRemoteControl *remoteControl = nullptr;
+    menuid_t statusMenuId = -1; // todo
 
     switch (rcType) {
+        case Hydro_RemoteControl_Serial:
+            remoteControl = new HydroRemoteSerialControl(rcSetup);
+            HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
+            break;
+
+        case Hydro_RemoteControl_Simhub:
+            remoteControl = new HydroRemoteSimhubControl(rcSetup, statusMenuId);
+            HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
+            break;
+
         case Hydro_RemoteControl_WiFi:
             #ifdef HYDRO_USE_WIFI
                 remoteControl = new HydroRemoteWiFiControl(rcServerPort);
@@ -220,16 +236,6 @@ void HydruinoBaseUI::addRemote(Hydro_RemoteControl rcType, UARTDeviceSetup rcSet
                 remoteControl = new HydroRemoteEthernetControl(rcServerPort);
                 HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
             #endif
-            break;
-
-        case Hydro_RemoteControl_Serial:
-            remoteControl = new HydroRemoteSerialControl(rcSetup);
-            HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
-            break;
-
-        case Hydro_RemoteControl_Simhub:
-            remoteControl = new HydroRemoteSimhubControl(rcSetup, statusMenuId);
-            HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
             break;
 
         default: break;

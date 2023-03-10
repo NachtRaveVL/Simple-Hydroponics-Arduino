@@ -38,9 +38,11 @@ struct HydroUIData;
 struct LCDDisplaySetup {
     bool bitInversion;                  // Bit logic inversion (inverts b/w, default: false)
     LiquidCrystal::BackLightPinMode backlitMode; // Backlight pin mode (default: LiquidCrystal::BACKLIGHT_NORMAL)
-    bool isDFRobotShield;               // DFRobot shield usage (default: false)
+    bool isDFRobotShield;               // Using DF robot shield
 
     inline LCDDisplaySetup(bool bitInversionIn = false, LiquidCrystal::BackLightPinMode backlitModeIn = LiquidCrystal::BACKLIGHT_NORMAL, bool isDFRobotShieldIn = false) : bitInversion(bitInversionIn), backlitMode(backlitModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
+
+    static inline LCDDisplaySetup usingDFRobotShield() { return LCDDisplaySetup(false, LiquidCrystal::BACKLIGHT_NORMAL, true); }
 };
 
 // Standard Pixel Display Setup
@@ -52,7 +54,7 @@ struct PixelDisplaySetup {
     inline PixelDisplaySetup(Hydro_DisplayOrientation dispOrientIn = Hydro_DisplayOrientation_R0, pintype_t dcPinIn = -1, pintype_t resetPinIn = -1) : dispOrient(dispOrientIn), dcPin(dcPinIn), resetPin(resetPinIn) { ; }
 };
 
-// Special ST7735 Display Setup
+// ST7735 Pixel Display Setup
 struct ST7735DisplaySetup {
     Hydro_DisplayOrientation dispOrient; // Display orientation (default: R0)
     Hydro_ST7735Tab tabColor;           // ST7735 tab color (default: undef/-1)
@@ -88,38 +90,43 @@ struct UIDisplaySetup {
     inline UIDisplaySetup(ST7735DisplaySetup dispSetup) : dispCfgType(ST7735), dispCfgAs{.st7735=dispSetup} { ; }
     inline UIDisplaySetup(TFTDisplaySetup dispSetup) : dispCfgType(TFT), dispCfgAs{.tft=dispSetup} { ; }
 
+    static inline UIDisplaySetup usingDFRobotShield() { return UIDisplaySetup(LCDDisplaySetup::usingDFRobotShield()); }
+
     inline Hydro_DisplayOrientation getDisplayOrientation() const { return dispCfgType == Pixel ? dispCfgAs.gfx.dispOrient : dispCfgType == ST7735 ? dispCfgAs.st7735.dispOrient : dispCfgType == TFT ? dispCfgAs.tft.dispOrient : Hydro_DisplayOrientation_R0; }
 };
 
 // Rotary Encoder Input Setup
-struct RotaryInputSetup {
+struct RotaryControlSetup {
     EncoderType encoderSpeed;           // Encoder cycling speed
 
-    inline RotaryInputSetup(EncoderType encoderSpeedIn = HALF_CYCLE) : encoderSpeed(encoderSpeedIn) { ; }
+    inline RotaryControlSetup(EncoderType encoderSpeedIn = HALF_CYCLE) : encoderSpeed(encoderSpeedIn) { ; }
 };
 
 // Up/Down Buttons Input Setup
-struct ButtonsInputSetup {
+struct ButtonsControlSetup {
     uint8_t repeatSpeed;                // Key repeat speed, in milliseconds
+    bool isDFRobotShield;               // Using DF robot shield
 
-    inline ButtonsInputSetup(uint8_t repeatSpeedIn = HYDRO_UI_KEYREPEAT_SPEED) : repeatSpeed(repeatSpeedIn) { ; }
+    inline ButtonsControlSetup(uint8_t repeatSpeedIn = HYDRO_UI_KEYREPEAT_SPEED, bool isDFRobotShieldIn = false) : repeatSpeed(repeatSpeedIn), isDFRobotShield(isDFRobotShieldIn) { ; }
+
+    static inline ButtonsControlSetup usingDFRobotShield() { return ButtonsControlSetup(HYDRO_UI_KEYREPEAT_SPEED, true); }
 };
 
 // Analog Joystick Input Setup
-struct JoystickInputSetup {
+struct JoystickControlSetup {
     millis_t repeatDelay;               // Repeat delay, in milliseconds (default: 750)
     float decreaseDivisor;              // Repeat decrease divisor
 
-    inline JoystickInputSetup(millis_t repeatDelayIn = 750, float decreaseDivisorIn = 3.0f) : repeatDelay(repeatDelayIn), decreaseDivisor(decreaseDivisorIn) { ; }
+    inline JoystickControlSetup(millis_t repeatDelayIn = 750, float decreaseDivisorIn = 3.0f) : repeatDelay(repeatDelayIn), decreaseDivisor(decreaseDivisorIn) { ; }
 };
 
 // Display Matrix Input Setup
-struct MatrixInputSetup {
+struct MatrixControlSetup {
     millis_t repeatDelay;               // Repeat delay, in milliseconds
     millis_t repeatInterval;            // Repeat interval, in milliseconds
     EncoderType encoderSpeed;           // Encoder cycling speed (optional)
 
-    inline MatrixInputSetup(millis_t repeatDelayIn = 850, millis_t repeatIntervalIn = 350, EncoderType encoderSpeedIn = HALF_CYCLE) : repeatDelay(repeatDelayIn), repeatInterval(repeatIntervalIn), encoderSpeed(encoderSpeedIn) { ; }
+    inline MatrixControlSetup(millis_t repeatDelayIn = 850, millis_t repeatIntervalIn = 350, EncoderType encoderSpeedIn = HALF_CYCLE) : repeatDelay(repeatDelayIn), repeatInterval(repeatIntervalIn), encoderSpeed(encoderSpeedIn) { ; }
 };
 
 // Combined UI Control Setup
@@ -127,17 +134,19 @@ struct MatrixInputSetup {
 struct UIControlSetup {
     enum : signed char { None, Encoder, Buttons, Joystick, Matrix } ctrlCfgType; // Control config type
     union {
-        RotaryInputSetup encoder;       // Rotary encoder setup
-        ButtonsInputSetup buttons;      // Up/Down buttons setup
-        JoystickInputSetup joystick;    // Analog joystick setup
-        MatrixInputSetup matrix;        // Matrix keyboard setup
+        RotaryControlSetup encoder;     // Rotary encoder setup
+        ButtonsControlSetup buttons;    // Up/Down buttons setup
+        JoystickControlSetup joystick;  // Analog joystick setup
+        MatrixControlSetup matrix;      // Matrix keyboard setup
     } ctrlCfgAs;
 
     inline UIControlSetup() : ctrlCfgType(None), ctrlCfgAs{} { ; }
-    inline UIControlSetup(RotaryInputSetup ctrlSetup) : ctrlCfgType(Encoder), ctrlCfgAs{.encoder=ctrlSetup} { ; }
-    inline UIControlSetup(ButtonsInputSetup ctrlSetup) : ctrlCfgType(Buttons), ctrlCfgAs{.buttons=ctrlSetup} { ; }
-    inline UIControlSetup(JoystickInputSetup ctrlSetup) : ctrlCfgType(Joystick), ctrlCfgAs{.joystick=ctrlSetup} { ; }
-    inline UIControlSetup(MatrixInputSetup ctrlSetup) : ctrlCfgType(Matrix), ctrlCfgAs{.matrix=ctrlSetup} { ; }
+    inline UIControlSetup(RotaryControlSetup ctrlSetup) : ctrlCfgType(Encoder), ctrlCfgAs{.encoder=ctrlSetup} { ; }
+    inline UIControlSetup(ButtonsControlSetup ctrlSetup) : ctrlCfgType(Buttons), ctrlCfgAs{.buttons=ctrlSetup} { ; }
+    inline UIControlSetup(JoystickControlSetup ctrlSetup) : ctrlCfgType(Joystick), ctrlCfgAs{.joystick=ctrlSetup} { ; }
+    inline UIControlSetup(MatrixControlSetup ctrlSetup) : ctrlCfgType(Matrix), ctrlCfgAs{.matrix=ctrlSetup} { ; }
+
+    static inline UIControlSetup usingDFRobotShield() { return UIControlSetup(ButtonsControlSetup::usingDFRobotShield()); }
 };
 
 // Base UI
@@ -158,8 +167,7 @@ public:
 
     void addRemote(Hydro_RemoteControl rcType,                              // Type of remote control
                    UARTDeviceSetup rcSetup = UARTDeviceSetup(),             // Remote control serial setup (if serial based), else ignored
-                   uint16_t rcServerPort = HYDRO_UI_REMOTESERVER_PORT,      // Remote control server listening port (if networking based), else ignored
-                   menuid_t statusMenuId = -1);                             // Status menu item (if simhub based), else ignored
+                   uint16_t rcServerPort = HYDRO_UI_REMOTESERVER_PORT);     // Remote control server listening port (if networking based), else ignored
 
     virtual bool begin() override;                                          // Begins UI
 

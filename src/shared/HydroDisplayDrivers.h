@@ -41,8 +41,8 @@ protected:
 class HydroDisplayLiquidCrystalIO : public HydroDisplayDriver {
 public:
     HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup lcdSetup, bool bitInversion = false, LiquidCrystal::BackLightPinMode backlightPinMode = LiquidCrystal::BACKLIGHT_NORMAL);
-    // Special constructor for DFRobot 16x2 LCD (isDFRobot_unused tossed, only used for constructor resolution)
-    HydroDisplayLiquidCrystalIO(bool isDFRobot_unused, I2CDeviceSetup lcdSetup, bool bitInversion = false, LiquidCrystal::BackLightPinMode backlightPinMode = LiquidCrystal::BACKLIGHT_NORMAL);
+    // Special constructor for DFRobotShield /w 16x2 LCD (isDFRobotShield_unused tossed, only used for constructor resolution)
+    HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup lcdSetup, bool bitInversion = false, LiquidCrystal::BackLightPinMode backlightPinMode = LiquidCrystal::BACKLIGHT_NORMAL);
     virtual ~HydroDisplayLiquidCrystalIO() = default;
 
     virtual void init() override;

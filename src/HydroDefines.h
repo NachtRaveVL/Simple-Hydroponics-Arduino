@@ -739,21 +739,25 @@ class HydroRail;
 #define SETUP_ENUM_Undefined            -1
 #define SETUP_ENUM_Primary              1
 #define SETUP_ENUM_Fallback             2
-#define SETUP_ENUM_Minimal              1
-#define SETUP_ENUM_Full                 2
-#define SETUP_ENUM_UART                 1
-#define SETUP_ENUM_I2C                  2
-#define SETUP_ENUM_SPI                  3
-#define SETUP_ENUM_LCD                  1
-#define SETUP_ENUM_Pixel                2
-#define SETUP_ENUM_ST7735               3
-#define SETUP_ENUM_TFT                  4
-#define SETUP_ENUM_Encoder              1
-#define SETUP_ENUM_Buttons              2
-#define SETUP_ENUM_Joystick             3
-#define SETUP_ENUM_Matrix               4
-#define SETUP_ENUM_Hostname             1
-#define SETUP_ENUM_IPAddress            2
+#define SETUP_ENUM_Minimal              3
+#define SETUP_ENUM_Full                 4
+#define SETUP_ENUM_UART                 5
+#define SETUP_ENUM_I2C                  6
+#define SETUP_ENUM_SPI                  7
+#define SETUP_ENUM_LCD                  8
+#define SETUP_ENUM_Pixel                9
+#define SETUP_ENUM_ST7735               10
+#define SETUP_ENUM_TFT                  11
+#define SETUP_ENUM_Encoder              12
+#define SETUP_ENUM_Buttons              13
+#define SETUP_ENUM_Joystick             14
+#define SETUP_ENUM_Matrix               15
+#define SETUP_ENUM_Serial               16
+#define SETUP_ENUM_Simhub               17
+#define SETUP_ENUM_WiFi                 18
+#define SETUP_ENUM_Ethernet             19
+#define SETUP_ENUM_Hostname             20
+#define SETUP_ENUM_IPAddress            21
 // Checks setup defines for equality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
 #define IS_SETUP_AS(X,Y)                JOIN(SETUP_ENUM,X) == SETUP_ENUM_##Y
 // Checks setup defines for inequality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)

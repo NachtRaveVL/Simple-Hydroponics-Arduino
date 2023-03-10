@@ -6,6 +6,7 @@
 #include "Hydruino.h"
 #ifdef HYDRO_USE_GUI
 #include "HydruinoUI.h"
+#include <DfRobotInputAbstraction.h>
 
 
 HydroInputDriver::HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins)
@@ -26,8 +27,34 @@ void HydroInputRotary::begin(MenuRenderer *renderer, MenuItem *initialItem)
 
 
 HydroInputUpDownButtons::HydroInputUpDownButtons(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed)
-    : HydroInputDriver(controlPins), _keySpeed(keyRepeatSpeed)
+    : HydroInputDriver(controlPins), _keySpeed(keyRepeatSpeed), _dfRobotIORef(nullptr)
 { ; }
+
+HydroInputUpDownButtons::HydroInputUpDownButtons(bool isDFRobotShield_unused, uint16_t keyRepeatSpeed)
+    : HydroInputDriver(make_pair((uint8_t)5, (const pintype_t *)(new pintype_t[5]))), _keySpeed(keyRepeatSpeed), _dfRobotIORef(inputFromDfRobotShield())
+{
+    pintype_t *pins = const_cast<pintype_t *>(_pins.second);
+    HYDRO_SOFT_ASSERT(pins, SFP(HStr_Err_AllocationFailure));
+
+    if (pins) {
+        pins[0] = (pintype_t)DF_KEY_UP;
+        pins[1] = (pintype_t)DF_KEY_DOWN;
+        pins[2] = (pintype_t)DF_KEY_SELECT;
+        pins[3] = (pintype_t)DF_KEY_LEFT;
+        pins[4] = (pintype_t)DF_KEY_RIGHT;
+    }
+    #if NUM_ANALOG_INPUTS > 0
+        pinMode(A0, INPUT);
+    #endif
+}
+
+HydroInputUpDownButtons::~HydroInputUpDownButtons()
+{
+    if (_dfRobotIORef) {
+        pintype_t *pins = const_cast<pintype_t *>(_pins.second);
+        if (pins) { delete [] pins; }
+    }
+}
 
 void HydroInputUpDownButtons::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
@@ -43,7 +70,7 @@ HydroInputJoystick::HydroInputJoystick(Pair<uint8_t, const pintype_t *> controlP
       _joystickMultiIo(200),
       _joystickIoXAxis(internalAnalogIo(), controlPins.second[0], jsCenterX)
 {
-    multiIoAddExpander(&_joystickMultiIo, &_joystickIoXAxis, controlPins.first);
+    multiIoAddExpander(&_joystickMultiIo, &_joystickIoXAxis, 5);
 }
 
 static void menuMgrOnMenuSelect(pinid_t /*key*/, bool held)

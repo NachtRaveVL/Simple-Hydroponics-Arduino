@@ -59,7 +59,7 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode
     _renderer.setTitleRequired(_screenSize[1] >= 4);
 }
 
-HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobot_unused, I2CDeviceSetup lcdSetup, bool bitInversion, LiquidCrystal::BackLightPinMode backlightPinMode)
+HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup lcdSetup, bool bitInversion, LiquidCrystal::BackLightPinMode backlightPinMode)
     : _screenSize{16, 2},
       _lcd(8, 9, 4, 5, 6, 7),
       _renderer(_lcd, _screenSize[0], _screenSize[1])
@@ -67,8 +67,6 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobot_unused, 
     _lcd.setIoAbstraction(ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | lcdSetup.address, 0xff, lcdSetup.wire, bitInversion));
     _lcd.configureBacklightPin(10, backlightPinMode);
     _renderer.setTitleRequired(false);
-
-    switches.initialise(inputFromDfRobotShield(), false);
 }
 
 void HydroDisplayLiquidCrystalIO::init()

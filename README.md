@@ -360,7 +360,9 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_LCD_I2C_ADDR              0b000           // LCD i2c address
+#define SETUP_DISP_I2C_ADDR             0b000           // LCD/Gfx i2c address
+#define SETUP_DISP_SPI                  SPI             // Gfx/TFT SPI class instance
+#define SETUP_DISP_SPI_CS               -1              // Gfx/TFT SPI CS pin, else -1
 #define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
@@ -429,6 +431,36 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_EEPROM_SYSDATA_ADDR       0x2222          // System data memory offset for EEPROM saves (from Data Writer output)
 #define SETUP_EEPROM_CROPSLIB_ADDR      0x0000          // Start address for Crops Library data (from Data Writer output)
 #define SETUP_EEPROM_STRINGS_ADDR       0x1111          // Start address for strings data (from Data Writer output)
+
+// UI Settings
+#define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic activity level
+#define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interruptable I/O if able
+#define SEUTP_UI_USE_UNICODE_FONTS      true            // Use tcUnicode fonts instead of default, if using graphical display
+#define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
+
+// UI Display Output Settings
+#define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion, if using LCD
+#define SETUP_UI_LCD_BACKLIGHT_MODE     LiquidCrystal::BACKLIGHT_NORMAL // LCD display backlight mode (BACKLIGHT_NORMAL, BACKLIGHT_INVERTED, BACKLIGHT_PWM), if using LCD
+#define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
+#define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
+#define SETUP_UI_GFX_RESET_PIN          -1              // Optional reset pin, if using graphical display, else -1
+#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735
+#define SETUP_UI_TFT_SCREEN_WIDTH       320             // Custom screen width, if using TFT_eSPI
+#define SETUP_UI_TFT_SCREEN_HEIGHT      240             // Custom screen height, if using TFT_eSPI
+
+// UI Control Input Settings
+#define SETUP_UI_ENC_ROTARY_SPEED       HALF_CYCLE      // Rotary encoder cycling speed
+#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
+#define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
+#define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
+#define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor)
+
+// UI Remote Control Settings
+#define SETUP_UI_REMOTE1_TYPE           Disabled        // Type of first remote control (Disabled, Serial, Simhub, WiFi, Ethernet)
+#define SETUP_UI_REMOTE1_UART           Serial1         // Serial setup for first remote control, if Serial/Simhub
+#define SETUP_UI_REMOTE2_TYPE           Disabled        // Type of second remote control (Disabled, Serial, Simhub, WiFi, Ethernet)
+#define SETUP_UI_REMOTE2_UART           Serial1         // Serial setup for second remote control, if Serial/Simhub
+#define SETUP_UI_RC_NETWORKING_PORT     3333            // Remote controller networking port, if WiFi/Ethernet
 
 // Device Pin Setup
 #define SETUP_PH_METER_PIN              -1              // pH meter sensor pin (analog), else -1

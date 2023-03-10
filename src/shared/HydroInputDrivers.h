@@ -56,16 +56,19 @@ protected:
 class HydroInputUpDownButtons : public HydroInputDriver {
 public:
     HydroInputUpDownButtons(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed);
-    virtual ~HydroInputUpDownButtons() = default;
+    // Special constructor for DFRobotShield /w buttons (isDFRobotShield_unused tossed, only used for constructor resolution)
+    HydroInputUpDownButtons(bool isDFRobotShield_unused, uint16_t keyRepeatSpeed);
+    virtual ~HydroInputUpDownButtons();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
-    virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
+    virtual IoAbstractionRef getIoAbstraction() override { return _dfRobotIORef; }
 
     inline uint16_t getKeySpeed() const { return _keySpeed; }
 
 protected:
     const uint16_t _keySpeed;
+    IoAbstractionRef _dfRobotIORef;
 };
 
 class HydroInputJoystick : public HydroInputDriver {
