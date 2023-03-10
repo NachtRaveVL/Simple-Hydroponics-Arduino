@@ -44,17 +44,17 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
                 }
                 break;
 
-            case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOk:
-            case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOkLR:
+            case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:
+            case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
                 HYDRO_SOFT_ASSERT(uiControlSetup.ctrlCfgType == UIControlSetup::Matrix, SFP(HStr_Err_InvalidParameter));
-                _input = new HydroInput3x4Matrix(ctrlInPins, uiControlSetup.ctrlCfgAs.matrix.repeatDelay, uiControlSetup.ctrlCfgAs.matrix.repeatInterval,
+                _input = new HydroInputMatrix3x4(ctrlInPins, uiControlSetup.ctrlCfgAs.matrix.repeatDelay, uiControlSetup.ctrlCfgAs.matrix.repeatInterval,
                                                  uiControlSetup.ctrlCfgAs.matrix.encoderSpeed);
                 break;
 
-            case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOk:
-            case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOkLR:
+            case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk:
+            case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR:
                 HYDRO_SOFT_ASSERT(uiControlSetup.ctrlCfgType == UIControlSetup::Matrix, SFP(HStr_Err_InvalidParameter));
-                _input = new HydroInput4x4Matrix(ctrlInPins, uiControlSetup.ctrlCfgAs.matrix.repeatDelay, uiControlSetup.ctrlCfgAs.matrix.repeatInterval,
+                _input = new HydroInputMatrix4x4(ctrlInPins, uiControlSetup.ctrlCfgAs.matrix.repeatDelay, uiControlSetup.ctrlCfgAs.matrix.repeatInterval,
                                                  uiControlSetup.ctrlCfgAs.matrix.encoderSpeed);
                 break;
 
@@ -71,7 +71,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
         auto lcdSetup = controller->getLCDSetup();
 
         // LiquidCrystalIO supports only i2c
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_16x2LCD && dispOutMode <= Hydro_DisplayOutputMode_20x4LCD_Swapped) || lcdSetup.cfgType == DeviceSetup::I2CSetup, SFP(HStr_Err_InvalidParameter));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2 && dispOutMode <= Hydro_DisplayOutputMode_LCD20x4_Swapped) || lcdSetup.cfgType == DeviceSetup::I2CSetup, SFP(HStr_Err_InvalidParameter));
         // U8g2 supports either i2c or SPI
         HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_SSD1305 && dispOutMode <= Hydro_DisplayOutputMode_IL3820_V2) || (lcdSetup.cfgType == DeviceSetup::I2CSetup || lcdSetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
         // AdafruitGFX supports only SPI
@@ -81,10 +81,10 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
 
         switch (dispOutMode) {
             // LiquidCrystalIO
-            case Hydro_DisplayOutputMode_16x2LCD:
-            case Hydro_DisplayOutputMode_16x2LCD_Swapped:
-            case Hydro_DisplayOutputMode_20x4LCD:
-            case Hydro_DisplayOutputMode_20x4LCD_Swapped:
+            case Hydro_DisplayOutputMode_LCD16x2:
+            case Hydro_DisplayOutputMode_LCD16x2_Swapped:
+            case Hydro_DisplayOutputMode_LCD20x4:
+            case Hydro_DisplayOutputMode_LCD20x4_Swapped:
                 HYDRO_SOFT_ASSERT(uiDisplaySetup.dispCfgType == UIDisplaySetup::LCD, SFP(HStr_Err_InvalidParameter));
                 if (!uiDisplaySetup.dispCfgAs.lcd.isDFRobotShield) {
                     _display = new HydroDisplayLiquidCrystalIO(dispOutMode, lcdSetup.cfgAs.i2c, uiDisplaySetup.dispCfgAs.lcd.bitInversion, uiDisplaySetup.dispCfgAs.lcd.backlitMode);
@@ -139,7 +139,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIDisplaySetup uiDisplaySetup, UIControlSetup uiC
 
             default: break;
         }
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_16x2LCD && dispOutMode <= Hydro_DisplayOutputMode_TFT) || _display, SFP(HStr_Err_AllocationFailure));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2 && dispOutMode <= Hydro_DisplayOutputMode_TFT) || _display, SFP(HStr_Err_AllocationFailure));
 
         if (_display) {
             // Late input driver setup

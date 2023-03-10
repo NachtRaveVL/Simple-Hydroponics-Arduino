@@ -12,8 +12,8 @@ class HydroInputDriver;
 class HydroInputRotary;
 class HydroInputUpDownButtons;
 class HydroInputJoystick;
-class HydroInput3x4Matrix;
-class HydroInput4x4Matrix;
+class HydroInputMatrix3x4;
+class HydroInputMatrix4x4;
 class HydroInputResistiveTouch;
 class HydroInputTouchscreen;
 class HydroInputTFTTouch;
@@ -89,10 +89,10 @@ protected:
     AnalogJoystickToButtons _joystickIoXAxis;
 };
 
-class HydroInput3x4Matrix : public HydroInputDriver {
+class HydroInputMatrix3x4 : public HydroInputDriver {
 public:
-    HydroInput3x4Matrix(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed);
-    virtual ~HydroInput3x4Matrix();
+    HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed);
+    virtual ~HydroInputMatrix3x4();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
@@ -108,10 +108,10 @@ protected:
     HydroInputRotary *_rotaryEncoder;
 };
 
-class HydroInput4x4Matrix : public HydroInputDriver {
+class HydroInputMatrix4x4 : public HydroInputDriver {
 public:
-    HydroInput4x4Matrix(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed);
-    virtual ~HydroInput4x4Matrix();
+    HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed = HALF_CYCLE);
+    virtual ~HydroInputMatrix4x4();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 

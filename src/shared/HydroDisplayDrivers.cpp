@@ -49,9 +49,9 @@ void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme di
 
 
 HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup lcdSetup, bool bitInversion, LiquidCrystal::BackLightPinMode backlightPinMode)
-    : _screenSize{displayMode < Hydro_DisplayOutputMode_20x4LCD ? 16 : 20, displayMode < Hydro_DisplayOutputMode_20x4LCD ? 2 : 4},
-      _lcd(displayMode == Hydro_DisplayOutputMode_16x2LCD || displayMode == Hydro_DisplayOutputMode_20x4LCD ? 2 : 0, 1,
-           displayMode == Hydro_DisplayOutputMode_16x2LCD || displayMode == Hydro_DisplayOutputMode_20x4LCD ? 0 : 2, 4, 5, 6, 7),
+    : _screenSize{displayMode < Hydro_DisplayOutputMode_LCD20x4 ? 16 : 20, displayMode < Hydro_DisplayOutputMode_LCD20x4 ? 2 : 4},
+      _lcd(displayMode == Hydro_DisplayOutputMode_LCD16x2 || displayMode == Hydro_DisplayOutputMode_LCD20x4 ? 2 : 0, 1,
+           displayMode == Hydro_DisplayOutputMode_LCD16x2 || displayMode == Hydro_DisplayOutputMode_LCD20x4 ? 0 : 2, 4, 5, 6, 7),
       _renderer(_lcd, _screenSize[0], _screenSize[1])
 {
     _lcd.setIoAbstraction(ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | lcdSetup.address, 0xff, lcdSetup.wire, bitInversion));
@@ -229,7 +229,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::init()
 {
-    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN(JOIN(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE), SM)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
+    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
@@ -257,7 +257,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::init()
 {
-    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN(JOIN(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE), SM)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
+    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
@@ -278,7 +278,7 @@ HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetu
 
 void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::init()
 {
-    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN(JOIN(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE), SM)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
+    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::begin()
@@ -299,7 +299,7 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup lcdSetup, Hydro_DisplayO
 
 void HydroDisplayTFTeSPI::init()
 {
-    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN(JOIN(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE), ML)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
+    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
 
 void HydroDisplayTFTeSPI::begin()

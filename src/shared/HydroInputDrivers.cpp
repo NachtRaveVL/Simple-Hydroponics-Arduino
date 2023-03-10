@@ -87,7 +87,7 @@ void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
     menuMgr.initWithoutInput(renderer, initialItem);
 }
 
-static String get3x4MatrixKBKeys()
+static String getMatrix3x4KBKeys()
 {
     static const String kb3x4(F(HYDRO_UI_3X4MATRIX_KEYS));
     return kb3x4;
@@ -99,10 +99,10 @@ static char getNx4MatrixActions(int charIndex)
     return actNx4[charIndex];
 }
 
-HydroInput3x4Matrix::HydroInput3x4Matrix(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
+HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,3,get3x4MatrixKBKeys().c_str()),
+      _keyboardLayout(4,3,getMatrix3x4KBKeys().c_str()),
       _tcMenuKeyListener(getNx4MatrixActions(0), getNx4MatrixActions(1), getNx4MatrixActions(2), getNx4MatrixActions(3)),
       _rotaryEncoder(nullptr)
 {
@@ -122,27 +122,27 @@ HydroInput3x4Matrix::HydroInput3x4Matrix(Pair<uint8_t, const pintype_t *> contro
     }
 }
 
-HydroInput3x4Matrix::~HydroInput3x4Matrix()
+HydroInputMatrix3x4::~HydroInputMatrix3x4()
 {
     if (_rotaryEncoder) { delete _rotaryEncoder; }
 }
 
-void HydroInput3x4Matrix::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputMatrix3x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
 }
 
 
-static String get4x4MatrixKBKeys()
+static String getMatrix4x4KBKeys()
 {
     static const String kb4x4(F(HYDRO_UI_4X4MATRIX_KEYS));
     return kb4x4;
 }
 
-HydroInput4x4Matrix::HydroInput4x4Matrix(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
+HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, EncoderType optEncoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,4,get4x4MatrixKBKeys().c_str()),
+      _keyboardLayout(4,4,getMatrix4x4KBKeys().c_str()),
       _tcMenuKeyListener(getNx4MatrixActions(0), getNx4MatrixActions(1), getNx4MatrixActions(2), getNx4MatrixActions(3)),
       _rotaryEncoder()
 {
@@ -163,12 +163,12 @@ HydroInput4x4Matrix::HydroInput4x4Matrix(Pair<uint8_t, const pintype_t *> contro
     }
 }
 
-HydroInput4x4Matrix::~HydroInput4x4Matrix()
+HydroInputMatrix4x4::~HydroInputMatrix4x4()
 {
     if (_rotaryEncoder) { delete _rotaryEncoder; }
 }
 
-void HydroInput4x4Matrix::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputMatrix4x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
 }

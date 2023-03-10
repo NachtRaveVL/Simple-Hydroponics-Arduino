@@ -1225,19 +1225,19 @@ String displayOutputModeToString(Hydro_DisplayOutputMode displayOutMode, bool ex
     switch (displayOutMode) {
         case Hydro_DisplayOutputMode_Disabled:
             return SFP(HStr_Disabled);
-        case Hydro_DisplayOutputMode_16x2LCD:
-            return SFP(HStr_Enum_16x2LCD);
-        case Hydro_DisplayOutputMode_16x2LCD_Swapped: {
-            String retVal(SFP(HStr_Enum_16x2LCD));
+        case Hydro_DisplayOutputMode_LCD16x2:
+            return SFP(HStr_Enum_LCD16x2);
+        case Hydro_DisplayOutputMode_LCD16x2_Swapped: {
+            String retVal(SFP(HStr_Enum_LCD16x2));
             String concat(SFP(HStr_Enum_Swapped));
             retVal.reserve(retVal.length() + concat.length());
             retVal.concat(concat);
             return retVal;
         }
-        case Hydro_DisplayOutputMode_20x4LCD:
-            return SFP(HStr_Enum_20x4LCD);
-        case Hydro_DisplayOutputMode_20x4LCD_Swapped: {
-            String retVal(SFP(HStr_Enum_20x4LCD));
+        case Hydro_DisplayOutputMode_LCD20x4:
+            return SFP(HStr_Enum_LCD20x4);
+        case Hydro_DisplayOutputMode_LCD20x4_Swapped: {
+            String retVal(SFP(HStr_Enum_LCD20x4));
             String concat(SFP(HStr_Enum_Swapped));
             retVal.reserve(retVal.length() + concat.length());
             retVal.concat(concat);
@@ -1327,27 +1327,27 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
-        case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOk: {
-            String retVal(SFP(HStr_Enum_3x4Matrix));
+        case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk: {
+            String retVal(SFP(HStr_Enum_Matrix3x4));
             retVal.reserve(retVal.length() + 2);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
-        case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOkLR: {
-            String retVal(SFP(HStr_Enum_3x4Matrix));
+        case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR: {
+            String retVal(SFP(HStr_Enum_Matrix3x4));
             retVal.reserve(retVal.length() + 4);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
             return retVal;
         }
-        case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOk: {
-            String retVal(SFP(HStr_Enum_4x4Matrix));
+        case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk: {
+            String retVal(SFP(HStr_Enum_Matrix4x4));
             retVal.reserve(retVal.length() + 2);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
-        case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOkLR: {
-            String retVal(SFP(HStr_Enum_4x4Matrix));
+        case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR: {
+            String retVal(SFP(HStr_Enum_Matrix4x4));
             retVal.reserve(retVal.length() + 4);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
@@ -1966,20 +1966,24 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
             return (Hydro_DisplayOutputMode)-1;
         case 'D':
             return (Hydro_DisplayOutputMode)0;
-        case '1':
-            switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
-                case '\0':
-                    return (Hydro_DisplayOutputMode)1;
-                case 'S':
-                    return (Hydro_DisplayOutputMode)2;
-            }
-            break;
-        case '2':
-            switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
-                case '\0':
-                    return (Hydro_DisplayOutputMode)3;
-                case 'S':
-                    return (Hydro_DisplayOutputMode)4;
+        case 'L':
+            switch (displayOutModeStr.length() >= 4 ? displayOutModeStr[3] : '\0') {
+                case '1':
+                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
+                        case '\0':
+                            return (Hydro_DisplayOutputMode)1;
+                        case 'S':
+                            return (Hydro_DisplayOutputMode)2;
+                    }
+                    break;
+                case '2':
+                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
+                        case '\0':
+                            return (Hydro_DisplayOutputMode)3;
+                        case 'S':
+                            return (Hydro_DisplayOutputMode)4;
+                    }
+                    break;
             }
             break;
         case 'S':

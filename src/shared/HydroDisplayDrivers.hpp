@@ -24,7 +24,7 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup lcdSetup, Hyd
 template <class T>
 void HydroDisplayAdafruitGFX<T>::init()
 {
-    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN(JOIN(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE), SM)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
+    ((HydruinoBaseUI *)getUI())->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
 
 template <class T>

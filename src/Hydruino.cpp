@@ -1183,13 +1183,13 @@ Pair<uint8_t, const pintype_t *> Hydruino::getControlInputPins() const
                 return make_pair((uint8_t)5, (const pintype_t *)_ctrlInputPins);
             case Hydro_ControlInputMode_AnalogJoystickOk:
                 return make_pair((uint8_t)3, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOk:
+            case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:
                 return make_pair((uint8_t)10, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOkLR:
+            case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
                 return make_pair((uint8_t)12, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOk:
+            case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk:
                 return make_pair((uint8_t)11, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOkLR:
+            case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR:
                 return make_pair((uint8_t)13, (const pintype_t *)_ctrlInputPins);
             case Hydro_ControlInputMode_ResistiveTouch:
                 return make_pair((uint8_t)4, (const pintype_t *)_ctrlInputPins);

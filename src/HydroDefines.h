@@ -6,9 +6,17 @@
 #ifndef HydroDefines_H
 #define HydroDefines_H
 
-#ifndef JOIN                                                // Define joiner
+#ifndef JOIN                                                // Define double joiner
 #define JOIN_(X,Y)                      X##_##Y
 #define JOIN(X,Y)                       JOIN_(X,Y)
+#endif
+#ifndef JOIN3                                               // Define triple joiner
+#define JOIN3_(X,Y,Z)                   X##_##Y##_##Z
+#define JOIN3(X,Y,Z)                    JOIN3_(X,Y,Z)
+#endif
+#ifndef STR                                                 // Define stringifier
+#define STR_(X)                         #X
+#define STR(X)                          STR_(X)
 #endif
 
 #define ACT_HIGH                        false               // Active high (convenience)
@@ -227,39 +235,39 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 
 // EEPROM Device Type Enumeration
 enum Hydro_EEPROMType : signed short {
-    Hydro_EEPROMType_24LC01 = I2C_DEVICESIZE_24LC01 >> 7,   // 24LC01 (1K bits, 128 bytes), 7-bit address space
-    Hydro_EEPROMType_24LC02 = I2C_DEVICESIZE_24LC02 >> 7,   // 24LC02 (2K bits, 256 bytes), 8-bit address space
-    Hydro_EEPROMType_24LC04 = I2C_DEVICESIZE_24LC04 >> 7,   // 24LC04 (4K bits, 512 bytes), 9-bit address space
-    Hydro_EEPROMType_24LC08 = I2C_DEVICESIZE_24LC08 >> 7,   // 24LC08 (8K bits, 1024 bytes), 10-bit address space
-    Hydro_EEPROMType_24LC16 = I2C_DEVICESIZE_24LC16 >> 7,   // 24LC16 (16K bits, 2048 bytes), 11-bit address space
-    Hydro_EEPROMType_24LC32 = I2C_DEVICESIZE_24LC32 >> 7,   // 24LC32 (32K bits, 4096 bytes), 12-bit address space
-    Hydro_EEPROMType_24LC64 = I2C_DEVICESIZE_24LC64 >> 7,   // 24LC64 (64K bits, 8192 bytes), 13-bit address space
-    Hydro_EEPROMType_24LC128 = I2C_DEVICESIZE_24LC128 >> 7, // 24LC128 (128K bits, 16384 bytes), 14-bit address space
-    Hydro_EEPROMType_24LC256 = I2C_DEVICESIZE_24LC256 >> 7, // 24LC256 (256K bits, 32768 bytes), 15-bit address space
-    Hydro_EEPROMType_24LC512 = I2C_DEVICESIZE_24LC512 >> 7, // 24LC512 (512K bits, 65536 bytes), 16-bit address space
-    Hydro_EEPROMType_None = -1,                             // No EEPROM
+    Hydro_EEPROMType_EP24LC01 = I2C_DEVICESIZE_24LC01 >> 7,     // Generic 24LC01 (1K bits, 128 bytes), 7-bit address space
+    Hydro_EEPROMType_EP24LC02 = I2C_DEVICESIZE_24LC02 >> 7,     // Generic 24LC02 (2K bits, 256 bytes), 8-bit address space
+    Hydro_EEPROMType_EP24LC04 = I2C_DEVICESIZE_24LC04 >> 7,     // Generic 24LC04 (4K bits, 512 bytes), 9-bit address space
+    Hydro_EEPROMType_EP24LC08 = I2C_DEVICESIZE_24LC08 >> 7,     // Generic 24LC08 (8K bits, 1024 bytes), 10-bit address space
+    Hydro_EEPROMType_EP24LC16 = I2C_DEVICESIZE_24LC16 >> 7,     // Generic 24LC16 (16K bits, 2048 bytes), 11-bit address space
+    Hydro_EEPROMType_EP24LC32 = I2C_DEVICESIZE_24LC32 >> 7,     // Generic 24LC32 (32K bits, 4096 bytes), 12-bit address space
+    Hydro_EEPROMType_EP24LC64 = I2C_DEVICESIZE_24LC64 >> 7,     // Generic 24LC64 (64K bits, 8192 bytes), 13-bit address space
+    Hydro_EEPROMType_EP24LC128 = I2C_DEVICESIZE_24LC128 >> 7,   // Generic 24LC128 (128K bits, 16384 bytes), 14-bit address space
+    Hydro_EEPROMType_EP24LC256 = I2C_DEVICESIZE_24LC256 >> 7,   // Generic 24LC256 (256K bits, 32768 bytes), 15-bit address space
+    Hydro_EEPROMType_EP24LC512 = I2C_DEVICESIZE_24LC512 >> 7,   // Generic 24LC512 (512K bits, 65536 bytes), 16-bit address space
+    Hydro_EEPROMType_None = -1,                                 // No EEPROM
 
-    Hydro_EEPROMType_1K_Bits = Hydro_EEPROMType_24LC01,     // 1K bits (alias of 24LC01)
-    Hydro_EEPROMType_2K_Bits = Hydro_EEPROMType_24LC02,     // 2K bits (alias of 24LC02)
-    Hydro_EEPROMType_4K_Bits = Hydro_EEPROMType_24LC04,     // 4K bits (alias of 24LC04)
-    Hydro_EEPROMType_8K_Bits = Hydro_EEPROMType_24LC08,     // 8K bits (alias of 24LC08)
-    Hydro_EEPROMType_16K_Bits = Hydro_EEPROMType_24LC16,    // 16K bits (alias of 24LC16)
-    Hydro_EEPROMType_32K_Bits = Hydro_EEPROMType_24LC32,    // 32K bits (alias of 24LC32)
-    Hydro_EEPROMType_64K_Bits = Hydro_EEPROMType_24LC64,    // 64K bits (alias of 24LC64)
-    Hydro_EEPROMType_128K_Bits = Hydro_EEPROMType_24LC128,  // 128K bits (alias of 24LC128)
-    Hydro_EEPROMType_256K_Bits = Hydro_EEPROMType_24LC256,  // 256K bits (alias of 24LC256)
-    Hydro_EEPROMType_512K_Bits = Hydro_EEPROMType_24LC512,  // 512K bits (alias of 24LC512)
+    Hydro_EEPROMType_Bits_1k = Hydro_EEPROMType_EP24LC01,       // 1K bits (alias of 24LC01)
+    Hydro_EEPROMType_Bits_2k = Hydro_EEPROMType_EP24LC02,       // 2K bits (alias of 24LC02)
+    Hydro_EEPROMType_Bits_4k = Hydro_EEPROMType_EP24LC04,       // 4K bits (alias of 24LC04)
+    Hydro_EEPROMType_Bits_8k = Hydro_EEPROMType_EP24LC08,       // 8K bits (alias of 24LC08)
+    Hydro_EEPROMType_Bits_16k = Hydro_EEPROMType_EP24LC16,      // 16K bits (alias of 24LC16)
+    Hydro_EEPROMType_Bits_32k = Hydro_EEPROMType_EP24LC32,      // 32K bits (alias of 24LC32)
+    Hydro_EEPROMType_Bits_64k = Hydro_EEPROMType_EP24LC64,      // 64K bits (alias of 24LC64)
+    Hydro_EEPROMType_Bits_128k = Hydro_EEPROMType_EP24LC128,    // 128K bits (alias of 24LC128)
+    Hydro_EEPROMType_Bits_256k = Hydro_EEPROMType_EP24LC256,    // 256K bits (alias of 24LC256)
+    Hydro_EEPROMType_Bits_512k = Hydro_EEPROMType_EP24LC512,    // 512K bits (alias of 24LC512)
 
-    Hydro_EEPROMType_128_Bytes = Hydro_EEPROMType_24LC01,   // 128 bytes (alias of 24LC01)
-    Hydro_EEPROMType_256_Bytes = Hydro_EEPROMType_24LC02,   // 256 bytes (alias of 24LC02)
-    Hydro_EEPROMType_512_Bytes = Hydro_EEPROMType_24LC04,   // 512 bytes (alias of 24LC04)
-    Hydro_EEPROMType_1024_Bytes = Hydro_EEPROMType_24LC08,  // 1024 bytes (alias of 24LC08)
-    Hydro_EEPROMType_2048_Bytes = Hydro_EEPROMType_24LC16,  // 2048 bytes (alias of 24LC16)
-    Hydro_EEPROMType_4096_Bytes = Hydro_EEPROMType_24LC32,  // 4096 bytes (alias of 24LC32)
-    Hydro_EEPROMType_8192_Bytes = Hydro_EEPROMType_24LC64,  // 8192 bytes (alias of 24LC64)
-    Hydro_EEPROMType_16384_Bytes = Hydro_EEPROMType_24LC128,// 16384 bytes (alias of 24LC128)
-    Hydro_EEPROMType_32768_Bytes = Hydro_EEPROMType_24LC256,// 32768 bytes (alias of 24LC256)
-    Hydro_EEPROMType_65536_Bytes = Hydro_EEPROMType_24LC512 // 65536 bytes (alias of 24LC512)
+    Hydro_EEPROMType_Bytes_128 = Hydro_EEPROMType_EP24LC01,     // 128 bytes (alias of 24LC01)
+    Hydro_EEPROMType_Bytes_256 = Hydro_EEPROMType_EP24LC02,     // 256 bytes (alias of 24LC02)
+    Hydro_EEPROMType_Bytes_512 = Hydro_EEPROMType_EP24LC04,     // 512 bytes (alias of 24LC04)
+    Hydro_EEPROMType_Bytes_1024 = Hydro_EEPROMType_EP24LC08,    // 1024 bytes (alias of 24LC08)
+    Hydro_EEPROMType_Bytes_2048 = Hydro_EEPROMType_EP24LC16,    // 2048 bytes (alias of 24LC16)
+    Hydro_EEPROMType_Bytes_4096 = Hydro_EEPROMType_EP24LC32,    // 4096 bytes (alias of 24LC32)
+    Hydro_EEPROMType_Bytes_8192 = Hydro_EEPROMType_EP24LC64,    // 8192 bytes (alias of 24LC64)
+    Hydro_EEPROMType_Bytes_16384 = Hydro_EEPROMType_EP24LC128,  // 16384 bytes (alias of 24LC128)
+    Hydro_EEPROMType_Bytes_32768 = Hydro_EEPROMType_EP24LC256,  // 32768 bytes (alias of 24LC256)
+    Hydro_EEPROMType_Bytes_65536 = Hydro_EEPROMType_EP24LC512   // 65536 bytes (alias of 24LC512)
 };
 
 // RTC Device Type Enumeration
@@ -431,10 +439,10 @@ enum Hydro_MeasurementMode : signed char {
 // Display output mode support provided by tcMenu.
 enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_Disabled,                       // No display output
-    Hydro_DisplayOutputMode_16x2LCD,                        // 16x2 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
-    Hydro_DisplayOutputMode_16x2LCD_Swapped,                // 16x2 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
-    Hydro_DisplayOutputMode_20x4LCD,                        // 20x4 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
-    Hydro_DisplayOutputMode_20x4LCD_Swapped,                // 20x4 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD16x2,                        // 16x2 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD16x2_Swapped,                // 16x2 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD20x4,                        // 20x4 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD20x4_Swapped,                // 20x4 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
     Hydro_DisplayOutputMode_SSD1305,                        // SSD1305 128x32 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SSD1305_x32Ada,                 // Adafruit SSD1305 128x32 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SSD1305_x64Ada,                 // Adafruit SSD1305 128x64 OLED, using U8g2 (i2c or SPI)
@@ -464,10 +472,10 @@ enum Hydro_ControlInputMode : signed char {
     Hydro_ControlInputMode_UpDownOkButtons,                 // Momentary Up, Down, and Ok buttons, pins: {Up,Dw,Ok}
     Hydro_ControlInputMode_UpDownOkButtons_LR,              // Momentary Up, Down, Ok, Back(L), and Next(R) buttons, pins: {Up,Dw,Ok,Bk,Nx}
     Hydro_ControlInputMode_AnalogJoystickOk,                // Analog joystick /w momentary Ok button, pins: {aX,aY,Ok} (aX can be unused/-1, else used for back/next)
-    Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOk,   // 3x4 numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok button, pins: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok}
-    Hydro_ControlInputMode_3x4MatrixKeyboard_OptRotEncOkLR, // 3x4 numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok, Back(L), and Next(R) buttons, pins: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok,Bk,Nx}
-    Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOk,   // 4x4 alpha-numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok button, pins: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok}
-    Hydro_ControlInputMode_4x4MatrixKeyboard_OptRotEncOkLR, // 4x4 alpha-numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok, Back(L), and Next(R) buttons, pins: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok,Bk,Nx}
+    Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk,   // 3x4 numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok button, pins: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok}
+    Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR, // 3x4 numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok, Back(L), and Next(R) buttons, pins: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok,Bk,Nx}
+    Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk,   // 4x4 alpha-numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok button, pins: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok}
+    Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR, // 4x4 alpha-numeric keyboard matrix (graphical), & optional rotary encoder /w momentary Ok, Back(L), and Next(R) buttons, pins: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok,Bk,Nx}
     Hydro_ControlInputMode_ResistiveTouch,                  // Resistive touchscreen, pins: {X+,X-,Y+,Y-}
     Hydro_ControlInputMode_TouchScreen,                     // Full touchscreen (FT6206, or XPT2046 /w setup define), pins: {}
     Hydro_ControlInputMode_TFTTouch,                        // TFT-based Touch, using TFT_eSPI (Note: usage requires TFT display mode & editing TFT_eSPI\User_Setup.h & properly defining TOUCH_CS), pins: {tCS,tIRQ} (tIRQ can be unused/-1)
@@ -723,5 +731,32 @@ class HydroCrop;
 class HydroReservoir;
 class HydroFeedReservoir;
 class HydroRail;
+
+// System sketches setup enums & helpers
+#define SETUP_ENUM_Disabled             -1
+#define SETUP_ENUM_None                 -1
+#define SETUP_ENUM_Count                -1
+#define SETUP_ENUM_Undefined            -1
+#define SETUP_ENUM_Primary              1
+#define SETUP_ENUM_Fallback             2
+#define SETUP_ENUM_Minimal              1
+#define SETUP_ENUM_Full                 2
+#define SETUP_ENUM_UART                 1
+#define SETUP_ENUM_I2C                  2
+#define SETUP_ENUM_SPI                  3
+#define SETUP_ENUM_LCD                  1
+#define SETUP_ENUM_Pixel                2
+#define SETUP_ENUM_ST7735               3
+#define SETUP_ENUM_TFT                  4
+#define SETUP_ENUM_Encoder              1
+#define SETUP_ENUM_Buttons              2
+#define SETUP_ENUM_Joystick             3
+#define SETUP_ENUM_Matrix               4
+#define SETUP_ENUM_Hostname             1
+#define SETUP_ENUM_IPAddress            2
+// Checks setup defines for equality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
+#define IS_SETUP_AS(X,Y)                JOIN(SETUP_ENUM,X) == SETUP_ENUM_##Y
+// Checks setup defines for inequality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
+#define NOT_SETUP_AS(X,Y)               JOIN(SETUP_ENUM,X) != SETUP_ENUM_##Y
 
 #endif // /ifndef HydroDefines_H

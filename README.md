@@ -353,7 +353,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 ```Arduino
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
+#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (EP24LC01, EP24LC02, EP24LC04, EP24LC08, EP24LC16, EP24LC32, EP24LC64, EP24LC128, EP24LC256, EP24LC512, None)
 #define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address
 #define SETUP_RTC_I2C_ADDR              0b000           // RTC i2c address (only 0b000 can be used atm)
 #define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
@@ -381,7 +381,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
 // GPS Settings                                         (note: define HYDRO_ENABLE_GPS to enable GPS)
-#define SETUP_GPS_TYPE                  None            // Type of GPS (Serial, I2C, SPI, None)
+#define SETUP_GPS_TYPE                  None            // Type of GPS (UART, I2C, SPI, None)
 #define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
 #define SETUP_GPS_I2C_ADDR              0b000           // GPS i2c address, if using i2c
 #define SETUP_GPS_SPI                   SPI             // GPS SPI class instance, if using spi
@@ -390,11 +390,11 @@ Included below is the default system setup defines of the Vertical NFT example (
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, 16x2LCD, 16x2LCD_Swapped, 20x4LCD, 20x4LCD_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
-#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, 3x4MatrixKeyboard_OptRotEncOk, 3x4MatrixKeyboard_OptRotEncOkLR, 4x4MatrixKeyboard_OptRotEncOk, 4x4MatrixKeyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
+#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
-#define SETUP_SYS_TIMEZONE              +0              // System timezone offset
+#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 #define SETUP_SYS_STATIC_LAT            DBL_UNDEF       // System static latitude (if not using GPS/UI, else DBL_UNDEF), in degrees
 #define SETUP_SYS_STATIC_LONG           DBL_UNDEF       // System static longitude (if not using GPS/UI, else DBL_UNDEF), in minutes

@@ -28,6 +28,8 @@ extern const ConnectorLocalInfo applicationInfo;
 #define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // Default 4x4 matrix keyboard keys
 #define HYDRO_UI_NX4MATRIX_ACTIONS      "*#AB"              // Default next char, back char, enter char, and delete char on keyboard
 #define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            // Default graphical display theme base (CoolBlue, DarkMode)
+#define HYDRO_UI_GFX_DISP_THEME_SMLMED  SM                  // Small/medium display theme suffix
+#define HYDRO_UI_GFX_DISP_THEME_MEDLRG  ML                  // Medium/large display theme suffix
 #define HYDRO_UI_GFXTFT_USES_AN_SLIDER  true                // Default analog slider usage for AdafruitGFX/TFTe_SPI displays
 #define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Default raw touch usage for TFTTouch
 

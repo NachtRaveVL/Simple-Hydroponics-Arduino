@@ -21,7 +21,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
+#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (EP24LC01, EP24LC02, EP24LC04, EP24LC08, EP24LC16, EP24LC32, EP24LC64, EP24LC128, EP24LC256, EP24LC512, None)
 #define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address
 #define SETUP_RTC_I2C_ADDR              0b000           // RTC i2c address (only 0b000 can be used atm)
 #define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
@@ -29,6 +29,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
 #define SETUP_LCD_I2C_ADDR              0b000           // LCD i2c address
+#define SETUP_LCD_SPI                   SPI             // LCD SPI class instance
+#define SETUP_LCD_SPI_CS                -1              // LCD SPI CS pin, else -1
 #define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
@@ -49,7 +51,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_ETHERNET_SPI_CS           SS1             // Ethernet CS pin
 
 // GPS Settings                                         (note: define HYDRO_ENABLE_GPS to enable GPS)
-#define SETUP_GPS_TYPE                  None            // Type of GPS (Serial, I2C, SPI, None)
+#define SETUP_GPS_TYPE                  None            // Type of GPS (UART, I2C, SPI, None)
 #define SETUP_GPS_SERIAL                Serial1         // GPS serial class instance, if using serial
 #define SETUP_GPS_I2C_ADDR              0b000           // GPS i2c address, if using i2c
 #define SETUP_GPS_SPI                   SPI             // GPS SPI class instance, if using spi
@@ -61,10 +63,10 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, 16x2LCD, 16x2LCD_Swapped, 20x4LCD, 20x4LCD_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
-#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, 3x4MatrixKeyboard_OptRotEncOk, 3x4MatrixKeyboard_OptRotEncOkLR, 4x4MatrixKeyboard_OptRotEncOk, 4x4MatrixKeyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
+#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
-#define SETUP_SYS_TIMEZONE              +0              // System timezone offset
+#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
 // System Saves Settings                                (note: only one primary and one fallback mechanism may be enabled at a time)
@@ -107,17 +109,17 @@ MQTTClient mqttClient;
 #endif
 
 // Pre-init checks
-#if (SETUP_SAVES_WIFISTORAGE_MODE != Disabled || SETUP_DATA_WIFISTORAGE_ENABLE || SETUP_LOG_WIFISTORAGE_ENABLE) && !defined(HYDRO_USE_WIFI_STORAGE)
+#if (NOT_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Disabled) || SETUP_DATA_WIFISTORAGE_ENABLE || SETUP_LOG_WIFISTORAGE_ENABLE) && !defined(HYDRO_USE_WIFI_STORAGE)
 #warning The HYDRO_ENABLE_WIFI flag is expected to be defined as well as WiFiNINA_Generic.h included in order to run this sketch with WiFiStorage features enabled
 #endif
-#if (SETUP_SAVES_SD_CARD_MODE != Disabled || SETUP_DATA_SD_ENABLE || SETUP_LOG_SD_ENABLE || SETUP_EXTDATA_SD_ENABLE) && SETUP_SD_CARD_SPI_CS == -1
+#if (NOT_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Disabled) || SETUP_DATA_SD_ENABLE || SETUP_LOG_SD_ENABLE || SETUP_EXTDATA_SD_ENABLE) && SETUP_SD_CARD_SPI_CS == -1
 #warning The SETUP_SD_CARD_SPI_CS define is expected to be set to a valid pin in order to run this sketch with SD card features enabled
 #endif
-#if (SETUP_SAVES_EEPROM_MODE != Disabled || SETUP_EXTDATA_EEPROM_ENABLE) && SETUP_EEPROM_DEVICE_TYPE == None
+#if (NOT_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Disabled) || SETUP_EXTDATA_EEPROM_ENABLE) && IS_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None)
 #warning The SETUP_EEPROM_DEVICE_TYPE define is expected to be set to a valid size in order to run this sketch with EEPROM features enabled
 #endif
 
-pintype_t _SETUP_CTRL_INPUT_PINS[] = SETUP_CTRL_INPUT_PINS;
+pintype_t SETUP_CTRL_INPUT_PINS_[] = SETUP_CTRL_INPUT_PINS;
 Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
                          JOIN(Hydro_EEPROMType,SETUP_EEPROM_DEVICE_TYPE),
                          I2CDeviceSetup((uint8_t)SETUP_EEPROM_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
@@ -133,17 +135,22 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
 #else
                          DeviceSetup(),
 #endif
-#if defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == Serial
+#if defined(HYDRO_USE_GPS) && IS_SETUP_AS(SETUP_GPS_TYPE, UART)
                          UARTDeviceSetup(&SETUP_GPS_SERIAL, HYDRO_SYS_NMEAGPS_SERIALBAUD),
-#elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == I2C
+#elif defined(HYDRO_USE_GPS) && IS_SETUP_AS(SETUP_GPS_TYPE, I2C)
                          I2CDeviceSetup(SETUP_GPS_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
-#elif defined(HYDRO_USE_GPS) && SETUP_GPS_TYPE == SPI
+#elif defined(HYDRO_USE_GPS) && IS_SETUP_AS(SETUP_GPS_TYPE, SPI)
                          SPIDeviceSetup(SETUP_GPS_SPI_CS, &SETUP_GPS_SPI),
 #else
                          DeviceSetup(),
 #endif
-                         _SETUP_CTRL_INPUT_PINS,
-                         I2CDeviceSetup((uint8_t)SETUP_LCD_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED));
+                         SETUP_CTRL_INPUT_PINS_,
+#if SETUP_LCD_SPI_CS >= 0
+                         SPIDeviceSetup(SETUP_LCD_SPI_CS, &SETUP_LCD_SPI)
+#else
+                         I2CDeviceSetup((uint8_t)SETUP_LCD_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED)
+#endif
+                         );
 
 inline void setupOnce()
 {
@@ -164,20 +171,20 @@ inline void setupOnce()
     #ifndef HYDRO_USE_GPS
         hydroController.setSystemLocation(SETUP_SYS_STATIC_LAT, SETUP_SYS_STATIC_LONG, SETUP_SYS_STATIC_ALT);
     #endif
-    #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
+    #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Primary)
         hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToWiFiStorageJson
-    #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
+    #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Primary)
         hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToSDCardJson
-    #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Primary
+    #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Primary)
         hydroController.setAutosaveEnabled(Hydro_Autosave_EnabledToEEPROMRaw
     #else
         hydroController.setAutosaveEnabled(Hydro_Autosave_Disabled
     #endif
-    #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
+    #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Fallback)
         , Hydro_Autosave_EnabledToWiFiStorageJson);
-    #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
+    #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Fallback)
         , Hydro_Autosave_EnabledToSDCardJson);
-    #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Fallback
+    #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Fallback)
         , Hydro_Autosave_EnabledToEEPROMRaw);
     #else
         );
@@ -206,9 +213,9 @@ inline void setupAlways()
             netBegan = hydroController.getEthernet();
         #endif
         if (netBegan) {
-            #if SETUP_MQTT_BROKER_CONNECT_BY == Hostname
+            #if IS_SETUP_AS(SETUP_MQTT_BROKER_CONNECT_BY, Hostname)
                 mqttClient.begin(String(F(SETUP_MQTT_BROKER_HOSTNAME)).c_str(), SETUP_MQTT_BROKER_PORT, netClient);
-            #elif SETUP_MQTT_BROKER_CONNECT_BY == IPAddress
+            #elif IS_SETUP_AS(SETUP_MQTT_BROKER_CONNECT_BY, IPAddress)
             {   uint8_t ipAddr[4] = SETUP_MQTT_BROKER_IPADDR;
                 IPAddress ip(ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
                 mqttClient.begin(ip, SETUP_MQTT_BROKER_PORT, netClient);
@@ -243,29 +250,29 @@ void setup() {
     #endif
 
     // Sets system config name used in any of the following inits.
-    #if (defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE != Disabled) || \
-        (SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE != Disabled)
+    #if (defined(HYDRO_USE_WIFI_STORAGE) && NOT_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Disabled)) || \
+        (SETUP_SD_CARD_SPI_CS >= 0 && NOT_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Disabled))
         hydroController.setSystemConfigFilename(F(SETUP_SAVES_CONFIG_FILE));
     #endif
     // Sets the EEPROM memory address for system data.
-    #if SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE != Disabled
+    #if NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && NOT_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Disabled)
         hydroController.setSystemDataAddress(SETUP_EEPROM_SYSDATA_ADDR);
     #endif
 
     // Initializes controller with first initialization method that successfully returns.
     if (!(false
-        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Primary
+        #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Primary)
             || hydroController.initFromWiFiStorage()
-        #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Primary
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Primary)
             || hydroController.initFromSDCard()
-        #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Primary
+        #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Primary)
             || hydroController.initFromEEPROM()
         #endif
-        #if defined(HYDRO_USE_WIFI_STORAGE) && SETUP_SAVES_WIFISTORAGE_MODE == Fallback
+        #if defined(HYDRO_USE_WIFI_STORAGE) && IS_SETUP_AS(SETUP_SAVES_WIFISTORAGE_MODE, Fallback)
             || hydroController.initFromWiFiStorage()
-        #elif SETUP_SD_CARD_SPI_CS >= 0 && SETUP_SAVES_SD_CARD_MODE == Fallback
+        #elif SETUP_SD_CARD_SPI_CS >= 0 && IS_SETUP_AS(SETUP_SAVES_SD_CARD_MODE, Fallback)
             || hydroController.initFromSDCard()
-        #elif SETUP_EEPROM_DEVICE_TYPE != None && SETUP_SAVES_EEPROM_MODE == Fallback
+        #elif NOT_SETUP_AS(SETUP_EEPROM_DEVICE_TYPE, None) && IS_SETUP_AS(SETUP_SAVES_EEPROM_MODE, Fallback)
             || hydroController.initFromEEPROM()
         #endif
         )) {
@@ -280,7 +287,7 @@ void setup() {
 
     setupAlways();
 
-    #if defined(HYDRO_USE_GUI) && SETUP_DISPLAY_OUT_MODE != Disabled
+    #if defined(HYDRO_USE_GUI) && NOT_SETUP_AS(SETUP_DISPLAY_OUT_MODE, Disabled)
         hydroController.enableUI(new HydruinoFullUI());
     #endif
 
