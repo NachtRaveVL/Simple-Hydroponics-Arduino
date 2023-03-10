@@ -100,8 +100,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_EEPROM_STRINGS_ADDR       0x1111          // Start address for strings data (from Data Writer output)
 
 // UI Settings
-#define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic activity level
-#define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interruptable I/O if able
+#define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic active level (ACT_LOW, ACT_HIGH)
+#define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interrupt driven I/O if able, else force polling
 #define SEUTP_UI_USE_UNICODE_FONTS      true            // Use tcUnicode fonts instead of default, if using graphical display
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
@@ -116,7 +116,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_TFT_SCREEN_HEIGHT      240             // Custom screen height, if using TFT_eSPI
 
 // UI Control Input Settings
-#define SETUP_UI_ENC_ROTARY_SPEED       HALF_CYCLE      // Rotary encoder cycling speed
+#define SETUP_UI_ENC_ROTARY_SPEED       HALF_CYCLE      // Rotary encoder cycling speed (FULL_CYCLE, HALF_CYCLE, QUARTER_CYCLE)
 #define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
 #define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds

@@ -94,10 +94,4 @@ class HydroInputDriver;
 class HydroRemoteControl;
 struct HydroUIData;
 
-
-// Returns the first theme in parameter list that isn't undefined, allowing defaulting chains to be nicely defined.
-inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_DisplayTheme theme2) {
-    return theme1 != Hydro_DisplayTheme_Undefined ? theme1 : theme2;
-}
-
 #endif // /ifndef HydroUIDefines_H

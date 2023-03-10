@@ -53,8 +53,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          LCD20x4         // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
-#define SETUP_CONTROL_IN_MODE           RemoteControl   // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
+#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours
@@ -94,8 +94,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_EEPROM_STRINGS_ADDR       0x1111          // Start address for strings data (from Data Writer output)
 
 // UI Settings
-#define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic activity level
-#define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interruptable I/O if able
+#define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic active level (ACT_LOW, ACT_HIGH)
+#define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interrupt driven I/O if able, else force polling
 #define SEUTP_UI_USE_UNICODE_FONTS      true            // Use tcUnicode fonts instead of default, if using graphical display
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
@@ -110,7 +110,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_TFT_SCREEN_HEIGHT      240             // Custom screen height, if using TFT_eSPI
 
 // UI Control Input Settings
-#define SETUP_UI_ENC_ROTARY_SPEED       HALF_CYCLE      // Rotary encoder cycling speed
+#define SETUP_UI_ENC_ROTARY_SPEED       HALF_CYCLE      // Rotary encoder cycling speed (FULL_CYCLE, HALF_CYCLE, QUARTER_CYCLE)
 #define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
 #define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
