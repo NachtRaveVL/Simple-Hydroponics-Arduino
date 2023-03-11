@@ -447,6 +447,8 @@ public:
     Hydro_ControlInputMode getControlInputMode() const;
     // System display name (default: "Hydruino")
     String getSystemName() const;
+    // System display name (default: "Hydruino"), as constant chars
+    inline const char *getSystemNameChars() const { return _systemData ? _systemData->systemName : nullptr; }
     // System time zone offset from UTC (default: +0/UTC), in total offset seconds
     time_t getTimeZoneOffset() const;
     // Whenever the system booted up with the RTC battery failure flag set (meaning the time is not set correctly)

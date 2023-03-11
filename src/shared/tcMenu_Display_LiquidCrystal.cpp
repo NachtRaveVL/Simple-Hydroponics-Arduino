@@ -85,9 +85,9 @@ void LiquidCrystalRenderer::renderList() {
 
 void LiquidCrystalRenderer::renderTitle(bool forceDraw) {
     if(!drewTitleThisTime || forceDraw) {
-        strncpy(buffer, this->appTitle, 30);
+        strncpy_P(buffer, appTitle, min(bufferSize, 30));
         uint8_t bufSz = bufferSize;
-        uint8_t last = min(bufSz, (uint8_t)strlen(buffer));
+        uint8_t last = min(bufSz, (uint8_t)strnlen(appTitle, 30));
         for(uint8_t i = last; i < bufSz; i++) {
             buffer[i] = ' ';
         }

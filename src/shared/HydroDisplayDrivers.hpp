@@ -16,7 +16,7 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup,
           _gfx(displaySetup.cs, dcPin, resetPin),
       #endif
       _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemName().c_str(), &_gfxDrawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
 {
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
