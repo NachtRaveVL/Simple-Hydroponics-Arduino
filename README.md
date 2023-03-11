@@ -41,7 +41,7 @@ Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
 MCUs that definitely work: GIGA, Portenta, ESP32/8266, Teensy 3.5+, STM32 (>256kB Flash), Pico, etc.
 
-MCUs that _can_ work /w ext. data storage: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB Flash)
+MCUs that _can_ work /w ext. data storage/limited build: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB Flash)
 
 MCUs that will definitely _not_ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8/32 (<256kB Flash), etc.
 
