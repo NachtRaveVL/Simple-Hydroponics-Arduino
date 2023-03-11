@@ -23,6 +23,9 @@ struct UIControlSetup;
 
 #include "HydruinoUI.h"
 
+// Returns the active base UI instance. Not guaranteed to be non-null.
+inline HydruinoBaseUI *getBaseUI() { return reinterpret_cast<HydruinoBaseUI *>(getUI()); }
+
 // Returns the first theme in parameter list that isn't undefined, allowing defaulting chains to be nicely defined.
 inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_DisplayTheme theme2) {
     return theme1 != Hydro_DisplayTheme_Undefined ? theme1 : theme2;

@@ -45,10 +45,10 @@ public:
     virtual ~HydruinoBaseUI();
 
     void init(uint8_t updatesPerSec,                                        // Updates per second (1 to 10)
-              Hydro_DisplayTheme displayTheme,                              // Display theme to apply
+              Hydro_DisplayTheme displayTheme = Hydro_DisplayTheme_Undefined, // Display theme to apply
               bool analogSlider = false);                                   // Slider usage for analog items
-    void init();                                                            // Standard initializer
 
+    virtual void init() override;                                           // Standard initializer
     virtual bool begin() override;                                          // Begins UI
 
     virtual void setNeedsLayout() override;

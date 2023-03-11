@@ -339,7 +339,6 @@ inline void setupUI()
             #if NOT_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Disabled)
                 ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE2_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE2_UART), SETUP_UI_RC_NETWORKING_PORT);
             #endif
-            ui->init();
             hydroController.enableUI(ui);
         }
     #endif
