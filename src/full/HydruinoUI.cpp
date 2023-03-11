@@ -51,6 +51,11 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
                 }
             } break;
 
+            case Hydro_ControlInputMode_Matrix2x2UpDownButtonsOkL: {
+                HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Matrix, SFP(HStr_Err_InvalidParameter));
+                _input = new HydroInputMatrix2x2(ctrlInPins, _uiCtrlSetup.ctrlCfgAs.matrix.repeatDelay, _uiCtrlSetup.ctrlCfgAs.matrix.repeatInterval);
+            } break;
+
             case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:
             case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR: {
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Matrix, SFP(HStr_Err_InvalidParameter));

@@ -13,6 +13,7 @@ class HydroInputRotary;
 class HydroInputUpDownButtons;
 class HydroInputESP32TouchKeys;
 class HydroInputJoystick;
+class HydroInputMatrix2x2;
 class HydroInputMatrix3x4;
 class HydroInputMatrix4x4;
 class HydroInputResistiveTouch;
@@ -113,6 +114,23 @@ protected:
     const float _joystickCalib[3];
     MultiIoAbstraction _joystickMultiIo;
     AnalogJoystickToButtons _joystickIoXAxis;
+};
+
+class HydroInputMatrix2x2 : public HydroInputDriver {
+public:
+    HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval);
+    virtual ~HydroInputMatrix2x2();
+
+    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+
+    virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
+
+    inline MatrixKeyboardManager &getKeyboard() { return _keyboard; }
+
+protected:
+    MatrixKeyboardManager _keyboard;
+    KeyboardLayout _keyboardLayout;
+    MenuEditingKeyListener _tcMenuKeyListener;
 };
 
 class HydroInputMatrix3x4 : public HydroInputDriver {

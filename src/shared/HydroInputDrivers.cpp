@@ -140,23 +140,49 @@ void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
     menuMgr.initWithoutInput(renderer, initialItem);
 }
 
+
+static String getMatrix2x2KBKeys()
+{
+    static const String kb2x2(F(HYDRO_UI_MXNMATRIX_ACTIONS));
+    return kb2x2;
+}
+
+HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval)
+    : HydroInputDriver(controlPins),
+      _keyboard(),
+      _keyboardLayout(2,2,getMatrix2x2KBKeys().c_str()),
+      _tcMenuKeyListener(getMxNMatrixActions(0), getMxNMatrixActions(1), getMxNMatrixActions(2), getMxNMatrixActions(3))
+{
+    // todo expander setup
+    _keyboardLayout.setRowPin(0, controlPins.second[0]);
+    _keyboardLayout.setRowPin(1, controlPins.second[1]);
+    _keyboardLayout.setColPin(0, controlPins.second[2]);
+    _keyboardLayout.setColPin(1, controlPins.second[3]);
+    _keyboard.setRepeatKeyMillis(repeatDelay, repeatInterval);
+}
+
+void HydroInputMatrix2x2::begin(MenuRenderer *renderer, MenuItem *initialItem)
+{
+    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+}
+
+
 static String getMatrix3x4KBKeys()
 {
     static const String kb3x4(F(HYDRO_UI_3X4MATRIX_KEYS));
     return kb3x4;
 }
 
-static char getNx4MatrixActions(int charIndex)
+static char getMxNMatrixActions(int charIndex)
 {
-    static const String actNx4(F(HYDRO_UI_NX4MATRIX_ACTIONS));
-    return actNx4[charIndex];
+    return getMatrix2x2KBKeys()[charIndex];
 }
 
 HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
       _keyboardLayout(4,3,getMatrix3x4KBKeys().c_str()),
-      _tcMenuKeyListener(getNx4MatrixActions(0), getNx4MatrixActions(1), getNx4MatrixActions(2), getNx4MatrixActions(3)),
+      _tcMenuKeyListener(getMxNMatrixActions(0), getMxNMatrixActions(1), getMxNMatrixActions(2), getMxNMatrixActions(3)),
       _rotaryEncoder(nullptr)
 {
     // todo expander setup
@@ -167,7 +193,6 @@ HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> contro
     _keyboardLayout.setColPin(0, controlPins.second[4]);
     _keyboardLayout.setColPin(1, controlPins.second[5]);
     _keyboardLayout.setColPin(2, controlPins.second[6]);
-    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
     _keyboard.setRepeatKeyMillis(repeatDelay, repeatInterval);
 
     if (isValidPin(controlPins.second[7])) {
@@ -182,6 +207,7 @@ HydroInputMatrix3x4::~HydroInputMatrix3x4()
 
 void HydroInputMatrix3x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
+    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
 }
 
@@ -196,7 +222,7 @@ HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> contro
     : HydroInputDriver(controlPins),
       _keyboard(),
       _keyboardLayout(4,4,getMatrix4x4KBKeys().c_str()),
-      _tcMenuKeyListener(getNx4MatrixActions(0), getNx4MatrixActions(1), getNx4MatrixActions(2), getNx4MatrixActions(3)),
+      _tcMenuKeyListener(getMxNMatrixActions(0), getMxNMatrixActions(1), getMxNMatrixActions(2), getMxNMatrixActions(3)),
       _rotaryEncoder()
 {
     // todo expander setup
@@ -208,7 +234,6 @@ HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> contro
     _keyboardLayout.setColPin(1, controlPins.second[5]);
     _keyboardLayout.setColPin(2, controlPins.second[6]);
     _keyboardLayout.setColPin(3, controlPins.second[7]);
-    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
     _keyboard.setRepeatKeyMillis(repeatDelay, repeatInterval);
 
     if (isValidPin(controlPins.second[8])) {
@@ -223,6 +248,7 @@ HydroInputMatrix4x4::~HydroInputMatrix4x4()
 
 void HydroInputMatrix4x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
+    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
 }
 

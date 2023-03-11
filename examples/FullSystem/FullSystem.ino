@@ -290,6 +290,7 @@ inline void setupUI()
                 case Hydro_ControlInputMode_AnalogJoystickOk:
                     uiCtrlSetup = UIControlSetup(JoystickControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_JS_ACCELERATION));
                     break;
+                case Hydro_ControlInputMode_Matrix2x2UpDownButtonsOkL:
                 case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:
                 case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
                 case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk:

@@ -324,6 +324,7 @@ enum Hydro_String : unsigned short {
     HStr_Enum_LiqVolume,
     HStr_Enum_Lowest,
     HStr_Enum_Marrow,
+    HStr_Enum_Matrix2x2,
     HStr_Enum_Matrix3x4,
     HStr_Enum_Matrix4x4,
     HStr_Enum_Melon,
