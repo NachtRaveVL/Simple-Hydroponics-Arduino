@@ -112,9 +112,9 @@ struct ButtonsControlSetup {
 struct ESP32TouchControlSetup {
     uint8_t repeatSpeed;                        // Key repeat speed, in ticks
     uint16_t switchThreshold;                   // Switch activation threshold (default: 800)
-    Hydro_ESP32Touch_HighRef highVoltage;       // High reference voltage (default: 2V7)
-    Hydro_ESP32Touch_LowRef lowVoltage;         // Low reference voltage (default: 0V5)
-    Hydro_ESP32Touch_HighRefAtten attenuation;  // High reference voltage attention (default: 1V)
+    Hydro_ESP32Touch_HighRef highVoltage;       // High reference voltage (default: V_2V7)
+    Hydro_ESP32Touch_LowRef lowVoltage;         // Low reference voltage (default: V_0V5)
+    Hydro_ESP32Touch_HighRefAtten attenuation;  // High reference voltage attention (default: V_1V)
 
     inline ESP32TouchControlSetup(uint8_t repeatSpeedIn = HYDRO_UI_KEYREPEAT_SPEED, uint16_t switchThresholdIn = 800, Hydro_ESP32Touch_HighRef highVoltageIn = Hydro_ESP32Touch_HighRef_V_2V7, Hydro_ESP32Touch_LowRef lowVoltageIn = Hydro_ESP32Touch_LowRef_V_0V5, Hydro_ESP32Touch_HighRefAtten attenuationIn = Hydro_ESP32Touch_HighRefAtten_V_1V) : repeatSpeed(repeatSpeedIn), switchThreshold(switchThresholdIn), highVoltage(highVoltageIn), lowVoltage(lowVoltageIn), attenuation(attenuationIn) { ; }
 };
