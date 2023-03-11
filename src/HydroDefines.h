@@ -786,14 +786,15 @@ class HydroRail;
 #define SETUP_ENUM_UpDownESP32TouchOk   122
 #define SETUP_ENUM_UpDownESP32TouchOkLR 123
 #define SETUP_ENUM_AnalogJoystickOk     124
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk 125
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR 126
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk 127
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR 128
-#define SETUP_ENUM_ResistiveTouch       129
-#define SETUP_ENUM_TouchScreen          130
-#define SETUP_ENUM_TFTTouch             131
-#define SETUP_ENUM_RemoteControl        132
+#define SETUP_ENUM_Matrix2x2UpDownButtonsOkL 125
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk 126
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR 127
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk 128
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR 129
+#define SETUP_ENUM_ResistiveTouch       130
+#define SETUP_ENUM_TouchScreen          131
+#define SETUP_ENUM_TFTTouch             132
+#define SETUP_ENUM_RemoteControl        133
 // Checks setup defines for equality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
 #define IS_SETUP_AS(X,Y)                JOIN(SETUP_ENUM,X) == SETUP_ENUM_##Y
 // Checks setup defines for inequality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)

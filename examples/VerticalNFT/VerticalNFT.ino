@@ -720,7 +720,7 @@ inline void setupUI()
             #if IS_SETUP_AS(SETUP_SYS_UI_MODE, Minimal)
                 #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOkLR) ||\
                     IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownButtons) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownButtonsLR) ||\
-                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, AnalogJoystickOk) ||\
+                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, AnalogJoystickOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix2x2UpDownButtonsOkL) ||\
                     IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix3x4Keyboard_OptRotEncOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix3x4Keyboard_OptRotEncOkLR) ||\
                     IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOkLR) ||\
                     SETUP_UI_IS_DFROBOTSHIELD

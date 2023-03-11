@@ -147,6 +147,11 @@ static String getMatrix2x2KBKeys()
     return kb2x2;
 }
 
+static inline char getMxNMatrixActions(int charIndex)
+{
+    return getMatrix2x2KBKeys()[charIndex];
+}
+
 HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval)
     : HydroInputDriver(controlPins),
       _keyboard(),
@@ -171,11 +176,6 @@ static String getMatrix3x4KBKeys()
 {
     static const String kb3x4(F(HYDRO_UI_3X4MATRIX_KEYS));
     return kb3x4;
-}
-
-static char getMxNMatrixActions(int charIndex)
-{
-    return getMatrix2x2KBKeys()[charIndex];
 }
 
 HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed)
