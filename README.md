@@ -36,14 +36,16 @@ Hydruino is a MCU-based solution primarily written for Arduino and Arduino-like 
 
 ### MCU Requirements
 
-Minimum MCU: 256-512kB Flash, 16-24kB SRAM, 8-16MHz  
-Recommended: 1MB+ Flash, 32kB+ SRAM, 32MHz+
+Minimum MCU: 256-512kB Flash, 16-24kB SRAM, 16MHz  
+Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
-Will work: Nano 33 (any), MKR (any), Due/Zero, ESP32/8266, Teensy 3+, STM32 (properly sized), Pico, etc.
+MCUs that definitely work: GIGA, Portenta, ESP32/8266, Teensy 3.5+, STM32 (>256kB Flash), Pico, etc.
 
-Won't work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2-, STM8, etc.
+MCUs that _can_ work /w ext. data storage: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB Flash)
 
-Devices that _may_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101, STM32 (improperly sized)
+MCUs that will definitely _not_ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8/32 (<256kB Flash), etc.
+
+MCUs that _may_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101
 
 Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRAM size configurations. Some configurations may not be supported, others may limit total system size (i.e. object count, library support, features, etc.). Bigger is always better until you get a better idea of your specific use case's size requirements.
 
