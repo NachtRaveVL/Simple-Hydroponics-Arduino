@@ -300,7 +300,7 @@ void HydruinoMinUI::addSerialRemote(UARTDeviceSetup rcSetup)
     HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
 
     if (remoteControl && remoteControl->getConnection()) {
-        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(applicationInfo); }
+        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(getApplicationInfo()); }
         if (_remoteServer) { _remoteServer->addConnection(remoteControl->getConnection()); }
         _remotes.push_back(remoteControl);
     } else {
@@ -315,7 +315,7 @@ void HydruinoMinUI::addSimhubRemote(UARTDeviceSetup rcSetup)
     HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
 
     if (remoteControl && remoteControl->getConnection()) {
-        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(applicationInfo); }
+        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(getApplicationInfo()); }
         if (_remoteServer) { _remoteServer->addConnection(remoteControl->getConnection()); }
         _remotes.push_back(remoteControl);
     } else {
@@ -335,7 +335,7 @@ void HydruinoMinUI::addWiFiRemote(uint16_t rcServerPort)
     #endif
 
     if (remoteControl && remoteControl->getConnection()) {
-        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(applicationInfo); }
+        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(getApplicationInfo()); }
         if (_remoteServer) { _remoteServer->addConnection(remoteControl->getConnection()); }
         _remotes.push_back(remoteControl);
     } else {
@@ -355,7 +355,7 @@ void HydruinoMinUI::addEthernetRemote(uint16_t rcServerPort)
     #endif
 
     if (remoteControl && remoteControl->getConnection()) {
-        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(applicationInfo); }
+        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(getApplicationInfo()); }
         if (_remoteServer) { _remoteServer->addConnection(remoteControl->getConnection()); }
         _remotes.push_back(remoteControl);
     } else {

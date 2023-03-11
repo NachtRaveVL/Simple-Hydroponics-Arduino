@@ -24,9 +24,10 @@
 #include "tcMenu_Display_LiquidCrystal.h"
 #include "tcUtil.h"
 
-LiquidCrystalRenderer::LiquidCrystalRenderer(LiquidCrystal& lcd, uint8_t dimX, uint8_t dimY) : BaseMenuRenderer(dimX) {
+LiquidCrystalRenderer::LiquidCrystalRenderer(LiquidCrystal& lcd, uint8_t dimX, uint8_t dimY, const char *appTitle) : BaseMenuRenderer(dimX) {
     this->dimY = dimY;
     this->lcd = &lcd;
+    this->appTitle = appTitle;
     this->backChar = '<';
     this->forwardChar = '>';
     this->editChar = '=';
@@ -84,7 +85,7 @@ void LiquidCrystalRenderer::renderList() {
 
 void LiquidCrystalRenderer::renderTitle(bool forceDraw) {
     if(!drewTitleThisTime || forceDraw) {
-        strcpy_P(buffer, applicationInfo.name);
+        strcpy(buffer, this->appTitle);
         uint8_t bufSz = bufferSize;
         uint8_t last = min(bufSz, (uint8_t)strlen(buffer));
         for(uint8_t i = last; i < bufSz; i++) {

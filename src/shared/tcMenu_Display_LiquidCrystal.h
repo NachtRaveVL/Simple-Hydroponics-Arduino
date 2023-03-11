@@ -39,6 +39,7 @@ class LiquidCrystalRenderer : public BaseMenuRenderer {
 private:
     LiquidCrystal* lcd;
     uint8_t dimY;
+    const char *appTitle;
     uint8_t backChar;
     uint8_t forwardChar;
     uint8_t editChar;
@@ -48,7 +49,7 @@ private:
     uint8_t lcdEditorCursorY = 0xFF;
 public:
 
-    LiquidCrystalRenderer(LiquidCrystal& lcd, uint8_t dimX, uint8_t dimY);
+    LiquidCrystalRenderer(LiquidCrystal& lcd, uint8_t dimX, uint8_t dimY, const char *appTitle);
     virtual ~LiquidCrystalRenderer();
     void render() override;
     void initialise() override;
@@ -80,8 +81,8 @@ protected:
 /**
  * This method constructs an instance of a liquid crystal renderer.
  */
-inline MenuRenderer* liquidCrystalRenderer(LiquidCrystal& lcd, uint8_t dimX, uint8_t dimY) {
-    return new LiquidCrystalRenderer(lcd, dimX, dimY);
+inline MenuRenderer* liquidCrystalRenderer(LiquidCrystal& lcd, uint8_t dimX, uint8_t dimY, const char *appTitle) {
+    return new LiquidCrystalRenderer(lcd, dimX, dimY, appTitle);
 }
 
 #endif // _TCMENU_LIQUID_CRYSTAL_H

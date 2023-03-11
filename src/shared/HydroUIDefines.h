@@ -6,9 +6,6 @@
 #ifndef HydroUIDefines_H
 #define HydroUIDefines_H
 
-// Unique program identifier for tcMenu
-extern const ConnectorLocalInfo applicationInfo;
-
 #if F_SPD >= 48000000                                       // Resolve an appropriate UI update speed (1-10)
 #define HYDRO_UI_UPDATE_SPEED           10
 #elif F_SPD >= 32000000

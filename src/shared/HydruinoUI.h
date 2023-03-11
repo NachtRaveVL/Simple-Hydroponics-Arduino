@@ -56,11 +56,13 @@ public:
     virtual bool isFullUI() = 0;
     inline bool isMinUI() { return !isFullUI(); }
 
+    inline const ConnectorLocalInfo &getApplicationInfo() const { return _appInfo; }
     inline const UIControlSetup &getControlSetup() const { return _uiCtrlSetup; }
     inline const UIDisplaySetup &getDisplaySetup() const { return _uiDispSetup; }
     inline bool isActiveLow() const { return _isActiveLow; }
 
 protected:
+    ConnectorLocalInfo _appInfo;                            // Application info for connections
     const UIControlSetup _uiCtrlSetup;                      // Control setup
     const UIDisplaySetup _uiDispSetup;                      // Display setup
     const bool _isActiveLow;                                // IO pins use active-low signaling logic

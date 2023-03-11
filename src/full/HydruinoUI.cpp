@@ -211,7 +211,7 @@ void HydruinoFullUI::addRemote(Hydro_RemoteControl rcType, UARTDeviceSetup rcSet
     }
 
     if (remoteControl && remoteControl->getConnection()) {
-        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(applicationInfo); }
+        if (!_remoteServer) { _remoteServer = new TcMenuRemoteServer(getApplicationInfo()); }
         if (_remoteServer) { _remoteServer->addConnection(remoteControl->getConnection()); }
         _remotes.push_back(remoteControl);
     } else {

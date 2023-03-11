@@ -54,7 +54,7 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode
            displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 0 : 2, 4, 5, 6, 7,
            backlightMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
            ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
-      _renderer(_lcd, _screenSize[0], _screenSize[1])
+      _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemName().c_str())
 {
     _lcd.configureBacklightPin(3);
     _renderer.setTitleRequired(_screenSize[1] >= 4);
@@ -65,7 +65,7 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_un
       _lcd(8, 9, 4, 5, 6, 7,
            backlightMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
            ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
-      _renderer(_lcd, _screenSize[0], _screenSize[1])
+      _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemName().c_str())
 {
     _lcd.configureBacklightPin(10);
     _renderer.setTitleRequired(false);
@@ -185,7 +185,7 @@ HydroDisplayU8g2lib::HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, De
         HYDRO_SOFT_ASSERT(_gfxDrawable, SFP(HStr_Err_AllocationFailure));
 
         if (_gfxDrawable) {
-            _renderer = new GraphicsDeviceRenderer(HYDRO_UI_RENDERER_BUFFERSIZE, applicationInfo.name, _gfxDrawable);
+            _renderer = new GraphicsDeviceRenderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemName().c_str(), _gfxDrawable);
             HYDRO_SOFT_ASSERT(_renderer, SFP(HStr_Err_AllocationFailure));
 
             if (_renderer) { _renderer->setTitleMode(BaseGraphicalRenderer::TITLE_FIRST_ROW); }
@@ -219,7 +219,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
           _gfx(displaySetup.cs, dcPin, resetPin),
       #endif
       _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, applicationInfo.name, &_gfxDrawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemName().c_str(), &_gfxDrawable)
 {
     HYDRO_SOFT_ASSERT(_tab != Hydro_ST7735Tab_Undefined, SFP(HStr_Err_InvalidParameter));
     #ifdef ESP8266
@@ -248,7 +248,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
           _gfx(displaySetup.cs, dcPin, resetPin),
       #endif
       _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, applicationInfo.name, &_gfxDrawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemName().c_str(), &_gfxDrawable)
 {
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_NotConfiguredProperly));
@@ -272,7 +272,7 @@ HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetu
     : HydroDisplayDriver(displayOrientation),
       _gfx(dcPin, displaySetup.cs, resetPin, displaySetup.spi),
       _gfxDrawable(&_gfx),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, applicationInfo.name, &_gfxDrawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemName().c_str(), &_gfxDrawable)
 {
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
@@ -293,7 +293,7 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_Disp
     : HydroDisplayDriver(displayOrientation), _screenSize{screenWidth, screenHeight},
       _gfx(screenWidth, screenHeight),
       _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, applicationInfo.name, &_gfxDrawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemName().c_str(), &_gfxDrawable)
 {
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
