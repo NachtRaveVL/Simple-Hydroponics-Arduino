@@ -82,10 +82,10 @@ struct UIDisplaySetup {
     } dispCfgAs;                        // Display config data
 
     inline UIDisplaySetup() : dispCfgType(None), dispCfgAs{} { ; }
-    inline UIDisplaySetup(LCDDisplaySetup dispSetup) : dispCfgType(LCD), dispCfgAs{.lcd=dispSetup} { ; }
-    inline UIDisplaySetup(PixelDisplaySetup dispSetup) : dispCfgType(Pixel), dispCfgAs{.gfx=dispSetup} { ; }
-    inline UIDisplaySetup(ST7735DisplaySetup dispSetup) : dispCfgType(ST7735), dispCfgAs{.st7735=dispSetup} { ; }
-    inline UIDisplaySetup(TFTDisplaySetup dispSetup) : dispCfgType(TFT), dispCfgAs{.tft=dispSetup} { ; }
+    inline UIDisplaySetup(LCDDisplaySetup displaySetup) : dispCfgType(LCD), dispCfgAs{.lcd=displaySetup} { ; }
+    inline UIDisplaySetup(PixelDisplaySetup displaySetup) : dispCfgType(Pixel), dispCfgAs{.gfx=displaySetup} { ; }
+    inline UIDisplaySetup(ST7735DisplaySetup displaySetup) : dispCfgType(ST7735), dispCfgAs{.st7735=displaySetup} { ; }
+    inline UIDisplaySetup(TFTDisplaySetup displaySetup) : dispCfgType(TFT), dispCfgAs{.tft=displaySetup} { ; }
 
     static inline UIDisplaySetup usingDFRobotShield() { return UIDisplaySetup(LCDDisplaySetup::usingDFRobotShield()); }
 

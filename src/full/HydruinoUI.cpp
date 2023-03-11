@@ -75,16 +75,16 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
 
         // Display driver setup
         auto dispOutMode = controller->getDisplayOutputMode();
-        auto dispSetup = controller->getDisplaySetup();
+        auto displaySetup = controller->getDisplaySetup();
 
         // LiquidCrystalIO supports only i2c
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2_EN && dispOutMode <= Hydro_DisplayOutputMode_LCD20x4_RS) || dispSetup.cfgType == DeviceSetup::I2CSetup, SFP(HStr_Err_InvalidParameter));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2_EN && dispOutMode <= Hydro_DisplayOutputMode_LCD20x4_RS) || displaySetup.cfgType == DeviceSetup::I2CSetup, SFP(HStr_Err_InvalidParameter));
         // U8g2 supports either i2c or SPI
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_SSD1305 && dispOutMode <= Hydro_DisplayOutputMode_IL3820_V2) || (dispSetup.cfgType == DeviceSetup::I2CSetup || dispSetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_SSD1305 && dispOutMode <= Hydro_DisplayOutputMode_IL3820_V2) || (displaySetup.cfgType == DeviceSetup::I2CSetup || displaySetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
         // AdafruitGFX supports only SPI
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_PCD8544) || (dispSetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_PCD8544) || (displaySetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
         // TFTe_SPI supports only SPI
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_PCD8544) || (dispSetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_PCD8544) || (displaySetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
 
         switch (dispOutMode) {
             // LiquidCrystalIO
@@ -94,9 +94,9 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
             case Hydro_DisplayOutputMode_LCD20x4_RS: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::LCD, SFP(HStr_Err_InvalidParameter));
                 if (!_uiDispSetup.dispCfgAs.lcd.isDFRobotShield) {
-                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, dispSetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
+                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, displaySetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
                 } else {
-                    _display = new HydroDisplayLiquidCrystalIO(true, dispSetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
+                    _display = new HydroDisplayLiquidCrystalIO(true, displaySetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
                 }
             } break;
 
@@ -111,38 +111,38 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
             case Hydro_DisplayOutputMode_IL3820:
             case Hydro_DisplayOutputMode_IL3820_V2: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                _display = new HydroDisplayU8g2lib(dispOutMode, dispSetup, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                _display = new HydroDisplayU8g2lib(dispOutMode, displaySetup, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
             } break;
 
             // AdafruitGFX
             case Hydro_DisplayOutputMode_ST7735: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::ST7735, SFP(HStr_Err_InvalidParameter));
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgAs.st7735.tabColor != Hydro_ST7735Tab_Undefined, SFP(HStr_Err_InvalidParameter));
-                _display = new HydroDisplayAdafruitGFX<Adafruit_ST7735>(dispSetup.cfgAs.spi, _uiDispSetup.dispCfgAs.st7735.dispOrient, _uiDispSetup.dispCfgAs.st7735.tabColor, _uiDispSetup.dispCfgAs.st7735.dcPin, _uiDispSetup.dispCfgAs.st7735.resetPin);
+                _display = new HydroDisplayAdafruitGFX<Adafruit_ST7735>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.st7735.dispOrient, _uiDispSetup.dispCfgAs.st7735.tabColor, _uiDispSetup.dispCfgAs.st7735.dcPin, _uiDispSetup.dispCfgAs.st7735.resetPin);
             } break;
             case Hydro_DisplayOutputMode_ST7789: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                _display = new HydroDisplayAdafruitGFX<Adafruit_ST7789>(dispSetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                _display = new HydroDisplayAdafruitGFX<Adafruit_ST7789>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
             } break;
             case Hydro_DisplayOutputMode_ILI9341: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                _display = new HydroDisplayAdafruitGFX<Adafruit_ILI9341>(dispSetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                _display = new HydroDisplayAdafruitGFX<Adafruit_ILI9341>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
             } break;
             case Hydro_DisplayOutputMode_PCD8544: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                _display = new HydroDisplayAdafruitGFX<Adafruit_PCD8544>(dispSetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                _display = new HydroDisplayAdafruitGFX<Adafruit_PCD8544>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
             } break;
 
             // TFT_eSPI
             case Hydro_DisplayOutputMode_TFT: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::TFT, SFP(HStr_Err_InvalidParameter));
-                HYDRO_SOFT_ASSERT(dispSetup.cfgAs.spi.spi == HYDRO_USE_SPI, SFP(HStr_Err_NotConfiguredProperly));
+                HYDRO_SOFT_ASSERT(displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI, SFP(HStr_Err_NotConfiguredProperly));
                 #ifdef TFT_CS
-                    HYDRO_SOFT_ASSERT(dispSetup.cfgAs.spi.cs == TFT_CS, SFP(HStr_Err_NotConfiguredProperly));
+                    HYDRO_SOFT_ASSERT(displaySetup.cfgAs.spi.cs == TFT_CS, SFP(HStr_Err_NotConfiguredProperly));
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
                 #endif
-                _display = new HydroDisplayTFTeSPI(dispSetup.cfgAs.spi, _uiDispSetup.dispCfgAs.tft.dispOrient, _uiDispSetup.dispCfgAs.tft.screenWidth, _uiDispSetup.dispCfgAs.tft.screenHeight);
+                _display = new HydroDisplayTFTeSPI(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.tft.dispOrient, _uiDispSetup.dispCfgAs.tft.screenWidth, _uiDispSetup.dispCfgAs.tft.screenHeight);
             } break;
 
             default: break;

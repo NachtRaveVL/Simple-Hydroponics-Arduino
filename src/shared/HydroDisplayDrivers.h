@@ -40,9 +40,9 @@ protected:
 
 class HydroDisplayLiquidCrystalIO : public HydroDisplayDriver {
 public:
-    HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup dispSetup, Hydro_BacklightMode backlightMode = Hydro_BacklightMode_Normal);
+    HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode backlightMode = Hydro_BacklightMode_Normal);
     // Special constructor for DFRobotShield /w 16x2 LCD (isDFRobotShield_unused tossed, only used for constructor resolution)
-    HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup dispSetup, Hydro_BacklightMode backlightMode = Hydro_BacklightMode_Normal);
+    HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode backlightMode = Hydro_BacklightMode_Normal);
     virtual ~HydroDisplayLiquidCrystalIO() = default;
 
     virtual void init() override;
@@ -62,7 +62,7 @@ protected:
 
 class HydroDisplayU8g2lib : public HydroDisplayDriver {
 public:
-    HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, DeviceSetup dispSetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayU8g2lib();
 
     virtual void init() override;
@@ -84,7 +84,7 @@ protected:
 template <class T>
 class HydroDisplayAdafruitGFX : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup dispSetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void init() override;
@@ -105,7 +105,7 @@ protected:
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7735> : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup dispSetup, Hydro_DisplayOrientation displayOrientation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void init() override;
@@ -127,7 +127,7 @@ protected:
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7789> : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup dispSetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void init() override;
@@ -148,7 +148,7 @@ protected:
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_PCD8544> : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup dispSetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void init() override;
@@ -168,7 +168,7 @@ protected:
 
 class HydroDisplayTFTeSPI : public HydroDisplayDriver {
 public:
-    HydroDisplayTFTeSPI(SPIDeviceSetup dispSetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight);
+    HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight);
     virtual ~HydroDisplayTFTeSPI() = default;
 
     virtual void init() override;
