@@ -362,7 +362,8 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_DISP_I2C_ADDR             0b000           // LCD/Gfx i2c address
+#define SETUP_DISP_LCD_I2C_ADDR         0b111           // LCD i2c address
+#define SETUP_DISP_GFX_I2C_ADDR         0b000           // Gfx i2c address
 #define SETUP_DISP_SPI                  SPI             // Gfx/TFT SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Gfx/TFT SPI CS pin, else -1
 #define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
@@ -394,7 +395,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
 #define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
@@ -441,7 +442,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
-#define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion, if using LCD
+#define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion (B/W), if using LCD
 #define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
 #define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
 #define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display

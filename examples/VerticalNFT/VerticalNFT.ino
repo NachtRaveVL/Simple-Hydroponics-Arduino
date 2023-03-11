@@ -30,7 +30,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_DISP_I2C_ADDR             0b000           // LCD/Gfx i2c address
+#define SETUP_DISP_LCD_I2C_ADDR         0b111           // LCD i2c address
+#define SETUP_DISP_GFX_I2C_ADDR         0b000           // Gfx i2c address
 #define SETUP_DISP_SPI                  SPI             // Gfx/TFT SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Gfx/TFT SPI CS pin, else -1
 #define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
@@ -62,7 +63,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
 #define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
@@ -109,7 +110,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
-#define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion, if using LCD
+#define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion (B/W), if using LCD
 #define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
 #define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
 #define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
@@ -262,8 +263,12 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
                          SETUP_CTRL_INPUT_PINS_,
 #if SETUP_DISP_SPI_CS >= 0
                          SPIDeviceSetup(SETUP_DISP_SPI_CS, &SETUP_DISP_SPI)
+#elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_EN) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_RS) ||\
+      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_EN) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_RS) ||\
+      SETUP_UI_IS_DFROBOTSHIELD
+                         I2CDeviceSetup((uint8_t)SETUP_DISP_LCD_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED)
 #else
-                         I2CDeviceSetup((uint8_t)SETUP_DISP_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED)
+                         I2CDeviceSetup((uint8_t)SETUP_DISP_GFX_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED)
 #endif
                          );
 
@@ -679,10 +684,10 @@ inline void setupUI()
                 default: break;
             }
             switch (hydroController.getDisplayOutputMode()) {
-                case Hydro_DisplayOutputMode_LCD16x2:
-                case Hydro_DisplayOutputMode_LCD16x2_Swapped:
-                case Hydro_DisplayOutputMode_LCD20x4:
-                case Hydro_DisplayOutputMode_LCD20x4_Swapped:
+                case Hydro_DisplayOutputMode_LCD16x2_EN:
+                case Hydro_DisplayOutputMode_LCD16x2_RS:
+                case Hydro_DisplayOutputMode_LCD20x4_EN:
+                case Hydro_DisplayOutputMode_LCD20x4_RS:
                     uiDispSetup = UIDisplaySetup(LCDDisplaySetup(SETUP_UI_LCD_BIT_INVERSION, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_SSD1305:
@@ -725,8 +730,8 @@ inline void setupUI()
                 #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TouchScreen)
                     ui->allocateTouchscreenControl();
                 #endif
-                #if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_Swapped) ||\
-                    IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_Swapped) ||\
+                #if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_EN) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_RS) ||\
+                    IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_EN) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_RS) ||\
                     SETUP_UI_IS_DFROBOTSHIELD
                     ui->allocateLCDDisplay();
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1306) ||\

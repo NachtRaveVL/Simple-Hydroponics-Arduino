@@ -439,10 +439,10 @@ enum Hydro_MeasurementMode : signed char {
 // Display output mode support provided by tcMenu.
 enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_Disabled,                       // No display output
-    Hydro_DisplayOutputMode_LCD16x2,                        // 16x2 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
-    Hydro_DisplayOutputMode_LCD16x2_Swapped,                // 16x2 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
-    Hydro_DisplayOutputMode_LCD20x4,                        // 20x4 text LCD (with pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
-    Hydro_DisplayOutputMode_LCD20x4_Swapped,                // 20x4 text LCD (with EN<->RS swapped, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD16x2_EN,                     // 16x2 text LCD (with EN first, pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD16x2_RS,                     // 16x2 text LCD (with RS first, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD20x4_EN,                     // 20x4 text LCD (with EN first, pins: {EN,RW,RS,BL,Data}), using LiquidCrystalIO (i2c only)
+    Hydro_DisplayOutputMode_LCD20x4_RS,                     // 20x4 text LCD (with RS first, pins: {RS,RW,EN,BL,Data}), using LiquidCrystalIO (i2c only)
     Hydro_DisplayOutputMode_SSD1305,                        // SSD1305 128x32 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SSD1305_x32Ada,                 // Adafruit SSD1305 128x32 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SSD1305_x64Ada,                 // Adafruit SSD1305 128x64 OLED, using U8g2 (i2c or SPI)
@@ -760,10 +760,10 @@ class HydroRail;
 #define SETUP_ENUM_Ethernet             19
 #define SETUP_ENUM_Hostname             20
 #define SETUP_ENUM_IPAddress            21
-#define SETUP_ENUM_LCD16x2              100
-#define SETUP_ENUM_LCD16x2_Swapped      101
-#define SETUP_ENUM_LCD20x4              102
-#define SETUP_ENUM_LCD20x4_Swapped      103
+#define SETUP_ENUM_LCD16x2_EN           100
+#define SETUP_ENUM_LCD16x2_RS           101
+#define SETUP_ENUM_LCD20x4_EN           102
+#define SETUP_ENUM_LCD20x4_RS           103
 #define SETUP_ENUM_SSD1305              104
 #define SETUP_ENUM_SSD1305_x32Ada       105
 #define SETUP_ENUM_SSD1305_x64Ada       106

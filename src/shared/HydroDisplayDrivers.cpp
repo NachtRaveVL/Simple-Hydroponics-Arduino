@@ -49,23 +49,25 @@ void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme di
 
 
 HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup dispSetup, bool bitInversion, Hydro_BacklightMode backlightPinMode)
-    : _screenSize{displayMode < Hydro_DisplayOutputMode_LCD20x4 ? 16 : 20, displayMode < Hydro_DisplayOutputMode_LCD20x4 ? 2 : 4},
-      _lcd(displayMode == Hydro_DisplayOutputMode_LCD16x2 || displayMode == Hydro_DisplayOutputMode_LCD20x4 ? 2 : 0, 1,
-           displayMode == Hydro_DisplayOutputMode_LCD16x2 || displayMode == Hydro_DisplayOutputMode_LCD20x4 ? 0 : 2, 4, 5, 6, 7),
+    : _screenSize{displayMode < Hydro_DisplayOutputMode_LCD20x4_EN ? 16 : 20, displayMode < Hydro_DisplayOutputMode_LCD20x4_EN ? 2 : 4},
+      _lcd(displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 2 : 0, 1,
+           displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 0 : 2, 4, 5, 6, 7,
+           backlightPinMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightPinMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
+           ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | dispSetup.address, 0xff, dispSetup.wire, bitInversion)),
       _renderer(_lcd, _screenSize[0], _screenSize[1])
 {
-    _lcd.setIoAbstraction(ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | dispSetup.address, 0xff, dispSetup.wire, bitInversion));
-    _lcd.configureBacklightPin(3, backlightPinMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightPinMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM);
+    _lcd.configureBacklightPin(3);
     _renderer.setTitleRequired(_screenSize[1] >= 4);
 }
 
 HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup dispSetup, bool bitInversion, Hydro_BacklightMode backlightPinMode)
     : _screenSize{16, 2},
-      _lcd(8, 9, 4, 5, 6, 7),
+      _lcd(8, 9, 4, 5, 6, 7,
+           backlightPinMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightPinMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
+           ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | dispSetup.address, 0xff, dispSetup.wire, bitInversion)),
       _renderer(_lcd, _screenSize[0], _screenSize[1])
 {
-    _lcd.setIoAbstraction(ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | dispSetup.address, 0xff, dispSetup.wire, bitInversion));
-    _lcd.configureBacklightPin(10, backlightPinMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightPinMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM);
+    _lcd.configureBacklightPin(10);
     _renderer.setTitleRequired(false);
 }
 
@@ -78,6 +80,7 @@ void HydroDisplayLiquidCrystalIO::begin()
 {
     _lcd.begin(_screenSize[0], _screenSize[1]);
     _lcd.backlight(); // todo better backlight timeout handling
+    _lcd.clear(); // can take a while to complete
 }
 
 

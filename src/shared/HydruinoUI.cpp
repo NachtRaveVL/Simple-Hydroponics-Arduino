@@ -35,7 +35,7 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
         isrMode = (allInputInterruptable ? SWITCHES_NO_POLLING : (nonKeysInterruptable ? SWITCHES_POLL_KEYS_ONLY : SWITCHES_POLL_EVERYTHING));
     }
 
-    switches.init(_input->getIoAbstraction() ?: internalDigitalIo(), isrMode, _isActiveLow);
+    switches.init(_input && _input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
 
     if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _utf8Fonts); }
 }
@@ -66,7 +66,7 @@ void HydruinoBaseUI::setNeedsLayout()
 
 
 HydroUIData::HydroUIData()
-    : HydroData('H','S','Y','S', 1),
+    : HydroData('H','U','I','D', 1),
       updatesPerSec(HYDRO_UI_UPDATE_SPEED), displayTheme(Hydro_DisplayTheme_Undefined), joystickCalib{0.5f,0.5f,0.05f}
 {
     _size = sizeof(*this);

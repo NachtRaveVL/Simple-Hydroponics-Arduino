@@ -1614,10 +1614,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Sunflower[] PROGMEM = {"Sunflower"};
             return flashStr_Enum_Sunflower;
         } break;
-        case HStr_Enum_Swapped: {
-            static const char flashStr_Enum_Swapped[] PROGMEM = {"Swapped"};
-            return flashStr_Enum_Swapped;
-        } break;
         case HStr_Enum_SwissChard: {
             static const char flashStr_Enum_SwissChard[] PROGMEM = {"SwissChard"};
             return flashStr_Enum_SwissChard;

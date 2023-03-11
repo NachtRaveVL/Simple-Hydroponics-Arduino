@@ -172,13 +172,13 @@ void HydruinoMinUI::allocateLCDDisplay()
         auto dispSetup = controller->getDisplaySetup();
 
         // LiquidCrystalIO supports only i2c
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2 && dispOutMode <= Hydro_DisplayOutputMode_LCD20x4_Swapped) || dispSetup.cfgType == DeviceSetup::I2CSetup, SFP(HStr_Err_InvalidParameter));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2_EN && dispOutMode <= Hydro_DisplayOutputMode_LCD20x4_RS) || dispSetup.cfgType == DeviceSetup::I2CSetup, SFP(HStr_Err_InvalidParameter));
 
         switch (dispOutMode) {
-            case Hydro_DisplayOutputMode_LCD16x2:
-            case Hydro_DisplayOutputMode_LCD16x2_Swapped:
-            case Hydro_DisplayOutputMode_LCD20x4:
-            case Hydro_DisplayOutputMode_LCD20x4_Swapped:
+            case Hydro_DisplayOutputMode_LCD16x2_EN:
+            case Hydro_DisplayOutputMode_LCD16x2_RS:
+            case Hydro_DisplayOutputMode_LCD20x4_EN:
+            case Hydro_DisplayOutputMode_LCD20x4_RS:
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::LCD, SFP(HStr_Err_InvalidParameter));
                 if (!_uiDispSetup.dispCfgAs.lcd.isDFRobotShield) {
                     _display = new HydroDisplayLiquidCrystalIO(dispOutMode, dispSetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.bitInversion, _uiDispSetup.dispCfgAs.lcd.backlightMode);
@@ -188,7 +188,7 @@ void HydruinoMinUI::allocateLCDDisplay()
                 break;
             default: break;
         }
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2 && dispOutMode <= Hydro_DisplayOutputMode_LCD20x4_Swapped) || _display, SFP(HStr_Err_AllocationFailure));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_LCD16x2_EN && dispOutMode <= Hydro_DisplayOutputMode_LCD20x4_RS) || _display, SFP(HStr_Err_AllocationFailure));
     }
 }
 

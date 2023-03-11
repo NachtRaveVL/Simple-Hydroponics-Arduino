@@ -1225,22 +1225,28 @@ String displayOutputModeToString(Hydro_DisplayOutputMode displayOutMode, bool ex
     switch (displayOutMode) {
         case Hydro_DisplayOutputMode_Disabled:
             return SFP(HStr_Disabled);
-        case Hydro_DisplayOutputMode_LCD16x2:
-            return SFP(HStr_Enum_LCD16x2);
-        case Hydro_DisplayOutputMode_LCD16x2_Swapped: {
+        case Hydro_DisplayOutputMode_LCD16x2_EN: {
             String retVal(SFP(HStr_Enum_LCD16x2));
-            String concat(SFP(HStr_Enum_Swapped));
-            retVal.reserve(retVal.length() + concat.length());
-            retVal.concat(concat);
+            retVal.reserve(retVal.length() + 2);
+            retVal.concat('E'); retVal.concat('N');
             return retVal;
         }
-        case Hydro_DisplayOutputMode_LCD20x4:
-            return SFP(HStr_Enum_LCD20x4);
-        case Hydro_DisplayOutputMode_LCD20x4_Swapped: {
+        case Hydro_DisplayOutputMode_LCD16x2_RS: {
+            String retVal(SFP(HStr_Enum_LCD16x2));
+            retVal.reserve(retVal.length() + 2);
+            retVal.concat('R'); retVal.concat('S');
+            return retVal;
+        }
+        case Hydro_DisplayOutputMode_LCD20x4_EN: {
             String retVal(SFP(HStr_Enum_LCD20x4));
-            String concat(SFP(HStr_Enum_Swapped));
-            retVal.reserve(retVal.length() + concat.length());
-            retVal.concat(concat);
+            retVal.reserve(retVal.length() + 2);
+            retVal.concat('E'); retVal.concat('N');
+            return retVal;
+        }
+        case Hydro_DisplayOutputMode_LCD20x4_RS: {
+            String retVal(SFP(HStr_Enum_LCD20x4));
+            retVal.reserve(retVal.length() + 2);
+            retVal.concat('R'); retVal.concat('S');
             return retVal;
         }
         case Hydro_DisplayOutputMode_SSD1305:
@@ -1983,17 +1989,17 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
             switch (displayOutModeStr.length() >= 4 ? displayOutModeStr[3] : '\0') {
                 case '1':
                     switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
-                        case '\0':
+                        case 'E':
                             return (Hydro_DisplayOutputMode)1;
-                        case 'S':
+                        case 'R':
                             return (Hydro_DisplayOutputMode)2;
                     }
                     break;
                 case '2':
                     switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
-                        case '\0':
+                        case 'E':
                             return (Hydro_DisplayOutputMode)3;
-                        case 'S':
+                        case 'R':
                             return (Hydro_DisplayOutputMode)4;
                     }
                     break;

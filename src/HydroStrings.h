@@ -379,7 +379,6 @@ enum Hydro_String : unsigned short {
     HStr_Enum_ST7789,
     HStr_Enum_Strawberries,
     HStr_Enum_Sunflower,
-    HStr_Enum_Swapped,
     HStr_Enum_SwissChard,
     HStr_Enum_Taro,
     HStr_Enum_Tarragon,
