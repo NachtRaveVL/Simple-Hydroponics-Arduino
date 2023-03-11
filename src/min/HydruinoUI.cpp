@@ -181,9 +181,9 @@ void HydruinoMinUI::allocateLCDDisplay()
             case Hydro_DisplayOutputMode_LCD20x4_RS:
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::LCD, SFP(HStr_Err_InvalidParameter));
                 if (!_uiDispSetup.dispCfgAs.lcd.isDFRobotShield) {
-                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, dispSetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.bitInversion, _uiDispSetup.dispCfgAs.lcd.backlightMode);
+                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, dispSetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
                 } else {
-                    _display = new HydroDisplayLiquidCrystalIO(true, dispSetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.bitInversion, _uiDispSetup.dispCfgAs.lcd.backlightMode);
+                    _display = new HydroDisplayLiquidCrystalIO(true, dispSetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
                 }
                 break;
             default: break;

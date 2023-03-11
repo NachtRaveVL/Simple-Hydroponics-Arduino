@@ -34,13 +34,12 @@ inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_Disp
 
 // LCD Display Setup
 struct LCDDisplaySetup {
-    bool bitInversion;                  // Bit logic inversion (inverts b/w, default: false)
     Hydro_BacklightMode backlightMode;  // Backlight pin mode (default: Hydro_BacklightMode_Normal)
     bool isDFRobotShield;               // Using DF robot shield
 
-    inline LCDDisplaySetup(bool bitInversionIn = false, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : bitInversion(bitInversionIn), backlightMode(backlightModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
+    inline LCDDisplaySetup(Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : backlightMode(backlightModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
 
-    static inline LCDDisplaySetup usingDFRobotShield() { return LCDDisplaySetup(false, Hydro_BacklightMode_Normal, true); }
+    static inline LCDDisplaySetup usingDFRobotShield() { return LCDDisplaySetup(Hydro_BacklightMode_Normal, true); }
 };
 
 // Standard Pixel Display Setup

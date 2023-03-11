@@ -110,7 +110,6 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
-#define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion (B/W), if using LCD
 #define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
 #define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
 #define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
@@ -688,7 +687,7 @@ inline void setupUI()
                 case Hydro_DisplayOutputMode_LCD16x2_RS:
                 case Hydro_DisplayOutputMode_LCD20x4_EN:
                 case Hydro_DisplayOutputMode_LCD20x4_RS:
-                    uiDispSetup = UIDisplaySetup(LCDDisplaySetup(SETUP_UI_LCD_BIT_INVERSION, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
+                    uiDispSetup = UIDisplaySetup(LCDDisplaySetup(JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_SSD1305:
                 case Hydro_DisplayOutputMode_SSD1305_x32Ada:

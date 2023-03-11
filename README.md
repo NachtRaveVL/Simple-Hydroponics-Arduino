@@ -442,7 +442,6 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
-#define SETUP_UI_LCD_BIT_INVERSION      false           // LCD display bit inversion (B/W), if using LCD
 #define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
 #define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
 #define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
