@@ -16,6 +16,7 @@ struct UIDisplaySetup;
 
 struct RotaryControlSetup;
 struct ButtonsControlSetup;
+struct ESP32TouchControlSetup;
 struct JoystickControlSetup;
 struct MatrixControlSetup;
 struct UIControlSetup;
@@ -92,19 +93,30 @@ struct UIDisplaySetup {
 
 // Rotary Encoder Input Setup
 struct RotaryControlSetup {
-    Hydro_EncoderSpeed encoderSpeed;    // Encoder cycling speed
+    Hydro_EncoderSpeed encoderSpeed;    // Encoder cycling speed (detent freq)
 
     inline RotaryControlSetup(Hydro_EncoderSpeed encoderSpeedIn = Hydro_EncoderSpeed_HalfCycle) : encoderSpeed(encoderSpeedIn) { ; }
 };
 
 // Up/Down Buttons Input Setup
 struct ButtonsControlSetup {
-    uint8_t repeatSpeed;                // Key repeat speed, in milliseconds
+    uint8_t repeatSpeed;                // Key repeat speed, in ticks
     bool isDFRobotShield;               // Using DF robot shield
 
     inline ButtonsControlSetup(uint8_t repeatSpeedIn = HYDRO_UI_KEYREPEAT_SPEED, bool isDFRobotShieldIn = false) : repeatSpeed(repeatSpeedIn), isDFRobotShield(isDFRobotShieldIn) { ; }
 
     static inline ButtonsControlSetup usingDFRobotShield() { return ButtonsControlSetup(HYDRO_UI_KEYREPEAT_SPEED, true); }
+};
+
+// ESP32 Touch Keys Input Setup
+struct ESP32TouchControlSetup {
+    uint8_t repeatSpeed;                        // Key repeat speed, in ticks
+    uint16_t switchThreshold;                   // Switch activation threshold (default: 800)
+    Hydro_ESP32Touch_HighRef highVoltage;       // High reference voltage (default: 2V7)
+    Hydro_ESP32Touch_LowRef lowVoltage;         // Low reference voltage (default: 0V5)
+    Hydro_ESP32Touch_HighRefAtten attenuation;  // High reference voltage attention (default: 1V)
+
+    inline ESP32TouchControlSetup(uint8_t repeatSpeedIn = HYDRO_UI_KEYREPEAT_SPEED, uint16_t switchThresholdIn = 800, Hydro_ESP32Touch_HighRef highVoltageIn = Hydro_ESP32Touch_HighRef_V_2V7, Hydro_ESP32Touch_LowRef lowVoltageIn = Hydro_ESP32Touch_LowRef_V_0V5, Hydro_ESP32Touch_HighRefAtten attenuationIn = Hydro_ESP32Touch_HighRefAtten_V_1V) : repeatSpeed(repeatSpeedIn), switchThreshold(switchThresholdIn), highVoltage(highVoltageIn), lowVoltage(lowVoltageIn), attenuation(attenuationIn) { ; }
 };
 
 // Analog Joystick Input Setup
@@ -127,10 +139,11 @@ struct MatrixControlSetup {
 // Combined UI Control Setup
 // A union of the various UI control setup structures, to assist with user control input settings.
 struct UIControlSetup {
-    enum : signed char { None, Encoder, Buttons, Joystick, Matrix } ctrlCfgType; // Control config type
+    enum : signed char { None, Encoder, Buttons, ESP32Touch, Joystick, Matrix } ctrlCfgType; // Control config type
     union {
         RotaryControlSetup encoder;     // Rotary encoder setup
         ButtonsControlSetup buttons;    // Up/Down buttons setup
+        ESP32TouchControlSetup touch;   // ESP32 touch keys setup
         JoystickControlSetup joystick;  // Analog joystick setup
         MatrixControlSetup matrix;      // Matrix keyboard setup
     } ctrlCfgAs;
@@ -138,6 +151,7 @@ struct UIControlSetup {
     inline UIControlSetup() : ctrlCfgType(None), ctrlCfgAs{} { ; }
     inline UIControlSetup(RotaryControlSetup ctrlSetup) : ctrlCfgType(Encoder), ctrlCfgAs{.encoder=ctrlSetup} { ; }
     inline UIControlSetup(ButtonsControlSetup ctrlSetup) : ctrlCfgType(Buttons), ctrlCfgAs{.buttons=ctrlSetup} { ; }
+    inline UIControlSetup(ESP32TouchControlSetup ctrlSetup) : ctrlCfgType(ESP32Touch), ctrlCfgAs{.touch=ctrlSetup} { ; }
     inline UIControlSetup(JoystickControlSetup ctrlSetup) : ctrlCfgType(Joystick), ctrlCfgAs{.joystick=ctrlSetup} { ; }
     inline UIControlSetup(MatrixControlSetup ctrlSetup) : ctrlCfgType(Matrix), ctrlCfgAs{.matrix=ctrlSetup} { ; }
 

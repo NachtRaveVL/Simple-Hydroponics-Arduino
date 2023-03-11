@@ -63,6 +63,32 @@ void HydroInputUpDownButtons::begin(MenuRenderer *renderer, MenuItem *initialIte
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
 }
 
+HydroInputESP32TouchKeys::HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed, uint16_t switchThreshold, Hydro_ESP32Touch_HighRef highVoltage, Hydro_ESP32Touch_LowRef lowVoltage, Hydro_ESP32Touch_HighRefAtten attenuation)
+    : HydroInputDriver(controlPins), _keySpeed(keyRepeatSpeed)
+#ifdef ESP32
+      , _esp32Touch(switchThreshold,
+                    highVoltage == Hydro_ESP32Touch_HighRef_V_2V4 ? TOUCH_HVOLT_2V4 : highVoltage == Hydro_ESP32Touch_HighRef_V_2V5 ? TOUCH_HVOLT_2V5 :
+                    highVoltage == Hydro_ESP32Touch_HighRef_V_2V6 ? TOUCH_HVOLT_2V6 : highVoltage == Hydro_ESP32Touch_HighRef_V_2V7 ? TOUCH_HVOLT_2V7 : 
+                    highVoltage == Hydro_ESP32Touch_HighRef_Max ? TOUCH_HVOLT_MAX : TOUCH_HVOLT_KEEP,
+                    lowVoltage == Hydro_ESP32Touch_LowRef_V_0V5 ? TOUCH_LVOLT_0V5 : lowVoltage == Hydro_ESP32Touch_LowRef_V_0V6 ? TOUCH_LVOLT_0V6 :
+                    lowVoltage == Hydro_ESP32Touch_LowRef_V_0V7 ? TOUCH_LVOLT_0V7 : lowVoltage == Hydro_ESP32Touch_LowRef_V_0V8 ? TOUCH_LVOLT_0V8 :
+                    lowVoltage == Hydro_ESP32Touch_LowRef_Max ? TOUCH_LVOLT_MAX : TOUCH_LVOLT_KEEP,
+                    attenuation == Hydro_ESP32Touch_HighRefAtten_V_0V ? TOUCH_HVOLT_ATTEN_0V : attenuation == Hydro_ESP32Touch_HighRefAtten_V_0V5 ? TOUCH_HVOLT_ATTEN_0V5 :
+                    attenuation == Hydro_ESP32Touch_HighRefAtten_V_1V ? TOUCH_HVOLT_ATTEN_1V : attenuation == Hydro_ESP32Touch_HighRefAtten_V_1V5 ? TOUCH_HVOLT_ATTEN_1V5 :
+                    attenuation == Hydro_ESP32Touch_HighRefAtten_Max ? TOUCH_HVOLT_ATTEN_MAX : TOUCH_HVOLT_ATTEN_KEEP)
+#endif
+{ ; }
+
+void HydroInputESP32TouchKeys::begin(MenuRenderer *renderer, MenuItem *initialItem)
+{
+    menuMgr.initForUpDownOk(renderer, initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
+    if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
+    if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
+    #ifdef ESP32
+        _esp32Touch.ensureInterruptRegistered();
+    #endif
+}
+
 
 HydroInputJoystick::HydroInputJoystick(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, float decreaseDivisor, float jsCenterX, float jsCenterY, float jsZeroTol)
     : HydroInputDriver(controlPins), _repeatDelay(repeatDelay), _decreaseDivisor(decreaseDivisor),

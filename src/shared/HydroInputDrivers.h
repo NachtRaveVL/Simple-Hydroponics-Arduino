@@ -11,6 +11,7 @@
 class HydroInputDriver;
 class HydroInputRotary;
 class HydroInputUpDownButtons;
+class HydroInputESP32TouchKeys;
 class HydroInputJoystick;
 class HydroInputMatrix3x4;
 class HydroInputMatrix4x4;
@@ -69,6 +70,28 @@ public:
 protected:
     const uint16_t _keySpeed;
     IoAbstractionRef _dfRobotIORef;
+};
+
+class HydroInputESP32TouchKeys : public HydroInputDriver {
+public:
+    HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed, uint16_t switchThreshold, Hydro_ESP32Touch_HighRef highVoltage, Hydro_ESP32Touch_LowRef lowVoltage, Hydro_ESP32Touch_HighRefAtten attenuation);
+    virtual ~HydroInputESP32TouchKeys() = default;
+
+    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+
+    #ifdef ESP32
+        virtual IoAbstractionRef getIoAbstraction() override { return &_esp32Touch; }    
+    #else
+        virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
+    #endif
+
+    inline uint16_t getKeySpeed() const { return _keySpeed; }
+
+protected:
+    const uint16_t _keySpeed;
+    #ifdef ESP32
+        ESP32TouchKeysAbstraction _esp32Touch;
+    #endif
 };
 
 class HydroInputJoystick : public HydroInputDriver {

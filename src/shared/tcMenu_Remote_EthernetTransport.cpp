@@ -1,3 +1,8 @@
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
+    tcMenu Ethernet Remote Control
+*/
+
 #include <Hydruino.h>
 #if defined(HYDRO_USE_ETHERNET) && defined(HYDRO_USE_GUI)
 

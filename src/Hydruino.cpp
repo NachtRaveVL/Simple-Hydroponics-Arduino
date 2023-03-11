@@ -1174,16 +1174,15 @@ Pair<uint8_t, const pintype_t *> Hydruino::getControlInputPins() const
     if (_ctrlInputPins) {
         switch (getControlInputMode()) {
             case Hydro_ControlInputMode_RotaryEncoderOk:
-                return make_pair((uint8_t)3, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_RotaryEncoderOk_LR:
-                return make_pair((uint8_t)5, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_UpDownOkButtons:
-                return make_pair((uint8_t)3, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_UpDownOkButtons_LR:
-                return make_pair((uint8_t)5, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_UpDownButtonsOk:
+            case Hydro_ControlInputMode_UpDownESP32TouchOk:
             case Hydro_ControlInputMode_AnalogJoystickOk:
                 return make_pair((uint8_t)3, (const pintype_t *)_ctrlInputPins);
-            case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:
+            case Hydro_ControlInputMode_RotaryEncoderOkLR:
+            case Hydro_ControlInputMode_UpDownButtonsOkLR:
+            case Hydro_ControlInputMode_UpDownESP32TouchOkLR:
+                return make_pair((uint8_t)5, (const pintype_t *)_ctrlInputPins);
+            case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:  
                 return make_pair((uint8_t)10, (const pintype_t *)_ctrlInputPins);
             case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
                 return make_pair((uint8_t)12, (const pintype_t *)_ctrlInputPins);
@@ -1200,6 +1199,7 @@ Pair<uint8_t, const pintype_t *> Hydruino::getControlInputPins() const
     }
     return make_pair((uint8_t)0, (const pintype_t *)nullptr);
 }
+
 #endif
 
 I2C_eeprom *Hydruino::getEEPROM(bool begin)

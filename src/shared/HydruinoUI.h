@@ -17,6 +17,7 @@
 #include "tcMenu_Display_TfteSpi.h"
 #include "tcMenu_Display_U8g2.h"
 #include "tcMenu_Input_AdaTouchDriver.h"
+#include "tcMenu_Input_ESP32TouchKeysAbstraction.h"
 #include "tcMenu_Remote_EthernetTransport.h"
 #include "tcMenu_Remote_SerialTransport.h"
 #include "tcMenu_Remote_SimhubConnector.h"

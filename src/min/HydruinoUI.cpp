@@ -25,13 +25,13 @@ void HydruinoMinUI::allocateStandardControls()
         auto ctrlInPins = controller->getControlInputPins();
         switch (ctrlInMode) {
             case Hydro_ControlInputMode_RotaryEncoderOk:
-            case Hydro_ControlInputMode_RotaryEncoderOk_LR: {
+            case Hydro_ControlInputMode_RotaryEncoderOkLR: {
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Encoder, SFP(HStr_Err_InvalidParameter));
                 _input = new HydroInputRotary(ctrlInPins, _uiCtrlSetup.ctrlCfgAs.encoder.encoderSpeed);
             } break;
 
-            case Hydro_ControlInputMode_UpDownOkButtons:
-            case Hydro_ControlInputMode_UpDownOkButtons_LR: {
+            case Hydro_ControlInputMode_UpDownButtonsOk:
+            case Hydro_ControlInputMode_UpDownButtonsOkLR: {
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Buttons, SFP(HStr_Err_InvalidParameter));
                 if (!_uiCtrlSetup.ctrlCfgAs.buttons.isDFRobotShield) {
                     _input = new HydroInputUpDownButtons(ctrlInPins, _uiCtrlSetup.ctrlCfgAs.buttons.repeatSpeed);
@@ -70,7 +70,32 @@ void HydruinoMinUI::allocateStandardControls()
     }
 }
 
-void HydruinoMinUI::allocateResistiveControls()
+void HydruinoMinUI::allocateESP32TouchControl()
+{
+    auto controller = getController();
+    HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
+    HYDRO_SOFT_ASSERT(!_input, SFP(HStr_Err_AlreadyInitialized));
+    #ifndef ESP32
+        HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_UnsupportedOperation));
+    #endif
+
+    if (controller && !_input) {
+        auto ctrlInMode = controller->getControlInputMode();
+        auto ctrlInPins = controller->getControlInputPins();
+        switch (ctrlInMode) {
+            case Hydro_ControlInputMode_UpDownESP32TouchOk:
+            case Hydro_ControlInputMode_UpDownESP32TouchOkLR:
+                HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::ESP32Touch, SFP(HStr_Err_InvalidParameter));
+                _input = new HydroInputESP32TouchKeys(ctrlInPins, _uiCtrlSetup.ctrlCfgAs.touch.repeatSpeed, _uiCtrlSetup.ctrlCfgAs.touch.switchThreshold,
+                                                      _uiCtrlSetup.ctrlCfgAs.touch.highVoltage, _uiCtrlSetup.ctrlCfgAs.touch.lowVoltage, _uiCtrlSetup.ctrlCfgAs.touch.attenuation);
+                break;
+            default: break;
+        }
+        HYDRO_SOFT_ASSERT(!(ctrlInMode >= Hydro_ControlInputMode_UpDownESP32TouchOk && ctrlInMode <= Hydro_ControlInputMode_UpDownESP32TouchOkLR) || _input, SFP(HStr_Err_AllocationFailure));
+    }
+}
+
+void HydruinoMinUI::allocateResistiveTouchControl()
 {
     auto controller = getController();
     HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));

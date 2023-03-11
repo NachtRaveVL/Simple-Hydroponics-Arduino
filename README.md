@@ -51,7 +51,7 @@ Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRA
 
 The easiest way to install this controller is to utilize the Arduino IDE library manager, or through a package manager such as PlatformIO. Otherwise, simply download this controller and extract its files into a `Simple-Hydroponics-Arduino` folder in your Arduino custom libraries folder, typically found in your `[My ]Documents\Arduino\libraries` folder (Windows), or `~/Documents/Arduino/libraries/` folder (Linux/OSX).
 
-From there, you can make a local copy of one of the examples based on the kind of system setup you want to use. If you are unsure of which, we recommend using the Vertical NFT Example for older MCUs and the Full System Example for modern MCUs. Older storage constrained MCUs may need further modifications (and possibly external hardware) so is recommended only for advanced users.
+From there, you can make a local copy of one of the examples based on the kind of system setup you want to use. If you are unsure of which, we recommend using the Vertical NFT Example for older MCUs and the Full System Example for modern MCUs. Older storage constrained MCUs (< 512kB Flash) may need further modifications (and possibly external hardware) so is recommended only for advanced users.
 
 ### Header Defines
 
@@ -342,11 +342,11 @@ void loop()
 
 ### Main System Examples
 
-There are two main system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. The Vertical NFT example is the recommended starting point for most system builds, and is perfect for those with only basic programming knowledge. It is also the standard implementation for our 3D printed controller enclosure and for most vertical towers that will be used. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code.
+There are two main system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. The Vertical NFT Example is the recommended starting point for most system builders, and is perfect for those with only basic programming knowledge. It is also the standard implementation for our 3D printed controller enclosure. It can be easily extended to include other functionality if desired, simply by copying and pasting the example code.
 
-This system code has the benefit of being able to compile out what you don't use, making it ideal for storage constrained devices, but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out.
+The Vertical NFT Example sketch has the benefit of being able to compile in a minimal UI mode that will strip out what isn't used, making it ideal for storage constrained devices (e.g. those with < 512kB Flash), but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out, thus requiring re-compiling/re-uploading on system setup changes. The UI, in this mode, only provides edit capabilities, not create/delete, with more customization options locked out.
 
-The Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for modern MCUs that have lots of storage space to use such as ESP32, RasPi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where a GUI will be primarily used to create objects with (or done similarly in code to initialize, as is done in the Vertical NFT example). It involves the least amount of coding and setup, but comes at the highest cost.
+By contrast, the Full System Example sketch will build an empty system with all object and system features enabled. It is recommended for modern MCUs that have lots of storage space to use such as ESP32, RasPi Pico, etc. It works similarly to the Vertical NFT Example, except is meant for systems where a GUI (possibly only remotely controlled) will be primarily used to create objects with. It involves the least amount of coding, but comes at the highest cost since it has to contain everything that possibly could be used, even if it ultimately isn't. The UI, in this mode, provides edit, create, and delete capabilities, with more options available for customization.
 
 Included below is the default system setup defines of the Vertical NFT example (of which a smaller similar version is used for the Full System example) to illustrate a variety of the controller features. This is not an exhaustive list of course, as there are many more things the controller is capable of, as documented in its main header file include, GitHub Project Wiki, and elsewhere.
 
@@ -393,10 +393,10 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
 #define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
-#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
+#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
-#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours
+#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours (int or float)
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 #define SETUP_SYS_STATIC_LAT            DBL_UNDEF       // System static latitude (if not using GPS/UI, else DBL_UNDEF), in degrees
 #define SETUP_SYS_STATIC_LONG           DBL_UNDEF       // System static longitude (if not using GPS/UI, else DBL_UNDEF), in minutes
@@ -450,10 +450,14 @@ Included below is the default system setup defines of the Vertical NFT example (
 
 // UI Control Input Settings
 #define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
-#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
+#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed, in ticks
 #define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
 #define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor)
+#define SETUP_UI_ESP32TOUCH_SWITCH      800             // ESP32 Touch key switch threshold, if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_HVOLTS      V_2V7           // ESP32 Touch key high reference voltage (Keep, V_2V4, V_2V5, V_2V6, V_2V7, Max), if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_LVOLTS      V_0V5           // ESP32 Touch key low reference voltage (Keep, V_0V5, V_0V6, V_0V7, V_0V8, Max), if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_HVATTEN     V_1V            // ESP32 Touch key high ref voltage attenuation (Keep, V_1V5, V_1V, V_0V5, V_0V, Max), if on ESP32/using ESP32Touch
 
 // UI Remote Control Settings
 #define SETUP_UI_REMOTE1_TYPE           Disabled        // Type of first remote control (Disabled, Serial, Simhub, WiFi, Ethernet)

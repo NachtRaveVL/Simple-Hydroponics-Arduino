@@ -1,9 +1,12 @@
 // Simple-Hydroponics-Arduino Full System
 //
 // This sketch will build the entire library onto a device, while supporting all of its
-// functionality, and thus has the highest cost. Not meant for constrained devices.
+// functionality, and thus has the highest cost. Not meant for constrained devices!
+// Minimum Flash size: 512kB - 1MB+, depending on settings
 //
-// TODO: STILL A WIP! #11 in Hydruino.
+// Under full UI mode the UI will allow you to modify, create, and destroy any objects.
+// Other settings normally locked under the UI will be configurable (some may require
+// reboot), making it so a re-build and re-upload isn't necessary.
 
 #ifdef USE_SW_SERIAL
 #include "SoftwareSerial.h"
@@ -64,9 +67,9 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
 #define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
-#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
+#define SETUP_CONTROL_IN_MODE           RemoteControl   // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
-#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours
+#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours (int or float)
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 
 // System Saves Settings                                (note: only one primary and one fallback mechanism may be enabled at a time)
@@ -117,10 +120,14 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // UI Control Input Settings
 #define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
-#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
+#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed, in ticks
 #define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
 #define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor)
+#define SETUP_UI_ESP32TOUCH_SWITCH      800             // ESP32 Touch key switch threshold, if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_HVOLTS      V_2V7           // ESP32 Touch key high reference voltage (Keep, V_2V4, V_2V5, V_2V6, V_2V7, Max), if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_LVOLTS      V_0V5           // ESP32 Touch key low reference voltage (Keep, V_0V5, V_0V6, V_0V7, V_0V8, Max), if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_HVATTEN     V_1V            // ESP32 Touch key high ref voltage attenuation (Keep, V_1V5, V_1V, V_0V5, V_0V, Max), if on ESP32/using ESP32Touch
 
 // UI Remote Control Settings
 #define SETUP_UI_REMOTE1_TYPE           Disabled        // Type of first remote control (Disabled, Serial, Simhub, WiFi, Ethernet)
@@ -270,12 +277,16 @@ inline void setupUI()
         #else
             switch (hydroController.getControlInputMode()) {
                 case Hydro_ControlInputMode_RotaryEncoderOk:
-                case Hydro_ControlInputMode_RotaryEncoderOk_LR:
+                case Hydro_ControlInputMode_RotaryEncoderOkLR:
                     uiCtrlSetup = UIControlSetup(RotaryControlSetup(JOIN(Hydro_EncoderSpeed,SETUP_UI_ENC_ROTARY_SPEED)));
                     break;
-                case Hydro_ControlInputMode_UpDownOkButtons:
-                case Hydro_ControlInputMode_UpDownOkButtons_LR:
+                case Hydro_ControlInputMode_UpDownButtonsOk:
+                case Hydro_ControlInputMode_UpDownButtonsOkLR:
                     uiCtrlSetup = UIControlSetup(ButtonsControlSetup(SETUP_UI_KEY_REPEAT_SPEED));
+                    break;
+                case Hydro_ControlInputMode_UpDownESP32TouchOk:
+                case Hydro_ControlInputMode_UpDownESP32TouchOkLR:
+                    uiCtrlSetup = UIControlSetup(ESP32TouchControlSetup(SETUP_UI_KEY_REPEAT_SPEED, SETUP_UI_ESP32TOUCH_SWITCH, JOIN(Hydro_ESP32Touch_HighRef,SETUP_UI_ESP32TOUCH_HVOLTS), JOIN(Hydro_ESP32Touch_LowRef,SETUP_UI_ESP32TOUCH_LVOLTS), JOIN(Hydro_ESP32Touch_HighRefAtten,SETUP_UI_ESP32TOUCH_HVATTEN)));
                     break;
                 case Hydro_ControlInputMode_AnalogJoystickOk:
                     uiCtrlSetup = UIControlSetup(JoystickControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_JS_ACCELERATION));

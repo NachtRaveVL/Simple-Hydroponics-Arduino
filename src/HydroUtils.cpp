@@ -1301,21 +1301,34 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
-        case Hydro_ControlInputMode_RotaryEncoderOk_LR: {
+        case Hydro_ControlInputMode_RotaryEncoderOkLR: {
             String retVal(SFP(HStr_Enum_RotaryEncoder));
             retVal.reserve(retVal.length() + 4);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
             return retVal;
         }
-        case Hydro_ControlInputMode_UpDownOkButtons: {
+        case Hydro_ControlInputMode_UpDownButtonsOk: {
             String retVal(SFP(HStr_Enum_UpDownButtons));
             retVal.reserve(retVal.length() + 2);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
-        case Hydro_ControlInputMode_UpDownOkButtons_LR: {
+        case Hydro_ControlInputMode_UpDownButtonsOkLR: {
             String retVal(SFP(HStr_Enum_UpDownButtons));
+            retVal.reserve(retVal.length() + 4);
+            retVal.concat('O'); retVal.concat('k');
+            retVal.concat('L'); retVal.concat('R');
+            return retVal;
+        }
+        case Hydro_ControlInputMode_UpDownESP32TouchOk: {
+            String retVal(SFP(HStr_Enum_UpDownESP32Touch));
+            retVal.reserve(retVal.length() + 2);
+            retVal.concat('O'); retVal.concat('k');
+            return retVal;
+        }
+        case Hydro_ControlInputMode_UpDownESP32TouchOkLR: {
+            String retVal(SFP(HStr_Enum_UpDownESP32Touch));
             retVal.reserve(retVal.length() + 4);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
@@ -2064,11 +2077,23 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
                 case 'n':
                     return (Hydro_ControlInputMode)-1;
                 case 'p':
-                    switch (controlInModeStr.length() >= 16 ? controlInModeStr[15] : '\0') {
-                        case '\0':
-                            return (Hydro_ControlInputMode)3;
-                        case 'L':
-                            return (Hydro_ControlInputMode)4;
+                    switch (controlInModeStr.length() >= 7 ? controlInModeStr[6] : '\0') {
+                        case 'B':
+                            switch (controlInModeStr.length() >= 16 ? controlInModeStr[15] : '\0') {
+                                case '\0':
+                                    return (Hydro_ControlInputMode)3;
+                                case 'L':
+                                    return (Hydro_ControlInputMode)4;
+                            }
+                            break;
+                        case 'E':
+                            switch (controlInModeStr.length() >= 19 ? controlInModeStr[18] : '\0') {
+                                case '\0':
+                                    return (Hydro_ControlInputMode)5;
+                                case 'L':
+                                    return (Hydro_ControlInputMode)6;
+                            }
+                            break;
                     }
                     break;
             }
@@ -2088,41 +2113,45 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
                 case 'e':
                     switch (controlInModeStr.length() >= 3 ? controlInModeStr[2] : '\0') {
                         case 's':
-                            return (Hydro_ControlInputMode)10;
+                            return (Hydro_ControlInputMode)12;
                         case 'm':
-                            return (Hydro_ControlInputMode)13;
+                            return (Hydro_ControlInputMode)15;
                     }
                     break;
             }
             break;
         case 'A':
-            return (Hydro_ControlInputMode)5;
-        case '3':
-            switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\0') {
-                case '\0':
-                    return (Hydro_ControlInputMode)6;
-                case 'L':
-                    return (Hydro_ControlInputMode)7;
-            }
-            break;
-        case '4':
-            switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\0') {
-                case '\0':
-                    return (Hydro_ControlInputMode)8;
-                case 'L':
-                    return (Hydro_ControlInputMode)9;
+            return (Hydro_ControlInputMode)7;
+        case 'M':
+            switch (controlInModeStr.length() >= 7 ? controlInModeStr[6] : '\0') {
+                case '3':
+                    switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\0') {
+                        case '\0':
+                            return (Hydro_ControlInputMode)8;
+                        case 'L':
+                            return (Hydro_ControlInputMode)9;
+                    }
+                    break;
+                case '4':
+                    switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\0') {
+                        case '\0':
+                            return (Hydro_ControlInputMode)10;
+                        case 'L':
+                            return (Hydro_ControlInputMode)11;
+                    }
+                    break;
             }
             break;
         case 'T':
             switch (controlInModeStr.length() >= 2 ? controlInModeStr[1] : '\0') {
                 case 'o':
-                    return (Hydro_ControlInputMode)11;
+                    return (Hydro_ControlInputMode)13;
                 case 'F':
-                    return (Hydro_ControlInputMode)12;
+                    return (Hydro_ControlInputMode)14;
             }
             break;
         case 'C':
-            return (Hydro_ControlInputMode)14;
+            return (Hydro_ControlInputMode)16;
     }
     return Hydro_ControlInputMode_Undefined;
 }

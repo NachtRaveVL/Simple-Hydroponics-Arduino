@@ -390,6 +390,7 @@ enum Hydro_String : unsigned short {
     HStr_Enum_TouchScreen,
     HStr_Enum_Turnip,
     HStr_Enum_UpDownButtons,
+    HStr_Enum_UpDownESP32Touch,
     HStr_Enum_WaterAerator,
     HStr_Enum_WaterHeater,
     HStr_Enum_WaterHeight,

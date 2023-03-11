@@ -93,8 +93,43 @@ enum Hydro_EncoderSpeed : signed char {
     Hydro_EncoderSpeed_HalfCycle,                           // Detent on every position where A == B
     Hydro_EncoderSpeed_QuarterCycle,                        // Detent after every signal change, A or B
 
-    Hydro_EncoderSpeed_Count,                               // Placeholder
     Hydro_EncoderSpeed_Undefined = -1                       // Placeholder
+};
+
+// ESP32 Touch Key High Reference Voltage
+enum Hydro_ESP32Touch_HighRef : signed char {
+    Hydro_ESP32Touch_HighRef_Keep,                          // No change
+    Hydro_ESP32Touch_HighRef_V_2V4,                         // 2.4v
+    Hydro_ESP32Touch_HighRef_V_2V5,                         // 2.5v
+    Hydro_ESP32Touch_HighRef_V_2V6,                         // 2.6v
+    Hydro_ESP32Touch_HighRef_V_2V7,                         // 2.7v
+    Hydro_ESP32Touch_HighRef_Max,                           // Max voltage
+
+    Hydro_ESP32Touch_HighRef_Undefined = -1                 // Placeholder
+};
+
+// ESP32 Touch Key Low Reference Voltage
+enum Hydro_ESP32Touch_LowRef : signed char {
+    Hydro_ESP32Touch_LowRef_Keep,                           // No change
+    Hydro_ESP32Touch_LowRef_V_0V5,                          // 0.5v
+    Hydro_ESP32Touch_LowRef_V_0V6,                          // 0.6v
+    Hydro_ESP32Touch_LowRef_V_0V7,                          // 0.7v
+    Hydro_ESP32Touch_LowRef_V_0V8,                          // 0.8v
+    Hydro_ESP32Touch_LowRef_Max,                            // Max voltage
+
+    Hydro_ESP32Touch_LowRef_Undefined = -1                  // Placeholder
+};
+
+// ESP32 Touch Key High Ref Volt Attenuation
+enum Hydro_ESP32Touch_HighRefAtten : signed char {
+    Hydro_ESP32Touch_HighRefAtten_Keep,                     // No change
+    Hydro_ESP32Touch_HighRefAtten_V_1V5,                    // 1.5v
+    Hydro_ESP32Touch_HighRefAtten_V_1V,                     // 1v
+    Hydro_ESP32Touch_HighRefAtten_V_0V5,                    // 0.5v
+    Hydro_ESP32Touch_HighRefAtten_V_0V,                     // 0v
+    Hydro_ESP32Touch_HighRefAtten_Max,                      // Max voltage
+
+    Hydro_ESP32Touch_HighRefAtten_Undefined = -1            // Placeholder
 };
 
 // LCD Backlight Mode
@@ -103,7 +138,6 @@ enum Hydro_BacklightMode : signed char {
     Hydro_BacklightMode_Inverted,                           // The backlight is active LOW
     Hydro_BacklightMode_PWM,                                // The backlight is connected directly to a PWM pin
 
-    Hydro_BacklightMode_Count,                              // Placeholder
     Hydro_BacklightMode_Undefined = -1                      // Placeholder
 };
 

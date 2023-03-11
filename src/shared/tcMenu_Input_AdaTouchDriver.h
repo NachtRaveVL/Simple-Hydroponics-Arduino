@@ -1,4 +1,3 @@
-
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
     tcMenu Adafruit FT2606 Touchscreen

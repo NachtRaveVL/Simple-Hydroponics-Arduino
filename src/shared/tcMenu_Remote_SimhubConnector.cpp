@@ -1,3 +1,10 @@
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
+    tcMenu Simhub Remote Control
+*/
+#include <Hydruino.h>
+#ifdef HYDRO_USE_GUI
+
 /*
  * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
@@ -9,8 +16,6 @@
  * If you want to edit this file in place, make sure to rename it first.
  */
 
-#include <Hydruino.h>
-#ifdef HYDRO_USE_GUI
 #include "tcMenu_Remote_SimhubConnector.h"
 #include <MenuItems.h>
 #include <MenuIterator.h>

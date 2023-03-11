@@ -1,8 +1,17 @@
 // Simple-Hydroponics-Arduino Vertical Nutrient Film Technique (NFT) Example
 //
-// The Vertical NFT Example sketch is the standard implementation for our 3D printed
-// controller enclosure and for most vertical towers that will be used. It can be
-// easily extended to include other functionality if desired.
+// The Vertical NFT Example sketch is our recommended standard implementation. It can
+// be easily extended to include other functionality as desired. Follow the setup
+// defines below, filling in for your own particular system setup.
+//
+// Under minimal UI mode, if any UI I/O is enabled, the UI will allow you to modify,
+// but not create/destroy, objects created below. This restriction also applies to
+// various other settings, which will be locked under the UI.
+//
+// To again modify these locked values, a new sketch will have to be re-built and
+// re-uploaded. This process allows code-stripping to reduce build sizes to levels
+// that may work with <512kB Flash on constrained devices. Otherwise, one may need to
+// consider data export to SD Card or EEPROM - see the DataWriter example for details.
 
 #ifdef USE_SW_SERIAL
 #include "SoftwareSerial.h"
@@ -54,10 +63,10 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
 #define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2, LCD16x2_Swapped, LCD20x4, LCD20x4_Swapped, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
-#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOk_LR, UpDownOkButtons, UpDownOkButtons_LR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
+#define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
-#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours
+#define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours (int or float)
 #define SETUP_SYS_LOGLEVEL              All             // System log level filter (All, Warnings, Errors, None)
 #define SETUP_SYS_STATIC_LAT            DBL_UNDEF       // System static latitude (if not using GPS/UI, else DBL_UNDEF), in degrees
 #define SETUP_SYS_STATIC_LONG           DBL_UNDEF       // System static longitude (if not using GPS/UI, else DBL_UNDEF), in minutes
@@ -111,10 +120,14 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // UI Control Input Settings
 #define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
-#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed
+#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed, in ticks
 #define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
 #define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor)
+#define SETUP_UI_ESP32TOUCH_SWITCH      800             // ESP32 Touch key switch threshold, if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_HVOLTS      V_2V7           // ESP32 Touch key high reference voltage (Keep, V_2V4, V_2V5, V_2V6, V_2V7, Max), if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_LVOLTS      V_0V5           // ESP32 Touch key low reference voltage (Keep, V_0V5, V_0V6, V_0V7, V_0V8, Max), if on ESP32/using ESP32Touch
+#define SETUP_UI_ESP32TOUCH_HVATTEN     V_1V            // ESP32 Touch key high ref voltage attenuation (Keep, V_1V5, V_1V, V_0V5, V_0V, Max), if on ESP32/using ESP32Touch
 
 // UI Remote Control Settings
 #define SETUP_UI_REMOTE1_TYPE           Disabled        // Type of first remote control (Disabled, Serial, Simhub, WiFi, Ethernet)
@@ -264,7 +277,7 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
 
 inline void setupMuxing()
 {
-    #if SETUP_MUXING_CHANNEL_BITS >= 0 && SETUP_MUXING_CHANNEL_BITS > 0
+    #if SETUP_MUXING_CHANNEL_BITS >= 0
         pintype_t _SETUP_MUXING_ADDRESS_PINS[] = SETUP_MUXING_ADDRESS_PINS;
         HydroDigitalPin chipEnable(SETUP_MUXING_ENABLE_PIN, OUTPUT, SETUP_MUXING_ENABLE_TYPE);
         #if SETUP_PH_METER_MUXCHN >= 0 && SETUP_PH_METER_PIN >= 0
@@ -643,12 +656,16 @@ inline void setupUI()
         #else
             switch (hydroController.getControlInputMode()) {
                 case Hydro_ControlInputMode_RotaryEncoderOk:
-                case Hydro_ControlInputMode_RotaryEncoderOk_LR:
+                case Hydro_ControlInputMode_RotaryEncoderOkLR:
                     uiCtrlSetup = UIControlSetup(RotaryControlSetup(JOIN(Hydro_EncoderSpeed,SETUP_UI_ENC_ROTARY_SPEED)));
                     break;
-                case Hydro_ControlInputMode_UpDownOkButtons:
-                case Hydro_ControlInputMode_UpDownOkButtons_LR:
+                case Hydro_ControlInputMode_UpDownButtonsOk:
+                case Hydro_ControlInputMode_UpDownButtonsOkLR:
                     uiCtrlSetup = UIControlSetup(ButtonsControlSetup(SETUP_UI_KEY_REPEAT_SPEED));
+                    break;
+                case Hydro_ControlInputMode_UpDownESP32TouchOk:
+                case Hydro_ControlInputMode_UpDownESP32TouchOkLR:
+                    uiCtrlSetup = UIControlSetup(ESP32TouchControlSetup(SETUP_UI_KEY_REPEAT_SPEED, SETUP_UI_ESP32TOUCH_SWITCH, JOIN(Hydro_ESP32Touch_HighRef,SETUP_UI_ESP32TOUCH_HVOLTS), JOIN(Hydro_ESP32Touch_LowRef,SETUP_UI_ESP32TOUCH_LVOLTS), JOIN(Hydro_ESP32Touch_HighRefAtten,SETUP_UI_ESP32TOUCH_HVATTEN)));
                     break;
                 case Hydro_ControlInputMode_AnalogJoystickOk:
                     uiCtrlSetup = UIControlSetup(JoystickControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_JS_ACCELERATION));
@@ -696,12 +713,15 @@ inline void setupUI()
 
         if (ui) {
             #if IS_SETUP_AS(SETUP_SYS_UI_MODE, Minimal)
-                #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOk_LR) ||\
-                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownOkButtons) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownOkButtons_LR) ||\
+                #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, RotaryEncoderOkLR) ||\
+                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownButtons) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownButtonsLR) ||\
                     IS_SETUP_AS(SETUP_CONTROL_IN_MODE, AnalogJoystickOk) ||\
                     IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix3x4Keyboard_OptRotEncOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix3x4Keyboard_OptRotEncOkLR) ||\
-                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOkLR)
+                    IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOk) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, Matrix4x4Keyboard_OptRotEncOkLR) ||\
+                    SETUP_UI_IS_DFROBOTSHIELD
                     ui->allocateStandardControls();
+                #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownESP32Touch) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownESP32TouchLR)
+                    ui->allocateESP32TouchControl();
                 #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TouchScreen)
                     ui->allocateTouchscreenControl();
                 #endif
@@ -722,12 +742,12 @@ inline void setupUI()
                     ui->allocateTFTDisplay();
                 #endif
                 #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, ResistiveTouch)
-                    ui->allocateResistiveControls();
+                    ui->allocateResistiveTouchControl();
                 #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TFTTouch)
                     ui->allocateTFTTouchControl();
                 #endif
 
-                #if IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Serial)
+                #if IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Serial) || IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, UART)
                     ui->addSerialRemote(UARTDeviceSetup(&SETUP_UI_REMOTE1_UART));
                 #elif IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Simhub)
                     ui->addSimhubRemote(UARTDeviceSetup(&SETUP_UI_REMOTE1_UART));
@@ -736,7 +756,7 @@ inline void setupUI()
                 #elif IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Ethernet)
                     ui->addEthernetRemote(SETUP_UI_RC_NETWORKING_PORT);
                 #endif
-                #if IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Serial)
+                #if IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Serial) || IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, UART)
                     ui->addSerialRemote(UARTDeviceSetup(&SETUP_UI_REMOTE2_UART));
                 #elif IS_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Simhub)
                     ui->addSimhubRemote(UARTDeviceSetup(&SETUP_UI_REMOTE2_UART));
