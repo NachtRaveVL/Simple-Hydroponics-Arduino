@@ -12,8 +12,9 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
       _gfxOrTFT(getController() && getController()->getDisplayOutputMode() >= Hydro_DisplayOutputMode_ST7735 && getController()->getDisplayOutputMode() <= Hydro_DisplayOutputMode_TFT),
       _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr)
 {
-    if (getController()) { strncpy(_appInfo.name, getController()->getSystemName().c_str(), 30); }
-    strncpy(_appInfo.uuid, String(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")).c_str(), 38); // todo, name->hash
+    if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
+    String uuid(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")); // todo, name->hash
+    strncpy(_appInfo.uuid, uuid.c_str(), 38);
 }
 
 HydruinoBaseUI::~HydruinoBaseUI()
