@@ -779,9 +779,9 @@ void Hydruino::commonPostInit()
             #endif
             #ifdef HYDRO_USE_GUI
                 Serial.print(F(", controlInputPins: "));
-                if (getControlInputPins() && _ctrlInputPins && isValidPin(_ctrlInputPins[0])) {
+                if (getControlInputPins().first && _ctrlInputPins && isValidPin(_ctrlInputPins[0])) {
                     Serial.print('{');
-                    for (int i = 0; i < getControlInputPins(); ++i) {
+                    for (int i = 0; i < getControlInputPins().first; ++i) {
                         if (i) { Serial.print(','); }
                         Serial.print(_ctrlInputPins[i]);
                     }
