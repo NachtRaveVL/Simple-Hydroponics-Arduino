@@ -26,7 +26,7 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
 * Actuator and Sensor I/O pins can be multiplexed or expanded (TODO) for pin-limited environments.
 * Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by tcMenu).
   * Contains at-a-glance system overview screen and UI menu system for system configuration, calibration, and more (TODO).
-  * GUI I/O can be setup as fully interrupt driven (5~20ms) or polling based (50~100ms).
+  * GUI I/O can be setup as fully interrupt driven (5-20ms) or polling based (50-100ms).
   * Can be built in Minimal mode, saving space at the cost of having to re-compile and re-upload upon system setup changes (i.e. a R/O UI), or Full mode, which uses large amounts of Flash space to provide everything at once (i.e. a R/W UI), with only pinout changes requiring rebuild.
   * Includes remote UI access through enabled Ethernet, WiFi, Serial, and/or Simhub connection.
 
