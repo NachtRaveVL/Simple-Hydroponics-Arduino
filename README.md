@@ -53,13 +53,17 @@ Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRA
 
 The easiest way to install this controller is to utilize the Arduino IDE library manager, or through a package manager such as PlatformIO. Otherwise, simply download this controller and extract its files into a `Simple-Hydroponics-Arduino` folder in your Arduino custom libraries folder, typically found in your `[My ]Documents\Arduino\libraries` folder (Windows), or `~/Documents/Arduino/libraries/` folder (Linux/OSX).
 
-From there, you can make a local copy of one of the examples based on the kind of system setup you want to use. If you are unsure of which, we recommend using the Vertical NFT Example for older MCUs and the Full System Example for modern MCUs. Older storage constrained MCUs (< 512kB Flash) may need further modifications (and possibly external hardware) so is recommended only for advanced users.
+From there, you can make a local copy of one of the example sketches based on the kind of system setup you want to use. If you are unsure of which, we recommend the Vertical NFT Example, as it is our standard implementation built for most common system setups and only requires changing setup defines at the top of the file. Older storage constrained MCUs (< 512kB Flash) may need further tweaking, and possibly external storage hardware (such as EEPROM or SD Card - see the Data Writer example for more details). Modern MCUs with lots of Flash storage can instead simply build the Full System Example (TODO: Still a WIP).
 
-### Header Defines
+### Setup
 
-There are several defines inside of the controller's main header file that allow for more fine-tuned control of the controller. You may edit and uncomment these lines directly, or supply them via custom build flags. While editing the main header file isn't ideal, it is often easiest. Note that editing the controller's main header file directly will affect all projects compiled on your system using those modified controller files.
+#### Header Defines
 
-Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=602603.0> on how to define custom build flags manually via modifying the platform[.local].txt file. Note that editing such directly will affect all other projects compiled on your system using those modified platform framework files, but at least you keep those changes to the same place.
+There are several defines inside of the controller's main Hydruino.h header file that allow for more fine-tuned control of the controller. You may edit and uncomment these lines directly, or supply them via custom build flags. While editing the main header file isn't ideal, it is often easiest. Note that editing the controller's main header file directly will affect all projects compiled on your system using those modified controller files.
+
+Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=602603.0> on how to define custom build flags manually via modifying the platform[.local].txt file, or with the Arduino CLI (preferred way going forward).
+
+For the older platform.local.txt file override approach, create platform.local.txt alongside platform.txt located in %applocaldata%\Arduino15\packages\{platform}\hardware\{arch}\{version}\ (replacing %applocaldata%\Arduino15 with ~/Library/Arduino15 for OSX, and ~/.arduino15 for Linux), with the contents: `compiler.cpp.extra_flags=-Dname` (replacing `name` with full name of below define). Note that it will affect all builds for that platform until again changed/removed. Some build systems may require directly editing platform.txt and adding onto the end of its CPP build recipe, e.g. Teensy & `recipe.cpp.o.pattern=`.
 
 From Hydruino.h:
 ```Arduino
@@ -100,7 +104,11 @@ From Hydruino.h:
 //#define HYDRO_ENABLE_DEBUG_ASSERTIONS
 ```
 
-### Controller Initialization
+#### External Libraries
+
+* TFT_eSPI: If using this graphical display library, user library setup via its TFT_eSPI\User_Setup.h library setup file is required.
+
+### Initialization
 
 There are several initialization mode settings exposed through this controller that are used for more fine-tuned control.
 
@@ -217,8 +225,10 @@ SPI devices can be chained together on the same shared data lines, which are typ
 * The `CS` pin may be connected to any digital output pin, but it's common to use the `CS` (or `SS`) pin for the first device. Additional devices are not restricted to what pin they can or should use, but given it's not a data pin not using a choice interrupt-capable pin allows those to be used for interrupt driven mechanisms.
 * Many low-cost SPI-based SD card modules on market only read SDHC sized SD cards (2GB to 32GB) formatted in FAT32 (filenames limited to 8 characters plus 3 character file extension).
   * Some SD cards simply will not play nicely with these modules and you may have to try another SD card manufacturer. We recommend 32GB SD cards due to overall lowest cost (5~10 $USD/SD card - smaller SD cards actually becoming _more_ expensive).
+* Many various graphical displays have an additional `DC` pin, which is required to be connected to any digital pin in addition to `CS`.
+  * There is also an additional `Reset` pin for many of these, but is instead optional.
 
-SPI Devices Supported: SD card modules, NMEA GPS modules
+SPI Devices Supported: SD card modules, NMEA GPS modules, 128x32 to 296x128 OLED displays, 320x240+ LCD/TFT gfx displays & FT/XPT touchscreens
 
 ### I2C Bus
 
@@ -227,23 +237,23 @@ I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same sh
 * When more than one I2C device of the same kind is to be used on the same data line, each device must be set to use a different address. This is accomplished via the A0-A2 (sometimes A0-A5) pins/pads on the physical device that must be set either open or closed (typically via a de-solderable resistor, or by shorting a pin/pad). Check your specific breakout's datasheet for details.
 * Note that not all the I2C libraries used support multi-addressable I2C devices at this time (read as: may only use one). Currently, this restriction applies to: RTC devices.
 
-I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS modules, 16x2/20x4 LCD modules (TODO)
+I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS modules, 16x2/20x4 LCD displays, 128x32 to 296x128 OLED displays
 
 ### OneWire Bus
 
 OneWire devices can be chained together on the same shared data lines (no flipping of wires). Devices can be of the same or different types, require minimal setup (and no soldering), and most can even operate in "parasite" power mode where they use the power from the data line (and an internal capacitor) to function (thus saving a `Vcc` line, only requiring `Data` and `GND`). OneWire runs only in the low kb/s speeds and is useful for digital sensors.
 
 * Typically, sensors are limited to 20 devices along a maximum 100m of wire.
-* When more than one OneWire device is on the same data data line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
+* When more than one OneWire device is on the same device line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
 
-OneWire Devices Supported: DHT* Temp modules, DS* Temp modules
+OneWire Devices Supported: DHT* air temp/humidity sensors, DS* water temp sensors
 
 ### Analog IO
 
 * All analog sensors will need to have the same operational voltage range. Many analog sensors are set to use 0v to 5v by default, but some can go -5v to +5v, some even up to 5.5v.
-* The `AREF` pin, by default, is the same voltage as the MCU. Analog sensors must not exceed this voltage limit.
+* The `AREF` (or `IOREF`) pin, by default, is the same voltage as the MCU. Analog sensors must not exceed this voltage limit.
   * 5v analog sensor signals **must** be [level converted](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/) in order to connect to 3.3v MCUs.
-* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) as well as the RasPi Pico and others support different bit resolutions for analog/PWM pins, but may also impose other limits. See the datasheet of your MCU for details.
+* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, etc.) as well as the RasPi Pico and others support different bit resolutions for analog/PWM pins. Refer to the datasheet of your MCU for details.
 
 ### Sensors
 
@@ -262,13 +272,13 @@ We also ask that our users report any broken sensors (outside of bad calibration
 
 ## Memory Callouts
 
-* The total number of objects and different kinds of objects (reservoirs, pumps, probes, relays, etc.) that the controller can support at once depends on how much free Flash storage and RAM your MCU has available. Hydruino objects range in RAM memory size from 150 to 500 bytes or more depending on settings and object type, with the base Flash memory usage ranging from 100kB to 300kB+ depending on settings.
-  * For our target microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with MB+ of Flash and 32kB+ of SRAM. Devices with < 32kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in crop data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
-* For AVR, SAM/SAMD, and other architectures that do not have C++ STL (standard container) support, there are a series of *`_MAXSIZE` defines at the top of `HydroDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller uses.
+* The total number of objects and different kinds of objects (reservoirs, pumps, probes, relays, etc.) that the controller can support at once depends on how much free Flash storage and SRAM your MCU has available. Hydruino C++0x11 objects range in memory usage size from 150 to 750 bytes or more depending on settings and object type, with the compiled Flash binary ranging in size from 100kB to 500kB+ depending on platform and settings.
+  * For our supported microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with 1MB+ of Flash and 32kB+ of SRAM. Devices with < 24kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in library data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
+* For AVR, SAM, and other build architectures that do not have C++0x11 STL (standard container library) support, there are a series of *`_MAXSIZE` defines at the top of `HydroDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller instead uses.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
-* To further save on code size cost, see the Data Writer Example to see how to externalize controller data onto an SD card or EEPROM.
-  * Note: Upgrading between versions or changing custom/user data may require you rebuild and redeploy to such external devices.
+* To further save on code size cost, see the Data Writer Example on how to externalize library data onto an SD Card or EEPROM.
+  * Note: Upgrading between versions or changing custom/program data may require you to re-build and re-deploy to such external device.
 
 ## Example Usage
 

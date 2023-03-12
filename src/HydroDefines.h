@@ -176,8 +176,8 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_FEEDRES_FRACTION_EMPTY    0.2f                // What fraction of a feed reservoir's volume is to be considered 'empty' during7*- pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 #define HYDRO_FEEDRES_FRACTION_FILLED   0.9f                // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 
-#define HYDRO_NIGHT_START_HR            20                  // Hour of the day night starts (for night feeding multiplier, used if not able to calculate from lat/long/date)
-#define HYDRO_NIGHT_FINISH_HR           6                   // Hour of the day night finishes (for night feeding multiplier, used if not able to calculate from lat/long/date)
+#define HYDRO_NIGHT_START_HR            20                  // Hour of the day night starts (for night feeding multiplier, used if not able to calculate from location & time)
+#define HYDRO_NIGHT_FINISH_HR           6                   // Hour of the day night finishes (for night feeding multiplier, used if not able to calculate from location & time)
 
 #define HYDRO_POS_SEARCH_FROMBEG        -1                  // Search from beginning to end, 0 up to MAXSIZE-1
 #define HYDRO_POS_SEARCH_FROMEND        HYDRO_POS_MAXSIZE   // Search from end to beginning, MAXSIZE-1 down to 0
@@ -735,66 +735,66 @@ class HydroReservoir;
 class HydroFeedReservoir;
 class HydroRail;
 
-// System sketches setup enums & helpers
-#define SETUP_ENUM_Disabled             -1
-#define SETUP_ENUM_None                 -1
-#define SETUP_ENUM_Count                -1
-#define SETUP_ENUM_Undefined            -1
-#define SETUP_ENUM_Primary              1
-#define SETUP_ENUM_Fallback             2
-#define SETUP_ENUM_Minimal              3
-#define SETUP_ENUM_Full                 4
-#define SETUP_ENUM_UART                 5
-#define SETUP_ENUM_I2C                  6
-#define SETUP_ENUM_SPI                  7
-#define SETUP_ENUM_LCD                  8
-#define SETUP_ENUM_Pixel                9
-#define SETUP_ENUM_ST7735               10
-#define SETUP_ENUM_TFT                  11
-#define SETUP_ENUM_Encoder              12
-#define SETUP_ENUM_Buttons              13
-#define SETUP_ENUM_Joystick             14
-#define SETUP_ENUM_Matrix               15
-#define SETUP_ENUM_Serial               16
-#define SETUP_ENUM_Simhub               17
-#define SETUP_ENUM_WiFi                 18
-#define SETUP_ENUM_Ethernet             19
-#define SETUP_ENUM_Hostname             20
-#define SETUP_ENUM_IPAddress            21
-#define SETUP_ENUM_LCD16x2_EN           100
-#define SETUP_ENUM_LCD16x2_RS           101
-#define SETUP_ENUM_LCD20x4_EN           102
-#define SETUP_ENUM_LCD20x4_RS           103
-#define SETUP_ENUM_SSD1305              104
-#define SETUP_ENUM_SSD1305_x32Ada       105
-#define SETUP_ENUM_SSD1305_x64Ada       106
-#define SETUP_ENUM_SSD1306              107
-#define SETUP_ENUM_SH1106               108
-#define SETUP_ENUM_SSD1607_GD           109
-#define SETUP_ENUM_SSD1607_WS           110
-#define SETUP_ENUM_IL3820               111
-#define SETUP_ENUM_IL3820_V2            112
-#define SETUP_ENUM_ST7735               113
-#define SETUP_ENUM_ST7789               114
-#define SETUP_ENUM_ILI9341              115
-#define SETUP_ENUM_PCD8544              116
-#define SETUP_ENUM_TFT                  117
-#define SETUP_ENUM_RotaryEncoderOk      118
-#define SETUP_ENUM_RotaryEncoderOkLR    119
-#define SETUP_ENUM_UpDownButtonsOk      120
-#define SETUP_ENUM_UpDownButtonsOkLR    121
-#define SETUP_ENUM_UpDownESP32TouchOk   122
-#define SETUP_ENUM_UpDownESP32TouchOkLR 123
-#define SETUP_ENUM_AnalogJoystickOk     124
-#define SETUP_ENUM_Matrix2x2UpDownButtonsOkL 125
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk 126
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR 127
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk 128
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR 129
-#define SETUP_ENUM_ResistiveTouch       130
-#define SETUP_ENUM_TouchScreen          131
-#define SETUP_ENUM_TFTTouch             132
-#define SETUP_ENUM_RemoteControl        133
+// System sketches setup enums (for non-zero resolution)
+#define SETUP_ENUM_Disabled                                 -1
+#define SETUP_ENUM_None                                     -1
+#define SETUP_ENUM_Count                                    -1
+#define SETUP_ENUM_Undefined                                -1
+#define SETUP_ENUM_Primary                                  10
+#define SETUP_ENUM_Fallback                                 11
+#define SETUP_ENUM_Minimal                                  20
+#define SETUP_ENUM_Full                                     21
+#define SETUP_ENUM_UART                                     30
+#define SETUP_ENUM_I2C                                      31
+#define SETUP_ENUM_SPI                                      32
+#define SETUP_ENUM_LCD                                      40
+#define SETUP_ENUM_Pixel                                    41
+#define SETUP_ENUM_ST7735                                   42
+#define SETUP_ENUM_TFT                                      43
+#define SETUP_ENUM_Encoder                                  50
+#define SETUP_ENUM_Buttons                                  51
+#define SETUP_ENUM_Joystick                                 52
+#define SETUP_ENUM_Matrix                                   53
+#define SETUP_ENUM_Serial                                   60
+#define SETUP_ENUM_Simhub                                   61
+#define SETUP_ENUM_WiFi                                     62
+#define SETUP_ENUM_Ethernet                                 63
+#define SETUP_ENUM_Hostname                                 70
+#define SETUP_ENUM_IPAddress                                71
+// Display & controller setup enums (for non-zero resolution)
+#define SETUP_ENUM_LCD16x2_EN                               100
+#define SETUP_ENUM_LCD16x2_RS                               101
+#define SETUP_ENUM_LCD20x4_EN                               102
+#define SETUP_ENUM_LCD20x4_RS                               103
+#define SETUP_ENUM_SSD1305                                  104
+#define SETUP_ENUM_SSD1305_x32Ada                           105
+#define SETUP_ENUM_SSD1305_x64Ada                           106
+#define SETUP_ENUM_SSD1306                                  107
+#define SETUP_ENUM_SH1106                                   108
+#define SETUP_ENUM_SSD1607_GD                               109
+#define SETUP_ENUM_SSD1607_WS                               110
+#define SETUP_ENUM_IL3820                                   111
+#define SETUP_ENUM_IL3820_V2                                112
+#define SETUP_ENUM_ST7789                                   113
+#define SETUP_ENUM_ILI9341                                  114
+#define SETUP_ENUM_PCD8544                                  115
+#define SETUP_ENUM_TFT                                      116
+#define SETUP_ENUM_RotaryEncoderOk                          117
+#define SETUP_ENUM_RotaryEncoderOkLR                        118
+#define SETUP_ENUM_UpDownButtonsOk                          119
+#define SETUP_ENUM_UpDownButtonsOkLR                        120
+#define SETUP_ENUM_UpDownESP32TouchOk                       121
+#define SETUP_ENUM_UpDownESP32TouchOkLR                     122
+#define SETUP_ENUM_AnalogJoystickOk                         123
+#define SETUP_ENUM_Matrix2x2UpDownButtonsOkL                124
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk            125
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR          126
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk            127
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR          128
+#define SETUP_ENUM_ResistiveTouch                           129
+#define SETUP_ENUM_TouchScreen                              130
+#define SETUP_ENUM_TFTTouch                                 131
+#define SETUP_ENUM_RemoteControl                            132
 // Checks setup defines for equality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
 #define IS_SETUP_AS(X,Y)                JOIN(SETUP_ENUM,X) == SETUP_ENUM_##Y
 // Checks setup defines for inequality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
