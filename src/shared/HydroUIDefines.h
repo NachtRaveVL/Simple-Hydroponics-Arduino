@@ -19,7 +19,7 @@
 
 #define HYDRO_UI_RENDERER_BUFFERSIZE    30                  // Default buffer size for display renderer
 #define HYDRO_UI_I2C_LCD_BASEADDR       0x20                // Base address of I2C LiquidCrystalIO LCDs (bitwise or'ed with passed address)
-#define HYDRO_UI_I2C_OLED_BASEADDR      0x78                // Base address of I2C U8G2 OLEDs (bitwise or'ed with passed address)
+#define HYDRO_UI_I2C_OLED_BASEADDR      0x78                // Base address of I2C U8G2 OLEDs (bitwise or'ed with passed address) (some devices may use 0x7e)
 #define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
 #define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // Default 3x4 matrix keyboard keys
