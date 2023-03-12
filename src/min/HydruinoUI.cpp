@@ -131,7 +131,7 @@ void HydruinoMinUI::allocateTouchscreenControl()
         auto ctrlInPins = controller->getControlInputPins();
         switch (ctrlInMode) {
             case Hydro_ControlInputMode_TouchScreen:
-                #ifdef HELIO_ENABLE_XPT2046TS
+                #ifdef HYDRO_ENABLE_XPT2046TS
                     HYDRO_SOFT_ASSERT(ctrlInPins.first && ctrlInPins.second && isValidPin(ctrlInPins.second[0]), SFP(HStr_Err_InvalidPinOrType));
                 #endif
                 _input = new HydroInputTouchscreen(ctrlInPins, _uiDispSetup.getDisplayOrientation());

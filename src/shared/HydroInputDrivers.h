@@ -135,7 +135,7 @@ protected:
 
 class HydroInputMatrix3x4 : public HydroInputDriver {
 public:
-    HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed);
+    HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed);
     virtual ~HydroInputMatrix3x4();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
@@ -154,7 +154,7 @@ protected:
 
 class HydroInputMatrix4x4 : public HydroInputDriver {
 public:
-    HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed = Hydro_EncoderSpeed_HalfCycle);
+    HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed = Hydro_EncoderSpeed_HalfCycle);
     virtual ~HydroInputMatrix4x4();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;

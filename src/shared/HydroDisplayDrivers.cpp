@@ -53,7 +53,7 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode
       _lcd(displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 2 : 0, 1,
            displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 0 : 2, 4, 5, 6, 7,
            backlightMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
-           ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
+           ioFrom8574(HYDRO_UI_I2C_LCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
       _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
 {
     _lcd.configureBacklightPin(3);
@@ -64,7 +64,7 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_un
     : _screenSize{16, 2},
       _lcd(8, 9, 4, 5, 6, 7,
            backlightMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
-           ioFrom8574(HYDRO_UI_I2CLCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
+           ioFrom8574(HYDRO_UI_I2C_LCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
       _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
 {
     _lcd.configureBacklightPin(10);
@@ -89,7 +89,12 @@ HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_Display
 {
     HYDRO_SOFT_ASSERT(_gfx, SFP(HStr_Err_AllocationFailure));
     if (_gfx) {
-        _gfxDrawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire);
+        if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
+            _gfx->setI2CAddress(HYDRO_UI_I2C_OLED_BASEADDR | displaySetup.cfgAs.i2c.address);
+            _gfxDrawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire);
+        } else {
+            _gfxDrawable = new U8g2Drawable(_gfx);
+        }
         HYDRO_SOFT_ASSERT(_gfxDrawable, SFP(HStr_Err_AllocationFailure));
 
         if (_gfxDrawable) {

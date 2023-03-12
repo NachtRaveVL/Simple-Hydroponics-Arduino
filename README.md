@@ -392,7 +392,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
 #define SETUP_DISP_LCD_I2C_ADDR         0b111           // LCD i2c address
-#define SETUP_DISP_GFX_I2C_ADDR         0b000           // Gfx i2c address
+#define SETUP_DISP_GFX_I2C_ADDR         0b000           // U8G2 i2c address
 #define SETUP_DISP_SPI                  SPI             // Gfx/TFT SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Gfx/TFT SPI CS pin, else -1
 #define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}

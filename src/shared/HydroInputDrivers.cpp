@@ -141,22 +141,11 @@ void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
 }
 
 
-static String getMatrix2x2KBKeys()
-{
-    static const String kb2x2(F(HYDRO_UI_MXNMATRIX_ACTIONS));
-    return kb2x2;
-}
-
-static inline char getMxNMatrixActions(int charIndex)
-{
-    return getMatrix2x2KBKeys()[charIndex];
-}
-
 HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(2,2,getMatrix2x2KBKeys().c_str()),
-      _tcMenuKeyListener(getMxNMatrixActions(0), getMxNMatrixActions(1), getMxNMatrixActions(2), getMxNMatrixActions(3))
+      _keyboardLayout(2,2,SFP(HStr_UI_MatrixActions).c_str()),
+      _tcMenuKeyListener(SFP(HStr_UI_MatrixActions)[0], SFP(HStr_UI_MatrixActions)[1], SFP(HStr_UI_MatrixActions)[2], SFP(HStr_UI_MatrixActions)[3])
 {
     // todo expander setup
     _keyboardLayout.setRowPin(0, controlPins.second[0]);
@@ -178,11 +167,11 @@ static String getMatrix3x4KBKeys()
     return kb3x4;
 }
 
-HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed)
+HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,3,getMatrix3x4KBKeys().c_str()),
-      _tcMenuKeyListener(getMxNMatrixActions(0), getMxNMatrixActions(1), getMxNMatrixActions(2), getMxNMatrixActions(3)),
+      _keyboardLayout(4,3,SFP(HStr_UI_Matrix3x4Keys).c_str()),
+      _tcMenuKeyListener(SFP(HStr_UI_MatrixActions)[0], SFP(HStr_UI_MatrixActions)[1], SFP(HStr_UI_MatrixActions)[2], SFP(HStr_UI_MatrixActions)[3]),
       _rotaryEncoder(nullptr)
 {
     // todo expander setup
@@ -196,7 +185,7 @@ HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> contro
     _keyboard.setRepeatKeyMillis(repeatDelay, repeatInterval);
 
     if (isValidPin(controlPins.second[7])) {
-        _rotaryEncoder = new HydroInputRotary(make_pair((uint8_t)(controlPins.first - 7), &controlPins.second[7]), optEncoderSpeed);
+        _rotaryEncoder = new HydroInputRotary(make_pair((uint8_t)(controlPins.first - 7), &controlPins.second[7]), encoderSpeed);
     }
 }
 
@@ -218,12 +207,12 @@ static String getMatrix4x4KBKeys()
     return kb4x4;
 }
 
-HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed optEncoderSpeed)
+HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,4,getMatrix4x4KBKeys().c_str()),
-      _tcMenuKeyListener(getMxNMatrixActions(0), getMxNMatrixActions(1), getMxNMatrixActions(2), getMxNMatrixActions(3)),
-      _rotaryEncoder()
+      _keyboardLayout(4,4,SFP(HStr_UI_Matrix4x4Keys).c_str()),
+      _tcMenuKeyListener(SFP(HStr_UI_MatrixActions)[0], SFP(HStr_UI_MatrixActions)[1], SFP(HStr_UI_MatrixActions)[2], SFP(HStr_UI_MatrixActions)[3]),
+      _rotaryEncoder(nullptr)
 {
     // todo expander setup
     _keyboardLayout.setRowPin(0, controlPins.second[0]);
@@ -237,7 +226,7 @@ HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> contro
     _keyboard.setRepeatKeyMillis(repeatDelay, repeatInterval);
 
     if (isValidPin(controlPins.second[8])) {
-        _rotaryEncoder = new HydroInputRotary(make_pair((uint8_t)(controlPins.first - 8), &controlPins.second[8]), optEncoderSpeed);
+        _rotaryEncoder = new HydroInputRotary(make_pair((uint8_t)(controlPins.first - 8), &controlPins.second[8]), encoderSpeed);
     }
 }
 
