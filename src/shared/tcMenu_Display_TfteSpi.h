@@ -16,6 +16,10 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+/* Changelist:
+ * - Refactored TFTTouch code to avoid define switches/build errors.
+ */
+
 /**
  * @file tcMenu_Display_TfteSpi.h
  * 

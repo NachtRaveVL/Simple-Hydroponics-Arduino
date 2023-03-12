@@ -6,6 +6,15 @@
 #include <Hydruino.h>
 #ifdef HYDRO_USE_GUI
 
+/*
+ * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).
+ * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
+ */
+
+/* Changelist:
+ * - Variable name standardizations and keeping things in function scope.
+ */
+
 /**
  * Dark mode traditional theme by TheCodersCorner.com. This is part of the standard themes shipped with TcMenu.
  * This file will not be updated by the designer, you can edit.

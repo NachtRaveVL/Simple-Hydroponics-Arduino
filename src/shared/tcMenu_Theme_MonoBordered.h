@@ -11,6 +11,10 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+/* Changelist:
+ * - Variable name standardizations and keeping things in function scope.
+ */
+
 #ifndef TCMENU_THEME_MONO_BORDER
 #define TCMENU_THEME_MONO_BORDER
 

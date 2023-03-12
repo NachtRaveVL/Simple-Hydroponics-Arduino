@@ -11,6 +11,11 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+/* Changelist:
+ * - Changed from application.name to constructed appTitle parameter
+ * - Put length limits into renderTitle & now using internal appTitle
+ */
+
 /**
  * @file tcMenu_Display_LiquidCrystal.h
  * 

@@ -66,6 +66,22 @@ public:
     HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx);
     virtual ~HydroDisplayU8g2lib();
 
+    virtual void init() override;
+    virtual void begin() override;
+
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair(_screenSize[0], _screenSize[1]); }
+    virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
+    virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
+
+    inline U8G2 *getOLED() { return _gfx; }
+
+protected:
+    uint16_t _screenSize[2];
+    U8G2 *_gfx;
+    U8g2Drawable *_gfxDrawable;
+    GraphicsDeviceRenderer *_renderer;
+
+public:
     static inline HydroDisplayU8g2lib *allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
     static inline HydroDisplayU8g2lib *allocateSSD1305I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
     static inline HydroDisplayU8g2lib *allocateSSD1305I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
@@ -85,21 +101,6 @@ public:
     static inline HydroDisplayU8g2lib *allocateSSD1607WSSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
     static inline HydroDisplayU8g2lib *allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
     static inline HydroDisplayU8g2lib *allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-
-    virtual void init() override;
-    virtual void begin() override;
-
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair(_screenSize[0], _screenSize[1]); }
-    virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
-    virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
-
-    inline U8G2 *getOLED() { return _gfx; }
-
-protected:
-    uint16_t _screenSize[2];
-    U8G2 *_gfx;
-    U8g2Drawable *_gfxDrawable;
-    GraphicsDeviceRenderer *_renderer;
 };
 
 template <class T>

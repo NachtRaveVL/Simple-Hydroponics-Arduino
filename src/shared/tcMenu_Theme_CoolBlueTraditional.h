@@ -11,6 +11,10 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+/* Changelist:
+ * - Variable name standardizations and keeping things in function scope.
+ */
+
 #ifndef COOL_BLUE_TRADITIONAL_THEME
 #define COOL_BLUE_TRADITIONAL_THEME
 

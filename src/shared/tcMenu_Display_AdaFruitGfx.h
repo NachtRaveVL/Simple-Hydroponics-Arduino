@@ -11,6 +11,10 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+/* Changelist:
+ * - Refactored drawable/canvas into templates to remove define switches.
+ */
+
 /**
  * @file tcMenu_Display_AdaFruitGfx.h
  *
