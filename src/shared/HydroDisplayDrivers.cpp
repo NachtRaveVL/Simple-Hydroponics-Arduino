@@ -83,102 +83,11 @@ void HydroDisplayLiquidCrystalIO::begin()
 }
 
 
-HydroDisplayU8g2lib::HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx)
     : HydroDisplayDriver(displayOrientation),
-      _screenSize{0}, _gfx(nullptr), _gfxDrawable(nullptr), _renderer(nullptr)
+      _screenSize{screenWidth, screenHeight}, _gfx(gfx), _gfxDrawable(nullptr), _renderer(nullptr)
 {
-    const u8g2_cb_t *u8g2Rotation = nullptr;
-    switch (_displayOri) {
-        case Hydro_DisplayOrientation_R0:
-            u8g2Rotation = U8G2_R0;
-            break;
-        case Hydro_DisplayOrientation_R1:
-            u8g2Rotation = U8G2_R1;
-            break;
-        case Hydro_DisplayOrientation_R2:
-            u8g2Rotation = U8G2_R2;
-            break;
-        case Hydro_DisplayOrientation_R3:
-            u8g2Rotation = U8G2_R3;
-            break;
-        case Hydro_DisplayOrientation_HorzMirror:
-            u8g2Rotation = U8G2_MIRROR;
-            break;
-        case Hydro_DisplayOrientation_VertMirror:
-            u8g2Rotation = U8G2_MIRROR_VERTICAL;
-            break;
-        default: break;
-    }
-
-    switch (displayMode) {
-        case Hydro_DisplayOutputMode_SSD1305:
-            _screenSize[0] = 128; _screenSize[1] = 32;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_SSD1305_128X32_NONAME_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            } else if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
-                _gfx = new U8G2_SSD1305_128X32_NONAME_F_HW_I2C(u8g2Rotation, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_SSD1305_x32Ada:
-            _screenSize[0] = 128; _screenSize[1] = 32;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_SSD1305_128X32_ADAFRUIT_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            } else if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
-                _gfx = new U8G2_SSD1305_128X32_ADAFRUIT_F_HW_I2C(u8g2Rotation, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_SSD1305_x64Ada:
-            _screenSize[0] = 128; _screenSize[1] = 64;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_SSD1305_128X64_ADAFRUIT_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            } else if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
-                _gfx = new U8G2_SSD1305_128X64_ADAFRUIT_F_HW_I2C(u8g2Rotation, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_SSD1306:
-            _screenSize[0] = 128; _screenSize[1] = 64;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            } else if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
-                _gfx = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(u8g2Rotation, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_SH1106:
-            _screenSize[0] = 128; _screenSize[1] = 64;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_SH1106_128X64_NONAME_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            } else if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
-                _gfx = new U8G2_SH1106_128X64_NONAME_F_HW_I2C(u8g2Rotation, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_SSD1607_GD:
-            _screenSize[0] = 200; _screenSize[1] = 200;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_SSD1607_GD_200X200_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_SSD1607_WS:
-            _screenSize[0] = 200; _screenSize[1] = 200;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_SSD1607_WS_200X200_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_IL3820:
-            _screenSize[0] = 296; _screenSize[1] = 128;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_IL3820_296X128_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            }
-            break;
-        case Hydro_DisplayOutputMode_IL3820_V2:
-            _screenSize[0] = 296; _screenSize[1] = 128;
-            if (displaySetup.cfgType == DeviceSetup::SPISetup) {
-                _gfx = new U8G2_IL3820_V2_296X128_F_4W_HW_SPI(u8g2Rotation, displaySetup.cfgAs.spi.cs, dcPin, resetPin);
-            }
-            break;
-        default: break;
-    }
     HYDRO_SOFT_ASSERT(_gfx, SFP(HStr_Err_AllocationFailure));
-
     if (_gfx) {
         _gfxDrawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire);
         HYDRO_SOFT_ASSERT(_gfxDrawable, SFP(HStr_Err_AllocationFailure));
@@ -222,7 +131,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 {
     HYDRO_SOFT_ASSERT(_tab != Hydro_ST7735Tab_Undefined, SFP(HStr_Err_InvalidParameter));
     #ifdef ESP8266
-        HYDRO_SOFT_ASSERT(displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_NotConfiguredProperly));
+        HYDRO_SOFT_ASSERT(!HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
     #endif
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
@@ -250,7 +159,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
 {
     #ifdef ESP8266
-        HYDRO_SOFT_ASSERT(displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_NotConfiguredProperly));
+        HYDRO_SOFT_ASSERT(!HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
     #endif
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }

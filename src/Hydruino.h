@@ -181,6 +181,11 @@ typedef Adafruit_GPS GPSClass;
 #else
 #define HYDRO_USE_WIRE                  nullptr
 #endif
+#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_TWOWIRE)) && WIRE_INTERFACES_COUNT > 1
+#define HYDRO_USE_WIRE1                 &Wire1
+#else
+#define HYDRO_USE_WIRE1                 nullptr
+#endif
 #if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SERIAL1)) && (defined(HWSERIAL1) || defined(HAVE_HWSERIAL1) || defined(PIN_SERIAL1_RX) || defined(SERIAL2_RX) || defined(Serial1))
 #define HYDRO_USE_SERIAL1               &Serial1
 #else

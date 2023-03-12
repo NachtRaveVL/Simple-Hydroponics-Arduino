@@ -63,7 +63,28 @@ protected:
 class HydroDisplayU8g2lib : public HydroDisplayDriver {
 public:
     HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx);
     virtual ~HydroDisplayU8g2lib();
+
+    static inline HydroDisplayU8g2lib *allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaI2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaI2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1306SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1306I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1306I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSH1106SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSH1106I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSH1106I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1607GDSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1607WSSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
 
     virtual void init() override;
     virtual void begin() override;

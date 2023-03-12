@@ -29,10 +29,21 @@ public:
     void allocateTFTTouchControl();                                         // Allocates/pulls-into-build a TFTTouch control (using TFTe_SPI), must be called after TFT display allocation
 
     void allocateLCDDisplay();                                              // Allocates/pulls-into-build a LCD display (using LiquidCrystalIO)
-    void allocateU8G2Display();                                             // Allocates/pulls-into-build an U8G2 OLED pixel display (using U8G2)
-    void allocateAdaGFXST77Display();                                       // Allocates/pulls-into-build an AdafruitGFX ST7735/ST7789 color pixel display (using AdafruitGFX)
-    void allocateAdaGFXILIDisplay();                                        // Allocates/pulls-into-build an AdafruitGFX ILI9341 pixel display (using AdafruitGFX)
-    void allocateAdaGFXPCDDisplay();                                        // Allocates/pulls-into-build an AdafruitGFX PCD8544/Nokia5110 color pixel display (using AdafruitGFX)
+
+    void allocateSSD1305Display();                                          // Allocates/pulls-into-build a SSD1305 OLED pixel display (using U8G2)
+    void allocateSSD1305x32AdaDisplay();                                    // Allocates/pulls-into-build a SSD1305 (ADAFRUIT_128X32) OLED pixel display (using U8G2)
+    void allocateSSD1305x64AdaDisplay();                                    // Allocates/pulls-into-build a SSD1305 (ADAFRUIT_128x64) OLED pixel display (using U8G2)
+    void allocateSSD1306Display();                                          // Allocates/pulls-into-build a SSD1306 OLED pixel display (using U8G2)
+    void allocateSH1106Display();                                           // Allocates/pulls-into-build a SH1106 OLED pixel display (using U8G2)
+    void allocateSSD1607GDDisplay();                                        // Allocates/pulls-into-build a SSD1607 GD OLED pixel display (using U8G2)
+    void allocateSSD1607WSDisplay();                                        // Allocates/pulls-into-build a SSD1607 WS OLED pixel display (using U8G2)
+    void allocateIL3820Display();                                           // Allocates/pulls-into-build an IL3820 OLED pixel display (using U8G2)
+    void allocateIL3820V2Display();                                         // Allocates/pulls-into-build an IL3820 V2 OLED pixel display (using U8G2)
+
+    void allocateST7735Display();                                           // Allocates/pulls-into-build a ST7735 color pixel display (using AdafruitGFX)
+    void allocateST7789Display();                                           // Allocates/pulls-into-build a ST7789 color pixel display (using AdafruitGFX)
+    void allocateILI9341Display();                                          // Allocates/pulls-into-build an ILI9341 pixel display (using AdafruitGFX)
+    void allocatePCD8544Display();                                          // Allocates/pulls-into-build a PCD8544/Nokia5110 color pixel display (using AdafruitGFX)
     void allocateTFTDisplay();                                              // Allocates/pulls-into-build a TFTe_SPI color pixel display (using TFTe_SPI)
 
     void addSerialRemote(UARTDeviceSetup rcSetup = UARTDeviceSetup());      // Adds/pulls-into-build a remote control by Serial or Bluetooth AT

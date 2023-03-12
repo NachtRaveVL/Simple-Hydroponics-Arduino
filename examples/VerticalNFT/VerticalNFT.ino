@@ -63,7 +63,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ILI9341, PCD8544, TFT)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ST7789, ILI9341, PCD8544, TFT)
 #define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix2x2UpDownButtonsOkL, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
@@ -734,18 +734,32 @@ inline void setupUI()
                     IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_EN) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_RS) ||\
                     SETUP_UI_IS_DFROBOTSHIELD
                     ui->allocateLCDDisplay();
-                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1306) ||\
-                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305_x32Ada) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305_x64Ada) ||\
-                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SH1106) ||\
-                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_GD) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_WS) ||\
-                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820_V2)
-                    ui->allocateU8G2Display();
-                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789)
-                    ui->allocateAdaGFXST77Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305)
+                    ui->allocateSSD1305Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305_x32Ada)
+                    ui->allocateSSD1305x32AdaDisplay();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1305_x64Ada)
+                    ui->allocateSSD1305x64AdaDisplay();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1306)
+                    ui->allocateSSD1306Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SH1106)
+                    ui->allocateSH1106Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_GD)
+                    ui->allocateSSD1607GDDisplay();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_WS)
+                    ui->allocateSSD1607WSDisplay();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820)
+                    ui->allocateIL3820Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820_V2)
+                    ui->allocateIL3820V2Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735)
+                    ui->allocateST7735Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789)
+                    ui->allocateST7789Display();
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341)
-                    ui->allocateAdaGFXILIDisplay();
+                    ui->allocateILI9341Display();
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, PCD8544)
-                    ui->allocateAdaGFXPCDDisplay();
+                    ui->allocatePCD8544Display();
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, TFT)
                     ui->allocateTFTDisplay();
                 #endif
