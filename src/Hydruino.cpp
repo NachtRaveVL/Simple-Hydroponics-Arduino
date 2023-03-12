@@ -1193,6 +1193,9 @@ Pair<uint8_t, const pintype_t *> Hydruino::getControlInputPins() const
             case Hydro_ControlInputMode_Matrix2x2UpDownButtonsOkL:
             case Hydro_ControlInputMode_ResistiveTouch:
                 return make_pair((uint8_t)4, (const pintype_t *)_ctrlInputPins);
+            #ifdef HYDRO_ENABLE_XPT2046TS
+                case Hydro_ControlInputMode_TouchScreen:
+            #endif
             case Hydro_ControlInputMode_TFTTouch:
                 return make_pair((uint8_t)2, (const pintype_t *)_ctrlInputPins);
             default: break;

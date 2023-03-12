@@ -243,11 +243,11 @@ SPI devices can be chained together on the same shared data lines, which are typ
 
 * The `CS` pin may be connected to any digital output pin, but it's common to use the `CS` (or `SS`) pin for the first device. Additional devices are not restricted to what pin they can or should use, but given it's not a data pin not using a choice interrupt-capable pin allows those to be used for interrupt driven mechanisms.
 * Many low-cost SPI-based SD card modules on market only read SDHC sized SD cards (2GB to 32GB) formatted in FAT32 (filenames limited to 8 characters plus 3 character file extension).
-  * Some SD cards simply will not play nicely with these modules and you may have to try another SD card manufacturer. We recommend 32GB SD cards due to overall lowest cost (5~10 $USD/SD card - smaller SD cards actually becoming _more_ expensive).
-* Many various graphical displays have an additional `DC` (or `RS`) pin, which is required to be connected to any digital pin in addition to `CS`.
+  * Some SD cards simply will not play nicely with these modules and you may have to try another SD card manufacturer. We recommend 32GB SD cards due to overall lowest cost (smaller SD cards actually becoming _more_ expensive).
+* Many various graphical displays have an additional `DC` (or `RS`) pin, which is required to be connected to any digital pin in addition to its `CS` pin.
   * There is also an additional `Reset` pin for many of these, but is optional.
 
-SPI Devices Supported: SD card modules, NMEA GPS modules, 128x32 to 296x128 OLED displays, 320x240+ LCD/TFT gfx displays & FT/XPT touchscreens
+SPI Devices Supported: SD card modules, NMEA GPS modules, 128x32 to 296x128 OLED displays, 320x240+ LCD/TFT gfx displays, XPT touchscreens
 
 ### I2C Bus
 
@@ -256,7 +256,7 @@ I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same sh
 * When more than one I2C device of the same kind is to be used on the same data line, each device must be set to use a different address. This is accomplished via the A0-A2 (sometimes A0-A5) pins/pads on the physical device that must be set either open or closed (typically via a de-solderable resistor, or by shorting a pin/pad). Check your specific breakout's datasheet for details.
 * Note that not all the I2C libraries used support multi-addressable I2C devices at this time (read as: may only use one). Currently, this restriction applies to: RTC devices.
 
-I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS modules, 16x2/20x4 LCD displays, 128x32 to 296x128 OLED displays
+I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS modules, 16x2/20x4 LCD displays, 128x32 to 296x128 OLED displays, FT touchscreens
 
 ### OneWire Bus
 

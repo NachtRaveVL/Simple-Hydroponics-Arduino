@@ -273,7 +273,11 @@ void HydroInputResistiveTouch::begin(MenuRenderer *renderer, MenuItem *initialIt
 
 HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayOrientation displayOrientation)
     : HydroInputDriver(controlPins),
-      _touchScreen(),
+      #ifndef HYDRO_ENABLE_XPT2046TS
+          _touchScreen(),
+      #else
+          _touchScreen(controlPins.second[0], controlPins.second[1]),
+      #endif
       _touchInterrogator(_touchScreen),
       _touchOrientation(
          /*swap*/ displayOrientation == Hydro_DisplayOrientation_R1 || displayOrientation == Hydro_DisplayOrientation_R3,
