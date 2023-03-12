@@ -112,6 +112,25 @@
 #endif
 #endif
 
+// Standardized TFT WxH
+#ifdef HYDRO_USE_GUI
+#include <User_Setup.h>
+#endif
+#ifndef TFT_GFX_WIDTH
+#ifdef TFT_WIDTH
+#define TFT_GFX_WIDTH                   TFT_WIDTH           // Custom defined
+#else
+#define TFT_GFX_WIDTH                   320                 // Default 320x
+#endif
+#endif
+#ifndef TFT_GFX_HEIGHT
+#ifdef TFT_HEIGHT
+#define TFT_GFX_HEIGHT                  TFT_HEIGHT          // Custom defined
+#else
+#define TFT_GFX_HEIGHT                  240                 // Default x240
+#endif
+#endif
+
 typedef typeof(millis())                millis_t;           // Millisecond time type
 typedef int8_t                          hposi_t;            // Position indexing type alias
 typedef uint32_t                        hkey_t;             // Key type alias, for hashing
@@ -125,7 +144,7 @@ typedef uint16_t                        hframe_t;           // Polling frame typ
 typedef typeof(INPUT)                   ard_pinmode_t;      // Arduino pin mode type alias
 typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin status type alias
 
-// The following slot sizes apply to all architectures
+// The following sizes apply to all architectures
 #define HYDRO_PREFIX_MAXSIZE            16                  // Prefix names maximum size (for logging/publishing)
 #define HYDRO_NAME_MAXSIZE              24                  // Naming character maximum size (system name, crop name, etc.)
 #define HYDRO_POS_MAXSIZE               32                  // Position indicies maximum size (max # of objs of same type)
