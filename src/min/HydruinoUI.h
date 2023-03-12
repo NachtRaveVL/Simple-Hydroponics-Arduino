@@ -30,7 +30,9 @@ public:
 
     void allocateLCDDisplay();                                              // Allocates/pulls-into-build a LCD display (using LiquidCrystalIO)
     void allocateU8G2Display();                                             // Allocates/pulls-into-build an U8G2 OLED pixel display (using U8G2)
-    void allocateAdaGFXDisplay();                                           // Allocates/pulls-into-build an AdafruitGFX color pixel display (using AdafruitGFX)
+    void allocateAdaGFXST77Display();                                       // Allocates/pulls-into-build an AdafruitGFX ST7735/ST7789 color pixel display (using AdafruitGFX)
+    void allocateAdaGFXILIDisplay();                                        // Allocates/pulls-into-build an AdafruitGFX ILI9341 pixel display (using AdafruitGFX)
+    void allocateAdaGFXPCDDisplay();                                        // Allocates/pulls-into-build an AdafruitGFX PCD8544/Nokia5110 color pixel display (using AdafruitGFX)
     void allocateTFTDisplay();                                              // Allocates/pulls-into-build a TFTe_SPI color pixel display (using TFTe_SPI)
 
     void addSerialRemote(UARTDeviceSetup rcSetup = UARTDeviceSetup());      // Adds/pulls-into-build a remote control by Serial or Bluetooth AT

@@ -230,7 +230,7 @@ void HydruinoMinUI::allocateU8G2Display()
     }
 }
 
-void HydruinoMinUI::allocateAdaGFXDisplay()
+void HydruinoMinUI::allocateAdaGFXST77Display()
 {
     auto controller = getController();
     HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
@@ -242,7 +242,7 @@ void HydruinoMinUI::allocateAdaGFXDisplay()
         auto displaySetup = controller->getDisplaySetup();
 
         // AdafruitGFX supports only SPI
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_PCD8544) || (displaySetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_ST7789) || (displaySetup.cfgType == DeviceSetup::SPISetup), SFP(HStr_Err_InvalidParameter));
 
         switch (dispOutMode) {
             case Hydro_DisplayOutputMode_ST7735: {
@@ -254,17 +254,59 @@ void HydruinoMinUI::allocateAdaGFXDisplay()
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ST7789>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
             } break;
+            default: break;
+        }
+        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_ST7789) || _display, SFP(HStr_Err_AllocationFailure));
+    }
+}
+
+void HydruinoMinUI::allocateAdaGFXILIDisplay()
+{
+    auto controller = getController();
+    HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
+    HYDRO_SOFT_ASSERT(!_display, SFP(HStr_Err_AlreadyInitialized));
+
+    if (controller && !_display) {
+        // Display driver setup
+        auto dispOutMode = controller->getDisplayOutputMode();
+        auto displaySetup = controller->getDisplaySetup();
+
+        // AdafruitGFX supports only SPI
+        HYDRO_SOFT_ASSERT(dispOutMode != Hydro_DisplayOutputMode_ILI9341 || displaySetup.cfgType == DeviceSetup::SPISetup, SFP(HStr_Err_InvalidParameter));
+
+        switch (dispOutMode) {
             case Hydro_DisplayOutputMode_ILI9341: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ILI9341>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
             } break;
+            default: break;
+        }
+        HYDRO_SOFT_ASSERT(dispOutMode != Hydro_DisplayOutputMode_ILI9341 || _display, SFP(HStr_Err_AllocationFailure));
+    }
+}
+
+void HydruinoMinUI::allocateAdaGFXPCDDisplay()
+{
+    auto controller = getController();
+    HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
+    HYDRO_SOFT_ASSERT(!_display, SFP(HStr_Err_AlreadyInitialized));
+
+    if (controller && !_display) {
+        // Display driver setup
+        auto dispOutMode = controller->getDisplayOutputMode();
+        auto displaySetup = controller->getDisplaySetup();
+
+        // AdafruitGFX supports only SPI
+        HYDRO_SOFT_ASSERT(dispOutMode != Hydro_DisplayOutputMode_PCD8544 || displaySetup.cfgType == DeviceSetup::SPISetup, SFP(HStr_Err_InvalidParameter));
+
+        switch (dispOutMode) {
             case Hydro_DisplayOutputMode_PCD8544: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_PCD8544>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.dispOrient, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
             } break;
             default: break;
         }
-        HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_PCD8544) || _display, SFP(HStr_Err_AllocationFailure));
+        HYDRO_SOFT_ASSERT(dispOutMode != Hydro_DisplayOutputMode_PCD8544 || _display, SFP(HStr_Err_AllocationFailure));
     }
 }
 

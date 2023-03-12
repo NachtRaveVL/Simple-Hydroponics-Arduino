@@ -739,10 +739,13 @@ inline void setupUI()
                       IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SH1106) ||\
                       IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_GD) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, SSD1607_WS) ||\
                       IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, IL3820_V2)
-                    ui->allocateU8G2Display();      
-                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789) ||\
-                      IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, PCD8544)
-                    ui->allocateAdaGFXDisplay();
+                    ui->allocateU8G2Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789)
+                    ui->allocateAdaGFXST77Display();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341)
+                    ui->allocateAdaGFXILIDisplay();
+                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, PCD8544)
+                    ui->allocateAdaGFXPCDDisplay();
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, TFT)
                     ui->allocateTFTDisplay();
                 #endif
