@@ -23,7 +23,7 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
   * Can add a piezo buzzer for audible system alerts (TODO).
 * Library data can be built into onboard Flash or exported onto external storage to save on compiled build size.
   * Data export may allow enough space savings for certain 256kB Flash device builds.
-* Actuator and Sensor I/O pins can be multiplexed or expanded (TODO) for pin-limited environments.
+* Actuator and Sensor I/O pins can be natively multiplexed or expanded through 8/16-bit i2c expanders (TODO) for pin-limited environments.
 * Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by tcMenu).
   * Contains at-a-glance system overview screen and UI menu system for system configuration, calibration, and more (TODO).
   * System configuration menus can be pin-coded to prevent tampering, thus still allowing informational/read-only menu access.
