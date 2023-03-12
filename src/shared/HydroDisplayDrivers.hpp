@@ -7,7 +7,7 @@
 #ifdef HYDRO_USE_GUI
 #include "HydruinoUI.h"
 
-inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayOrientation displayOrientation)
+static inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayOrientation displayOrientation)
 {
     switch (displayOrientation) {
         case Hydro_DisplayOrientation_R0: return U8G2_R0;
