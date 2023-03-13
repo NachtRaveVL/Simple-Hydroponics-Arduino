@@ -75,7 +75,7 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_un
     _renderer.setTitleRequired(false);
 }
 
-void HydroDisplayLiquidCrystalIO::init()
+void HydroDisplayLiquidCrystalIO::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED);
 }
@@ -117,7 +117,7 @@ HydroDisplayU8g2lib::~HydroDisplayU8g2lib()
     if (_gfx) { delete _gfx; }
 }
 
-void HydroDisplayU8g2lib::init()
+void HydroDisplayU8g2lib::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), Hydro_DisplayTheme_MonoOLED));
 }
@@ -145,7 +145,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
-void HydroDisplayAdafruitGFX<Adafruit_ST7735>::init()
+void HydroDisplayAdafruitGFX<Adafruit_ST7735>::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
@@ -173,7 +173,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
-void HydroDisplayAdafruitGFX<Adafruit_ST7789>::init()
+void HydroDisplayAdafruitGFX<Adafruit_ST7789>::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
@@ -194,7 +194,7 @@ HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetu
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
-void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::init()
+void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }
@@ -215,7 +215,7 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_Disp
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
-void HydroDisplayTFTeSPI::init()
+void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), HYDRO_UI_GFXTFT_USES_AN_SLIDER);
 }

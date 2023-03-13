@@ -66,13 +66,13 @@ void HydruinoBaseUI::init()
     if (uiData) {
         init(uiData->updatesPerSec, uiData->displayTheme, _gfxOrTFT ? HYDRO_UI_GFXTFT_USES_AN_SLIDER : false);
     } else if (_display) {
-        _display->init(); // calls back into above init with default settings for display
+        _display->initBaseUIFromDefaults(); // calls back into above init with default settings for display
     } else {
         init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
     }
 }
 
-RENDERING_CALLBACK_NAME_INVOKE(fnTesting123RtCall, textItemRenderFn, "Testing123", -1, NO_CALLBACK) // to be removed soon
+RENDERING_CALLBACK_NAME_INVOKE(fnTesting123RtCall, textItemRenderFn, "Testing123", -1, NO_CALLBACK) // tbr
 TextMenuItem menuTesting123(fnTesting123RtCall, "", 1, 5, NULL);
 
 bool HydruinoBaseUI::begin()
@@ -81,7 +81,7 @@ bool HydruinoBaseUI::begin()
     if (_input) { _input->begin(_display ? _display->getBaseRenderer() : nullptr, (_menuRoot = &menuTesting123)); }
     else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, (_menuRoot = &menuTesting123)); }
 
-    //reset();
+    reset();
 
     return (_display && (_input || _remotes.size())) || _remotes.size();
 }
@@ -92,25 +92,30 @@ void HydruinoBaseUI::setNeedsLayout()
 void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
 {
     if (_display) {
-        // todo: clear screen /w custom background
+        // todo
     }
 }
 
 void HydruinoBaseUI::reset()
 {
-    if (_display) { _display->getBaseRenderer()->takeOverDisplay(); }
+    if (_display) {
+        _display->getBaseRenderer()->takeOverDisplay();
 
-    if (_backlight->isAnalogType()) { ((HydroAnalogPin *)_backlight)->analogWrite(1.0f);
-    } else { ((HydroDigitalPin *)_backlight)->activate(); }
+        if (_backlight->isAnalogType()) { ((HydroAnalogPin *)_backlight)->analogWrite(1.0f);
+        } else { ((HydroDigitalPin *)_backlight)->activate(); }
+    }
 }
 
 void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userClick)
 {
-    if (userClick == RPRESS_NONE) {
-        // todo: custom render loop
-    } else {
-        // todo: set display timeout
-        if (_display) { _display->getBaseRenderer()->giveBackDisplay(); }
+    if (_display) {
+        if (userClick == RPRESS_NONE) {
+            // todo: custom render loop
+            _display->clearScreen(); // tbr
+        } else {
+            // todo: set display timeout
+            _display->getBaseRenderer()->giveBackDisplay();
+        }
     }
 }
 

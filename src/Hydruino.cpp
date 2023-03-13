@@ -1331,10 +1331,13 @@ GPSClass *Hydruino::getGPS(bool begin)
         switch (_gpsSetup.cfgType) {
             case DeviceSetup::UARTSetup:
                 _gpsBegan = _gps->begin(_gpsSetup.cfgAs.uart.baud);
+                break;
             case DeviceSetup::I2CSetup:
                 _gpsBegan = _gps->begin(GPS_DEFAULT_I2C_ADDR | _gpsSetup.cfgAs.i2c.address);
+                break;
             case DeviceSetup::SPISetup:
                 _gpsBegan = _gps->begin(_gpsSetup.cfgAs.spi.speed);
+                break;
             default: break;
         }
         if (!_gpsBegan) { deallocateGPS(); }
