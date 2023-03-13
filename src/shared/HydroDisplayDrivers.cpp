@@ -11,8 +11,8 @@
 #include "IoAbstractionWire.h"
 #include "DfRobotInputAbstraction.h"
 
-HydroDisplayDriver::HydroDisplayDriver(Hydro_DisplayOrientation displayOrientation)
-    : _rotation(displayOrientation), _displayTheme(Hydro_DisplayTheme_Undefined)
+HydroDisplayDriver::HydroDisplayDriver(Hydro_DisplayRotation displayRotation)
+    : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined)
 { ; }
 
 void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider, bool utf8Fonts)
@@ -83,12 +83,11 @@ void HydroDisplayLiquidCrystalIO::initBaseUIFromDefaults()
 void HydroDisplayLiquidCrystalIO::begin()
 {
     _lcd.begin(_screenSize[0], _screenSize[1]);
-    _lcd.backlight(); // todo better backlight timeout handling
 }
 
 
-HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx)
-    : HydroDisplayDriver(displayOrientation),
+HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx)
+    : HydroDisplayDriver(displayRotation),
       _screenSize{screenWidth, screenHeight}, _gfx(gfx), _gfxDrawable(nullptr), _renderer(nullptr)
 {
     HYDRO_SOFT_ASSERT(_gfx, SFP(HStr_Err_AllocationFailure));
@@ -128,8 +127,8 @@ void HydroDisplayU8g2lib::begin()
 }
 
 
-HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayOrientation), _tab(tabColor),
+HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin)
+    : HydroDisplayDriver(displayRotation), _tab(tabColor),
       #ifndef ESP8266
           _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
       #else
@@ -157,8 +156,8 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
 }
 
 
-HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayOrientation),
+HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
+    : HydroDisplayDriver(displayRotation),
       #ifndef ESP8266
           _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
       #else
@@ -185,8 +184,8 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 }
 
 
-HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayOrientation),
+HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
+    : HydroDisplayDriver(displayRotation),
       _gfx(dcPin, displaySetup.cs, resetPin, displaySetup.spi),
       _gfxDrawable(&_gfx),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
@@ -206,8 +205,8 @@ void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::begin()
 }
 
 
-HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight)
-    : HydroDisplayDriver(displayOrientation), _screenSize{screenWidth, screenHeight},
+HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight)
+    : HydroDisplayDriver(displayRotation), _screenSize{screenWidth, screenHeight},
       _gfx(screenWidth, screenHeight),
       _gfxDrawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)

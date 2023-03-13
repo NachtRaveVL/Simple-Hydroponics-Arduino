@@ -190,7 +190,7 @@ protected:
 
 class HydroInputTouchscreen : public HydroInputDriver {
 public:
-    HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayOrientation displayOrientation);
+    HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation);
     virtual ~HydroInputTouchscreen() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;

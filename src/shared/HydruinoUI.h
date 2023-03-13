@@ -77,6 +77,8 @@ protected:
     Vector<HydroRemoteControl *, HYDRO_UI_REMOTECONTROLS_MAXSIZE> _remotes; // Remote controls list (owned)
     HydroPin *_backlight;                                   // Backlight pin control (owned)
 
+    void setBacklightEnable(bool enabled);
+
 public: // consider protected
     virtual void started(BaseMenuRenderer* currentRenderer) override;
     virtual void reset() override;

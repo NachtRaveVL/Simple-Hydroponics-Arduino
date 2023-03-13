@@ -7,136 +7,136 @@
 #ifdef HYDRO_USE_GUI
 #include "HydruinoUI.h"
 
-static inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayOrientation displayOrientation)
+static inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayRotation displayRotation)
 {
-    switch (displayOrientation) {
-        case Hydro_DisplayOrientation_R0: return U8G2_R0;
-        case Hydro_DisplayOrientation_R1: return U8G2_R1;
-        case Hydro_DisplayOrientation_R2: return U8G2_R2;
-        case Hydro_DisplayOrientation_R3: return U8G2_R3;
-        case Hydro_DisplayOrientation_HorzMirror: return U8G2_MIRROR;
-        case Hydro_DisplayOrientation_VertMirror: return U8G2_MIRROR_VERTICAL;
+    switch (displayRotation) {
+        case Hydro_DisplayRotation_R0: return U8G2_R0;
+        case Hydro_DisplayRotation_R1: return U8G2_R1;
+        case Hydro_DisplayRotation_R2: return U8G2_R2;
+        case Hydro_DisplayRotation_R3: return U8G2_R3;
+        case Hydro_DisplayRotation_HorzMirror: return U8G2_MIRROR;
+        case Hydro_DisplayRotation_VertMirror: return U8G2_MIRROR_VERTICAL;
         default: return U8G2_R0;
     }
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup && (!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 32, new U8G2_SSD1305_128X32_NONAME_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 32, new U8G2_SSD1305_128X32_NONAME_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305I2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 32, new U8G2_SSD1305_128X32_NONAME_F_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 32, new U8G2_SSD1305_128X32_NONAME_F_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305I2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || ((bool)HYDRO_USE_WIRE1 && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1)), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 32, new U8G2_SSD1305_128X32_NONAME_F_2ND_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 32, new U8G2_SSD1305_128X32_NONAME_F_2ND_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x32AdaSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x32AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup && (!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 32, new U8G2_SSD1305_128X32_ADAFRUIT_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 32, new U8G2_SSD1305_128X32_ADAFRUIT_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x32AdaI2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x32AdaI2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 32, new U8G2_SSD1305_128X32_ADAFRUIT_F_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 32, new U8G2_SSD1305_128X32_ADAFRUIT_F_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x32AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x32AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || ((bool)HYDRO_USE_WIRE1 && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1)), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 32, new U8G2_SSD1305_128X32_ADAFRUIT_F_2ND_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 32, new U8G2_SSD1305_128X32_ADAFRUIT_F_2ND_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x64AdaSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x64AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup && (!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SSD1305_128X64_ADAFRUIT_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SSD1305_128X64_ADAFRUIT_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x64AdaI2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x64AdaI2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SSD1305_128X64_ADAFRUIT_F_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SSD1305_128X64_ADAFRUIT_F_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x64AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1305x64AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || ((bool)HYDRO_USE_WIRE1 && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1)), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SSD1305_128X64_ADAFRUIT_F_2ND_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SSD1305_128X64_ADAFRUIT_F_2ND_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1306SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1306SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup && (!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1306I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1306I2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1306I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1306I2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || ((bool)HYDRO_USE_WIRE1 && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1)), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SSD1306_128X64_NONAME_F_2ND_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SSD1306_128X64_NONAME_F_2ND_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSH1106SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSH1106SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup && (!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SH1106_128X64_NONAME_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SH1106_128X64_NONAME_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSH1106I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSH1106I2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SH1106_128X64_NONAME_F_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SH1106_128X64_NONAME_F_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSH1106I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSH1106I2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::I2CSetup && (!(bool)HYDRO_USE_WIRE || ((bool)HYDRO_USE_WIRE1 && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1)), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 128, 64, new U8G2_SH1106_128X64_NONAME_F_2ND_HW_I2C(dispRotToU8g2Rot(displayOrientation), resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 128, 64, new U8G2_SH1106_128X64_NONAME_F_2ND_HW_I2C(dispRotToU8g2Rot(displayRotation), resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1607GDSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1607GDSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup && (!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI), SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 200, 200, new U8G2_SSD1607_GD_200X200_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 200, 200, new U8G2_SSD1607_GD_200X200_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1607WSSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateSSD1607WSSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 200, 200, new U8G2_SSD1607_WS_200X200_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 200, 200, new U8G2_SSD1607_WS_200X200_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 296, 128, new U8G2_IL3820_296X128_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 296, 128, new U8G2_IL3820_296X128_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
-inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
+inline HydroDisplayU8g2lib *HydroDisplayU8g2lib::allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
 {
     HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
-    return new HydroDisplayU8g2lib(displaySetup, displayOrientation, 296, 128, new U8G2_IL3820_V2_296X128_F_4W_HW_SPI(dispRotToU8g2Rot(displayOrientation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
+    return new HydroDisplayU8g2lib(displaySetup, displayRotation, 296, 128, new U8G2_IL3820_V2_296X128_F_4W_HW_SPI(dispRotToU8g2Rot(displayRotation), displaySetup.cfgAs.spi.cs, dcPin, resetPin));
 }
 
 
 template <class T>
-HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayOrientation),
+HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
+    : HydroDisplayDriver(displayRotation),
     #ifndef ESP8266
           _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
       #else

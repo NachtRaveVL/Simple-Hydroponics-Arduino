@@ -702,13 +702,13 @@ inline void setupUI()
                 case Hydro_DisplayOutputMode_ST7789:
                 case Hydro_DisplayOutputMode_ILI9341:
                 case Hydro_DisplayOutputMode_PCD8544:
-                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
+                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_ST7735:
-                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
+                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_TFT:
-                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT));
+                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT));
                     break;
                 default: break;
             }

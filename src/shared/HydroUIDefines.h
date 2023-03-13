@@ -47,17 +47,17 @@ enum Hydro_ST7735Tab : signed char {
     Hydro_ST7735Tab_Undefined           = (int8_t)0xff      // Placeholder
 };
 
-// Display Orientation
-enum Hydro_DisplayOrientation : signed char {
-    Hydro_DisplayOrientation_R0,                            // Standard landscape orientation
-    Hydro_DisplayOrientation_R1,                            // 90 degree clockwise rotation
-    Hydro_DisplayOrientation_R2,                            // 180 degree clockwise rotation
-    Hydro_DisplayOrientation_R3,                            // 270 degree clockwise rotation
-    Hydro_DisplayOrientation_HorzMirror,                    // Horizontally mirrored (if supported)
-    Hydro_DisplayOrientation_VertMirror,                    // Vertically mirrored (if supported)
+// Display Rotation
+enum Hydro_DisplayRotation : signed char {
+    Hydro_DisplayRotation_R0,                               // 0 degree clockwise rotation
+    Hydro_DisplayRotation_R1,                               // 90 degree clockwise rotation
+    Hydro_DisplayRotation_R2,                               // 180 degree clockwise rotation
+    Hydro_DisplayRotation_R3,                               // 270 degree clockwise rotation
+    Hydro_DisplayRotation_HorzMirror,                       // Horizontally mirrored (if supported)
+    Hydro_DisplayRotation_VertMirror,                       // Vertically mirrored (if supported)
 
-    Hydro_DisplayOrientation_Count,                         // Placeholder
-    Hydro_DisplayOrientation_Undefined = -1                 // Placeholder
+    Hydro_DisplayRotation_Count,                            // Placeholder
+    Hydro_DisplayRotation_Undefined = -1                    // Placeholder
 };
 
 // Display Theme

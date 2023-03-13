@@ -18,7 +18,7 @@ class HydroDisplayTFTeSPI;
 
 class HydroDisplayDriver {
 public:
-    HydroDisplayDriver(Hydro_DisplayOrientation displayOrientation = Hydro_DisplayOrientation_Undefined);
+    HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined);
     virtual ~HydroDisplayDriver() = default;
 
     void commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider = false, bool utf8Fonts = false);
@@ -31,12 +31,14 @@ public:
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() = 0;
 
     virtual void clearScreen() = 0;
+    virtual bool isLandscape() const = 0;
+    inline bool isPortrait() const { return !isLandscape(); }
 
-    inline Hydro_DisplayOrientation getRotation() const { return _rotation; }
+    inline Hydro_DisplayRotation getRotation() const { return _rotation; }
     inline Hydro_DisplayTheme getDisplayTheme() const { return _displayTheme; }
 
 protected:
-    const Hydro_DisplayOrientation _rotation;
+    const Hydro_DisplayRotation _rotation;
     Hydro_DisplayTheme _displayTheme;
 };
 
@@ -50,11 +52,13 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)_screenSize[0], (uint16_t)_screenSize[1]) : make_pair((uint16_t)_screenSize[1], (uint16_t)_screenSize[0]); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair((uint16_t)max(_screenSize[0],_screenSize[1]), (uint16_t)min(_screenSize[0],_screenSize[1]))
+                                                                                          : make_pair((uint16_t)min(_screenSize[0],_screenSize[1]), (uint16_t)max(_screenSize[0],_screenSize[1])); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return nullptr; }
 
     virtual void clearScreen() override { _lcd.clear(); }
+    virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1]; }
 
     inline LiquidCrystal &getLCD() { return _lcd; }
 
@@ -66,18 +70,21 @@ protected:
 
 class HydroDisplayU8g2lib : public HydroDisplayDriver {
 public:
-    HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx);
+    HydroDisplayU8g2lib(Hydro_DisplayOutputMode displayMode, DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx);
     virtual ~HydroDisplayU8g2lib();
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair(_screenSize[0], _screenSize[1]) : make_pair(_screenSize[1], _screenSize[0]); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                          : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
 
     virtual void clearScreen() override { if (_gfx) { _gfx->clearDisplay(); } }
+    virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                        : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3); }
 
     inline U8G2 *getOLED() { return _gfx; }
 
@@ -88,41 +95,42 @@ protected:
     GraphicsDeviceRenderer *_renderer;
 
 public:
-    static inline HydroDisplayU8g2lib *allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaI2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaI2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1306SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1306I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1306I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSH1106SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSH1106I2C(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSH1106I2C2(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1607GDSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1607WSSPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305I2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305I2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaI2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaI2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaI2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1306SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1306I2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1306I2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSH1106SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSH1106I2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSH1106I2C2(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1607GDSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateSSD1607WSSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2lib *allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
 };
 
 template <class T>
 class HydroDisplayAdafruitGFX : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
     virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
 
     inline T &getGfx() { return _gfx; }
 
@@ -135,17 +143,18 @@ protected:
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7735> : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
     virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
 
     inline Adafruit_ST7735 &getGfx() { return _gfx; }
 
@@ -159,17 +168,18 @@ protected:
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7789> : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
     virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
 
     inline Adafruit_ST7789 &getGfx() { return _gfx; }
 
@@ -182,17 +192,18 @@ protected:
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_PCD8544> : public HydroDisplayDriver {
 public:
-    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, pintype_t dcPin, pintype_t resetPin);
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
     virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
 
     inline Adafruit_PCD8544 &getGfx() { return _gfx; }
 
@@ -204,17 +215,20 @@ protected:
 
 class HydroDisplayTFTeSPI : public HydroDisplayDriver {
 public:
-    HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayOrientation displayOrientation, uint16_t screenWidth, uint16_t screenHeight);
+    HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight);
     virtual ~HydroDisplayTFTeSPI() = default;
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair(_screenSize[0], _screenSize[1]) : make_pair(_screenSize[1], _screenSize[0]); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                          : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
     virtual void clearScreen() override { _gfx.fillScreen(0x00000000); }
+    virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                        : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3); }
 
     inline TFT_eSPI &getGfx() { return _gfx; }
 

@@ -16,7 +16,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
     String uuid(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")); // todo, name->hash
     strncpy(_appInfo.uuid, uuid.c_str(), 38);
     pintype_t ledPin = uiDisplaySetup.getBacklightPin();
-    if (isValidPin(ledPin)) {
+    if (uiDisplaySetup.dispCfgType != UIDisplaySetup::LCD && isValidPin(ledPin)) { // LCD has its own backlight
         switch (uiDisplaySetup.getBacklightMode()) {
             case Hydro_BacklightMode_Inverted:
                 _backlight = new HydroDigitalPin(ledPin, OUTPUT, ACT_LOW);
@@ -82,6 +82,7 @@ bool HydruinoBaseUI::begin()
     else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, (_menuRoot = &menuTesting123)); }
 
     reset();
+    setBacklightEnable(true);
 
     return (_display && (_input || _remotes.size())) || _remotes.size();
 }
@@ -89,10 +90,44 @@ bool HydruinoBaseUI::begin()
 void HydruinoBaseUI::setNeedsLayout()
 { ; } // todo
 
+void HydruinoBaseUI::setBacklightEnable(bool enabled)
+{
+    if (_uiDispSetup.dispCfgType != UIDisplaySetup::LCD && _backlight) {
+        if (enabled) {
+            if (_backlight->isDigitalType()) {
+                ((HydroDigitalPin *)_backlight)->activate();
+            } else {
+                ((HydroAnalogPin *)_backlight)->analogWrite(1.0f);
+            }
+        } else {
+            if (_backlight->isDigitalType()) {
+                ((HydroDigitalPin *)_backlight)->deactivate();
+            } else {
+                ((HydroAnalogPin *)_backlight)->analogWrite(0.0f); // todo: nice backlight-out anim
+            }
+        }
+    } else if (_uiDispSetup.dispCfgType == UIDisplaySetup::LCD && _display) {
+        if (enabled) {
+            if (_uiDispSetup.getBacklightMode() != Hydro_BacklightMode_PWM) {
+                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().backlight();
+            } else {
+                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().setBacklight(255);
+            }
+        } else {
+            if (_uiDispSetup.getBacklightMode() != Hydro_BacklightMode_PWM) {
+                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().noBacklight();
+            } else {
+                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().setBacklight(0); // todo: nice backlight-out anim
+            }
+        }
+    }
+}
+
 void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
 {
     if (_display) {
         // todo
+        _display->clearScreen(); // tbr
     }
 }
 
@@ -100,11 +135,7 @@ void HydruinoBaseUI::reset()
 {
     if (_display) {
         _display->getBaseRenderer()->takeOverDisplay();
-
-        if (_backlight) {
-            if (_backlight->isAnalogType()) { ((HydroAnalogPin *)_backlight)->analogWrite(1.0f);
-            } else { ((HydroDigitalPin *)_backlight)->activate(); }
-        }
+        setBacklightEnable(true);
     }
 }
 
@@ -113,9 +144,8 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
     if (_display) {
         if (userClick == RPRESS_NONE) {
             // todo: custom render loop
-            _display->clearScreen(); // tbr
         } else {
-            // todo: set display timeout
+            // todo: set backlight timeout
             _display->getBaseRenderer()->giveBackDisplay();
         }
     }

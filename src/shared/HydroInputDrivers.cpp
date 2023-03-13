@@ -246,9 +246,9 @@ HydroInputResistiveTouch::HydroInputResistiveTouch(Pair<uint8_t, const pintype_t
     : HydroInputDriver(controlPins),
       _touchInterrogator(controlPins.second[0], controlPins.second[1], controlPins.second[2], controlPins.second[3]),
       _touchOrientation(
-         /*swap*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R3,
-         /*invX*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_HorzMirror,
-         /*invY*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R3 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_VertMirror
+         /*swap*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3,
+         /*invX*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror,
+         /*invY*/ displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }
@@ -260,7 +260,7 @@ void HydroInputResistiveTouch::begin(MenuRenderer *renderer, MenuItem *initialIt
 }
 
 
-HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayOrientation displayOrientation)
+HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation)
     : HydroInputDriver(controlPins),
       #ifndef HYDRO_ENABLE_XPT2046TS
           _touchScreen(),
@@ -269,9 +269,9 @@ HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> co
       #endif
       _touchInterrogator(_touchScreen),
       _touchOrientation(
-         /*swap*/ displayOrientation == Hydro_DisplayOrientation_R1 || displayOrientation == Hydro_DisplayOrientation_R3,
-         /*invX*/ displayOrientation == Hydro_DisplayOrientation_R1 || displayOrientation == Hydro_DisplayOrientation_R2 || displayOrientation == Hydro_DisplayOrientation_HorzMirror,
-         /*invY*/ displayOrientation == Hydro_DisplayOrientation_R3 || displayOrientation == Hydro_DisplayOrientation_R2 || displayOrientation == Hydro_DisplayOrientation_VertMirror
+         /*swap*/ displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R3,
+         /*invX*/ displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_HorzMirror,
+         /*invY*/ displayRotation == Hydro_DisplayRotation_R3 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_VertMirror
       )
 { ; }
 
@@ -286,9 +286,9 @@ HydroInputTFTTouch::HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlP
     : HydroInputDriver(controlPins),
       _touchInterrogator(&displayDriver->getGfx(), displayDriver->getScreenSize().first, displayDriver->getScreenSize().second, useRawTouch),
       _touchOrientation(
-         /*swap*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R3,
-         /*invX*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_HorzMirror,
-         /*invY*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R3 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_VertMirror
+         /*swap*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3,
+         /*invX*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror,
+         /*invY*/ displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }
