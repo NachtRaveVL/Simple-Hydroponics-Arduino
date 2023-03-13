@@ -246,9 +246,9 @@ HydroInputResistiveTouch::HydroInputResistiveTouch(Pair<uint8_t, const pintype_t
     : HydroInputDriver(controlPins),
       _touchInterrogator(controlPins.second[0], controlPins.second[1], controlPins.second[2], controlPins.second[3]),
       _touchOrientation(
-         /*swap*/ displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R1 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R3,
-         /*invX*/ displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R1 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R2 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_HorzMirror,
-         /*invY*/ displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R3 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R2 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_VertMirror
+         /*swap*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R3,
+         /*invX*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_HorzMirror,
+         /*invY*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R3 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_VertMirror
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }
@@ -286,9 +286,9 @@ HydroInputTFTTouch::HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlP
     : HydroInputDriver(controlPins),
       _touchInterrogator(&displayDriver->getGfx(), displayDriver->getScreenSize().first, displayDriver->getScreenSize().second, useRawTouch),
       _touchOrientation(
-         /*swap*/ displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R1 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R3,
-         /*invX*/ displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R1 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R2 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_HorzMirror,
-         /*invY*/ displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R3 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_R2 || displayDriver->getDisplayOrientation() == Hydro_DisplayOrientation_VertMirror
+         /*swap*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R3,
+         /*invX*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R1 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_HorzMirror,
+         /*invY*/ displayDriver->getRotation() == Hydro_DisplayOrientation_R3 || displayDriver->getRotation() == Hydro_DisplayOrientation_R2 || displayDriver->getRotation() == Hydro_DisplayOrientation_VertMirror
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }

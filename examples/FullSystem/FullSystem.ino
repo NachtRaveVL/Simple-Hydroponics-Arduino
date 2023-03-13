@@ -108,11 +108,11 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
-#define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
+#define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w LED pin
 #define SETUP_UI_GFX_ORIENTATION        R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
-#define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC pin, if using SPI-based display
-#define SETUP_UI_GFX_LED_PIN            -1              // Optional display interface backlight/LED pin, if using SPI-based display (Note: Backlight/LED pin, if unused, can optionally be tied either HIGH/LOW for always on/off)
-#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using graphical display, else -1 (Note: Reset/RST pin, if unused, typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC/RS pin, if using SPI-based display
+#define SETUP_UI_GFX_LED_PIN            -1              // Optional display interface backlight/LED pin, if using SPI-based display (Note: Unused backlight/LED pin can optionally be tied typically to HIGH for always-on)
+#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using graphical display, else -1 (Note: Unused reset/RST pin typically needs tied to HIGH for display to function)
 #define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
 #define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI
@@ -318,10 +318,10 @@ inline void setupUI()
                 case Hydro_DisplayOutputMode_ST7789:
                 case Hydro_DisplayOutputMode_ILI9341:
                 case Hydro_DisplayOutputMode_PCD8544:
-                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
+                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_ST7735:
-                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
+                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_TFT:
                     uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT));

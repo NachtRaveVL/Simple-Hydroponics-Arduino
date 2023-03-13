@@ -158,7 +158,7 @@ template <class T>
 void HydroDisplayAdafruitGFX<T>::begin()
 {
     _gfx.begin();
-    _gfx.setRotation((uint8_t)_displayOri);
+    _gfx.setRotation((uint8_t)_rotation);
 }
 
 #endif

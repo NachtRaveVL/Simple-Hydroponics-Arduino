@@ -35,7 +35,7 @@
 
 // Base UI
 // The base class that manages interaction with the tcMenu UI system.
-class HydruinoBaseUI : public HydroUIInterface {
+class HydruinoBaseUI : public HydroUIInterface, public CustomDrawing {
 public:
     HydruinoBaseUI(UIControlSetup uiControlSetup = UIControlSetup(),        // UI control input setup
                    UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),        // UI display output setup 
@@ -75,10 +75,17 @@ protected:
     HydroDisplayDriver *_display;                           // Display driver (owned)
     TcMenuRemoteServer *_remoteServer;                      // Remote control server (owned)
     Vector<HydroRemoteControl *, HYDRO_UI_REMOTECONTROLS_MAXSIZE> _remotes; // Remote controls list (owned)
+    HydroPin *_backlight;                                   // Backlight pin control (owned)
+
+public: // consider protected
+    virtual void started(BaseMenuRenderer* currentRenderer) override;
+    virtual void reset() override;
+    virtual void renderLoop(unsigned int currentValue, RenderPressMode userClick) override;
 };
 
 
 // UI Serialization Data
+// id: HUID. Hydruino  linear calibration data.
 struct HydroUIData : public HydroData {
     uint8_t updatesPerSec;                                  // Updates per second (1-10, default: HYDRO_UI_UPDATE_SPEED)
     Hydro_DisplayTheme displayTheme;                        // Display theme (if supported)

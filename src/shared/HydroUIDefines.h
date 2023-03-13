@@ -130,11 +130,11 @@ enum Hydro_ESP32Touch_HighRefAtten : signed char {
     Hydro_ESP32Touch_HighRefAtten_Undefined = -1            // Placeholder
 };
 
-// LCD Backlight Mode
+// Backlight Operation Mode
 enum Hydro_BacklightMode : signed char {
-    Hydro_BacklightMode_Normal,                             // The backlight is active HIGH
-    Hydro_BacklightMode_Inverted,                           // The backlight is active LOW
-    Hydro_BacklightMode_PWM,                                // The backlight is connected directly to a PWM pin
+    Hydro_BacklightMode_Normal,                             // The backlight is active HIGH, standard amongst most displays
+    Hydro_BacklightMode_Inverted,                           // The backlight is active LOW, inverted ouput signal
+    Hydro_BacklightMode_PWM,                                // The backlight uses analog PWM for variable intensity control
 
     Hydro_BacklightMode_Undefined = -1                      // Placeholder
 };

@@ -29,7 +29,7 @@ enum Hydro_Autosave : signed char {
 };
 
 // User System Setup Data
-// id: HSYS. Hydruino user system setup data.
+// id: HSYS. User system setup data.
 struct HydroSystemData : public HydroData {
     Hydro_SystemMode systemMode;                            // System type mode
     Hydro_MeasurementMode measureMode;                      // System measurement mode
@@ -60,7 +60,7 @@ struct HydroSystemData : public HydroData {
 
 
 // Calibration Data
-// id: HCAL. Hydruino linear calibration data.
+// id: HCAL. User calibration data.
 // This class essentially controls a simple Ax+B linear transformation mapping, and is
 // used to 'convert' values from one coordinate system into another, or in our case used
 // for storing custom user curve/offset correction/mapping data.
@@ -151,7 +151,7 @@ enum Hydro_CropsDataFlag : unsigned char {
 };
 
 // Crops Library Data
-// id: HCLD. Hydruino crops library data.
+// id: HCLD. Crops library data.
 struct HydroCropsLibData : public HydroData {
     Hydro_CropType cropType;                                // Crop type
     char cropName[HYDRO_NAME_MAXSIZE];                      // Name of crop

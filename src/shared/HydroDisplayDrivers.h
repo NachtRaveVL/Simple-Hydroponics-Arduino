@@ -30,11 +30,11 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() = 0;
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() = 0;
 
-    inline Hydro_DisplayOrientation getDisplayOrientation() const { return _displayOri; }
+    inline Hydro_DisplayOrientation getRotation() const { return _rotation; }
     inline Hydro_DisplayTheme getDisplayTheme() const { return _displayTheme; }
 
 protected:
-    const Hydro_DisplayOrientation _displayOri;
+    const Hydro_DisplayOrientation _rotation;
     Hydro_DisplayTheme _displayTheme;
 };
 
@@ -48,7 +48,7 @@ public:
     virtual void init() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_screenSize[0], (uint16_t)_screenSize[1]); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)_screenSize[0], (uint16_t)_screenSize[1]) : make_pair((uint16_t)_screenSize[1], (uint16_t)_screenSize[0]); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return nullptr; }
 
@@ -69,7 +69,7 @@ public:
     virtual void init() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair(_screenSize[0], _screenSize[1]); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair(_screenSize[0], _screenSize[1]) : make_pair(_screenSize[1], _screenSize[0]); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
 
@@ -112,7 +112,7 @@ public:
     virtual void init() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)320, (uint16_t)240); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
@@ -133,7 +133,7 @@ public:
     virtual void init() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)320, (uint16_t)240); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
@@ -155,7 +155,7 @@ public:
     virtual void init() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)320, (uint16_t)240); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
@@ -176,7 +176,7 @@ public:
     virtual void init() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)320, (uint16_t)240); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair((uint16_t)TFT_GFX_WIDTH, (uint16_t)TFT_GFX_HEIGHT) : make_pair((uint16_t)TFT_GFX_HEIGHT, (uint16_t)TFT_GFX_WIDTH); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
@@ -196,7 +196,7 @@ public:
     virtual void init() override;
     virtual void begin() override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair(_screenSize[0], _screenSize[1]); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape(_rotation) ? make_pair(_screenSize[0], _screenSize[1]) : make_pair(_screenSize[1], _screenSize[0]); }
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 

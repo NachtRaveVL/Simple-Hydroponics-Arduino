@@ -12,35 +12,39 @@
 #include "DfRobotInputAbstraction.h"
 
 HydroDisplayDriver::HydroDisplayDriver(Hydro_DisplayOrientation displayOrientation)
-    : _displayOri(displayOrientation), _displayTheme(Hydro_DisplayTheme_Undefined)
+    : _rotation(displayOrientation), _displayTheme(Hydro_DisplayTheme_Undefined)
 { ; }
 
 void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider, bool utf8Fonts)
 {
-    getBaseRenderer()->setUpdatesPerSecond(updatesPerSec);
-    if (getGraphicsRenderer()) {
-        getGraphicsRenderer()->setUseSliderForAnalog(analogSlider);
-        if (utf8Fonts) { getGraphicsRenderer()->enableTcUnicode(); }
+    auto baseRenderer = getBaseRenderer();
+    auto graphicsRenderer = getGraphicsRenderer();
+
+    baseRenderer->setCustomDrawingHandler(getBaseUI());
+    baseRenderer->setUpdatesPerSecond(updatesPerSec);
+    if (graphicsRenderer) {
+        graphicsRenderer->setUseSliderForAnalog(analogSlider);
+        if (utf8Fonts) { graphicsRenderer->enableTcUnicode(); }
 
         if (_displayTheme != displayTheme) {
             switch ((_displayTheme = displayTheme)) {
                 case Hydro_DisplayTheme_CoolBlue_ML:
-                    installCoolBlueModernTheme(*getGraphicsRenderer(), MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
                     break;
                 case Hydro_DisplayTheme_CoolBlue_SM:
-                    installCoolBlueTraditionalTheme(*getGraphicsRenderer(), MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
                     break;
                 case Hydro_DisplayTheme_DarkMode_ML:
-                    installDarkModeModernTheme(*getGraphicsRenderer(), MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
                     break;
                 case Hydro_DisplayTheme_DarkMode_SM:
-                    installDarkModeTraditionalTheme(*getGraphicsRenderer(), MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
                     break;
                 case Hydro_DisplayTheme_MonoOLED:
-                    installMonoBorderedTheme(*getGraphicsRenderer(), MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
                     break;
                 case Hydro_DisplayTheme_MonoOLED_Inv:
-                    installMonoInverseTitleTheme(*getGraphicsRenderer(), MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
                     break;
             }
         }
@@ -149,7 +153,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::init()
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
 {
     _gfx.initR(_tab);
-    _gfx.setRotation((uint8_t)_displayOri);
+    _gfx.setRotation((uint8_t)_rotation);
 }
 
 
@@ -177,7 +181,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::init()
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 {
     _gfx.init(320, 240);
-    _gfx.setRotation((uint8_t)_displayOri);
+    _gfx.setRotation((uint8_t)_rotation);
 }
 
 
@@ -198,7 +202,7 @@ void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::init()
 void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::begin()
 {
     _gfx.begin();
-    _gfx.setRotation((uint8_t)_displayOri);
+    _gfx.setRotation((uint8_t)_rotation);
 }
 
 
@@ -219,7 +223,7 @@ void HydroDisplayTFTeSPI::init()
 void HydroDisplayTFTeSPI::begin()
 {
     _gfx.begin();
-    _gfx.setRotation((uint8_t)_displayOri);
+    _gfx.setRotation((uint8_t)_rotation);
 }
 
 #endif

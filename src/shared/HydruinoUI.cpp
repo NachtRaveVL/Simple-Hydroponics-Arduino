@@ -10,11 +10,28 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
     : _appInfo{0}, _uiCtrlSetup(uiControlSetup), _uiDispSetup(uiDisplaySetup),
       _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _utf8Fonts(enableTcUnicodeFonts),
       _gfxOrTFT(getController() && getController()->getDisplayOutputMode() >= Hydro_DisplayOutputMode_ST7735 && getController()->getDisplayOutputMode() <= Hydro_DisplayOutputMode_TFT),
-      _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr)
+      _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr)
 {
     if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
     String uuid(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")); // todo, name->hash
     strncpy(_appInfo.uuid, uuid.c_str(), 38);
+    pintype_t ledPin = uiDisplaySetup.getBacklightPin();
+    if (isValidPin(ledPin)) {
+        switch (uiDisplaySetup.getBacklightMode()) {
+            case Hydro_BacklightMode_Inverted:
+                _backlight = new HydroDigitalPin(ledPin, OUTPUT, ACT_LOW);
+                break;
+            case Hydro_BacklightMode_PWM:
+                _backlight = new HydroAnalogPin(ledPin, OUTPUT);
+                break;
+            default: // Normal
+                _backlight = new HydroDigitalPin(ledPin, OUTPUT, ACT_HIGH);
+                break;
+        }
+        HYDRO_SOFT_ASSERT(_backlight, SFP(HStr_Err_AllocationFailure));
+
+        if (_backlight) { _backlight->init(); }
+    }
 }
 
 HydruinoBaseUI::~HydruinoBaseUI()
@@ -26,6 +43,7 @@ HydruinoBaseUI::~HydruinoBaseUI()
     if (_input) { delete _input; }
     if (_display) { delete _display; }
     if (_remoteServer) { delete _remoteServer; }
+    if (_backlight) { delete _backlight; }
 }
 
 void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider)
@@ -54,17 +72,47 @@ void HydruinoBaseUI::init()
     }
 }
 
+RENDERING_CALLBACK_NAME_INVOKE(fnTesting123RtCall, textItemRenderFn, "Testing123", -1, NO_CALLBACK) // to be removed soon
+TextMenuItem menuTesting123(fnTesting123RtCall, "", 1, 5, NULL);
+
 bool HydruinoBaseUI::begin()
 {
     if (_display) { _display->begin(); }
-    if (_input) { _input->begin(_display ? _display->getBaseRenderer() : nullptr, _menuRoot); }
-    else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, _menuRoot); }
+    if (_input) { _input->begin(_display ? _display->getBaseRenderer() : nullptr, (_menuRoot = &menuTesting123)); }
+    else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, (_menuRoot = &menuTesting123)); }
+
+    //reset();
 
     return (_display && (_input || _remotes.size())) || _remotes.size();
 }
 
 void HydruinoBaseUI::setNeedsLayout()
 { ; } // todo
+
+void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
+{
+    if (_display) {
+        // todo: clear screen /w custom background
+    }
+}
+
+void HydruinoBaseUI::reset()
+{
+    if (_display) { _display->getBaseRenderer()->takeOverDisplay(); }
+
+    if (_backlight->isAnalogType()) { ((HydroAnalogPin *)_backlight)->analogWrite(1.0f);
+    } else { ((HydroDigitalPin *)_backlight)->activate(); }
+}
+
+void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userClick)
+{
+    if (userClick == RPRESS_NONE) {
+        // todo: custom render loop
+    } else {
+        // todo: set display timeout
+        if (_display) { _display->getBaseRenderer()->giveBackDisplay(); }
+    }
+}
 
 
 HydroUIData::HydroUIData()

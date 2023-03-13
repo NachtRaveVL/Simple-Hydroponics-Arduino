@@ -23,6 +23,11 @@ struct UIControlSetup;
 
 #include "HydruinoUI.h"
 
+// Returns if orientation is considered as being in "portrait" mode (longer height than width), or not.
+inline bool isPortrait(Hydro_DisplayOrientation orientation) { return orientation == Hydro_DisplayOrientation_R1 || Hydro_DisplayOrientation_R3; }
+// Returns if orientation is considered as being in "landscape" mode (longer width than height), or not
+inline bool isLandscape(Hydro_DisplayOrientation orientation) { return !isPortrait(orientation); }
+
 // Returns the active base UI instance. Not guaranteed to be non-null.
 inline HydruinoBaseUI *getBaseUI() { return reinterpret_cast<HydruinoBaseUI *>(getUI()); }
 
@@ -34,7 +39,7 @@ inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_Disp
 
 // LCD Display Setup
 struct LCDDisplaySetup {
-    Hydro_BacklightMode backlightMode;  // Backlight pin mode (default: Hydro_BacklightMode_Normal)
+    Hydro_BacklightMode backlightMode;  // Backlight/LED pin mode (default: Hydro_BacklightMode_Normal)
     bool isDFRobotShield;               // Using DF robot shield
 
     inline LCDDisplaySetup(Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : backlightMode(backlightModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
@@ -44,30 +49,34 @@ struct LCDDisplaySetup {
 
 // Standard Pixel Display Setup
 struct PixelDisplaySetup {
-    Hydro_DisplayOrientation dispOrient; // Display orientation (default: R0)
-    pintype_t dcPin;                    // DC pin (if using SPI), else -1 (default: -1)
-    pintype_t resetPin;                 // Reset pin (optional), else -1 (default: -1)
+    Hydro_DisplayOrientation rotation;  // Display orientation/rotation (default: R0)
+    pintype_t dcPin;                    // DC/RS pin (if using SPI), else -1 (default: -1)
+    pintype_t ledPin;                   // Optional backlight/LED pin (if using SPI), else -1 (default: -1, Note: Unused backlight/LED pin can optionally be tied typically to HIGH for always-on)
+    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset/RST pin typically needs tied to HIGH for display to function)
+    Hydro_BacklightMode backlightMode;  // Backlight/LED pin mode (default: Hydro_BacklightMode_Normal)
 
-    inline PixelDisplaySetup(Hydro_DisplayOrientation dispOrientIn = Hydro_DisplayOrientation_R0, pintype_t dcPinIn = -1, pintype_t resetPinIn = -1) : dispOrient(dispOrientIn), dcPin(dcPinIn), resetPin(resetPinIn) { ; }
+    inline PixelDisplaySetup(Hydro_DisplayOrientation rotationIn = Hydro_DisplayOrientation_R0, pintype_t dcPinIn = -1, pintype_t ledPinIn = -1, pintype_t resetPinIn = -1, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal) : rotation(rotationIn), dcPin(dcPinIn), ledPin(ledPinIn), resetPin(resetPinIn), backlightMode(backlightModeIn) { ; }
 };
 
 // ST7735 Pixel Display Setup
 struct ST7735DisplaySetup {
-    Hydro_DisplayOrientation dispOrient; // Display orientation (default: R0)
+    Hydro_DisplayOrientation rotation;  // Display orientation/rotation (default: R0)
     Hydro_ST7735Tab tabColor;           // ST7735 tab color (default: undef/-1)
-    pintype_t dcPin;                    // DC pin (if using SPI), else -1 (default: -1)
-    pintype_t resetPin;                 // Reset pin (optional), else -1 (default: -1)
+    pintype_t dcPin;                    // DC/RS pin (if using SPI), else -1 (default: -1)
+    pintype_t ledPin;                   // Optional backlight/LED pin (if using SPI), else -1 (default: -1, Note: Unused backlight/LED pin can optionally be tied typically to HIGH for always-on)
+    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset/RST pin typically needs tied to HIGH for display to function)
+    Hydro_BacklightMode backlightMode;  // Backlight/LED pin mode (default: Hydro_BacklightMode_Normal)
 
-    inline ST7735DisplaySetup(Hydro_DisplayOrientation dispOrientIn = Hydro_DisplayOrientation_R0, Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined, pintype_t dcPinIn = -1, pintype_t resetPinIn = -1) : dispOrient(dispOrientIn), tabColor(tabColorIn), dcPin(dcPinIn), resetPin(resetPinIn) { ; }
+    inline ST7735DisplaySetup(Hydro_DisplayOrientation rotationIn = Hydro_DisplayOrientation_R0, Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined, pintype_t dcPinIn = -1, pintype_t ledPinIn = -1, pintype_t resetPinIn = -1, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal) : rotation(rotationIn), tabColor(tabColorIn), dcPin(dcPinIn), ledPin(ledPinIn), resetPin(resetPinIn), backlightMode(backlightModeIn) { ; }
 };
 
 // TFT Display Setup
 struct TFTDisplaySetup {
-    Hydro_DisplayOrientation dispOrient; // Display orientation
+    Hydro_DisplayOrientation rotation;  // Display orientation/rotation (default: R0)
     uint16_t screenWidth;               // TFT screen width (default: 320)
     uint16_t screenHeight;              // TFT screen height (default: 240)
 
-    inline TFTDisplaySetup(Hydro_DisplayOrientation dispOrientIn = Hydro_DisplayOrientation_R0, pintype_t screenWidthIn = 320, pintype_t screenHeightIn = 240) : dispOrient(dispOrientIn), screenWidth(screenWidthIn), screenHeight(screenHeightIn) { ; }
+    inline TFTDisplaySetup(Hydro_DisplayOrientation rotationIn = Hydro_DisplayOrientation_R0, pintype_t screenWidthIn = 320, pintype_t screenHeightIn = 240) : rotation(rotationIn), screenWidth(screenWidthIn), screenHeight(screenHeightIn) { ; }
 };
 
 // Combined UI Display Setup
@@ -89,7 +98,9 @@ struct UIDisplaySetup {
 
     static inline UIDisplaySetup usingDFRobotShield() { return UIDisplaySetup(LCDDisplaySetup::usingDFRobotShield()); }
 
-    inline Hydro_DisplayOrientation getDisplayOrientation() const { return dispCfgType == Pixel ? dispCfgAs.gfx.dispOrient : dispCfgType == ST7735 ? dispCfgAs.st7735.dispOrient : dispCfgType == TFT ? dispCfgAs.tft.dispOrient : Hydro_DisplayOrientation_R0; }
+    inline Hydro_DisplayOrientation getRotation() const { return dispCfgType == Pixel ? dispCfgAs.gfx.rotation : dispCfgType == ST7735 ? dispCfgAs.st7735.rotation : dispCfgType == TFT ? dispCfgAs.tft.rotation : Hydro_DisplayOrientation_R0; }
+    inline Hydro_BacklightMode getBacklightMode() const { return dispCfgType == LCD ? dispCfgAs.lcd.backlightMode : dispCfgType == Pixel ? dispCfgAs.gfx.backlightMode : dispCfgType == ST7735 ? dispCfgAs.st7735.backlightMode : Hydro_BacklightMode_Normal; }
+    inline pintype_t getBacklightPin() const { return dispCfgType == LCD ? (pintype_t)(dispCfgAs.lcd.isDFRobotShield ? 10 : 3) : dispCfgType == Pixel ? dispCfgAs.gfx.ledPin : dispCfgType == ST7735 ? dispCfgAs.st7735.ledPin : (pintype_t)-1; }
 };
 
 
