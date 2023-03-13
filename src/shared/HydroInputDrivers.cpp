@@ -161,12 +161,6 @@ void HydroInputMatrix2x2::begin(MenuRenderer *renderer, MenuItem *initialItem)
 }
 
 
-static String getMatrix3x4KBKeys()
-{
-    static const String kb3x4(F(HYDRO_UI_3X4MATRIX_KEYS));
-    return kb3x4;
-}
-
 HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
@@ -200,12 +194,6 @@ void HydroInputMatrix3x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
 }
 
-
-static String getMatrix4x4KBKeys()
-{
-    static const String kb4x4(F(HYDRO_UI_4X4MATRIX_KEYS));
-    return kb4x4;
-}
 
 HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
