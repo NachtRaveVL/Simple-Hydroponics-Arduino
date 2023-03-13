@@ -22,7 +22,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
                 _backlight = new HydroDigitalPin(ledPin, OUTPUT, ACT_LOW);
                 break;
             case Hydro_BacklightMode_PWM:
-                _backlight = new HydroAnalogPin(ledPin, OUTPUT);
+                _backlight = new HydroAnalogPin(ledPin, OUTPUT); // todo dflt ESP channel/freq
                 break;
             default: // Normal
                 _backlight = new HydroDigitalPin(ledPin, OUTPUT, ACT_HIGH);
@@ -125,28 +125,30 @@ void HydruinoBaseUI::setBacklightEnable(bool enabled)
 
 void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
 {
+    // overview screen started
     if (_display) {
-        // todo
         _display->clearScreen(); // tbr
+        // todo
     }
 }
 
 void HydruinoBaseUI::reset()
 {
+    // user interaction timeout
     if (_display) {
         _display->getBaseRenderer()->takeOverDisplay();
-        setBacklightEnable(true);
     }
 }
 
 void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userClick)
 {
+    // render overview screen until key interruption
     if (_display) {
         if (userClick == RPRESS_NONE) {
             // todo: custom render loop
         } else {
-            // todo: set backlight timeout
             _display->getBaseRenderer()->giveBackDisplay();
+            setBacklightEnable(true);
         }
     }
 }

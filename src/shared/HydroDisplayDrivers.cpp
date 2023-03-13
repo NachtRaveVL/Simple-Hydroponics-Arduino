@@ -23,6 +23,10 @@ void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme di
     baseRenderer->setCustomDrawingHandler(getBaseUI());
     baseRenderer->setUpdatesPerSecond(updatesPerSec);
     if (graphicsRenderer) {
+        if (getController() && getController()->getControlInputMode() >= Hydro_ControlInputMode_ResistiveTouch &&
+            getController()->getControlInputMode() < Hydro_ControlInputMode_RemoteControl) {
+            graphicsRenderer->setHasTouchInterface(true);
+        }
         graphicsRenderer->setUseSliderForAnalog(analogSlider);
         if (utf8Fonts) { graphicsRenderer->enableTcUnicode(); }
 

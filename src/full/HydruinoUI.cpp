@@ -74,7 +74,7 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
                 #ifdef HYDRO_ENABLE_XPT2046TS
                     HYDRO_SOFT_ASSERT(ctrlInPins.first && ctrlInPins.second && isValidPin(ctrlInPins.second[0]), SFP(HStr_Err_InvalidPinOrType));
                 #endif
-                _input = new HydroInputTouchscreen(ctrlInPins, _uiDispSetup.getRotation());
+                _input = new HydroInputTouchscreen(ctrlInPins, _uiDispSetup.getDisplayRotation());
             } break;
 
             default: break;

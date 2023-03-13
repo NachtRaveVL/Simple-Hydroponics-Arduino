@@ -93,7 +93,7 @@ struct UIDisplaySetup {
 
     static inline UIDisplaySetup usingDFRobotShield() { return UIDisplaySetup(LCDDisplaySetup::usingDFRobotShield()); }
 
-    inline Hydro_DisplayRotation getRotation() const { return dispCfgType == Pixel ? dispCfgAs.gfx.rotation : dispCfgType == ST7735 ? dispCfgAs.st7735.rotation : dispCfgType == TFT ? dispCfgAs.tft.rotation : Hydro_DisplayRotation_R0; }
+    inline Hydro_DisplayRotation getDisplayRotation() const { return dispCfgType == Pixel ? dispCfgAs.gfx.rotation : dispCfgType == ST7735 ? dispCfgAs.st7735.rotation : dispCfgType == TFT ? dispCfgAs.tft.rotation : Hydro_DisplayRotation_R0; }
     inline Hydro_BacklightMode getBacklightMode() const { return dispCfgType == LCD ? dispCfgAs.lcd.backlightMode : dispCfgType == Pixel ? dispCfgAs.gfx.backlightMode : dispCfgType == ST7735 ? dispCfgAs.st7735.backlightMode : Hydro_BacklightMode_Normal; }
     inline pintype_t getBacklightPin() const { return dispCfgType == LCD ? (pintype_t)(dispCfgAs.lcd.isDFRobotShield ? 10 : 3) : dispCfgType == Pixel ? dispCfgAs.gfx.ledPin : dispCfgType == ST7735 ? dispCfgAs.st7735.ledPin : (pintype_t)-1; }
 };
