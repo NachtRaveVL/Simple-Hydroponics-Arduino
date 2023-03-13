@@ -101,8 +101,10 @@ void HydruinoBaseUI::reset()
     if (_display) {
         _display->getBaseRenderer()->takeOverDisplay();
 
-        if (_backlight->isAnalogType()) { ((HydroAnalogPin *)_backlight)->analogWrite(1.0f);
-        } else { ((HydroDigitalPin *)_backlight)->activate(); }
+        if (_backlight) {
+            if (_backlight->isAnalogType()) { ((HydroAnalogPin *)_backlight)->analogWrite(1.0f);
+            } else { ((HydroDigitalPin *)_backlight)->activate(); }
+        }
     }
 }
 
