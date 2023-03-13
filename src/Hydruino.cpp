@@ -81,7 +81,7 @@ Hydruino::~Hydruino()
 void Hydruino::allocateEEPROM()
 {
     if (!_eeprom && _eepromType != Hydro_EEPROMType_None && _eepromSetup.cfgType == DeviceSetup::I2CSetup) {
-        _eeprom = new I2C_eeprom(_eepromSetup.cfgAs.i2c.address | HYDRO_SYS_I2CEEPROM_BASEADDR,
+        _eeprom = new I2C_eeprom(HYDRO_SYS_I2CEEPROM_BASEADDR | _eepromSetup.cfgAs.i2c.address,
                                  getEEPROMSize(), _eepromSetup.cfgAs.i2c.wire);
         _eepromBegan = false;
         HYDRO_SOFT_ASSERT(_eeprom, SFP(HStr_Err_AllocationFailure));
@@ -1332,7 +1332,7 @@ GPSClass *Hydruino::getGPS(bool begin)
             case DeviceSetup::UARTSetup:
                 _gpsBegan = _gps->begin(_gpsSetup.cfgAs.uart.baud);
             case DeviceSetup::I2CSetup:
-                _gpsBegan = _gps->begin(_gpsSetup.cfgAs.i2c.speed);
+                _gpsBegan = _gps->begin(GPS_DEFAULT_I2C_ADDR | _gpsSetup.cfgAs.i2c.address);
             case DeviceSetup::SPISetup:
                 _gpsBegan = _gps->begin(_gpsSetup.cfgAs.spi.speed);
             default: break;
