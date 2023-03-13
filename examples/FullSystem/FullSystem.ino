@@ -25,15 +25,14 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (AT24LC01, AT24LC02, AT24LC04, AT24LC08, AT24LC16, AT24LC32, AT24LC64, AT24LC128, AT24LC256, AT24LC512, None)
-#define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address
-#define SETUP_RTC_I2C_ADDR              0b000           // RTC i2c address (only 0b000 can be used atm)
+#define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address (A0-A2, bitwise or'ed with base address 0x50)
 #define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
 #define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_DISP_I2C_ADDR             0b000           // LCD/OLED i2c address (bitwise or'ed with base address - LCD: 0x20, OLED: 0x78)
-#define SETUP_DISP_SPI                  SPI             // Gfx/TFT SPI class instance
-#define SETUP_DISP_SPI_CS               -1              // Gfx/TFT SPI CS pin, else -1
+#define SETUP_DISP_I2C_ADDR             0b000           // LCD/OLED i2c address (bitwise or'ed with base address - LCD: 0x20, OLED: 0x78, Note: most LCDs typically use 0b111 => 0x27)
+#define SETUP_DISP_SPI                  SPI             // Display SPI class instance
+#define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
 #define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
@@ -110,10 +109,11 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // UI Display Output Settings
 #define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
-#define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
-#define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
-#define SETUP_UI_GFX_RESET_PIN          -1              // Optional reset pin, if using graphical display, else -1
-#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735
+#define SETUP_UI_GFX_ORIENTATION        R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
+#define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC pin, if using SPI-based display
+#define SETUP_UI_GFX_LED_PIN            -1              // Optional display interface backlight/LED pin, if using SPI-based display (Note: Backlight/LED pin, if unused, can optionally be tied either HIGH/LOW for always on/off)
+#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using graphical display, else -1 (Note: Reset/RST pin, if unused, typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
 #define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI
 
@@ -160,7 +160,7 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
                          JOIN(Hydro_EEPROMType,SETUP_EEPROM_DEVICE_TYPE),
                          I2CDeviceSetup((uint8_t)SETUP_EEPROM_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
                          JOIN(Hydro_RTCType,SETUP_RTC_DEVICE_TYPE),
-                         I2CDeviceSetup((uint8_t)SETUP_RTC_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         I2CDeviceSetup((uint8_t)0b000, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
                          SPIDeviceSetup((pintype_t)SETUP_SD_CARD_SPI_CS, &SETUP_SD_CARD_SPI, SETUP_SD_CARD_SPI_SPEED),
 #if defined(HYDRO_USE_AT_WIFI)
                          UARTDeviceSetup(&SETUP_WIFI_SERIAL, HYDRO_SYS_ATWIFI_SERIALBAUD),
@@ -318,13 +318,13 @@ inline void setupUI()
                 case Hydro_DisplayOutputMode_ST7789:
                 case Hydro_DisplayOutputMode_ILI9341:
                 case Hydro_DisplayOutputMode_PCD8544:
-                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_DISP_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
+                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
                     break;
                 case Hydro_DisplayOutputMode_ST7735:
-                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_DISP_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
+                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN));
                     break;
                 case Hydro_DisplayOutputMode_TFT:
-                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_DISP_ORIENTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT));
+                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayOrientation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT));
                     break;
                 default: break;
             }

@@ -385,16 +385,15 @@ Included below is the default system setup defines of the Vertical NFT example (
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
 #define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (AT24LC01, AT24LC02, AT24LC04, AT24LC08, AT24LC16, AT24LC32, AT24LC64, AT24LC128, AT24LC256, AT24LC512, None)
-#define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address
-#define SETUP_RTC_I2C_ADDR              0b000           // RTC i2c address (only 0b000 can be used atm)
+#define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address (A0-A2, bitwise or'ed with base address 0x50)
 #define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
 #define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
 #define SETUP_DISP_LCD_I2C_ADDR         0b111           // LCD i2c address (A0-A2, bitwise or'ed with base address 0x20)
 #define SETUP_DISP_OLED_I2C_ADDR        0b000           // OLED i2c address (A0-A2, bitwise or'ed with base address 0x78)
-#define SETUP_DISP_SPI                  SPI             // Gfx/TFT SPI class instance
-#define SETUP_DISP_SPI_CS               -1              // Gfx/TFT SPI CS pin, else -1
+#define SETUP_DISP_SPI                  SPI             // Display SPI class instance
+#define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
 #define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
@@ -472,10 +471,11 @@ Included below is the default system setup defines of the Vertical NFT example (
 
 // UI Display Output Settings
 #define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // LCD display backlight mode (Normal, Inverted, PWM), if using LCD
-#define SETUP_UI_GFX_DISP_ORIENTATION   R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display
-#define SETUP_UI_GFX_DC_PIN             -1              // SPI display interface DC pin, if using SPI-based display
-#define SETUP_UI_GFX_RESET_PIN          -1              // Optional reset pin, if using graphical display, else -1
-#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735
+#define SETUP_UI_GFX_ORIENTATION        R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
+#define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC pin, if using SPI-based display
+#define SETUP_UI_GFX_LED_PIN            -1              // Optional display interface backlight/LED pin, if using SPI-based display (Note: Backlight/LED pin, if unused, can optionally be tied either HIGH/LOW for always on/off)
+#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using graphical display, else -1 (Note: Reset/RST pin, if unused, typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
 #define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI
 
