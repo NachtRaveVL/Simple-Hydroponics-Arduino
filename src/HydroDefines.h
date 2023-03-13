@@ -254,28 +254,28 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 
 // EEPROM Device Type Enumeration
 enum Hydro_EEPROMType : signed short {
-    Hydro_EEPROMType_AT24LC01 = I2C_DEVICESIZE_24LC01 >> 7,     // AT24LC01 (1K bits, 128 bytes), 7-bit address space
-    Hydro_EEPROMType_AT24LC02 = I2C_DEVICESIZE_24LC02 >> 7,     // AT24LC02 (2K bits, 256 bytes), 8-bit address space
-    Hydro_EEPROMType_AT24LC04 = I2C_DEVICESIZE_24LC04 >> 7,     // AT24LC04 (4K bits, 512 bytes), 9-bit address space
-    Hydro_EEPROMType_AT24LC08 = I2C_DEVICESIZE_24LC08 >> 7,     // AT24LC08 (8K bits, 1024 bytes), 10-bit address space
-    Hydro_EEPROMType_AT24LC16 = I2C_DEVICESIZE_24LC16 >> 7,     // AT24LC16 (16K bits, 2048 bytes), 11-bit address space
-    Hydro_EEPROMType_AT24LC32 = I2C_DEVICESIZE_24LC32 >> 7,     // AT24LC32 (32K bits, 4096 bytes), 12-bit address space
-    Hydro_EEPROMType_AT24LC64 = I2C_DEVICESIZE_24LC64 >> 7,     // AT24LC64 (64K bits, 8192 bytes), 13-bit address space
-    Hydro_EEPROMType_AT24LC128 = I2C_DEVICESIZE_24LC128 >> 7,   // AT24LC128 (128K bits, 16384 bytes), 14-bit address space
-    Hydro_EEPROMType_AT24LC256 = I2C_DEVICESIZE_24LC256 >> 7,   // AT24LC256 (256K bits, 32768 bytes), 15-bit address space
-    Hydro_EEPROMType_AT24LC512 = I2C_DEVICESIZE_24LC512 >> 7,   // AT24LC512 (512K bits, 65536 bytes), 16-bit address space
+    Hydro_EEPROMType_AT24LC01 = I2C_DEVICESIZE_24LC01 >> 7,     // AT24LC01 (1k bits, 128 bytes), 7-bit address space
+    Hydro_EEPROMType_AT24LC02 = I2C_DEVICESIZE_24LC02 >> 7,     // AT24LC02 (2k bits, 256 bytes), 8-bit address space
+    Hydro_EEPROMType_AT24LC04 = I2C_DEVICESIZE_24LC04 >> 7,     // AT24LC04 (4k bits, 512 bytes), 9-bit address space
+    Hydro_EEPROMType_AT24LC08 = I2C_DEVICESIZE_24LC08 >> 7,     // AT24LC08 (8k bits, 1024 bytes), 10-bit address space
+    Hydro_EEPROMType_AT24LC16 = I2C_DEVICESIZE_24LC16 >> 7,     // AT24LC16 (16k bits, 2048 bytes), 11-bit address space
+    Hydro_EEPROMType_AT24LC32 = I2C_DEVICESIZE_24LC32 >> 7,     // AT24LC32 (32k bits, 4096 bytes), 12-bit address space
+    Hydro_EEPROMType_AT24LC64 = I2C_DEVICESIZE_24LC64 >> 7,     // AT24LC64 (64k bits, 8192 bytes), 13-bit address space
+    Hydro_EEPROMType_AT24LC128 = I2C_DEVICESIZE_24LC128 >> 7,   // AT24LC128 (128k bits, 16384 bytes), 14-bit address space
+    Hydro_EEPROMType_AT24LC256 = I2C_DEVICESIZE_24LC256 >> 7,   // AT24LC256 (256k bits, 32768 bytes), 15-bit address space
+    Hydro_EEPROMType_AT24LC512 = I2C_DEVICESIZE_24LC512 >> 7,   // AT24LC512 (512k bits, 65536 bytes), 16-bit address space
     Hydro_EEPROMType_None = -1,                                 // No EEPROM
 
-    Hydro_EEPROMType_Bits_1k = Hydro_EEPROMType_AT24LC01,       // 1K bits (alias of AT24LC01)
-    Hydro_EEPROMType_Bits_2k = Hydro_EEPROMType_AT24LC02,       // 2K bits (alias of AT24LC02)
-    Hydro_EEPROMType_Bits_4k = Hydro_EEPROMType_AT24LC04,       // 4K bits (alias of AT24LC04)
-    Hydro_EEPROMType_Bits_8k = Hydro_EEPROMType_AT24LC08,       // 8K bits (alias of AT24LC08)
-    Hydro_EEPROMType_Bits_16k = Hydro_EEPROMType_AT24LC16,      // 16K bits (alias of AT24LC16)
-    Hydro_EEPROMType_Bits_32k = Hydro_EEPROMType_AT24LC32,      // 32K bits (alias of AT24LC32)
-    Hydro_EEPROMType_Bits_64k = Hydro_EEPROMType_AT24LC64,      // 64K bits (alias of AT24LC64)
-    Hydro_EEPROMType_Bits_128k = Hydro_EEPROMType_AT24LC128,    // 128K bits (alias of AT24LC128)
-    Hydro_EEPROMType_Bits_256k = Hydro_EEPROMType_AT24LC256,    // 256K bits (alias of AT24LC256)
-    Hydro_EEPROMType_Bits_512k = Hydro_EEPROMType_AT24LC512,    // 512K bits (alias of AT24LC512)
+    Hydro_EEPROMType_Bits_1k = Hydro_EEPROMType_AT24LC01,       // 1k bits (alias of AT24LC01)
+    Hydro_EEPROMType_Bits_2k = Hydro_EEPROMType_AT24LC02,       // 2k bits (alias of AT24LC02)
+    Hydro_EEPROMType_Bits_4k = Hydro_EEPROMType_AT24LC04,       // 4k bits (alias of AT24LC04)
+    Hydro_EEPROMType_Bits_8k = Hydro_EEPROMType_AT24LC08,       // 8k bits (alias of AT24LC08)
+    Hydro_EEPROMType_Bits_16k = Hydro_EEPROMType_AT24LC16,      // 16k bits (alias of AT24LC16)
+    Hydro_EEPROMType_Bits_32k = Hydro_EEPROMType_AT24LC32,      // 32k bits (alias of AT24LC32)
+    Hydro_EEPROMType_Bits_64k = Hydro_EEPROMType_AT24LC64,      // 64k bits (alias of AT24LC64)
+    Hydro_EEPROMType_Bits_128k = Hydro_EEPROMType_AT24LC128,    // 128k bits (alias of AT24LC128)
+    Hydro_EEPROMType_Bits_256k = Hydro_EEPROMType_AT24LC256,    // 256k bits (alias of AT24LC256)
+    Hydro_EEPROMType_Bits_512k = Hydro_EEPROMType_AT24LC512,    // 512k bits (alias of AT24LC512)
 
     Hydro_EEPROMType_Bytes_128 = Hydro_EEPROMType_AT24LC01,     // 128 bytes (alias of AT24LC01)
     Hydro_EEPROMType_Bytes_256 = Hydro_EEPROMType_AT24LC02,     // 256 bytes (alias of AT24LC02)
