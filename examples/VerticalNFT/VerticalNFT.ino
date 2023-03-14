@@ -827,7 +827,7 @@ void setup() {
     // Setup base interfaces
     #ifdef HYDRO_ENABLE_DEBUG_OUTPUT
         Serial.begin(115200);           // Begin USB Serial interface
-        //while (!Serial) { ; }           // Wait for USB Serial to connect
+        while (!Serial) { ; }           // Wait for USB Serial to connect
     #endif
     #if defined(ESP_PLATFORM)
         SETUP_I2C_WIRE.begin(SETUP_ESP_I2C_SDA, SETUP_ESP_I2C_SCL); // Begin i2c Wire for ESP
