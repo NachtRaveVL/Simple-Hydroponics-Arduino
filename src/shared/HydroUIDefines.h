@@ -54,10 +54,10 @@ enum Hydro_ST7735Tab : signed char {
 
 // Display Rotation
 enum Hydro_DisplayRotation : signed char {
-    Hydro_DisplayRotation_R0,                               // 0 degree counter-clockwise rotation
-    Hydro_DisplayRotation_R1,                               // 90 degree counter-clockwise rotation
-    Hydro_DisplayRotation_R2,                               // 180 degree counter-clockwise rotation
-    Hydro_DisplayRotation_R3,                               // 270 degree counter-clockwise rotation
+    Hydro_DisplayRotation_R0,                               // 0 degree clockwise rotation
+    Hydro_DisplayRotation_R1,                               // 90 degree clockwise rotation
+    Hydro_DisplayRotation_R2,                               // 180 degree clockwise rotation
+    Hydro_DisplayRotation_R3,                               // 270 degree clockwise rotation
     Hydro_DisplayRotation_HorzMirror,                       // Horizontally mirrored (if supported)
     Hydro_DisplayRotation_VertMirror,                       // Vertically mirrored (if supported)
 
