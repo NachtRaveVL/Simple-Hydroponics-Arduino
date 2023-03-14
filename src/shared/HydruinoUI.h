@@ -32,6 +32,7 @@
 #include "HydroDisplayDrivers.h"
 #include "HydroInputDrivers.h"
 #include "HydroRemoteControls.h"
+#include "HydroOverviews.h"
 
 // Base UI
 // The base class that manages interaction with the tcMenu UI system.
@@ -51,7 +52,7 @@ public:
     virtual void init() override;                                           // Standard initializer
     virtual bool begin() override;                                          // Begins UI
 
-    virtual void setNeedsLayout() override;
+    virtual void setNeedsRedraw() override;
 
     virtual bool isFullUI() = 0;
     inline bool isMinUI() { return !isFullUI(); }
@@ -60,6 +61,7 @@ public:
     inline const UIControlSetup &getControlSetup() const { return _uiCtrlSetup; }
     inline const UIDisplaySetup &getDisplaySetup() const { return _uiDispSetup; }
     inline bool isActiveLow() const { return _isActiveLow; }
+    inline bool allowingISR() const { return _allowISR; }
 
 protected:
     ConnectorLocalInfo _appInfo;                            // Application info for connections
@@ -77,6 +79,7 @@ protected:
     Vector<HydroRemoteControl *, HYDRO_UI_REMOTECONTROLS_MAXSIZE> _remotes; // Remote controls list (owned)
     HydroPin *_backlight;                                   // Backlight control (owned)
     time_t _blTimeout;                                      // Backlight timeout (UTC)
+    HydroOverview *_overview;                               // Overview screen (owned)
 
     void setBacklightEnable(bool enabled);
 
@@ -101,6 +104,7 @@ struct HydroUIData : public HydroData {
 
 #include "tcMenu_Display_AdaFruitGfx.hpp"
 #include "HydroDisplayDrivers.hpp"
+#include "HydroOverviews.hpp"
 
 #endif // /ifndef HydroBaseUI_H
 #endif

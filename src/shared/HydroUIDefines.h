@@ -149,6 +149,7 @@ class HydruinoBaseUI;
 class HydroDisplayDriver;
 class HydroInputDriver;
 class HydroRemoteControl;
+class HydroOverview;
 struct HydroUIData;
 
 #endif // /ifndef HydroUIDefines_H

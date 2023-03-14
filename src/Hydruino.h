@@ -364,7 +364,7 @@ public:
     // Sets publisher tabulation needed flag
     inline void setNeedsTabulation() { publisher.setNeedsTabulation(); }
     // Sets active UI layout needed flag
-    inline void setNeedsLayout() { if (_activeUIInstance) { _activeUIInstance->setNeedsLayout(); } }
+    inline void setNeedsRedraw() { if (_activeUIInstance) { _activeUIInstance->setNeedsRedraw(); } }
 
     // Sets display name of system (HYDRO_NAME_MAXSIZE size limit)
     void setSystemName(String systemName);

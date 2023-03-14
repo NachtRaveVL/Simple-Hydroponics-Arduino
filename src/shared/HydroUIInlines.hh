@@ -34,7 +34,7 @@ inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_Disp
 
 // LCD Display Setup
 struct LCDDisplaySetup {
-    Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
+    Hydro_BacklightMode ledMode;        // LCD backlight pin mode (default: Hydro_BacklightMode_Normal)
     bool isDFRobotShield;               // Using DF robot shield
 
     inline LCDDisplaySetup(Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : ledMode(ledModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }

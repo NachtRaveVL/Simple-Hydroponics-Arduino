@@ -26,13 +26,14 @@ public:
     virtual void initBaseUIFromDefaults() = 0;
     virtual void begin() = 0;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const = 0;
-    virtual BaseMenuRenderer *getBaseRenderer() = 0;
-    virtual GraphicsDeviceRenderer *getGraphicsRenderer() = 0;
+    virtual HydroOverview *createOverview() = 0;
 
-    virtual void clearScreen() = 0;
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const = 0;
     virtual bool isLandscape() const = 0;
     inline bool isPortrait() const { return !isLandscape(); }
+
+    virtual BaseMenuRenderer *getBaseRenderer() = 0;
+    virtual GraphicsDeviceRenderer *getGraphicsRenderer() = 0;
 
     inline Hydro_DisplayRotation getRotation() const { return _rotation; }
     inline Hydro_DisplayTheme getDisplayTheme() const { return _displayTheme; }
@@ -52,13 +53,14 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual HydroOverview *createOverview() override;
+
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair((uint16_t)max(_screenSize[0],_screenSize[1]), (uint16_t)min(_screenSize[0],_screenSize[1]))
                                                                                           : make_pair((uint16_t)min(_screenSize[0],_screenSize[1]), (uint16_t)max(_screenSize[0],_screenSize[1])); }
+    virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1]; }
+
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return nullptr; }
-
-    virtual void clearScreen() override { _lcd.clear(); }
-    virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1]; }
 
     inline LiquidCrystal &getLCD() { return _lcd; }
 
@@ -76,21 +78,23 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual HydroOverview *createOverview() override;
+
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                           : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
-    virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
-
-    virtual void clearScreen() override { if (_gfx) { _gfx->clearDisplay(); } }
     virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                         : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3); }
 
-    inline U8G2 *getOLED() { return _gfx; }
+    virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
+    virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
+
+    inline U8G2 &getGfx() { return *_gfx; }
+    inline U8g2Drawable &getDrawable() { return *_drawable; }
 
 protected:
     uint16_t _screenSize[2];
     U8G2 *_gfx;
-    U8g2Drawable *_gfxDrawable;
+    U8g2Drawable *_drawable;
     GraphicsDeviceRenderer *_renderer;
 
 public:
@@ -133,18 +137,20 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual HydroOverview *createOverview() override;
+
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
-    virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
-
     inline T &getGfx() { return _gfx; }
+    inline AdafruitDrawable<T> &getDrawable() { return _drawable; }
 
 protected:
     T _gfx;
-    AdafruitDrawable<T> _gfxDrawable;
+    AdafruitDrawable<T> _drawable;
     GraphicsDeviceRenderer _renderer;
 };
 
@@ -157,19 +163,21 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual HydroOverview *createOverview() override;
+
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
-    virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
-
     inline Adafruit_ST7735 &getGfx() { return _gfx; }
+    inline AdafruitDrawable<Adafruit_ST7735> &getDrawable() { return _drawable; }
 
 protected:
     const Hydro_ST7735Tab _tab;
     Adafruit_ST7735 _gfx;
-    AdafruitDrawable<Adafruit_ST7735> _gfxDrawable;
+    AdafruitDrawable<Adafruit_ST7735> _drawable;
     GraphicsDeviceRenderer _renderer;
 };
 
@@ -182,18 +190,20 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual HydroOverview *createOverview() override;
+
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
-    virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
-
     inline Adafruit_ST7789 &getGfx() { return _gfx; }
+    inline AdafruitDrawable<Adafruit_ST7789> &getDrawable() { return _drawable; }
 
 protected:
     Adafruit_ST7789 _gfx;
-    AdafruitDrawable<Adafruit_ST7789> _gfxDrawable;
+    AdafruitDrawable<Adafruit_ST7789> _drawable;
     GraphicsDeviceRenderer _renderer;
 };
 
@@ -206,18 +216,20 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual HydroOverview *createOverview() override;
+
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
-    virtual void clearScreen() override { _gfx.fillScreen(0x0000); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
-
     inline Adafruit_PCD8544 &getGfx() { return _gfx; }
+    inline AdafruitDrawable<Adafruit_PCD8544> &getDrawable() { return _drawable; }
 
 protected:
     Adafruit_PCD8544 _gfx;
-    AdafruitDrawable<Adafruit_PCD8544> _gfxDrawable;
+    AdafruitDrawable<Adafruit_PCD8544> _drawable;
     GraphicsDeviceRenderer _renderer;
 };
 
@@ -229,21 +241,23 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual HydroOverview *createOverview() override;
+
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                           : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
-    virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
-
-    virtual void clearScreen() override { _gfx.fillScreen(0x00000000); }
     virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                         : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3); }
 
+    virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
+    virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
+
     inline TFT_eSPI &getGfx() { return _gfx; }
+    inline TfteSpiDrawable &getDrawable() { return _drawable; }
 
 protected:
     const uint16_t _screenSize[2];
     TFT_eSPI _gfx;
-    TfteSpiDrawable _gfxDrawable;
+    TfteSpiDrawable _drawable;
     GraphicsDeviceRenderer _renderer;
 };
 

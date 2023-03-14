@@ -10,7 +10,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
     : _appInfo{0}, _uiCtrlSetup(uiControlSetup), _uiDispSetup(uiDisplaySetup),
       _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _utf8Fonts(enableTcUnicodeFonts),
       _gfxOrTFT(getController() && getController()->getDisplayOutputMode() >= Hydro_DisplayOutputMode_ST7735 && getController()->getDisplayOutputMode() <= Hydro_DisplayOutputMode_TFT),
-      _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr), _blTimeout(0)
+      _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr), _blTimeout(0), _overview(nullptr)
 {
     if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
     String uuid(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")); // todo, name->hash
@@ -43,6 +43,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
 
 HydruinoBaseUI::~HydruinoBaseUI()
 {
+    if (_overview) { delete _overview; }
     while (_remotes.size()) {
         delete (*_remotes.begin());
         _remotes.erase(_remotes.begin());
@@ -94,8 +95,11 @@ bool HydruinoBaseUI::begin()
     return (_display && (_input || _remotes.size())) || _remotes.size();
 }
 
-void HydruinoBaseUI::setNeedsLayout()
-{ ; } // todo
+void HydruinoBaseUI::setNeedsRedraw()
+{
+    if (_overview) { _overview->setNeedsFullRedraw(); }
+    else { menuMgr.notifyStructureChanged(); }
+}
 
 void HydruinoBaseUI::setBacklightEnable(bool enabled)
 {
@@ -136,7 +140,10 @@ void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
 {
     // overview screen started
     if (_display) {
-        _display->clearScreen(); // tbr
+        if (!_overview) {
+            _overview = _display->createOverview();
+            HYDRO_SOFT_ASSERT(_overview, SFP(HStr_Err_AllocationFailure));
+        }
     }
 }
 
@@ -154,12 +161,13 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
     // render overview screen until key interruption
     if (_display) {
         if (userClick == RPRESS_NONE) {
-            // todo: custom render loop
+            if (_overview) { _overview->renderOverview(_display->isLandscape(), _display->getScreenSize()); }
 
             if (_blTimeout && unixNow() >= _blTimeout) {
                 setBacklightEnable(false);
             }
         } else {
+            if (_overview) { delete _overview; _overview = nullptr; }
             _display->getBaseRenderer()->giveBackDisplay();
             setBacklightEnable(true);
             _blTimeout = 0;

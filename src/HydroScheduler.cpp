@@ -37,7 +37,7 @@ void HydroScheduler::update()
             if (_inDaytimeMode != daytimeMode) {
                 _inDaytimeMode = daytimeMode;
                 setNeedsScheduling();
-                Hydruino::_activeInstance->setNeedsLayout();
+                Hydruino::_activeInstance->setNeedsRedraw();
             }
 
             if (!(_lastDay[0] == currTime.year()-2000 &&
@@ -484,7 +484,7 @@ void HydroScheduler::updateDayTracking()
     _inDaytimeMode = _dailyTwilight.isDaytime(time);
 
     setNeedsScheduling();
-    Hydruino::_activeInstance->setNeedsLayout();
+    Hydruino::_activeInstance->setNeedsRedraw();
 }
 
 void HydroScheduler::performScheduling()

@@ -196,8 +196,8 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup,
       #else
           _gfx(displaySetup.cs, dcPin, resetPin),
       #endif
-      _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
+      _drawable(&_gfx, 0),
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
@@ -213,6 +213,12 @@ void HydroDisplayAdafruitGFX<T>::begin()
 {
     _gfx.begin();
     _gfx.setRotation((uint8_t)_rotation);
+}
+
+template <class T>
+HydroOverview *HydroDisplayAdafruitGFX<T>::createOverview()
+{
+    return new HydroOverviewAdaGfx<T>(this);
 }
 
 #endif

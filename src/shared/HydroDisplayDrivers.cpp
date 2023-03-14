@@ -89,23 +89,28 @@ void HydroDisplayLiquidCrystalIO::begin()
     _lcd.begin(_screenSize[0], _screenSize[1]);
 }
 
+HydroOverview *HydroDisplayLiquidCrystalIO::createOverview()
+{
+    return new HydroOverviewLCD(this);
+}
+
 
 HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, U8G2 *gfx)
     : HydroDisplayDriver(displayRotation),
-      _screenSize{gfx->getDisplayWidth(), gfx->getDisplayHeight()}, _gfx(gfx), _gfxDrawable(nullptr), _renderer(nullptr)
+      _screenSize{gfx->getDisplayWidth(), gfx->getDisplayHeight()}, _gfx(gfx), _drawable(nullptr), _renderer(nullptr)
 {
     HYDRO_SOFT_ASSERT(_gfx, SFP(HStr_Err_AllocationFailure));
     if (_gfx) {
         if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
             _gfx->setI2CAddress(HYDRO_UI_I2C_OLED_BASEADDR | displaySetup.cfgAs.i2c.address);
-            _gfxDrawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire);
+            _drawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire);
         } else {
-            _gfxDrawable = new U8g2Drawable(_gfx);
+            _drawable = new U8g2Drawable(_gfx);
         }
-        HYDRO_SOFT_ASSERT(_gfxDrawable, SFP(HStr_Err_AllocationFailure));
+        HYDRO_SOFT_ASSERT(_drawable, SFP(HStr_Err_AllocationFailure));
 
-        if (_gfxDrawable) {
-            _renderer = new GraphicsDeviceRenderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), _gfxDrawable);
+        if (_drawable) {
+            _renderer = new GraphicsDeviceRenderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), _drawable);
             HYDRO_SOFT_ASSERT(_renderer, SFP(HStr_Err_AllocationFailure));
 
             if (_renderer) { _renderer->setTitleMode(BaseGraphicalRenderer::TITLE_FIRST_ROW); }
@@ -116,7 +121,7 @@ HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_Display
 HydroDisplayU8g2lib::~HydroDisplayU8g2lib()
 {
     if (_renderer) { delete _renderer; }
-    if (_gfxDrawable) { delete _gfxDrawable; }
+    if (_drawable) { delete _drawable; }
     if (_gfx) { delete _gfx; }
 }
 
@@ -130,6 +135,11 @@ void HydroDisplayU8g2lib::begin()
     if (_gfx) { _gfx->begin(); }
 }
 
+HydroOverview *HydroDisplayU8g2lib::createOverview()
+{
+    return new HydroOverviewOLED(this);
+}
+
 
 HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation), _tab(tabColor),
@@ -138,8 +148,8 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(displaySetup.cs, dcPin, resetPin),
       #endif
-      _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
+      _drawable(&_gfx, 0),
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
     HYDRO_SOFT_ASSERT(_tab != Hydro_ST7735Tab_Undefined, SFP(HStr_Err_InvalidParameter));
     #ifdef ESP8266
@@ -159,6 +169,11 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::createOverview()
+{
+    return new HydroOverviewAdaGfx<Adafruit_ST7735>(this);
+}
+
 
 HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation),
@@ -167,8 +182,8 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(displaySetup.cs, dcPin, resetPin),
       #endif
-      _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
+      _drawable(&_gfx, 0),
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
@@ -187,12 +202,17 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::createOverview()
+{
+    return new HydroOverviewAdaGfx<Adafruit_ST7789>(this);
+}
+
 
 HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation),
       _gfx(dcPin, displaySetup.cs, resetPin, displaySetup.spi),
-      _gfxDrawable(&_gfx),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
+      _drawable(&_gfx),
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
@@ -208,12 +228,17 @@ void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_PCD8544>::createOverview()
+{
+    return new HydroOverviewAdaGfx<Adafruit_PCD8544>(this);
+}
+
 
 HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight)
     : HydroDisplayDriver(displayRotation), _screenSize{screenWidth, screenHeight},
       _gfx(screenWidth, screenHeight),
-      _gfxDrawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_gfxDrawable)
+      _drawable(&_gfx, 0),
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
@@ -227,6 +252,11 @@ void HydroDisplayTFTeSPI::begin()
 {
     _gfx.begin();
     _gfx.setRotation((uint8_t)_rotation);
+}
+
+HydroOverview *HydroDisplayTFTeSPI::createOverview()
+{
+    return new HydroOverviewTFT(this);
 }
 
 #endif
