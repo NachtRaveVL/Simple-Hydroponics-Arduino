@@ -125,7 +125,7 @@ void publishData(HydroSensor *sensor)
     }
 }
 
-bool setUnixTime(DateTime unixTime)
+bool _setUnixTime(DateTime unixTime)
 {
     auto rtc = getController() ? getController()->getRTC() : nullptr;
     if (rtc) {

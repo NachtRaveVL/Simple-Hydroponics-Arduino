@@ -10,7 +10,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
     : _appInfo{0}, _uiCtrlSetup(uiControlSetup), _uiDispSetup(uiDisplaySetup),
       _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _utf8Fonts(enableTcUnicodeFonts),
       _gfxOrTFT(getController() && getController()->getDisplayOutputMode() >= Hydro_DisplayOutputMode_ST7735 && getController()->getDisplayOutputMode() <= Hydro_DisplayOutputMode_TFT),
-      _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr)
+      _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr), _blTimeout(0)
 {
     if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
     String uuid(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")); // todo, name->hash
@@ -64,7 +64,7 @@ void HydruinoBaseUI::init()
 {
     const HydroUIData *uiData = nullptr; // todo
     if (uiData) {
-        init(uiData->updatesPerSec, uiData->displayTheme, _gfxOrTFT ? HYDRO_UI_GFXTFT_USES_AN_SLIDER : false);
+        init(uiData->updatesPerSec, uiData->displayTheme, _gfxOrTFT ? HYDRO_UI_GFXTFT_USES_SLIDER : false);
     } else if (_display) {
         _display->initBaseUIFromDefaults(); // calls back into above init with default settings for display
     } else {
@@ -105,6 +105,7 @@ void HydruinoBaseUI::setBacklightEnable(bool enabled)
             } else {
                 ((HydroAnalogPin *)_backlight)->analogWrite(0.0f); // todo: nice backlight-out anim
             }
+            _blTimeout = 0;
         }
     } else if (_uiDispSetup.dispCfgType == UIDisplaySetup::LCD && _display) {
         if (enabled) {
@@ -119,6 +120,7 @@ void HydruinoBaseUI::setBacklightEnable(bool enabled)
             } else {
                 ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().setBacklight(0); // todo: nice backlight-out anim
             }
+            _blTimeout = 0;
         }
     }
 }
@@ -128,15 +130,15 @@ void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
     // overview screen started
     if (_display) {
         _display->clearScreen(); // tbr
-        // todo
     }
 }
 
 void HydruinoBaseUI::reset()
 {
-    // user interaction timeout
+    // menu interaction timeout
     if (_display) {
         _display->getBaseRenderer()->takeOverDisplay();
+        _blTimeout = (_backlight || (_uiDispSetup.dispCfgType == UIDisplaySetup::LCD && _display)) ? unixNow() + HYDRO_UI_BACKLIGHT_TIMEOUT : 0;
     }
 }
 
@@ -146,9 +148,14 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
     if (_display) {
         if (userClick == RPRESS_NONE) {
             // todo: custom render loop
+
+            if (_blTimeout && unixNow() >= _blTimeout) {
+                setBacklightEnable(false);
+            }
         } else {
             _display->getBaseRenderer()->giveBackDisplay();
             setBacklightEnable(true);
+            _blTimeout = 0;
         }
     }
 }

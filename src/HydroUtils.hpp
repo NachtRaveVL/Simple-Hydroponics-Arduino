@@ -341,16 +341,16 @@ inline DateTime localDayStart(time_t unixTime)
     return DateTime(currTime.year(), currTime.month(), currTime.day());
 }
 
-extern bool setUnixTime(DateTime unixTime);
+extern bool _setUnixTime(DateTime unixTime);
 
 inline bool setUnixTime(time_t unixTime)
 {
-    return setUnixTime(DateTime((uint32_t)unixTime));
+    return _setUnixTime(DateTime((uint32_t)unixTime));
 }
 
 inline bool setLocalTime(DateTime localTime)
 {
-    return setUnixTime(unixTime(localTime));
+    return _setUnixTime(DateTime((uint32_t)unixTime(localTime)));
 }
 
 

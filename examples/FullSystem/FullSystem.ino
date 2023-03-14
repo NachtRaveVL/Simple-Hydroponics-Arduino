@@ -111,8 +111,8 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w LED pin
 #define SETUP_UI_GFX_ORIENTATION        R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
 #define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC/RS pin, if using SPI-based display
-#define SETUP_UI_GFX_LED_PIN            -1              // Optional display interface backlight/LED pin, if using SPI-based display (Note: Unused backlight/LED pin can optionally be tied typically to HIGH for always-on)
-#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using graphical display, else -1 (Note: Unused reset/RST pin typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_LED_PIN            -1              // Optional display interface backlight/LED/BL pin, if using SPI-based display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using graphical display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
 #define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
 #define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI

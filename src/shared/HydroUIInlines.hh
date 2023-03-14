@@ -34,7 +34,7 @@ inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_Disp
 
 // LCD Display Setup
 struct LCDDisplaySetup {
-    Hydro_BacklightMode backlightMode;  // Backlight/LED pin mode (default: Hydro_BacklightMode_Normal)
+    Hydro_BacklightMode backlightMode;  // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
     bool isDFRobotShield;               // Using DF robot shield
 
     inline LCDDisplaySetup(Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : backlightMode(backlightModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
@@ -46,9 +46,9 @@ struct LCDDisplaySetup {
 struct PixelDisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
     pintype_t dcPin;                    // DC/RS pin (if using SPI), else -1 (default: -1)
-    pintype_t ledPin;                   // Optional backlight/LED pin (if using SPI), else -1 (default: -1, Note: Unused backlight/LED pin can optionally be tied typically to HIGH for always-on)
-    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset/RST pin typically needs tied to HIGH for display to function)
-    Hydro_BacklightMode backlightMode;  // Backlight/LED pin mode (default: Hydro_BacklightMode_Normal)
+    pintype_t ledPin;                   // Optional backlight/LED/BL pin (if using SPI), else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset pin typically needs tied to HIGH for display to function)
+    Hydro_BacklightMode backlightMode;  // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
 
     inline PixelDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, pintype_t dcPinIn = -1, pintype_t ledPinIn = -1, pintype_t resetPinIn = -1, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal) : rotation(rotationIn), dcPin(dcPinIn), ledPin(ledPinIn), resetPin(resetPinIn), backlightMode(backlightModeIn) { ; }
 };
@@ -58,9 +58,9 @@ struct ST7735DisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
     Hydro_ST7735Tab tabColor;           // ST7735 tab color (default: undef/-1)
     pintype_t dcPin;                    // DC/RS pin (if using SPI), else -1 (default: -1)
-    pintype_t ledPin;                   // Optional backlight/LED pin (if using SPI), else -1 (default: -1, Note: Unused backlight/LED pin can optionally be tied typically to HIGH for always-on)
-    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset/RST pin typically needs tied to HIGH for display to function)
-    Hydro_BacklightMode backlightMode;  // Backlight/LED pin mode (default: Hydro_BacklightMode_Normal)
+    pintype_t ledPin;                   // Optional backlight/LED/BL pin (if using SPI), else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset pin typically needs tied to HIGH for display to function)
+    Hydro_BacklightMode backlightMode;  // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
 
     inline ST7735DisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined, pintype_t dcPinIn = -1, pintype_t ledPinIn = -1, pintype_t resetPinIn = -1, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal) : rotation(rotationIn), tabColor(tabColorIn), dcPin(dcPinIn), ledPin(ledPinIn), resetPin(resetPinIn), backlightMode(backlightModeIn) { ; }
 };

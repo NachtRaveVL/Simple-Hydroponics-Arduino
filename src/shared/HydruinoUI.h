@@ -75,7 +75,8 @@ protected:
     HydroDisplayDriver *_display;                           // Display driver (owned)
     TcMenuRemoteServer *_remoteServer;                      // Remote control server (owned)
     Vector<HydroRemoteControl *, HYDRO_UI_REMOTECONTROLS_MAXSIZE> _remotes; // Remote controls list (owned)
-    HydroPin *_backlight;                                   // Backlight pin control (owned)
+    HydroPin *_backlight;                                   // Backlight control (owned)
+    time_t _blTimeout;                                      // Backlight timeout (UTC)
 
     void setBacklightEnable(bool enabled);
 
