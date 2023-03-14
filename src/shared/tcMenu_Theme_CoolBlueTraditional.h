@@ -13,6 +13,7 @@
 
 /* Changelist:
  * - Variable name standardizations and keeping things in function scope.
+ * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
 
 #ifndef COOL_BLUE_TRADITIONAL_THEME

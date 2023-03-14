@@ -187,9 +187,9 @@ void HydruinoMinUI::allocateLCDDisplay()
             case Hydro_DisplayOutputMode_LCD20x4_RS:
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::LCD, SFP(HStr_Err_InvalidParameter));
                 if (!_uiDispSetup.dispCfgAs.lcd.isDFRobotShield) {
-                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, displaySetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
+                    _display = new HydroDisplayLiquidCrystalIO(dispOutMode, displaySetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.ledMode);
                 } else {
-                    _display = new HydroDisplayLiquidCrystalIO(true, displaySetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.backlightMode);
+                    _display = new HydroDisplayLiquidCrystalIO(true, displaySetup.cfgAs.i2c, _uiDispSetup.dispCfgAs.lcd.ledMode);
                 }
                 break;
             default: break;
@@ -211,9 +211,9 @@ void HydruinoMinUI::allocateSSD1305Display()
         switch (dispOutMode) {
             case Hydro_DisplayOutputMode_SSD1305: {
                 if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1305I2C(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1305Wire(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1305I2C2(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1305Wire1(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::SPISetup && displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI) {
                     _display = HydroDisplayU8g2lib::allocateSSD1305SPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else {
@@ -240,9 +240,9 @@ void HydruinoMinUI::allocateSSD1305x32AdaDisplay()
             case Hydro_DisplayOutputMode_SSD1305_x32Ada: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1305x32AdaI2C(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1305x32AdaWire(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1305x32AdaI2C2(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1305x32AdaWire1(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::SPISetup && displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI) {
                     _display = HydroDisplayU8g2lib::allocateSSD1305x32AdaSPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else {
@@ -269,9 +269,9 @@ void HydruinoMinUI::allocateSSD1305x64AdaDisplay()
             case Hydro_DisplayOutputMode_SSD1305_x64Ada: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1305x64AdaI2C(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1305x64AdaWire(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1305x64AdaI2C2(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1305x64AdaWire1(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::SPISetup && displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI) {
                     _display = HydroDisplayU8g2lib::allocateSSD1305x64AdaSPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else {
@@ -298,9 +298,9 @@ void HydruinoMinUI::allocateSSD1306Display()
             case Hydro_DisplayOutputMode_SSD1306: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1306I2C(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1306Wire(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1) {
-                    _display = HydroDisplayU8g2lib::allocateSSD1306I2C2(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSSD1306Wire1(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::SPISetup && displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI) {
                     _display = HydroDisplayU8g2lib::allocateSSD1306SPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else {
@@ -327,9 +327,9 @@ void HydruinoMinUI::allocateSH1106Display()
             case Hydro_DisplayOutputMode_SH1106: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE) {
-                    _display = HydroDisplayU8g2lib::allocateSH1106I2C(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSH1106Wire(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::I2CSetup && displaySetup.cfgAs.i2c.wire == HYDRO_USE_WIRE1) {
-                    _display = HydroDisplayU8g2lib::allocateSH1106I2C2(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                    _display = HydroDisplayU8g2lib::allocateSH1106Wire1(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else if (displaySetup.cfgType == DeviceSetup::SPISetup && displaySetup.cfgAs.spi.spi == HYDRO_USE_SPI) {
                     _display = HydroDisplayU8g2lib::allocateSH1106SPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 } else {
@@ -342,7 +342,7 @@ void HydruinoMinUI::allocateSH1106Display()
     }
 }
 
-void HydruinoMinUI::allocateSSD1607GDDisplay()
+void HydruinoMinUI::allocateCustomOLEDDisplay()
 {
     auto controller = getController();
     HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
@@ -353,9 +353,15 @@ void HydruinoMinUI::allocateSSD1607GDDisplay()
         auto displaySetup = controller->getDisplaySetup();
 
         switch (dispOutMode) {
-            case Hydro_DisplayOutputMode_SSD1607_GD: {
+            case Hydro_DisplayOutputMode_CustomOLED: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                _display = HydroDisplayU8g2lib::allocateSSD1607GDSPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
+                    _display = HydroDisplayU8g2lib::allocateCustomOLEDI2C(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                } else if (displaySetup.cfgType == DeviceSetup::SPISetup) {
+                    _display = HydroDisplayU8g2lib::allocateCustomOLEDSPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                } else {
+                    HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_InvalidParameter));
+                }
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_AllocationFailure));
             } break;
             default: break;
@@ -363,7 +369,7 @@ void HydruinoMinUI::allocateSSD1607GDDisplay()
     }
 }
 
-void HydruinoMinUI::allocateSSD1607WSDisplay()
+void HydruinoMinUI::allocateSSD1607Display()
 {
     auto controller = getController();
     HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
@@ -374,9 +380,9 @@ void HydruinoMinUI::allocateSSD1607WSDisplay()
         auto displaySetup = controller->getDisplaySetup();
 
         switch (dispOutMode) {
-            case Hydro_DisplayOutputMode_SSD1607_WS: {
+            case Hydro_DisplayOutputMode_SSD1607: {
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                _display = HydroDisplayU8g2lib::allocateSSD1607WSSPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
+                _display = HydroDisplayU8g2lib::allocateSSD1607SPI(displaySetup, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_AllocationFailure));
             } break;
             default: break;

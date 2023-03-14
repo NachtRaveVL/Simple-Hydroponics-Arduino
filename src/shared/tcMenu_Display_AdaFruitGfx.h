@@ -12,7 +12,8 @@
  */
 
 /* Changelist:
- * - Refactored drawable/canvas into templates to remove define switches.
+ * - Refactored drawable/canvas into templates to remove define switches / handle casting
+ * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
 
 /**

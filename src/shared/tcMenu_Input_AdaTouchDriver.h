@@ -11,6 +11,10 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+/* Changelist:
+ * - Enclosed inside of #ifdef & reorg'ed for general inclusion
+ */
+
 /**
  * @file tcMenu_Input_AdaTouchDriver.h
  * 

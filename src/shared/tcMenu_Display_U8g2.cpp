@@ -1,6 +1,6 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
-    tcMenu U8g2 Display
+    tcMenu U8G2 Display
 */
 
 #include <Hydruino.h>
@@ -14,7 +14,7 @@
 /**
  * @file tcMenu_Display_U8g2.h
  *
- * U8g2 renderer that renders menus onto this type of display. This file is a plugin file and should not
+ * U8G2 renderer that renders menus onto this type of display. This file is a plugin file and should not
  * be directly edited, it will be replaced each time the project is built. If you want to edit this file in place,
  * make sure to rename it first.
  *

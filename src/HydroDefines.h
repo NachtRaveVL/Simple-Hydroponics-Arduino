@@ -153,7 +153,7 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_JSON_DOC_DEFSIZE          192                 // Default JSON document chunk data bytes (serialization buffer size)
 #define HYDRO_STRING_BUFFER_SIZE        32                  // Size in bytes of string serialization buffers
 #define HYDRO_WIFISTREAM_BUFFER_SIZE    128                 // Size in bytes of WiFi serialization buffers
-// The following sizes only matter for architectures that do not have STL support (AVR/SAM)
+// The following sizes only apply to architectures that do not have STL support (AVR/SAM)
 #define HYDRO_DEFAULT_MAXSIZE           8                   // Default maximum array/map size
 #define HYDRO_ACTUATOR_SIGNAL_SLOTS     4                   // Maximum number of slots for actuator's activation signal
 #define HYDRO_SENSOR_SIGNAL_SLOTS       6                   // Maximum number of slots for sensor's measurement signal
@@ -467,8 +467,8 @@ enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_SSD1305_x64Ada,                 // Adafruit SSD1305 128x64 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SSD1306,                        // SSD1306 128x64 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SH1106,                         // SH1106 128x64 OLED, using U8g2 (i2c or SPI)
-    Hydro_DisplayOutputMode_SSD1607_GD,                     // SSD1607 GD 200x200 OLED, using U8g2 (SPI only)
-    Hydro_DisplayOutputMode_SSD1607_WS,                     // SSD1607 WS 200x200 OLED, using U8g2 (SPI only)
+    Hydro_DisplayOutputMode_CustomOLED,                     // Custom OLED (class defined statically in UIDefines), using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_SSD1607,                        // SSD1607 200x200 OLED, using U8g2 (SPI only)
     Hydro_DisplayOutputMode_IL3820,                         // IL3820 296x128 OLED, using U8g2 (SPI only)
     Hydro_DisplayOutputMode_IL3820_V2,                      // IL3820 V2 296x128 OLED, using U8g2 (SPI only)
     Hydro_DisplayOutputMode_ST7735,                         // ST7735 320x240 graphical LCD, using AdafruitGFX (SPI only)
@@ -790,8 +790,8 @@ class HydroRail;
 #define SETUP_ENUM_SSD1305_x64Ada                           106
 #define SETUP_ENUM_SSD1306                                  107
 #define SETUP_ENUM_SH1106                                   108
-#define SETUP_ENUM_SSD1607_GD                               109
-#define SETUP_ENUM_SSD1607_WS                               110
+#define SETUP_ENUM_CustomOLED                               109
+#define SETUP_ENUM_SSD1607                                  110
 #define SETUP_ENUM_IL3820                                   111
 #define SETUP_ENUM_IL3820_V2                                112
 #define SETUP_ENUM_ST7789                                   113

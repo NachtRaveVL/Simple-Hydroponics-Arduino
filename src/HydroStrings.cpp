@@ -1232,6 +1232,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_CustomCrop8[] PROGMEM = {"CustomCrop8"};
             return flashStr_Enum_CustomCrop8;
         } break;
+        case HStr_Enum_CustomOLED: {
+            static const char flashStr_Enum_CustomOLED[] PROGMEM = {"CustomOLED"};
+            return flashStr_Enum_CustomOLED;
+        } break;
         case HStr_Enum_DC12V: {
             static const char flashStr_Enum_DC12V[] PROGMEM = {"DC12V"};
             return flashStr_Enum_DC12V;

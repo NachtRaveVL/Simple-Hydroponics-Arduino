@@ -34,10 +34,10 @@ inline Hydro_DisplayTheme definedThemeElse(Hydro_DisplayTheme theme1, Hydro_Disp
 
 // LCD Display Setup
 struct LCDDisplaySetup {
-    Hydro_BacklightMode backlightMode;  // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
+    Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
     bool isDFRobotShield;               // Using DF robot shield
 
-    inline LCDDisplaySetup(Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : backlightMode(backlightModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
+    inline LCDDisplaySetup(Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, bool isDFRobotShieldIn = false) : ledMode(ledModeIn), isDFRobotShield(isDFRobotShieldIn) { ; }
 
     static inline LCDDisplaySetup usingDFRobotShield() { return LCDDisplaySetup(Hydro_BacklightMode_Normal, true); }
 };
@@ -45,24 +45,66 @@ struct LCDDisplaySetup {
 // Standard Pixel Display Setup
 struct PixelDisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
-    pintype_t dcPin;                    // DC/RS pin (if using SPI), else -1 (default: -1)
-    pintype_t ledPin;                   // Optional backlight/LED/BL pin (if using SPI), else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    pintype_t dcPin;                    // DC/RS pin, else -1 (default: -1)
     pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset pin typically needs tied to HIGH for display to function)
-    Hydro_BacklightMode backlightMode;  // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
+    pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
+    uint8_t ledBitRes;                  // Backlight PWM output bit resolution, if PWM
+#ifdef ESP32
+    uint8_t ledChannel;                 // Backlight PWM output channel (0 reserved for buzzer), if PWM/ESP
+#endif
+#ifdef ESP_PLATFORM
+    float ledFrequency;                 // Backlight PWM output frequency, if PWM/ESP
+#endif
 
-    inline PixelDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, pintype_t dcPinIn = -1, pintype_t ledPinIn = -1, pintype_t resetPinIn = -1, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal) : rotation(rotationIn), dcPin(dcPinIn), ledPin(ledPinIn), resetPin(resetPinIn), backlightMode(backlightModeIn) { ; }
+    inline PixelDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, pintype_t dcPinIn = -1, pintype_t resetPinIn = -1, pintype_t ledPinIn = -1, Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, uint8_t ledBitResIn = DAC_RESOLUTION
+#ifdef ESP32
+                             , uint8_t ledChannel = 1
+#endif
+#ifdef ESP_PLATFORM
+                             , float ledFrequencyIn = 1000
+#endif
+        ) : rotation(rotationIn), dcPin(dcPinIn), resetPin(resetPinIn), ledPin(ledPinIn), ledMode(ledModeIn), ledBitRes(ledBitResIn)
+#ifdef ESP32
+            , ledChannel(ledChannelIn)
+#endif
+#ifdef ESP_PLATFORM
+            , ledFrequency(ledFrequencyIn)
+#endif
+        { ; }
 };
 
 // ST7735 Pixel Display Setup
 struct ST7735DisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
     Hydro_ST7735Tab tabColor;           // ST7735 tab color (default: undef/-1)
-    pintype_t dcPin;                    // DC/RS pin (if using SPI), else -1 (default: -1)
-    pintype_t ledPin;                   // Optional backlight/LED/BL pin (if using SPI), else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    pintype_t dcPin;                    // DC/RS pin, else -1 (default: -1)
     pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset pin typically needs tied to HIGH for display to function)
-    Hydro_BacklightMode backlightMode;  // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
+    pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
+    uint8_t ledBitRes;                  // Backlight PWM output bit resolution, if PWM
+#ifdef ESP32
+    uint8_t ledChannel;                 // Backlight PWM output channel (0 reserved for buzzer), if PWM/ESP
+#endif
+#ifdef ESP_PLATFORM
+    float ledFrequency;                 // Backlight PWM output frequency, if PWM/ESP
+#endif
 
-    inline ST7735DisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined, pintype_t dcPinIn = -1, pintype_t ledPinIn = -1, pintype_t resetPinIn = -1, Hydro_BacklightMode backlightModeIn = Hydro_BacklightMode_Normal) : rotation(rotationIn), tabColor(tabColorIn), dcPin(dcPinIn), ledPin(ledPinIn), resetPin(resetPinIn), backlightMode(backlightModeIn) { ; }
+    inline ST7735DisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined, pintype_t dcPinIn = -1, pintype_t resetPinIn = -1, pintype_t ledPinIn = -1, Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, uint8_t ledBitResIn = DAC_RESOLUTION
+#ifdef ESP32
+                              , uint8_t ledChannel = 1
+#endif
+#ifdef ESP_PLATFORM
+                              , float ledFrequencyIn = 1000
+#endif
+        ) : rotation(rotationIn), tabColor(tabColorIn), dcPin(dcPinIn), resetPin(resetPinIn), ledPin(ledPinIn), ledMode(ledModeIn), ledBitRes(ledBitResIn)
+#ifdef ESP32
+            , ledChannel(ledChannelIn)
+#endif
+#ifdef ESP_PLATFORM
+            , ledFrequency(ledFrequencyIn)
+#endif
+        { ; }
 };
 
 // TFT Display Setup
@@ -70,8 +112,33 @@ struct TFTDisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
     uint16_t screenWidth;               // TFT screen width (default: 320)
     uint16_t screenHeight;              // TFT screen height (default: 240)
+    //pintype_t dcPin = TFT_DC;         // DC/RS pin, else -1 (uses TFT_DC statically defined)
+    //pintype_t resetPin = TFT_RST;     // Optional reset/RST pin, else -1 (uses TFT_RST statically defined, Note: Unused reset pin typically needs tied to HIGH for display to function)
+    pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
+    uint8_t ledBitRes;                  // Backlight PWM output bit resolution, if PWM
+#ifdef ESP32
+    uint8_t ledChannel;                 // Backlight PWM output channel (0 reserved for buzzer), if PWM/ESP
+#endif
+#ifdef ESP_PLATFORM
+    float ledFrequency;                 // Backlight PWM output frequency, if PWM/ESP
+#endif
 
-    inline TFTDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, pintype_t screenWidthIn = 320, pintype_t screenHeightIn = 240) : rotation(rotationIn), screenWidth(screenWidthIn), screenHeight(screenHeightIn) { ; }
+    inline TFTDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, uint16_t screenWidthIn = TFT_GFX_WIDTH, uint16_t screenHeightIn = TFT_GFX_HEIGHT, pintype_t ledPinIn = -1, Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, uint8_t ledBitResIn = DAC_RESOLUTION
+#ifdef ESP32
+                           , uint8_t ledChannel = 1
+#endif
+#ifdef ESP_PLATFORM
+                           , float ledFrequencyIn = 1000
+#endif
+        ) : rotation(rotationIn), screenWidth(screenWidthIn), screenHeight(screenHeightIn), ledPin(ledPinIn), ledMode(ledModeIn), ledBitRes(ledBitResIn)
+#ifdef ESP32
+            , ledChannel(ledChannelIn)
+#endif
+#ifdef ESP_PLATFORM
+            , ledFrequency(ledFrequencyIn)
+#endif
+        { ; }
 };
 
 // Combined UI Display Setup
@@ -94,8 +161,15 @@ struct UIDisplaySetup {
     static inline UIDisplaySetup usingDFRobotShield() { return UIDisplaySetup(LCDDisplaySetup::usingDFRobotShield()); }
 
     inline Hydro_DisplayRotation getDisplayRotation() const { return dispCfgType == Pixel ? dispCfgAs.gfx.rotation : dispCfgType == ST7735 ? dispCfgAs.st7735.rotation : dispCfgType == TFT ? dispCfgAs.tft.rotation : Hydro_DisplayRotation_R0; }
-    inline Hydro_BacklightMode getBacklightMode() const { return dispCfgType == LCD ? dispCfgAs.lcd.backlightMode : dispCfgType == Pixel ? dispCfgAs.gfx.backlightMode : dispCfgType == ST7735 ? dispCfgAs.st7735.backlightMode : Hydro_BacklightMode_Normal; }
-    inline pintype_t getBacklightPin() const { return dispCfgType == LCD ? (pintype_t)(dispCfgAs.lcd.isDFRobotShield ? 10 : 3) : dispCfgType == Pixel ? dispCfgAs.gfx.ledPin : dispCfgType == ST7735 ? dispCfgAs.st7735.ledPin : (pintype_t)-1; }
+    inline pintype_t getBacklightPin() const { return dispCfgType == LCD ? (pintype_t)(dispCfgAs.lcd.isDFRobotShield ? 10 : 3) : dispCfgType == Pixel ? dispCfgAs.gfx.ledPin : dispCfgType == ST7735 ? dispCfgAs.st7735.ledPin : dispCfgType == TFT ? dispCfgAs.tft.ledPin : (pintype_t)-1; }
+    inline Hydro_BacklightMode getBacklightMode() const { return dispCfgType == LCD ? dispCfgAs.lcd.ledMode : dispCfgType == Pixel ? dispCfgAs.gfx.ledMode : dispCfgType == ST7735 ? dispCfgAs.st7735.ledMode : dispCfgType == TFT ? dispCfgAs.tft.ledMode : Hydro_BacklightMode_Normal; }
+    inline uint8_t getBacklightBitRes() const { return dispCfgType == Pixel ? dispCfgAs.gfx.ledBitRes : dispCfgType == ST7735 ? dispCfgAs.st7735.ledBitRes : dispCfgType == TFT ? dispCfgAs.tft.ledBitRes : DAC_RESOLUTION; }
+#ifdef ESP32
+    inline uint8_t getBacklightChannel() const { return dispCfgType == Pixel ? dispCfgAs.gfx.ledChannel : dispCfgType == ST7735 ? dispCfgAs.st7735.ledChannel : dispCfgType == TFT ? dispCfgAs.tft.ledChannel : 1; }
+#endif
+#ifdef ESP_PLATFORM
+    inline float getBacklightFrequency() const { return dispCfgType == Pixel ? dispCfgAs.gfx.ledFrequency : dispCfgType == ST7735 ? dispCfgAs.st7735.ledFrequency : dispCfgType == TFT ? dispCfgAs.tft.ledFrequency : 1000; }
+#endif
 };
 
 

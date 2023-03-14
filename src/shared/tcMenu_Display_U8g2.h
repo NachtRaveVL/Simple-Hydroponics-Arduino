@@ -1,6 +1,6 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
-    tcMenu U8g2 Display
+    tcMenu U8G2 Display
 */
 
 #include <Hydruino.h>
@@ -11,10 +11,14 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+/* Changelist:
+ * - Enclosed inside of #ifdef & reorg'ed for general inclusion
+ */
+
 /**
  * @file tcMenu_Display_U8g2.h
  * 
- * U8g2 renderer that renders menus onto this type of display. This file is a plugin file and should not
+ * U8G2 renderer that renders menus onto this type of display. This file is a plugin file and should not
  * be directly edited, it will be replaced each time the project is built. If you want to edit this file in place,
  * make sure to rename it first.
  * 
@@ -45,7 +49,7 @@ using namespace tcgfx;
  * A standard menu render configuration that describes how to renderer each item and the title.
  * Specialised for u8g2 fonts.
  */
-typedef struct ColorGfxMenuConfig<const uint8_t*> U8g2GfxMenuConfig;
+typedef struct ColorGfxMenuConfig<const uint8_t*> U8G2GfxMenuConfig;
 
 // some colour displays don't create this value
 #ifndef BLACK

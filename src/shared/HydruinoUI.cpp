@@ -22,7 +22,14 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
                 _backlight = new HydroDigitalPin(ledPin, OUTPUT, ACT_LOW);
                 break;
             case Hydro_BacklightMode_PWM:
-                _backlight = new HydroAnalogPin(ledPin, OUTPUT); // todo dflt ESP channel/freq
+                _backlight = new HydroAnalogPin(ledPin, OUTPUT, uiDisplaySetup.getBacklightBitRes(),
+#ifdef ESP32
+                                                uiDisplaySetup.getBacklightChannel(),
+#endif
+#ifdef ESP_PLATFORM
+                                                uiDisplaySetup.getBacklightFrequency(),
+#endif
+                                                (uint8_t)-1);
                 break;
             default: // Normal
                 _backlight = new HydroDigitalPin(ledPin, OUTPUT, ACT_HIGH);

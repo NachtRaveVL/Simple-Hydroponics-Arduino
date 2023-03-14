@@ -65,7 +65,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, SSD1607_GD, SSD1607_WS, IL3820, IL3820_V2, ST7735, ST7789, ILI9341, PCD8544, TFT)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, CustomOLED, SSD1607, IL3820, IL3820_V2, ST7735, ST7789, ILI9341, PCD8544, TFT)
 #define SETUP_CONTROL_IN_MODE           RemoteControl   // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix2x2UpDownButtonsOkL, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
 #define SETUP_SYS_TIMEZONE              +0              // System timezone offset, in hours (int or float)
@@ -108,14 +108,16 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
-#define SETUP_UI_LCD_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w LED pin
-#define SETUP_UI_GFX_ORIENTATION        R0              // Display orientation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
-#define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC/RS pin, if using SPI-based display
-#define SETUP_UI_GFX_LED_PIN            -1              // Optional display interface backlight/LED/BL pin, if using SPI-based display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
-#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using graphical display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_ROTATION           R0              // Display rotation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
+#define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC/RS pin, if using SPI display
+#define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using SPI display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_BACKLIGHT_PIN      -1              // Optional display interface backlight/LED/BL pin, if using SPI display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+#define SETUP_UI_GFX_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w backlight pin
 #define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
 #define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI
+#define SETUP_UI_GFX_BACKLIGHT_ESP_CHN  1               // Backlight PWM channel, if on ESP/using PWM backlight
+#define SETUP_UI_GFX_BACKLIGHT_ESP_FRQ  1000            // Backlight PWM frequency, if on ESP/using PWM backlight
 
 // UI Control Input Settings
 #define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
@@ -304,27 +306,48 @@ inline void setupUI()
                 case Hydro_DisplayOutputMode_LCD16x2_RS:
                 case Hydro_DisplayOutputMode_LCD20x4_EN:
                 case Hydro_DisplayOutputMode_LCD20x4_RS:
-                    uiDispSetup = UIDisplaySetup(LCDDisplaySetup(JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
+                    uiDispSetup = UIDisplaySetup(LCDDisplaySetup(JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE)));
                     break;
                 case Hydro_DisplayOutputMode_SSD1305:
                 case Hydro_DisplayOutputMode_SSD1305_x32Ada:
                 case Hydro_DisplayOutputMode_SSD1305_x64Ada:
                 case Hydro_DisplayOutputMode_SSD1306:
                 case Hydro_DisplayOutputMode_SH1106:
-                case Hydro_DisplayOutputMode_SSD1607_GD:
-                case Hydro_DisplayOutputMode_SSD1607_WS:
+                case Hydro_DisplayOutputMode_CustomOLED:
+                case Hydro_DisplayOutputMode_SSD1607:
                 case Hydro_DisplayOutputMode_IL3820:
                 case Hydro_DisplayOutputMode_IL3820_V2:
                 case Hydro_DisplayOutputMode_ST7789:
                 case Hydro_DisplayOutputMode_ILI9341:
                 case Hydro_DisplayOutputMode_PCD8544:
-                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
+                    uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ROTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN, SETUP_UI_GFX_BACKLIGHT_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE), DAC_RESOLUTION
+#ifdef ESP32
+                                                                   , SETUP_UI_GFX_BACKLIGHT_ESP_CHN
+#endif
+#ifdef ESP_PLATFORM
+                                                                   , SETUP_UI_GFX_BACKLIGHT_ESP_FRQ
+#endif
+                                                ));
                     break;
                 case Hydro_DisplayOutputMode_ST7735:
-                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ORIENTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_LED_PIN, SETUP_UI_GFX_RESET_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_LCD_BACKLIGHT_MODE)));
+                    uiDispSetup = UIDisplaySetup(ST7735DisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ROTATION), JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN, SETUP_UI_GFX_BACKLIGHT_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE), DAC_RESOLUTION
+#ifdef ESP32
+                                                                    , SETUP_UI_GFX_BACKLIGHT_ESP_CHN
+#endif
+#ifdef ESP_PLATFORM
+                                                                    , SETUP_UI_GFX_BACKLIGHT_ESP_FRQ
+#endif
+                                                ));
                     break;
                 case Hydro_DisplayOutputMode_TFT:
-                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ORIENTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT));
+                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ROTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT, SETUP_UI_GFX_BACKLIGHT_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE), DAC_RESOLUTION
+#ifdef ESP32
+                                                                   , SETUP_UI_GFX_BACKLIGHT_ESP_CHN
+#endif
+#ifdef ESP_PLATFORM
+                                                                   , SETUP_UI_GFX_BACKLIGHT_ESP_FRQ
+#endif
+                                                ));
                     break;
                 default: break;
             }

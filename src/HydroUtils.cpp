@@ -1259,18 +1259,10 @@ String displayOutputModeToString(Hydro_DisplayOutputMode displayOutMode, bool ex
             return SFP(HStr_Enum_SSD1306);
         case Hydro_DisplayOutputMode_SH1106:
             return SFP(HStr_Enum_SH1106);
-        case Hydro_DisplayOutputMode_SSD1607_GD: {
-            String retVal(SFP(HStr_Enum_SSD1607));
-            retVal.reserve(retVal.length() + 2);
-            retVal.concat('G'); retVal.concat('D');
-            return retVal;
-        }
-        case Hydro_DisplayOutputMode_SSD1607_WS: {
-            String retVal(SFP(HStr_Enum_SSD1607));
-            retVal.reserve(retVal.length() + 2);
-            retVal.concat('W'); retVal.concat('S');
-            return retVal;
-        }
+        case Hydro_DisplayOutputMode_CustomOLED:
+            return SFP(HStr_Enum_CustomOLED);
+        case Hydro_DisplayOutputMode_SSD1607:
+            return SFP(HStr_Enum_SSD1607);
         case Hydro_DisplayOutputMode_IL3820:
             return SFP(HStr_Enum_IL3820);
         case Hydro_DisplayOutputMode_IL3820_V2:
@@ -1990,10 +1982,30 @@ Hydro_MeasurementMode measurementModeFromString(String measurementModeStr)
 Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
 {
     switch (displayOutModeStr.length() >= 1 ? displayOutModeStr[0] : '\0') {
-        case 'U':
-            return (Hydro_DisplayOutputMode)-1;
+        case 'C':
+            switch (displayOutModeStr.length() >= 2 ? displayOutModeStr[1] : '\0') {
+                case 'o':
+                    return (Hydro_DisplayOutputMode)19;
+                case 'u':
+                    return (Hydro_DisplayOutputMode)10;
+            }
+            break;
         case 'D':
             return (Hydro_DisplayOutputMode)0;
+        case 'I':
+            switch (displayOutModeStr.length() >= 3 ? displayOutModeStr[2] : '\0') {
+                case '3':
+                    switch (displayOutModeStr.length() >= 7 ? displayOutModeStr[6] : '\0') {
+                        case '\0':
+                            return (Hydro_DisplayOutputMode)12;
+                        case 'V':
+                            return (Hydro_DisplayOutputMode)13;
+                    }
+                    break;
+                case 'I':
+                    return (Hydro_DisplayOutputMode)16;
+            }
+            break;
         case 'L':
             switch (displayOutModeStr.length() >= 4 ? displayOutModeStr[3] : '\0') {
                 case '1':
@@ -2014,8 +2026,12 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
                     break;
             }
             break;
+        case 'P':
+            return (Hydro_DisplayOutputMode)17;
         case 'S':
             switch (displayOutModeStr.length() >= 2 ? displayOutModeStr[1] : '\0') {
+                case 'H':
+                    return (Hydro_DisplayOutputMode)9;
                 case 'S':
                     switch (displayOutModeStr.length() >= 5 ? displayOutModeStr[4] : '\0') {
                         case '3':
@@ -2039,17 +2055,9 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
                             }
                             break;
                         case '6':
-                            switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
-                                case 'G':
-                                    return (Hydro_DisplayOutputMode)10;
-                                case 'W':
-                                    return (Hydro_DisplayOutputMode)11;
-                            }
-                            break;
+                            return (Hydro_DisplayOutputMode)11;
                     }
                     break;
-                case 'H':
-                    return (Hydro_DisplayOutputMode)9;
                 case 'T':
                     switch (displayOutModeStr.length() >= 5 ? displayOutModeStr[4] : '\0') {
                         case '3':
@@ -2060,26 +2068,10 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
                     break;
             }
             break;
-        case 'I':
-            switch (displayOutModeStr.length() >= 3 ? displayOutModeStr[2] : '\0') {
-                case '3':
-                    switch (displayOutModeStr.length() >= 7 ? displayOutModeStr[6] : '\0') {
-                        case '\0':
-                            return (Hydro_DisplayOutputMode)12;
-                        case 'V':
-                            return (Hydro_DisplayOutputMode)13;
-                    }
-                    break;
-                case 'I':
-                    return (Hydro_DisplayOutputMode)16;
-            }
-            break;
-        case 'P':
-            return (Hydro_DisplayOutputMode)17;
         case 'T':
             return (Hydro_DisplayOutputMode)18;
-        case 'C':
-            return (Hydro_DisplayOutputMode)19;
+        case 'U':
+            return (Hydro_DisplayOutputMode)-1;
     }
     return Hydro_DisplayOutputMode_Undefined;
 }

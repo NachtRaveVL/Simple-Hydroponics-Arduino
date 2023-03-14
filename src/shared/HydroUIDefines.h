@@ -14,20 +14,24 @@
 #define HYDRO_UI_UPDATE_SPEED           2
 #endif
 
-// The following sizes only matter for architectures that do not have STL support (AVR/SAM)
+// The following sizes apply to all architectures
+#define HYDRO_UI_RENDERER_BUFFERSIZE    32                  // Default buffer size for display renderer
+// The following sizes only apply to architectures that do not have STL support (AVR/SAM)
 #define HYDRO_UI_REMOTECONTROLS_MAXSIZE 2                   // Maximum array size for remote controls list (max # of remote controls)
 
-#define HYDRO_UI_RENDERER_BUFFERSIZE    30                  // Default buffer size for display renderer
 #define HYDRO_UI_I2C_LCD_BASEADDR       0x20                // Base address of I2C LiquidCrystalIO LCDs (bitwise or'ed with passed address)
-#define HYDRO_UI_I2C_OLED_BASEADDR      0x78                // Base address of I2C U8G2 OLEDs (bitwise or'ed with passed address) (some devices may use 0x7e)
+#define HYDRO_UI_I2C_OLED_BASEADDR      0x78                // Base address of I2C U8g2 OLEDs (bitwise or'ed with passed address, some devices may use 0x7e)
+#define HYDRO_UI_CUSTOM_OLED_I2C        U8G2_SSD1309_128X64_NONAME0_F_HW_I2C    // Custom OLED for i2c setup (must be _HW_I2C variant /w 2 params: rotation, resetPin)
+#define HYDRO_UI_CUSTOM_OLED_SPI        U8G2_SSD1309_128X64_NONAME0_F_4W_HW_SPI // Custom OLED for SPI setup (must be _4W_HW_SPI variant /w 4 params: rotation, csPin, dcPin, resetPin)
+#define HYDRO_UI_GFXTFT_USES_SLIDER     true                // Default analog slider usage for AdafruitGFX/TFTe_SPI displays
+#define HYDRO_UI_BACKLIGHT_TIMEOUT      5 * SECS_PER_MIN    // Backlight timeout, in secs
+
 #define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
-#define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // Default 3x4 matrix keyboard keys
-#define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // Default 4x4 matrix keyboard keys
-#define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Default enter char, delete/exit char, back char, and next on keyboard (also default 2x2 matrix keyboard keys)
-#define HYDRO_UI_GFXTFT_USES_SLIDER     true                // Default analog slider usage for AdafruitGFX/TFTe_SPI displays
-#define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Default raw touch usage for TFTTouch
-#define HYDRO_UI_BACKLIGHT_TIMEOUT      5 * SECS_PER_MIN    // Backlight timeout, in secs
+#define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // 3x4 matrix keyboard keys
+#define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // 4x4 matrix keyboard keys
+#define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Enter char, delete/exit char, back char, and next on keyboard (also 2x2 matrix keyboard keys)
+#define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Raw touch usage for TFTTouch
 
 // Default graphical display theme base (CoolBlue, DarkMode)
 #define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            

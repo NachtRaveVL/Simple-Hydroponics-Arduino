@@ -56,11 +56,11 @@ void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme di
 }
 
 
-HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode backlightMode)
+HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
     : _screenSize{displayMode < Hydro_DisplayOutputMode_LCD20x4_EN ? 16 : 20, displayMode < Hydro_DisplayOutputMode_LCD20x4_EN ? 2 : 4},
       _lcd(displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 2 : 0, 1,
            displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 0 : 2, 4, 5, 6, 7,
-           backlightMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
+           ledMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : ledMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
            ioFrom8574(HYDRO_UI_I2C_LCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
       _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
 {
@@ -68,10 +68,10 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode
     _renderer.setTitleRequired(_screenSize[1] >= 4);
 }
 
-HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode backlightMode)
+HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
     : _screenSize{16, 2},
       _lcd(8, 9, 4, 5, 6, 7,
-           backlightMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : backlightMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
+           ledMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : ledMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
            ioFrom8574(HYDRO_UI_I2C_LCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
       _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
 {
@@ -90,9 +90,9 @@ void HydroDisplayLiquidCrystalIO::begin()
 }
 
 
-HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight, U8G2 *gfx)
+HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, U8G2 *gfx)
     : HydroDisplayDriver(displayRotation),
-      _screenSize{screenWidth, screenHeight}, _gfx(gfx), _gfxDrawable(nullptr), _renderer(nullptr)
+      _screenSize{gfx->getDisplayWidth(), gfx->getDisplayHeight()}, _gfx(gfx), _gfxDrawable(nullptr), _renderer(nullptr)
 {
     HYDRO_SOFT_ASSERT(_gfx, SFP(HStr_Err_AllocationFailure));
     if (_gfx) {
@@ -183,7 +183,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::initBaseUIFromDefaults()
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 {
-    _gfx.init(320, 240);
+    _gfx.init(TFT_GFX_WIDTH, TFT_GFX_HEIGHT);
     _gfx.setRotation((uint8_t)_rotation);
 }
 

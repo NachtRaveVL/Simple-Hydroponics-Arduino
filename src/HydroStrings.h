@@ -284,6 +284,7 @@ enum Hydro_String : unsigned short {
     HStr_Enum_CustomCrop6,
     HStr_Enum_CustomCrop7,
     HStr_Enum_CustomCrop8,
+    HStr_Enum_CustomOLED,
     HStr_Enum_DC12V,
     HStr_Enum_DC24V,
     HStr_Enum_DC3V3,

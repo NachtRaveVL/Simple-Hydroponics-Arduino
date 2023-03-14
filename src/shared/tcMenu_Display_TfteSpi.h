@@ -18,6 +18,7 @@
 
 /* Changelist:
  * - Refactored TFTTouch code to avoid define switches/build errors.
+ * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
 
 /**

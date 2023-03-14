@@ -14,6 +14,7 @@
 /* Changelist:
  * - Changed from application.name to constructed appTitle parameter
  * - Put length limits into renderTitle & now using internal appTitle
+ * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
 
 /**
