@@ -4,7 +4,6 @@
 */
 
 #include "Hydruino.h"
-#include "shared/HydroUIDefines.h"
 
 #ifndef HYDRO_DISABLE_BUILTIN_DATA
 String stringFromPGMAddr(const char *flashStr);

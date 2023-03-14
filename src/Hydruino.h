@@ -198,6 +198,7 @@ typedef Adafruit_GPS GPSClass;
 #endif
 
 #include "HydroDefines.h"
+#include "shared/HydroUIDefines.h"
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 #include "ArxSmartPtr/shared_ptr.h"     // Forced shared pointer library

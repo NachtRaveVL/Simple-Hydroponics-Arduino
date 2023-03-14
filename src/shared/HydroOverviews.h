@@ -62,7 +62,7 @@ public:
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
 
 protected:
-    Adafruit_GFX &_gfx;                                     // Graphics (strong)
+    T &_gfx;                                                // Graphics (strong)
     AdafruitDrawable<T> &_drawable;                         // Drawable (strong)
 };
 
