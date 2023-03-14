@@ -11,9 +11,9 @@ static inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayRotation displayRot
 {
     switch (displayRotation) {
         case Hydro_DisplayRotation_R0: return U8G2_R0;
-        case Hydro_DisplayRotation_R1: return U8G2_R1;
+        case Hydro_DisplayRotation_R1: return U8G2_R3;
         case Hydro_DisplayRotation_R2: return U8G2_R2;
-        case Hydro_DisplayRotation_R3: return U8G2_R3;
+        case Hydro_DisplayRotation_R3: return U8G2_R1;
         case Hydro_DisplayRotation_HorzMirror: return U8G2_MIRROR;
         case Hydro_DisplayRotation_VertMirror: return U8G2_MIRROR_VERTICAL;
         default: return U8G2_R0;
