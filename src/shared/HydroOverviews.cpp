@@ -15,7 +15,7 @@ HydroOverview::~HydroOverview()
 { ; }
 
 
-HydroOverviewLCD::HydroOverviewLCD(HydroDisplayLiquidCrystalIO *display)
+HydroOverviewLCD::HydroOverviewLCD(HydroDisplayLiquidCrystal *display)
     : HydroOverview(display), _lcd(display->getLCD())
 { ; }
 
@@ -28,7 +28,7 @@ void HydroOverviewLCD::renderOverview(bool isLandscape, Pair<uint16_t, uint16_t>
 }
 
 
-HydroOverviewOLED::HydroOverviewOLED(HydroDisplayU8g2lib *display)
+HydroOverviewOLED::HydroOverviewOLED(HydroDisplayU8g2OLED *display)
     : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable())
 { ; }
 

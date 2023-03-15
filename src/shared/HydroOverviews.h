@@ -12,12 +12,14 @@ class HydroOverview;
 class HydroOverviewLCD;
 class HydroOverviewOLED;
 template<class T> class HydroOverviewAdaGfx;
+template<class T> class HydroOverviewAdaTFT;
 class HydroOverviewTFT;
 
 #include "HydruinoUI.h"
 
 // Overview Base
-// Overview class that manages the default at-a-glance 
+// Overview class that manages the default at-a-glance system overview.
+// Meant to be able to be deleted on a moments notice to transition back into menu.
 class HydroOverview {
 public:
     HydroOverview(HydroDisplayDriver *display);
@@ -34,7 +36,7 @@ protected:
 
 class HydroOverviewLCD : public HydroOverview {
 public:
-    HydroOverviewLCD(HydroDisplayLiquidCrystalIO *display);
+    HydroOverviewLCD(HydroDisplayLiquidCrystal *display);
     virtual ~HydroOverviewLCD();
 
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
@@ -45,7 +47,7 @@ protected:
 
 class HydroOverviewOLED : public HydroOverview {
 public:
-    HydroOverviewOLED(HydroDisplayU8g2lib *display);
+    HydroOverviewOLED(HydroDisplayU8g2OLED *display);
     virtual ~HydroOverviewOLED();
 
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
@@ -66,6 +68,28 @@ public:
 protected:
     T &_gfx;                                                // Graphics (strong)
     AdafruitDrawable<T> &_drawable;                         // Drawable (strong)
+
+    DateTime _lastTime;                                     // Last time (local)
+
+    void drawBackground(Coord pt, Coord sz, Pair<uint16_t, uint16_t> &screenSize);
+};
+
+template<class T>
+class HydroOverviewAdaTFT : public HydroOverview {
+public:
+    HydroOverviewAdaTFT(HydroDisplayAdafruitGFX<T> *display);
+    virtual ~HydroOverviewAdaTFT();
+
+    virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
+
+protected:
+    T &_gfx;                                                // Graphics (strong)
+    AdafruitDrawable<T> &_drawable;                         // Drawable (strong)
+
+    DateTime _lastTime;                                     // Last time (local)
+
+    void drawBackground(Coord pt, Coord sz, Pair<uint16_t, uint16_t> &screenSize);
+};
 };
 
 class HydroOverviewTFT : public HydroOverview {

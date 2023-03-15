@@ -121,15 +121,15 @@ void HydruinoBaseUI::setBacklightEnable(bool enabled)
     } else if (_uiDispSetup.dispCfgType == UIDisplaySetup::LCD && _display) {
         if (enabled) {
             if (_uiDispSetup.getBacklightMode() != Hydro_BacklightMode_PWM) {
-                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().backlight();
+                ((HydroDisplayLiquidCrystal *)_display)->getLCD().backlight();
             } else {
-                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().setBacklight(255);
+                ((HydroDisplayLiquidCrystal *)_display)->getLCD().setBacklight(255);
             }
         } else {
             if (_uiDispSetup.getBacklightMode() != Hydro_BacklightMode_PWM) {
-                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().noBacklight();
+                ((HydroDisplayLiquidCrystal *)_display)->getLCD().noBacklight();
             } else {
-                ((HydroDisplayLiquidCrystalIO *)_display)->getLCD().setBacklight(0); // todo: nice backlight-out anim
+                ((HydroDisplayLiquidCrystal *)_display)->getLCD().setBacklight(0); // todo: nice backlight-out anim
             }
             _blTimeout = 0;
         }

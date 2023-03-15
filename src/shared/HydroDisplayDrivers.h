@@ -9,13 +9,15 @@
 #define HydroDisplayDrivers_H
 
 class HydroDisplayDriver;
-class HydroDisplayLiquidCrystalIO;
-class HydroDisplayU8g2lib;
+class HydroDisplayLiquidCrystal;
+class HydroDisplayU8g2OLED;
 template <class T> class HydroDisplayAdafruitGFX;
 class HydroDisplayTFTeSPI;
 
 #include "HydruinoUI.h"
 
+// Driver Display Base
+// Base display driver class that manages display output mode selection.
 class HydroDisplayDriver {
 public:
     HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined);
@@ -43,12 +45,13 @@ protected:
     Hydro_DisplayTheme _displayTheme;
 };
 
-class HydroDisplayLiquidCrystalIO : public HydroDisplayDriver {
+
+class HydroDisplayLiquidCrystal : public HydroDisplayDriver {
 public:
-    HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode = Hydro_BacklightMode_Normal);
+    HydroDisplayLiquidCrystal(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode = Hydro_BacklightMode_Normal);
     // Special constructor for DFRobotShield /w 16x2 LCD (isDFRobotShield_unused tossed, only used for constructor resolution)
-    HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode = Hydro_BacklightMode_Normal);
-    virtual ~HydroDisplayLiquidCrystalIO() = default;
+    HydroDisplayLiquidCrystal(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode = Hydro_BacklightMode_Normal);
+    virtual ~HydroDisplayLiquidCrystal() = default;
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
@@ -70,10 +73,11 @@ protected:
     LiquidCrystalRenderer _renderer;
 };
 
-class HydroDisplayU8g2lib : public HydroDisplayDriver {
+
+class HydroDisplayU8g2OLED : public HydroDisplayDriver {
 public:
-    HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, U8G2 *gfx);
-    virtual ~HydroDisplayU8g2lib();
+    HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, U8G2 *gfx);
+    virtual ~HydroDisplayU8g2OLED();
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
@@ -98,35 +102,36 @@ protected:
     GraphicsDeviceRenderer *_renderer;
 
 public:
-    static inline HydroDisplayU8g2lib *allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305Wire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305Wire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaSPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaWire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x32AdaWire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaSPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaWire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1305x64AdaWire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1306SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1306SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1306Wire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1306Wire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSH1106SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSH1106SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSH1106Wire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSH1106Wire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateCustomOLEDI2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateCustomOLEDSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1607SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateSSD1607SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateIL3820SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
-    static inline HydroDisplayU8g2lib *allocateIL3820V2SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305Wire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305Wire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x32AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x32AdaSPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x32AdaWire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x32AdaWire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x64AdaSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x64AdaSPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x64AdaWire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1305x64AdaWire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1306SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1306SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1306Wire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1306Wire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSH1106SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSH1106SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSH1106Wire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSH1106Wire1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateCustomOLEDI2C(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateCustomOLEDSPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1607SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateSSD1607SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateIL3820SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateIL3820SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateIL3820V2SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    static inline HydroDisplayU8g2OLED *allocateIL3820V2SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
 };
+
 
 template <class T>
 class HydroDisplayAdafruitGFX : public HydroDisplayDriver {
@@ -153,6 +158,7 @@ protected:
     AdafruitDrawable<T> _drawable;
     GraphicsDeviceRenderer _renderer;
 };
+
 
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7735> : public HydroDisplayDriver {
@@ -181,6 +187,7 @@ protected:
     GraphicsDeviceRenderer _renderer;
 };
 
+
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7789> : public HydroDisplayDriver {
 public:
@@ -207,11 +214,41 @@ protected:
     GraphicsDeviceRenderer _renderer;
 };
 
+
+template <>
+class HydroDisplayAdafruitGFX<Adafruit_ILI9341> : public HydroDisplayDriver {
+public:
+    HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
+    virtual ~HydroDisplayAdafruitGFX() = default;
+
+    virtual void initBaseUIFromDefaults() override;
+    virtual void begin() override;
+
+    virtual HydroOverview *createOverview() override;
+
+    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
+    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+
+    virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
+    virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
+
+    inline Adafruit_ILI9341 &getGfx() { return _gfx; }
+    inline AdafruitDrawable<Adafruit_ILI9341> &getDrawable() { return _drawable; }
+
+protected:
+    Adafruit_ILI9341 _gfx;
+    AdafruitDrawable<Adafruit_ILI9341> _drawable;
+    GraphicsDeviceRenderer _renderer;
+};
+
+
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_PCD8544> : public HydroDisplayDriver {
 public:
     HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
     virtual ~HydroDisplayAdafruitGFX() = default;
+
+    inline void init(uint8_t contrast = 40, uint8_t bias = 4) { _contrast = contrast; _bias = bias; }
 
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
@@ -228,14 +265,16 @@ public:
     inline AdafruitDrawable<Adafruit_PCD8544> &getDrawable() { return _drawable; }
 
 protected:
+    uint8_t _contrast, _bias;
     Adafruit_PCD8544 _gfx;
     AdafruitDrawable<Adafruit_PCD8544> _drawable;
     GraphicsDeviceRenderer _renderer;
 };
 
+
 class HydroDisplayTFTeSPI : public HydroDisplayDriver {
 public:
-    HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight);
+    HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight, Hydro_ST7735Tab tabColor = Hydro_ST7735Tab_Undefined);
     virtual ~HydroDisplayTFTeSPI() = default;
 
     virtual void initBaseUIFromDefaults() override;
@@ -256,6 +295,7 @@ public:
 
 protected:
     const uint16_t _screenSize[2];
+    const Hydro_ST7735Tab _tabColor;
     TFT_eSPI _gfx;
     TfteSpiDrawable _drawable;
     GraphicsDeviceRenderer _renderer;

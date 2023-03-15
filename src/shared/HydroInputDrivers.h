@@ -26,6 +26,8 @@ class HydroInputTFTTouch;
 #include "graphics\MenuTouchScreenEncoder.h"
 #include "JoystickSwitchInput.h"
 
+// Input Driver Base
+// Base input driver class that manages control input mode selection.
 class HydroInputDriver {
 public:
     HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins);
@@ -39,6 +41,7 @@ public:
 protected:
     const Pair<uint8_t, const pintype_t *> _pins;
 };
+
 
 class HydroInputRotary : public HydroInputDriver {
 public:
@@ -54,6 +57,7 @@ public:
 protected:
     const Hydro_EncoderSpeed _encoderSpeed;
 };
+
 
 class HydroInputUpDownButtons : public HydroInputDriver {
 public:
@@ -72,6 +76,7 @@ protected:
     const uint16_t _keySpeed;
     IoAbstractionRef _dfRobotIORef;
 };
+
 
 class HydroInputESP32TouchKeys : public HydroInputDriver {
 public:
@@ -95,6 +100,7 @@ protected:
     #endif
 };
 
+
 class HydroInputJoystick : public HydroInputDriver {
 public:
     HydroInputJoystick(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, float decreaseDivisor, float jsCenterX = 0.5f, float jsCenterY = 0.5f, float jsZeroTol = 0.05f);
@@ -116,6 +122,7 @@ protected:
     AnalogJoystickToButtons _joystickIoXAxis;
 };
 
+
 class HydroInputMatrix2x2 : public HydroInputDriver {
 public:
     HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval);
@@ -132,6 +139,7 @@ protected:
     KeyboardLayout _keyboardLayout;
     MenuEditingKeyListener _tcMenuKeyListener;
 };
+
 
 class HydroInputMatrix3x4 : public HydroInputDriver {
 public:
@@ -152,6 +160,7 @@ protected:
     HydroInputRotary *_rotaryEncoder;
 };
 
+
 class HydroInputMatrix4x4 : public HydroInputDriver {
 public:
     HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed = Hydro_EncoderSpeed_HalfCycle);
@@ -171,6 +180,7 @@ protected:
     HydroInputRotary *_rotaryEncoder;
 };
 
+
 class HydroInputResistiveTouch : public HydroInputDriver {
 public:
     HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver);
@@ -187,6 +197,7 @@ protected:
     iotouch::TouchOrientationSettings _touchOrientation;
     MenuTouchScreenManager _touchScreen;
 };
+
 
 class HydroInputTouchscreen : public HydroInputDriver {
 public:
@@ -211,6 +222,7 @@ protected:
     iotouch::AdaLibTouchInterrogator _touchInterrogator;
     iotouch::TouchOrientationSettings _touchOrientation;
 };
+
 
 class HydroInputTFTTouch : public HydroInputDriver {
 public:

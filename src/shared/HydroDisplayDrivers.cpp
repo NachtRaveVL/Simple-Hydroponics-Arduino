@@ -56,7 +56,7 @@ void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme di
 }
 
 
-HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
+HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
     : _screenSize{displayMode < Hydro_DisplayOutputMode_LCD20x4_EN ? 16 : 20, displayMode < Hydro_DisplayOutputMode_LCD20x4_EN ? 2 : 4},
       _lcd(displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 2 : 0, 1,
            displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 0 : 2, 4, 5, 6, 7,
@@ -68,7 +68,7 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(Hydro_DisplayOutputMode
     _renderer.setTitleRequired(_screenSize[1] >= 4);
 }
 
-HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
+HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
     : _screenSize{16, 2},
       _lcd(8, 9, 4, 5, 6, 7,
            ledMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : ledMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
@@ -79,23 +79,23 @@ HydroDisplayLiquidCrystalIO::HydroDisplayLiquidCrystalIO(bool isDFRobotShield_un
     _renderer.setTitleRequired(false);
 }
 
-void HydroDisplayLiquidCrystalIO::initBaseUIFromDefaults()
+void HydroDisplayLiquidCrystal::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED);
 }
 
-void HydroDisplayLiquidCrystalIO::begin()
+void HydroDisplayLiquidCrystal::begin()
 {
     _lcd.begin(_screenSize[0], _screenSize[1]);
 }
 
-HydroOverview *HydroDisplayLiquidCrystalIO::createOverview()
+HydroOverview *HydroDisplayLiquidCrystal::createOverview()
 {
     return new HydroOverviewLCD(this);
 }
 
 
-HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, U8G2 *gfx)
+HydroDisplayU8g2OLED::HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, U8G2 *gfx)
     : HydroDisplayDriver(displayRotation),
       _screenSize{gfx->getDisplayWidth(), gfx->getDisplayHeight()}, _gfx(gfx), _drawable(nullptr), _renderer(nullptr)
 {
@@ -118,24 +118,24 @@ HydroDisplayU8g2lib::HydroDisplayU8g2lib(DeviceSetup displaySetup, Hydro_Display
     }
 }
 
-HydroDisplayU8g2lib::~HydroDisplayU8g2lib()
+HydroDisplayU8g2OLED::~HydroDisplayU8g2OLED()
 {
     if (_renderer) { delete _renderer; }
     if (_drawable) { delete _drawable; }
     if (_gfx) { delete _gfx; }
 }
 
-void HydroDisplayU8g2lib::initBaseUIFromDefaults()
+void HydroDisplayU8g2OLED::initBaseUIFromDefaults()
 {
     getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), Hydro_DisplayTheme_MonoOLED));
 }
 
-void HydroDisplayU8g2lib::begin()
+void HydroDisplayU8g2OLED::begin()
 {
     if (_gfx) { _gfx->begin(); }
 }
 
-HydroOverview *HydroDisplayU8g2lib::createOverview()
+HydroOverview *HydroDisplayU8g2OLED::createOverview()
 {
     return new HydroOverviewOLED(this);
 }
@@ -171,7 +171,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::createOverview()
 {
-    return new HydroOverviewAdaGfx<Adafruit_ST7735>(this);
+    return new HydroOverviewAdaTFT<Adafruit_ST7735>(this);
 }
 
 
@@ -204,12 +204,46 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::createOverview()
 {
-    return new HydroOverviewAdaGfx<Adafruit_ST7789>(this);
+    return new HydroOverviewAdaTFT<Adafruit_ST7789>(this);
+}
+
+
+HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
+    : HydroDisplayDriver(displayRotation),
+      #ifndef ESP8266
+          _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
+      #else
+          _gfx(displaySetup.cs, dcPin, resetPin),
+      #endif
+      _drawable(&_gfx, 0),
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
+{
+    #ifdef ESP8266
+        HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
+    #endif
+    _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
+}
+
+void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::initBaseUIFromDefaults()
+{
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_SLIDER);
+}
+
+void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
+{
+    _gfx.initSPI(getController() ? getController()->getDisplaySetup().cfgAs.spi.speed : 0);
+    _gfx.setRotation((uint8_t)_rotation);
+}
+
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::createOverview()
+{
+    return new HydroOverviewAdaTFT<Adafruit_ILI9341>(this);
 }
 
 
 HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation),
+      _contrast(40), _bias(4),
       _gfx(dcPin, displaySetup.cs, resetPin, displaySetup.spi),
       _drawable(&_gfx),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
@@ -224,7 +258,7 @@ void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::initBaseUIFromDefaults()
 
 void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::begin()
 {
-    _gfx.begin();
+    _gfx.begin(_contrast, _bias);
     _gfx.setRotation((uint8_t)_rotation);
 }
 
@@ -234,8 +268,9 @@ HydroOverview *HydroDisplayAdafruitGFX<Adafruit_PCD8544>::createOverview()
 }
 
 
-HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight)
-    : HydroDisplayDriver(displayRotation), _screenSize{screenWidth, screenHeight},
+HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight, Hydro_ST7735Tab tabColor)
+    : HydroDisplayDriver(displayRotation),
+      _screenSize{screenWidth, screenHeight}, _tabColor(tabColor),
       _gfx(screenWidth, screenHeight),
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
@@ -250,7 +285,11 @@ void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 
 void HydroDisplayTFTeSPI::begin()
 {
-    _gfx.begin();
+    if (_tabColor == Hydro_ST7735Tab_Undefined) {
+        _gfx.begin();
+    } else {
+        _gfx.begin((uint8_t)_tabColor);
+    }
     _gfx.setRotation((uint8_t)_rotation);
 }
 
