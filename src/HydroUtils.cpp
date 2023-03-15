@@ -132,6 +132,8 @@ bool _setUnixTime(DateTime unixTime)
         rtc->adjust(unixTime);
         getController()->notifyRTCTimeUpdated();
         return true;
+    } else {
+        setTime(unixTime.unixtime());
     }
     return false;
 }

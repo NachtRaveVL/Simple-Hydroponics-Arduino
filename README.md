@@ -12,24 +12,24 @@ Created by NachtRaveVL, May 20th, 2022.
 
 This controller allows one to set up a system of reservoirs, pumps, probes, relays, and other objects useful in automating the daily lighting, feed dosing, watering, and data monitoring & collection processes involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. Works with a large variety of widely-available aquarium/hobbyist equipment, including popular GPS, RTC, EEPROM, SD card, WiFi, and other modules compatible with Arduino. Contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases for the system configured, along with fully customizable weekly feed/additive amounts and daily feeding/lighting scheduling. With the right setup Hydruino can automatically do things like: enable grow lights for the needed period each day (potentially only turning on to augment daily sunlight hours), drive water pumps and auto-dosers during feedings, spray leafy plants in the morning before lights/sunrise, heat cold water to a specific temp for tropical plants, use CO2 sensors to manage air circulation fans to maintain optimal grow tent parameters, remind when to prune plants, or even use soil moisture sensing to dynamically determine watering schedule.
 
-* Can be used entirely off-line with RTC module and optional GPS module (or known static location) for accurate sun angle measurements and sunrise/sunset timings, or used on-line through enabled on-board WiFi/Ethernet or external ESP-AT WiFi module.
-  * Uses SolarCalculator Arduino library, based upon NOAA Solar Calculator, for fine calculations of the sun's solar position (accurate until 2100).
+* Can be used entirely off-line with RTC module and optional GPS module (or known static location) for accurate sunset/sunrise & feed timings, or used on-line through enabled on-board WiFi/Ethernet or external ESP-AT WiFi module.
+  * Uses SolarCalculator Arduino library, based upon NOAA Solar Calculator, for fine offline calculations of sunrise/sunset times (accurate until 2100).
 * Configured system setup can be saved/loaded to/from EEPROM, SD card, or WiFiStorage-like external storage device.
-  * Can export/import in JSON for human-readability (allowing easy text editing), or in Binary for ultra-compactness/speed.
-  * Auto-save, backup-auto-save (for auto-recovery), and low-disk cleanup (TODO) functionality.
-  * Import functions are optimized with minimum spanning trie for ultra-fast text parsing.
-* Supports interval-based sensor data publishing & system event data logging to MQTT IoT broker or to external storage in .csv/.txt format.
-  * Can be extended to work with other JSON based Web APIs or Client-like derivatives (for DB storage or server-endpoint support).
-  * Can add a piezo buzzer for audible system alerts (TODO).
+  * System setup can be saved in pretty-print JSON for human-readability (allowing easy text editing), or in raw Binary for ultra-compactness/speed.
+  * Auto-save, backup-auto-save (for auto-recovery functionality), and low-disk cleanup/alerting (TODO) functionality.
+  * Import string decode functions are pre-optimized with minimum spanning trie for ultra-fast text parsing & system load-up time.
+* Supports interval-based sensor data publishing & system event data logging to MQTT IoT broker or to external storage in .csv/.txt format (/w date in filename, segmented daily).
+  * Can be extended to work with other JSON-based Web APIs or Client-like derivatives (for DB storage or server-endpoint support).
+  * Can add a piezo buzzer for audible system warning/failure alerting (TODO), or a display for current readings & recent logging messages.
+* Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by tcMenu).
+  * Contains at-a-glance system overview screen and GUI menu system for system configuration, sensor calibration, and more (TODO).
+  * Critical system configuration menus can be pin-coded to prevent setup tampering, thus still allowing informational-screen/read-only access.
+  * GUI I/O can be setup as interrupt driven (5-25ms), polling based (50-100ms), or partially interrupt driven (depending on pins used).
+  * Includes remote GUI access through enabled Ethernet, WiFi, Serial, and/or Simhub connection.
+  * System examples can be built in Minimal mode, saving on sketch size at the cost of having to re-compile and re-upload upon certain system setup changes, or Full mode, which uses large amounts of Flash space available on modern controllers to provide everything all at once, with only more major of system changes requiring a full rebuild.
+* Actuator, Sensor, and I/O pins can be natively multiplexed or expanded through 8/16-bit i2c expanders (TODO) for pin-limited controllers.
 * Library data can be built into onboard Flash or exported onto external storage to save on compiled build size.
   * Data export may allow enough space savings for certain 256kB Flash device builds.
-* Actuator and Sensor I/O pins can be natively multiplexed or expanded through 8/16-bit i2c expanders (TODO) for pin-limited environments.
-* Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by tcMenu).
-  * Contains at-a-glance system overview screen and UI menu system for system configuration, calibration, and more (TODO).
-  * System configuration menus can be pin-coded to prevent tampering, thus still allowing informational/read-only menu access.
-  * GUI I/O can be setup as fully interrupt driven (5-20ms) or polling based (50-100ms).
-  * Can be built in Minimal mode, saving space at the cost of having to re-compile and re-upload upon system setup changes (i.e. a R/O UI), or Full mode, which uses large amounts of Flash space to provide everything at once (i.e. a R/W UI), with only pinout changes requiring rebuild.
-  * Includes remote UI access through enabled Ethernet, WiFi, Serial, and/or Simhub connection.
 
 Made primarily for Arduino microcontrollers / build environments, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
