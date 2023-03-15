@@ -16,6 +16,8 @@ class HydroOverviewTFT;
 
 #include "HydruinoUI.h"
 
+// Overview Base
+// Overview class that manages the default at-a-glance 
 class HydroOverview {
 public:
     HydroOverview(HydroDisplayDriver *display);
