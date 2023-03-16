@@ -17,7 +17,7 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
 * Configured system setup can be saved/loaded to/from EEPROM, SD card, or WiFiStorage-like external storage device.
   * System setup can be saved in pretty-print JSON for human-readability (allowing easy text editing), or in raw Binary for ultra-compactness/speed.
   * Auto-save, backup-auto-save (for auto-recovery functionality), and low storage-space cleanup (TODO) functionality.
-  * Import string decode functions are pre-optimized with minimum spanning trie for ultra-fast text parsing & system load-up time.
+  * Import string decode functions are pre-optimized with minimum spanning trie for ultra-fast text parsing & reduced loading times.
 * Supports interval-based sensor data publishing and system event logging to MQTT IoT broker (for further IoT-integrated processing) or to external storage in .csv/.txt format (/w date in filename, segmented daily).
   * Can be extended to work with other JSON-based Web APIs or Client-like derivatives (for DB storage or server-endpoint support).
   * Can add a piezo buzzer for audible system warning/failure alerting (TODO), or a display for current readings & recent logging messages.
