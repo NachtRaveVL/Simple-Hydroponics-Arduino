@@ -12,7 +12,6 @@ class HydroOverview;
 class HydroOverviewLCD;
 class HydroOverviewOLED;
 template<class T> class HydroOverviewAdaGfx;
-template<class T> class HydroOverviewAdaGfx;
 class HydroOverviewTFT;
 
 #include "HydruinoUI.h"

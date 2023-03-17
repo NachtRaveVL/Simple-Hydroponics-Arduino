@@ -53,5 +53,4 @@ void HydroOverviewTFT::renderOverview(bool isLandscape, Pair<uint16_t, uint16_t>
     // todo
 }
 
-
 #endif

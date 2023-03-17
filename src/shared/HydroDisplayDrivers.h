@@ -53,7 +53,7 @@ protected:
 
 // Liquid Crystal Display Driver
 // Display driver for text-only monochrome LCD, typically ones that talk through a PCF8574 i2c driver or similar.
-// Note: 8080/6080 raw connections are not supported at this time.
+// Note: Parallel 6800/8080 raw data connections are not supported at this time.
 class HydroDisplayLiquidCrystal : public HydroDisplayDriver {
 public:
     HydroDisplayLiquidCrystal(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode = Hydro_BacklightMode_Normal);
