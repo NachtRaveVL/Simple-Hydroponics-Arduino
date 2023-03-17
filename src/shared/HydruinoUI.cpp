@@ -8,7 +8,7 @@
 
 HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiDisplaySetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
     : _appInfo{0}, _uiCtrlSetup(uiControlSetup), _uiDispSetup(uiDisplaySetup),
-      _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _utf8Fonts(enableTcUnicodeFonts),
+      _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _isUnicodeFonts(enableTcUnicodeFonts),
       _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr), _blTimeout(0), _overview(nullptr)
 {
     if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
@@ -57,20 +57,19 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
 {
     SwitchInterruptMode isrMode(SWITCHES_POLL_EVERYTHING);
     if (_allowISR) {
-        bool allInputInterruptable = false; // todo
-        bool nonKeysInterruptable = false; // todo
-        isrMode = (allInputInterruptable ? SWITCHES_NO_POLLING : (nonKeysInterruptable ? SWITCHES_POLL_KEYS_ONLY : SWITCHES_POLL_EVERYTHING));
+        bool mainPinsInterruptable = _input && _input->areMainPinsInterruptable();
+        bool allPinsInterruptable = mainPinsInterruptable && _input->areAllPinsInterruptable();
+        isrMode = (allPinsInterruptable ? SWITCHES_NO_POLLING : (mainPinsInterruptable ? SWITCHES_POLL_KEYS_ONLY : SWITCHES_POLL_EVERYTHING));
     }
 
     switches.init(_input && _input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
 
-    if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _utf8Fonts); }
+    if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _isUnicodeFonts); }
 }
 
-void HydruinoBaseUI::init()
+void HydruinoBaseUI::init(HydroUIData *uiData)
 {
-    const HydroUIData *uiData = nullptr; // todo
-    if (uiData) {
+    if ((_uiData = uiData)) {
         init(uiData->updatesPerSec, uiData->displayTheme, _display && _display->isColor() ? HYDRO_UI_GFXTFT_USES_SLIDER : false);
     } else if (_display) {
         _display->initBaseUIFromDefaults(); // calls back into above init with default settings for display
@@ -172,31 +171,4 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
             _blTimeout = 0;
         }
     }
-}
-
-
-HydroUIData::HydroUIData()
-    : HydroData('H','U','I','D', 1),
-      updatesPerSec(HYDRO_UI_UPDATE_SPEED), displayTheme(Hydro_DisplayTheme_Undefined), joystickCalib{0.5f,0.5f,0.05f}
-{
-    _size = sizeof(*this);
-}
-
-void HydroUIData::toJSONObject(JsonObject &objectOut) const
-{
-    HydroData::toJSONObject(objectOut);
-
-    if (updatesPerSec != HYDRO_UI_UPDATE_SPEED) { objectOut[SFP(HStr_Key_UpdatesPerSec)] = updatesPerSec; }
-    if (displayTheme != Hydro_DisplayTheme_Undefined) { objectOut[SFP(HStr_Key_DisplayTheme)] = displayTheme; }
-    if (!isFPEqual(joystickCalib[0], 0.5f) || !isFPEqual(joystickCalib[1], 0.5f) || !isFPEqual(joystickCalib[2], 0.05f)) { objectOut[SFP(HStr_Key_JoystickCalib)] = commaStringFromArray(joystickCalib, 3); }
-}
-
-void HydroUIData::fromJSONObject(JsonObjectConst &objectIn)
-{
-    HydroData::fromJSONObject(objectIn);
-
-    updatesPerSec = objectIn[SFP(HStr_Key_UpdatesPerSec)] | updatesPerSec;
-    displayTheme = objectIn[SFP(HStr_Key_DisplayTheme)] | displayTheme;
-    JsonVariantConst joystickCalibVar = objectIn[SFP(HStr_Key_JoystickCalib)];
-    commaStringToArray(joystickCalibVar, joystickCalib, 3);
 }

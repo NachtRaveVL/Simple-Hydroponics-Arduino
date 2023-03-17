@@ -4,6 +4,7 @@
 */
 
 #include "Hydruino.h"
+#include "shared/HydroUIData.h"
 
 static HydroRTCInterface *_rtcSyncProvider = nullptr;
 time_t rtcNow() {
@@ -47,7 +48,7 @@ Hydruino::Hydruino(pintype_t piezoBuzzerPin,
       _gpsSetup(gpsSetup), _gps(nullptr), _gpsBegan(false),
 #endif
 #ifdef HYDRO_USE_GUI
-      _activeUIInstance(nullptr), _ctrlInputPins(ctrlInputPins), _displaySetup(displaySetup),
+      _activeUIInstance(nullptr), _uiData(nullptr), _ctrlInputPins(ctrlInputPins), _displaySetup(displaySetup),
 #endif
 #ifdef HYDRO_USE_MULTITASKING
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
@@ -63,6 +64,7 @@ Hydruino::~Hydruino()
     suspend();
 #ifdef HYDRO_USE_GUI
     if (_activeUIInstance) { delete _activeUIInstance; _activeUIInstance = nullptr; }
+    if (_uiData) { delete _uiData; _uiData = nullptr; }
 #endif
     deactivatePinMuxers();
     while (_objects.size()) { _objects.erase(_objects.begin()); }
@@ -386,8 +388,11 @@ bool Hydruino::initFromJSONStream(Stream *streamIn)
                         hydroCropsLib.setUserCropData((HydroCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
                         setCustomAdditiveData((HydroCustomAdditiveData *)data);
+                    } else if (data->isUIData()) {
+                        if (_uiData) { delete _uiData; }
+                        _uiData = (HydroUIData *)data; data = nullptr;
                     }
-                    delete data; data = nullptr;
+                    if (data) { delete data; data = nullptr; }
                 } else if (data && data->isObjectData()) {
                     HydroObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
@@ -477,6 +482,18 @@ bool Hydruino::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
+        if (_uiData) {
+            StaticJsonDocument<HYDRO_JSON_DOC_DEFSIZE> doc;
+
+            JsonObject uiDataObj = doc.to<JsonObject>();
+            _uiData->toJSONObject(uiDataObj);
+
+            if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
+                HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_ExportFailure));
+                return false;
+            }
+        }
+
         if (_objects.size()) {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
                 HydroData *data = iter->second->newSaveData();
@@ -537,8 +554,11 @@ bool Hydruino::initFromBinaryStream(Stream *streamIn)
                         hydroCropsLib.setUserCropData((HydroCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
                         setCustomAdditiveData((HydroCustomAdditiveData *)data);
+                    } else if (data->isUIData()) {
+                        if (_uiData) { delete _uiData; }
+                        _uiData = (HydroUIData *)data; data = nullptr;
                     }
-                    delete data; data = nullptr;
+                    if (data) { delete data; data = nullptr; }
                 } else if (data && data->isObjectData()) {
                     HydroObject *obj = newObjectFromData(data);
                     delete data; data = nullptr;
@@ -609,6 +629,13 @@ bool Hydruino::saveToBinaryStream(Stream *streamOut)
             for (auto iter = _additives.begin(); iter != _additives.end(); ++iter) {
                 bytesWritten += serializeDataToBinaryStream(iter->second, streamOut);
             }
+
+            HYDRO_SOFT_ASSERT(bytesWritten, SFP(HStr_Err_ExportFailure));
+            if (!bytesWritten) { return false; }
+        }
+
+        if (_uiData) {
+            size_t bytesWritten = serializeDataToBinaryStream(_uiData, streamOut);
 
             HYDRO_SOFT_ASSERT(bytesWritten, SFP(HStr_Err_ExportFailure));
             if (!bytesWritten) { return false; }

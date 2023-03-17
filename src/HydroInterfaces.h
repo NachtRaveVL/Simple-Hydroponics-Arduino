@@ -96,7 +96,7 @@ public:
 // UI Interface
 class HydroUIInterface {
 public:
-    virtual void init() = 0;
+    virtual void init(HydroUIData *data = nullptr) = 0;
     virtual bool begin() = 0;
 
     virtual void setNeedsRedraw() = 0;

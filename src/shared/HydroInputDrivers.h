@@ -34,6 +34,9 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) = 0;
 
+    bool areAllPinsInterruptable() const;
+    virtual bool areMainPinsInterruptable() const = 0;
+
     virtual IoAbstractionRef getIoAbstraction() = 0;
 
     inline const Pair<uint8_t, const pintype_t *> &getPins() const { return _pins; }
@@ -51,6 +54,8 @@ public:
     virtual ~HydroInputRotary() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+
+    virtual bool areMainPinsInterruptable() const override;
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
@@ -72,6 +77,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
+    virtual bool areMainPinsInterruptable() const override;
+
     virtual IoAbstractionRef getIoAbstraction() override { return _dfRobotIORef; }
 
     inline uint16_t getKeySpeed() const { return _keySpeed; }
@@ -90,6 +97,8 @@ public:
     virtual ~HydroInputESP32TouchKeys() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+
+    virtual bool areMainPinsInterruptable() const override { return false; }
 
     #ifdef ESP32
         virtual IoAbstractionRef getIoAbstraction() override { return &_esp32Touch; }    
@@ -116,6 +125,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
+    virtual bool areMainPinsInterruptable() const override { return false; }
+
     virtual IoAbstractionRef getIoAbstraction() override { return &_joystickMultiIo; }
 
     inline millis_t getRepeatDelay() const { return _repeatDelay; }
@@ -140,6 +151,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
+    virtual bool areMainPinsInterruptable() const override { return false; }
+
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
     inline MatrixKeyboardManager &getKeyboard() { return _keyboard; }
@@ -159,6 +172,8 @@ public:
     virtual ~HydroInputMatrix3x4();
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+
+    virtual bool areMainPinsInterruptable() const override { return _rotaryEncoder ? _rotaryEncoder->areMainPinsInterruptable() : false; }
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
@@ -182,6 +197,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
+    virtual bool areMainPinsInterruptable() const override { return _rotaryEncoder ? _rotaryEncoder->areMainPinsInterruptable() : false; }
+
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
     inline MatrixKeyboardManager &getKeyboard() { return _keyboard; }
@@ -204,6 +221,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
+    virtual bool areMainPinsInterruptable() const override { return false; }
+
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
     inline MenuTouchScreenManager &getTouchScreen() { return _touchScreen; }
@@ -223,6 +242,8 @@ public:
     virtual ~HydroInputTouchscreen() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+
+    virtual bool areMainPinsInterruptable() const override { return false; }
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
@@ -250,6 +271,8 @@ public:
     virtual ~HydroInputTFTTouch() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+
+    virtual bool areMainPinsInterruptable() const override { return false; }
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 

@@ -13,6 +13,16 @@ HydroInputDriver::HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins)
     : _pins(controlPins)
 { ; }
 
+bool HydroInputDriver::areAllPinsInterruptable() const
+{
+    for (int i = 0; i < _pins.first; ++i) {
+        if (!(isValidPin(_pins.second[i]) && checkPinCanInterrupt(_pins.second[i]))) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 HydroInputRotary::HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins), _encoderSpeed(encoderSpeed)
@@ -23,6 +33,14 @@ void HydroInputRotary::begin(MenuRenderer *renderer, MenuItem *initialItem)
     menuMgr.initForEncoder(renderer, initialItem, _pins.second[0], _pins.second[1], _pins.second[2], _encoderSpeed == Hydro_EncoderSpeed_FullCycle ? FULL_CYCLE : _encoderSpeed == Hydro_EncoderSpeed_HalfCycle ? HALF_CYCLE : QUARTER_CYCLE);
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);    
+}
+
+bool HydroInputRotary::areMainPinsInterruptable() const
+{
+    return _pins.first >= 3 &&
+           isValidPin(_pins.second[0]) && checkPinCanInterrupt(_pins.second[0]) &&
+           isValidPin(_pins.second[1]) && checkPinCanInterrupt(_pins.second[1]) &&
+           isValidPin(_pins.second[2]) && checkPinCanInterrupt(_pins.second[2]);
 }
 
 
@@ -62,6 +80,15 @@ void HydroInputUpDownButtons::begin(MenuRenderer *renderer, MenuItem *initialIte
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
 }
+
+bool HydroInputUpDownButtons::areMainPinsInterruptable() const
+{
+    return _pins.first >= 3 &&
+           isValidPin(_pins.second[0]) && checkPinCanInterrupt(_pins.second[0]) &&
+           isValidPin(_pins.second[1]) && checkPinCanInterrupt(_pins.second[1]) &&
+           isValidPin(_pins.second[2]) && checkPinCanInterrupt(_pins.second[2]);
+}
+
 
 HydroInputESP32TouchKeys::HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed, uint16_t switchThreshold, Hydro_ESP32Touch_HighRef highVoltage, Hydro_ESP32Touch_LowRef lowVoltage, Hydro_ESP32Touch_HighRefAtten attenuation)
     : HydroInputDriver(controlPins), _keySpeed(keyRepeatSpeed)

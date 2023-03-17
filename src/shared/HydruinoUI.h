@@ -10,6 +10,7 @@
 
 #include "HydroUIDefines.h"
 #include "HydroUIInlines.hh"
+#include "HydroUIData.h"
 
 // tcMenu Plugin Adaptations
 #include "tcMenu_Display_AdaFruitGfx.h"
@@ -49,7 +50,7 @@ public:
               Hydro_DisplayTheme displayTheme = Hydro_DisplayTheme_Undefined, // Display theme to apply
               bool analogSlider = false);                                   // Slider usage for analog items
 
-    virtual void init() override;                                           // Standard initializer
+    virtual void init(HydroUIData *uiData = nullptr) override;              // Standard initializer
     virtual bool begin() override;                                          // Begins UI
 
     virtual void setNeedsRedraw() override;
@@ -62,6 +63,9 @@ public:
     inline const UIDisplaySetup &getDisplaySetup() const { return _uiDispSetup; }
     inline bool isActiveLow() const { return _isActiveLow; }
     inline bool allowingISR() const { return _allowISR; }
+    inline bool isUnicodeFonts() const { return _isUnicodeFonts; }
+
+    inline HydroUIData *getUIData() { return _uiData; }
 
 protected:
     ConnectorLocalInfo _appInfo;                            // Application info for connections
@@ -69,8 +73,9 @@ protected:
     const UIDisplaySetup _uiDispSetup;                      // Display setup
     const bool _isActiveLow;                                // IO pins use active-low signaling logic
     const bool _allowISR;                                   // Perform ISR checks to determine ISR eligibility
-    const bool _utf8Fonts;                                  // Using tcUnicode library fonts
+    const bool _isUnicodeFonts;                             // Using tcUnicode library fonts
 
+    HydroUIData *_uiData;                                   // Hydro UI data (strong)
     MenuItem *_menuRoot;                                    // Menu root item (strong)
     HydroInputDriver *_input;                               // Input driver (owned)
     HydroDisplayDriver *_display;                           // Display driver (owned)
@@ -86,19 +91,6 @@ public: // consider protected
     virtual void started(BaseMenuRenderer* currentRenderer) override;
     virtual void reset() override;
     virtual void renderLoop(unsigned int currentValue, RenderPressMode userClick) override;
-};
-
-
-// UI Serialization Data
-// id: HUID. Hydruino  linear calibration data.
-struct HydroUIData : public HydroData {
-    uint8_t updatesPerSec;                                  // Updates per second (1-10, default: HYDRO_UI_UPDATE_SPEED)
-    Hydro_DisplayTheme displayTheme;                        // Display theme (if supported)
-    float joystickCalib[3];                                 // Joystick calibration ({midX,midY,zeroTol}, default: {0.5,0.5,0.05})
-
-    HydroUIData();
-    virtual void toJSONObject(JsonObject &objectOut) const override;
-    virtual void fromJSONObject(JsonObjectConst &objectIn) override;
 };
 
 #include "tcMenu_Display_AdaFruitGfx.hpp"

@@ -45,6 +45,7 @@ struct HydroData : public HydroJSONSerializableInterface {
     inline bool isCalibrationData() const { return isStandardData() && id.chars[1] == 'C' && id.chars[2] == 'A' && id.chars[3] == 'L'; }
     inline bool isCropsLibData() const { return isStandardData() && id.chars[1] == 'C' && id.chars[2] == 'L' && id.chars[3] == 'D'; }
     inline bool isAdditiveData() const { return isStandardData() && id.chars[1] == 'A' && id.chars[2] == 'D' && id.chars[3] == 'D'; }
+    inline bool isUIData() const { return isStandardData() && id.chars[1] == 'U' && id.chars[2] == 'I' && id.chars[3] == 'D'; }
     inline bool isObjectData() const { return !isStandardData() && id.object.idType >= 0; }
 
     HydroData();                                            // Default constructor
