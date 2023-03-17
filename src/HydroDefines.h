@@ -474,7 +474,6 @@ enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_ST7735,                         // ST7735 320x240 graphical LCD, using AdafruitGFX (SPI only)
     Hydro_DisplayOutputMode_ST7789,                         // ST7789 320x240 graphical LCD, using AdafruitGFX (SPI only)
     Hydro_DisplayOutputMode_ILI9341,                        // ILI9341 320x240 graphical LCD, using AdafruitGFX (SPI only)
-    Hydro_DisplayOutputMode_PCD8544,                        // PCD8544 (or Nokia5110) 320x240 graphical LCD, using AdafruitGFX (SPI only)
     Hydro_DisplayOutputMode_TFT,                            // TFT 320x240+ graphical LCD, using TFT_eSPI (SPI only, Note: usage requires editing TFT_eSPI\User_Setup.h & properly defining TFT_CS, TFT_DC, & TFT_RST)
 
     Hydro_DisplayOutputMode_Count,                          // Placeholder
@@ -796,24 +795,23 @@ class HydroRail;
 #define SETUP_ENUM_IL3820_V2                                112
 #define SETUP_ENUM_ST7789                                   113
 #define SETUP_ENUM_ILI9341                                  114
-#define SETUP_ENUM_PCD8544                                  115
-#define SETUP_ENUM_TFT                                      116
-#define SETUP_ENUM_RotaryEncoderOk                          117
-#define SETUP_ENUM_RotaryEncoderOkLR                        118
-#define SETUP_ENUM_UpDownButtonsOk                          119
-#define SETUP_ENUM_UpDownButtonsOkLR                        120
-#define SETUP_ENUM_UpDownESP32TouchOk                       121
-#define SETUP_ENUM_UpDownESP32TouchOkLR                     122
-#define SETUP_ENUM_AnalogJoystickOk                         123
-#define SETUP_ENUM_Matrix2x2UpDownButtonsOkL                124
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk            125
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR          126
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk            127
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR          128
-#define SETUP_ENUM_ResistiveTouch                           129
-#define SETUP_ENUM_TouchScreen                              130
-#define SETUP_ENUM_TFTTouch                                 131
-#define SETUP_ENUM_RemoteControl                            132
+#define SETUP_ENUM_TFT                                      115
+#define SETUP_ENUM_RotaryEncoderOk                          116
+#define SETUP_ENUM_RotaryEncoderOkLR                        117
+#define SETUP_ENUM_UpDownButtonsOk                          118
+#define SETUP_ENUM_UpDownButtonsOkLR                        119
+#define SETUP_ENUM_UpDownESP32TouchOk                       120
+#define SETUP_ENUM_UpDownESP32TouchOkLR                     121
+#define SETUP_ENUM_AnalogJoystickOk                         122
+#define SETUP_ENUM_Matrix2x2UpDownButtonsOkL                123
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk            124
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR          125
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk            126
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR          127
+#define SETUP_ENUM_ResistiveTouch                           128
+#define SETUP_ENUM_TouchScreen                              139
+#define SETUP_ENUM_TFTTouch                                 130
+#define SETUP_ENUM_RemoteControl                            131
 // Checks setup defines for equality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
 #define IS_SETUP_AS(X,Y)                JOIN(SETUP_ENUM,X) == SETUP_ENUM_##Y
 // Checks setup defines for inequality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)

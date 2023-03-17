@@ -15,7 +15,8 @@
 #endif
 
 // The following sizes apply to all architectures
-#define HYDRO_UI_RENDERER_BUFFERSIZE    32                  // Default buffer size for display renderer
+#define HYDRO_UI_RENDERER_BUFFERSIZE    32                  // Buffer size for display renderers
+#define HYDRO_UI_STARFIELD_MAXSIZE      16                  // Starfield map maxsize
 // The following sizes only apply to architectures that do not have STL support (AVR/SAM)
 #define HYDRO_UI_REMOTECONTROLS_MAXSIZE 2                   // Maximum array size for remote controls list (max # of remote controls)
 
@@ -81,18 +82,19 @@ enum Hydro_DisplayTheme : signed char {
 };
 
 // ST7735 Device Tab
-// Special device tab identifier for ST7735 devices.
+// Special device tab identifier for ST7735 (B & R) devices.
 enum Hydro_ST7735Tab : signed char {
-    Hydro_ST7735Tab_Green               = 0x00,             // Green tag
-    Hydro_ST7735Tab_Green18             = 0x00,             // 18Green tag (alias of Green)
-    Hydro_ST7735Tab_Red                 = 0x01,             // Red tag
-    Hydro_ST7735Tab_Red18               = 0x01,             // 18Red tag (alias of Red)
-    Hydro_ST7735Tab_Black               = 0x02,             // Black tag
-    Hydro_ST7735Tab_Black18             = 0x02,             // 18Black tag (alias of Black)
-    Hydro_ST7735Tab_Green144            = 0x01,             // 144Green tag (alias of Red)
-    Hydro_ST7735Tab_Mini160x80          = 0x04,             // Mini160x80 tag
-    Hydro_ST7735Tab_Hallowing           = 0x05,             // Hallowing tag
-    Hydro_ST7735Tab_Mini160x80_Plugin   = 0x06,             // Mini160x80_Plugin tag
+    Hydro_ST7735Tab_BModel              = (int8_t)0xff,     // ST7735B model (no color tag)
+    Hydro_ST7735Tab_Green               = 0x00,             // ST7735R Green tag
+    Hydro_ST7735Tab_Green18             = 0x00,             // ST7735R 18Green tag (alias of Green)
+    Hydro_ST7735Tab_Red                 = 0x01,             // ST7735R Red tag
+    Hydro_ST7735Tab_Red18               = 0x01,             // ST7735R 18Red tag (alias of Red)
+    Hydro_ST7735Tab_Black               = 0x02,             // ST7735R Black tag
+    Hydro_ST7735Tab_Black18             = 0x02,             // ST7735R 18Black tag (alias of Black)
+    Hydro_ST7735Tab_Green144            = 0x01,             // ST7735R 144Green tag (alias of Red)
+    Hydro_ST7735Tab_Mini                = 0x04,             // ST7735R Mini160x80 tag
+    Hydro_ST7735Tab_Hallowing           = 0x05,             // ST7735R Hallowing tag
+    Hydro_ST7735Tab_Mini_Plugin         = 0x06,             // ST7735R Mini160x80_Plugin tag
 
     Hydro_ST7735Tab_Undefined           = (int8_t)0xff      // Placeholder
 };

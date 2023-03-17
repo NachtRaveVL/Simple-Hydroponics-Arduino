@@ -474,7 +474,6 @@ void HydruinoMinUI::allocateST7735Display()
             case Hydro_DisplayOutputMode_ST7735: {
                 HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup, SFP(HStr_Err_InvalidParameter));
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgAs.gfx.tabColor != Hydro_ST7735Tab_Undefined, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ST7735>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.tabColor, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_AllocationFailure));
             } break;
@@ -521,28 +520,6 @@ void HydruinoMinUI::allocateILI9341Display()
                 HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup, SFP(HStr_Err_InvalidParameter));
                 HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
                 _display = new HydroDisplayAdafruitGFX<Adafruit_ILI9341>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
-                HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_AllocationFailure));
-            } break;
-            default: break;
-        }
-    }
-}
-
-void HydruinoMinUI::allocatePCD8544Display()
-{
-    auto controller = getController();
-    HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
-    HYDRO_SOFT_ASSERT(!_display, SFP(HStr_Err_AlreadyInitialized));
-
-    if (controller && !_display) {
-        auto dispOutMode = controller->getDisplayOutputMode();
-        auto displaySetup = controller->getDisplaySetup();
-
-        switch (dispOutMode) {
-            case Hydro_DisplayOutputMode_PCD8544: {
-                HYDRO_SOFT_ASSERT(displaySetup.cfgType == DeviceSetup::SPISetup, SFP(HStr_Err_InvalidParameter));
-                HYDRO_SOFT_ASSERT(_uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-                _display = new HydroDisplayAdafruitGFX<Adafruit_PCD8544>(displaySetup.cfgAs.spi, _uiDispSetup.dispCfgAs.gfx.rotation, _uiDispSetup.dispCfgAs.gfx.dcPin, _uiDispSetup.dispCfgAs.gfx.resetPin);
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_AllocationFailure));
             } break;
             default: break;

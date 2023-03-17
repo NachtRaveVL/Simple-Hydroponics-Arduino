@@ -34,7 +34,6 @@
 #include <Adafruit_ST7735.h>
 #include <Adafruit_ST7789.h>
 #include <Adafruit_ILI9341.h>
-#include <Adafruit_PCD8544.h>
 #include <Adafruit_SPITFT.h>
 
 #include <tcUtil.h>
@@ -198,39 +197,6 @@ public:
     T* getGfx() { return reinterpret_cast<T*>(graphics); }
 protected:
     explicit AdafruitDrawable() : graphics(nullptr), canvasDrawable(nullptr), spriteHeight(0) {}
-    void setGraphics(Adafruit_GFX* gfx) { graphics = gfx; }
-
-    UnicodeFontHandler *createFontHandler() override;
-};
-
-// Specialization for Adafruit_PCD8544
-template <>
-class AdafruitDrawable<Adafruit_PCD8544> : public DeviceDrawable {
-private:
-    Adafruit_GFX* graphics;
-public:
-    explicit AdafruitDrawable(Adafruit_GFX* graphics, int = 0) : graphics(graphics) {
-        setSubDeviceType(NO_SUB_DEVICE);
-    }
-    ~AdafruitDrawable() override = default;
-
-    Coord getDisplayDimensions() override {
-        return Coord(graphics->width(), graphics->height());
-    }
-
-    DeviceDrawable *getSubDeviceFor(const Coord& where, const Coord& size, const color_t *palette, int paletteSize) override { return nullptr; }
-    void transaction(bool isStarting, bool redrawNeeded) override;
-    void internalDrawText(const Coord &where, const void *font, int mag, const char *text) override;
-    void drawBitmap(const Coord &where, const DrawableIcon *icon, bool selected) override;
-    void drawXBitmap(const Coord &where, const Coord &size, const uint8_t *data) override;
-    void drawBox(const Coord &where, const Coord &size, bool filled) override;
-    void drawCircle(const Coord& where, int radius, bool filled) override;
-    void drawPolygon(const Coord points[], int numPoints, bool filled) override;
-    Coord internalTextExtents(const void *font, int mag, const char *text, int *baseline) override;
-    void drawPixel(uint16_t x, uint16_t y) override;
-    Adafruit_PCD8544* getGfx() { return reinterpret_cast<Adafruit_PCD8544*>(graphics); }
-protected:
-    explicit AdafruitDrawable() : graphics(nullptr) {}
     void setGraphics(Adafruit_GFX* gfx) { graphics = gfx; }
 
     UnicodeFontHandler *createFontHandler() override;

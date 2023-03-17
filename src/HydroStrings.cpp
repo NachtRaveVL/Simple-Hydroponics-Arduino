@@ -1471,10 +1471,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Enum_Parsnip[] PROGMEM = {"Parsnip"};
             return flashStr_Enum_Parsnip;
         } break;
-        case HStr_Enum_PCD8544: {
-            static const char flashStr_Enum_PCD8544[] PROGMEM = {"PCD8544"};
-            return flashStr_Enum_PCD8544;
-        } break;
         case HStr_Enum_Pea: {
             static const char flashStr_Enum_Pea[] PROGMEM = {"Pea"};
             return flashStr_Enum_Pea;

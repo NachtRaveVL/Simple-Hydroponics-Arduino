@@ -344,7 +344,6 @@ enum Hydro_String : unsigned short {
     HStr_Enum_PakChoi,
     HStr_Enum_Parsley,
     HStr_Enum_Parsnip,
-    HStr_Enum_PCD8544,
     HStr_Enum_Pea,
     HStr_Enum_PeaSugar,
     HStr_Enum_Pepino,

@@ -114,7 +114,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using SPI display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
 #define SETUP_UI_GFX_BACKLIGHT_PIN      -1              // Optional display interface backlight/LED/BL pin, if using SPI display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
 #define SETUP_UI_GFX_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w backlight pin
-#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735 display
+#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (BModel, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Hallowing, Mini_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
 #define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI
 #define SETUP_UI_GFX_BACKLIGHT_ESP_CHN  1               // Backlight PWM channel, if on ESP/using PWM backlight
@@ -704,7 +704,6 @@ inline void setupUI()
                 case Hydro_DisplayOutputMode_ST7735:
                 case Hydro_DisplayOutputMode_ST7789:
                 case Hydro_DisplayOutputMode_ILI9341:
-                case Hydro_DisplayOutputMode_PCD8544:
                     uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ROTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN, SETUP_UI_GFX_BACKLIGHT_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE), DAC_RESOLUTION,
 #ifdef ESP32
                                                                    SETUP_UI_GFX_BACKLIGHT_ESP_CHN,
@@ -773,8 +772,6 @@ inline void setupUI()
                     ui->allocateST7789Display();
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341)
                     ui->allocateILI9341Display();
-                #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, PCD8544)
-                    ui->allocatePCD8544Display();
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, TFT)
                     ui->allocateTFTDisplay();
                 #endif

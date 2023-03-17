@@ -12,13 +12,13 @@ class HydroOverview;
 class HydroOverviewLCD;
 class HydroOverviewOLED;
 template<class T> class HydroOverviewAdaGfx;
-template<class T> class HydroOverviewAdaTFT;
+template<class T> class HydroOverviewAdaGfx;
 class HydroOverviewTFT;
 
 #include "HydruinoUI.h"
 
-// Overview Base
-// Overview class that manages the default at-a-glance system overview.
+// Overview Screen Base
+// Overview screen class that manages the default at-a-glance system overview.
 // Meant to be able to be deleted on a moments notice to transition back into menu.
 class HydroOverview {
 public:
@@ -34,6 +34,9 @@ protected:
     bool _needsFullRedraw;                                  // Needs full redraw flag
 };
 
+
+// LCD Overview Screen
+// Overview screen built for LCD displays.
 class HydroOverviewLCD : public HydroOverview {
 public:
     HydroOverviewLCD(HydroDisplayLiquidCrystal *display);
@@ -45,6 +48,8 @@ protected:
     LiquidCrystal &_lcd;                                    // LCD (strong)
 };
 
+// OLED Overview Screen
+// Overview screen built for OLED displays.
 class HydroOverviewOLED : public HydroOverview {
 public:
     HydroOverviewOLED(HydroDisplayU8g2OLED *display);
@@ -57,6 +62,8 @@ protected:
     U8g2Drawable &_drawable;                                // Drawable (strong)
 };
 
+// AdafruitGFX Overview Screen
+// Overview screen built for AdafruitGFX displays.
 template<class T>
 class HydroOverviewAdaGfx : public HydroOverview {
 public:
@@ -74,24 +81,8 @@ protected:
     void drawBackground(Coord pt, Coord sz, Pair<uint16_t, uint16_t> &screenSize);
 };
 
-template<class T>
-class HydroOverviewAdaTFT : public HydroOverview {
-public:
-    HydroOverviewAdaTFT(HydroDisplayAdafruitGFX<T> *display);
-    virtual ~HydroOverviewAdaTFT();
-
-    virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
-
-protected:
-    T &_gfx;                                                // Graphics (strong)
-    AdafruitDrawable<T> &_drawable;                         // Drawable (strong)
-
-    DateTime _lastTime;                                     // Last time (local)
-
-    void drawBackground(Coord pt, Coord sz, Pair<uint16_t, uint16_t> &screenSize);
-};
-};
-
+// TFTe_SPI Overview Screen
+// Overview screen built for TFTe_SPI displays.
 class HydroOverviewTFT : public HydroOverview {
 public:
     HydroOverviewTFT(HydroDisplayTFTeSPI *display);

@@ -43,7 +43,6 @@ public:
     void allocateST7735Display();                                           // Allocates/pulls-into-build a ST7735 color pixel display (using AdafruitGFX)
     void allocateST7789Display();                                           // Allocates/pulls-into-build a ST7789 color pixel display (using AdafruitGFX)
     void allocateILI9341Display();                                          // Allocates/pulls-into-build an ILI9341 pixel display (using AdafruitGFX)
-    void allocatePCD8544Display();                                          // Allocates/pulls-into-build a PCD8544/Nokia5110 color pixel display (using AdafruitGFX)
     void allocateTFTDisplay();                                              // Allocates/pulls-into-build a TFTe_SPI color pixel display (using TFTe_SPI)
 
     void addSerialRemote(UARTDeviceSetup rcSetup = UARTDeviceSetup());      // Adds/pulls-into-build a remote control by Serial or Bluetooth AT

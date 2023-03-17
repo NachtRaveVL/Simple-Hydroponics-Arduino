@@ -43,6 +43,8 @@ protected:
 };
 
 
+// Rotary Encoder Input Driver
+// Rotary encoder that uses a twisting motion, along with momentary push-down.
 class HydroInputRotary : public HydroInputDriver {
 public:
     HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins, Hydro_EncoderSpeed encoderSpeed);
@@ -59,6 +61,8 @@ protected:
 };
 
 
+// Up/Down Buttons Input Driver
+// Standard momentary buttons input.
 class HydroInputUpDownButtons : public HydroInputDriver {
 public:
     HydroInputUpDownButtons(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed);
@@ -78,6 +82,8 @@ protected:
 };
 
 
+// ESP32 ESPTouch Keys Input Driver
+// For ESP32 only, uses integrated touch keys library.
 class HydroInputESP32TouchKeys : public HydroInputDriver {
 public:
     HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed, uint16_t switchThreshold, Hydro_ESP32Touch_HighRef highVoltage, Hydro_ESP32Touch_LowRef lowVoltage, Hydro_ESP32Touch_HighRefAtten attenuation);
@@ -101,6 +107,8 @@ protected:
 };
 
 
+// Analog Joystick Input Driver
+// Analog joystick control with momentary press button.
 class HydroInputJoystick : public HydroInputDriver {
 public:
     HydroInputJoystick(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, float decreaseDivisor, float jsCenterX = 0.5f, float jsCenterY = 0.5f, float jsZeroTol = 0.05f);
@@ -123,6 +131,8 @@ protected:
 };
 
 
+// 2x2 Button Matrix Input Driver
+// For matrix-style input with 2 rows and 2 columns of cross-tied momentary buttons.
 class HydroInputMatrix2x2 : public HydroInputDriver {
 public:
     HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval);
@@ -141,6 +151,8 @@ protected:
 };
 
 
+// 3x4 Button Matrix Input Driver
+// For matrix-style numeric input with 4 rows and 3 columns of cross-tied momentary buttons.
 class HydroInputMatrix3x4 : public HydroInputDriver {
 public:
     HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed);
@@ -161,6 +173,8 @@ protected:
 };
 
 
+// 4x4 Button Matrix Input Driver
+// For matrix-style alpha-numeric input with 4 rows and 4 columns of cross-tied momentary buttons.
 class HydroInputMatrix4x4 : public HydroInputDriver {
 public:
     HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed = Hydro_EncoderSpeed_HalfCycle);
@@ -181,6 +195,8 @@ protected:
 };
 
 
+// Resistive Touch Screen Input Driver
+// A style of touch screen that uses resistive measurements for touch detection.
 class HydroInputResistiveTouch : public HydroInputDriver {
 public:
     HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver);
@@ -199,6 +215,8 @@ protected:
 };
 
 
+// Touch Screen Input Driver
+// Standard touch screen driver using FT6206 (i2c based) or XPT2046 (SPI based).
 class HydroInputTouchscreen : public HydroInputDriver {
 public:
     HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation);
@@ -224,6 +242,8 @@ protected:
 };
 
 
+// TFT Touch Screen Input Driver
+// Standard XPT2046 touch screen, but using TFT_eSPI library. Must be paired with TFTeSPI display driver.
 class HydroInputTFTTouch : public HydroInputDriver {
 public:
     HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, bool useRawTouch = false);

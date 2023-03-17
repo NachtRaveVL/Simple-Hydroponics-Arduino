@@ -165,13 +165,17 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::initBaseUIFromDefaults()
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
 {
-    _gfx.initR(_tab);
+    if (_tab == Hydro_ST7735Tab_BModel) {
+        _gfx.initB();
+    } else {
+        _gfx.initR((uint8_t)_tab);
+    }
     _gfx.setRotation((uint8_t)_rotation);
 }
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::createOverview()
 {
-    return new HydroOverviewAdaTFT<Adafruit_ST7735>(this);
+    return new HydroOverviewAdaGfx<Adafruit_ST7735>(this);
 }
 
 
@@ -204,7 +208,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::createOverview()
 {
-    return new HydroOverviewAdaTFT<Adafruit_ST7789>(this);
+    return new HydroOverviewAdaGfx<Adafruit_ST7789>(this);
 }
 
 
@@ -237,34 +241,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::createOverview()
 {
-    return new HydroOverviewAdaTFT<Adafruit_ILI9341>(this);
-}
-
-
-HydroDisplayAdafruitGFX<Adafruit_PCD8544>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation),
-      _contrast(40), _bias(4),
-      _gfx(dcPin, displaySetup.cs, resetPin, displaySetup.spi),
-      _drawable(&_gfx),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
-{
-    _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
-}
-
-void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::initBaseUIFromDefaults()
-{
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_SLIDER);
-}
-
-void HydroDisplayAdafruitGFX<Adafruit_PCD8544>::begin()
-{
-    _gfx.begin(_contrast, _bias);
-    _gfx.setRotation((uint8_t)_rotation);
-}
-
-HydroOverview *HydroDisplayAdafruitGFX<Adafruit_PCD8544>::createOverview()
-{
-    return new HydroOverviewAdaGfx<Adafruit_PCD8544>(this);
+    return new HydroOverviewAdaGfx<Adafruit_ILI9341>(this);
 }
 
 
@@ -285,7 +262,7 @@ void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 
 void HydroDisplayTFTeSPI::begin()
 {
-    if (_tabColor == Hydro_ST7735Tab_Undefined) {
+    if (_tabColor == Hydro_ST7735Tab_BModel) {
         _gfx.begin();
     } else {
         _gfx.begin((uint8_t)_tabColor);

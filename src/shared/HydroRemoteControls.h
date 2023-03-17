@@ -20,6 +20,8 @@ class HydroRemoteEthernetControl;
 
 #include "HydruinoUI.h"
 
+// Remote Control Base
+// Base remote control class.
 class HydroRemoteControl {
 public:
     virtual ~HydroRemoteControl() = default;
@@ -28,6 +30,8 @@ public:
 };
 
 
+// Serial UART Remote Control
+// Manages remote control over serial UART.
 class HydroRemoteSerialControl : public HydroRemoteControl {
 public:
     HydroRemoteSerialControl(UARTDeviceSetup serialSetup);
@@ -42,6 +46,8 @@ protected:
 };
 
 
+// Simhub Connector Remote Control
+// Manages remote control over simhub connector.
 class HydroRemoteSimhubControl : public HydroRemoteControl {
 public:
     HydroRemoteSimhubControl(UARTDeviceSetup serialSetup, menuid_t statusMenuId);
@@ -55,6 +61,8 @@ protected:
 
 
 #ifdef HYDRO_USE_WIFI
+// WiFi Remote Control
+// Manages remote control over a WiFi connection.
 class HydroRemoteWiFiControl : public HydroRemoteControl {
 public:
     HydroRemoteWiFiControl(uint16_t listeningPort = HYDRO_UI_REMOTESERVER_PORT);
@@ -74,6 +82,8 @@ protected:
 
 
 #ifdef HYDRO_USE_ETHERNET
+// Ethernet Remote Control
+// Manages remote control over an Ethernet connection.
 class HydroRemoteEthernetControl : public HydroRemoteControl {
 public:
     HydroRemoteEthernetControl(uint16_t listeningPort = HYDRO_UI_REMOTESERVER_PORT);

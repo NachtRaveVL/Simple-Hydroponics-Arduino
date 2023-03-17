@@ -35,7 +35,7 @@ Made primarily for Arduino microcontrollers / build environments, but should wor
 
 Dependencies include: Adafruit BusIO (dep of RTClib/tcMenu), Adafruit GPS Library (ext NMEA-AT, optional), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer (AVR/SAM STL), ArxSmartPtr (SharedPtr), DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManagerIO), MQTT, OneWire (-like|platform-specific), RTClib, SimpleCollections (dep of TaskManagerIO), SD (-like|platform-specific), SolarCalculator, TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like networking library (optional): WiFi101 (MKR1000 only), WiFiNINA_Generic, WiFiEspAT (ext ESP-AT), or Ethernet (-like|platform-specific).
 
-Additional GUI (tcMenu) dependencies: Adafruit FT6206 Library (disableable), Adafruit GFX Library, Adafruit ILI9341, Adafruit PCD8544 Nokia 5110 LCD library, Adafruit ST7735 and ST7789 Library, Adafruit TouchScreen, LiquidCrystalIO, tcUnicodeHelper, TFT_eSPI, U8g2, and XPT2046_Touchscreen (optional). (Note: There may be extra not included here)
+Additional GUI (tcMenu) dependencies: Adafruit FT6206 Library (disableable), Adafruit GFX Library, Adafruit ILI9341, Adafruit ST7735 and ST7789 Library, Adafruit TouchScreen, LiquidCrystalIO, tcUnicodeHelper, TFT_eSPI, U8g2, and XPT2046_Touchscreen (optional). (Note: There may be extra not included here)
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -429,7 +429,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 // System Settings
 #define SETUP_SYSTEM_MODE               Recycling       // System run mode (Recycling, DrainToWaste)
 #define SETUP_MEASURE_MODE              Default         // System measurement mode (Default, Imperial, Metric, Scientific)
-#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, CustomOLED, SSD1607, IL3820, IL3820_V2, ST7735, ST7789, ILI9341, PCD8544, TFT)
+#define SETUP_DISPLAY_OUT_MODE          Disabled        // System display output mode (Disabled, LCD16x2_EN, LCD16x2_RS, LCD20x4_EN, LCD20x4_RS, SSD1305, SSD1305_x32Ada, SSD1305_x64Ada, SSD1306, SH1106, CustomOLED, SSD1607, IL3820, IL3820_V2, ST7735, ST7789, ILI9341, TFT)
 #define SETUP_CONTROL_IN_MODE           Disabled        // System control input mode (Disabled, RotaryEncoderOk, RotaryEncoderOkLR, UpDownButtonsOk, UpDownButtonsOkLR, UpDownESP32TouchOk, UpDownESP32TouchOkLR, AnalogJoystickOk, Matrix2x2UpDownButtonsOkL, Matrix3x4Keyboard_OptRotEncOk, Matrix3x4Keyboard_OptRotEncOkLR, Matrix4x4Keyboard_OptRotEncOk, Matrix4x4Keyboard_OptRotEncOkLR, ResistiveTouch, TouchScreen, TFTTouch, RemoteControl)
 #define SETUP_SYS_UI_MODE               Minimal         // System user interface mode (Disabled, Minimal, Full)
 #define SETUP_SYS_NAME                  "Hydruino"      // System name
@@ -481,7 +481,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using SPI display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
 #define SETUP_UI_GFX_BACKLIGHT_PIN      -1              // Optional display interface backlight/LED/BL pin, if using SPI display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
 #define SETUP_UI_GFX_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w backlight pin
-#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (Green, Red, Black, Green144, Mini160x80, Hallowing, Mini160x80_Plugin, Undefined), if using ST7735 display
+#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (BModel, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Hallowing, Mini_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
 #define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI
 #define SETUP_UI_GFX_BACKLIGHT_ESP_CHN  1               // Backlight PWM channel, if on ESP/using PWM backlight
