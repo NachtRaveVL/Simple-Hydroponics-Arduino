@@ -26,7 +26,7 @@ public:
     void allocateESP32TouchControl();                                       // Allocates/pulls-into-build an ESP32 Touch key control (only for ESP32)
     void allocateResistiveTouchControl();                                   // Allocates/pulls-into-build a resistive touchscreen control, must be called after display allocation
     void allocateTouchscreenControl();                                      // Allocates/pulls-into-build a Touchscreen control (using FT6206/XPT2046)
-    void allocateTFTTouchControl();                                         // Allocates/pulls-into-build a TFTTouch control (using TFTe_SPI), must be called after TFT display allocation
+    void allocateTFTTouchControl();                                         // Allocates/pulls-into-build a TFTTouch control (using TFT_eSPI), must be called after TFT display allocation
 
     void allocateLCDDisplay();                                              // Allocates/pulls-into-build a LCD display (using LiquidCrystalIO)
 
@@ -43,7 +43,7 @@ public:
     void allocateST7735Display();                                           // Allocates/pulls-into-build a ST7735 color pixel display (using AdafruitGFX)
     void allocateST7789Display();                                           // Allocates/pulls-into-build a ST7789 color pixel display (using AdafruitGFX)
     void allocateILI9341Display();                                          // Allocates/pulls-into-build an ILI9341 pixel display (using AdafruitGFX)
-    void allocateTFTDisplay();                                              // Allocates/pulls-into-build a TFTe_SPI color pixel display (using TFTe_SPI)
+    void allocateTFTDisplay();                                              // Allocates/pulls-into-build a TFT_eSPI color pixel display (using TFT_eSPI)
 
     void addSerialRemote(UARTDeviceSetup rcSetup = UARTDeviceSetup());      // Adds/pulls-into-build a remote control by Serial or Bluetooth AT
     void addSimhubRemote(UARTDeviceSetup rcSetup = UARTDeviceSetup());      // Adds/pulls-into-build a remote control by Simhub serial connector, requires UART setup

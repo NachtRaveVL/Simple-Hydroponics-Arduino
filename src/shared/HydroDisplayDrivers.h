@@ -178,6 +178,7 @@ protected:
 
 
 // ST7735 AdafruitSPITFT Display Driver
+// Advanced color display.
 // Note: Class requires proper ST7735 tab color.
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7735> : public HydroDisplayDriver {
@@ -209,6 +210,7 @@ protected:
 
 
 // ST7789 AdafruitSPITFT Display Driver
+// Advanced color display.
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7789> : public HydroDisplayDriver {
 public:
@@ -238,6 +240,7 @@ protected:
 
 
 // ILI9341 AdafruitSPITFT Display Driver
+// Most modern widely-available TFT displays on market are typically a variant of this particular type.
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ILI9341> : public HydroDisplayDriver {
 public:
@@ -266,8 +269,9 @@ protected:
 };
 
 
-// TFTe_SPI Display Driver
-// Note: Usage of TFTe_SPI requires library setup via its TFTe_SPI\User_Setup.h.
+// TFT_eSPI Display Driver
+// Fastest library for working with TFT displays, but requires additional setup.
+// Note: Usage of TFT_eSPI requires library setup via its TFT_eSPI\User_Setup.h.
 class HydroDisplayTFTeSPI : public HydroDisplayDriver {
 public:
     HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight, Hydro_ST7735Tab tabColor = Hydro_ST7735Tab_Undefined);

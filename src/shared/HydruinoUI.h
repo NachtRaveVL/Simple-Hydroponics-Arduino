@@ -70,7 +70,6 @@ protected:
     const bool _isActiveLow;                                // IO pins use active-low signaling logic
     const bool _allowISR;                                   // Perform ISR checks to determine ISR eligibility
     const bool _utf8Fonts;                                  // Using tcUnicode library fonts
-    const bool _gfxOrTFT;                                   // Display is Adafruit_GFX or TFT_eSPI
 
     MenuItem *_menuRoot;                                    // Menu root item (strong)
     HydroInputDriver *_input;                               // Input driver (owned)

@@ -96,7 +96,7 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
         HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7735 && dispOutMode <= Hydro_DisplayOutputMode_ILI9341) || displaySetup.cfgType == DeviceSetup::SPISetup, SFP(HStr_Err_InvalidParameter));
         HYDRO_SOFT_ASSERT(dispOutMode != Hydro_DisplayOutputMode_ST7735 || _uiDispSetup.dispCfgType == UIDisplaySetup::ST7735, SFP(HStr_Err_InvalidParameter));
         HYDRO_SOFT_ASSERT(!(dispOutMode >= Hydro_DisplayOutputMode_ST7789 && dispOutMode <= Hydro_DisplayOutputMode_ILI9341) || _uiDispSetup.dispCfgType == UIDisplaySetup::Pixel, SFP(HStr_Err_InvalidParameter));
-        // TFTe_SPI supports only SPI, /w TFT setup
+        // TFT_eSPI supports only SPI, /w TFT setup
         HYDRO_SOFT_ASSERT(dispOutMode != Hydro_DisplayOutputMode_TFT || displaySetup.cfgType == DeviceSetup::SPISetup, SFP(HStr_Err_InvalidParameter));
         HYDRO_SOFT_ASSERT(dispOutMode != Hydro_DisplayOutputMode_TFT || _uiDispSetup.dispCfgType == UIDisplaySetup::TFT, SFP(HStr_Err_InvalidParameter));
 

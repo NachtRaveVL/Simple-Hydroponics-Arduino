@@ -80,8 +80,8 @@ protected:
     void drawBackground(Coord pt, Coord sz, Pair<uint16_t, uint16_t> &screenSize);
 };
 
-// TFTe_SPI Overview Screen
-// Overview screen built for TFTe_SPI displays.
+// TFT_eSPI Overview Screen
+// Overview screen built for TFT_eSPI displays.
 class HydroOverviewTFT : public HydroOverview {
 public:
     HydroOverviewTFT(HydroDisplayTFTeSPI *display);

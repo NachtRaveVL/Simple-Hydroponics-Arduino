@@ -9,7 +9,6 @@
 HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiDisplaySetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
     : _appInfo{0}, _uiCtrlSetup(uiControlSetup), _uiDispSetup(uiDisplaySetup),
       _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _utf8Fonts(enableTcUnicodeFonts),
-      _gfxOrTFT(getController() && getController()->getDisplayOutputMode() >= Hydro_DisplayOutputMode_ST7735 && getController()->getDisplayOutputMode() <= Hydro_DisplayOutputMode_TFT),
       _menuRoot(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr), _blTimeout(0), _overview(nullptr)
 {
     if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
@@ -72,7 +71,7 @@ void HydruinoBaseUI::init()
 {
     const HydroUIData *uiData = nullptr; // todo
     if (uiData) {
-        init(uiData->updatesPerSec, uiData->displayTheme, _gfxOrTFT ? HYDRO_UI_GFXTFT_USES_SLIDER : false);
+        init(uiData->updatesPerSec, uiData->displayTheme, _display && _display->isColor() ? HYDRO_UI_GFXTFT_USES_SLIDER : false);
     } else if (_display) {
         _display->initBaseUIFromDefaults(); // calls back into above init with default settings for display
     } else {
