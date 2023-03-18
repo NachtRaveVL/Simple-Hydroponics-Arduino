@@ -27,7 +27,7 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
   * Includes remote UI menu access through enabled WiFi, Ethernet, Bluetooth, Serial, and/or Simhub connection.
   * UI I/O pins automatically setup as fully interrupt driven (5-25ms latency), partially interrupt driven (only keys/buttons polled), or polling based (75-100ms+ latency), depending on pins used.
   * System examples can be built in Minimal mode, saving on compiled sketch size at the cost of having to modify/re-upload the sketch upon certain system setup changes, or Full mode, which uses large amounts of Flash space available on modern controllers to provide everything all at once, with only more major of system changes requiring a modify/re-upload of the sketch.
-* Actuator, Sensor, and I/O pins can be natively multiplexed or expanded through 8/16-bit i2c expanders (TODO) for pin-limited controllers.
+* Actuator, Sensor, and I/O pins can be multiplexed or expanded through 8/16-bit i2c expanders for pin-limited controllers.
 * Library data can be built into onboard Flash or exported onto external storage to save on compiled sketch size.
   * Data export may allow enough size savings for certain 256kB Flash (or less) device builds (albeit possibly having to disable other features).
 
@@ -64,7 +64,7 @@ Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
 * _May_ work, but only with heavy tweaking/very limited build: ATMega2560, Genuino 101
 
-Note: Pin-limited MCUs may be restricted in how many sensors/actuators/etc. can be connected at once, and in such case where more pins are needed an i2c-based 8/16-bit expander using the PCF857X, MCP23017, or AW9523 might be recommended. The controller also supports standard multiplexing with a CD74HC or similar.
+Note: Pin-limited MCUs may be restricted in how many sensors/actuators/etc. can be connected at once, and in such case where more pins are needed an i2c-based 8/16-bit expander using a PCF857X or MCP23017 might be recommended. The controller also supports standard multiplexing with a CD74HC or similar.
 
 Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRAM size configurations. Some configurations may not be supported, others may limit total system size (i.e. object count, library support, features, etc.). Bigger is always better until you get a better idea of your specific use case's size requirements.
 
@@ -127,9 +127,9 @@ From Hydruino.h:
 
 #### External Libraries
 
-* U8g2 (for monochrome OLED displays): When using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 header file. Under this custom option, this library has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing custom device changes.
+* **U8g2** (for monochrome OLED displays): When using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file. Under this custom option, this library has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing device changes.
 
-* TFT_eSPI (for advanced color TFT displays): If using this advanced graphical display library (in place of AdafruitGfx), user library setup via its TFT_eSPI\User_Setup.h library setup file is required. This library always has static linkage against a single SPI device at a time and will require sketch modify/re-upload upon needing device changes.
+* **TFT_eSPI** (for advanced color TFT displays): If using this advanced graphical display library (in place of AdafruitGfx), user library setup via its TFT_eSPI\User_Setup.h library setup file is required. This library always has static linkage against a single SPI device at a time and will require sketch modify/re-upload upon needing changes.
 
 ### Initialization
 
