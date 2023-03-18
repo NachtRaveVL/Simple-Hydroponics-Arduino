@@ -127,9 +127,9 @@ From Hydruino.h:
 
 #### External Libraries
 
-* **U8g2** (for monochrome OLED displays): When using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file. Under this custom option, this library has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing device changes.
+* **U8g2** (for monochrome OLED displays): When using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file. Under this custom option, this library has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing any changes.
 
-* **TFT_eSPI** (for advanced color TFT displays): If using this advanced graphical display library (in place of AdafruitGfx), user library setup via its TFT_eSPI\User_Setup.h library setup file is required. This library always has static linkage against a single SPI device at a time and will require sketch modify/re-upload upon needing changes.
+* **TFT_eSPI** (for advanced color TFT displays): If using this advanced graphical display library (in place of AdafruitGfx), user library setup via its TFT_eSPI\User_Setup.h library setup file is required. This library always has static linkage against a single SPI device at a time and will require sketch modify/re-upload upon needing any changes.
 
 ### Initialization
 
