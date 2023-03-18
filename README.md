@@ -22,10 +22,10 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
   * Can be extended to work with other JSON-based Web APIs or Client-like derivatives (for DB storage or server-endpoint support).
   * Can add a piezo buzzer for audible system warning/failure alerting (TODO), or a display for current readings & recent logging messages.
 * Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by [tcMenu](https://github.com/davetcc/tcMenuLib)).
-  * Contains at-a-glance system overview screen and GUI menu system for system configuration, sensor calibration, and more (TODO).
+  * Contains at-a-glance system overview screen and interactive menu system for system configuration, sensor calibration, and more (TODO).
   * Critical system configuration menus can be pin-coded to prevent setup tampering, thus still allowing informational-screen/read-only access.
-  * GUI I/O pins can be setup up as fully interrupt driven (5-25ms latency), partially interrupt driven (only buttons polled), or polling based (75-100ms+ latency).
   * Includes remote UI menu access through enabled WiFi, Ethernet, Bluetooth, Serial, and/or Simhub connection.
+  * UI I/O pins automatically setup as fully interrupt driven (5-25ms latency), partially interrupt driven (only keys/buttons polled), or polling based (75-100ms+ latency), depending on pins used.
   * System examples can be built in Minimal mode, saving on compiled sketch size at the cost of having to modify/re-upload the sketch upon certain system setup changes, or Full mode, which uses large amounts of Flash space available on modern controllers to provide everything all at once, with only more major of system changes requiring a modify/re-upload of the sketch.
 * Actuator, Sensor, and I/O pins can be natively multiplexed or expanded through 8/16-bit i2c expanders (TODO) for pin-limited controllers.
 * Library data can be built into onboard Flash or exported onto external storage to save on compiled build size.
@@ -60,7 +60,7 @@ Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
 * _Can_ work, possibly /w ext. data/min. UI: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB)
 
-* Definitely will ___not___ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8/32 (<256kB)
+* Definitely will ___not___ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8/32 (<256kB), ATtiny (any)
 
 * _May_ work, but only with heavy tweaking/very limited build: ATMega2560, Genuino 101
 
