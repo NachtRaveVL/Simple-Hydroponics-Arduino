@@ -294,9 +294,13 @@ OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp 
 
 We also ask that our users report any broken sensors (outside of bad calibration data) for us to consider adding support to (also consider sponsoring our work on [Patreon](www.patreon.com/nachtrave)).
 
-### WiFi
+### Networking
 
-* Devices with built-in WiFi can enable such through header defines while other devices can utilize an external [serial ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/).
+* Devices with built-in WiFi or Ethernet port can enable such through header/build defines while other devices can utilize an external [serial ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/) on any open Serial line.
+  * Warning: While WiFi password is encrypted into system settings data, it should not be considered secure.
+* Bluetooth module can be used on any open Serial line to provide remote device control.
+* MQTT requires remotely accessible broker daemon in order to publish sensor data (setup separately).
+* Note that WiFi-based location determination APIs require external 3rd party monthly subscription fees, thus are currently not included as a feature.
 
 ## Memory Callouts
 
