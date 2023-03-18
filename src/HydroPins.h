@@ -31,7 +31,7 @@ struct HydroPin {
     inline bool isAnalogType() const { return type == Analog; }
     inline bool isUnknownType() const { return type <= Unknown; }
 
-    pintype_t pin;                                          // Pin number (else -1 if undefined, -2 if virtual)
+    pintype_t pin;                                          // Pin number (else -1 if undefined, 100+ if virtual)
     Hydro_PinMode mode;                                     // Pin mode setting
     int8_t channel;                                         // Muxing channel select (else -127 if unused)
 
