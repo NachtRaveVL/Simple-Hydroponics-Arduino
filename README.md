@@ -24,8 +24,8 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
 * Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by [tcMenu](https://github.com/davetcc/tcMenuLib)).
   * Contains at-a-glance system overview screen and GUI menu system for system configuration, sensor calibration, and more (TODO).
   * Critical system configuration menus can be pin-coded to prevent setup tampering, thus still allowing informational-screen/read-only access.
-  * GUI I/O automatically sets itself up as interrupt driven (/w 5-25ms latency), polling based (/w 50-100ms latency), or partially interrupt driven (depending on primary input pins).
-  * Includes remote GUI access through enabled Ethernet, WiFi, Serial, and/or Simhub connection.
+  * GUI I/O pins can be setup up as fully interrupt driven (5-25ms latency), partially interrupt driven (only buttons polled), or polling based (75-100ms+ latency).
+  * Includes remote UI menu access through enabled WiFi, Ethernet, Bluetooth, Serial, and/or Simhub connection.
   * System examples can be built in Minimal mode, saving on compiled sketch size at the cost of having to modify/re-upload the sketch upon certain system setup changes, or Full mode, which uses large amounts of Flash space available on modern controllers to provide everything all at once, with only more major of system changes requiring a modify/re-upload of the sketch.
 * Actuator, Sensor, and I/O pins can be natively multiplexed or expanded through 8/16-bit i2c expanders (TODO) for pin-limited controllers.
 * Library data can be built into onboard Flash or exported onto external storage to save on compiled build size.
@@ -56,13 +56,15 @@ Hydruino is a MCU-based solution primarily written for Arduino and Arduino-like 
 Minimum MCU: 256-512kB Flash, 16-24kB SRAM, 16MHz  
 Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
-* Definitely will work: GIGA, Portenta, ESP32/8266, Teensy 3.5+, STM32 (>256kB Flash), Pico/Nano RP2040 Connect, etc.
+* Definitely _will_ work: GIGA, Portenta, ESP32/8266, Teensy 3.5+, STM32 (>256kB), Pico/Nano RP2040 Connect
 
-* _Can_ work /w ext. data storage/min UI: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB Flash)
+* _Can_ work, possibly /w ext. data/min. UI: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB)
 
-* Definitely will ___not___ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8/32 (<256kB Flash), etc.
+* Definitely will ___not___ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8/32 (<256kB)
 
-* _May_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101
+* _May_ work, but only with heavy tweaking/very limited build: ATMega2560, Genuino 101
+
+Note: Pin-limited MCUs may be restricted in how many sensors/actuators/etc. can be connected at once, and in such case where more pins are needed an i2c-based 8/16-bit expander using the PCF857X, MCP23017, or AW9523 might be recommended. The controller also supports standard multiplexing with a CD74HC or similar.
 
 Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRAM size configurations. Some configurations may not be supported, others may limit total system size (i.e. object count, library support, features, etc.). Bigger is always better until you get a better idea of your specific use case's size requirements.
 
@@ -72,7 +74,7 @@ The easiest way to install this controller is to utilize the Arduino IDE library
 
 From there, you can make a local copy of one of the example sketches based on the kind of system setup you want to use. If you are unsure of which, we recommend the Vertical NFT Example, as it is our standard implementation built for most common system setups and only requires changing setup defines at the top of the file.
 
-Older storage constrained MCUs (< 512kB Flash) may need further tweaking, and possibly external storage hardware (such as EEPROM or SD Card - see the Data Writer example for more details). Modern MCUs with lots of Flash storage can instead simply build the Full System Example (TODO: Still a WIP).
+Storage constrained MCUs (< 512kB Flash, particularly <= 256kB) may need further setup file/max-sizes tweaking, and possibly external storage hardware (such as EEPROM or SD Card - see the Data Writer example for more details). Modern MCUs with lots of Flash storage can instead simply build the Full System Example (TODO: Still a WIP - use DA Tracking Example for right now).
 
 ### Setup
 
@@ -82,7 +84,7 @@ There are several defines inside of the controller's main Hydruino.h header file
 
 Alternatively, you may also refer to <https://forum.arduino.cc/index.php?topic=602603.0> on how to define custom build flags manually via modifying the platform[.local].txt file, or with the Arduino CLI (preferred way going forward).
 
-For the older platform.local.txt file override approach, create platform.local.txt alongside platform.txt located in %applocaldata%\Arduino15\packages\{platform}\hardware\{arch}\{version}\ (replacing %applocaldata%\Arduino15 with ~/Library/Arduino15 for OSX, and ~/.arduino15 for Linux), with the contents: `compiler.cpp.extra_flags=-Dname` (replacing `name` with full name of below define). Note that it will affect all builds for that platform until again changed/removed. Some build systems may require directly editing platform.txt and adding onto the end of its CPP build recipe, e.g. Teensy & `recipe.cpp.o.pattern=`.
+For the older platform.local.txt file override approach, create platform.local.txt alongside platform.txt located in %applocaldata%\Arduino15\packages\{platform}\hardware\{arch}\{version}\ (replacing %applocaldata%\Arduino15 with ~/Library/Arduino15 for OSX, and ~/.arduino15 for Linux), with the contents: `compiler.cpp.extra_flags=-Dname` (replacing `name` with full name of below define). Note that it will affect all builds for that platform until again changed/removed. Some build systems may require directly editing platform.txt and adding onto the end of its CPP build recipe, e.g. Teensy & `recipe.cpp.o.pattern=<bunch-of-stuff> -Dname`.
 
 From Hydruino.h:
 ```Arduino
@@ -125,7 +127,9 @@ From Hydruino.h:
 
 #### External Libraries
 
-* TFT_eSPI: If using this graphical display library, user library setup via its TFT_eSPI\User_Setup.h library setup file is required.
+* U8g2 (for monochrome OLED displays): When using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 header file. Under this custom option, this library has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing custom device changes.
+
+* TFT_eSPI (for advanced color TFT displays): If using this advanced graphical display library (in place of AdafruitGfx), user library setup via its TFT_eSPI\User_Setup.h library setup file is required. This library always has static linkage against a single SPI device at a time and will require sketch modify/re-upload upon needing device changes.
 
 ### Initialization
 
@@ -257,7 +261,7 @@ I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same sh
 * When more than one I2C device of the same kind is to be used on the same data line, each device must be set to use a different address. This is accomplished via the A0-A2 (sometimes A0-A5) pins/pads on the physical device that must be set either open or closed (typically via a de-solderable resistor, or by shorting a pin/pad). Check your specific breakout's datasheet for details.
 * Note that not all the I2C libraries used support multi-addressable I2C devices at this time (read as: may only use one). Currently, this restriction applies to: RTC devices.
 
-I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS modules, 16x2/20x4 LCD displays, 128x32/128x64 OLED displays, FT6206 touchscreens
+I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS modules, 16x2/20x4 LCD displays, 128x32/128x64 OLED displays, FT6206 touchscreens, 8/16-bit pin expanders
 
 ### OneWire Bus
 
@@ -265,10 +269,9 @@ OneWire devices can be chained together on the same shared data lines (no flippi
 
 * Typically, sensors are limited to 20 devices along a maximum 100m of wire.
 * When more than one OneWire device is on the same device line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
+* Note that DHT* 1W devices may not play nicely together on the same wire line as other 1W devices - dependency issue.
 
 OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp sensors
-
-(TODO: DHT* 1W devices may not play nicely together on the same wire as other 1W devices - support pending)
 
 ### Analog IO
 
@@ -276,8 +279,8 @@ OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp 
   * Note: Altering default factory calibration settings may require addition tools for setting up a new calibration, such as special calibration fluids/procedures/etc. Refer to the datasheet of your device for details.
 * The `AREF` (or `IOREF`) pin, which controls the upper-bound of this range, by default if left not-connected (NC) is the same voltage as the MCU. Analog sensors must not exceed this voltage limit.
   * 5v analog sensor output signals connecting to 3.3v MCUs that are not 5v tolerant **must** either be: [level converted](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/) in order to connect, or configured to output 0v to `AREF` (or `IOREF`) in voltage calibration output range (if able to calibrate - see note above).
-  * Warning: Too high of applied voltage to any pin incapable of receiving such high a voltage risks permanent damage to that device. _Always_ ensure that the applied voltage level coming out a device is supported when going back into another device! Some breakouts/IC's have 5v tolerance built-in, some do not. Refer to the datasheet of your MCU/device for details.
-  * Note: Typically a 3.3v output signal will not need level converted up to 5v for a 5v digital input to function.
+  * Warning: Too high of applied voltage to any pin incapable of receiving such high a voltage risks permanent damage to that device. _Always_ ensure that the applied voltage level coming out a device is supported when going back into another. Some breakouts/IC's have 5v tolerance built-in, some do not. Refer to the datasheet of your MCU/device for details.
+  * Note: Typically a 3.3v output signal will _not_ need level converted up to 5v for a 5v digital input to operate (read as: 3.3v is plenty enough to trigger HIGH on 5v device inputs).
 * The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, Nano 33, etc.) as well as many more modern MCUs support different bit resolutions for analog/PWM pins (tied to overridable `DAC_RESOLUTION` & `ADC_RESOLUTION` defines), with some (e.g. Pico, ESP32, etc.) supporting any pin being digital or analog w/o restriction. Refer to the datasheet of your MCU for details.
 
 ### Sensors
