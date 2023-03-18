@@ -28,8 +28,8 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
   * UI I/O pins automatically setup as fully interrupt driven (5-25ms latency), partially interrupt driven (only keys/buttons polled), or polling based (75-100ms+ latency), depending on pins used.
   * System examples can be built in Minimal mode, saving on compiled sketch size at the cost of having to modify/re-upload the sketch upon certain system setup changes, or Full mode, which uses large amounts of Flash space available on modern controllers to provide everything all at once, with only more major of system changes requiring a modify/re-upload of the sketch.
 * Actuator, Sensor, and I/O pins can be natively multiplexed or expanded through 8/16-bit i2c expanders (TODO) for pin-limited controllers.
-* Library data can be built into onboard Flash or exported onto external storage to save on compiled build size.
-  * Data export may allow enough compiled sketch size savings for certain 256kB Flash device builds (albeit possibly having to disable other features).
+* Library data can be built into onboard Flash or exported onto external storage to save on compiled sketch size.
+  * Data export may allow enough size savings for certain 256kB Flash (or less) device builds (albeit possibly having to disable other features).
 
 Made primarily for Arduino microcontrollers / build environments, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
