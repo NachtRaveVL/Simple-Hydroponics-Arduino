@@ -19,8 +19,8 @@ struct Twilight;
 // Returns if pin is valid
 inline bool isValidPin(pintype_t pin) { return pin != (pintype_t)-1; }
 // Returns if channel is valid
-inline bool isValidChannel(uint8_t channel) { return channel != (uint8_t)-1; }
-// Returns if measurement row is valid
+inline bool isValidChannel(int8_t channel) { return channel != -127; }
+// Returns if measurement row is valid1
 inline bool isValidRow(uint8_t row) { return row != (uint8_t)-1; }
 // Returns if taskId is valid
 inline bool isValidTask(unsigned int taskId) { return taskId != 0xffffU; } // purposeful, not using library define incase not included
@@ -116,8 +116,8 @@ struct DeviceSetup {
 // Note: Off-by-one? No, b/c for e.g. 12-bit analogRead(): 0 => no-sig/bin-low,
 //       1 => min-sig/PWM-wf, 4095 => max-sig/PWM-wf, 4096=full-sig/bin-high
 struct BitResolution {
-    const uint8_t bits;                                     // Bit resolution (#-of-bits)
-    const int_least32_t maxVal;                             // Maximum value (2 ^ #-of-bits)
+    uint8_t bits;                       // Bit resolution (#-of-bits)
+    int_least32_t maxVal;               // Maximum value (2 ^ #-of-bits)
 
     // Bit resolution from # of bits
     inline BitResolution(uint8_t numBits = 8) : bits(numBits), maxVal(1 << numBits) { ; }

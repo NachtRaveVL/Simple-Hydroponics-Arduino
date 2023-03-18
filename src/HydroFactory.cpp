@@ -5,7 +5,7 @@
 
 #include "Hydruino.h"
 
-SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputPin, uint8_t muxChannel)
+SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputPin, int8_t pinChannel)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_GrowLights));
@@ -15,7 +15,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputP
         auto actuator = SharedPtr<HydroRelayActuator>(new HydroRelayActuator(
             Hydro_ActuatorType_GrowLights,
             positionIndex,
-            HydroDigitalPin(outputPin, OUTPUT, muxChannel)
+            HydroDigitalPin(outputPin, OUTPUT, pinChannel)
         ));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
@@ -23,7 +23,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addGrowLightsRelay(pintype_t outputP
     return nullptr;
 }
 
-SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outputPin, uint8_t muxChannel)
+SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outputPin, int8_t pinChannel)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterPump));
@@ -34,7 +34,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outp
         auto actuator = SharedPtr<HydroRelayPumpActuator>(new HydroRelayPumpActuator(
             Hydro_ActuatorType_WaterPump,
             positionIndex,
-            HydroDigitalPin(outputPin, OUTPUT, muxChannel)
+            HydroDigitalPin(outputPin, OUTPUT, pinChannel)
         ));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
@@ -42,7 +42,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addWaterPumpRelay(pintype_t outp
     return nullptr;
 }
 
-SharedPtr<HydroRelayActuator> HydroFactory::addWaterHeaterRelay(pintype_t outputPin, uint8_t muxChannel)
+SharedPtr<HydroRelayActuator> HydroFactory::addWaterHeaterRelay(pintype_t outputPin, int8_t pinChannel)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterHeater));
@@ -53,7 +53,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterHeaterRelay(pintype_t output
         auto actuator = SharedPtr<HydroRelayActuator>(new HydroRelayActuator(
             Hydro_ActuatorType_WaterHeater,
             positionIndex,
-            HydroDigitalPin(outputPin, OUTPUT, muxChannel)
+            HydroDigitalPin(outputPin, OUTPUT, pinChannel)
         ));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
@@ -61,7 +61,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterHeaterRelay(pintype_t output
     return nullptr;
 }
 
-SharedPtr<HydroRelayActuator> HydroFactory::addWaterSprayerRelay(pintype_t outputPin, uint8_t muxChannel)
+SharedPtr<HydroRelayActuator> HydroFactory::addWaterSprayerRelay(pintype_t outputPin, int8_t pinChannel)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterSprayer));
@@ -72,7 +72,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterSprayerRelay(pintype_t outpu
         auto actuator = SharedPtr<HydroRelayActuator>(new HydroRelayActuator(
             Hydro_ActuatorType_WaterSprayer,
             positionIndex,
-            HydroDigitalPin(outputPin, OUTPUT, muxChannel)
+            HydroDigitalPin(outputPin, OUTPUT, pinChannel)
         ));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
@@ -80,7 +80,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterSprayerRelay(pintype_t outpu
     return nullptr;
 }
 
-SharedPtr<HydroRelayActuator> HydroFactory::addWaterAeratorRelay(pintype_t outputPin, uint8_t muxChannel)
+SharedPtr<HydroRelayActuator> HydroFactory::addWaterAeratorRelay(pintype_t outputPin, int8_t pinChannel)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_WaterAerator));
@@ -91,7 +91,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterAeratorRelay(pintype_t outpu
         auto actuator = SharedPtr<HydroRelayActuator>(new HydroRelayActuator(
             Hydro_ActuatorType_WaterAerator,
             positionIndex,
-            HydroDigitalPin(outputPin, OUTPUT, muxChannel)
+            HydroDigitalPin(outputPin, OUTPUT, pinChannel)
         ));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
@@ -99,7 +99,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addWaterAeratorRelay(pintype_t outpu
     return nullptr;
 }
 
-SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputPin, uint8_t muxChannel)
+SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputPin, int8_t pinChannel)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_FanExhaust));
@@ -110,7 +110,7 @@ SharedPtr<HydroRelayActuator> HydroFactory::addFanExhaustRelay(pintype_t outputP
         auto actuator = SharedPtr<HydroRelayActuator>(new HydroRelayActuator(
             Hydro_ActuatorType_FanExhaust,
             positionIndex,
-            HydroDigitalPin(outputPin, OUTPUT, muxChannel)
+            HydroDigitalPin(outputPin, OUTPUT, pinChannel)
         ));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
@@ -125,7 +125,7 @@ SharedPtr<HydroVariableActuator> HydroFactory::addAnalogFanExhaust(pintype_t out
 #ifdef ESP_PLATFORM
                                                                    float pwmFrequency,
 #endif
-                                                                   uint8_t muxChannel)
+                                                                   int8_t pinChannel)
 {
     bool outputPinIsPWM = checkPinIsPWMOutput(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_FanExhaust));
@@ -143,14 +143,14 @@ SharedPtr<HydroVariableActuator> HydroFactory::addAnalogFanExhaust(pintype_t out
 #ifdef ESP_PLATFORM
                            pwmFrequency,
 #endif
-                           muxChannel)));
+                           pinChannel)));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
 
     return nullptr;
 }
 
-SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_t outputPin, uint8_t muxChannel)
+SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_t outputPin, int8_t pinChannel)
 {
     bool outputPinIsDigital = checkPinIsDigital(outputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_ActuatorType_PeristalticPump));
@@ -161,7 +161,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_
         auto actuator = SharedPtr<HydroRelayPumpActuator>(new HydroRelayPumpActuator(
             Hydro_ActuatorType_PeristalticPump,
             positionIndex,
-            HydroDigitalPin(outputPin, OUTPUT, muxChannel)
+            HydroDigitalPin(outputPin, OUTPUT, pinChannel)
         ));
         if (getController()->registerObject(actuator)) { return actuator; }
     }
@@ -169,7 +169,7 @@ SharedPtr<HydroRelayPumpActuator> HydroFactory::addPeristalticPumpRelay(pintype_
     return nullptr;
 }
 
-SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin, bool isActiveLow, uint8_t muxChannel)
+SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin, bool isActiveLow, int8_t pinChannel)
 {
     bool inputPinIsDigital = checkPinIsDigital(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterLevel));
@@ -180,7 +180,7 @@ SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin,
         auto sensor = SharedPtr<HydroBinarySensor>(new HydroBinarySensor(
             Hydro_SensorType_WaterLevel,
             positionIndex,
-            HydroDigitalPin(inputPin, INPUT, isActiveLow, muxChannel)
+            HydroDigitalPin(inputPin, INPUT, isActiveLow, pinChannel)
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
     }
@@ -188,7 +188,7 @@ SharedPtr<HydroBinarySensor> HydroFactory::addLevelIndicator(pintype_t inputPin,
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPhMeter(pintype_t inputPin, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPhMeter(pintype_t inputPin, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PotentialHydrogen));
@@ -199,7 +199,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPhMeter(pintype_t inputPin, 
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_PotentialHydrogen,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel)
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel)
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
     }
@@ -207,7 +207,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPhMeter(pintype_t inputPin, 
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t inputPin, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t inputPin, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_TotalDissolvedSolids));
@@ -218,7 +218,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t input
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_TotalDissolvedSolids,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel)
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel)
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
     }
@@ -226,7 +226,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTDSElectrode(pintype_t input
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTemperatureSensor(pintype_t inputPin, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTemperatureSensor(pintype_t inputPin, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterTemperature));
@@ -237,7 +237,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTemperatureSensor(pintype_t 
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_WaterTemperature,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel)
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel)
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
     }
@@ -245,7 +245,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogTemperatureSensor(pintype_t 
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogCO2Sensor(pintype_t inputPin, int ppmScale, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogCO2Sensor(pintype_t inputPin, int ppmScale, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_AirCarbonDioxide));
@@ -256,7 +256,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogCO2Sensor(pintype_t inputPin
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_AirCarbonDioxide,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel),
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel),
             true
         ));
         if (getController()->registerObject(sensor)) {
@@ -279,7 +279,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogCO2Sensor(pintype_t inputPin
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inputPin, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inputPin, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_SoilMoisture));
@@ -290,7 +290,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inp
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_SoilMoisture,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel),
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel),
             true
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
@@ -299,7 +299,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogMoistureSensor(pintype_t inp
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPumpFlowSensor(pintype_t inputPin, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPumpFlowSensor(pintype_t inputPin, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PumpFlow));
@@ -310,7 +310,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPumpFlowSensor(pintype_t inp
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_PumpFlow,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel)
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel)
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
     }
@@ -318,7 +318,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogPumpFlowSensor(pintype_t inp
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t inputPin, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t inputPin, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
@@ -329,7 +329,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t i
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_WaterHeight,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel)
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel)
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
     }
@@ -337,7 +337,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addAnalogWaterHeightMeter(pintype_t i
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t inputPin, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t inputPin, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_WaterHeight));
@@ -348,7 +348,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_WaterHeight,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel),
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel),
             true
         ));
         if (getController()->registerObject(sensor)) { return sensor; }
@@ -357,7 +357,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addUltrasonicDistanceSensor(pintype_t
     return nullptr;
 }
 
-SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin, bool isWattageBased, uint8_t inputBitRes, uint8_t muxChannel)
+SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin, bool isWattageBased, uint8_t inputBitRes, int8_t pinChannel)
 {
     bool inputPinIsAnalog = checkPinIsAnalogInput(inputPin);
     hposi_t positionIndex = getController()->firstPositionOpen(HydroIdentity(Hydro_SensorType_PowerLevel));
@@ -368,7 +368,7 @@ SharedPtr<HydroAnalogSensor> HydroFactory::addPowerLevelMeter(pintype_t inputPin
         auto sensor = SharedPtr<HydroAnalogSensor>(new HydroAnalogSensor(
             Hydro_SensorType_PowerLevel,
             positionIndex,
-            HydroAnalogPin(inputPin, INPUT, inputBitRes, muxChannel)
+            HydroAnalogPin(inputPin, INPUT, inputBitRes, pinChannel)
         ));
         if (getController()->registerObject(sensor)) {
             if (!isWattageBased) { sensor->setMeasurementUnits(Hydro_UnitsType_Power_Amperage); }

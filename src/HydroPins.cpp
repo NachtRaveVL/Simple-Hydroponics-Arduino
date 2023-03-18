@@ -4,6 +4,7 @@
 */
 
 #include "Hydruino.h"
+#include "AnalogDeviceAbstraction.h"
 
 HydroPin *newPinObjectFromSubData(const HydroPinData *dataIn)
 {
@@ -23,13 +24,12 @@ HydroPin *newPinObjectFromSubData(const HydroPinData *dataIn)
     return nullptr;
 }
 
-
 HydroPin::HydroPin()
     : type(Unknown), pin((pintype_t)-1), mode(Hydro_PinMode_Undefined), channel(-1)
 { ; }
 
-HydroPin::HydroPin(int classType, pintype_t pinNumber, Hydro_PinMode pinMode, uint8_t muxChannel)
-    : type((typeof(type))classType), pin(pinNumber), mode(pinMode), channel(muxChannel)
+HydroPin::HydroPin(int classType, pintype_t pinNumber, Hydro_PinMode pinMode, int8_t pinChannel)
+    : type((typeof(type))classType), pin(pinNumber), mode(pinMode), channel(pinChannel)
 { ; }
 
 HydroPin::HydroPin(const HydroPinData *dataIn)
@@ -58,54 +58,82 @@ void HydroPin::init()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid()) {
-            switch (mode) {
-                case Hydro_PinMode_Digital_Input:
-                case Hydro_PinMode_Analog_Input:
-                    pinMode(pin, INPUT);
-                    break;
-
-                case Hydro_PinMode_Digital_Input_PullUp:
-                    pinMode(pin, INPUT_PULLUP);
-                    break;
-
-                case Hydro_PinMode_Digital_Input_PullDown:
-                    #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_MBED) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY) || defined(INPUT_PULLDOWN)
-                        pinMode(pin, INPUT_PULLDOWN);
-                    #else
+            if (!isExpanded()) {
+                switch (mode) {
+                    case Hydro_PinMode_Digital_Input:
+                    case Hydro_PinMode_Analog_Input:
                         pinMode(pin, INPUT);
-                    #endif
-                    break;
+                        break;
 
-                case Hydro_PinMode_Digital_Output:
-                case Hydro_PinMode_Digital_Output_PushPull:
-                case Hydro_PinMode_Analog_Output:
-                    pinMode(pin, OUTPUT);
-                    break;
+                    case Hydro_PinMode_Digital_Input_PullUp:
+                        pinMode(pin, INPUT_PULLUP);
+                        break;
 
-                default:
-                    break;
+                    case Hydro_PinMode_Digital_Input_PullDown:
+                        #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_MBED) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY) || defined(INPUT_PULLDOWN)
+                            pinMode(pin, INPUT_PULLDOWN);
+                        #else
+                            pinMode(pin, INPUT);
+                        #endif
+                        break;
+
+                    case Hydro_PinMode_Digital_Output:
+                    case Hydro_PinMode_Digital_Output_PushPull:
+                    case Hydro_PinMode_Analog_Output:
+                        pinMode(pin, OUTPUT);
+                        break;
+
+                    default:
+                        break;
+                }
+            } else {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                if (expander) {
+                    expander->getIoAbstraction()->pinDirection(abs(channel), isOutput() ? OUTPUT : mode == Hydro_PinMode_Digital_Input_PullUp ? INPUT_PULLUP : mode == Hydro_PinMode_Digital_Input_PullDown ? INPUT_PULLDOWN : INPUT);
+                }
             }
         }
     #endif
 }
 
-bool HydroPin::enableMuxer(int step)
+void HydroPin::deinit()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && isMuxed()) {
-            SharedPtr<HydroPinMuxer> muxer = getController() ? getController()->getPinMuxer(pin) : nullptr;
-            if (muxer) {
-                switch (step) {
-                    case 0: muxer->selectChannel(channel); muxer->activate(); return true;
-                    case 1: muxer->selectChannel(channel); return true;
-                    case 2: muxer->activate(); return true;
-                    default: return false;
+        if (isValid()) {
+            if (!isExpanded()) {
+                pinMode(pin, INPUT);
+            } else {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                if (expander) {
+                    expander->getIoAbstraction()->pinDirection(abs(channel), INPUT);
                 }
+            }
+        }
+    #endif
+}
+
+bool HydroPin::enablePin(int step)
+{
+    #if !HYDRO_SYS_DRY_RUN_ENABLE
+        if (isValid() && isValidChannel(channel)) {
+            if (isMuxed()) {
+                SharedPtr<HydroPinMuxer> muxer = getController() ? getController()->getPinMuxer(pin) : nullptr;
+                if (muxer) {
+                    switch (step) {
+                        case 0: muxer->selectChannel(channel); muxer->activate(); return true;
+                        case 1: muxer->selectChannel(channel); return true;
+                        case 2: muxer->activate(); return true;
+                        default: return false;
+                    }
+                }
+            } else if (isExpanded()) {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                return expander && expander->syncChannel();
             }
         }
         return false;
     #else
-        return isValid() && isMuxed();
+        return isValid() && isValidChannel(channel);
     #endif
 }
 
@@ -114,28 +142,28 @@ HydroDigitalPin::HydroDigitalPin()
     : HydroPin(Digital)
 { ; }
 
-HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, uint8_t muxChannel)
+HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, int8_t pinChannel)
     : HydroPin(Digital, pinNumber, pinMode != OUTPUT ? (pinMode != INPUT ? (pinMode == INPUT_PULLUP ? Hydro_PinMode_Digital_Input_PullUp : Hydro_PinMode_Digital_Input_PullDown)
                                                                          : Hydro_PinMode_Digital_Input)
-                                                     : (pinMode == OUTPUT ? Hydro_PinMode_Digital_Output : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
+                                                     : (pinMode == OUTPUT ? Hydro_PinMode_Digital_Output : Hydro_PinMode_Digital_Output_PushPull), pinChannel),
       activeLow(pinMode == INPUT || pinMode == INPUT_PULLUP || pinMode == OUTPUT)
 { ; }
 
-HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Hydro_PinMode pinMode, uint8_t muxChannel)
-    : HydroPin(Digital, pinNumber, pinMode, muxChannel),
+HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Hydro_PinMode pinMode, int8_t pinChannel)
+    : HydroPin(Digital, pinNumber, pinMode, pinChannel),
       activeLow(pinMode == Hydro_PinMode_Digital_Input ||
                 pinMode == Hydro_PinMode_Digital_Input_PullUp ||
                 pinMode == Hydro_PinMode_Digital_Output)
 { ; }
 
-HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, bool isActiveLow, uint8_t muxChannel)
+HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, bool isActiveLow, int8_t pinChannel)
     : HydroPin(Digital, pinNumber, pinMode != OUTPUT ? (isActiveLow ? Hydro_PinMode_Digital_Input_PullUp : Hydro_PinMode_Digital_Input_PullDown)
-                                                     : (isActiveLow ? Hydro_PinMode_Digital_Output : Hydro_PinMode_Digital_Output_PushPull), muxChannel),
+                                                     : (isActiveLow ? Hydro_PinMode_Digital_Output : Hydro_PinMode_Digital_Output_PushPull), pinChannel),
       activeLow(isActiveLow)
 { ; }
 
-HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Hydro_PinMode pinMode, bool isActiveLow, uint8_t muxChannel)
-    : HydroPin(Digital, pinNumber, pinMode, muxChannel),
+HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, Hydro_PinMode pinMode, bool isActiveLow, int8_t pinChannel)
+    : HydroPin(Digital, pinNumber, pinMode, pinChannel),
       activeLow(isActiveLow)
 { ; }
 
@@ -153,8 +181,16 @@ void HydroDigitalPin::saveToData(HydroPinData *dataOut) const
 ard_pinstatus_t HydroDigitalPin::digitalRead()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || selectAndActivateMuxer())) {
-            return ::digitalRead(pin);
+        if (isValid()) {
+            if (isValidChannel(channel)) { selectAndActivatePin(); }
+            if (!isExpanded()) {
+                return ::digitalRead(pin);
+            } else {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                if (expander) {
+                    return (ard_pinstatus_t)(expander->getIoAbstraction()->readValue(abs(channel)));
+                }
+            }
         }
     #endif
     return (ard_pinstatus_t)-1;
@@ -163,9 +199,17 @@ ard_pinstatus_t HydroDigitalPin::digitalRead()
 void HydroDigitalPin::digitalWrite(ard_pinstatus_t status)
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || selectMuxer())) {
-            ::digitalWrite(pin, status);
-            if (isMuxed()) { activateMuxer(); }
+        if (isValid()) {
+            if (!isExpanded()) {
+                if (isMuxed()) { selectPin(); }
+                ::digitalWrite(pin, status);
+            } else {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                if (expander) {
+                    expander->getIoAbstraction()->writeValue(abs(channel), (uint8_t)status);
+                }
+            }
+            if (isValidChannel(channel)) { activatePin(); }
         }
     #endif
 }
@@ -188,8 +232,8 @@ HydroAnalogPin::HydroAnalogPin(pintype_t pinNumber, ard_pinmode_t pinMode, uint8
 #ifdef ESP_PLATFORM
                                float pinPWMFrequency,
 #endif
-                               uint8_t muxChannel)
-    : HydroPin(Analog, pinNumber, pinMode != OUTPUT ? Hydro_PinMode_Analog_Input : Hydro_PinMode_Analog_Output, muxChannel),
+                               int8_t pinChannel)
+    : HydroPin(Analog, pinNumber, pinMode != OUTPUT ? Hydro_PinMode_Analog_Input : Hydro_PinMode_Analog_Output, pinChannel),
       bitRes(analogBitRes ? analogBitRes : (pinMode == OUTPUT ? DAC_RESOLUTION : ADC_RESOLUTION))
 #ifdef ESP32
       , pwmChannel(pinPWMChannel)
@@ -206,8 +250,8 @@ HydroAnalogPin::HydroAnalogPin(pintype_t pinNumber, Hydro_PinMode pinMode, uint8
 #ifdef ESP_PLATFORM
                                float pinPWMFrequency,
 #endif
-                               uint8_t muxChannel)
-    : HydroPin(Analog, pinNumber, pinMode, muxChannel),
+                               int8_t pinChannel)
+    : HydroPin(Analog, pinNumber, pinMode, pinChannel),
       bitRes(analogBitRes ? analogBitRes : (pinMode == Hydro_PinMode_Analog_Output ? DAC_RESOLUTION : ADC_RESOLUTION))
 #ifdef ESP32
       , pwmChannel(pinPWMChannel)
@@ -231,11 +275,26 @@ void HydroAnalogPin::init()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid()) {
-            HydroPin::init();
-            #ifdef ESP32
-                ledcAttachPin(pin, pwmChannel);
-                ledcSetup(pwmChannel, pwmFrequency, bitRes.bits);
-            #endif
+            if (!isExpanded()) {
+                HydroPin::init();
+
+                #ifdef ESP32
+                    ledcAttachPin(pin, pwmChannel);
+                    ledcSetup(pwmChannel, pwmFrequency, bitRes.bits);
+                #endif
+            } else {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                if (expander) {
+                    auto ioDir = isOutput() ? AnalogDirection::DIR_OUT : AnalogDirection::DIR_IN;
+                    auto analogIORef = (AnalogDevice *)(expander->getIoAbstraction());
+                    analogIORef->initPin(abs(channel), ioDir);
+
+                    auto ioRefBits = analogIORef->getBitDepth(ioDir, abs(channel));
+                    if (bitRes.bits != ioRefBits) {
+                        bitRes = BitResolution(ioRefBits);
+                    }
+                }
+            }
         }
     #endif
 }
@@ -261,11 +320,20 @@ float HydroAnalogPin::analogRead()
 int HydroAnalogPin::analogRead_raw()
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || selectAndActivateMuxer())) {
-            #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-                analogReadResolution(bitRes.bits);
-            #endif
-            return ::analogRead(pin);
+        if (isValid()) {
+            if (isValidChannel(channel)) { selectAndActivatePin(); }
+            if (!isExpanded()) {
+                #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+                    analogReadResolution(bitRes.bits);
+                #endif
+                return ::analogRead(pin);
+            } else {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                if (expander) {
+                    auto analogIORef = (AnalogDevice *)(expander->getIoAbstraction());
+                    analogIORef->getCurrentValue(abs(channel));
+                }
+            }
         }
     #endif
     return 0;
@@ -279,19 +347,28 @@ void HydroAnalogPin::analogWrite(float amount)
 void HydroAnalogPin::analogWrite_raw(int amount)
 {
     #if !HYDRO_SYS_DRY_RUN_ENABLE
-        if (isValid() && (!isMuxed() || selectMuxer())) {
-            #ifdef ESP32
-                ledcWrite(pwmChannel, amount);
-            #else
-                #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
-                    analogWriteResolution(bitRes.bits);
-                #elif defined(ESP8266)
-                    analogWriteRange(bitRes.maxVal);
-                    analogWriteFreq(pwmFrequency);
+        if (isValid()) {
+            if (!isExpanded()) {
+                if (isMuxed()) { selectPin(); }
+                #ifdef ESP32
+                    ledcWrite(pwmChannel, amount);
+                #else
+                    #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+                        analogWriteResolution(bitRes.bits);
+                    #elif defined(ESP8266)
+                        analogWriteRange(bitRes.maxVal);
+                        analogWriteFreq(pwmFrequency);
+                    #endif
+                    ::analogWrite(pin, amount);
                 #endif
-                ::analogWrite(pin, amount);
-            #endif
-            if (isMuxed()) { activateMuxer(); }
+            } else {
+                SharedPtr<HydroPinExpander> expander = getController() ? getController()->getPinExpander(HydroPin::expanderForPinNumber(pin)) : nullptr;
+                if (expander) {
+                    auto analogIORef = (AnalogDevice *)(expander->getIoAbstraction());
+                    analogIORef->setCurrentValue(abs(channel), amount);
+                }
+            }
+            if (isValidChannel(channel)) { activatePin(); }
         }
     #endif
 }
@@ -353,11 +430,14 @@ void HydroPinData::fromJSONObject(JsonObjectConst &objectIn)
 
 
 HydroPinMuxer::HydroPinMuxer()
-    : _signal(), _chipEnable(), _channelPins{(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1}, _channelSelect(0)
-{ ; }
+    : _signal(), _chipEnable(), _channelPins{(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1},
+      _channelBits(0), _channelSelect(-1)
+{
+    _signal.channel = -127; // unused
+}
 
 HydroPinMuxer::HydroPinMuxer(HydroPin signalPin,
-                             pintype_t *muxChannelPins, uint8_t muxChannelBits,
+                             pintype_t *muxChannelPins, int8_t muxChannelBits,
                              HydroDigitalPin chipEnablePin)
     : _signal(signalPin), _chipEnable(chipEnablePin),
       _channelPins{ muxChannelBits > 0 ? muxChannelPins[0] : (pintype_t)-1,
@@ -365,9 +445,9 @@ HydroPinMuxer::HydroPinMuxer(HydroPin signalPin,
                     muxChannelBits > 2 ? muxChannelPins[2] : (pintype_t)-1,
                     muxChannelBits > 3 ? muxChannelPins[3] : (pintype_t)-1,
                     muxChannelBits > 4 ? muxChannelPins[4] : (pintype_t)-1 },
-      _channelBits(muxChannelBits), _channelSelect(0)
+      _channelBits(muxChannelBits), _channelSelect(-1)
 {
-    _signal.channel = -1; // unused
+    _signal.channel = -127; // unused
 }
 
 HydroPinMuxer::HydroPinMuxer(const HydroPinMuxerData *dataIn)
@@ -377,9 +457,9 @@ HydroPinMuxer::HydroPinMuxer(const HydroPinMuxerData *dataIn)
                     dataIn->channelPins[2],
                     dataIn->channelPins[3],
                     dataIn->channelPins[4] },
-      _channelBits(dataIn->channelBits), _channelSelect(0)
+      _channelBits(dataIn->channelBits), _channelSelect(-1)
 {
-    _signal.channel = -1; // unused
+    _signal.channel = -127; // unused
 }
 
 void HydroPinMuxer::saveToData(HydroPinMuxerData *dataOut) const
@@ -470,8 +550,44 @@ void HydroPinMuxer::setIsActive(bool isActive)
 }
 
 
+HydroPinExpander::HydroPinExpander()
+    : _signal(), _ioRef(nullptr), _channelBits(0)
+{
+    _signal.pin = 100;
+    _signal.channel = _channelBits;
+}
+
+HydroPinExpander::HydroPinExpander(HydroPin signalPin, IoAbstractionRef ioRef, uint8_t channelBits)
+    : _signal(signalPin), _ioRef(ioRef),
+      _channelBits(channelBits)
+{
+    _signal.pin = isValidPin(_signal.pin) ? ((_signal.pin >= 100 ? _signal.pin - 100 : _signal.pin) & ~0b1111) + 100 : -1;
+    _signal.channel = _channelBits;
+}
+
+HydroPinExpander::HydroPinExpander(const HydroPinExpanderData *dataIn, IoAbstractionRef ioRef)
+    : _signal(&dataIn->signal), _ioRef(ioRef),
+      _channelBits(dataIn->channelBits)
+{
+    _signal.pin = isValidPin(_signal.pin) ? ((_signal.pin >= 100 ? _signal.pin - 100 : _signal.pin) & ~0b1111) + 100 : -1;
+    _signal.channel = _channelBits;
+}
+
+void HydroPinExpander::saveToData(HydroPinExpanderData *dataOut) const
+{
+    _signal.saveToData(&dataOut->signal);
+    dataOut->channelBits = _channelBits;
+}
+
+bool HydroPinExpander::syncChannel()
+{
+    return _ioRef->sync();
+}
+
+
 HydroPinMuxerData::HydroPinMuxerData()
-    : HydroSubData(0), signal(), chipEnable(), channelPins{(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1}, channelBits(0)
+    : HydroSubData(0), signal(), chipEnable(), channelPins{(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1,(pintype_t)-1},
+      channelBits(0)
 { ; }
 
 void HydroPinMuxerData::toJSONObject(JsonObject &objectOut) const
@@ -502,4 +618,30 @@ void HydroPinMuxerData::fromJSONObject(JsonObjectConst &objectIn)
     JsonVariantConst channelPinsVar = objectIn[SFP(HStr_Key_ChannelPins)];
     commaStringToArray(channelPinsVar, channelPins, 5);
     for (channelBits = 0; channelBits < 5 && isValidPin(channelPins[channelBits]); ++channelBits) { ; }
+}
+
+
+HydroPinExpanderData::HydroPinExpanderData()
+    : HydroSubData(0), signal(), channelBits(0)
+{
+    signal.channel = channelBits;
+}
+
+void HydroPinExpanderData::toJSONObject(JsonObject &objectOut) const
+{
+    //HydroSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
+
+    if (isValidPin(signal.pin)) {
+        JsonObject signalPinObj = objectOut.createNestedObject(SFP(HStr_Key_SignalPin));
+        signal.toJSONObject(signalPinObj);
+    }
+}
+
+void HydroPinExpanderData::fromJSONObject(JsonObjectConst &objectIn)
+{
+    //HydroSubData::fromJSONObject(objectIn); // purposeful no call to base method (ignores type)
+
+    JsonObjectConst signalPinObj = objectIn[SFP(HStr_Key_SignalPin)];
+    if (!signalPinObj.isNull()) { signal.fromJSONObject(signalPinObj); }
+    channelBits = signal.channel;
 }
