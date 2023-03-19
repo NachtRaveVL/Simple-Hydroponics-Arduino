@@ -537,33 +537,50 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_FRESH_WATER_PIN           -1              // Fresh water peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_UP_PIN                 -1              // pH up solution peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_DOWN_PIN               -1              // pH down solution peristaltic pump relay pin (digital), else -1
-#define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor pin, for adaptive crop
+#define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor, for adaptive crop, pin (analog), else -1
 
 // Device Multiplexing Setup
-#define SETUP_MUXING_CHANNEL_BITS       -1              // Number of channel bits for multiplexer, else -1
-#define SETUP_MUXING_ADDRESS_PINS       {hpin_none}     // Address channel pins, else {-1}
-#define SETUP_MUXING_ENABLE_PIN         -1              // Chip enable pin for multiplexer (optional), else -1
-#define SETUP_MUXING_ENABLE_TYPE        ACT_LOW         // Chip enable pin type/active level (ACT_HIGH, ACT_LOW)
-#define SETUP_PH_METER_MUXCHN           -1              // pH meter sensor pin muxing channel #, else -1
-#define SETUP_TDS_METER_MUXCHN          -1              // TDS meter sensor pin muxing channel #, else -1
-#define SETUP_CO2_SENSOR_MUXCHN         -1              // CO2 meter sensor pin muxing channel #, else -1
-#define SETUP_AC_USAGE_SENSOR_MUXCHN    -1              // AC power usage meter sensor pin muxing channel #, else -1
-#define SETUP_DC_USAGE_SENSOR_MUXCHN    -1              // DC power usage meter sensor pin muxing channel #, else -1
-#define SETUP_FLOW_RATE_SENSOR_MUXCHN   -1              // Main feed pump flow rate sensor pin muxing channel #, else -1
-#define SETUP_VOL_FILLED_MUXCHN         -1              // Water level filled indicator pin muxing channel #, else -1
-#define SETUP_VOL_EMPTY_MUXCHN          -1              // Water level empty indicator pin muxing channel #, else -1
-#define SETUP_VOL_LEVEL_MUXCHN          -1              // Water level sensor pin muxing channel #, else -1
-#define SETUP_GROW_LIGHTS_MUXCHN        -1              // Grow lights relay pin muxing channel #, else -1
-#define SETUP_WATER_AERATOR_MUXCHN      -1              // Aerator relay pin muxing channel #, else -1
-#define SETUP_FEED_PUMP_MUXCHN          -1              // Water level low indicator pin muxing channel #, else -1
-#define SETUP_WATER_HEATER_MUXCHN       -1              // Water heater relay pin muxing channel #, else -1
-#define SETUP_WATER_SPRAYER_MUXCHN      -1              // Water sprayer relay pin muxing channel #, else -1
-#define SETUP_FAN_EXHAUST_MUXCHN        -1              // Fan exhaust relay pin muxing channel #, else -1
-#define SETUP_NUTRIENT_MIX_MUXCHN       -1              // Nutrient premix peristaltic pump relay pin muxing channel #, else -1
-#define SETUP_FRESH_WATER_MUXCHN        -1              // Fresh water peristaltic pump relay pin muxing channel #, else -1
-#define SETUP_PH_UP_MUXCHN              -1              // pH up solution peristaltic pump relay pin muxing channel #, else -1
-#define SETUP_PH_DOWN_MUXCHN            -1              // pH down solution peristaltic pump relay pin muxing channel #, else -1
-#define SETUP_CROP_SOILM_MUXCHN         -1              // Soil moisture sensor pin muxing channel #, for adaptive crop
+#define SETUP_MUXER_CHANNEL_BITS        -1              // Multiplexer channel bits (8 or 16), else -1
+#define SETUP_MUXER_ADDRESS_PINS        {hpin_none}     // Multiplexer addressing bus/channel pins, else {-1}
+#define SETUP_MUXER_ENABLE_PIN          -1              // Multiplexer chip enable pin (optional), else -1
+#define SETUP_MUXER_ENABLE_TYPE         ACT_LOW         // Multiplexer chip enable pin type/active level (ACT_HIGH, ACT_LOW)
+
+// Device Pin Expanders Setup
+#define SETUP_EXPANDER1_CHANNEL_BITS    -1              // Pin expander 1 channel bits (8 or 16), else -1
+#define SETUP_EXPANDER2_CHANNEL_BITS    -1              // Pin expander 2 channel bits (8 or 16), else -1
+#define SETUP_EXPANDER1_IOREF_PINMODE   Digital_Input   // Pin expander 1 pin mode (Digital_Input, Digital_Input_PullUp, Digital_Input_PullDown, Digital_Output, Analog_Input, Analog_Output, Undefined)
+#define SETUP_EXPANDER2_IOREF_PINMODE   Digital_Output  // Pin expander 2 pin mode (Digital_Input, Digital_Input_PullUp, Digital_Input_PullDown, Digital_Output, Analog_Input, Analog_Output, Undefined)
+#define SETUP_EXPANDER1_IOREF_I2C_ADDR  0x27            // Pin expander 1 full I2C device address (including device base offset)
+#define SETUP_EXPANDER2_IOREF_I2C_ADDR  0x28            // Pin expander 2 full I2C device address (including device base offset)
+#define SETUP_EXPANDER1_IOREF_ISR_PIN   -1              // Pin expander 1 interrupt pin, else -1
+#define SETUP_EXPANDER2_IOREF_ISR_PIN   -1              // Pin expander 2 interrupt pin, else -1
+#define SETUP_EXPANDER_IOREF_I2C_WIRE   Wire            // Pin expanders I2C wire class instance
+// IORef allocation command using ioFrom* functions in IoAbstraction for pin expander 1
+#define SETUP_EXPANDER1_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER1_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER1_IOREF_ISR_PIN, &SETUP_EXPANDER1_IOREF_I2C_WIRE)
+// IORef allocation command using ioFrom* functions in IoAbstraction for pin expander 2
+#define SETUP_EXPANDER2_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER2_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER2_IOREF_ISR_PIN, &SETUP_EXPANDER2_IOREF_I2C_WIRE)
+
+// Pin Muxer/Expander Channel Setup
+#define SETUP_PH_METER_PINCHNL          hpinchnl_none   // pH meter sensor pin muxer/expander channel #, else -127/none
+#define SETUP_TDS_METER_PINCHNL         hpinchnl_none   // TDS meter sensor pin muxer/expander channel #, else -127/none
+#define SETUP_CO2_SENSOR_PINCHNL        hpinchnl_none   // CO2 meter sensor pin muxer/expander channel #, else -127/none
+#define SETUP_AC_USAGE_SENSOR_PINCHNL   hpinchnl_none   // AC power usage meter sensor pin muxer/expander channel #, else -127/none
+#define SETUP_DC_USAGE_SENSOR_PINCHNL   hpinchnl_none   // DC power usage meter sensor pin muxer/expander channel #, else -127/none
+#define SETUP_FLOW_RATE_SENSOR_PINCHNL  hpinchnl_none   // Main feed pump flow rate sensor pin muxer/expander channel #, else -127/none
+#define SETUP_VOL_FILLED_PINCHNL        hpinchnl_none   // Water level filled indicator pin muxer/expander channel #, else -127/none
+#define SETUP_VOL_EMPTY_PINCHNL         hpinchnl_none   // Water level empty indicator pin muxer/expander channel #, else -127/none
+#define SETUP_VOL_LEVEL_PINCHNL         hpinchnl_none   // Water level sensor pin muxer/expander channel #, else -127/none
+#define SETUP_GROW_LIGHTS_PINCHNL       hpinchnl_none   // Grow lights relay pin muxer/expander channel #, else -127/none
+#define SETUP_WATER_AERATOR_PINCHNL     hpinchnl_none   // Aerator relay pin muxer/expander channel #, else -127/none
+#define SETUP_FEED_PUMP_PINCHNL         hpinchnl_none   // Water level low indicator pin muxer/expander channel #, else -127/none
+#define SETUP_WATER_HEATER_PINCHNL      hpinchnl_none   // Water heater relay pin muxer/expander channel #, else -127/none
+#define SETUP_WATER_SPRAYER_PINCHNL     hpinchnl_none   // Water sprayer relay pin muxer/expander channel #, else -127/none
+#define SETUP_FAN_EXHAUST_PINCHNL       hpinchnl_none   // Fan exhaust relay pin muxer/expander channel #, else -127/none
+#define SETUP_NUTRIENT_MIX_PINCHNL      hpinchnl_none   // Nutrient premix peristaltic pump relay pin muxer/expander channel #, else -127/none
+#define SETUP_FRESH_WATER_PINCHNL       hpinchnl_none   // Fresh water peristaltic pump relay pin muxer/expander channel #, else -127/none
+#define SETUP_PH_UP_PINCHNL             hpinchnl_none   // pH up solution peristaltic pump relay pin muxer/expander channel #, else -127/none
+#define SETUP_PH_DOWN_PINCHNL           hpinchnl_none   // pH down solution peristaltic pump relay pin muxer/expander channel #, else -127/none
+#define SETUP_CROP_SOILM_PINCHNL        hpinchnl_none   // Soil moisture sensor, for adaptive crop, pin muxer/expander channel #, else -127/none
 
 // System Setup
 #define SETUP_AC_POWER_RAIL_TYPE        AC110V          // Rail power type used for actuator AC rail (AC110V, AC220V)
