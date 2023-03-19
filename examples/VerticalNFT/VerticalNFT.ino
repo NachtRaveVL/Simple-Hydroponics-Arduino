@@ -33,7 +33,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_DISP_OLED_I2C_ADDR        0b000           // OLED i2c address (A0-A2, bitwise or'ed with base address 0x78)
 #define SETUP_DISP_SPI                  SPI             // Display SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
-#define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
+#define SETUP_CTRL_INPUT_PINS           {hpin_none}     // Control input pins, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
@@ -167,7 +167,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // Device Multiplexing Setup
 #define SETUP_MUXING_CHANNEL_BITS       -1              // Number of channel bits for multiplexer, else -1
-#define SETUP_MUXING_ADDRESS_PINS       {(pintype_t)-1} // Address channel pins, else {-1}
+#define SETUP_MUXING_ADDRESS_PINS       {hpin_none}     // Address channel pins, else {-1}
 #define SETUP_MUXING_ENABLE_PIN         -1              // Chip enable pin for multiplexer (optional), else -1
 #define SETUP_MUXING_ENABLE_TYPE        ACT_LOW         // Chip enable pin type/active level (ACT_HIGH, ACT_LOW)
 #define SETUP_PH_METER_MUXCHN           -1              // pH meter sensor pin muxing channel #, else -1

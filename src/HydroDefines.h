@@ -136,11 +136,14 @@ typedef int8_t                          hposi_t;            // Position indexing
 typedef uint32_t                        hkey_t;             // Key type alias, for hashing
 typedef int8_t                          hid_t;              // Id type alias, for RTTI
 typedef uint16_t                        hframe_t;           // Polling frame type, for sync
-#define millis_none                     ((millis_t)0)       // No millis defined/invalid placeholder
-#define hposi_none                      ((hposi_t)-1)       // No position defined/invalid placeholder
-#define hkey_none                       ((hkey_t)-1)        // No key defined/invalid placeholder
-#define hid_none                        ((hid_t)-1)         // No id defined/invalid placeholder
-#define hframe_none                     ((hframe_t)0)       // No frame defined/invalid placeholder
+#define millis_none                     ((millis_t)0)       // No millis defined/none placeholder
+#define hposi_none                      ((hposi_t)-1)       // No position defined/none placeholder
+#define hkey_none                       ((hkey_t)-1)        // No key defined/none placeholder
+#define hid_none                        ((hid_t)-1)         // No id defined/none placeholder
+#define hframe_none                     ((hframe_t)0)       // No frame defined/none placeholder
+#define hpin_none                       ((pintype_t)-1)     // No pin defined/none placeholder
+#define hpin_virtual                    ((pintype_t)100)    // Virtual pin section start placeholder
+#define hpinchnl_none                   ((int8_t)-127)      // No pin channel defined/none placeholder
 typedef typeof(INPUT)                   ard_pinmode_t;      // Arduino pin mode type alias
 typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin status type alias
 

@@ -306,7 +306,7 @@ We also ask that our users report any broken sensors (outside of bad calibration
 
 * The total number of objects and different kinds of objects (reservoirs, pumps, probes, relays, etc.) that the controller can support at once depends on how much free Flash storage and SRAM your MCU has available. Hydruino C++0x11 objects range in memory usage size from 150 to 750 bytes or more depending on settings and object type, with the compiled Flash binary ranging in size from 100kB to 500kB+ depending on platform and settings.
   * For our supported microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with 1MB+ of Flash and 32kB+ of SRAM. Devices with < 24kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in library data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
-* For AVR, SAM, and other build architectures that do not have C++0x11 STL (standard container library) support, there are a series of *`_MAXSIZE` defines at the top of `HydroDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller instead uses.
+* For AVR, SAM, and other build architectures that do not have C++0x11 STL (standard container library) support, there are a series of *`_MAXSIZE` defines nearer to the top of `HydroDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller instead uses.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
 * To further save on code size cost, see the Data Writer Example on how to externalize library data onto an SD Card or EEPROM.
@@ -407,7 +407,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_DISP_OLED_I2C_ADDR        0b000           // OLED i2c address (A0-A2, bitwise or'ed with base address 0x78)
 #define SETUP_DISP_SPI                  SPI             // Display SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
-#define SETUP_CTRL_INPUT_PINS           {(pintype_t)-1} // Control input pins, else {-1}
+#define SETUP_CTRL_INPUT_PINS           {hpin_none}     // Control input pins, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
@@ -541,7 +541,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 
 // Device Multiplexing Setup
 #define SETUP_MUXING_CHANNEL_BITS       -1              // Number of channel bits for multiplexer, else -1
-#define SETUP_MUXING_ADDRESS_PINS       {(pintype_t)-1} // Address channel pins, else {-1}
+#define SETUP_MUXING_ADDRESS_PINS       {hpin_none}     // Address channel pins, else {-1}
 #define SETUP_MUXING_ENABLE_PIN         -1              // Chip enable pin for multiplexer (optional), else -1
 #define SETUP_MUXING_ENABLE_TYPE        ACT_LOW         // Chip enable pin type/active level (ACT_HIGH, ACT_LOW)
 #define SETUP_PH_METER_MUXCHN           -1              // pH meter sensor pin muxing channel #, else -1

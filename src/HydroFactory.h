@@ -26,12 +26,12 @@ public:
     // Adds a new relay-based grow light to the system using the given parameters.
     // Grow lights are essential to almost all plants and are used to mimic natural sun rhythms.
     SharedPtr<HydroRelayActuator> addGrowLightsRelay(pintype_t outputPin,                   // Digital output pin this actuator sits on
-                                                     int8_t pinChannel = -127);             // Pin multiplexer/expander channel number, else -127
+                                                     int8_t pinChannel = hpinchnl_none);    // Pin muxer/expander channel #, else -127/none
 
     // Adds a new relay-based water pump to the system using the given parameters.
     // Water pumps are used to feed crops and move liquids around from one reservoir to another.
     SharedPtr<HydroRelayPumpActuator> addWaterPumpRelay(pintype_t outputPin,                // Digital output pin this actuator sits on
-                                                        int8_t pinChannel = -127);          // Pin multiplexer/expander channel number, else -127
+                                                        int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
 // TODO: #18 in Hydruino.
 //     // Adds a new analog PWM-based water pump to the system using the given parameters.
@@ -44,27 +44,27 @@ public:
 // #ifdef ESP_PLATFORM
 //                                                              float pwmFrequency = 1000,     // PWM output frequency
 // #endif
-//                                                              int8_t pinChannel = -127);     // Pin multiplexer/expander channel number, else -127
+//                                                              int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Adds a new relay-based water heater to the system using the given parameters.
     // Water heaters can keep feed water heated during colder months and save off root damage.
     SharedPtr<HydroRelayActuator> addWaterHeaterRelay(pintype_t outputPin,                  // Digital output pin this actuator sits on
-                                                      int8_t pinChannel = -127);            // Pin multiplexer/expander channel number, else -127
+                                                      int8_t pinChannel = hpinchnl_none);   // Pin muxer/expander channel #, else -127/none
 
     // Adds a new relay-based water sprayer to the system using the given parameters.
     // Water sprayers can turn on before the lights turn on to provide crops with damp morning soil.
     SharedPtr<HydroRelayActuator> addWaterSprayerRelay(pintype_t outputPin,                 // Digital output pin this actuator sits on
-                                                       int8_t pinChannel = -127);           // Pin multiplexer/expander channel number, else -127
+                                                       int8_t pinChannel = hpinchnl_none);  // Pin muxer/expander channel #, else -127/none
 
     // Adds a new relay-based water aerator to the system using the given parameters.
     // Water aerators can help plants grow while also discouraging pathogens from taking root.
     SharedPtr<HydroRelayActuator> addWaterAeratorRelay(pintype_t outputPin,                 // Digital output pin this actuator sits on
-                                                       int8_t pinChannel = -127);           // Pin multiplexer/expander channel number, else -127
+                                                       int8_t pinChannel = hpinchnl_none);  // Pin muxer/expander channel #, else -127/none
 
     // Adds a new relay-based fan exhaust to the system using the given parameters.
     // Fan exhausts can move air around to modify nearby CO2 levels that plants use to breathe.
     SharedPtr<HydroRelayActuator> addFanExhaustRelay(pintype_t outputPin,                   // Digital output pin this actuator sits on
-                                                     int8_t pinChannel = -127);             // Pin multiplexer/expander channel number, else -127
+                                                     int8_t pinChannel = hpinchnl_none);    // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog PWM-based fan exhaust to the system using the given parameters.
     // PWM fan exhausts allow a graduated adaptive speed control to manage CO2 levels.
@@ -76,12 +76,12 @@ public:
 #ifdef ESP_PLATFORM
                                                          float pwmFrequency = 1000,         // PWM output frequency
 #endif
-                                                         int8_t pinChannel = -127);         // Pin multiplexer/expander channel number, else -127
+                                                         int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Adds a new peristaltic dosing pump relay to the system using the given parameters.
     // Peristaltic pumps allow proper dosing of nutrients and other additives.
     SharedPtr<HydroRelayPumpActuator> addPeristalticPumpRelay(pintype_t outputPin,          // Digital output pin this actuator sits on
-                                                              int8_t pinChannel = -127);    // Pin multiplexer/expander channel number, else -127
+                                                              int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Convenience builders for common sensors (shared, nullptr return -> failure).
 
@@ -93,25 +93,25 @@ public:
     // Level indicators can be used to control filled/empty status of a liquid reservoir.
     SharedPtr<HydroBinarySensor> addLevelIndicator(pintype_t inputPin,                      // Digital input pin this sensor sits on (can make interruptable)
                                                    bool isActiveLow = true,                 // If indication is active when a LOW signal is read (aka active-low)
-                                                   int8_t pinChannel = -127);               // Pin multiplexer/expander channel number, else -127
+                                                   int8_t pinChannel = hpinchnl_none);      // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog PH meter to the system using the given parameters.
     // pH meters are vital in ensuring the proper alkalinity level is used in feed water.
     SharedPtr<HydroAnalogSensor> addAnalogPhMeter(pintype_t inputPin,                       // Analog input pin this sensor sits on
                                                   uint8_t inputBitRes = ADC_RESOLUTION,     // ADC input bit resolution to use
-                                                  int8_t pinChannel = -127);                // Pin multiplexer/expander channel number, else -127
+                                                  int8_t pinChannel = hpinchnl_none);       // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog TDS electrode to the system using the given parameters.
     // TDS electrodes are vital in ensuring the proper nutrition levels are used in feed water.
     SharedPtr<HydroAnalogSensor> addAnalogTDSElectrode(pintype_t inputPin,                  // Analog input pin this sensor sits on
                                                        uint8_t inputBitRes = ADC_RESOLUTION, // ADC input bit resolution to use
-                                                       int8_t pinChannel = -127);           // Pin multiplexer/expander channel number, else -127
+                                                       int8_t pinChannel = hpinchnl_none);  // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog temperature sensor to the system using the given parameters.
     // Temperature sensors can be used to ensure proper temperature conditions are being met.
     SharedPtr<HydroAnalogSensor> addAnalogTemperatureSensor(pintype_t inputPin,             // Analog input pin this sensor sits on
                                                             uint8_t inputBitRes = ADC_RESOLUTION, // ADC input bit resolution to use
-                                                            int8_t pinChannel = -127);      // Pin multiplexer/expander channel number, else -127
+                                                            int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog CO2 sensor to the system using the given parameters.
     // CO2 sensors can be used to ensure proper CO2 levels are being met.
@@ -119,39 +119,39 @@ public:
     SharedPtr<HydroAnalogSensor> addAnalogCO2Sensor(pintype_t inputPin,                     // Analog input pin this sensor sits on
                                                     int ppmScale = 500,                     // PPM measurement scaling (500, 640, 700 - default: 500)
                                                     uint8_t inputBitRes = ADC_RESOLUTION,   // ADC input bit resolution to use
-                                                    int8_t pinChannel = -127);              // Pin multiplexer/expander channel number, else -127
+                                                    int8_t pinChannel = hpinchnl_none);     // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog moisture sensor to the system using the given parameters.
     // Soil moisture sensors can be used to drive feedings for crops.
     SharedPtr<HydroAnalogSensor> addAnalogMoistureSensor(pintype_t inputPin,                // Analog input pin this sensor sits on
                                                          uint8_t inputBitRes = ADC_RESOLUTION, // ADC input bit resolution to use
-                                                         int8_t pinChannel = -127);         // Pin multiplexer/expander channel number, else -127
+                                                         int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog PWM-based pump flow sensor to the system using the given parameters.
     // Pump flow sensors can allow for more precise liquid volume pumping calculations.
     SharedPtr<HydroAnalogSensor> addAnalogPumpFlowSensor(pintype_t inputPin,                // Analog input pin this sensor sits on
                                                          uint8_t inputBitRes = ADC_RESOLUTION, // ADC input bit resolution to use
-                                                         int8_t pinChannel = -127);         // Pin multiplexer/expander channel number, else -127
+                                                         int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog water height meter to the system using the given parameters.
     // Water height meters can be used to determine the volume of a container.
     SharedPtr<HydroAnalogSensor> addAnalogWaterHeightMeter(pintype_t inputPin,              // Analog input pin this sensor sits on
                                                            uint8_t inputBitRes = ADC_RESOLUTION, // ADC input bit resolution to use
-                                                           int8_t pinChannel = -127);       // Pin multiplexer/expander channel number, else -127
+                                                           int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Adds a new downward-facing analog ultrasonic distance sensor to the system using the given parameters.
     // Downward-facing ultrasonic distance sensors can be used to determine the volume of a container.
     // (Pro-tip: These widely available inexpensive sensors don't sit in the water and thus won't corrode as fast.)
     SharedPtr<HydroAnalogSensor> addUltrasonicDistanceSensor(pintype_t inputPin,            // Analog input pin this sensor sits on
                                                              uint8_t inputBitRes = ADC_RESOLUTION, // ADC input bit resolution to use
-                                                             int8_t pinChannel = -127);     // Pin multiplexer/expander channel number, else -127
+                                                             int8_t pinChannel = hpinchnl_none); // Pin muxer/expander channel #, else -127/none
 
     // Adds a new analog power usage meter to the system using the given parameters.
     // Power usage meters can be used to determine and manage the energy demands of a power rail.
     SharedPtr<HydroAnalogSensor> addPowerLevelMeter(pintype_t inputPin,                     // Analog input pin this sensor sits on
                                                     bool isWattageBased = true,             // If power meter measures wattage (true) or amperage (false)
                                                     uint8_t inputBitRes = ADC_RESOLUTION,   // ADC input bit resolution to use
-                                                    int8_t pinChannel = -127);              // Pin multiplexer/expander channel number, else -127
+                                                    int8_t pinChannel = hpinchnl_none);     // Pin muxer/expander channel #, else -127/none
 
     // Adds a new digital DHT* OneWire temperature & humidity sensor to the system using the given parameters.
     // Uses the DHT library. A very common digital sensor, included in most Arduino starter kits.

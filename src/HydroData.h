@@ -78,7 +78,7 @@ struct HydroData : public HydroJSONSerializableInterface {
 // entire data object hierarchy, useful for triggers, measurements, etc.
 // NOTE: NON-CONST VALUE TYPES ONLY, NO VIRTUALS. All data *MUST* be able to use default operator=.
 struct HydroSubData {
-    hid_t type;                                             // Sub data type (or hid_none/-1 if unused)
+    hid_t type;                                             // Sub data type, else -1/none
 
     HydroSubData();
     HydroSubData(hid_t dataType);

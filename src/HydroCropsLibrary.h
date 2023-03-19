@@ -50,9 +50,9 @@ protected:
     Map<Hydro_CropType, HydroCropsLibraryBook *, HYDRO_CROPS_CROPSLIB_MAXSIZE> _cropsData; // Loaded crops library data
     bool _hasUserCrops = false;                             // Has user crops flag
 
-    String _libSDCropPrefix;                                // Library data files prefix for SD card, else "" if unused
+    String _libSDCropPrefix;                                // Library data files prefix for SD card, else ""/unused
     bool _libSDJSONFormat = false;                          // Library SD card data files JSON format tracking flag
-    size_t _libEEPROMDataAddress = (size_t)-1;              // Library EEPROM data begin address, else -1 if unused
+    size_t _libEEPROMDataAddress = (size_t)-1;              // Library EEPROM data begin address, else -1/unused
     bool _libEEPROMJSONFormat = false;                      // Library EEPROM data JSON format tracking flag
 
     HydroCropsLibraryBook *newBookFromType(Hydro_CropType cropType);

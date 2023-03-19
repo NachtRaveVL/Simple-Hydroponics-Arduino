@@ -132,7 +132,7 @@ struct UIDisplaySetup {
     static inline UIDisplaySetup usingDFRobotShield() { return UIDisplaySetup(LCDDisplaySetup::usingDFRobotShield()); }
 
     inline Hydro_DisplayRotation getDisplayRotation() const { return dispCfgType == Pixel ? dispCfgAs.gfx.rotation : dispCfgType == TFT ? dispCfgAs.tft.rotation : Hydro_DisplayRotation_R0; }
-    inline pintype_t getBacklightPin() const { return dispCfgType == LCD ? (pintype_t)(dispCfgAs.lcd.isDFRobotShield ? 10 : 3) : dispCfgType == Pixel ? dispCfgAs.gfx.ledPin : dispCfgType == TFT ? dispCfgAs.tft.ledPin : (pintype_t)-1; }
+    inline pintype_t getBacklightPin() const { return dispCfgType == LCD ? (pintype_t)(dispCfgAs.lcd.isDFRobotShield ? 10 : 3) : dispCfgType == Pixel ? dispCfgAs.gfx.ledPin : dispCfgType == TFT ? dispCfgAs.tft.ledPin : hpin_none; }
     inline Hydro_BacklightMode getBacklightMode() const { return dispCfgType == LCD ? dispCfgAs.lcd.ledMode : dispCfgType == Pixel ? dispCfgAs.gfx.ledMode : dispCfgType == TFT ? dispCfgAs.tft.ledMode : Hydro_BacklightMode_Normal; }
     inline uint8_t getBacklightBitRes() const { return dispCfgType == Pixel ? dispCfgAs.gfx.ledBitRes : dispCfgType == TFT ? dispCfgAs.tft.ledBitRes : DAC_RESOLUTION; }
 #ifdef ESP32

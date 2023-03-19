@@ -17,9 +17,9 @@ struct Twilight;
 // Only have defines included at this point, complex inline imps at top of Hydruino.hpp
 
 // Returns if pin is valid
-inline bool isValidPin(pintype_t pin) { return pin != (pintype_t)-1; }
+inline bool isValidPin(pintype_t pin) { return pin != hpin_none; }
 // Returns if channel is valid
-inline bool isValidChannel(int8_t channel) { return channel != -127; }
+inline bool isValidChannel(int8_t channel) { return channel != hpinchnl_none; }
 // Returns if measurement row is valid1
 inline bool isValidRow(uint8_t row) { return row != (uint8_t)-1; }
 // Returns if taskId is valid
