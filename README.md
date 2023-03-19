@@ -540,25 +540,23 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_CROP_SOILM_PIN            -1              // Soil moisture sensor, for adaptive crop, pin (analog), else -1
 
 // Device Multiplexing Setup
-#define SETUP_MUXER_CHANNEL_BITS        -1              // Multiplexer channel bits (8 or 16), else -1
+#define SETUP_MUXER_CHANNEL_BITS        -1              // Multiplexer channel bits (3 = 8-bit, 4 = 16-bit), else -1
 #define SETUP_MUXER_ADDRESS_PINS        {hpin_none}     // Multiplexer addressing bus/channel pins, else {-1}
 #define SETUP_MUXER_ENABLE_PIN          -1              // Multiplexer chip enable pin (optional), else -1
 #define SETUP_MUXER_ENABLE_TYPE         ACT_LOW         // Multiplexer chip enable pin type/active level (ACT_HIGH, ACT_LOW)
 
 // Device Pin Expanders Setup
-#define SETUP_EXPANDER1_CHANNEL_BITS    -1              // Pin expander 1 channel bits (8 or 16), else -1
-#define SETUP_EXPANDER2_CHANNEL_BITS    -1              // Pin expander 2 channel bits (8 or 16), else -1
-#define SETUP_EXPANDER1_IOREF_PINMODE   Digital_Input   // Pin expander 1 pin mode (Digital_Input, Digital_Input_PullUp, Digital_Input_PullDown, Digital_Output, Analog_Input, Analog_Output, Undefined)
-#define SETUP_EXPANDER2_IOREF_PINMODE   Digital_Output  // Pin expander 2 pin mode (Digital_Input, Digital_Input_PullUp, Digital_Input_PullDown, Digital_Output, Analog_Input, Analog_Output, Undefined)
+#define SETUP_EXPANDER1_CHANNEL_BITS    -1              // Pin expander 1 channel bits (3 = 8-bit, 4 = 16-bit), else -1
+#define SETUP_EXPANDER2_CHANNEL_BITS    -1              // Pin expander 2 channel bits (3 = 8-bit, 4 = 16-bit), else -1
 #define SETUP_EXPANDER1_IOREF_I2C_ADDR  0x27            // Pin expander 1 full I2C device address (including device base offset)
 #define SETUP_EXPANDER2_IOREF_I2C_ADDR  0x28            // Pin expander 2 full I2C device address (including device base offset)
 #define SETUP_EXPANDER1_IOREF_ISR_PIN   -1              // Pin expander 1 interrupt pin, else -1
 #define SETUP_EXPANDER2_IOREF_ISR_PIN   -1              // Pin expander 2 interrupt pin, else -1
 #define SETUP_EXPANDER_IOREF_I2C_WIRE   Wire            // Pin expanders I2C wire class instance
 // IORef allocation command using ioFrom* functions in IoAbstraction for pin expander 1
-#define SETUP_EXPANDER1_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER1_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER1_IOREF_ISR_PIN, &SETUP_EXPANDER1_IOREF_I2C_WIRE)
+#define SETUP_EXPANDER1_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER1_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER1_IOREF_ISR_PIN, &SETUP_EXPANDER_IOREF_I2C_WIRE)
 // IORef allocation command using ioFrom* functions in IoAbstraction for pin expander 2
-#define SETUP_EXPANDER2_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER2_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER2_IOREF_ISR_PIN, &SETUP_EXPANDER2_IOREF_I2C_WIRE)
+#define SETUP_EXPANDER2_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER2_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER2_IOREF_ISR_PIN, &SETUP_EXPANDER_IOREF_I2C_WIRE)
 
 // Pin Muxer/Expander Channel Setup
 #define SETUP_PH_METER_PINCHNL          hpinchnl_none   // pH meter sensor pin muxer/expander channel #, else -127/none

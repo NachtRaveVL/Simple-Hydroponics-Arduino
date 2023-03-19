@@ -119,6 +119,7 @@ typedef int uartmode_t;
 
 #ifndef HYDRO_DISABLE_MULTITASKING
 #include "TaskManagerIO.h"              // Task Manager library
+#include "IoAbstraction.h"              // IoAbstraction library
 #define HYDRO_USE_MULTITASKING
 #else
 #ifndef HYDRO_DISABLE_GUI

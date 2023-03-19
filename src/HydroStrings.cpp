@@ -486,14 +486,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_Channel[] PROGMEM = {"channel"};
             return flashStr_Key_Channel;
         } break;
-        case HStr_Key_ChannelPins: {
-            static const char flashStr_Key_ChannelPins[] PROGMEM = {"channelPins"};
-            return flashStr_Key_ChannelPins;
-        } break;
-        case HStr_Key_ChipEnablePin: {
-            static const char flashStr_Key_ChipEnablePin[] PROGMEM = {"chipEnablePin"};
-            return flashStr_Key_ChipEnablePin;
-        } break;
         case HStr_Key_ComputeHeatIndex: {
             static const char flashStr_Key_ComputeHeatIndex[] PROGMEM = {"computeHeatIndex"};
             return flashStr_Key_ComputeHeatIndex;
@@ -809,10 +801,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_SensorName: {
             static const char flashStr_Key_SensorName[] PROGMEM = {"sensorName"};
             return flashStr_Key_SensorName;
-        } break;
-        case HStr_Key_SignalPin: {
-            static const char flashStr_Key_SignalPin[] PROGMEM = {"signalPin"};
-            return flashStr_Key_SignalPin;
         } break;
         case HStr_Key_SowTime: {
             static const char flashStr_Key_SowTime[] PROGMEM = {"sowTime"};
