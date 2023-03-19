@@ -171,7 +171,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_MUXER_ENABLE_PIN          -1              // Multiplexer chip enable pin (optional), else -1
 #define SETUP_MUXER_ENABLE_TYPE         ACT_LOW         // Multiplexer chip enable pin type/active level (ACT_HIGH, ACT_LOW)
 
-// Device Pin Expanders Setup
+// Device Pin Expanders Setup                           // (Note: Will redefine any used pins from channel setup below to a virtual pin = 100+chnl#)
 #define SETUP_EXPANDER1_CHANNEL_BITS    -1              // Pin expander 1 channel bits (3 = 8-bit, 4 = 16-bit), else -1
 #define SETUP_EXPANDER2_CHANNEL_BITS    -1              // Pin expander 2 channel bits (3 = 8-bit, 4 = 16-bit), else -1
 #define SETUP_EXPANDER1_IOREF_I2C_ADDR  0x27            // Pin expander 1 full I2C device address (including device base offset)
@@ -184,7 +184,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // IORef allocation command using ioFrom* functions in IoAbstraction for pin expander 2
 #define SETUP_EXPANDER2_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER2_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER2_IOREF_ISR_PIN, &SETUP_EXPANDER_IOREF_I2C_WIRE)
 
-// Pin Muxer/Expander Channel Setup
+// Pin Muxer/Expander Channel Setup                     // (Note: Only multiplexing or expanding may be done at the same time)
 #define SETUP_PH_METER_PINCHNL          hpinchnl_none   // pH meter sensor pin muxer/expander channel #, else -127/none
 #define SETUP_TDS_METER_PINCHNL         hpinchnl_none   // TDS meter sensor pin muxer/expander channel #, else -127/none
 #define SETUP_CO2_SENSOR_PINCHNL        hpinchnl_none   // CO2 meter sensor pin muxer/expander channel #, else -127/none
@@ -380,45 +380,33 @@ inline void setupPinChannels()
         };
         #if SETUP_PH_METER_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_PH_METER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_PH_METER_PINCHNL/16, expanders[SETUP_PH_METER_PINCHNL/16]); }
-            #if SETUP_PH_METER_PIN == -1
-                #undef SETUP_PH_METER_PIN
-                #define SETUP_PH_METER_PIN (100 + SETUP_PH_METER_PINCHNL)
-            #endif
+            #undef SETUP_PH_METER_PIN
+            #define SETUP_PH_METER_PIN (100 + SETUP_PH_METER_PINCHNL)
         #endif
         #if SETUP_TDS_METER_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_TDS_METER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_TDS_METER_PINCHNL/16, expanders[SETUP_TDS_METER_PINCHNL/16]); }
-            #if SETUP_TDS_METER_PIN == -1
-                #undef SETUP_TDS_METER_PIN
-                #define SETUP_TDS_METER_PIN (100 + SETUP_TDS_METER_PINCHNL)
-            #endif
+            #undef SETUP_TDS_METER_PIN
+            #define SETUP_TDS_METER_PIN (100 + SETUP_TDS_METER_PINCHNL)
         #endif
         #if SETUP_CO2_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_CO2_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_CO2_SENSOR_PINCHNL/16, expanders[SETUP_CO2_SENSOR_PINCHNL/16]); }
-            #if SETUP_CO2_SENSOR_PIN == -1
-                #undef SETUP_CO2_SENSOR_PIN
-                #define SETUP_CO2_SENSOR_PIN (100 + SETUP_CO2_SENSOR_PINCHNL)
-            #endif
+            #undef SETUP_CO2_SENSOR_PIN
+            #define SETUP_CO2_SENSOR_PIN (100 + SETUP_CO2_SENSOR_PINCHNL)
         #endif
         #if SETUP_AC_USAGE_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_AC_USAGE_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_AC_USAGE_SENSOR_PINCHNL/16, expanders[SETUP_AC_USAGE_SENSOR_PINCHNL/16]); }
-            #if SETUP_AC_USAGE_SENSOR_PIN == -1
-                #undef SETUP_AC_USAGE_SENSOR_PIN
-                #define SETUP_AC_USAGE_SENSOR_PIN (100 + SETUP_AC_USAGE_SENSOR_PINCHNL)
-            #endif
+            #undef SETUP_AC_USAGE_SENSOR_PIN
+            #define SETUP_AC_USAGE_SENSOR_PIN (100 + SETUP_AC_USAGE_SENSOR_PINCHNL)
         #endif
         #if SETUP_DC_USAGE_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_DC_USAGE_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_DC_USAGE_SENSOR_PINCHNL/16, expanders[SETUP_DC_USAGE_SENSOR_PINCHNL/16]); }
-            #if SETUP_DC_USAGE_SENSOR_PIN == -1
-                #undef SETUP_DC_USAGE_SENSOR_PIN
-                #define SETUP_DC_USAGE_SENSOR_PIN (100 + SETUP_DC_USAGE_SENSOR_PINCHNL)
-            #endif
+            #undef SETUP_DC_USAGE_SENSOR_PIN
+            #define SETUP_DC_USAGE_SENSOR_PIN (100 + SETUP_DC_USAGE_SENSOR_PINCHNL)
         #endif
         #if SETUP_FLOW_RATE_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_FLOW_RATE_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_FLOW_RATE_SENSOR_PINCHNL/16, expanders[SETUP_FLOW_RATE_SENSOR_PINCHNL/16]); }
-            #if SETUP_FLOW_RATE_SENSOR_PIN == -1
-                #undef SETUP_FLOW_RATE_SENSOR_PIN
-                #define SETUP_FLOW_RATE_SENSOR_PIN (100 + SETUP_FLOW_RATE_SENSOR_PINCHNL)
-            #endif
+            #undef SETUP_FLOW_RATE_SENSOR_PIN
+            #define SETUP_FLOW_RATE_SENSOR_PIN (100 + SETUP_FLOW_RATE_SENSOR_PINCHNL)
         #endif
         #if SETUP_VOL_FILLED_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_VOL_FILLED_PINCHNL/16)) { hydroController.setPinExpander(SETUP_VOL_FILLED_PINCHNL/16, expanders[SETUP_VOL_FILLED_PINCHNL/16]); }
