@@ -365,7 +365,7 @@ inline void setupPinChannels()
         #if SETUP_CROP_SOILM_PINCHNL >= 0 && SETUP_CROP_SOILM_PIN >= 0
             if (!hydroController.getPinMuxer(SETUP_CROP_SOILM_PIN)) { hydroController.setPinMuxer(SETUP_CROP_SOILM_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_CROP_SOILM_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
         #endif
-    #elif SETUP_EXPANDER1_CHANNEL_BITS >= 0 || SETUP_EXPANDER2_CHANNEL_BITS >= 0
+    #elif SETUP_EXPANDER1_CHANNEL_BITS > 0 || SETUP_EXPANDER2_CHANNEL_BITS > 0
         SharedPtr<HydroPinExpander> expanders[] = {
             #if SETUP_EXPANDER1_CHANNEL_BITS > 0
                 SharedPtr<HydroPinExpander>(new HydroPinExpander(SETUP_EXPANDER1_CHANNEL_BITS, SETUP_EXPANDER1_IOREF_ALLOC())),
@@ -378,265 +378,117 @@ inline void setupPinChannels()
                 SharedPtr<HydroPinExpander>(nullptr)
             #endif
         };
-        #if SETUP_PH_METER_PINCHNL >= 0 || SETUP_PH_METER_PIN >= 100
+        #if SETUP_PH_METER_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_PH_METER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_PH_METER_PINCHNL/16, expanders[SETUP_PH_METER_PINCHNL/16]); }
-            #if SETUP_PH_METER_PIN < 100 || (SETUP_PH_METER_PIN - 100)/16 != (SETUP_PH_METER_PINCHNL)/16
-                #warning "SETUP_PH_METER_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
             #if SETUP_PH_METER_PIN == -1
                 #undef SETUP_PH_METER_PIN
                 #define SETUP_PH_METER_PIN (100 + SETUP_PH_METER_PINCHNL)
             #endif
-            #define SETUP_PH_METER_PINCHNL_ SETUP_PH_METER_PINCHNL
-            #undef SETUP_PH_METER_PINCHNL
-            #define SETUP_PH_METER_PINCHNL -SETUP_PH_METER_PINCHNL_
         #endif
-        #if SETUP_TDS_METER_PINCHNL >= 0 || SETUP_TDS_METER_PIN >= 100
+        #if SETUP_TDS_METER_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_TDS_METER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_TDS_METER_PINCHNL/16, expanders[SETUP_TDS_METER_PINCHNL/16]); }
-            #if SETUP_TDS_METER_PIN < 100 || (SETUP_TDS_METER_PIN - 100)/16 != (SETUP_TDS_METER_PINCHNL)/16
-                #warning "SETUP_TDS_METER_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
             #if SETUP_TDS_METER_PIN == -1
                 #undef SETUP_TDS_METER_PIN
                 #define SETUP_TDS_METER_PIN (100 + SETUP_TDS_METER_PINCHNL)
             #endif
-            #define SETUP_TDS_METER_PINCHNL_ SETUP_TDS_METER_PINCHNL
-            #undef SETUP_TDS_METER_PINCHNL
-            #define SETUP_TDS_METER_PINCHNL -SETUP_TDS_METER_PINCHNL_
         #endif
-        #if SETUP_CO2_SENSOR_PINCHNL >= 0 || SETUP_CO2_SENSOR_PIN >= 100
+        #if SETUP_CO2_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_CO2_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_CO2_SENSOR_PINCHNL/16, expanders[SETUP_CO2_SENSOR_PINCHNL/16]); }
-            #if SETUP_CO2_SENSOR_PIN < 100 || (SETUP_CO2_SENSOR_PIN - 100)/16 != (SETUP_CO2_SENSOR_PINCHNL)/16
-                #warning "SETUP_CO2_SENSOR_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
             #if SETUP_CO2_SENSOR_PIN == -1
                 #undef SETUP_CO2_SENSOR_PIN
                 #define SETUP_CO2_SENSOR_PIN (100 + SETUP_CO2_SENSOR_PINCHNL)
             #endif
-            #define SETUP_CO2_SENSOR_PINCHNL_ SETUP_CO2_SENSOR_PINCHNL
-            #undef SETUP_CO2_SENSOR_PINCHNL
-            #define SETUP_CO2_SENSOR_PINCHNL -SETUP_CO2_SENSOR_PINCHNL_
         #endif
-        #if SETUP_AC_USAGE_SENSOR_PINCHNL >= 0 || SETUP_AC_USAGE_SENSOR_PIN >= 100
+        #if SETUP_AC_USAGE_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_AC_USAGE_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_AC_USAGE_SENSOR_PINCHNL/16, expanders[SETUP_AC_USAGE_SENSOR_PINCHNL/16]); }
-            #if SETUP_AC_USAGE_SENSOR_PIN < 100 || (SETUP_AC_USAGE_SENSOR_PIN - 100)/16 != (SETUP_AC_USAGE_SENSOR_PINCHNL)/16
-                #warning "SETUP_AC_USAGE_SENSOR_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
             #if SETUP_AC_USAGE_SENSOR_PIN == -1
                 #undef SETUP_AC_USAGE_SENSOR_PIN
                 #define SETUP_AC_USAGE_SENSOR_PIN (100 + SETUP_AC_USAGE_SENSOR_PINCHNL)
             #endif
-            #define SETUP_AC_USAGE_SENSOR_PINCHNL_ SETUP_AC_USAGE_SENSOR_PINCHNL
-            #undef SETUP_AC_USAGE_SENSOR_PINCHNL
-            #define SETUP_AC_USAGE_SENSOR_PINCHNL -SETUP_AC_USAGE_SENSOR_PINCHNL_
         #endif
-        #if SETUP_DC_USAGE_SENSOR_PINCHNL >= 0 || SETUP_DC_USAGE_SENSOR_PIN >= 100
+        #if SETUP_DC_USAGE_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_DC_USAGE_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_DC_USAGE_SENSOR_PINCHNL/16, expanders[SETUP_DC_USAGE_SENSOR_PINCHNL/16]); }
-            #if SETUP_DC_USAGE_SENSOR_PIN < 100 || (SETUP_DC_USAGE_SENSOR_PIN - 100)/16 != (SETUP_DC_USAGE_SENSOR_PINCHNL)/16
-                #warning "SETUP_DC_USAGE_SENSOR_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
             #if SETUP_DC_USAGE_SENSOR_PIN == -1
                 #undef SETUP_DC_USAGE_SENSOR_PIN
                 #define SETUP_DC_USAGE_SENSOR_PIN (100 + SETUP_DC_USAGE_SENSOR_PINCHNL)
             #endif
-            #define SETUP_DC_USAGE_SENSOR_PINCHNL_ SETUP_DC_USAGE_SENSOR_PINCHNL
-            #undef SETUP_DC_USAGE_SENSOR_PINCHNL
-            #define SETUP_DC_USAGE_SENSOR_PINCHNL -SETUP_DC_USAGE_SENSOR_PINCHNL_
         #endif
-        #if SETUP_FLOW_RATE_SENSOR_PINCHNL >= 0 || SETUP_FLOW_RATE_SENSOR_PIN >= 100
+        #if SETUP_FLOW_RATE_SENSOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_FLOW_RATE_SENSOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_FLOW_RATE_SENSOR_PINCHNL/16, expanders[SETUP_FLOW_RATE_SENSOR_PINCHNL/16]); }
-            #if SETUP_FLOW_RATE_SENSOR_PIN < 100 || (SETUP_FLOW_RATE_SENSOR_PIN - 100)/16 != (SETUP_FLOW_RATE_SENSOR_PINCHNL)/16
-                #warning "SETUP_FLOW_RATE_SENSOR_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
             #if SETUP_FLOW_RATE_SENSOR_PIN == -1
                 #undef SETUP_FLOW_RATE_SENSOR_PIN
                 #define SETUP_FLOW_RATE_SENSOR_PIN (100 + SETUP_FLOW_RATE_SENSOR_PINCHNL)
             #endif
-            #define SETUP_FLOW_RATE_SENSOR_PINCHNL_ SETUP_FLOW_RATE_SENSOR_PINCHNL
-            #undef SETUP_FLOW_RATE_SENSOR_PINCHNL
-            #define SETUP_FLOW_RATE_SENSOR_PINCHNL -SETUP_FLOW_RATE_SENSOR_PINCHNL_
         #endif
-        #if SETUP_VOL_FILLED_PINCHNL >= 0 || SETUP_VOL_FILLED_PIN >= 100
+        #if SETUP_VOL_FILLED_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_VOL_FILLED_PINCHNL/16)) { hydroController.setPinExpander(SETUP_VOL_FILLED_PINCHNL/16, expanders[SETUP_VOL_FILLED_PINCHNL/16]); }
-            #if SETUP_VOL_FILLED_PIN < 100 || (SETUP_VOL_FILLED_PIN - 100)/16 != (SETUP_VOL_FILLED_PINCHNL)/16
-                #warning "SETUP_VOL_FILLED_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_VOL_FILLED_PIN == -1
-                #undef SETUP_VOL_FILLED_PIN
-                #define SETUP_VOL_FILLED_PIN (100 + SETUP_VOL_FILLED_PINCHNL)
-            #endif
-            #define SETUP_VOL_FILLED_PINCHNL_ SETUP_VOL_FILLED_PINCHNL
-            #undef SETUP_VOL_FILLED_PINCHNL
-            #define SETUP_VOL_FILLED_PINCHNL -SETUP_VOL_FILLED_PINCHNL_
+            #undef SETUP_VOL_FILLED_PIN
+            #define SETUP_VOL_FILLED_PIN (100 + SETUP_VOL_FILLED_PINCHNL)
         #endif
-        #if SETUP_VOL_EMPTY_PINCHNL >= 0 || SETUP_VOL_EMPTY_PIN >= 100
+        #if SETUP_VOL_EMPTY_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_VOL_EMPTY_PINCHNL/16)) { hydroController.setPinExpander(SETUP_VOL_EMPTY_PINCHNL/16, expanders[SETUP_VOL_EMPTY_PINCHNL/16]); }
-            #if SETUP_VOL_EMPTY_PIN < 100 || (SETUP_VOL_EMPTY_PIN - 100)/16 != (SETUP_VOL_EMPTY_PINCHNL)/16
-                #warning "SETUP_VOL_EMPTY_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_VOL_EMPTY_PIN == -1
-                #undef SETUP_VOL_EMPTY_PIN
-                #define SETUP_VOL_EMPTY_PIN (100 + SETUP_VOL_EMPTY_PINCHNL)
-            #endif
-            #define SETUP_VOL_EMPTY_PINCHNL_ SETUP_VOL_EMPTY_PINCHNL
-            #undef SETUP_VOL_EMPTY_PINCHNL
-            #define SETUP_VOL_EMPTY_PINCHNL -SETUP_VOL_EMPTY_PINCHNL_
+            #undef SETUP_VOL_EMPTY_PIN
+            #define SETUP_VOL_EMPTY_PIN (100 + SETUP_VOL_EMPTY_PINCHNL)
         #endif
-        #if SETUP_VOL_LEVEL_PINCHNL >= 0 || SETUP_VOL_LEVEL_PIN >= 100
+        #if SETUP_VOL_LEVEL_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_VOL_LEVEL_PINCHNL/16)) { hydroController.setPinExpander(SETUP_VOL_LEVEL_PINCHNL/16, expanders[SETUP_VOL_LEVEL_PINCHNL/16]); }
-            #if SETUP_VOL_LEVEL_PIN < 100 || (SETUP_VOL_LEVEL_PIN - 100)/16 != (SETUP_VOL_LEVEL_PINCHNL)/16
-                #warning "SETUP_VOL_LEVEL_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_VOL_LEVEL_PIN == -1
-                #undef SETUP_VOL_LEVEL_PIN
-                #define SETUP_VOL_LEVEL_PIN (100 + SETUP_VOL_LEVEL_PINCHNL)
-            #endif
-            #define SETUP_VOL_LEVEL_PINCHNL_ SETUP_VOL_LEVEL_PINCHNL
-            #undef SETUP_VOL_LEVEL_PINCHNL
-            #define SETUP_VOL_LEVEL_PINCHNL -SETUP_VOL_LEVEL_PINCHNL_
+            #undef SETUP_VOL_LEVEL_PIN
+            #define SETUP_VOL_LEVEL_PIN (100 + SETUP_VOL_LEVEL_PINCHNL)
         #endif
-        #if SETUP_GROW_LIGHTS_PINCHNL >= 0 || SETUP_GROW_LIGHTS_PIN >= 100
+        #if SETUP_GROW_LIGHTS_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_GROW_LIGHTS_PINCHNL/16)) { hydroController.setPinExpander(SETUP_GROW_LIGHTS_PINCHNL/16, expanders[SETUP_GROW_LIGHTS_PINCHNL/16]); }
-            #if SETUP_GROW_LIGHTS_PIN < 100 || (SETUP_GROW_LIGHTS_PIN - 100)/16 != (SETUP_GROW_LIGHTS_PINCHNL)/16
-                #warning "SETUP_GROW_LIGHTS_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_GROW_LIGHTS_PIN == -1
-                #undef SETUP_GROW_LIGHTS_PIN
-                #define SETUP_GROW_LIGHTS_PIN (100 + SETUP_GROW_LIGHTS_PINCHNL)
-            #endif
-            #define SETUP_GROW_LIGHTS_PINCHNL_ SETUP_GROW_LIGHTS_PINCHNL
-            #undef SETUP_GROW_LIGHTS_PINCHNL
-            #define SETUP_GROW_LIGHTS_PINCHNL -SETUP_GROW_LIGHTS_PINCHNL_
+            #undef SETUP_GROW_LIGHTS_PIN
+            #define SETUP_GROW_LIGHTS_PIN (100 + SETUP_GROW_LIGHTS_PINCHNL)
         #endif
-        #if SETUP_WATER_AERATOR_PINCHNL >= 0 || SETUP_WATER_AERATOR_PIN >= 100
+        #if SETUP_WATER_AERATOR_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_WATER_AERATOR_PINCHNL/16)) { hydroController.setPinExpander(SETUP_WATER_AERATOR_PINCHNL/16, expanders[SETUP_WATER_AERATOR_PINCHNL/16]); }
-            #if SETUP_WATER_AERATOR_PIN < 100 || (SETUP_WATER_AERATOR_PIN - 100)/16 != (SETUP_WATER_AERATOR_PINCHNL)/16
-                #warning "SETUP_WATER_AERATOR_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_WATER_AERATOR_PIN == -1
-                #undef SETUP_WATER_AERATOR_PIN
-                #define SETUP_WATER_AERATOR_PIN (100 + SETUP_WATER_AERATOR_PINCHNL)
-            #endif
-            #define SETUP_WATER_AERATOR_PINCHNL_ SETUP_WATER_AERATOR_PINCHNL
-            #undef SETUP_WATER_AERATOR_PINCHNL
-            #define SETUP_WATER_AERATOR_PINCHNL -SETUP_WATER_AERATOR_PINCHNL_
+            #undef SETUP_WATER_AERATOR_PIN
+            #define SETUP_WATER_AERATOR_PIN (100 + SETUP_WATER_AERATOR_PINCHNL)
         #endif
-        #if SETUP_FEED_PUMP_PINCHNL >= 0 || SETUP_FEED_PUMP_PIN >= 100
+        #if SETUP_FEED_PUMP_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_FEED_PUMP_PINCHNL/16)) { hydroController.setPinExpander(SETUP_FEED_PUMP_PINCHNL/16, expanders[SETUP_FEED_PUMP_PINCHNL/16]); }
-            #if SETUP_FEED_PUMP_PIN < 100 || (SETUP_FEED_PUMP_PIN - 100)/16 != (SETUP_FEED_PUMP_PINCHNL)/16
-                #warning "SETUP_FEED_PUMP_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_FEED_PUMP_PIN == -1
-                #undef SETUP_FEED_PUMP_PIN
-                #define SETUP_FEED_PUMP_PIN (100 + SETUP_FEED_PUMP_PINCHNL)
-            #endif
-            #define SETUP_FEED_PUMP_PINCHNL_ SETUP_FEED_PUMP_PINCHNL
-            #undef SETUP_FEED_PUMP_PINCHNL
-            #define SETUP_FEED_PUMP_PINCHNL -SETUP_FEED_PUMP_PINCHNL_
+            #undef SETUP_FEED_PUMP_PIN
+            #define SETUP_FEED_PUMP_PIN (100 + SETUP_FEED_PUMP_PINCHNL)
         #endif
         #if SETUP_WATER_HEATER_PINCHNL >= 0 || SETUP_WATER_HEATER_PIN >= 100
             if (!hydroController.getPinExpander(SETUP_WATER_HEATER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_WATER_HEATER_PINCHNL/16, expanders[SETUP_WATER_HEATER_PINCHNL/16]); }
-            #if SETUP_WATER_HEATER_PIN < 100 || (SETUP_WATER_HEATER_PIN - 100)/16 != (SETUP_WATER_HEATER_PINCHNL)/16
-                #warning "SETUP_WATER_HEATER_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_WATER_HEATER_PIN == -1
-                #undef SETUP_WATER_HEATER_PIN
-                #define SETUP_WATER_HEATER_PIN (100 + SETUP_WATER_HEATER_PINCHNL)
-            #endif
-            #define SETUP_WATER_HEATER_PINCHNL_ SETUP_WATER_HEATER_PINCHNL
-            #undef SETUP_WATER_HEATER_PINCHNL
-            #define SETUP_WATER_HEATER_PINCHNL -SETUP_WATER_HEATER_PINCHNL_
+            #undef SETUP_WATER_HEATER_PIN
+            #define SETUP_WATER_HEATER_PIN (100 + SETUP_WATER_HEATER_PINCHNL)
         #endif
         #if SETUP_WATER_SPRAYER_PINCHNL >= 0 || SETUP_WATER_SPRAYER_PIN >= 100
             if (!hydroController.getPinExpander(SETUP_WATER_SPRAYER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_WATER_SPRAYER_PINCHNL/16, expanders[SETUP_WATER_SPRAYER_PINCHNL/16]); }
-            #if SETUP_WATER_SPRAYER_PIN < 100 || (SETUP_WATER_SPRAYER_PIN - 100)/16 != (SETUP_WATER_SPRAYER_PINCHNL)/16
-                #warning "SETUP_WATER_SPRAYER_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_WATER_SPRAYER_PIN == -1
-                #undef SETUP_WATER_SPRAYER_PIN
-                #define SETUP_WATER_SPRAYER_PIN (100 + SETUP_WATER_SPRAYER_PINCHNL)
-            #endif
-            #define SETUP_WATER_SPRAYER_PINCHNL_ SETUP_WATER_SPRAYER_PINCHNL
-            #undef SETUP_WATER_SPRAYER_PINCHNL
-            #define SETUP_WATER_SPRAYER_PINCHNL -SETUP_WATER_SPRAYER_PINCHNL_
+            #undef SETUP_WATER_SPRAYER_PIN
+            #define SETUP_WATER_SPRAYER_PIN (100 + SETUP_WATER_SPRAYER_PINCHNL)
         #endif
         #if SETUP_FAN_EXHAUST_PINCHNL >= 0 || SETUP_FAN_EXHAUST_PIN >= 100
             if (!hydroController.getPinExpander(SETUP_FAN_EXHAUST_PINCHNL/16)) { hydroController.setPinExpander(SETUP_FAN_EXHAUST_PINCHNL/16, expanders[SETUP_FAN_EXHAUST_PINCHNL/16]); }
-            #if SETUP_FAN_EXHAUST_PIN < 100 || (SETUP_FAN_EXHAUST_PIN - 100)/16 != (SETUP_FAN_EXHAUST_PINCHNL)/16
-                #warning "SETUP_FAN_EXHAUST_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_FAN_EXHAUST_PIN == -1
-                #undef SETUP_FAN_EXHAUST_PIN
-                #define SETUP_FAN_EXHAUST_PIN (100 + SETUP_FAN_EXHAUST_PINCHNL)
-            #endif
-            #define SETUP_FAN_EXHAUST_PINCHNL_ SETUP_FAN_EXHAUST_PINCHNL
-            #undef SETUP_FAN_EXHAUST_PINCHNL
-            #define SETUP_FAN_EXHAUST_PINCHNL -SETUP_FAN_EXHAUST_PINCHNL_
+            #undef SETUP_FAN_EXHAUST_PIN
+            #define SETUP_FAN_EXHAUST_PIN (100 + SETUP_FAN_EXHAUST_PINCHNL)
         #endif
         #if SETUP_NUTRIENT_MIX_PINCHNL >= 0 || SETUP_NUTRIENT_MIX_PIN >= 100
             if (!hydroController.getPinExpander(SETUP_NUTRIENT_MIX_PINCHNL/16)) { hydroController.setPinExpander(SETUP_NUTRIENT_MIX_PINCHNL/16, expanders[SETUP_NUTRIENT_MIX_PINCHNL/16]); }
-            #if SETUP_NUTRIENT_MIX_PIN < 100 || (SETUP_NUTRIENT_MIX_PIN - 100)/16 != (SETUP_NUTRIENT_MIX_PINCHNL)/16
-                #warning "SETUP_NUTRIENT_MIX_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_NUTRIENT_MIX_PIN == -1
-                #undef SETUP_NUTRIENT_MIX_PIN
-                #define SETUP_NUTRIENT_MIX_PIN (100 + SETUP_NUTRIENT_MIX_PINCHNL)
-            #endif
-            #define SETUP_NUTRIENT_MIX_PINCHNL_ SETUP_NUTRIENT_MIX_PINCHNL
-            #undef SETUP_NUTRIENT_MIX_PINCHNL
-            #define SETUP_NUTRIENT_MIX_PINCHNL -SETUP_NUTRIENT_MIX_PINCHNL_
+            #undef SETUP_NUTRIENT_MIX_PIN
+            #define SETUP_NUTRIENT_MIX_PIN (100 + SETUP_NUTRIENT_MIX_PINCHNL)
         #endif
         #if SETUP_FRESH_WATER_PINCHNL >= 0 || SETUP_FRESH_WATER_PIN >= 100
             if (!hydroController.getPinExpander(SETUP_FRESH_WATER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_FRESH_WATER_PINCHNL/16, expanders[SETUP_FRESH_WATER_PINCHNL/16]); }
-            #if SETUP_FRESH_WATER_PIN < 100 || (SETUP_FRESH_WATER_PIN - 100)/16 != (SETUP_FRESH_WATER_PINCHNL)/16
-                #warning "SETUP_FRESH_WATER_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_FRESH_WATER_PIN == -1
-                #undef SETUP_FRESH_WATER_PIN
-                #define SETUP_FRESH_WATER_PIN (100 + SETUP_FRESH_WATER_PINCHNL)
-            #endif
-            #define SETUP_FRESH_WATER_PINCHNL_ SETUP_FRESH_WATER_PINCHNL
-            #undef SETUP_FRESH_WATER_PINCHNL
-            #define SETUP_FRESH_WATER_PINCHNL -SETUP_FRESH_WATER_PINCHNL_
+            #undef SETUP_FRESH_WATER_PIN
+            #define SETUP_FRESH_WATER_PIN (100 + SETUP_FRESH_WATER_PINCHNL)
         #endif
         #if SETUP_PH_UP_PINCHNL >= 0 || SETUP_PH_UP_PIN >= 100
             if (!hydroController.getPinExpander(SETUP_PH_UP_PINCHNL/16)) { hydroController.setPinExpander(SETUP_PH_UP_PINCHNL/16, expanders[SETUP_PH_UP_PINCHNL/16]); }
-            #if SETUP_PH_UP_PIN < 100 || (SETUP_PH_UP_PIN - 100)/16 != (SETUP_PH_UP_PINCHNL)/16
-                #warning "SETUP_PH_UP_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_PH_UP_PIN == -1
-                #undef SETUP_PH_UP_PIN
-                #define SETUP_PH_UP_PIN (100 + SETUP_PH_UP_PINCHNL)
-            #endif
-            #define SETUP_PH_UP_PINCHNL_ SETUP_PH_UP_PINCHNL
-            #undef SETUP_PH_UP_PINCHNL
-            #define SETUP_PH_UP_PINCHNL -SETUP_PH_UP_PINCHNL_
+            #undef SETUP_PH_UP_PIN
+            #define SETUP_PH_UP_PIN (100 + SETUP_PH_UP_PINCHNL)
         #endif
         #if SETUP_PH_DOWN_PINCHNL >= 0 || SETUP_PH_DOWN_PIN >= 100
             if (!hydroController.getPinExpander(SETUP_PH_DOWN_PINCHNL/16)) { hydroController.setPinExpander(SETUP_PH_DOWN_PINCHNL/16, expanders[SETUP_PH_DOWN_PINCHNL/16]); }
-            #if SETUP_PH_DOWN_PIN < 100 || (SETUP_PH_DOWN_PIN - 100)/16 != (SETUP_PH_DOWN_PINCHNL)/16
-                #warning "SETUP_PH_DOWN_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_PH_DOWN_PIN == -1
-                #undef SETUP_PH_DOWN_PIN
-                #define SETUP_PH_DOWN_PIN (100 + SETUP_PH_DOWN_PINCHNL)
-            #endif
-            #define SETUP_PH_DOWN_PINCHNL_ SETUP_PH_DOWN_PINCHNL
-            #undef SETUP_PH_DOWN_PINCHNL
-            #define SETUP_PH_DOWN_PINCHNL -SETUP_PH_DOWN_PINCHNL_
+            #undef SETUP_PH_DOWN_PIN
+            #define SETUP_PH_DOWN_PIN (100 + SETUP_PH_DOWN_PINCHNL)
         #endif
         #if SETUP_CROP_SOILM_PINCHNL >= 0 || SETUP_CROP_SOILM_PIN >= 100
-            if (!hydroController.getPinExpander(SETUP_CROP_SOILM_PINCHNL/16)) { hydroController.setPinExpander(SETUP_CROP_SOILM_PINCHNL/16, expanders[SETUP_CROP_SOILM_PINCHNL/16]); }
-            #if SETUP_CROP_SOILM_PIN < 100 || (SETUP_CROP_SOILM_PIN - 100)/16 != (SETUP_CROP_SOILM_PINCHNL)/16
-                #warning "SETUP_CROP_SOILM_PIN: Virtual pins attached to an expander should use a pin number of hpin_virtual (100) or higher, segmented into groups of 16 per expander."
-            #endif
-            #if SETUP_CROP_SOILM_PIN == -1
-                #undef SETUP_CROP_SOILM_PIN
-                #define SETUP_CROP_SOILM_PIN (100 + SETUP_CROP_SOILM_PINCHNL)
-            #endif
-            #define SETUP_CROP_SOILM_PINCHNL_ SETUP_CROP_SOILM_PINCHNL
-            #undef SETUP_CROP_SOILM_PINCHNL
-            #define SETUP_CROP_SOILM_PINCHNL -SETUP_CROP_SOILM_PINCHNL_
+            if (!hydroController.getPinExpander(SETUP_CROP_SOILM_PINCHNL/16)) { hydroController.setPinExpander(SETUP_CROP_SOILM_PINCHNL/16, expanders[SETUP_CROP_SOILM_PINCHNL/16]);
+            #undef SETUP_CROP_SOILM_PIN
+            #define SETUP_CROP_SOILM_PIN (100 + SETUP_CROP_SOILM_PINCHNL)
         #endif
     #endif
 }

@@ -29,7 +29,9 @@ HydroPin::HydroPin()
 { ; }
 
 HydroPin::HydroPin(int classType, pintype_t pinNumber, Hydro_PinMode pinMode, int8_t pinChannel)
-    : type((typeof(type))classType), pin(pinNumber), mode(pinMode), channel(pinChannel)
+    : type((typeof(type))classType), pin(pinNumber), mode(pinMode),
+      channel(pinChannel == hpinchnl_none ? (pinNumber != hpin_none && pinNumber >= hpin_virtual ? pinChannelForExpanderChannel(abs(pinNumber - hpin_virtual)) : hpinchnl_none)
+                                          : (pinNumber != hpin_none && pinNumber >= hpin_virtual ? pinChannelForExpanderChannel(abs(pinChannel)) : pinChannelForMuxerChannel(abs(pinChannel))))
 { ; }
 
 HydroPin::HydroPin(const HydroPinData *dataIn)
