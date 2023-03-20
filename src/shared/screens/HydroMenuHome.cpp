@@ -36,28 +36,28 @@ void CALLBACK_FUNCTION sysNameChanged(int id) { } // todo
 void CALLBACK_FUNCTION timeChanged(int id) { } // todo
 void CALLBACK_FUNCTION tzChanged(int id) { } // todo
 
-H_RENDERING_CALLBACK_NAME_INVOKE(fnEEPROMSizeRtCall, textItemRenderFn, HUIStr_Key_Size, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnSDNameRtCall, textItemRenderFn, HUIStr_Key_Name, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnDisplayModeRtCall, textItemRenderFn, HUIStr_Key_DisplayMode, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnControlModeRtCall, textItemRenderFn, HUIStr_Key_ControlMode, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnFreeMemoryRtCall, textItemRenderFn, HUIStr_Key_FreeMemory, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnUptimeRtCall, textItemRenderFn, HUIStr_Key_Uptime, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnFirmwareRtCall, textItemRenderFn, HUIStr_Key_Firmware, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnBoardRtCall, textItemRenderFn, HUIStr_Key_Board, -1, NO_CALLBACK)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickYTolRtCall, largeNumItemRenderFn, HUIStr_Key_JoystickYTol, -1, jsConfigChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickYMidRtCall, largeNumItemRenderFn, HUIStr_Key_JoystickYMid, -1, jsConfigChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickXTolRtCall, largeNumItemRenderFn, HUIStr_Key_JoystickXTol, -1, jsConfigChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickXMidRtCall, largeNumItemRenderFn, HUIStr_Key_JoystickXMid, -1, jsConfigChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnLongitudeMinRtCall, largeNumItemRenderFn, HUIStr_Key_LongMinutes, -1, longChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnLatitudeDegRtCall, largeNumItemRenderFn, HUIStr_Key_LatDegrees, -1, latChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnMQTTBrokerIPRtCall, ipAddressRenderFn, HUIStr_Key_MQTTBroker, -1, brokerChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnWiFiPasswordRtCall, textItemRenderFn, HUIStr_Key_WiFiPass, -1, passChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnWiFiSSIDRtCall, textItemRenderFn, HUIStr_Key_WiFiSSID, -1, ssidChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnMACAddressRtCall, textItemRenderFn, HUIStr_Key_MACAddr0x, -1, macChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnControllerIPRtCall, ipAddressRenderFn, HUIStr_Key_ControllerIP, -1, ipChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnLocalTimeRtCall, timeItemRenderFn, HUIStr_Key_LocalTime, -1, timeChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnDateRtCall, dateItemRenderFn, HUIStr_Key_Date, -1, dateChanged)
-H_RENDERING_CALLBACK_NAME_INVOKE(fnSystemNameRtCall, textItemRenderFn, HUIStr_Key_SystemName, -1, sysNameChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnEEPROMSizeRtCall, textItemRenderFn, HUIStr_Item_Size, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnSDNameRtCall, textItemRenderFn, HUIStr_Item_Name, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnDisplayModeRtCall, textItemRenderFn, HUIStr_Item_DisplayMode, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnControlModeRtCall, textItemRenderFn, HUIStr_Item_ControlMode, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnFreeMemoryRtCall, textItemRenderFn, HUIStr_Item_FreeMemory, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnUptimeRtCall, textItemRenderFn, HUIStr_Item_Uptime, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnFirmwareRtCall, textItemRenderFn, HUIStr_Item_Firmware, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnBoardRtCall, textItemRenderFn, HUIStr_Item_Board, -1, NO_CALLBACK)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickYTolRtCall, largeNumItemRenderFn, HUIStr_Item_JoystickYTol, -1, jsConfigChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickYMidRtCall, largeNumItemRenderFn, HUIStr_Item_JoystickYMid, -1, jsConfigChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickXTolRtCall, largeNumItemRenderFn, HUIStr_Item_JoystickXTol, -1, jsConfigChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnJoystickXMidRtCall, largeNumItemRenderFn, HUIStr_Item_JoystickXMid, -1, jsConfigChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnLongitudeMinRtCall, largeNumItemRenderFn, HUIStr_Item_LongMinutes, -1, longChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnLatitudeDegRtCall, largeNumItemRenderFn, HUIStr_Item_LatDegrees, -1, latChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnMQTTBrokerIPRtCall, ipAddressRenderFn, HUIStr_Item_MQTTBroker, -1, brokerChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnWiFiPasswordRtCall, textItemRenderFn, HUIStr_Item_WiFiPass, -1, passChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnWiFiSSIDRtCall, textItemRenderFn, HUIStr_Item_WiFiSSID, -1, ssidChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnMACAddressRtCall, textItemRenderFn, HUIStr_Item_MACAddr0x, -1, macChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnControllerIPRtCall, ipAddressRenderFn, HUIStr_Item_ControllerIP, -1, ipChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnLocalTimeRtCall, timeItemRenderFn, HUIStr_Item_LocalTime, -1, timeChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnDateRtCall, dateItemRenderFn, HUIStr_Item_Date, -1, dateChanged)
+H_RENDERING_CALLBACK_NAME_INVOKE(fnSystemNameRtCall, textItemRenderFn, HUIStr_Item_SystemName, -1, sysNameChanged)
 
 
 HydroHomeMenu::HydroHomeMenu()
@@ -147,57 +147,57 @@ HydroHomeMenuInfo::HydroHomeMenuInfo()
     enumStrSystemMode[0] = (_enumStrSystemMode[0] = SFP(HUIStr_Enum_SystemMode_0)).c_str();
     enumStrSystemMode[1] = (_enumStrSystemMode[1] = SFP(HUIStr_Enum_SystemMode_1)).c_str();
 
-    InitAnyMenuInfo(minfoOverview, HUIStr_Key_BackToOverview, 7, NO_ADDRESS, 0, backToOverview);
-    InitBooleanMenuInfo(minfoToggleBadConn, HUIStr_Key_ToggleBadConn, 65, NO_ADDRESS, 1, NO_CALLBACK, NAMING_ON_OFF);
-    InitBooleanMenuInfo(minfoToggleFastTime, HUIStr_Key_ToggleFastTime, 64, NO_ADDRESS, 1, NO_CALLBACK, NAMING_ON_OFF);
-    InitAnyMenuInfo(minfoTriggerSigTime, HUIStr_Key_TriggerSigTime, 63, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoTriggerSDCleanup, HUIStr_Key_TriggerSDCleanup, 62, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoTriggerLowMem, HUIStr_Key_TriggerLowMem, 61, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoTriggerAutosave, HUIStr_Key_TriggerAutosave, 60, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoDebug, HUIStr_Key_Debug, 6, NO_ADDRESS, 0, NO_CALLBACK);
-    InitBooleanMenuInfo(minfoBatteryFailure, HUIStr_Key_BatteryFailure, 530, NO_ADDRESS, 1, NO_CALLBACK, NAMING_YES_NO);
-    InitSubMenuInfo(minfoRTC, HUIStr_Key_RTC, 53, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoEEPROM, HUIStr_Key_EEPROM, 52, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoSDCard, HUIStr_Key_SDCard, 51, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoSystem, HUIStr_Key_System, 50, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoInfo, HUIStr_Key_Info, 5, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoAddNewCalibration, HUIStr_Key_AddNew, 421, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoBrowseCalibrations, HUIStr_Key_Browse, 420, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoCalibrations, HUIStr_Key_Calibrations, 42, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoAddNewAdditive, HUIStr_Key_AddNew, 411, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoBrowseAdditives, HUIStr_Key_Browse, 410, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoAdditives, HUIStr_Key_Additives, 41, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoAddNewCropLib, HUIStr_Key_AddNew, 401, NO_ADDRESS, 0, NO_CALLBACK);
-    InitAnyMenuInfo(minfoBrowseCropsLib, HUIStr_Key_Browse, 400, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoCropsLib, HUIStr_Key_Crops, 40, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoLibrary, HUIStr_Key_Library, 4, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoControls, HUIStr_Key_Controls, 34, NO_ADDRESS, 0, NO_CALLBACK);
-    InitEnumMenuInfo(minfoGPSPolling, HUIStr_Key_GPSPolling, 333, NO_ADDRESS, 3, pollingChanged, enumStrGPSPolling);
-    InitAnalogMenuInfoUnits(minfoAltitude, HUIStr_Key_Altitude, 332, NO_ADDRESS, 10000, altChanged, 0, 1, HUIStr_Unit_MSL);
-    InitSubMenuInfo(minfoLocation, HUIStr_Key_Location, 33, NO_ADDRESS, 0, NO_CALLBACK);
-    InitBooleanMenuInfo(minfoAllowRemoteCtrl, HUIStr_Key_AllowRemoteCtrl, 329, NO_ADDRESS, 1, allowRemoteChanged, NAMING_CHECKBOX);
-    InitAnalogMenuInfo(minfoRemoteCtrlPort, HUIStr_Key_RemoteCtrlPort, 328, NO_ADDRESS, 65535, remotePortChanged, 0, 1);
-    InitAnalogMenuInfo(minfoBrokerPort, HUIStr_Key_BrokerPort, 327, NO_ADDRESS, 65535, brokerPortChanged, 0, 1);
-    InitBooleanMenuInfo(minfoAssignByHostname, HUIStr_Key_AssignByHostname, 326, NO_ADDRESS, 1, brokerByChanged, NAMING_CHECKBOX);
-    InitBooleanMenuInfo(minfoAssignByDHCP, HUIStr_Key_AssignByDHCP, 321, NO_ADDRESS, 1, ipByChanged, NAMING_CHECKBOX);
-    InitSubMenuInfo(minfoNetworking, HUIStr_Key_Networking, 32, NO_ADDRESS, 0, NO_CALLBACK);
-    InitBooleanMenuInfo(minfoDSTAddHour, HUIStr_Key_DSTAddHour, 313, NO_ADDRESS, 1, dstChanged, NAMING_CHECKBOX);
-    InitEnumMenuInfo(minfoTimeZone, HUIStr_Key_TimeZone, 312, NO_ADDRESS, 40, tzChanged, enumStrTimeZone);
-    InitSubMenuInfo(minfoTime, HUIStr_Key_Time, 31, NO_ADDRESS, 0, NO_CALLBACK);
-    InitEnumMenuInfo(minfoDataPolling, HUIStr_Key_DataPolling, 305, NO_ADDRESS, 7, pollingDTChanged, enumStrDataPolling);
-    InitEnumMenuInfo(minfoAutosaveSeconday, HUIStr_Key_AutosaveSecondary, 304, NO_ADDRESS, 3, secondaryAutosaveChanged, enumStrAutosave);
-    InitEnumMenuInfo(minfoAutosavePrimary, HUIStr_Key_AutosavePrimary, 303, NO_ADDRESS, 3, primaryAutosaveChanged, enumStrAutosave);
-    InitEnumMenuInfo(minfoMeasurements, HUIStr_Key_Measurements, 302, NO_ADDRESS, 2, sysMeasureChanged, enumStrMeasurements);
-    InitEnumMenuInfo(minfoSystemMode, HUIStr_Key_SystemMode, 301, NO_ADDRESS, 1, sysModeChanged, enumStrSystemMode);
-    InitSubMenuInfo(minfoGeneral, HUIStr_Key_General, 30, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoSettings, HUIStr_Key_Settings, 3, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoScheduling, HUIStr_Key_Scheduling, 25, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoPowerRails, HUIStr_Key_PowerRails, 24, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoReservoirs, HUIStr_Key_Reservoirs, 23, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoCrops, HUIStr_Key_Crops, 22, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoSensors, HUIStr_Key_Sensors, 21, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoActuators, HUIStr_Key_Actuators, 20, NO_ADDRESS, 0, NO_CALLBACK);
-    InitSubMenuInfo(minfoSystem, HUIStr_Key_System, 2, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoOverview, HUIStr_Item_BackToOverview, 7, NO_ADDRESS, 0, backToOverview);
+    InitBooleanMenuInfo(minfoToggleBadConn, HUIStr_Item_ToggleBadConn, 65, NO_ADDRESS, 1, NO_CALLBACK, NAMING_ON_OFF);
+    InitBooleanMenuInfo(minfoToggleFastTime, HUIStr_Item_ToggleFastTime, 64, NO_ADDRESS, 1, NO_CALLBACK, NAMING_ON_OFF);
+    InitAnyMenuInfo(minfoTriggerSigTime, HUIStr_Item_TriggerSigTime, 63, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoTriggerSDCleanup, HUIStr_Item_TriggerSDCleanup, 62, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoTriggerLowMem, HUIStr_Item_TriggerLowMem, 61, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoTriggerAutosave, HUIStr_Item_TriggerAutosave, 60, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoDebug, HUIStr_Item_Debug, 6, NO_ADDRESS, 0, NO_CALLBACK);
+    InitBooleanMenuInfo(minfoBatteryFailure, HUIStr_Item_BatteryFailure, 530, NO_ADDRESS, 1, NO_CALLBACK, NAMING_YES_NO);
+    InitSubMenuInfo(minfoRTC, HUIStr_Item_RTC, 53, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoEEPROM, HUIStr_Item_EEPROM, 52, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoSDCard, HUIStr_Item_SDCard, 51, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoSystem, HUIStr_Item_System, 50, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoInfo, HUIStr_Item_Info, 5, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoAddNewCalibration, HUIStr_Item_AddNew, 421, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoBrowseCalibrations, HUIStr_Item_Browse, 420, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoCalibrations, HUIStr_Item_Calibrations, 42, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoAddNewAdditive, HUIStr_Item_AddNew, 411, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoBrowseAdditives, HUIStr_Item_Browse, 410, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoAdditives, HUIStr_Item_Additives, 41, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoAddNewCropLib, HUIStr_Item_AddNew, 401, NO_ADDRESS, 0, NO_CALLBACK);
+    InitAnyMenuInfo(minfoBrowseCropsLib, HUIStr_Item_Browse, 400, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoCropsLib, HUIStr_Item_Crops, 40, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoLibrary, HUIStr_Item_Library, 4, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoControls, HUIStr_Item_Controls, 34, NO_ADDRESS, 0, NO_CALLBACK);
+    InitEnumMenuInfo(minfoGPSPolling, HUIStr_Item_GPSPolling, 333, NO_ADDRESS, 3, pollingChanged, enumStrGPSPolling);
+    InitAnalogMenuInfoUnits(minfoAltitude, HUIStr_Item_Altitude, 332, NO_ADDRESS, 10000, altChanged, 0, 1, HUIStr_Unit_MSL);
+    InitSubMenuInfo(minfoLocation, HUIStr_Item_Location, 33, NO_ADDRESS, 0, NO_CALLBACK);
+    InitBooleanMenuInfo(minfoAllowRemoteCtrl, HUIStr_Item_AllowRemoteCtrl, 329, NO_ADDRESS, 1, allowRemoteChanged, NAMING_CHECKBOX);
+    InitAnalogMenuInfo(minfoRemoteCtrlPort, HUIStr_Item_RemoteCtrlPort, 328, NO_ADDRESS, 65535, remotePortChanged, 0, 1);
+    InitAnalogMenuInfo(minfoBrokerPort, HUIStr_Item_BrokerPort, 327, NO_ADDRESS, 65535, brokerPortChanged, 0, 1);
+    InitBooleanMenuInfo(minfoAssignByHostname, HUIStr_Item_AssignByHostname, 326, NO_ADDRESS, 1, brokerByChanged, NAMING_CHECKBOX);
+    InitBooleanMenuInfo(minfoAssignByDHCP, HUIStr_Item_AssignByDHCP, 321, NO_ADDRESS, 1, ipByChanged, NAMING_CHECKBOX);
+    InitSubMenuInfo(minfoNetworking, HUIStr_Item_Networking, 32, NO_ADDRESS, 0, NO_CALLBACK);
+    InitBooleanMenuInfo(minfoDSTAddHour, HUIStr_Item_DSTAddHour, 313, NO_ADDRESS, 1, dstChanged, NAMING_CHECKBOX);
+    InitEnumMenuInfo(minfoTimeZone, HUIStr_Item_TimeZone, 312, NO_ADDRESS, 40, tzChanged, enumStrTimeZone);
+    InitSubMenuInfo(minfoTime, HUIStr_Item_Time, 31, NO_ADDRESS, 0, NO_CALLBACK);
+    InitEnumMenuInfo(minfoDataPolling, HUIStr_Item_DataPolling, 305, NO_ADDRESS, 7, pollingDTChanged, enumStrDataPolling);
+    InitEnumMenuInfo(minfoAutosaveSeconday, HUIStr_Item_AutosaveSecondary, 304, NO_ADDRESS, 3, secondaryAutosaveChanged, enumStrAutosave);
+    InitEnumMenuInfo(minfoAutosavePrimary, HUIStr_Item_AutosavePrimary, 303, NO_ADDRESS, 3, primaryAutosaveChanged, enumStrAutosave);
+    InitEnumMenuInfo(minfoMeasurements, HUIStr_Item_Measurements, 302, NO_ADDRESS, 2, sysMeasureChanged, enumStrMeasurements);
+    InitEnumMenuInfo(minfoSystemMode, HUIStr_Item_SystemMode, 301, NO_ADDRESS, 1, sysModeChanged, enumStrSystemMode);
+    InitSubMenuInfo(minfoGeneral, HUIStr_Item_General, 30, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoSettings, HUIStr_Item_Settings, 3, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoScheduling, HUIStr_Item_Scheduling, 25, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoPowerRails, HUIStr_Item_PowerRails, 24, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoReservoirs, HUIStr_Item_Reservoirs, 23, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoCrops, HUIStr_Item_Crops, 22, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoSensors, HUIStr_Item_Sensors, 21, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoActuators, HUIStr_Item_Actuators, 20, NO_ADDRESS, 0, NO_CALLBACK);
+    InitSubMenuInfo(minfoSystem, HUIStr_Item_System, 2, NO_ADDRESS, 0, NO_CALLBACK);
 }
 
 HydroHomeMenuItems::HydroHomeMenuItems()
