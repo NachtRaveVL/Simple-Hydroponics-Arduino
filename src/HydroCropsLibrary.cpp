@@ -178,7 +178,7 @@ void HydroCropsLibrary::updateCropsOfType(Hydro_CropType cropType)
 
 inline String getCropFilename(const String &libSDCropPrefix, Hydro_CropType cropType)
 {
-    String filename; filename.reserve(libSDCropPrefix.length() + 4);
+    String filename; filename.reserve(libSDCropPrefix.length() + 4 + 1);
     filename.concat(libSDCropPrefix);
     filename.concat('c');
     filename.concat('r');

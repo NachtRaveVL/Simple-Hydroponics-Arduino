@@ -3,9 +3,8 @@
     Hydruino Display Drivers
 */
 
-#include "Hydruino.h"
-#ifdef HYDRO_USE_GUI
 #include "HydruinoUI.h"
+#ifdef HYDRO_USE_GUI
 
 static inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayRotation displayRotation)
 {
@@ -205,7 +204,7 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup,
 template <class T>
 void HydroDisplayAdafruitGFX<T>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 template <class T>
@@ -216,10 +215,10 @@ void HydroDisplayAdafruitGFX<T>::begin()
 }
 
 template <class T>
-HydroOverview *HydroDisplayAdafruitGFX<T>::createOverview()
+HydroOverview *HydroDisplayAdafruitGFX<T>::allocateOverview()
 {
     // Unknown if type inherits from Adafruit_SPITFT or not, so Gfx used for compatibility
-    return new HydroOverviewAdaGfx<T>(this);
+    return new HydroOverviewGFX<T>(this);
 }
 
 #endif

@@ -3,9 +3,8 @@
     Hydruino Remote Controls
 */
 
-#include "Hydruino.h"
-#ifdef HYDRO_USE_GUI
 #include "HydruinoUI.h"
+#ifdef HYDRO_USE_GUI
 
 HydroRemoteSerialControl::HydroRemoteSerialControl(UARTDeviceSetup serialSetup)
     : _serialTransport(serialSetup.serial), _serialInitializer(), _serialConnection(_serialTransport, _serialInitializer)

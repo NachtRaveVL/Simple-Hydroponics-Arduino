@@ -21,10 +21,6 @@ enum Hydro_String : unsigned short {
     HStr_Default_SystemName,
     HStr_Default_ConfigFilename,
 
-    HStr_UI_MatrixActions,
-    HStr_UI_Matrix3x4Keys,
-    HStr_UI_Matrix4x4Keys,
-
     HStr_Err_AllocationFailure,
     HStr_Err_AlreadyInitialized,
     HStr_Err_AssertionFailure,

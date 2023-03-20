@@ -28,13 +28,16 @@
 #define HYDRO_UI_CUSTOM_OLED_SPI        U8G2_SSD1309_128X64_NONAME0_F_4W_HW_SPI // Custom OLED for SPI setup (must be _4W_HW_SPI variant /w 4 init params: rotation, csPin, dcPin, resetPin - SPI# not assertion checked since baked into define)
 #endif
 
-#define HYDRO_UI_I2C_LCD_BASEADDR       0x20                // Base address of I2C LiquidCrystalIO LCDs (bitwise or'ed with passed address)
+#define HYDRO_UI_I2C_LCD_BASEADDR       0x20                // Base address of I2C LiquidCrystalIO LCDs (bitwise or'ed with passed address - technically base address of i2c expander in use)
 #define HYDRO_UI_I2C_OLED_BASEADDR      0x78                // Base address of I2C U8g2 OLEDs (bitwise or'ed with passed address, some devices may use 0x7e)
-#define HYDRO_UI_GFXTFT_USES_SLIDER     true                // Default analog slider usage for Gfx/TFT displays
-#define HYDRO_UI_BACKLIGHT_TIMEOUT      5 * SECS_PER_MIN    // Backlight timeout, in secs
+#define HYDRO_UI_GFX_VARS_USES_SLIDER   true                // Default analog slider usage for graphical displays displaying variable value ranges
+#define HYDRO_UI_BACKLIGHT_TIMEOUT      5 * SECS_PER_MIN    // Backlight timeout, in seconds
+#define HYDRO_UI_START_AT_OVERVIEW      true                // Starts at overview screen (true), else menu screen (false)
+#define HYDRO_UI_DEALLOC_AFTER_USE      defined(__AVR__)    // If screen data should be unloaded after use (true = lower memory usage, increased screens transition time), or stay memory-resident (false = higher memory usage, more instant screen transitions)
 
-#define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed
+#define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed, in ticks
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
+#define HYDRO_UI_2X2MATRIX_KEYS         "AB*#"              // 2x2 matrix keyboard keys (U,D,L,R)
 #define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // 3x4 matrix keyboard keys (123,456,789,*0#)
 #define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // 4x4 matrix keyboard keys (123A,456B,789C,*0#D)
 #define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Assigned enter/select char, delete/exit char, back char, and next char on keyboard (also 2x2 matrix keyboard keys)
@@ -175,6 +178,8 @@ class HydruinoBaseUI;
 class HydroDisplayDriver;
 class HydroInputDriver;
 class HydroRemoteControl;
+class HydroMenu;
+class HydroHomeMenu;
 class HydroOverview;
 struct HydroUIData;
 

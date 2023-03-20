@@ -99,7 +99,7 @@ template<typename T>
 String commaStringFromArray(const T *arrayIn, size_t length)
 {
     if (!arrayIn || !length) { return String(SFP(HStr_null)); }
-    String retVal; retVal.reserve(length << 1);
+    String retVal; retVal.reserve(length << 1 + length >> 1 + 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
         retVal += String(arrayIn[index]);

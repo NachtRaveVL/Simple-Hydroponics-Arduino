@@ -300,7 +300,7 @@ We also ask that our users report any broken sensors (outside of bad calibration
   * Warning: While WiFi password is encrypted into system settings data, it should not be considered secure.
 * Bluetooth module can be used on any open Serial line to provide remote device control.
 * MQTT requires remotely accessible broker daemon in order to publish sensor data (setup separately).
-* Note that WiFi-based location determination APIs require external 3rd party monthly subscription fees, thus are currently not included as a feature.
+* Note that WiFi-based geo-location APIs require external 3rd party monthly subscription fees, thus are currently not included as a feature.
 
 ## Memory Callouts
 

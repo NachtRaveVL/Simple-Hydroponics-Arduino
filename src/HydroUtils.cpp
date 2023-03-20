@@ -145,7 +145,7 @@ String getYYMMDDFilename(String prefix, String ext)
     uint8_t mm = currTime.month();
     uint8_t dd = currTime.day();
 
-    String retVal; retVal.reserve(prefix.length() + 11);
+    String retVal; retVal.reserve(prefix.length() + 10 + 1);
 
     retVal.concat(prefix);
     if (yy < 10) { retVal.concat('0'); }
@@ -162,7 +162,7 @@ String getYYMMDDFilename(String prefix, String ext)
 
 String getNNFilename(String prefix, unsigned int value, String ext)
 {
-    String retVal; retVal.reserve(prefix.length() + 7);
+    String retVal; retVal.reserve(prefix.length() + 6 + 1);
 
     retVal.concat(prefix);
     if (value < 10) { retVal.concat('0'); }
@@ -194,7 +194,7 @@ hkey_t stringHash(String string)
 
 String addressToString(uintptr_t addr)
 {
-    String retVal; retVal.reserve((2 * sizeof(void*)) + 3);
+    String retVal; retVal.reserve((2 * sizeof(void*)) + 2 + 1);
     if (addr == (uintptr_t)-1) { addr = 0; }
     retVal.concat('0'); retVal.concat('x');
 
@@ -229,7 +229,7 @@ String charsToString(const char *charsIn, size_t length)
 
 String timeSpanToString(const TimeSpan &span)
 {
-    String retVal; retVal.reserve(12);
+    String retVal; retVal.reserve(15 + 1);
 
     if (span.days()) {
         retVal.concat(span.days());
@@ -256,7 +256,7 @@ String timeSpanToString(const TimeSpan &span)
 
 extern String measurementToString(float value, Hydro_UnitsType units, unsigned int additionalDecPlaces)
 {
-    String retVal; retVal.reserve(12);
+    String retVal; retVal.reserve(15 + 1);
     retVal.concat(roundToString(value, additionalDecPlaces));
 
     String unitsSym = unitsTypeToSymbol(units, true); // also excludes dimensionless, e.g. pH
@@ -272,7 +272,7 @@ template<>
 String commaStringFromArray<float>(const float *arrayIn, size_t length)
 {
     if (!arrayIn || !length) { return String(SFP(HStr_null)); }
-    String retVal; retVal.reserve(length << 1);
+    String retVal; retVal.reserve(length << 1 + length >> 1 + 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
 
@@ -294,7 +294,7 @@ template<>
 String commaStringFromArray<double>(const double *arrayIn, size_t length)
 {
     if (!arrayIn || !length) { return String(SFP(HStr_null)); }
-    String retVal; retVal.reserve(length << 1);
+    String retVal; retVal.reserve(length << 1 + length >> 1 + 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
 
@@ -366,9 +366,9 @@ String hexStringFromBytes(const uint8_t *bytesIn, size_t length)
     String retVal; retVal.reserve((length << 1) + 1);
     for (size_t index = 0; index < length; ++index) {
         String valStr = String(bytesIn[index], 16);
-        if (valStr.length() == 1) { valStr = String('0') + valStr; }
+        if (valStr.length() == 1) { retVal.concat('0'); }
 
-        retVal += valStr;
+        retVal.concat(valStr);
     }
     return retVal.length() ? retVal : String(SFP(HStr_null));
 }
@@ -1229,25 +1229,25 @@ String displayOutputModeToString(Hydro_DisplayOutputMode displayOutMode, bool ex
             return SFP(HStr_Disabled);
         case Hydro_DisplayOutputMode_LCD16x2_EN: {
             String retVal(SFP(HStr_Enum_LCD16x2));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('E'); retVal.concat('N');
             return retVal;
         }
         case Hydro_DisplayOutputMode_LCD16x2_RS: {
             String retVal(SFP(HStr_Enum_LCD16x2));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('R'); retVal.concat('S');
             return retVal;
         }
         case Hydro_DisplayOutputMode_LCD20x4_EN: {
             String retVal(SFP(HStr_Enum_LCD20x4));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('E'); retVal.concat('N');
             return retVal;
         }
         case Hydro_DisplayOutputMode_LCD20x4_RS: {
             String retVal(SFP(HStr_Enum_LCD20x4));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('R'); retVal.concat('S');
             return retVal;
         }
@@ -1276,7 +1276,7 @@ String displayOutputModeToString(Hydro_DisplayOutputMode displayOutMode, bool ex
         case Hydro_DisplayOutputMode_ILI9341:
             return SFP(HStr_Enum_ILI9341);
         case Hydro_DisplayOutputMode_TFT: {
-            String retVal; retVal.reserve(3);
+            String retVal; retVal.reserve(3 + 1);
             retVal.concat('T'); retVal.concat('F'); retVal.concat('T');
             return retVal;
         }
@@ -1295,53 +1295,53 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
             return SFP(HStr_Disabled);
         case Hydro_ControlInputMode_RotaryEncoderOk: {
             String retVal(SFP(HStr_Enum_RotaryEncoder));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
         case Hydro_ControlInputMode_RotaryEncoderOkLR: {
             String retVal(SFP(HStr_Enum_RotaryEncoder));
-            retVal.reserve(retVal.length() + 4);
+            retVal.reserve(retVal.length() + 4 + 1);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
             return retVal;
         }
         case Hydro_ControlInputMode_UpDownButtonsOk: {
             String retVal(SFP(HStr_Enum_UpDownButtons));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
         case Hydro_ControlInputMode_UpDownButtonsOkLR: {
             String retVal(SFP(HStr_Enum_UpDownButtons));
-            retVal.reserve(retVal.length() + 4);
+            retVal.reserve(retVal.length() + 4 + 1);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
             return retVal;
         }
         case Hydro_ControlInputMode_UpDownESP32TouchOk: {
             String retVal(SFP(HStr_Enum_UpDownESP32Touch));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
         case Hydro_ControlInputMode_UpDownESP32TouchOkLR: {
             String retVal(SFP(HStr_Enum_UpDownESP32Touch));
-            retVal.reserve(retVal.length() + 4);
+            retVal.reserve(retVal.length() + 4 + 1);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
             return retVal;
         }
         case Hydro_ControlInputMode_AnalogJoystickOk: {
             String retVal(SFP(HStr_Enum_AnalogJoystick));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
         case Hydro_ControlInputMode_Matrix2x2UpDownButtonsOkL: {
             String retVal(SFP(HStr_Enum_Matrix2x2));
             String concat(SFP(HStr_Enum_UpDownButtons));
-            retVal.reserve(retVal.length() + concat.length() + 3);
+            retVal.reserve(retVal.length() + concat.length() + 3 + 1);
             retVal.concat(concat);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L');
@@ -1349,26 +1349,26 @@ String controlInputModeToString(Hydro_ControlInputMode controlInMode, bool exclu
         }
         case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk: {
             String retVal(SFP(HStr_Enum_Matrix3x4));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
         case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR: {
             String retVal(SFP(HStr_Enum_Matrix3x4));
-            retVal.reserve(retVal.length() + 4);
+            retVal.reserve(retVal.length() + 4 + 1);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
             return retVal;
         }
         case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk: {
             String retVal(SFP(HStr_Enum_Matrix4x4));
-            retVal.reserve(retVal.length() + 2);
+            retVal.reserve(retVal.length() + 2 + 1);
             retVal.concat('O'); retVal.concat('k');
             return retVal;
         }
         case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR: {
             String retVal(SFP(HStr_Enum_Matrix4x4));
-            retVal.reserve(retVal.length() + 4);
+            retVal.reserve(retVal.length() + 4 + 1);
             retVal.concat('O'); retVal.concat('k');
             retVal.concat('L'); retVal.concat('R');
             return retVal;
@@ -1856,27 +1856,27 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
         case Hydro_UnitsType_LiqDilution_MilliLiterPerGallon: {
             String retVal(SFP(HStr_Unit_MilliLiterPer));
             String concat(SFP(HStr_Unit_Gallons));
-            retVal.reserve(retVal.length() + concat.length());
+            retVal.reserve(retVal.length() + concat.length() + 1);
             retVal.concat(concat);
             return retVal;
         }
         case Hydro_UnitsType_LiqDilution_MilliLiterPerLiter: {
             String retVal(SFP(HStr_Unit_MilliLiterPer));
-            retVal.reserve(retVal.length() + 1);
+            retVal.reserve(retVal.length() + 1 + 1);
             retVal.concat('L');
             return retVal;
         }
         case Hydro_UnitsType_LiqFlowRate_GallonsPerMin: {
             String retVal(SFP(HStr_Unit_Gallons));
             String concat(SFP(HStr_Unit_PerMinute));
-            retVal.reserve(retVal.length() + concat.length());
+            retVal.reserve(retVal.length() + concat.length() + 1);
             retVal.concat(concat);
             return retVal;
         }
         case Hydro_UnitsType_LiqFlowRate_LitersPerMin: {
             String retVal('L');
             String concat(SFP(HStr_Unit_PerMinute));
-            retVal.reserve(retVal.length() + concat.length());
+            retVal.reserve(retVal.length() + concat.length() + 1);
             retVal.concat(concat);
             return retVal;
         }
@@ -1890,19 +1890,19 @@ String unitsTypeToSymbol(Hydro_UnitsType unitsType, bool excludeSpecial)
             return String('W'); // alt: J/s
         case Hydro_UnitsType_Temperature_Celsius: {
             String retVal(SFP(HStr_Unit_Degree));
-            retVal.reserve(retVal.length() + 1);
+            retVal.reserve(retVal.length() + 1 + 1);
             retVal.concat('C');
             return retVal;
         }
         case Hydro_UnitsType_Temperature_Fahrenheit: {
             String retVal(SFP(HStr_Unit_Degree));
-            retVal.reserve(retVal.length() + 1);
+            retVal.reserve(retVal.length() + 1 + 1);
             retVal.concat('F');
             return retVal;
         }
         case Hydro_UnitsType_Temperature_Kelvin: {
             String retVal(SFP(HStr_Unit_Degree));
-            retVal.reserve(retVal.length() + 1);
+            retVal.reserve(retVal.length() + 1 + 1);
             retVal.concat('K');
             return retVal;
         }

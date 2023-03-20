@@ -11,6 +11,7 @@
 #include "HydroUIDefines.h"
 #include "HydroUIInlines.hh"
 #include "HydroUIData.h"
+#include "HydroUIStrings.h"
 
 // tcMenu Plugin Adaptations
 #include "tcMenu_Display_AdaFruitGfx.h"
@@ -33,6 +34,7 @@
 #include "HydroDisplayDrivers.h"
 #include "HydroInputDrivers.h"
 #include "HydroRemoteControls.h"
+#include "HydroMenus.h"
 #include "HydroOverviews.h"
 
 // Base UI
@@ -66,6 +68,9 @@ public:
     inline bool isUnicodeFonts() const { return _isUnicodeFonts; }
 
     inline HydroUIData *getUIData() { return _uiData; }
+    inline TcMenuRemoteServer *getRemoteServer() { return _remoteServer; }
+    inline HydroOverview *getOverview() { return _overview; }
+    inline HydroHomeMenu *getHomeMenu() { return _homeMenu; }
 
 protected:
     ConnectorLocalInfo _appInfo;                            // Application info for connections
@@ -76,7 +81,6 @@ protected:
     const bool _isUnicodeFonts;                             // Using tcUnicode library fonts
 
     HydroUIData *_uiData;                                   // Hydro UI data (strong)
-    MenuItem *_menuRoot;                                    // Menu root item (strong)
     HydroInputDriver *_input;                               // Input driver (owned)
     HydroDisplayDriver *_display;                           // Display driver (owned)
     TcMenuRemoteServer *_remoteServer;                      // Remote control server (owned)
@@ -84,6 +88,7 @@ protected:
     HydroPin *_backlight;                                   // Backlight control (owned)
     time_t _blTimeout;                                      // Backlight timeout (UTC)
     HydroOverview *_overview;                               // Overview screen (owned)
+    HydroHomeMenu *_homeMenu;                               // Home menu screen (owned)
 
     void setBacklightEnable(bool enabled);
 

@@ -3,9 +3,8 @@
     Hydruino Display Drivers
 */
 
-#include "Hydruino.h"
-#ifdef HYDRO_USE_GUI
 #include "HydruinoUI.h"
+#ifdef HYDRO_USE_GUI
 #include "BaseRenderers.h"
 #include "graphics/BaseGraphicalRenderer.h"
 #include "IoAbstractionWire.h"
@@ -89,7 +88,7 @@ void HydroDisplayLiquidCrystal::begin()
     _lcd.begin(_screenSize[0], _screenSize[1]);
 }
 
-HydroOverview *HydroDisplayLiquidCrystal::createOverview()
+HydroOverview *HydroDisplayLiquidCrystal::allocateOverview()
 {
     return new HydroOverviewLCD(this);
 }
@@ -135,7 +134,7 @@ void HydroDisplayU8g2OLED::begin()
     if (_gfx) { _gfx->begin(); }
 }
 
-HydroOverview *HydroDisplayU8g2OLED::createOverview()
+HydroOverview *HydroDisplayU8g2OLED::allocateOverview()
 {
     return new HydroOverviewOLED(this);
 }
@@ -160,7 +159,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
@@ -173,9 +172,9 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
-HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::createOverview()
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview()
 {
-    return new HydroOverviewAdaGfx<Adafruit_ST7735>(this);
+    return new HydroOverviewGFX<Adafruit_ST7735>(this);
 }
 
 
@@ -197,7 +196,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
@@ -206,9 +205,9 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
-HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::createOverview()
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::allocateOverview()
 {
-    return new HydroOverviewAdaGfx<Adafruit_ST7789>(this);
+    return new HydroOverviewGFX<Adafruit_ST7789>(this);
 }
 
 
@@ -230,7 +229,7 @@ HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetu
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFXTFT_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
@@ -239,9 +238,9 @@ void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
-HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::createOverview()
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::allocateOverview()
 {
-    return new HydroOverviewAdaGfx<Adafruit_ILI9341>(this);
+    return new HydroOverviewGFX<Adafruit_ILI9341>(this);
 }
 
 
@@ -257,7 +256,7 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_Disp
 
 void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), HYDRO_UI_GFXTFT_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayTFTeSPI::begin()
@@ -270,7 +269,7 @@ void HydroDisplayTFTeSPI::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
-HydroOverview *HydroDisplayTFTeSPI::createOverview()
+HydroOverview *HydroDisplayTFTeSPI::allocateOverview()
 {
     return new HydroOverviewTFT(this);
 }

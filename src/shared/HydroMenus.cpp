@@ -1,11 +1,16 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
-    Hydruino Overview Screens
+    Hydruino Menu Screens
 */
 
 #include "HydruinoUI.h"
 #ifdef HYDRO_USE_GUI
 
-#include "screens/HydroOverviewGFX.hpp"
+HydroMenu::HydroMenu()
+    : _loaded(false)
+{ ; }
+
+HydroMenu::~HydroMenu()
+{ ; }
 
 #endif

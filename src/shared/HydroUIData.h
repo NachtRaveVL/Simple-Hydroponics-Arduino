@@ -8,7 +8,7 @@
 
 struct HydroUIData;
 
-#include "Hydruino.h"
+#include <Hydruino.h>
 #include "HydroUIDefines.h"
 
 // UI Serialization Data

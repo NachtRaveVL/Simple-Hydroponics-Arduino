@@ -197,19 +197,6 @@ const char *pgmAddrForStr(Hydro_String strNum)
             return flashStr_Default_ConfigFilename;
         } break;
 
-        case HStr_UI_MatrixActions: {
-            static const char flashStr_UI_MatrixActions[] PROGMEM = {HYDRO_UI_MATRIX_ACTIONS};
-            return flashStr_UI_MatrixActions;
-        } break;
-        case HStr_UI_Matrix3x4Keys: {
-            static const char flashStr_UI_Matrix3x4Keys[] PROGMEM = {HYDRO_UI_3X4MATRIX_KEYS};
-            return flashStr_UI_Matrix3x4Keys;
-        } break;
-        case HStr_UI_Matrix4x4Keys: {
-            static const char flashStr_UI_Matrix4x4Keys[] PROGMEM = {HYDRO_UI_4X4MATRIX_KEYS};
-            return flashStr_UI_Matrix4x4Keys;
-        } break;
-
         case HStr_Err_AllocationFailure: {
             static const char flashStr_Err_AllocationFailure[] PROGMEM = {"Allocation failure"};
             return flashStr_Err_AllocationFailure;

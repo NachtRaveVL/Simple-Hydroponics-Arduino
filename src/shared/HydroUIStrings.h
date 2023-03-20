@@ -1,0 +1,166 @@
+/*  Hydruino: Simple automation controller for hydroponic grow systems.
+    Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
+    Hydruino UI Strings/Prototypes
+*/
+
+#include <Hydruino.h>
+#ifdef HYDRO_USE_GUI
+#ifndef HydroUIStrings_H
+#define HydroUIStrings_H
+
+// UI Strings Enumeration Table
+enum HydroUI_String : unsigned short {
+    HUIStr_MatrixActions,
+    HUIStr_Matrix2x2Keys,
+    HUIStr_Matrix3x4Keys,
+    HUIStr_Matrix4x4Keys,
+
+    HUIStr_Key_Actuators,
+    HUIStr_Key_AddNew,
+    HUIStr_Key_Additives,
+    HUIStr_Key_AllowRemoteCtrl,
+    HUIStr_Key_Altitude,
+    HUIStr_Key_AssignByDHCP,
+    HUIStr_Key_AssignByHostname,
+    HUIStr_Key_AutosavePrimary,
+    HUIStr_Key_AutosaveSecondary,
+    HUIStr_Key_BatteryFailure,
+    HUIStr_Key_Board,
+    HUIStr_Key_BrokerPort,
+    HUIStr_Key_Browse,
+    HUIStr_Key_Calibrations,
+    HUIStr_Key_ControlMode,
+    HUIStr_Key_ControllerIP,
+    HUIStr_Key_Controls,
+    HUIStr_Key_Crops,
+    HUIStr_Key_DSTAddHour,
+    HUIStr_Key_DataPolling,
+    HUIStr_Key_Date,
+    HUIStr_Key_Debug,
+    HUIStr_Key_DisplayMode,
+    HUIStr_Key_EEPROM,
+    HUIStr_Key_Firmware,
+    HUIStr_Key_FreeMemory,
+    HUIStr_Key_GPSPolling,
+    HUIStr_Key_General,
+    HUIStr_Key_Info,
+    HUIStr_Key_JoystickXMid,
+    HUIStr_Key_JoystickXTol,
+    HUIStr_Key_JoystickYMid,
+    HUIStr_Key_JoystickYTol,
+    HUIStr_Key_LatDegrees,
+    HUIStr_Key_Library,
+    HUIStr_Key_LocalTime,
+    HUIStr_Key_Location,
+    HUIStr_Key_LongMinutes,
+    HUIStr_Key_MACAddr0x,
+    HUIStr_Key_MQTTBroker,
+    HUIStr_Key_Measurements,
+    HUIStr_Key_Name,
+    HUIStr_Key_Networking,
+    HUIStr_Key_PowerRails,
+    HUIStr_Key_RTC,
+    HUIStr_Key_RemoteCtrlPort,
+    HUIStr_Key_Reservoirs,
+    HUIStr_Key_SDCard,
+    HUIStr_Key_Scheduling,
+    HUIStr_Key_Sensors,
+    HUIStr_Key_Settings,
+    HUIStr_Key_Size,
+    HUIStr_Key_System,
+    HUIStr_Key_SystemMode,
+    HUIStr_Key_SystemName,
+    HUIStr_Key_Time,
+    HUIStr_Key_TimeZone,
+    HUIStr_Key_ToggleBadConn,
+    HUIStr_Key_ToggleFastTime,
+    HUIStr_Key_TriggerAutosave,
+    HUIStr_Key_TriggerLowMem,
+    HUIStr_Key_TriggerSDCleanup,
+    HUIStr_Key_TriggerSigTime,
+    HUIStr_Key_Uptime,
+    HUIStr_Key_WiFiPass,
+    HUIStr_Key_WiFiSSID,
+    HUIStr_Key_BackToOverview,
+
+    HUIStr_Enum_Autosave_0,
+    HUIStr_Enum_Autosave_1,
+    HUIStr_Enum_Autosave_2,
+    HUIStr_Enum_Autosave_3,
+    HUIStr_Enum_DataPolling_0,
+    HUIStr_Enum_DataPolling_1,
+    HUIStr_Enum_DataPolling_2,
+    HUIStr_Enum_DataPolling_3,
+    HUIStr_Enum_DataPolling_4,
+    HUIStr_Enum_DataPolling_5,
+    HUIStr_Enum_DataPolling_6,
+    HUIStr_Enum_DataPolling_7,
+    HUIStr_Enum_GPSPolling_0,
+    HUIStr_Enum_GPSPolling_1,
+    HUIStr_Enum_GPSPolling_2,
+    HUIStr_Enum_GPSPolling_3,
+    HUIStr_Enum_Measurements_0,
+    HUIStr_Enum_Measurements_1,
+    HUIStr_Enum_Measurements_2,
+    HUIStr_Enum_SystemMode_0,
+    HUIStr_Enum_SystemMode_1,
+    HUIStr_Enum_TimeZone_0,
+    HUIStr_Enum_TimeZone_1,
+    HUIStr_Enum_TimeZone_2,
+    HUIStr_Enum_TimeZone_3,
+    HUIStr_Enum_TimeZone_4,
+    HUIStr_Enum_TimeZone_5,
+    HUIStr_Enum_TimeZone_6,
+    HUIStr_Enum_TimeZone_7,
+    HUIStr_Enum_TimeZone_8,
+    HUIStr_Enum_TimeZone_9,
+    HUIStr_Enum_TimeZone_10,
+    HUIStr_Enum_TimeZone_11,
+    HUIStr_Enum_TimeZone_12,
+    HUIStr_Enum_TimeZone_13,
+    HUIStr_Enum_TimeZone_14,
+    HUIStr_Enum_TimeZone_15,
+    HUIStr_Enum_TimeZone_16,
+    HUIStr_Enum_TimeZone_17,
+    HUIStr_Enum_TimeZone_18,
+    HUIStr_Enum_TimeZone_19,
+    HUIStr_Enum_TimeZone_20,
+    HUIStr_Enum_TimeZone_21,
+    HUIStr_Enum_TimeZone_22,
+    HUIStr_Enum_TimeZone_23,
+    HUIStr_Enum_TimeZone_24,
+    HUIStr_Enum_TimeZone_25,
+    HUIStr_Enum_TimeZone_26,
+    HUIStr_Enum_TimeZone_27,
+    HUIStr_Enum_TimeZone_28,
+    HUIStr_Enum_TimeZone_29,
+    HUIStr_Enum_TimeZone_30,
+    HUIStr_Enum_TimeZone_31,
+    HUIStr_Enum_TimeZone_32,
+    HUIStr_Enum_TimeZone_33,
+    HUIStr_Enum_TimeZone_34,
+    HUIStr_Enum_TimeZone_35,
+    HUIStr_Enum_TimeZone_36,
+    HUIStr_Enum_TimeZone_37,
+    HUIStr_Enum_TimeZone_38,
+    HUIStr_Enum_TimeZone_39,
+    HUIStr_Enum_TimeZone_40,
+
+    HUIStr_Unit_MSL,
+
+    HUIStr_Count
+};
+
+extern const char *HUIStr_Blank;
+
+// Returns memory resident string from PROGMEM (Flash) UI string enumeration.
+extern String stringFromPGM(HydroUI_String strNum);
+
+// Makes UI Strings lookup go through EEPROM, with specified data begin address.
+extern void beginUIStringsFromEEPROM(uint16_t uiDataAddress);
+
+// Makes UI Strings lookup go through SD card strings file at file prefix.
+extern void beginUIStringsFromSDCard(String uiDataFilePrefix);
+
+#endif // /ifndef HydroUIStrings_H
+#endif
