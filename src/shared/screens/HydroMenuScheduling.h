@@ -8,6 +8,8 @@
 #ifndef HydroMenuScheduling_H
 #define HydroMenuScheduling_H
 
+class HydroSchedulingMenu;
+
 #include "../HydruinoUI.h"
 
 class HydroSchedulingMenu : public HydroMenu

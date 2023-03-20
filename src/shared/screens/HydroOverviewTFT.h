@@ -8,6 +8,8 @@
 #ifndef HydroOverviewTFT_H
 #define HydroOverviewTFT_H
 
+class HydroOverviewTFT;
+
 #include "../HydruinoUI.h"
 
 // TFT_eSPI Overview Screen

@@ -9,17 +9,6 @@
 #define HydroMenus_H
 
 class HydroMenu;
-class HydroHomeMenu;
-class HydroAlertsMenu;
-class HydroActuatorsMenu;
-class HydroSensorsMenu;
-class HydroCropsMenu;
-class HydroReservoirsMenu;
-class HydroPowerRailsMenu;
-class HydroSchedulingMenu;
-class HydroCropsLibMenu;
-class HydroAdditivesMenu;
-class HydroCalibrationsMenu;
 
 #include "HydruinoUI.h"
 #include "RemoteMenuItem.h"
@@ -54,11 +43,7 @@ protected:
 
 // Initializes a BooleanMenuInfo structure
 #define InitBooleanMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback,boolNaming)\
-    strncpy(varName.name, SFP(strNum).c_str(), NAME_SIZE_T);\
-    varName.id = itemId;\
-    varName.eepromAddr = eepromPosition;\
-    varName.maxValue = valMaximum;\
-    varName.callback = fnCallback;\
+    InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.naming = boolNaming
 
 // Initializes a SubMenuInfo structure
@@ -67,49 +52,37 @@ protected:
 
 // Initializes an EnumMenuInfo structure
 #define InitEnumMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback,enumItems)\
-    strncpy(varName.name, SFP(strNum).c_str(), NAME_SIZE_T);\
-    varName.id = itemId;\
-    varName.eepromAddr = eepromPosition;\
-    varName.maxValue = valMaximum;\
-    varName.callback = fnCallback;\
+    InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.menuItems = enumItems
 
-// Initializes an AnalogMenuInfo structure, with units
+// Initializes an AnalogMenuInfo structure, with units from SFP()
 #define InitAnalogMenuInfoUnits(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback,valOffset,valDivisor,unitsStrNum)\
-    strncpy(varName.name, SFP(strNum).c_str(), NAME_SIZE_T);\
-    varName.id = itemId;\
-    varName.eepromAddr = eepromPosition;\
-    varName.maxValue = valMaximum;\
-    varName.callback = fnCallback;\
+    InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.offset = valOffset;\
     varName.divisor = valDivisor;\
     strncpy(varName.unitName, SFP(unitsStrNum).c_str(), UNIT_SIZE_T)
 
-// Initializes an AnalogMenuInfo structure, blank units
+// Initializes an AnalogMenuInfo structure, with blank units
 #define InitAnalogMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback,valOffset,valDivisor)\
-    strncpy(varName.name, SFP(strNum).c_str(), NAME_SIZE_T);\
-    varName.id = itemId;\
-    varName.eepromAddr = eepromPosition;\
-    varName.maxValue = valMaximum;\
-    varName.callback = fnCallback;\
+    InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.offset = valOffset;\
     varName.divisor = valDivisor;\
     strncpy(varName.unitName, HUIStr_Blank, UNIT_SIZE_T)
 
-// Altered rendering callback
+// Altered rendering callback that uses SFP()
 #define H_RENDERING_CALLBACK_NAME_INVOKE(fnName, parent, strNum, eepromPosition, invoke) \
 int fnName(RuntimeMenuItem* item, uint8_t row, RenderFnMode mode, char* buffer, int buffSize) { \
 	switch(mode) { \
-	case RENDERFN_NAME: \
-        strncpy(buffer, SFP(strNum).c_str(), buffSize); \
-		return true; \
-    case RENDERFN_INVOKE: \
-		invokeIfSafe(invoke, item); \
-		return true; \
-	case RENDERFN_EEPROM_POS: \
-		return eepromPosition; \
-	default: \
-		return parent(item, row, mode, buffer, buffSize); \
+        case RENDERFN_NAME: \
+            strncpy(buffer, SFP(strNum).c_str(), buffSize); \
+            return true; \
+        case RENDERFN_INVOKE: \
+            invokeIfSafe(invoke, item); \
+            return true; \
+        case RENDERFN_EEPROM_POS: \
+            return eepromPosition; \
+        default: \
+            return parent(item, row, mode, buffer, buffSize); \
 	} \
 }
 

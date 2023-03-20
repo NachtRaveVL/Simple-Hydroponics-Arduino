@@ -8,12 +8,11 @@
 #ifndef HydroMenuActuators_H
 #define HydroMenuActuators_H
 
+class HydroActuatorsMenu;
+
 #include "../HydruinoUI.h"
 
 class HydroActuatorsMenu : public HydroMenu
-{ }; // todo
-
-struct HydroActuatorsMenuItems
 { }; // todo
 
 #endif // /ifndef HydroMenuActuators_H

@@ -8,6 +8,8 @@
 #ifndef HydroMenuCalibrations_H
 #define HydroMenuCalibrations_H
 
+class HydroCalibrationsMenu;
+
 #include "../HydruinoUI.h"
 
 class HydroCalibrationsMenu : public HydroMenu

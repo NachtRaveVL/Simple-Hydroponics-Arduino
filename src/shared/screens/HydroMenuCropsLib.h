@@ -8,6 +8,8 @@
 #ifndef HydroMenuCropsLib_H
 #define HydroMenuCropsLib_H
 
+class HydroCropsLibMenu;
+
 #include "../HydruinoUI.h"
 
 class HydroCropsLibMenu : public HydroMenu

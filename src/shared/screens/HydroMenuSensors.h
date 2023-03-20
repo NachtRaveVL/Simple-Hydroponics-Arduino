@@ -8,6 +8,8 @@
 #ifndef HydroMenuSensors_H
 #define HydroMenuSensors_H
 
+class HydroSensorsMenu;
+
 #include "../HydruinoUI.h"
 
 class HydroSensorsMenu : public HydroMenu

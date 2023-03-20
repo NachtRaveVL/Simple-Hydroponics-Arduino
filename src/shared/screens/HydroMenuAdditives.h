@@ -8,6 +8,8 @@
 #ifndef HydroMenuAdditives_H
 #define HydroMenuAdditives_H
 
+class HydroAdditivesMenu;
+
 #include "../HydruinoUI.h"
 
 class HydroAdditivesMenu : public HydroMenu

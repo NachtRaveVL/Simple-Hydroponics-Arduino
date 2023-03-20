@@ -8,6 +8,8 @@
 #ifndef HydroOverviewOLED_H
 #define HydroOverviewOLED_H
 
+class HydroOverviewOLED;
+
 #include "../HydruinoUI.h"
 
 // OLED Overview Screen

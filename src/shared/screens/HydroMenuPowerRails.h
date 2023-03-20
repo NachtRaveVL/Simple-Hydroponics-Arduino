@@ -8,6 +8,8 @@
 #ifndef HydroMenuPowerRails_H
 #define HydroMenuPowerRails_H
 
+class HydroPowerRailsMenu;
+
 #include "../HydruinoUI.h"
 
 class HydroPowerRailsMenu : public HydroMenu

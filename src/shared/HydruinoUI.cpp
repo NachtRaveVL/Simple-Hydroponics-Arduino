@@ -139,6 +139,10 @@ void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
 {
     // overview screen started
     if (_display) {
+        #if HYDRO_UI_DEALLOC_AFTER_USE
+            if (_homeMenu) { delete _homeMenu; _homeMenu = nullptr; }
+        #endif
+
         if (!_overview) {
             _overview = _display->allocateOverview();
             HYDRO_SOFT_ASSERT(_overview, SFP(HStr_Err_AllocationFailure));
@@ -166,7 +170,13 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
                 setBacklightEnable(false);
             }
         } else {
-            if (_overview) { delete _overview; _overview = nullptr; }
+            #if HYDRO_UI_DEALLOC_AFTER_USE
+                if (_overview) { delete _overview; _overview = nullptr; }
+            #endif
+            if (!_homeMenu) {
+                _homeMenu = new HydroHomeMenu();
+                menuMgr.changeMenu(_homeMenu->getRootItem());
+            }
             _display->getBaseRenderer()->giveBackDisplay();
             setBacklightEnable(true);
             _blTimeout = 0;

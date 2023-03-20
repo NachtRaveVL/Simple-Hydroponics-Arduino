@@ -8,6 +8,8 @@
 #ifndef HydroOverviewLCD_H
 #define HydroOverviewLCD_H
 
+class HydroOverviewLCD;
+
 #include "../HydruinoUI.h"
 
 // LCD Overview Screen
