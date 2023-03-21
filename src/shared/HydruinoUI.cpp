@@ -56,6 +56,11 @@ HydruinoBaseUI::~HydruinoBaseUI()
 
 void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider)
 {
+    if (_uiData) {
+        _uiData->updatesPerSec = updatesPerSec;
+        _uiData->displayTheme = displayTheme;
+    }
+
     SwitchInterruptMode isrMode(SWITCHES_POLL_EVERYTHING);
     if (_allowISR) {
         bool mainPinsInterruptable = _input && _input->areMainPinsInterruptable();
@@ -65,7 +70,7 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
 
     switches.init(_input && _input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
 
-    if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _isUnicodeFonts, _itemFont, _titleFont); }
+    if (_display) { _display->commonInit(updatesPerSec, analogSlider, _isUnicodeFonts); }
 
     #if !HYDRO_UI_START_AT_OVERVIEW
         if (!_homeMenu) {
@@ -92,6 +97,8 @@ bool HydruinoBaseUI::begin()
 
     if (_input) { _input->begin(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
     else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
+
+    if (_display && _display->getGraphicsRenderer()) { _display->installTheme(_uiData ? _uiData->displayTheme : Hydro_DisplayTheme_Undefined); }
 
     #if HYDRO_UI_START_AT_OVERVIEW
         reset();

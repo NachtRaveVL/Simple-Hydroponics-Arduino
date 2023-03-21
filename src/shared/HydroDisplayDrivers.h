@@ -23,7 +23,8 @@ public:
     HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined);
     virtual ~HydroDisplayDriver() = default;
 
-    void commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider = false, bool utf8Fonts = false, const void *itemFont = nullptr, const void *titleFont = nullptr, bool needEditingIcons = false);
+    void commonInit(uint8_t updatesPerSec, bool analogSlider = false, bool utf8Fonts = false);
+    void installTheme(Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool needEditingIcons = false);
 
     virtual void initBaseUIFromDefaults() = 0;
     virtual void begin() = 0;

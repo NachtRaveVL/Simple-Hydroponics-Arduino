@@ -4,7 +4,6 @@
 */
 
 #include "Hydruino.h"
-#include "shared/HydroUIData.h"
 
 HydroData *_allocateDataFromBaseDecode(const HydroData &baseDecode)
 {

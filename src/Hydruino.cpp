@@ -4,7 +4,6 @@
 */
 
 #include "Hydruino.h"
-#include "shared/HydroUIData.h"
 
 static HydroRTCInterface *_rtcSyncProvider = nullptr;
 time_t rtcNow() {

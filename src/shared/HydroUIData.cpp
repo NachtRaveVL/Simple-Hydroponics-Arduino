@@ -3,6 +3,7 @@
     Hydruino UI Data
 */
 
+#include <Hydruino.h>
 #include "HydroUIData.h"
 
 HydroUIData::HydroUIData()
