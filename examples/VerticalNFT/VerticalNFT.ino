@@ -487,7 +487,7 @@ inline void setupPinChannels()
             #define SETUP_PH_DOWN_PIN (100 + SETUP_PH_DOWN_PINCHNL)
         #endif
         #if SETUP_CROP_SOILM_PINCHNL >= 0 || SETUP_CROP_SOILM_PIN >= 100
-            if (!hydroController.getPinExpander(SETUP_CROP_SOILM_PINCHNL/16)) { hydroController.setPinExpander(SETUP_CROP_SOILM_PINCHNL/16, expanders[SETUP_CROP_SOILM_PINCHNL/16]);
+            if (!hydroController.getPinExpander(SETUP_CROP_SOILM_PINCHNL/16)) { hydroController.setPinExpander(SETUP_CROP_SOILM_PINCHNL/16, expanders[SETUP_CROP_SOILM_PINCHNL/16]); }
             #undef SETUP_CROP_SOILM_PIN
             #define SETUP_CROP_SOILM_PIN (100 + SETUP_CROP_SOILM_PINCHNL)
         #endif
