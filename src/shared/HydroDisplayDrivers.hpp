@@ -217,7 +217,6 @@ void HydroDisplayAdafruitGFX<T>::begin()
 template <class T>
 HydroOverview *HydroDisplayAdafruitGFX<T>::allocateOverview()
 {
-    // Unknown if type inherits from Adafruit_SPITFT or not, so Gfx used for compatibility
     return new HydroOverviewGFX<T>(this);
 }
 

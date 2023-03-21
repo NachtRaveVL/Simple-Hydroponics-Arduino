@@ -66,7 +66,12 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
     switches.init(_input && _input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
 
     if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _isUnicodeFonts); }
-    if (!_homeMenu) { _homeMenu = new HydroHomeMenu(); }
+    #if !HYDRO_UI_START_AT_OVERVIEW
+        if (!_homeMenu) {
+            _homeMenu = new HydroHomeMenu();
+            HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
+        }
+    #endif
 }
 
 void HydruinoBaseUI::init(HydroUIData *uiData)
@@ -140,7 +145,7 @@ void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
     // overview screen started
     if (_display) {
         #if HYDRO_UI_DEALLOC_AFTER_USE
-            if (_homeMenu) { delete _homeMenu; _homeMenu = nullptr; }
+            if (_homeMenu) { delete _homeMenu; _homeMenu = nullptr; menuMgr.changeMenu(); }
         #endif
 
         if (!_overview) {
@@ -175,7 +180,11 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
             #endif
             if (!_homeMenu) {
                 _homeMenu = new HydroHomeMenu();
-                menuMgr.changeMenu(_homeMenu->getRootItem());
+                HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
+
+                if (_homeMenu) {
+                    menuMgr.changeMenu(_homeMenu->getRootItem());
+                }
             }
             _display->getBaseRenderer()->giveBackDisplay();
             setBacklightEnable(true);
