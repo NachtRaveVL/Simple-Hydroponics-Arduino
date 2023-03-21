@@ -106,7 +106,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // UI Settings
 #define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic active level (ACT_LOW, ACT_HIGH)
 #define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interrupt driven I/O if able, else force polling
-#define SETUP_UI_USE_UNICODE_FONTS      true            // Use tcUnicode fonts instead of default, if using graphical display
+#define SETUP_UI_USE_TCUNICODE_FONTS    false           // Use tcUnicode fonts instead of AdafruitGFX fonts, if using graphical display
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
 // UI Display Output Settings
@@ -238,6 +238,17 @@ MQTTClient mqttClient;
 #include "min/HydruinoUI.h"
 #elif IS_SETUP_AS(SETUP_SYS_UI_MODE, Full)
 #include "full/HydruinoUI.h"
+#endif
+#if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, TFT)
+#if !SETUP_UI_USE_TCUNICODE_FONTS
+#include "shared/tcMenu_Font_AdafruitGFXVerdana12.h"
+#define SETUP_UI_USE_OVERVIEW_FONT      Verdana12
+#define SETUP_UI_USE_MENU_FONT          Verdana12
+#else
+#include "shared/tcMenu_Font_tcUnicodeVerdana12.h"
+#define SETUP_UI_USE_OVERVIEW_FONT      Verdana12
+#define SETUP_UI_USE_MENU_FONT          Verdana12
+#endif
 #endif
 #endif
 
@@ -860,7 +871,7 @@ inline void setupUI()
                 default: break;
             }
         #endif
-        HydruinoUI *ui = new HydruinoUI(uiCtrlSetup, uiDispSetup, SETUP_UI_LOGIC_LEVEL, SETUP_UI_ALLOW_INTERRUPTS, SETUP_UI_USE_UNICODE_FONTS);
+        HydruinoUI *ui = new HydruinoUI(uiCtrlSetup, uiDispSetup, SETUP_UI_LOGIC_LEVEL, SETUP_UI_ALLOW_INTERRUPTS, SETUP_UI_USE_TCUNICODE_FONTS);
         HYDRO_SOFT_ASSERT(ui, SFP(HStr_Err_AllocationFailure));
 
         if (ui) {
@@ -939,6 +950,12 @@ inline void setupUI()
                 #if NOT_SETUP_AS(SETUP_UI_REMOTE2_TYPE, Disabled)
                     ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE2_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE2_UART), SETUP_UI_RC_NETWORKING_PORT);
                 #endif
+            #endif
+            #ifdef SETUP_UI_USE_OVERVIEW_FONT
+                ui->setOverviewFont(&SETUP_UI_USE_OVERVIEW_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_MENU_FONT
+                ui->setMenuFont(&SETUP_UI_USE_MENU_FONT);
             #endif
             hydroController.enableUI(ui);
         }

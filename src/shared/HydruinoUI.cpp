@@ -10,7 +10,7 @@ HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
     : _appInfo{0}, _uiCtrlSetup(uiControlSetup), _uiDispSetup(uiDisplaySetup),
       _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _isUnicodeFonts(enableTcUnicodeFonts),
       _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr), _blTimeout(0),
-      _overview(nullptr), _homeMenu(nullptr)
+      _overview(nullptr), _homeMenu(nullptr), _clockFont(nullptr), _detailFont(nullptr), _itemFont(nullptr), _titleFont(nullptr)
 {
     if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
     String uuid(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")); // todo, name->hash
@@ -65,7 +65,7 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
 
     switches.init(_input && _input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
 
-    if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _isUnicodeFonts); }
+    if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _isUnicodeFonts, _itemFont, _titleFont); }
     #if !HYDRO_UI_START_AT_OVERVIEW
         if (!_homeMenu) {
             _homeMenu = new HydroHomeMenu();

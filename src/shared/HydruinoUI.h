@@ -38,15 +38,23 @@
 #include "HydroOverviews.h"
 
 // Base UI
-// The base class that manages interaction with the tcMenu UI system.
+// The base class that manages interaction with the tcMenu UI system. Font setup should
+// precede initialization. Overview & menu screens not guaranteed to be allocated.
 class HydruinoBaseUI : public HydroUIInterface, public CustomDrawing {
 public:
     HydruinoBaseUI(UIControlSetup uiControlSetup = UIControlSetup(),        // UI control input setup
                    UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),        // UI display output setup 
                    bool isActiveLowIO = true,                               // Logic level usage for control & display IO pins
                    bool allowInterruptableIO = true,                        // Allows interruptable pins to interrupt, else forces polling
-                   bool enableTcUnicodeFonts = true);                       // Enables tcUnicode UTF8 fonts usage instead of library fonts
+                   bool enableTcUnicodeFonts = false);                      // Enables tcUnicode UTF8 fonts usage instead of library fonts
     virtual ~HydruinoBaseUI();
+
+    inline void setOverviewClockFont(const void *clockFont) { _clockFont = clockFont; } // Sets overview clock font
+    inline void setOverviewDetailFont(const void *detailFont) { _detailFont = detailFont; } // Sets overview detail font
+    inline void setOverviewFont(const void *overviewFont) { _clockFont = overviewFont; _detailFont = overviewFont; } // Sets both overview clock and detail font
+    inline void setMenuItemFont(const void *itemFont) { _itemFont = itemFont; }   // Sets menu item font
+    inline void setMenuTitleFont(const void *titleFont) { _titleFont = titleFont; } // Sets menu title font
+    inline void setMenuFont(const void *menuFont) { _itemFont = menuFont; _titleFont = menuFont; } // Sets both menu item and title font
 
     void init(uint8_t updatesPerSec,                                        // Updates per second (1 to 10)
               Hydro_DisplayTheme displayTheme = Hydro_DisplayTheme_Undefined, // Display theme to apply
@@ -89,6 +97,10 @@ protected:
     time_t _blTimeout;                                      // Backlight timeout (UTC)
     HydroOverview *_overview;                               // Overview screen (owned)
     HydroHomeMenu *_homeMenu;                               // Home menu screen (owned)
+    const void *_clockFont;                                 // Overview clock font (strong), when using graphical display
+    const void *_detailFont;                                // Overview detail font (strong), when using graphical display
+    const void *_itemFont;                                  // Menu item font (strong), when using graphical display
+    const void *_titleFont;                                 // Menu title font (strong), when using graphical display
 
     void setBacklightEnable(bool enabled);
 

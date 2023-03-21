@@ -14,7 +14,7 @@ HydroDisplayDriver::HydroDisplayDriver(Hydro_DisplayRotation displayRotation)
     : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined)
 { ; }
 
-void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider, bool utf8Fonts)
+void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider, bool utf8Fonts, const void *itemFont, const void *titleFont, bool needEditingIcons)
 {
     auto baseRenderer = getBaseRenderer();
     auto graphicsRenderer = getGraphicsRenderer();
@@ -32,22 +32,22 @@ void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, Hydro_DisplayTheme di
         if (_displayTheme != displayTheme) {
             switch ((_displayTheme = displayTheme)) {
                 case Hydro_DisplayTheme_CoolBlue_ML:
-                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
                     break;
                 case Hydro_DisplayTheme_CoolBlue_SM:
-                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
                     break;
                 case Hydro_DisplayTheme_DarkMode_ML:
-                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
                     break;
                 case Hydro_DisplayTheme_DarkMode_SM:
-                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
                     break;
                 case Hydro_DisplayTheme_MonoOLED:
-                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
                     break;
                 case Hydro_DisplayTheme_MonoOLED_Inv:
-                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(nullptr, 1), MenuFontDef(nullptr, 1), true);
+                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
                     break;
             }
         }
