@@ -64,7 +64,7 @@ HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(Hydro_DisplayOutputMode dis
       _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
 {
     _lcd.configureBacklightPin(3);
-    _renderer.setTitleRequired(_screenSize[1] >= 4);
+    _renderer.setTitleRequired(false);
 }
 
 HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
@@ -132,6 +132,7 @@ void HydroDisplayU8g2OLED::initBaseUIFromDefaults()
 void HydroDisplayU8g2OLED::begin()
 {
     if (_gfx) { _gfx->begin(); }
+    if (_renderer) { _renderer->setDisplayDimensions(getScreenSize().first, getScreenSize().second); }
 }
 
 HydroOverview *HydroDisplayU8g2OLED::allocateOverview()
@@ -143,9 +144,9 @@ HydroOverview *HydroDisplayU8g2OLED::allocateOverview()
 HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation), _tab(tabColor),
       #ifndef ESP8266
-          _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
+          _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
-          _gfx(displaySetup.cs, dcPin, resetPin),
+          _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
@@ -170,6 +171,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
         _gfx.initR((uint8_t)_tab);
     }
     _gfx.setRotation((uint8_t)_rotation);
+    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview()
@@ -181,9 +183,9 @@ HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview()
 HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation),
       #ifndef ESP8266
-          _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
+          _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
-          _gfx(displaySetup.cs, dcPin, resetPin),
+          _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
@@ -203,6 +205,7 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 {
     _gfx.init(TFT_GFX_WIDTH, TFT_GFX_HEIGHT);
     _gfx.setRotation((uint8_t)_rotation);
+    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::allocateOverview()
@@ -214,9 +217,9 @@ HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::allocateOverview()
 HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation),
       #ifndef ESP8266
-          _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
+          _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
-          _gfx(displaySetup.cs, dcPin, resetPin),
+          _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
@@ -234,8 +237,9 @@ void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::initBaseUIFromDefaults()
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
 {
-    _gfx.initSPI(getController() ? getController()->getDisplaySetup().cfgAs.spi.speed : 0);
+    _gfx.begin(getController() ? getController()->getDisplaySetup().cfgAs.spi.speed : 0);
     _gfx.setRotation((uint8_t)_rotation);
+    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::allocateOverview()
@@ -267,6 +271,7 @@ void HydroDisplayTFTeSPI::begin()
         _gfx.begin((uint8_t)_tabColor);
     }
     _gfx.setRotation((uint8_t)_rotation);
+    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 HydroOverview *HydroDisplayTFTeSPI::allocateOverview()

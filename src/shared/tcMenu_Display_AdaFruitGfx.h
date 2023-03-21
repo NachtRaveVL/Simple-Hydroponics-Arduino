@@ -120,10 +120,6 @@ void drawCookieCutBitmap(Adafruit_SPITFT* gfx, int16_t x, int16_t y, const uint8
                          int16_t h, int16_t totalWidth, int16_t xStart, int16_t yStart,
                          uint16_t fgColor, uint16_t bgColor);
 
-void drawCookieCutBitmap(Adafruit_GFX* gfx, int16_t x, int16_t y, const uint8_t *bitmap, int16_t w,
-                         int16_t h, int16_t totalWidth, int16_t xStart, int16_t yStart,
-                         uint16_t fgColor, uint16_t bgColor);
-
 /**
    @brief      Draw a RAM-resident 2-bit image at the specified (x,y) position,
    from image data that may be wider or taller than the desired width and height.

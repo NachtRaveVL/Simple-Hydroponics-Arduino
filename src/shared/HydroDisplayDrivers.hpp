@@ -191,13 +191,16 @@ template <class T>
 HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
     : HydroDisplayDriver(displayRotation),
     #ifndef ESP8266
-          _gfx(displaySetup.spi, dcPin, displaySetup.cs, resetPin),
+          _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
-          _gfx(displaySetup.cs, dcPin, resetPin),
+          _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
+    #ifdef ESP8266
+        HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
+    #endif
     _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
@@ -212,6 +215,7 @@ void HydroDisplayAdafruitGFX<T>::begin()
 {
     _gfx.begin();
     _gfx.setRotation((uint8_t)_rotation);
+    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 template <class T>

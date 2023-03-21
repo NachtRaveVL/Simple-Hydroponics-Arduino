@@ -75,33 +75,6 @@ void drawCookieCutBitmap(Adafruit_SPITFT* gfx, int16_t x, int16_t y, const uint8
     gfx->endWrite();
 }
 
-void drawCookieCutBitmap(Adafruit_GFX* gfx, int16_t x, int16_t y, const uint8_t *bitmap, int16_t w,
-                         int16_t h, int16_t totalWidth, int16_t xStart, int16_t yStart,
-                         uint16_t fgColor, uint16_t bgColor) {
-
-    // total width here is different to the width we are drawing, imagine rolling out a long
-    // line of dough and cutting cookies from it. The cookie is the part of the image we want
-    uint16_t byteWidth = (totalWidth + 7) / 8; // Bitmap scanline pad = whole byte
-    uint16_t yEnd = h + yStart;
-    uint16_t xEnd = w + xStart;
-    uint8_t byte;
-
-    gfx->startWrite();
-
-    for (uint16_t j = yStart; j < yEnd; j++, y++) {
-        byte = bitmap[size_t(((j * byteWidth) + xStart) / 8)];
-        for (uint16_t i = xStart; i < xEnd; i++) {
-            if (i & 7U)
-                byte <<= 1U;
-            else
-                byte = bitmap[size_t((j * byteWidth) + i / 8)];
-            gfx->writePixel(x + (i - xStart), y, (byte & 0x80U) ? fgColor : bgColor);
-        }
-    }
-
-    gfx->endWrite();
-}
-
 void drawCookieCutBitmap2bpp(Adafruit_SPITFT* gfx, int16_t x, int16_t y, const uint8_t *bitmap, int16_t w,
                              int16_t h, int16_t totalWidth, int16_t xStart, int16_t yStart,
                              const uint16_t* palette) {

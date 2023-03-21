@@ -66,6 +66,7 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
     switches.init(_input && _input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
 
     if (_display) { _display->commonInit(updatesPerSec, displayTheme, analogSlider, _isUnicodeFonts, _itemFont, _titleFont); }
+
     #if !HYDRO_UI_START_AT_OVERVIEW
         if (!_homeMenu) {
             _homeMenu = new HydroHomeMenu();
@@ -145,14 +146,9 @@ void HydruinoBaseUI::started(BaseMenuRenderer *currentRenderer)
 {
     // overview screen started
     if (_display) {
-        #if HYDRO_UI_DEALLOC_AFTER_USE
-            if (_homeMenu) { delete _homeMenu; _homeMenu = nullptr; menuMgr.changeMenu(); }
-        #endif
+        if (_overview) { _overview->setNeedsFullRedraw(); }
 
-        if (!_overview) {
-            _overview = _display->allocateOverview();
-            HYDRO_SOFT_ASSERT(_overview, SFP(HStr_Err_AllocationFailure));
-        }
+        _blTimeout = (_backlight || _uiDispSetup.dispCfgType == UIDisplaySetup::LCD ? unixNow() + HYDRO_UI_BACKLIGHT_TIMEOUT : 0);
     }
 }
 
@@ -160,8 +156,15 @@ void HydruinoBaseUI::reset()
 {
     // menu interaction timeout
     if (_display) {
+        #if HYDRO_UI_DEALLOC_AFTER_USE
+            if (_homeMenu) { delete _homeMenu; _homeMenu = nullptr; }
+        #endif
+        if (!_overview) {
+            _overview = _display->allocateOverview();
+            HYDRO_SOFT_ASSERT(_overview, SFP(HStr_Err_AllocationFailure));
+        }
+
         _display->getBaseRenderer()->takeOverDisplay();
-        _blTimeout = (_backlight || (_uiDispSetup.dispCfgType == UIDisplaySetup::LCD && _display)) ? unixNow() + HYDRO_UI_BACKLIGHT_TIMEOUT : 0;
     }
 }
 
@@ -172,22 +175,20 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
         if (userClick == RPRESS_NONE) {
             if (_overview) { _overview->renderOverview(_display->isLandscape(), _display->getScreenSize()); }
 
-            if (_blTimeout && unixNow() >= _blTimeout) {
-                setBacklightEnable(false);
-            }
+            if (_blTimeout && unixNow() >= _blTimeout) { setBacklightEnable(false); }
         } else {
+            _display->getBaseRenderer()->giveBackDisplay();
+
             #if HYDRO_UI_DEALLOC_AFTER_USE
                 if (_overview) { delete _overview; _overview = nullptr; }
             #endif
+
             if (!_homeMenu) {
                 _homeMenu = new HydroHomeMenu();
                 HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
-
-                if (_homeMenu) {
-                    menuMgr.changeMenu(_homeMenu->getRootItem());
-                }
             }
-            _display->getBaseRenderer()->giveBackDisplay();
+            if (_homeMenu) { menuMgr.changeMenu(_homeMenu->getRootItem()); }
+
             setBacklightEnable(true);
             _blTimeout = 0;
         }

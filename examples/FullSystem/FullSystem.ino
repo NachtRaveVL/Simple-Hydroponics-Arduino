@@ -33,6 +33,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_DISP_I2C_ADDR             0b000           // LCD/OLED i2c address (bitwise or'ed with base address - LCD: 0x20, OLED: 0x78, Note: most LCDs typically use 0b111 => 0x27)
 #define SETUP_DISP_SPI                  SPI             // Display SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
+#define SETUP_DISP_SPI_SPEED            24000000        // Display SPI speed, in Hz
 #define SETUP_CTRL_INPUT_PINS           {hpin_none}     // Control input pins, else {-1}
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
@@ -197,7 +198,7 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
 #endif
                          SETUP_CTRL_INPUT_PINS_,
 #if SETUP_DISP_SPI_CS >= 0
-                         SPIDeviceSetup(SETUP_DISP_SPI_CS, &SETUP_DISP_SPI)
+                         SPIDeviceSetup(SETUP_DISP_SPI_CS, &SETUP_DISP_SPI, SETUP_DISP_SPI_SPEED)
 #else
                          I2CDeviceSetup((uint8_t)SETUP_DISP_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED)
 #endif

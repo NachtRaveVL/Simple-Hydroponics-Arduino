@@ -50,6 +50,9 @@ inline Hydro_UnitsType definedUnitsElse(Hydro_UnitsType units1, Hydro_UnitsType 
     return units1 != Hydro_UnitsType_Undefined ? units1 : (units2 != Hydro_UnitsType_Undefined ? units2 : units3);
 }
 
+// Returns proper signed -1 int value when pin # isn't valid, for type conversion situations.
+inline int intForPin(pintype_t pin) { return isValidPin(pin) ? (int)pin : -1; }
+
 // Rounds floating point value to the number of decimal places.
 inline float roundToDecimalPlaces(float value, int decimalPlaces) {
     if (decimalPlaces >= 0) {
