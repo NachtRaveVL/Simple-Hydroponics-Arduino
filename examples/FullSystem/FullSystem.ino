@@ -147,15 +147,15 @@ EthernetClient netClient;
 MQTTClient mqttClient;
 #endif
 
-#if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, TFT)
+#if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341)
 #if !SETUP_UI_USE_TCUNICODE_FONTS
-#include "shared/tcMenu_Font_AdafruitGFXVerdana12.h"
-#define SETUP_UI_USE_OVERVIEW_FONT      Verdana12
-#define SETUP_UI_USE_MENU_FONT          Verdana12
+#include "shared/tcMenu_Font_AdafruitGFXArial14.h"
+#define SETUP_UI_USE_OVERVIEW_FONT      Arial14
+#define SETUP_UI_USE_MENU_FONT          Arial14
 #else
-#include "shared/tcMenu_Font_tcUnicodeVerdana12.h"
-#define SETUP_UI_USE_OVERVIEW_FONT      Verdana12
-#define SETUP_UI_USE_MENU_FONT          Verdana12
+#include "shared/tcMenu_Font_tcUnicodeArial14.h"
+#define SETUP_UI_USE_OVERVIEW_FONT      Arial14
+#define SETUP_UI_USE_MENU_FONT          Arial14
 #endif
 #endif
 

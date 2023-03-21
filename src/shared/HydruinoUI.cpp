@@ -88,6 +88,7 @@ void HydruinoBaseUI::init(HydroUIData *uiData)
 bool HydruinoBaseUI::begin()
 {
     if (_display) { _display->begin(); }
+
     if (_input) { _input->begin(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
     else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
 

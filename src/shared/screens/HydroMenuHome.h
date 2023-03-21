@@ -32,17 +32,20 @@ protected:
 struct HydroHomeMenuInfo {
     HydroHomeMenuInfo();
 
+#ifdef HELIO_DISABLE_BUILTIN_DATA
     String _enumStrGPSPolling[4];
-    const char *enumStrGPSPolling[4];
     String _enumStrTimeZone[41];
-    const char *enumStrTimeZone[41];
     String _enumStrDataPolling[8];
-    const char *enumStrDataPolling[8];
     String _enumStrAutosave[4];
-    const char *enumStrAutosave[4];
     String _enumStrMeasurements[3];
-    const char *enumStrMeasurements[3];
     String _enumStrSystemMode[2];
+#endif
+
+    const char *enumStrGPSPolling[4];
+    const char *enumStrTimeZone[41];
+    const char *enumStrDataPolling[8];
+    const char *enumStrAutosave[4];
+    const char *enumStrMeasurements[3];
     const char *enumStrSystemMode[2];
 
     AnyMenuInfo minfoOverview;
@@ -163,7 +166,7 @@ struct HydroHomeMenuItems {
     AnalogMenuItem menuRemoteCtrlPort;
     AnalogMenuItem menuBrokerPort;
     BooleanMenuItem menuAssignByHostname;
-    IpAddressMenuItem menuMQTTBrokerIP;
+    IpAddressMenuItem menuMQTTBroker;
     TextMenuItem menuWiFiPassword;
     TextMenuItem menuWiFiSSID;
     TextMenuItem menuMACAddress;

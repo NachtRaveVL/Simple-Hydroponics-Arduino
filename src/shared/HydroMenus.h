@@ -35,7 +35,7 @@ protected:
 
 // Initializes an AnyMenuInfo structure
 #define InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback)\
-    strncpy(varName.name, SFP(strNum).c_str(), NAME_SIZE_T);\
+    safeProgCpy(varName.name, CFP(strNum), NAME_SIZE_T);\
     varName.id = itemId;\
     varName.eepromAddr = eepromPosition;\
     varName.maxValue = valMaximum;\
@@ -55,26 +55,26 @@ protected:
     InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.menuItems = enumItems
 
-// Initializes an AnalogMenuInfo structure, with units from SFP()
+// Initializes an AnalogMenuInfo structure, with units from CFP()
 #define InitAnalogMenuInfoUnits(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback,valOffset,valDivisor,unitsStrNum)\
     InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.offset = valOffset;\
     varName.divisor = valDivisor;\
-    strncpy(varName.unitName, SFP(unitsStrNum).c_str(), UNIT_SIZE_T)
+    safeProgCpy(varName.unitName, CFP(unitsStrNum), UNIT_SIZE_T)
 
 // Initializes an AnalogMenuInfo structure, with blank units
 #define InitAnalogMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback,valOffset,valDivisor)\
     InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.offset = valOffset;\
     varName.divisor = valDivisor;\
-    strncpy(varName.unitName, HStr_Blank, UNIT_SIZE_T)
+    varName.unitName[0] = '\0'
 
-// Altered rendering callback that uses SFP()
+// Altered rendering callback that uses CFP()
 #define H_RENDERING_CALLBACK_NAME_INVOKE(fnName, parent, strNum, eepromPosition, invoke) \
 int fnName(RuntimeMenuItem* item, uint8_t row, RenderFnMode mode, char* buffer, int buffSize) { \
 	switch(mode) { \
         case RENDERFN_NAME: \
-            strncpy(buffer, SFP(strNum).c_str(), buffSize); \
+            safeProgCpy(buffer, CFP(strNum), buffSize); \
             return true; \
         case RENDERFN_INVOKE: \
             invokeIfSafe(invoke, item); \
