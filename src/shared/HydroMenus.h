@@ -67,7 +67,7 @@ protected:
     InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.offset = valOffset;\
     varName.divisor = valDivisor;\
-    strncpy(varName.unitName, HUIStr_Blank, UNIT_SIZE_T)
+    strncpy(varName.unitName, HStr_Blank, UNIT_SIZE_T)
 
 // Altered rendering callback that uses SFP()
 #define H_RENDERING_CALLBACK_NAME_INVOKE(fnName, parent, strNum, eepromPosition, invoke) \

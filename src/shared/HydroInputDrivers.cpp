@@ -170,8 +170,8 @@ void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
 HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(2,2,SFP(HUIStr_Matrix2x2Keys).c_str()),
-      _tcMenuKeyListener(SFP(HUIStr_MatrixActions)[0], SFP(HUIStr_MatrixActions)[1], SFP(HUIStr_MatrixActions)[2], SFP(HUIStr_MatrixActions)[3])
+      _keyboardLayout(2,2,SFP(HUIStr_Keys_Matrix2x2Keys).c_str()),
+      _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3])
 {
     // todo expander setup
     _keyboardLayout.setRowPin(0, controlPins.second[0]);
@@ -190,8 +190,8 @@ void HydroInputMatrix2x2::begin(MenuRenderer *renderer, MenuItem *initialItem)
 HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,3,SFP(HUIStr_Matrix3x4Keys).c_str()),
-      _tcMenuKeyListener(SFP(HUIStr_MatrixActions)[0], SFP(HUIStr_MatrixActions)[1], SFP(HUIStr_MatrixActions)[2], SFP(HUIStr_MatrixActions)[3]),
+      _keyboardLayout(4,3,SFP(HUIStr_Keys_Matrix3x4Keys).c_str()),
+      _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3]),
       _rotaryEncoder(nullptr)
 {
     // todo expander setup
@@ -224,8 +224,8 @@ void HydroInputMatrix3x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,4,SFP(HUIStr_Matrix4x4Keys).c_str()),
-      _tcMenuKeyListener(SFP(HUIStr_MatrixActions)[0], SFP(HUIStr_MatrixActions)[1], SFP(HUIStr_MatrixActions)[2], SFP(HUIStr_MatrixActions)[3]),
+      _keyboardLayout(4,4,SFP(HUIStr_Keys_Matrix4x4Keys).c_str()),
+      _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3]),
       _rotaryEncoder(nullptr)
 {
     // todo expander setup

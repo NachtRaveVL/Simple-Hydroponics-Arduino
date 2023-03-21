@@ -10,10 +10,10 @@
 
 // UI Strings Enumeration Table
 enum HydroUI_String : unsigned short {
-    HUIStr_MatrixActions,
-    HUIStr_Matrix2x2Keys,
-    HUIStr_Matrix3x4Keys,
-    HUIStr_Matrix4x4Keys,
+    HUIStr_Keys_MatrixActions,
+    HUIStr_Keys_Matrix2x2Keys,
+    HUIStr_Keys_Matrix3x4Keys,
+    HUIStr_Keys_Matrix4x4Keys,
 
     HUIStr_Item_Actuators,
     HUIStr_Item_AddNew,
@@ -151,8 +151,6 @@ enum HydroUI_String : unsigned short {
     HUIStr_Count
 };
 
-extern const char *HUIStr_Blank;
-
 // Returns memory resident string from PROGMEM (Flash) UI string enumeration.
 extern String stringFromPGM(HydroUI_String strNum);
 
@@ -161,6 +159,11 @@ extern void beginUIStringsFromEEPROM(uint16_t uiDataAddress);
 
 // Makes UI Strings lookup go through SD card strings file at file prefix.
 extern void beginUIStringsFromSDCard(String uiDataFilePrefix);
+
+#ifndef HYDRO_DISABLE_BUILTIN_DATA
+// Returns PROGMEM (Flash) address pointer given UI string number.
+const char *pgmAddrForStr(HydroUI_String strNum);
+#endif
 
 #endif // /ifndef HydroUIStrings_H
 #endif

@@ -3,16 +3,8 @@
     Hydruino UI Strings/Prototypes
 */
 
-#include "HydroUIStrings.h"
+#include "HydruinoUI.h"
 #ifdef HYDRO_USE_GUI
-
-static char _blank = '\0';
-const char *HUIStr_Blank = &_blank;
-
-#ifndef HYDRO_DISABLE_BUILTIN_DATA
-String stringFromPGMAddr(const char *flashUIStr); // implemented in base system
-const char *pgmAddrForUIStr(HydroUI_String strNum);
-#endif
 
 static uint16_t _uiStrDataAddress((uint16_t)-1);
 void beginUIStringsFromEEPROM(uint16_t uiDataAddress)
@@ -125,7 +117,7 @@ String stringFromPGM(HydroUI_String strNum)
     }
 
     #ifndef HYDRO_DISABLE_BUILTIN_DATA
-        return (_lookupCachedRes = stringFromPGMAddr(pgmAddrForUIStr(strNum)));
+        return (_lookupCachedRes = stringFromPGMAddr(pgmAddrForStr(strNum)));
     #else
         return (_lookupCachedRes = String());
     #endif
@@ -133,24 +125,24 @@ String stringFromPGM(HydroUI_String strNum)
 
 #ifndef HYDRO_DISABLE_BUILTIN_DATA
 
-const char *pgmAddrForUIStr(HydroUI_String strNum)
+const char *pgmAddrForStr(HydroUI_String strNum)
 {
     switch(strNum) {
-        case HUIStr_MatrixActions: {
-            static const char flashUIStr_MatrixActions[] PROGMEM = {HYDRO_UI_MATRIX_ACTIONS};
-            return flashUIStr_MatrixActions;
+        case HUIStr_Keys_MatrixActions: {
+            static const char flashUIStr_Keys_MatrixActions[] PROGMEM = {HYDRO_UI_MATRIX_ACTIONS};
+            return flashUIStr_Keys_MatrixActions;
         } break;
-        case HUIStr_Matrix2x2Keys: {
-            static const char flashUIStr_Matrix2x2Keys[] PROGMEM = {HYDRO_UI_2X2MATRIX_KEYS};
-            return flashUIStr_Matrix2x2Keys;
+        case HUIStr_Keys_Matrix2x2Keys: {
+            static const char flashUIStr_Keys_Matrix2x2Keys[] PROGMEM = {HYDRO_UI_2X2MATRIX_KEYS};
+            return flashUIStr_Keys_Matrix2x2Keys;
         } break;
-        case HUIStr_Matrix3x4Keys: {
-            static const char flashUIStr_Matrix3x4Keys[] PROGMEM = {HYDRO_UI_3X4MATRIX_KEYS};
-            return flashUIStr_Matrix3x4Keys;
+        case HUIStr_Keys_Matrix3x4Keys: {
+            static const char flashUIStr_Keys_Matrix3x4Keys[] PROGMEM = {HYDRO_UI_3X4MATRIX_KEYS};
+            return flashUIStr_Keys_Matrix3x4Keys;
         } break;
-        case HUIStr_Matrix4x4Keys: {
-            static const char flashUIStr_Matrix4x4Keys[] PROGMEM = {HYDRO_UI_4X4MATRIX_KEYS};
-            return flashUIStr_Matrix4x4Keys;
+        case HUIStr_Keys_Matrix4x4Keys: {
+            static const char flashUIStr_Keys_Matrix4x4Keys[] PROGMEM = {HYDRO_UI_4X4MATRIX_KEYS};
+            return flashUIStr_Keys_Matrix4x4Keys;
         } break;
 
         case HUIStr_Item_Actuators: {

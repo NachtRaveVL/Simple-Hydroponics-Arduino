@@ -11,7 +11,7 @@ const PROGMEM char pgmStrAuthenticatorText[] = { "Authenticator" };
 
 void CALLBACK_FUNCTION allowRemoteChanged(int id) { } // todo
 void CALLBACK_FUNCTION altChanged(int id) { } // todo
-void CALLBACK_FUNCTION backToOverview(int id) { } // todo
+void CALLBACK_FUNCTION backToOverview(int id) { getBaseUI()->reset(); }
 void CALLBACK_FUNCTION brokerByChanged(int id) { } // todo
 void CALLBACK_FUNCTION brokerChanged(int id) { } // todo
 void CALLBACK_FUNCTION brokerPortChanged(int id) { } // todo
@@ -216,18 +216,18 @@ HydroHomeMenuItems::HydroHomeMenuItems()
       menuBatteryFailure(&init.minfoBatteryFailure, false, NULL, INFO_LOCATION_PGM),
       menuBackRTC(&init.minfoRTC, &menuBatteryFailure, INFO_LOCATION_PGM),
       menuRTC(&init.minfoRTC, &menuBackRTC, &menuIoTMonitor, INFO_LOCATION_PGM),
-      menuEEPROMSize(fnEEPROMSizeRtCall, HUIStr_Blank, 520, 16, NULL),
+      menuEEPROMSize(fnEEPROMSizeRtCall, HStr_Blank, 520, 16, NULL),
       menuBackEEPROM(&init.minfoEEPROM, &menuEEPROMSize, INFO_LOCATION_PGM),
       menuEEPROM(&init.minfoEEPROM, &menuBackEEPROM, &menuRTC, INFO_LOCATION_PGM),
-      menuSDName(fnSDNameRtCall, HUIStr_Blank, 510, 16, NULL),
+      menuSDName(fnSDNameRtCall, HStr_Blank, 510, 16, NULL),
       menuBackSDCard(&init.minfoSDCard, &menuSDName, INFO_LOCATION_PGM),
       menuSDCard(&init.minfoSDCard, &menuBackSDCard, &menuEEPROM, INFO_LOCATION_PGM),
-      menuDisplayMode(fnDisplayModeRtCall, HUIStr_Blank, 505, 16, NULL),
-      menuControlMode(fnControlModeRtCall, HUIStr_Blank, 504, 16, &menuDisplayMode),
-      menuFreeMemory(fnFreeMemoryRtCall, HUIStr_Blank, 503, 16, &menuControlMode),
-      menuUptime(fnUptimeRtCall, HUIStr_Blank, 502, 16, &menuFreeMemory),
-      menuFirmware(fnFirmwareRtCall, HUIStr_Blank, 501, 16, &menuUptime),
-      menuBoard(fnBoardRtCall, HUIStr_Blank, 500, 16, &menuFirmware),
+      menuDisplayMode(fnDisplayModeRtCall, HStr_Blank, 505, 16, NULL),
+      menuControlMode(fnControlModeRtCall, HStr_Blank, 504, 16, &menuDisplayMode),
+      menuFreeMemory(fnFreeMemoryRtCall, HStr_Blank, 503, 16, &menuControlMode),
+      menuUptime(fnUptimeRtCall, HStr_Blank, 502, 16, &menuFreeMemory),
+      menuFirmware(fnFirmwareRtCall, HStr_Blank, 501, 16, &menuUptime),
+      menuBoard(fnBoardRtCall, HStr_Blank, 500, 16, &menuFirmware),
       menuBackSystemInfo(&init.minfoSystemInfo, &menuBoard, INFO_LOCATION_PGM),
       menuSystemInfo(&init.minfoSystemInfo, &menuBackSystem, &menuSDCard, INFO_LOCATION_PGM),
       menuBackInfo(&init.minfoInfo, &menuSystem, INFO_LOCATION_PGM),
@@ -264,9 +264,9 @@ HydroHomeMenuItems::HydroHomeMenuItems()
       menuBrokerPort(&init.minfoBrokerPort, 1883, &menuRemoteCtrlPort, INFO_LOCATION_PGM),
       menuAssignByHostname(&init.minfoAssignByHostname, false, &menuBrokerPort, INFO_LOCATION_PGM),
       menuMQTTBrokerIP(fnMQTTBrokerIPRtCall, IpAddressStorage(127, 0, 0, 1), 325, &menuAssignByHostname),
-      menuWiFiPassword(fnWiFiPasswordRtCall, HUIStr_Blank, 324, 24, &menuMQTTBrokerIP),
-      menuWiFiSSID(fnWiFiSSIDRtCall, HUIStr_Blank, 323, 24, &menuWiFiPassword),
-      menuMACAddress(fnMACAddressRtCall, HUIStr_Blank, 322, 12, &menuWiFiSSID),
+      menuWiFiPassword(fnWiFiPasswordRtCall, HStr_Blank, 324, 24, &menuMQTTBrokerIP),
+      menuWiFiSSID(fnWiFiSSIDRtCall, HStr_Blank, 323, 24, &menuWiFiPassword),
+      menuMACAddress(fnMACAddressRtCall, HStr_Blank, 322, 12, &menuWiFiSSID),
       menuAssignByDHCP(&init.minfoAssignByDHCP, true, &menuMACAddress, INFO_LOCATION_PGM),
       menuControllerIP(fnControllerIPRtCall, IpAddressStorage(127, 0, 0, 1), 320, &menuAssignByDHCP),
       menuBackNetworking(&init.minfoNetworking, &menuControllerIP, INFO_LOCATION_PGM),
@@ -282,7 +282,7 @@ HydroHomeMenuItems::HydroHomeMenuItems()
       menuAutosavePrimary(&init.minfoAutosavePrimary, 3, &menuAutosaveSeconday, INFO_LOCATION_PGM),
       menuMeasurements(&init.minfoMeasurements, 1, &menuAutosavePrimary, INFO_LOCATION_PGM),
       menuSystemMode(&init.minfoSystemMode, 0, &menuMeasurements, INFO_LOCATION_PGM),
-      menuSystemName(fnSystemNameRtCall, getController() ? getController()->getSystemName().c_str() : HUIStr_Blank, 300, 24, &menuSystemMode),
+      menuSystemName(fnSystemNameRtCall, getController() ? getController()->getSystemName().c_str() : HStr_Blank, 300, 24, &menuSystemMode),
       menuBackGeneral(&init.minfoGeneral, &menuSystemName, INFO_LOCATION_PGM),
       menuGeneral(&init.minfoGeneral, &menuBackGeneral, &menuTime, INFO_LOCATION_PGM),
       menuBackSettings(&init.minfoSettings, &menuGeneral, INFO_LOCATION_PGM),

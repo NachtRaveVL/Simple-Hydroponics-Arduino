@@ -420,7 +420,10 @@ enum Hydro_String : unsigned short {
     HStr_Count
 };
 
-// Returns memory resident string from PROGMEM (Flash) string enumeration.
+// Blank string ("")
+extern const char *HStr_Blank;
+
+// Returns memory resident string from PROGMEM (Flash) string number.
 extern String stringFromPGM(Hydro_String strNum);
 #define SFP(strNum) stringFromPGM((strNum))
 
@@ -432,5 +435,13 @@ extern void beginStringsFromEEPROM(uint16_t dataAddress);
 
 // Makes Strings lookup go through SD card strings file at file prefix.
 extern void beginStringsFromSDCard(String dataFilePrefix);
+
+#ifndef HYDRO_DISABLE_BUILTIN_DATA
+// Returns string from given PROGMEM (Flash) string address.
+String stringFromPGMAddr(const char *flashStr);
+
+// Returns PROGMEM (Flash) address pointer given string number.
+const char *pgmAddrForStr(Hydro_String strNum);
+#endif
 
 #endif // /ifndef HydroStrings_H
