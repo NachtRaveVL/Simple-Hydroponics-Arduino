@@ -11,7 +11,7 @@
 class HydruinoMinUI;
 typedef HydruinoMinUI HydruinoUI;
 
-#include "..\shared\HydruinoUI.h"
+#include "../shared/HydruinoUI.h"
 
 class HydruinoMinUI : public HydruinoBaseUI {
 public:

@@ -3,8 +3,8 @@
     Hydruino Full/RW UI
 */
 
-#include "Hydruino.h"
 #include "HydruinoUI.h"
+#ifdef HYDRO_USE_GUI
 
 HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiDisplaySetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
     : HydruinoBaseUI(uiControlSetup, uiDisplaySetup, isActiveLowIO, allowInterruptableIO, enableTcUnicodeFonts)
@@ -316,3 +316,5 @@ bool HydruinoFullUI::isFullUI()
 {
     return true;
 }
+
+#endif
