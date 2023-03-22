@@ -221,7 +221,7 @@ String charsToString(const char *charsIn, size_t length)
 {
     if (!charsIn || !length) { return String(SFP(HStr_null)); }
     String retVal; retVal.reserve(length + 1);
-    for (size_t index = 0; index < length && charsIn[index] != '\0'; ++index) {
+    for (size_t index = 0; index < length && charsIn[index] != '\000'; ++index) {
         retVal.concat(charsIn[index]);
     }
     return retVal.length() ? retVal : String(SFP(HStr_null));
@@ -1949,7 +1949,7 @@ hposi_t positionIndexFromString(String positionIndexStr)
 
 Hydro_SystemMode systemModeFromString(String systemModeStr)
 {
-        switch (systemModeStr.length() >= 1 ? systemModeStr[0] : '\0') {
+        switch (systemModeStr.length() >= 1 ? systemModeStr[0] : '\000') {
         case 'C':
             return (Hydro_SystemMode)2;
         case 'D':
@@ -1964,7 +1964,7 @@ Hydro_SystemMode systemModeFromString(String systemModeStr)
 
 Hydro_MeasurementMode measurementModeFromString(String measurementModeStr)
 {
-    switch (measurementModeStr.length() >= 1 ? measurementModeStr[0] : '\0') {
+    switch (measurementModeStr.length() >= 1 ? measurementModeStr[0] : '\000') {
         case 'C':
             return (Hydro_MeasurementMode)3;
         case 'I':
@@ -1981,9 +1981,9 @@ Hydro_MeasurementMode measurementModeFromString(String measurementModeStr)
 
 Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
 {
-    switch (displayOutModeStr.length() >= 1 ? displayOutModeStr[0] : '\0') {
+    switch (displayOutModeStr.length() >= 1 ? displayOutModeStr[0] : '\000') {
         case 'C':
-            switch (displayOutModeStr.length() >= 2 ? displayOutModeStr[1] : '\0') {
+            switch (displayOutModeStr.length() >= 2 ? displayOutModeStr[1] : '\000') {
                 case 'o':
                     return (Hydro_DisplayOutputMode)18;
                 case 'u':
@@ -1993,10 +1993,10 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
         case 'D':
             return (Hydro_DisplayOutputMode)0;
         case 'I':
-            switch (displayOutModeStr.length() >= 3 ? displayOutModeStr[2] : '\0') {
+            switch (displayOutModeStr.length() >= 3 ? displayOutModeStr[2] : '\000') {
                 case '3':
-                    switch (displayOutModeStr.length() >= 7 ? displayOutModeStr[6] : '\0') {
-                        case '\0':
+                    switch (displayOutModeStr.length() >= 7 ? displayOutModeStr[6] : '\000') {
+                        case '\000':
                             return (Hydro_DisplayOutputMode)12;
                         case 'V':
                             return (Hydro_DisplayOutputMode)13;
@@ -2007,9 +2007,9 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
             }
             break;
         case 'L':
-            switch (displayOutModeStr.length() >= 4 ? displayOutModeStr[3] : '\0') {
+            switch (displayOutModeStr.length() >= 4 ? displayOutModeStr[3] : '\000') {
                 case '1':
-                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
+                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\000') {
                         case 'E':
                             return (Hydro_DisplayOutputMode)1;
                         case 'R':
@@ -2017,7 +2017,7 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
                     }
                     break;
                 case '2':
-                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
+                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\000') {
                         case 'E':
                             return (Hydro_DisplayOutputMode)3;
                         case 'R':
@@ -2027,19 +2027,19 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
             }
             break;
         case 'S':
-            switch (displayOutModeStr.length() >= 2 ? displayOutModeStr[1] : '\0') {
+            switch (displayOutModeStr.length() >= 2 ? displayOutModeStr[1] : '\000') {
                 case 'H':
                     return (Hydro_DisplayOutputMode)9;
                 case 'S':
-                    switch (displayOutModeStr.length() >= 5 ? displayOutModeStr[4] : '\0') {
+                    switch (displayOutModeStr.length() >= 5 ? displayOutModeStr[4] : '\000') {
                         case '3':
-                            switch (displayOutModeStr.length() >= 7 ? displayOutModeStr[6] : '\0') {
+                            switch (displayOutModeStr.length() >= 7 ? displayOutModeStr[6] : '\000') {
                                 case '5':
-                                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\0') {
-                                        case '\0':
+                                    switch (displayOutModeStr.length() >= 8 ? displayOutModeStr[7] : '\000') {
+                                        case '\000':
                                             return (Hydro_DisplayOutputMode)5;
                                         case 'x':
-                                            switch (displayOutModeStr.length() >= 9 ? displayOutModeStr[8] : '\0') {
+                                            switch (displayOutModeStr.length() >= 9 ? displayOutModeStr[8] : '\000') {
                                                 case '3':
                                                     return (Hydro_DisplayOutputMode)6;
                                                 case '6':
@@ -2057,7 +2057,7 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
                     }
                     break;
                 case 'T':
-                    switch (displayOutModeStr.length() >= 5 ? displayOutModeStr[4] : '\0') {
+                    switch (displayOutModeStr.length() >= 5 ? displayOutModeStr[4] : '\000') {
                         case '3':
                             return (Hydro_DisplayOutputMode)14;
                         case '8':
@@ -2076,7 +2076,7 @@ Hydro_DisplayOutputMode displayOutputModeFromString(String displayOutModeStr)
 
 Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
 {
-    switch (controlInModeStr.length() >= 1 ? controlInModeStr[0] : '\0') {
+    switch (controlInModeStr.length() >= 1 ? controlInModeStr[0] : '\000') {
         case 'A':
             return (Hydro_ControlInputMode)7;
         case 'C':
@@ -2084,20 +2084,20 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
         case 'D':
             return (Hydro_ControlInputMode)0;
         case 'M':
-            switch (controlInModeStr.length() >= 7 ? controlInModeStr[6] : '\0') {
+            switch (controlInModeStr.length() >= 7 ? controlInModeStr[6] : '\000') {
                 case '2':
                     return (Hydro_ControlInputMode)8;
                 case '3':
-                    switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\0') {
-                        case '\0':
+                    switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\000') {
+                        case '\000':
                             return (Hydro_ControlInputMode)9;
                         case 'L':
                             return (Hydro_ControlInputMode)10;
                     }
                     break;
                 case '4':
-                    switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\0') {
-                        case '\0':
+                    switch (controlInModeStr.length() >= 12 ? controlInModeStr[11] : '\000') {
+                        case '\000':
                             return (Hydro_ControlInputMode)11;
                         case 'L':
                             return (Hydro_ControlInputMode)12;
@@ -2106,9 +2106,9 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
             }
             break;
         case 'R':
-            switch (controlInModeStr.length() >= 2 ? controlInModeStr[1] : '\0') {
+            switch (controlInModeStr.length() >= 2 ? controlInModeStr[1] : '\000') {
                 case 'e':
-                    switch (controlInModeStr.length() >= 3 ? controlInModeStr[2] : '\0') {
+                    switch (controlInModeStr.length() >= 3 ? controlInModeStr[2] : '\000') {
                         case 'm':
                             return (Hydro_ControlInputMode)16;
                         case 's':
@@ -2116,8 +2116,8 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
                     }
                     break;
                 case 'o':
-                    switch (controlInModeStr.length() >= 16 ? controlInModeStr[15] : '\0') {
-                        case '\0':
+                    switch (controlInModeStr.length() >= 16 ? controlInModeStr[15] : '\000') {
+                        case '\000':
                             return (Hydro_ControlInputMode)1;
                         case 'L':
                             return (Hydro_ControlInputMode)2;
@@ -2126,7 +2126,7 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
             }
             break;
         case 'T':
-            switch (controlInModeStr.length() >= 2 ? controlInModeStr[1] : '\0') {
+            switch (controlInModeStr.length() >= 2 ? controlInModeStr[1] : '\000') {
                 case 'F':
                     return (Hydro_ControlInputMode)15;
                 case 'o':
@@ -2134,22 +2134,22 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
             }
             break;
         case 'U':
-            switch (controlInModeStr.length() >= 2 ? controlInModeStr[1] : '\0') {
+            switch (controlInModeStr.length() >= 2 ? controlInModeStr[1] : '\000') {
                 case 'n':
                     return (Hydro_ControlInputMode)-1;
                 case 'p':
-                    switch (controlInModeStr.length() >= 7 ? controlInModeStr[6] : '\0') {
+                    switch (controlInModeStr.length() >= 7 ? controlInModeStr[6] : '\000') {
                         case 'B':
-                            switch (controlInModeStr.length() >= 16 ? controlInModeStr[15] : '\0') {
-                                case '\0':
+                            switch (controlInModeStr.length() >= 16 ? controlInModeStr[15] : '\000') {
+                                case '\000':
                                     return (Hydro_ControlInputMode)3;
                                 case 'L':
                                     return (Hydro_ControlInputMode)4;
                             }
                             break;
                         case 'E':
-                            switch (controlInModeStr.length() >= 19 ? controlInModeStr[18] : '\0') {
-                                case '\0':
+                            switch (controlInModeStr.length() >= 19 ? controlInModeStr[18] : '\000') {
+                                case '\000':
                                     return (Hydro_ControlInputMode)5;
                                 case 'L':
                                     return (Hydro_ControlInputMode)6;
@@ -2165,7 +2165,7 @@ Hydro_ControlInputMode controlInputModeFromString(String controlInModeStr)
 
 Hydro_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 {
-    switch (actuatorTypeStr.length() >= 1 ? actuatorTypeStr[0] : '\0') {
+    switch (actuatorTypeStr.length() >= 1 ? actuatorTypeStr[0] : '\000') {
         case 'C':
             return (Hydro_ActuatorType)7;
         case 'F':
@@ -2177,7 +2177,7 @@ Hydro_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
         case 'U':
             return (Hydro_ActuatorType)-1;
         case 'W':
-            switch (actuatorTypeStr.length() >= 6 ? actuatorTypeStr[5] : '\0') {
+            switch (actuatorTypeStr.length() >= 6 ? actuatorTypeStr[5] : '\000') {
                 case 'A':
                     return (Hydro_ActuatorType)3;
                 case 'H':
@@ -2194,9 +2194,9 @@ Hydro_ActuatorType actuatorTypeFromString(String actuatorTypeStr)
 
 Hydro_SensorType sensorTypeFromString(String sensorTypeStr)
 {
-    switch (sensorTypeStr.length() >= 1 ? sensorTypeStr[0] : '\0') {
+    switch (sensorTypeStr.length() >= 1 ? sensorTypeStr[0] : '\000') {
         case 'A':
-            switch (sensorTypeStr.length() >= 4 ? sensorTypeStr[3] : '\0') {
+            switch (sensorTypeStr.length() >= 4 ? sensorTypeStr[3] : '\000') {
                 case 'C':
                     return (Hydro_SensorType)0;
                 case 'T':
@@ -2208,7 +2208,7 @@ Hydro_SensorType sensorTypeFromString(String sensorTypeStr)
         case 'L':
             return (Hydro_SensorType)8;
         case 'P':
-            switch (sensorTypeStr.length() >= 2 ? sensorTypeStr[1] : '\0') {
+            switch (sensorTypeStr.length() >= 2 ? sensorTypeStr[1] : '\000') {
                 case 'o':
                     return (Hydro_SensorType)3;
                 case 'u':
@@ -2220,13 +2220,13 @@ Hydro_SensorType sensorTypeFromString(String sensorTypeStr)
         case 'U':
             return (Hydro_SensorType)-1;
         case 'W':
-            switch (sensorTypeStr.length() >= 6 ? sensorTypeStr[5] : '\0') {
+            switch (sensorTypeStr.length() >= 6 ? sensorTypeStr[5] : '\000') {
                 case 'H':
                     return (Hydro_SensorType)7;
                 case 'P':
                     return (Hydro_SensorType)2;
                 case 'T':
-                    switch (sensorTypeStr.length() >= 7 ? sensorTypeStr[6] : '\0') {
+                    switch (sensorTypeStr.length() >= 7 ? sensorTypeStr[6] : '\000') {
                         case 'D':
                             return (Hydro_SensorType)6;
                         case 'e':
@@ -2241,15 +2241,15 @@ Hydro_SensorType sensorTypeFromString(String sensorTypeStr)
 
 Hydro_CropType cropTypeFromString(String cropTypeStr)
 {
-    switch (cropTypeStr.length() >= 1 ? cropTypeStr[0] : '\0') {
+    switch (cropTypeStr.length() >= 1 ? cropTypeStr[0] : '\000') {
         case 'A':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'l':
                     return (Hydro_CropType)0;
                 case 'n':
                     return (Hydro_CropType)1;
                 case 'r':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 't':
                             return (Hydro_CropType)2;
                         case 'u':
@@ -2261,14 +2261,14 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'B':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
                     return (Hydro_CropType)5;
                 case 'e':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'a':
-                            switch (cropTypeStr.length() >= 5 ? cropTypeStr[4] : '\0') {
-                                case '\0':
+                            switch (cropTypeStr.length() >= 5 ? cropTypeStr[4] : '\000') {
+                                case '\000':
                                     return (Hydro_CropType)6;
                                 case 'B':
                                     return (Hydro_CropType)7;
@@ -2279,7 +2279,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                     }
                     break;
                 case 'l':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'a':
                             return (Hydro_CropType)9;
                         case 'u':
@@ -2289,7 +2289,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                 case 'o':
                     return (Hydro_CropType)11;
                 case 'r':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'o':
                             return (Hydro_CropType)12;
                         case 'u':
@@ -2299,9 +2299,9 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'C':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'b':
                             return (Hydro_CropType)14;
                         case 'n':
@@ -2319,11 +2319,11 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                 case 'e':
                     return (Hydro_CropType)20;
                 case 'h':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'a':
                             return (Hydro_CropType)21;
                         case 'i':
-                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\000') {
                                 case 'c':
                                     return (Hydro_CropType)22;
                                 case 'v':
@@ -2335,9 +2335,9 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                 case 'i':
                     return (Hydro_CropType)24;
                 case 'o':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'r':
-                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\000') {
                                 case 'i':
                                     return (Hydro_CropType)25;
                                 case 'n':
@@ -2349,11 +2349,11 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                     }
                     break;
                 case 'u':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'c':
                             return (Hydro_CropType)27;
                         case 's':
-                            switch (cropTypeStr.length() >= 11 ? cropTypeStr[10] : '\0') {
+                            switch (cropTypeStr.length() >= 11 ? cropTypeStr[10] : '\000') {
                                 case '1':
                                     return (Hydro_CropType)77;
                                 case '2':
@@ -2379,7 +2379,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
         case 'D':
             return (Hydro_CropType)28;
         case 'E':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'g':
                     return (Hydro_CropType)29;
                 case 'n':
@@ -2387,7 +2387,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'F':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'e':
                     return (Hydro_CropType)31;
                 case 'l':
@@ -2397,7 +2397,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'G':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
                     return (Hydro_CropType)34;
                 case 'i':
@@ -2407,11 +2407,11 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
         case 'K':
             return (Hydro_CropType)36;
         case 'L':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
                     return (Hydro_CropType)37;
                 case 'e':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'e':
                             return (Hydro_CropType)38;
                         case 'm':
@@ -2423,7 +2423,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'M':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
                     return (Hydro_CropType)41;
                 case 'e':
@@ -2435,7 +2435,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'O':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'k':
                     return (Hydro_CropType)45;
                 case 'n':
@@ -2445,13 +2445,13 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'P':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'k':
                             return (Hydro_CropType)48;
                         case 'r':
-                            switch (cropTypeStr.length() >= 5 ? cropTypeStr[4] : '\0') {
+                            switch (cropTypeStr.length() >= 5 ? cropTypeStr[4] : '\000') {
                                 case 'l':
                                     return (Hydro_CropType)49;
                                 case 'n':
@@ -2461,21 +2461,21 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                     }
                     break;
                 case 'e':
-                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\0') {
+                    switch (cropTypeStr.length() >= 3 ? cropTypeStr[2] : '\000') {
                         case 'a':
-                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
-                                case '\0':
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\000') {
+                                case '\000':
                                     return (Hydro_CropType)51;
                                 case 'S':
                                     return (Hydro_CropType)52;
                             }
                             break;
                         case 'p':
-                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                            switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\000') {
                                 case 'i':
                                     return (Hydro_CropType)53;
                                 case 'p':
-                                    switch (cropTypeStr.length() >= 8 ? cropTypeStr[7] : '\0') {
+                                    switch (cropTypeStr.length() >= 8 ? cropTypeStr[7] : '\000') {
                                         case 'B':
                                             return (Hydro_CropType)54;
                                         case 'H':
@@ -2487,8 +2487,8 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
                     }
                     break;
                 case 'o':
-                    switch (cropTypeStr.length() >= 7 ? cropTypeStr[6] : '\0') {
-                        case '\0':
+                    switch (cropTypeStr.length() >= 7 ? cropTypeStr[6] : '\000') {
+                        case '\000':
                             return (Hydro_CropType)56;
                         case 'S':
                             return (Hydro_CropType)57;
@@ -2499,7 +2499,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'R':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
                     return (Hydro_CropType)59;
                 case 'h':
@@ -2509,7 +2509,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'S':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
                     return (Hydro_CropType)62;
                 case 'i':
@@ -2527,9 +2527,9 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
             }
             break;
         case 'T':
-            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\0') {
+            switch (cropTypeStr.length() >= 2 ? cropTypeStr[1] : '\000') {
                 case 'a':
-                    switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\0') {
+                    switch (cropTypeStr.length() >= 4 ? cropTypeStr[3] : '\000') {
                         case 'o':
                             return (Hydro_CropType)69;
                         case 'r':
@@ -2547,7 +2547,7 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
         case 'U':
             return (Hydro_CropType)-1;
         case 'W':
-            switch (cropTypeStr.length() >= 6 ? cropTypeStr[5] : '\0') {
+            switch (cropTypeStr.length() >= 6 ? cropTypeStr[5] : '\000') {
                 case 'c':
                     return (Hydro_CropType)74;
                 case 'm':
@@ -2562,13 +2562,13 @@ Hydro_CropType cropTypeFromString(String cropTypeStr)
 
 Hydro_SubstrateType substrateTypeFromString(String substrateTypeStr)
 {
-        switch (substrateTypeStr.length() >= 1 ? substrateTypeStr[0] : '\0') {
+        switch (substrateTypeStr.length() >= 1 ? substrateTypeStr[0] : '\000') {
         case 'C':
-            switch (substrateTypeStr.length() >= 2 ? substrateTypeStr[1] : '\0') {
+            switch (substrateTypeStr.length() >= 2 ? substrateTypeStr[1] : '\000') {
                 case 'l':
                     return (Hydro_SubstrateType)0;
                 case 'o':
-                    switch (substrateTypeStr.length() >= 3 ? substrateTypeStr[2] : '\0') {
+                    switch (substrateTypeStr.length() >= 3 ? substrateTypeStr[2] : '\000') {
                         case 'c':
                             return (Hydro_SubstrateType)1;
                         case 'u':
@@ -2587,16 +2587,16 @@ Hydro_SubstrateType substrateTypeFromString(String substrateTypeStr)
 
 Hydro_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
 {
-     switch (reservoirTypeStr.length() >= 1 ? reservoirTypeStr[0] : '\0') {
+     switch (reservoirTypeStr.length() >= 1 ? reservoirTypeStr[0] : '\000') {
         case 'C':
-            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\0') {
+            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\000') {
                 case 'o':
                     return (Hydro_ReservoirType)22;
                 case 'u':
-                    switch (reservoirTypeStr.length() >= 15 ? reservoirTypeStr[14] : '\0') {
+                    switch (reservoirTypeStr.length() >= 15 ? reservoirTypeStr[14] : '\000') {
                         case '1':
-                            switch (reservoirTypeStr.length() >= 16 ? reservoirTypeStr[15] : '\0') {
-                                case '\0':
+                            switch (reservoirTypeStr.length() >= 16 ? reservoirTypeStr[15] : '\000') {
+                                case '\000':
                                     return (Hydro_ReservoirType)6;
                                 case '0':
                                     return (Hydro_ReservoirType)15;
@@ -2637,7 +2637,7 @@ Hydro_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
         case 'D':
             return (Hydro_ReservoirType)1;
         case 'F':
-            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\0') {
+            switch (reservoirTypeStr.length() >= 2 ? reservoirTypeStr[1] : '\000') {
                 case 'e':
                     return (Hydro_ReservoirType)0;
                 case 'r':
@@ -2647,7 +2647,7 @@ Hydro_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
         case 'N':
             return (Hydro_ReservoirType)2;
         case 'P':
-            switch (reservoirTypeStr.length() >= 3 ? reservoirTypeStr[2] : '\0') {
+            switch (reservoirTypeStr.length() >= 3 ? reservoirTypeStr[2] : '\000') {
                 case 'D':
                     return (Hydro_ReservoirType)5;
                 case 'U':
@@ -2661,9 +2661,9 @@ Hydro_ReservoirType reservoirTypeFromString(String reservoirTypeStr)
 }
 
 Hydro_RailType railTypeFromString(String railTypeStr) {
-    switch (railTypeStr.length() >= 1 ? railTypeStr[0] : '\0') {
+    switch (railTypeStr.length() >= 1 ? railTypeStr[0] : '\000') {
         case 'A':
-            switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\0') {
+            switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\000') {
                 case '1':
                     return (Hydro_RailType)0;
                 case '2':
@@ -2673,7 +2673,7 @@ Hydro_RailType railTypeFromString(String railTypeStr) {
         case 'C':
             return (Hydro_RailType)7;
         case 'D':
-            switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\0') {
+            switch (railTypeStr.length() >= 3 ? railTypeStr[2] : '\000') {
                 case '1':
                     return (Hydro_RailType)4;
                 case '2':
@@ -2694,9 +2694,9 @@ Hydro_RailType railTypeFromString(String railTypeStr) {
 
 Hydro_PinMode pinModeFromString(String pinModeStr)
 {
-    switch (pinModeStr.length() >= 1 ? pinModeStr[0] : '\0') {
+    switch (pinModeStr.length() >= 1 ? pinModeStr[0] : '\000') {
         case 'A':
-            switch (pinModeStr.length() >= 7 ? pinModeStr[6] : '\0') {
+            switch (pinModeStr.length() >= 7 ? pinModeStr[6] : '\000') {
                 case 'I':
                     return (Hydro_PinMode)5;
                 case 'O':
@@ -2706,13 +2706,13 @@ Hydro_PinMode pinModeFromString(String pinModeStr)
         case 'C':
             return (Hydro_PinMode)7;
         case 'D':
-            switch (pinModeStr.length() >= 8 ? pinModeStr[7] : '\0') {
+            switch (pinModeStr.length() >= 8 ? pinModeStr[7] : '\000') {
                 case 'I':
-                    switch (pinModeStr.length() >= 13 ? pinModeStr[12] : '\0') {
-                        case '\0':
+                    switch (pinModeStr.length() >= 13 ? pinModeStr[12] : '\000') {
+                        case '\000':
                             return (Hydro_PinMode)0;
                         case 'P':
-                            switch (pinModeStr.length() >= 17 ? pinModeStr[16] : '\0') {
+                            switch (pinModeStr.length() >= 17 ? pinModeStr[16] : '\000') {
                                 case 'D':
                                     return (Hydro_PinMode)2;
                                 case 'U':
@@ -2722,8 +2722,8 @@ Hydro_PinMode pinModeFromString(String pinModeStr)
                     }
                     break;
                 case 'O':
-                    switch (pinModeStr.length() >= 14 ? pinModeStr[13] : '\0') {
-                        case '\0':
+                    switch (pinModeStr.length() >= 14 ? pinModeStr[13] : '\000') {
+                        case '\000':
                             return (Hydro_PinMode)3;
                         case 'P':
                             return (Hydro_PinMode)4;
@@ -2739,9 +2739,9 @@ Hydro_PinMode pinModeFromString(String pinModeStr)
 
 Hydro_EnableMode enableModeFromString(String enableModeStr)
 {
-    switch (enableModeStr.length() >= 1 ? enableModeStr[0] : '\0') {
+    switch (enableModeStr.length() >= 1 ? enableModeStr[0] : '\000') {
         case 'A':
-            switch (enableModeStr.length() >= 2 ? enableModeStr[1] : '\0') {
+            switch (enableModeStr.length() >= 2 ? enableModeStr[1] : '\000') {
                 case 's':
                     return (Hydro_EnableMode)7;
                 case 'v':
@@ -2770,11 +2770,11 @@ Hydro_EnableMode enableModeFromString(String enableModeStr)
 
 Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
 {
-     switch (unitsCategoryStr.length() >= 1 ? unitsCategoryStr[0] : '\0') {
+     switch (unitsCategoryStr.length() >= 1 ? unitsCategoryStr[0] : '\000') {
         case 'A':
             return (Hydro_UnitsCategory)0;
         case 'C':
-            switch (unitsCategoryStr.length() >= 3 ? unitsCategoryStr[2] : '\0') {
+            switch (unitsCategoryStr.length() >= 3 ? unitsCategoryStr[2] : '\000') {
                 case 'n':
                     return (Hydro_UnitsCategory)1;
                 case 'u':
@@ -2784,7 +2784,7 @@ Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
         case 'D':
             return (Hydro_UnitsCategory)2;
         case 'L':
-            switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\0') {
+            switch (unitsCategoryStr.length() >= 4 ? unitsCategoryStr[3] : '\000') {
                 case 'D':
                     return (Hydro_UnitsCategory)3;
                 case 'F':
@@ -2794,7 +2794,7 @@ Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
             }
             break;
         case 'P':
-            switch (unitsCategoryStr.length() >= 2 ? unitsCategoryStr[1] : '\0') {
+            switch (unitsCategoryStr.length() >= 2 ? unitsCategoryStr[1] : '\000') {
                 case 'e':
                     return (Hydro_UnitsCategory)7;
                 case 'o':
@@ -2813,7 +2813,7 @@ Hydro_UnitsCategory unitsCategoryFromString(String unitsCategoryStr)
 
 Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
 {
-    switch (unitsSymbolStr.length() >= 1 ? unitsSymbolStr[0] : '\0') {
+    switch (unitsSymbolStr.length() >= 1 ? unitsSymbolStr[0] : '\000') {
         case '%':
             return (Hydro_UnitsType)1;
         case 'A':
@@ -2825,8 +2825,8 @@ Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
         case 'K':
             return (Hydro_UnitsType)20;
         case 'L':
-            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
-                case '\0':
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\000') {
+                case '\000':
                     return (Hydro_UnitsType)14;
                 case '/':
                     return (Hydro_UnitsType)12;
@@ -2837,7 +2837,7 @@ Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
         case 'W':
             return (Hydro_UnitsType)16;
         case '[':
-            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\000') {
                 case 'p':
                     return (Hydro_UnitsType)2;
                 case 'q':
@@ -2849,8 +2849,8 @@ Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
         case 'f':
             return (Hydro_UnitsType)7;
         case 'g':
-            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
-                case '\0':
+            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\000') {
+                case '\000':
                     return (Hydro_UnitsType)13;
                 case '/':
                     return (Hydro_UnitsType)11;
@@ -2859,11 +2859,11 @@ Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
         case 'l':
             return (Hydro_UnitsType)21;
         case 'm':
-            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\0') {
-                case '\0':
+            switch (unitsSymbolStr.length() >= 2 ? unitsSymbolStr[1] : '\000') {
+                case '\000':
                     return (Hydro_UnitsType)8;
                 case 'L':
-                    switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
+                    switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\000') {
                         case 'L':
                             return (Hydro_UnitsType)10;
                         case 'g':
@@ -2875,11 +2875,11 @@ Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
             }
             break;
         case 'p':
-            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\0') {
-                case '\0':
+            switch (unitsSymbolStr.length() >= 4 ? unitsSymbolStr[3] : '\000') {
+                case '\000':
                     return (Hydro_UnitsType)4;
                 case '(':
-                    switch (unitsSymbolStr.length() >= 5 ? unitsSymbolStr[4] : '\0') {
+                    switch (unitsSymbolStr.length() >= 5 ? unitsSymbolStr[4] : '\000') {
                         case '5':
                             return (Hydro_UnitsType)4;
                         case '6':
@@ -2893,7 +2893,7 @@ Hydro_UnitsType unitsTypeFromSymbol(String unitsSymbolStr)
         case 'r':
             return (Hydro_UnitsType)0;
         default: // degree symbol
-            switch (unitsSymbolStr.length() >= 3 ? unitsSymbolStr[2] : '\0') {
+            switch (unitsSymbolStr.length() >= 3 ? unitsSymbolStr[2] : '\000') {
                 case 'C':
                     return (Hydro_UnitsType)17;
                 case 'F':

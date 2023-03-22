@@ -14,46 +14,50 @@ HydroDisplayDriver::HydroDisplayDriver(Hydro_DisplayRotation displayRotation)
     : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined)
 { ; }
 
-void HydroDisplayDriver::commonInit(uint8_t updatesPerSec, bool analogSlider, bool utf8Fonts)
+void HydroDisplayDriver::setupRendering(uint8_t updatesPerSec, uint8_t titleMode, bool analogSlider, bool utf8Fonts)
 {
     auto baseRenderer = getBaseRenderer();
-    auto graphicsRenderer = getGraphicsRenderer();
+    if (baseRenderer) {
+        baseRenderer->setCustomDrawingHandler(getBaseUI());
+        baseRenderer->setUpdatesPerSecond(updatesPerSec);
+    }
 
-    baseRenderer->setCustomDrawingHandler(getBaseUI());
-    baseRenderer->setUpdatesPerSecond(updatesPerSec);
+    auto graphicsRenderer = getGraphicsRenderer();
     if (graphicsRenderer) {
-        if (getController() && getController()->getControlInputMode() >= Hydro_ControlInputMode_ResistiveTouch &&
+        if (getController()->getControlInputMode() >= Hydro_ControlInputMode_ResistiveTouch &&
             getController()->getControlInputMode() < Hydro_ControlInputMode_RemoteControl) {
             graphicsRenderer->setHasTouchInterface(true);
         }
+
+        graphicsRenderer->setTitleMode((BaseGraphicalRenderer::TitleMode)titleMode);
         graphicsRenderer->setUseSliderForAnalog(analogSlider);
         if (utf8Fonts) { graphicsRenderer->enableTcUnicode(); }
     }
 }
 
-void HydroDisplayDriver::installTheme(Hydro_DisplayTheme displayTheme, const void *itemFont, const void *titleFont, bool needEditingIcons)
+void HydroDisplayDriver::installTheme(Hydro_DisplayTheme displayTheme, const void *itemFont, const void *titleFont, bool editingIcons)
 {
     auto graphicsRenderer = getGraphicsRenderer();
 
     if (graphicsRenderer && _displayTheme != displayTheme) {
         switch ((_displayTheme = displayTheme)) {
             case Hydro_DisplayTheme_CoolBlue_ML:
-                installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
+                installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
                 break;
             case Hydro_DisplayTheme_CoolBlue_SM:
-                installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
+                installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
                 break;
             case Hydro_DisplayTheme_DarkMode_ML:
-                installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
+                installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
                 break;
             case Hydro_DisplayTheme_DarkMode_SM:
-                installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
+                installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
                 break;
             case Hydro_DisplayTheme_MonoOLED:
-                installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
+                installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
                 break;
             case Hydro_DisplayTheme_MonoOLED_Inv:
-                installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), needEditingIcons);
+                installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
                 break;
         }
     }
@@ -69,7 +73,6 @@ HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(Hydro_DisplayOutputMode dis
       _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
 {
     _lcd.configureBacklightPin(3);
-    _renderer.setTitleRequired(false);
 }
 
 HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(bool isDFRobotShield_unused, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode)
@@ -80,7 +83,6 @@ HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(bool isDFRobotShield_unused
       _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
 {
     _lcd.configureBacklightPin(10);
-    _renderer.setTitleRequired(false);
 }
 
 void HydroDisplayLiquidCrystal::initBaseUIFromDefaults()
@@ -91,6 +93,7 @@ void HydroDisplayLiquidCrystal::initBaseUIFromDefaults()
 void HydroDisplayLiquidCrystal::begin()
 {
     _lcd.begin(_screenSize[0], _screenSize[1]);
+    _renderer.setTitleRequired(false);
 }
 
 HydroOverview *HydroDisplayLiquidCrystal::allocateOverview()
@@ -107,17 +110,21 @@ HydroDisplayU8g2OLED::HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_Displ
     if (_gfx) {
         if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
             _gfx->setI2CAddress(HYDRO_UI_I2C_OLED_BASEADDR | displaySetup.cfgAs.i2c.address);
-            _drawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire);
-        } else {
-            _drawable = new U8g2Drawable(_gfx);
         }
+        #if HYDRO_UI_STM32_LDTC_ENABLE
+            _drawable = new StChromaArtDrawable();
+        #else
+            if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
+                _drawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire);
+            } else {
+                _drawable = new U8g2Drawable(_gfx);
+            }
+        #endif
         HYDRO_SOFT_ASSERT(_drawable, SFP(HStr_Err_AllocationFailure));
 
         if (_drawable) {
             _renderer = new GraphicsDeviceRenderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), _drawable);
             HYDRO_SOFT_ASSERT(_renderer, SFP(HStr_Err_AllocationFailure));
-
-            if (_renderer) { _renderer->setTitleMode(BaseGraphicalRenderer::TITLE_FIRST_ROW); }
         }
     }
 }
@@ -131,13 +138,12 @@ HydroDisplayU8g2OLED::~HydroDisplayU8g2OLED()
 
 void HydroDisplayU8g2OLED::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), Hydro_DisplayTheme_MonoOLED));
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), Hydro_DisplayTheme_MonoOLED), BaseGraphicalRenderer::TITLE_FIRST_ROW);
 }
 
 void HydroDisplayU8g2OLED::begin()
 {
     if (_gfx) { _gfx->begin(); }
-    if (_renderer) { _renderer->setDisplayDimensions(getScreenSize().first, getScreenSize().second); }
 }
 
 HydroOverview *HydroDisplayU8g2OLED::allocateOverview()
@@ -160,12 +166,11 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
     #endif
-    _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
@@ -176,7 +181,6 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
         _gfx.initR((uint8_t)_tab);
     }
     _gfx.setRotation((uint8_t)_rotation);
-    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview()
@@ -198,19 +202,17 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
     #endif
-    _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 {
     _gfx.init(TFT_GFX_WIDTH, TFT_GFX_HEIGHT);
     _gfx.setRotation((uint8_t)_rotation);
-    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::allocateOverview()
@@ -232,19 +234,17 @@ HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetu
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
     #endif
-    _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
 {
-    _gfx.begin(getController() ? getController()->getDisplaySetup().cfgAs.spi.speed : 0);
+    _gfx.begin(getController()->getDisplaySetup().cfgAs.spi.speed);
     _gfx.setRotation((uint8_t)_rotation);
-    _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
 HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::allocateOverview()
@@ -259,13 +259,11 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_Disp
       _gfx(screenWidth, screenHeight),
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
-{
-    _renderer.setTitleMode(BaseGraphicalRenderer::TITLE_ALWAYS);
-}
+{ ; }
 
 void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
 }
 
 void HydroDisplayTFTeSPI::begin()

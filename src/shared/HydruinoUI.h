@@ -18,6 +18,7 @@
 #include "tcMenu_Display_LiquidCrystal.h"
 #include "tcMenu_Display_TfteSpi.h"
 #include "tcMenu_Display_U8g2.h"
+#include "tcMenu_Extra_StChromaArt.h"
 #include "tcMenu_Input_AdaTouchDriver.h"
 #include "tcMenu_Input_ESP32TouchKeysAbstraction.h"
 #include "tcMenu_Remote_EthernetTransport.h"
@@ -58,9 +59,11 @@ public:
 
     void init(uint8_t updatesPerSec,                                        // Updates per second (1 to 10)
               Hydro_DisplayTheme displayTheme = Hydro_DisplayTheme_Undefined, // Display theme to apply
-              bool analogSlider = false);                                   // Slider usage for analog items
+              uint8_t titleMode = BaseGraphicalRenderer::NO_TITLE,          // Title mode
+              bool analogSlider = false,                                    // Slider usage for analog items
+              bool editingIcons = false);                                   // Editing icons usage
 
-    virtual void init(HydroUIData *uiData = nullptr) override;              // Standard initializer
+    virtual HydroUIData *init(HydroUIData *uiData = nullptr) override;      // Standard initializer
     virtual bool begin() override;                                          // Begins UI
 
     virtual void setNeedsRedraw() override;

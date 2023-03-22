@@ -30,9 +30,6 @@ protected:
     bool _loaded;
 };
 
-#define CALLBACK_FUNCTION
-#define NO_ADDRESS                      0xffff              // No EEPROM address
-
 // Initializes an AnyMenuInfo structure
 #define InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback)\
     safeProgCpy(varName.name, CFP(strNum), NAME_SIZE_T);\
@@ -67,7 +64,7 @@ protected:
     InitAnyMenuInfo(varName,strNum,itemId,eepromPosition,valMaximum,fnCallback);\
     varName.offset = valOffset;\
     varName.divisor = valDivisor;\
-    varName.unitName[0] = '\0'
+    varName.unitName[0] = '\000'
 
 // Altered rendering callback that uses CFP()
 #define H_RENDERING_CALLBACK_NAME_INVOKE(fnName, parent, strNum, eepromPosition, invoke) \
@@ -86,6 +83,14 @@ int fnName(RuntimeMenuItem* item, uint8_t row, RenderFnMode mode, char* buffer, 
 	} \
 }
 
+#ifdef HYDRO_DISABLE_BUILTIN_DATA
+#define InfoPtrForItem(itemName,castType) (&init.minfo##itemName)
+#define InfoLocation INFO_LOCATION_RAM
+#else
+#define InfoPtrForItem(itemName,castType) ((const castType *)CFP(HUIStr_Item_##itemName))
+#define InfoLocation INFO_LOCATION_PGM
+#endif
+
 #include "screens/HydroMenuHome.h"
 #include "screens/HydroMenuAlerts.h"
 #include "screens/HydroMenuActuators.h"
@@ -94,9 +99,11 @@ int fnName(RuntimeMenuItem* item, uint8_t row, RenderFnMode mode, char* buffer, 
 #include "screens/HydroMenuReservoirs.h"
 #include "screens/HydroMenuPowerRails.h"
 #include "screens/HydroMenuScheduling.h"
+#include "screens/HydroMenuSettings.h"
 #include "screens/HydroMenuCropsLib.h"
 #include "screens/HydroMenuAdditives.h"
 #include "screens/HydroMenuCalibrations.h"
+#include "screens/HydroMenuInformation.h"
 
 #endif // /ifndef HydroMenus_H
 #endif

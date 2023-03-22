@@ -276,12 +276,16 @@ void HydroInputResistiveTouch::begin(MenuRenderer *renderer, MenuItem *initialIt
 
 HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation)
     : HydroInputDriver(controlPins),
-      #ifndef HYDRO_ENABLE_XPT2046TS
-          _touchScreen(),
-      #else
+      #ifdef HYDRO_ENABLE_XPT2046TS
           _touchScreen(controlPins.second[0], controlPins.second[1]),
+      #else
+          _touchScreen(),
       #endif
-      _touchInterrogator(_touchScreen),
+      #if HYDRO_UI_BSP_TOUCH_ENABLE
+          _touchInterrogator(TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
+      #else
+          _touchInterrogator(_touchScreen),
+      #endif
       _touchOrientation(
          /*swap*/ displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R3,
          /*invX*/ displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_HorzMirror,
@@ -293,6 +297,9 @@ void HydroInputTouchscreen::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
     _touchInterrogator.init(); // begins touch device
     menuMgr.initWithoutInput(renderer, initialItem);
+    #ifdef HYDRO_ENABLE_XPT2046TS
+        _touchScreen.setRotation(getBaseUI() ? (uint8_t)getBaseUI()->getDisplaySetup().getDisplayRotation() : 0);
+    #endif
 }
 
 

@@ -5,7 +5,7 @@
 
 #include "Hydruino.h"
 
-static char _blank = '\0';
+static char _blank = '\000';
 const char *HStr_Blank = &_blank;
 
 static uint16_t _strDataAddress((uint16_t)-1);
@@ -95,11 +95,11 @@ String stringFromPGM(Hydro_String strNum)
 
                 {   char buffer[HYDRO_STRING_BUFFER_SIZE];
                     file.seek(lookupOffset);
-                    auto bytesRead = file.readBytesUntil('\0', buffer, HYDRO_STRING_BUFFER_SIZE);
+                    auto bytesRead = file.readBytesUntil('\000', buffer, HYDRO_STRING_BUFFER_SIZE);
                     retVal.concat(charsToString(buffer, bytesRead));
 
                     while (strnlen(buffer, HYDRO_STRING_BUFFER_SIZE) == HYDRO_STRING_BUFFER_SIZE) {
-                        bytesRead = file.readBytesUntil('\0', buffer, HYDRO_STRING_BUFFER_SIZE);
+                        bytesRead = file.readBytesUntil('\000', buffer, HYDRO_STRING_BUFFER_SIZE);
                         if (bytesRead) { retVal.concat(charsToString(buffer, bytesRead)); }
                     }
                 }

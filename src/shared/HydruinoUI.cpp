@@ -54,23 +54,30 @@ HydruinoBaseUI::~HydruinoBaseUI()
     if (_backlight) { delete _backlight; }
 }
 
-void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, bool analogSlider)
+void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, uint8_t titleMode, bool analogSlider, bool editingIcons)
 {
+    if (!_uiData) {
+        _uiData = new HydroUIData();
+        HYDRO_SOFT_ASSERT(_uiData, SFP(HStr_Err_AllocationFailure));
+    }
     if (_uiData) {
         _uiData->updatesPerSec = updatesPerSec;
         _uiData->displayTheme = displayTheme;
+        _uiData->titleMode = titleMode;
+        _uiData->analogSlider = analogSlider;
+        _uiData->editingIcons = editingIcons;
     }
 
-    SwitchInterruptMode isrMode(SWITCHES_POLL_EVERYTHING);
-    if (_allowISR) {
-        bool mainPinsInterruptable = _input && _input->areMainPinsInterruptable();
-        bool allPinsInterruptable = mainPinsInterruptable && _input->areAllPinsInterruptable();
-        isrMode = (allPinsInterruptable ? SWITCHES_NO_POLLING : (mainPinsInterruptable ? SWITCHES_POLL_KEYS_ONLY : SWITCHES_POLL_EVERYTHING));
+    if (_input) {
+        SwitchInterruptMode isrMode(SWITCHES_POLL_EVERYTHING);
+        if (_allowISR) {
+            bool mainPinsInterruptable = _input->areMainPinsInterruptable();
+            bool allPinsInterruptable = mainPinsInterruptable && _input->areAllPinsInterruptable();
+            isrMode = (allPinsInterruptable ? SWITCHES_NO_POLLING : (mainPinsInterruptable ? SWITCHES_POLL_KEYS_ONLY : SWITCHES_POLL_EVERYTHING));
+        }
+
+        switches.init(_input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
     }
-
-    switches.init(_input && _input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
-
-    if (_display) { _display->commonInit(updatesPerSec, analogSlider, _isUnicodeFonts); }
 
     #if !HYDRO_UI_START_AT_OVERVIEW
         if (!_homeMenu) {
@@ -80,25 +87,28 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
     #endif
 }
 
-void HydruinoBaseUI::init(HydroUIData *uiData)
+HydroUIData *HydruinoBaseUI::init(HydroUIData *uiData)
 {
-    if ((_uiData = uiData)) {
-        init(uiData->updatesPerSec, uiData->displayTheme, _display && _display->isColor() ? HYDRO_UI_GFX_VARS_USES_SLIDER : false);
+    if (uiData && (_uiData = uiData)) {
+        init(_uiData->updatesPerSec, _uiData->displayTheme, _uiData->titleMode, _uiData->analogSlider, _uiData->editingIcons);
     } else if (_display) {
         _display->initBaseUIFromDefaults(); // calls back into above init with default settings for display
     } else {
-        init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
+        init(HYDRO_UI_UPDATE_SPEED);
     }
+    return _uiData;
 }
 
 bool HydruinoBaseUI::begin()
 {
     if (_display) { _display->begin(); }
-
     if (_input) { _input->begin(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
     else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
 
-    if (_display && _display->getGraphicsRenderer()) { _display->installTheme(_uiData ? _uiData->displayTheme : Hydro_DisplayTheme_Undefined); }
+    if (_display) {
+        _display->setupRendering(_uiData->updatesPerSec, _uiData->titleMode, _uiData->analogSlider, _isUnicodeFonts);
+        _display->installTheme(_uiData->displayTheme, _itemFont, _titleFont, _uiData->editingIcons);
+    }
 
     #if HYDRO_UI_START_AT_OVERVIEW
         reset();

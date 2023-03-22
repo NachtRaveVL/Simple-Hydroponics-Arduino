@@ -34,6 +34,9 @@
 #define HYDRO_UI_START_AT_OVERVIEW      true                // Starts at overview screen (true), else menu screen (false)
 #define HYDRO_UI_DEALLOC_AFTER_USE      defined(__AVR__)    // If screen data should be unloaded after use (true = lower memory usage, increased screens transition time), or stay memory-resident (false = higher memory usage, more instant screen transitions)
 #define HYDRO_UI_GFX_VARS_USES_SLIDER   true                // Default analog slider usage for graphical displays displaying variable value ranges
+#define HYDRO_UI_ENABLE_DEBUG_MENU      defined(HYDRO_ENABLE_DEBUG_OUTPUT) // Enables special debug menu (true), else doesn't provide (false)
+#define HYDRO_UI_STM32_LDTC_ENABLE      false               // Enables STM32/mbed LDTC framebuffer capable canvas in place of default U8g2 canvas (true, note: requires advanced setup), else uses default (false)
+#define HYDRO_UI_BSP_TOUCH_ENABLE       false               // Enables STM32/mbed BSP touch screen interrogator in place of default AdaLibTouchInterrogator touch screen interrogator (true, note: requires advanced setup), else uses default (false)
 
 #define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed, in ticks
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
@@ -182,5 +185,12 @@ class HydroMenu;
 class HydroHomeMenu;
 class HydroOverview;
 struct HydroUIData;
+
+
+// tcMenu Callbacks
+#define CALLBACK_FUNCTION
+#define NO_ADDRESS                      0xffff              // No EEPROM address
+extern void CALLBACK_FUNCTION gotoScreen(int id);
+extern void CALLBACK_FUNCTION debugAction(int id);
 
 #endif // /ifndef HydroUIDefines_H

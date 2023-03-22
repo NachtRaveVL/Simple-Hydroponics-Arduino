@@ -357,7 +357,7 @@ public:
     // Minimal/RO UI only allows the user to edit existing objects, not create nor delete them.
     // Full/RW UI allows the user to add/remove system objects, customize features, change settings, etc.
     // Note: Be sure to manually include the appropriate UI system header file (e.g. #include "min/HydruinoUI.h") in Arduino sketch.
-    inline bool enableUI(HydroUIInterface *ui) { _activeUIInstance = ui; ui->init(_uiData ? _uiData : (_uiData = new HydroUIData())); return ui->begin(); }
+    inline bool enableUI(HydroUIInterface *ui) { _activeUIInstance = ui; _uiData = ui->init(_uiData); return ui->begin(); }
 #endif
 
     // Mutators.

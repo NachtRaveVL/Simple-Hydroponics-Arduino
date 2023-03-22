@@ -93,11 +93,11 @@ String stringFromPGM(HydroUI_String strNum)
 
                 {   char buffer[HYDRO_STRING_BUFFER_SIZE];
                     file.seek(lookupOffset);
-                    auto bytesRead = file.readBytesUntil('\0', buffer, HYDRO_STRING_BUFFER_SIZE);
+                    auto bytesRead = file.readBytesUntil('\000', buffer, HYDRO_STRING_BUFFER_SIZE);
                     retVal.concat(charsToString(buffer, bytesRead));
 
                     while (strnlen(buffer, HYDRO_STRING_BUFFER_SIZE) == HYDRO_STRING_BUFFER_SIZE) {
-                        bytesRead = file.readBytesUntil('\0', buffer, HYDRO_STRING_BUFFER_SIZE);
+                        bytesRead = file.readBytesUntil('\000', buffer, HYDRO_STRING_BUFFER_SIZE);
                         if (bytesRead) { retVal.concat(charsToString(buffer, bytesRead)); }
                     }
                 }
@@ -146,16 +146,20 @@ const char *pgmAddrForStr(HydroUI_String strNum)
         } break;
 
         case HUIStr_Item_Actuators: {
-            static const char flashUIStr_Item_Actuators[] PROGMEM = {"Actuators"};
-            return flashUIStr_Item_Actuators;
+            static const AnyMenuInfo flashUIStr_Item_Actuators PROGMEM = { "Actuators", 20, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Actuators;
         } break;
         case HUIStr_Item_AddNew: {
             static const char flashUIStr_Item_AddNew[] PROGMEM = {"Add New"};
             return flashUIStr_Item_AddNew;
         } break;
         case HUIStr_Item_Additives: {
-            static const char flashUIStr_Item_Additives[] PROGMEM = {"Additives"};
-            return flashUIStr_Item_Additives;
+            static const AnyMenuInfo flashUIStr_Item_Additives PROGMEM = { "Additives", 41, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Additives;
+        } break;
+        case HUIStr_Item_Alerts: {
+            static const AnyMenuInfo flashUIStr_Item_Alerts PROGMEM = { "Alerts", 1, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Alerts;
         } break;
         case HUIStr_Item_AllowRemoteCtrl: {
             static const char flashUIStr_Item_AllowRemoteCtrl[] PROGMEM = {"Allow Remote Ctrl"};
@@ -182,8 +186,8 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_AutosaveSecondary;
         } break;
         case HUIStr_Item_BackToOverview: {
-            static const char flashUIStr_Item_BackToOverview[] PROGMEM = {"Back To Overview"};
-            return flashUIStr_Item_BackToOverview;
+            static const AnyMenuInfo flashUIStr_Item_BackToOverview PROGMEM = { "Back to Overview", 7, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_BackToOverview;
         } break;
         case HUIStr_Item_BatteryFailure: {
             static const char flashUIStr_Item_BatteryFailure[] PROGMEM = {"Battery Failure"};
@@ -202,8 +206,8 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Browse;
         } break;
         case HUIStr_Item_Calibrations: {
-            static const char flashUIStr_Item_Calibrations[] PROGMEM = {"Calibrations"};
-            return flashUIStr_Item_Calibrations;
+            static const AnyMenuInfo flashUIStr_Item_Calibrations PROGMEM = { "Calibrations", 42, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Calibrations;
         } break;
         case HUIStr_Item_ControlMode: {
             static const char flashUIStr_Item_ControlMode[] PROGMEM = {"Control Mode"};
@@ -218,8 +222,12 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Controls;
         } break;
         case HUIStr_Item_Crops: {
-            static const char flashUIStr_Item_Crops[] PROGMEM = {"Crops"};
-            return flashUIStr_Item_Crops;
+            static const AnyMenuInfo flashUIStr_Item_Crops PROGMEM = { "Crops", 22, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Crops;
+        } break;
+        case HUIStr_Item_CropsLib: {
+            static const AnyMenuInfo flashUIStr_Item_CropsLib PROGMEM = { "Crops", 40, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_CropsLib;
         } break;
         case HUIStr_Item_DSTAddHour: {
             static const char flashUIStr_Item_DSTAddHour[] PROGMEM = {"DST Add Hour"};
@@ -234,8 +242,8 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Date;
         } break;
         case HUIStr_Item_Debug: {
-            static const char flashUIStr_Item_Debug[] PROGMEM = {"Debug"};
-            return flashUIStr_Item_Debug;
+            static const SubMenuInfo flashUIStr_Item_Debug PROGMEM = { "Debug", 6, NO_ADDRESS, 0, NO_CALLBACK };
+            return (const char *)&flashUIStr_Item_Debug;
         } break;
         case HUIStr_Item_DisplayMode: {
             static const char flashUIStr_Item_DisplayMode[] PROGMEM = {"Display Mode"};
@@ -261,9 +269,9 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             static const char flashUIStr_Item_General[] PROGMEM = {"General"};
             return flashUIStr_Item_General;
         } break;
-        case HUIStr_Item_Info: {
-            static const char flashUIStr_Item_Info[] PROGMEM = {"Info"};
-            return flashUIStr_Item_Info;
+        case HUIStr_Item_Information: {
+            static const BooleanMenuInfo flashUIStr_Item_Information PROGMEM = { "Information", 5, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Information;
         } break;
         case HUIStr_Item_JoystickXMid: {
             static const char flashUIStr_Item_JoystickXMid[] PROGMEM = {"Joystick X Mid"};
@@ -286,8 +294,8 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_LatDegrees;
         } break;
         case HUIStr_Item_Library: {
-            static const char flashUIStr_Item_Library[] PROGMEM = {"Library"};
-            return flashUIStr_Item_Library;
+            static const SubMenuInfo flashUIStr_Item_Library PROGMEM = { "Library", 4, NO_ADDRESS, 0, NO_CALLBACK };
+            return (const char *)&flashUIStr_Item_Library;
         } break;
         case HUIStr_Item_LocalTime: {
             static const char flashUIStr_Item_LocalTime[] PROGMEM = {"Local Time"};
@@ -322,8 +330,8 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Networking;
         } break;
         case HUIStr_Item_PowerRails: {
-            static const char flashUIStr_Item_PowerRails[] PROGMEM = {"Power Rails"};
-            return flashUIStr_Item_PowerRails;
+            static const AnyMenuInfo flashUIStr_Item_PowerRails PROGMEM = { "Power Rails", 24, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_PowerRails;
         } break;
         case HUIStr_Item_RTC: {
             static const char flashUIStr_Item_RTC[] PROGMEM = {"RTC"};
@@ -334,32 +342,32 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_RemoteCtrlPort;
         } break;
         case HUIStr_Item_Reservoirs: {
-            static const char flashUIStr_Item_Reservoirs[] PROGMEM = {"Reservoirs"};
-            return flashUIStr_Item_Reservoirs;
+            static const AnyMenuInfo flashUIStr_Item_Reservoirs PROGMEM = { "Reservoirs", 23, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Reservoirs;
         } break;
         case HUIStr_Item_SDCard: {
             static const char flashUIStr_Item_SDCard[] PROGMEM = {"SD Card"};
             return flashUIStr_Item_SDCard;
         } break;
         case HUIStr_Item_Scheduling: {
-            static const char flashUIStr_Item_Scheduling[] PROGMEM = {"Scheduling"};
-            return flashUIStr_Item_Scheduling;
+            static const AnyMenuInfo flashUIStr_Item_Scheduling PROGMEM = { "Scheduling", 25, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Scheduling;
         } break;
         case HUIStr_Item_Sensors: {
-            static const char flashUIStr_Item_Sensors[] PROGMEM = {"Sensors"};
-            return flashUIStr_Item_Sensors;
+            static const AnyMenuInfo flashUIStr_Item_Sensors PROGMEM = { "Sensors", 21, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Sensors;
         } break;
         case HUIStr_Item_Settings: {
-            static const char flashUIStr_Item_Settings[] PROGMEM = {"Settings"};
-            return flashUIStr_Item_Settings;
+            static const AnyMenuInfo flashUIStr_Item_Settings PROGMEM = { "Settings", 3, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Settings;
         } break;
         case HUIStr_Item_Size: {
             static const char flashUIStr_Item_Size[] PROGMEM = {"Size"};
             return flashUIStr_Item_Size;
         } break;
         case HUIStr_Item_System: {
-            static const char flashUIStr_Item_System[] PROGMEM = {"System"};
-            return flashUIStr_Item_System;
+            static const SubMenuInfo flashUIStr_Item_System PROGMEM = { "System", 2, NO_ADDRESS, 0, NO_CALLBACK };
+            return (const char *)&flashUIStr_Item_System;
         } break;
         case HUIStr_Item_SystemMode: {
             static const char flashUIStr_Item_SystemMode[] PROGMEM = {"System Mode"};
@@ -378,28 +386,28 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_TimeZone;
         } break;
         case HUIStr_Item_ToggleBadConn: {
-            static const char flashUIStr_Item_ToggleBadConn[] PROGMEM = {"Toggle BadConn"};
-            return flashUIStr_Item_ToggleBadConn;
+            static const BooleanMenuInfo flashUIStr_Item_ToggleBadConn PROGMEM = { "Toggle BadConn", 65, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
+            return (const char *)&flashUIStr_Item_ToggleBadConn;
         } break;
         case HUIStr_Item_ToggleFastTime: {
-            static const char flashUIStr_Item_ToggleFastTime[] PROGMEM = {"Toggle FastTime"};
-            return flashUIStr_Item_ToggleFastTime;
+            static const BooleanMenuInfo flashUIStr_Item_ToggleFastTime PROGMEM = { "Toggle FastTime", 64, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
+            return (const char *)&flashUIStr_Item_ToggleFastTime;
         } break;
         case HUIStr_Item_TriggerAutosave: {
-            static const char flashUIStr_Item_TriggerAutosave[] PROGMEM = {"Trigger Autosave"};
-            return flashUIStr_Item_TriggerAutosave;
+            static const AnyMenuInfo flashUIStr_Item_TriggerAutosave PROGMEM = { "Trigger Autosave", 60, NO_ADDRESS, 0, debugAction };
+            return (const char *)&flashUIStr_Item_TriggerAutosave;
         } break;
         case HUIStr_Item_TriggerLowMem: {
-            static const char flashUIStr_Item_TriggerLowMem[] PROGMEM = {"Trigger LowMem"};
-            return flashUIStr_Item_TriggerLowMem;
+            static const AnyMenuInfo flashUIStr_Item_TriggerLowMem PROGMEM = { "Trigger LowMem", 61, NO_ADDRESS, 0, debugAction };
+            return (const char *)&flashUIStr_Item_TriggerLowMem;
         } break;
         case HUIStr_Item_TriggerSDCleanup: {
-            static const char flashUIStr_Item_TriggerSDCleanup[] PROGMEM = {"Trigger SDCleanup"};
-            return flashUIStr_Item_TriggerSDCleanup;
+            static const AnyMenuInfo flashUIStr_Item_TriggerSDCleanup PROGMEM = { "Trigger SDCleanup", 62, NO_ADDRESS, 0, debugAction };
+            return (const char *)&flashUIStr_Item_TriggerSDCleanup;
         } break;
         case HUIStr_Item_TriggerSigTime: {
-            static const char flashUIStr_Item_TriggerSigTime[] PROGMEM = {"Trigger SigTime"};
-            return flashUIStr_Item_TriggerSigTime;
+            static const AnyMenuInfo flashUIStr_Item_TriggerSigTime PROGMEM = { "Trigger SigTime", 63, NO_ADDRESS, 0, debugAction };
+            return (const char *)&flashUIStr_Item_TriggerSigTime;
         } break;
         case HUIStr_Item_Uptime: {
             static const char flashUIStr_Item_Uptime[] PROGMEM = {"Uptime"};
@@ -414,253 +422,90 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_WiFiSSID;
         } break;
 
-        case HUIStr_Enum_Autosave_0: {
-            static const char flashUIStr_Enum_Autosave_0[] PROGMEM = {"SD Card"};
-            return flashUIStr_Enum_Autosave_0;
+        case HUIStr_Enum_Autosave: {
+            // SD Card000000
+            // EEPROM0000000
+            // WiFi Storage0
+            static const char flashUIStr_Enum_Autosave[] PROGMEM = {"SD Card\000\000\000\000\000\000EEPROM\000\000\000\000\000\000\000WiFi Storage"};
+            return flashUIStr_Enum_Autosave;
         } break;
-        case HUIStr_Enum_Autosave_1: {
-            static const char flashUIStr_Enum_Autosave_1[] PROGMEM = {"EEPROM"};
-            return flashUIStr_Enum_Autosave_1;
+        case HUIStr_Enum_DataPolling: {
+            // 1 second000
+            // 2 seconds00
+            // 5 seconds00
+            // 10 seconds0
+            // 15 seconds0
+            // 30 seconds0
+            // 45 seconds0
+            // 60 seconds0
+            static const char flashUIStr_Enum_DataPolling[] PROGMEM = {"1 second\000\000\0002 seconds\000\0005 seconds\000\00010 seconds\00015 seconds\00030 seconds\00045 seconds\00060 seconds"};
+            return flashUIStr_Enum_DataPolling;
         } break;
-        case HUIStr_Enum_Autosave_2: {
-            static const char flashUIStr_Enum_Autosave_2[] PROGMEM = {"WiFi Storage"};
-            return flashUIStr_Enum_Autosave_2;
+        case HUIStr_Enum_GPSPolling: {
+            // 1 second000
+            // 2 seconds00
+            // 5 seconds00
+            // 10 seconds0
+            static const char flashUIStr_Enum_GPSPolling[] PROGMEM = {"1 second\000\000\0002 seconds\000\0005 seconds\000\00010 seconds"};
+            return flashUIStr_Enum_GPSPolling;
         } break;
-        case HUIStr_Enum_Autosave_3: {
-            static const char flashUIStr_Enum_Autosave_3[] PROGMEM = {"Disabled"};
-            return flashUIStr_Enum_Autosave_3;
+        case HUIStr_Enum_Measurements: {
+            // Imperial000
+            // Metric00000
+            // Scientific0
+            static const char flashUIStr_Enum_Measurements[] PROGMEM = {"Imperial\000\000\000Metric\000\000\000\000\000Scientific"};
+            return flashUIStr_Enum_Measurements;
         } break;
-        case HUIStr_Enum_DataPolling_0: {
-            static const char flashUIStr_Enum_DataPolling_0[] PROGMEM = {"1 second"};
-            return flashUIStr_Enum_DataPolling_0;
+        case HUIStr_Enum_SystemMode: {
+            // Recycling0000
+            // DrainToWaste0
+            static const char flashUIStr_Enum_SystemMode[] PROGMEM = {"Recycling\000\000\000\000DrainToWaste"};
+            return flashUIStr_Enum_SystemMode;
         } break;
-        case HUIStr_Enum_DataPolling_1: {
-            static const char flashUIStr_Enum_DataPolling_1[] PROGMEM = {"2 seconds"};
-            return flashUIStr_Enum_DataPolling_1;
-        } break;
-        case HUIStr_Enum_DataPolling_2: {
-            static const char flashUIStr_Enum_DataPolling_2[] PROGMEM = {"5 seconds"};
-            return flashUIStr_Enum_DataPolling_2;
-        } break;
-        case HUIStr_Enum_DataPolling_3: {
-            static const char flashUIStr_Enum_DataPolling_3[] PROGMEM = {"10 seconds"};
-            return flashUIStr_Enum_DataPolling_3;
-        } break;
-        case HUIStr_Enum_DataPolling_4: {
-            static const char flashUIStr_Enum_DataPolling_4[] PROGMEM = {"15 seconds"};
-            return flashUIStr_Enum_DataPolling_4;
-        } break;
-        case HUIStr_Enum_DataPolling_5: {
-            static const char flashUIStr_Enum_DataPolling_5[] PROGMEM = {"30 seconds"};
-            return flashUIStr_Enum_DataPolling_5;
-        } break;
-        case HUIStr_Enum_DataPolling_6: {
-            static const char flashUIStr_Enum_DataPolling_6[] PROGMEM = {"45 seconds"};
-            return flashUIStr_Enum_DataPolling_6;
-        } break;
-        case HUIStr_Enum_DataPolling_7: {
-            static const char flashUIStr_Enum_DataPolling_7[] PROGMEM = {"60 seconds"};
-            return flashUIStr_Enum_DataPolling_7;
-        } break;
-        case HUIStr_Enum_GPSPolling_0: {
-            static const char flashUIStr_Enum_GPSPolling_0[] PROGMEM = {"1 second"};
-            return flashUIStr_Enum_GPSPolling_0;
-        } break;
-        case HUIStr_Enum_GPSPolling_1: {
-            static const char flashUIStr_Enum_GPSPolling_1[] PROGMEM = {"2 seconds"};
-            return flashUIStr_Enum_GPSPolling_1;
-        } break;
-        case HUIStr_Enum_GPSPolling_2: {
-            static const char flashUIStr_Enum_GPSPolling_2[] PROGMEM = {"5 seconds"};
-            return flashUIStr_Enum_GPSPolling_2;
-        } break;
-        case HUIStr_Enum_GPSPolling_3: {
-            static const char flashUIStr_Enum_GPSPolling_3[] PROGMEM = {"10 seconds"};
-            return flashUIStr_Enum_GPSPolling_3;
-        } break;
-        case HUIStr_Enum_Measurements_0: {
-            static const char flashUIStr_Enum_Measurements_0[] PROGMEM = {"Imperial"};
-            return flashUIStr_Enum_Measurements_0;
-        } break;
-        case HUIStr_Enum_Measurements_1: {
-            static const char flashUIStr_Enum_Measurements_1[] PROGMEM = {"Metric"};
-            return flashUIStr_Enum_Measurements_1;
-        } break;
-        case HUIStr_Enum_Measurements_2: {
-            static const char flashUIStr_Enum_Measurements_2[] PROGMEM = {"Scientific"};
-            return flashUIStr_Enum_Measurements_2;
-        } break;
-        case HUIStr_Enum_SystemMode_0: {
-            static const char flashUIStr_Enum_SystemMode_0[] PROGMEM = {"Recycling"};
-            return flashUIStr_Enum_SystemMode_0;
-        } break;
-        case HUIStr_Enum_SystemMode_1: {
-            static const char flashUIStr_Enum_SystemMode_1[] PROGMEM = {"DrainToWaste"};
-            return flashUIStr_Enum_SystemMode_1;
-        } break;
-        case HUIStr_Enum_TimeZone_0: {
-            static const char flashUIStr_Enum_TimeZone_0[] PROGMEM = {"UTC -12"};
-            return flashUIStr_Enum_TimeZone_0;
-        } break;
-        case HUIStr_Enum_TimeZone_1: {
-            static const char flashUIStr_Enum_TimeZone_1[] PROGMEM = {"UTC -11"};
-            return flashUIStr_Enum_TimeZone_1;
-        } break;
-        case HUIStr_Enum_TimeZone_2: {
-            static const char flashUIStr_Enum_TimeZone_2[] PROGMEM = {"UTC -10"};
-            return flashUIStr_Enum_TimeZone_2;
-        } break;
-        case HUIStr_Enum_TimeZone_3: {
-            static const char flashUIStr_Enum_TimeZone_3[] PROGMEM = {"UTC -9"};
-            return flashUIStr_Enum_TimeZone_3;
-        } break;
-        case HUIStr_Enum_TimeZone_4: {
-            static const char flashUIStr_Enum_TimeZone_4[] PROGMEM = {"UTC -9:30"};
-            return flashUIStr_Enum_TimeZone_4;
-        } break;
-        case HUIStr_Enum_TimeZone_5: {
-            static const char flashUIStr_Enum_TimeZone_5[] PROGMEM = {"UTC -8"};
-            return flashUIStr_Enum_TimeZone_5;
-        } break;
-        case HUIStr_Enum_TimeZone_6: {
-            static const char flashUIStr_Enum_TimeZone_6[] PROGMEM = {"UTC -7"};
-            return flashUIStr_Enum_TimeZone_6;
-        } break;
-        case HUIStr_Enum_TimeZone_7: {
-            static const char flashUIStr_Enum_TimeZone_7[] PROGMEM = {"UTC -6"};
-            return flashUIStr_Enum_TimeZone_7;
-        } break;
-        case HUIStr_Enum_TimeZone_8: {
-            static const char flashUIStr_Enum_TimeZone_8[] PROGMEM = {"UTC -5"};
-            return flashUIStr_Enum_TimeZone_8;
-        } break;
-        case HUIStr_Enum_TimeZone_9: {
-            static const char flashUIStr_Enum_TimeZone_9[] PROGMEM = {"UTC -4"};
-            return flashUIStr_Enum_TimeZone_9;
-        } break;
-        case HUIStr_Enum_TimeZone_10: {
-            static const char flashUIStr_Enum_TimeZone_10[] PROGMEM = {"UTC -3:30"};
-            return flashUIStr_Enum_TimeZone_10;
-        } break;
-        case HUIStr_Enum_TimeZone_11: {
-            static const char flashUIStr_Enum_TimeZone_11[] PROGMEM = {"UTC -3"};
-            return flashUIStr_Enum_TimeZone_11;
-        } break;
-        case HUIStr_Enum_TimeZone_12: {
-            static const char flashUIStr_Enum_TimeZone_12[] PROGMEM = {"UTC -2:30"};
-            return flashUIStr_Enum_TimeZone_12;
-        } break;
-        case HUIStr_Enum_TimeZone_13: {
-            static const char flashUIStr_Enum_TimeZone_13[] PROGMEM = {"UTC -2"};
-            return flashUIStr_Enum_TimeZone_13;
-        } break;
-        case HUIStr_Enum_TimeZone_14: {
-            static const char flashUIStr_Enum_TimeZone_14[] PROGMEM = {"UTC -1"};
-            return flashUIStr_Enum_TimeZone_14;
-        } break;
-        case HUIStr_Enum_TimeZone_15: {
-            static const char flashUIStr_Enum_TimeZone_15[] PROGMEM = {"UTC +0"};
-            return flashUIStr_Enum_TimeZone_15;
-        } break;
-        case HUIStr_Enum_TimeZone_16: {
-            static const char flashUIStr_Enum_TimeZone_16[] PROGMEM = {"UTC +1"};
-            return flashUIStr_Enum_TimeZone_16;
-        } break;
-        case HUIStr_Enum_TimeZone_17: {
-            static const char flashUIStr_Enum_TimeZone_17[] PROGMEM = {"UTC +2"};
-            return flashUIStr_Enum_TimeZone_17;
-        } break;
-        case HUIStr_Enum_TimeZone_18: {
-            static const char flashUIStr_Enum_TimeZone_18[] PROGMEM = {"UTC +3"};
-            return flashUIStr_Enum_TimeZone_18;
-        } break;
-        case HUIStr_Enum_TimeZone_19: {
-            static const char flashUIStr_Enum_TimeZone_19[] PROGMEM = {"UTC +3:30"};
-            return flashUIStr_Enum_TimeZone_19;
-        } break;
-        case HUIStr_Enum_TimeZone_20: {
-            static const char flashUIStr_Enum_TimeZone_20[] PROGMEM = {"UTC +4"};
-            return flashUIStr_Enum_TimeZone_20;
-        } break;
-        case HUIStr_Enum_TimeZone_21: {
-            static const char flashUIStr_Enum_TimeZone_21[] PROGMEM = {"UTC +4:30"};
-            return flashUIStr_Enum_TimeZone_21;
-        } break;
-        case HUIStr_Enum_TimeZone_22: {
-            static const char flashUIStr_Enum_TimeZone_22[] PROGMEM = {"UTC +5"};
-            return flashUIStr_Enum_TimeZone_22;
-        } break;
-        case HUIStr_Enum_TimeZone_23: {
-            static const char flashUIStr_Enum_TimeZone_23[] PROGMEM = {"UTC +5:30"};
-            return flashUIStr_Enum_TimeZone_23;
-        } break;
-        case HUIStr_Enum_TimeZone_24: {
-            static const char flashUIStr_Item_XXX[] PROGMEM = {"UTC +5:45"};
-            return flashUIStr_Item_XXX;
-        } break;
-        case HUIStr_Enum_TimeZone_25: {
-            static const char flashUIStr_Enum_TimeZone_25[] PROGMEM = {"UTC +6"};
-            return flashUIStr_Enum_TimeZone_25;
-        } break;
-        case HUIStr_Enum_TimeZone_26: {
-            static const char flashUIStr_Enum_TimeZone_26[] PROGMEM = {"UTC +6:30"};
-            return flashUIStr_Enum_TimeZone_26;
-        } break;
-        case HUIStr_Enum_TimeZone_27: {
-            static const char flashUIStr_Enum_TimeZone_27[] PROGMEM = {"UTC +7"};
-            return flashUIStr_Enum_TimeZone_27;
-        } break;
-        case HUIStr_Enum_TimeZone_28: {
-            static const char flashUIStr_Enum_TimeZone_28[] PROGMEM = {"UTC +8"};
-            return flashUIStr_Enum_TimeZone_28;
-        } break;
-        case HUIStr_Enum_TimeZone_29: {
-            static const char flashUIStr_Enum_TimeZone_29[] PROGMEM = {"UTC +8:30"};
-            return flashUIStr_Enum_TimeZone_29;
-        } break;
-        case HUIStr_Enum_TimeZone_30: {
-            static const char flashUIStr_Item_XXX[] PROGMEM = {"UTC +8:45"};
-            return flashUIStr_Item_XXX;
-        } break;
-        case HUIStr_Enum_TimeZone_31: {
-            static const char flashUIStr_Enum_TimeZone_31[] PROGMEM = {"UTC +9"};
-            return flashUIStr_Enum_TimeZone_31;
-        } break;
-        case HUIStr_Enum_TimeZone_32: {
-            static const char flashUIStr_Enum_TimeZone_32[] PROGMEM = {"UTC +9:30"};
-            return flashUIStr_Enum_TimeZone_32;
-        } break;
-        case HUIStr_Enum_TimeZone_33: {
-            static const char flashUIStr_Enum_TimeZone_33[] PROGMEM = {"UTC +10"};
-            return flashUIStr_Enum_TimeZone_33;
-        } break;
-        case HUIStr_Enum_TimeZone_34: {
-            static const char flashUIStr_Enum_TimeZone_34[] PROGMEM = {"UTC +10:30"};
-            return flashUIStr_Enum_TimeZone_34;
-        } break;
-        case HUIStr_Enum_TimeZone_35: {
-            static const char flashUIStr_Enum_TimeZone_35[] PROGMEM = {"UTC +11"};
-            return flashUIStr_Enum_TimeZone_35;
-        } break;
-        case HUIStr_Enum_TimeZone_36: {
-            static const char flashUIStr_Enum_TimeZone_36[] PROGMEM = {"UTC +12"};
-            return flashUIStr_Enum_TimeZone_36;
-        } break;
-        case HUIStr_Enum_TimeZone_37: {
-            static const char flashUIStr_Enum_TimeZone_37[] PROGMEM = {"UTC +12:45"};
-            return flashUIStr_Enum_TimeZone_37;
-        } break;
-        case HUIStr_Enum_TimeZone_38: {
-            static const char flashUIStr_Enum_TimeZone_38[] PROGMEM = {"UTC +13"};
-            return flashUIStr_Enum_TimeZone_38;
-        } break;
-        case HUIStr_Enum_TimeZone_39: {
-            static const char flashUIStr_Enum_TimeZone_39[] PROGMEM = {"UTC +13:45"};
-            return flashUIStr_Enum_TimeZone_39;
-        } break;
-        case HUIStr_Enum_TimeZone_40: {
-            static const char flashUIStr_Enum_TimeZone_40[] PROGMEM = {"UTC +14"};
-            return flashUIStr_Enum_TimeZone_40;
+        case HUIStr_Enum_TimeZone: {
+            // UTC -12****
+            // UTC -11****
+            // UTC -10****
+            // UTC -9*****
+            // UTC -9:30**
+            // UTC -8*****
+            // UTC -7*****
+            // UTC -6*****
+            // UTC -5*****
+            // UTC -4*****
+            // UTC -3:30**
+            // UTC -3*****
+            // UTC -2:30**
+            // UTC -2*****
+            // UTC -1*****
+            // UTC +0*****
+            // UTC +1*****
+            // UTC +2*****
+            // UTC +3*****
+            // UTC +3:30**
+            // UTC +4*****
+            // UTC +4:30**
+            // UTC +5*****
+            // UTC +5:30**
+            // UTC +5:45**
+            // UTC +6*****
+            // UTC +6:30**
+            // UTC +7*****
+            // UTC +8*****
+            // UTC +8:30**
+            // UTC +8:45**
+            // UTC +9*****
+            // UTC +9:30**
+            // UTC +10****
+            // UTC +10:30*
+            // UTC +11****
+            // UTC +12****
+            // UTC +12:45*
+            // UTC +13****
+            // UTC +13:45*
+            // UTC +14****
+            static const char flashUIStr_Enum_TimeZone[] PROGMEM = {"UTC -12\000\000\000\000UTC -11\000\000\000\000UTC -10\000\000\000\000UTC -9\000\000\000\000\000UTC -9:30\000\000UTC -8\000\000\000\000\000UTC -7\000\000\000\000\000UTC -6\000\000\000\000\000UTC -5\000\000\000\000\000UTC -4\000\000\000\000\000UTC -3:30\000\000UTC -3\000\000\000\000\000UTC -2:30\000\000UTC -2\000\000\000\000\000UTC -1\000\000\000\000\000UTC +0\000\000\000\000\000UTC +1\000\000\000\000\000UTC +2\000\000\000\000\000UTC +3\000\000\000\000\000UTC +3:30\000\000UTC +4\000\000\000\000\000UTC +4:30\000\000UTC +5\000\000\000\000\000UTC +5:30\000\000UTC +5:45\000\000UTC +6\000\000\000\000\000UTC +6:30\000\000UTC +7\000\000\000\000\000UTC +8\000\000\000\000\000UTC +8:30\000\000UTC +8:45\000\000UTC +9\000\000\000\000\000UTC +9:30\000\000UTC +10\000\000\000\000UTC +10:30\000UTC +11\000\000\000\000UTC +12\000\000\000\000UTC +12:45\000UTC +13\000\000\000\000UTC +13:45\000UTC +14\000\000\000"};
+            return flashUIStr_Enum_TimeZone;
         } break;
 
         case HUIStr_Unit_MSL: {
@@ -673,5 +518,18 @@ const char *pgmAddrForStr(HydroUI_String strNum)
     return nullptr;
 }
 
-#endif
+#endif // /ifndef HYDRO_DISABLE_BUILTIN_DATA
+
+size_t enumListPitch(const char *enumData)
+{
+    size_t size = 0;
+    while (get_info_char(enumData) != '\000' && size < 64) {
+        ++size; ++enumData;
+    }
+    while (get_info_char(enumData) == '\000' && size < 64) {
+        ++size; ++enumData;
+    }
+    return size;
+}
+
 #endif

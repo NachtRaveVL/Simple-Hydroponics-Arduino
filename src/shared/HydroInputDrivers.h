@@ -101,7 +101,7 @@ public:
     virtual bool areMainPinsInterruptable() const override { return false; }
 
     #ifdef ESP32
-        virtual IoAbstractionRef getIoAbstraction() override { return &_esp32Touch; }    
+        virtual IoAbstractionRef getIoAbstraction() override { return &_esp32Touch; }
     #else
         virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
     #endif
@@ -236,6 +236,7 @@ protected:
 
 // Touch Screen Input Driver
 // Standard touch screen driver using FT6206 (i2c based) or XPT2046 (SPI based).
+// BSP touch interrogator uses TFT_GFX_WIDTH/HEIGHT for screen device width/height.
 class HydroInputTouchscreen : public HydroInputDriver {
 public:
     HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation);
@@ -247,18 +248,22 @@ public:
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
-    #ifndef HYDRO_ENABLE_XPT2046TS
-        inline Adafruit_FT6206 &getTouchScreen() { return _touchScreen; }
-    #else
+    #ifdef HYDRO_ENABLE_XPT2046TS
         inline XPT2046_Touchscreen &getTouchScreen() { return _touchScreen; }
+    #else
+        inline Adafruit_FT6206 &getTouchScreen() { return _touchScreen; }
     #endif
 protected:
-    #ifndef HYDRO_ENABLE_XPT2046TS
-        Adafruit_FT6206 _touchScreen;
-    #else
+    #ifdef HYDRO_ENABLE_XPT2046TS
         XPT2046_Touchscreen _touchScreen;
+    #else
+        Adafruit_FT6206 _touchScreen;
     #endif
-    iotouch::AdaLibTouchInterrogator _touchInterrogator;
+    #if HYDRO_UI_BSP_TOUCH_ENABLE
+        StBspTouchInterrogator _touchInterrogator;
+    #else
+        iotouch::AdaLibTouchInterrogator _touchInterrogator;
+    #endif
     iotouch::TouchOrientationSettings _touchOrientation;
 };
 

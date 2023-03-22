@@ -23,13 +23,13 @@ public:
     HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined);
     virtual ~HydroDisplayDriver() = default;
 
-    void commonInit(uint8_t updatesPerSec, bool analogSlider = false, bool utf8Fonts = false);
-    void installTheme(Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool needEditingIcons = false);
-
     virtual void initBaseUIFromDefaults() = 0;
     virtual void begin() = 0;
 
     virtual HydroOverview *allocateOverview() = 0;
+
+    void setupRendering(uint8_t updatesPerSec, uint8_t titleMode, bool analogSlider = false, bool utf8Fonts = false);
+    void installTheme(Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool editingIcons = false);
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const = 0;
     virtual bool isLandscape() const = 0;
@@ -112,7 +112,11 @@ public:
 protected:
     uint16_t _screenSize[2];
     U8G2 *_gfx;
-    U8g2Drawable *_drawable;
+    #if HYDRO_UI_STM32_LDTC_ENABLE
+        StChromaArtDrawable *_drawable;
+    #else
+        U8g2Drawable *_drawable;
+    #endif
     GraphicsDeviceRenderer *_renderer;
 
 public:
@@ -211,7 +215,7 @@ protected:
 
 
 // ST7789 AdafruitSPITFT Display Driver
-// Advanced color display.
+// Advanced color display. Uses TFT_GFX_WIDTH/HEIGHT for screen device width/height.
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7789> : public HydroDisplayDriver {
 public:
