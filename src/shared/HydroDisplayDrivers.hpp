@@ -217,9 +217,9 @@ void HydroDisplayAdafruitGFX<T>::begin()
 }
 
 template <class T>
-HydroOverview *HydroDisplayAdafruitGFX<T>::allocateOverview()
+HydroOverview *HydroDisplayAdafruitGFX<T>::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewGFX<T>(this);
+    return new HydroOverviewGFX<T>(this, clockFont, detailFont);
 }
 
 #endif

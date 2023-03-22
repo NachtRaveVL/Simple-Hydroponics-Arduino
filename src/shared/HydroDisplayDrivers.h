@@ -26,7 +26,7 @@ public:
     virtual void initBaseUIFromDefaults() = 0;
     virtual void begin() = 0;
 
-    virtual HydroOverview *allocateOverview() = 0;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) = 0;
 
     void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false);
 
@@ -64,7 +64,7 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual HydroOverview *allocateOverview() override;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair((uint16_t)max(_screenSize[0],_screenSize[1]), (uint16_t)min(_screenSize[0],_screenSize[1]))
                                                                                           : make_pair((uint16_t)min(_screenSize[0],_screenSize[1]), (uint16_t)max(_screenSize[0],_screenSize[1])); }
@@ -94,7 +94,7 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual HydroOverview *allocateOverview() override;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                           : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
@@ -166,7 +166,7 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual HydroOverview *allocateOverview() override;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
@@ -197,7 +197,7 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual HydroOverview *allocateOverview() override;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
@@ -228,7 +228,7 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual HydroOverview *allocateOverview() override;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
@@ -258,7 +258,7 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual HydroOverview *allocateOverview() override;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
     virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
@@ -288,7 +288,7 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual HydroOverview *allocateOverview() override;
+    virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                           : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }

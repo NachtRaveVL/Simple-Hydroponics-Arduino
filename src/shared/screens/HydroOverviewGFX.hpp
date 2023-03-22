@@ -7,8 +7,8 @@
 #ifdef HYDRO_USE_GUI
 
 template <class T>
-HydroOverviewGFX<T>::HydroOverviewGFX(HydroDisplayAdafruitGFX<T> *display)
-    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable())
+HydroOverviewGFX<T>::HydroOverviewGFX(HydroDisplayAdafruitGFX<T> *display, const void *clockFont, const void *detailFont)
+    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable()), _clockFont(clockFont), _detailFont(detailFont)
 { ; }
 
 template <class T>

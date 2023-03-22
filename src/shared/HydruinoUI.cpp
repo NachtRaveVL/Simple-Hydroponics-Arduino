@@ -186,7 +186,7 @@ void HydruinoBaseUI::reset()
             if (_homeMenu) { delete _homeMenu; _homeMenu = nullptr; }
         #endif
         if (!_overview) {
-            _overview = _display->allocateOverview();
+            _overview = _display->allocateOverview(_clockFont, _detailFont);
             HYDRO_SOFT_ASSERT(_overview, SFP(HStr_Err_AllocationFailure));
         }
 

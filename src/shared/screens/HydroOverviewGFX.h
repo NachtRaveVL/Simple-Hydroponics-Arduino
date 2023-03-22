@@ -17,7 +17,7 @@ template<class T> class HydroOverviewGFX;
 template<class T>
 class HydroOverviewGFX : public HydroOverview {
 public:
-    HydroOverviewGFX(HydroDisplayAdafruitGFX<T> *display);
+    HydroOverviewGFX(HydroDisplayAdafruitGFX<T> *display, const void *clockFont = nullptr, const void *detailFont = nullptr);
     virtual ~HydroOverviewGFX();
 
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
@@ -25,12 +25,14 @@ public:
 protected:
     T &_gfx;                                                // Graphics (strong)
     AdafruitDrawable<T> &_drawable;                         // Drawable (strong)
+    const void *_clockFont;                                 // Overview clock font (strong)
+    const void *_detailFont;                                // Overview detail font (strong)
 };
 
 template<>
 class HydroOverviewGFX<Adafruit_ILI9341> : public HydroOverview {
 public:
-    HydroOverviewGFX(HydroDisplayAdafruitGFX<Adafruit_ILI9341> *display);
+    HydroOverviewGFX(HydroDisplayAdafruitGFX<Adafruit_ILI9341> *display, const void *clockFont = nullptr, const void *detailFont = nullptr);
     virtual ~HydroOverviewGFX();
 
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
@@ -38,6 +40,8 @@ public:
 protected:
     Adafruit_ILI9341 &_gfx;                                 // Graphics (strong)
     AdafruitDrawable<Adafruit_ILI9341> &_drawable;          // Drawable (strong)
+    const void *_clockFont;                                 // Overview clock font (strong)
+    const void *_detailFont;                                // Overview detail font (strong)
 
     uint8_t _skyBlue, _skyRed;                              // Sky color
     Map<uint16_t,Pair<uint16_t,uint16_t>,HYDRO_UI_STARFIELD_MAXSIZE> _stars; // Starfield

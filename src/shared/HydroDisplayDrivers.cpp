@@ -84,9 +84,9 @@ void HydroDisplayLiquidCrystal::begin()
     _renderer.setTitleRequired(false);
 }
 
-HydroOverview *HydroDisplayLiquidCrystal::allocateOverview()
+HydroOverview *HydroDisplayLiquidCrystal::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewLCD(this);
+    return new HydroOverviewLCD(this); // todo: font handling (# based)
 }
 
 
@@ -134,9 +134,9 @@ void HydroDisplayU8g2OLED::begin()
     if (_gfx) { _gfx->begin(); }
 }
 
-HydroOverview *HydroDisplayU8g2OLED::allocateOverview()
+HydroOverview *HydroDisplayU8g2OLED::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewOLED(this);
+    return new HydroOverviewOLED(this); // todo: font handling (# based)
 }
 
 
@@ -171,9 +171,9 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
-HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview()
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewGFX<Adafruit_ST7735>(this);
+    return new HydroOverviewGFX<Adafruit_ST7735>(this, clockFont, detailFont);
 }
 
 
@@ -203,9 +203,9 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
-HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::allocateOverview()
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewGFX<Adafruit_ST7789>(this);
+    return new HydroOverviewGFX<Adafruit_ST7789>(this, clockFont, detailFont);
 }
 
 
@@ -235,9 +235,9 @@ void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
     _gfx.setRotation((uint8_t)_rotation);
 }
 
-HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::allocateOverview()
+HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewGFX<Adafruit_ILI9341>(this);
+    return new HydroOverviewGFX<Adafruit_ILI9341>(this, clockFont, detailFont);
 }
 
 
@@ -265,9 +265,9 @@ void HydroDisplayTFTeSPI::begin()
     _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);
 }
 
-HydroOverview *HydroDisplayTFTeSPI::allocateOverview()
+HydroOverview *HydroDisplayTFTeSPI::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewTFT(this);
+    return new HydroOverviewTFT(this); // todo: font handling (# based)
 }
 
 #endif

@@ -40,8 +40,8 @@ static inline void randomStarColor(uint8_t* r, uint8_t* g, uint8_t* b) {
     *b = constrain((int)(*b) + (-10 + randVals[2]), 0, 255);
 }
 
-HydroOverviewGFX<Adafruit_ILI9341>::HydroOverviewGFX(HydroDisplayAdafruitGFX<Adafruit_ILI9341> *display)
-    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable()),
+HydroOverviewGFX<Adafruit_ILI9341>::HydroOverviewGFX(HydroDisplayAdafruitGFX<Adafruit_ILI9341> *display, const void *clockFont, const void *detailFont)
+    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable()), _clockFont(clockFont), _detailFont(detailFont),
       _skyBlue(255), _skyRed(0), _timeMag(1), _dateMag(1), _lastTime((uint32_t)0), _timeHeight(0), _dateHeight(0)
 {
     const auto screenSize = display->getScreenSize();
@@ -49,7 +49,7 @@ HydroOverviewGFX<Adafruit_ILI9341>::HydroOverviewGFX(HydroDisplayAdafruitGFX<Ada
 
     String timestamp = scaleTest.timestamp(DateTime::TIMESTAMP_TIME);
     for (int i = 2; i < 10; ++i) {
-        auto extents = _drawable.internalTextExtents(nullptr, i, timestamp.c_str(), nullptr);
+        auto extents = _drawable.textExtents(_clockFont, i, timestamp.c_str());
         if (screenSize.first - extents.x > screenSize.first / 4) {
             _timeMag = i;
         } else { break; }
@@ -57,7 +57,7 @@ HydroOverviewGFX<Adafruit_ILI9341>::HydroOverviewGFX(HydroDisplayAdafruitGFX<Ada
 
     timestamp = scaleTest.timestamp(DateTime::TIMESTAMP_DATE);
     for (int i = 2; i < 10; ++i) {
-        auto extents = _drawable.internalTextExtents(nullptr, i, timestamp.c_str(), nullptr);
+        auto extents = _drawable.textExtents(_clockFont, i, timestamp.c_str());
         if (screenSize.first - extents.x > screenSize.first / 2) {
             _dateMag = i;
         } else { break; }
@@ -130,7 +130,7 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
             x = constrain(x, 0.0f, 1.0f);
             skyBlue = roundf(skyEaseInOut(currTime.hour() < 12 ? x : 1.0f - x) * 255.0f);
             skyBlue = constrain(skyBlue, 0, 255);
-            if (currTime.hour() < 12) { x = constrain(x * 1.5f, 0.0f, 1.0f); }
+            if (currTime.hour() > 12) { x = constrain(x * 1.5f, 0.0f, 1.0f); }
             else { x = constrain(((x - 0.25f) * 1.5f), 0.0f, 1.0f); }
             skyRed = (-300.0f * (x * x)) + (300.0f * x);
             skyRed = constrain(skyRed, 0, 255);
@@ -144,22 +144,22 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
         uint16_t yOffset = 10;
 
         String timestamp = currTime.timestamp(DateTime::TIMESTAMP_TIME);
-        auto extents = _drawable.internalTextExtents(nullptr, _timeMag, timestamp.c_str(), nullptr);
+        auto extents = _drawable.textExtents(_clockFont, _timeMag, timestamp.c_str());
         _timeHeight = extents.y;
 
         drawBackground(Coord(0,0), Coord(screenSize.first,yOffset + _timeHeight + 5), screenSize);
         _drawable.setDrawColor(TFT_WHITE);
-        _drawable.internalDrawText(Coord((screenSize.first - extents.x) >> 1, yOffset), nullptr, _timeMag, timestamp.c_str());
+        _drawable.drawText(Coord((screenSize.first - extents.x) >> 1, yOffset), _clockFont, _timeMag, timestamp.c_str());
 
         yOffset += _timeHeight + 5;
 
         timestamp = currTime.timestamp(DateTime::TIMESTAMP_DATE);
-        extents = _drawable.internalTextExtents(nullptr, _dateMag, timestamp.c_str(), nullptr);
+        extents = _drawable.textExtents(_clockFont, _dateMag, timestamp.c_str());
         _dateHeight = extents.y;
 
         drawBackground(Coord(0,yOffset), Coord(screenSize.first,yOffset + _dateHeight + 5), screenSize);
         _drawable.setDrawColor(TFT_WHITE);
-        _drawable.internalDrawText(Coord((screenSize.first - extents.x) >> 1, yOffset), nullptr, _dateMag, timestamp.c_str());
+        _drawable.drawText(Coord((screenSize.first - extents.x) >> 1, yOffset), _clockFont, _dateMag, timestamp.c_str());
 
         yOffset += _dateHeight + 5;
 
@@ -174,17 +174,17 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
         if (needsTimeRedraw) {
             String lastTimestamp = _lastTime.timestamp(DateTime::TIMESTAMP_TIME);
             String currTimestamp = currTime.timestamp(DateTime::TIMESTAMP_TIME);
-            auto fullExtents = _drawable.internalTextExtents(nullptr, _timeMag, currTimestamp.c_str(), nullptr);
+            auto fullExtents = _drawable.textExtents(_clockFont, _timeMag, currTimestamp.c_str());
 
             for (int i = 0; i < lastTimestamp.length() && i < currTimestamp.length(); ++i) {
                 if (i == lastTimestamp.length() || i == currTimestamp.length() || lastTimestamp[i] != currTimestamp[i]) {
-                    auto partExtents = _drawable.internalTextExtents(nullptr, _timeMag, currTimestamp.c_str() + i, nullptr);
+                    auto partExtents = _drawable.textExtents(_clockFont, _timeMag, currTimestamp.c_str() + i);
                     Coord partStart = Coord(((screenSize.first - fullExtents.x) >> 1) + fullExtents.x - partExtents.x, yOffset);
 
                     drawBackground(partStart, partExtents, screenSize);
 
                     _drawable.setDrawColor(TFT_WHITE);
-                    _drawable.internalDrawText(partStart, nullptr, _timeMag, currTimestamp.c_str() + i);
+                    _drawable.drawText(partStart, _clockFont, _timeMag, currTimestamp.c_str() + i);
 
                     break;
                 }
@@ -196,17 +196,17 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
         if (needsDateRedraw) {
             String lastTimestamp = _lastTime.timestamp(DateTime::TIMESTAMP_DATE);
             String currTimestamp = currTime.timestamp(DateTime::TIMESTAMP_DATE);
-            auto fullExtents = _drawable.internalTextExtents(nullptr, _dateMag, currTimestamp.c_str(), nullptr);
+            auto fullExtents = _drawable.textExtents(_clockFont, _dateMag, currTimestamp.c_str());
 
             for (int i = 0; i < lastTimestamp.length() && i < currTimestamp.length(); ++i) {
                 if (i == lastTimestamp.length() || i == currTimestamp.length() || lastTimestamp[i] != currTimestamp[i]) {
-                    auto partExtents = _drawable.internalTextExtents(nullptr, _dateMag, currTimestamp.c_str() + i, nullptr);
+                    auto partExtents = _drawable.textExtents(_clockFont, _dateMag, currTimestamp.c_str() + i);
                     Coord partStart = Coord(((screenSize.first - fullExtents.x) >> 1) + fullExtents.x - partExtents.x, yOffset);
 
                     drawBackground(partStart, partExtents, screenSize);
 
                     _drawable.setDrawColor(TFT_WHITE);
-                    _drawable.internalDrawText(partStart, nullptr, _dateMag, currTimestamp.c_str() + i);
+                    _drawable.drawText(partStart, _clockFont, _dateMag, currTimestamp.c_str() + i);
 
                     break;
                 }
