@@ -36,7 +36,7 @@ struct HydroHomeMenuInfo {
     HydroHomeMenuInfo();
 
     AnyMenuInfo minfoBackToOverview;
-#if HYDRO_UI_ENABLE_DEBUG_MENU
+#ifdef HYDRO_UI_ENABLE_DEBUG_MENU
     BooleanMenuInfo minfoToggleBadConn;
     BooleanMenuInfo minfoToggleFastTime;
     AnyMenuInfo minfoTriggerSigTime;
@@ -44,7 +44,7 @@ struct HydroHomeMenuInfo {
     AnyMenuInfo minfoTriggerLowMem;
     AnyMenuInfo minfoTriggerAutosave;
     SubMenuInfo minfoDebug;
-#endif // /if HYDRO_UI_ENABLE_DEBUG_MENU
+#endif // /ifdef HYDRO_UI_ENABLE_DEBUG_MENU
     AnyMenuInfo minfoInformation;
     AnyMenuInfo minfoCalibrations;
     AnyMenuInfo minfoAdditives;
@@ -70,7 +70,7 @@ struct HydroHomeMenuItems {
 #endif
 
     ActionMenuItem menuBackToOverview;
-#if HYDRO_UI_ENABLE_DEBUG_MENU
+#ifdef HYDRO_UI_ENABLE_DEBUG_MENU
     BooleanMenuItem menuToggleBadConn;
     BooleanMenuItem menuToggleFastTime;
     ActionMenuItem menuTriggerSigTime;
@@ -79,7 +79,7 @@ struct HydroHomeMenuItems {
     ActionMenuItem menuTriggerAutosave;
     BackMenuItem menuBackDebug;
     SubMenuItem menuDebug;
-#endif // /if HYDRO_UI_ENABLE_DEBUG_MENU
+#endif // /ifdef HYDRO_UI_ENABLE_DEBUG_MENU
     ActionMenuItem menuInformation;
     ActionMenuItem menuCalibrations;
     ActionMenuItem menuAdditives;

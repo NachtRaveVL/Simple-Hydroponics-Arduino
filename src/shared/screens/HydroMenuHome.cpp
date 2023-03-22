@@ -56,7 +56,7 @@ void CALLBACK_FUNCTION gotoScreen(int id)
     }
 }
 
-#if HYDRO_UI_ENABLE_DEBUG_MENU
+#ifdef HYDRO_UI_ENABLE_DEBUG_MENU
 
 void CALLBACK_FUNCTION debugAction(int id)
 {
@@ -80,7 +80,7 @@ void CALLBACK_FUNCTION debugAction(int id)
     }
 }
 
-#endif
+#endif // /ifdef HYDRO_UI_ENABLE_DEBUG_MENU
 
 
 HydroHomeMenu::HydroHomeMenu()
@@ -111,7 +111,7 @@ MenuItem *HydroHomeMenu::getRootItem()
 HydroHomeMenuInfo::HydroHomeMenuInfo()
 {
     InitAnyMenuInfo(minfoBackToOverview, HUIStr_Item_BackToOverview, 7, NO_ADDRESS, 0, gotoScreen);
-    #if HYDRO_UI_ENABLE_DEBUG_MENU
+    #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
         InitBooleanMenuInfo(minfoToggleBadConn, HUIStr_Item_ToggleBadConn, 65, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF);
         InitBooleanMenuInfo(minfoToggleFastTime, HUIStr_Item_ToggleFastTime, 64, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF);
         InitAnyMenuInfo(minfoTriggerSigTime, HUIStr_Item_TriggerSigTime, 63, NO_ADDRESS, 0, debugAction);
@@ -143,7 +143,7 @@ HydroHomeMenuItems::HydroHomeMenuItems() :
         init(),
     #endif
     menuBackToOverview(InfoPtrForItem(BackToOverview, AnyMenuInfo), nullptr, InfoLocation),
-    #if HYDRO_UI_ENABLE_DEBUG_MENU
+    #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
         menuToggleBadConn(InfoPtrForItem(ToggleBadConn, BooleanMenuInfo), false, nullptr, InfoLocation), // todo: initial value
         menuToggleFastTime(InfoPtrForItem(ToggleFastTime, BooleanMenuInfo), false, &menuToggleBadConn, InfoLocation), // todo: initial value
         menuTriggerSigTime(InfoPtrForItem(TriggerSigTime, AnyMenuInfo), &menuToggleFastTime, InfoLocation),
