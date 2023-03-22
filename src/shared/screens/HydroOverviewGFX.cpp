@@ -132,7 +132,7 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
             skyBlue = constrain(skyBlue, 0, 255);
             if (currTime.hour() > 12) { x = constrain(x * 1.5f, 0.0f, 1.0f); }
             else { x = constrain(((x - 0.25f) * 1.5f), 0.0f, 1.0f); }
-            skyRed = (-300.0f * (x * x)) + (300.0f * x);
+            skyRed = (-286.0f * (x * x)) + (286.0f * x);
             skyRed = constrain(skyRed, 0, 255);
         }
 
