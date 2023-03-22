@@ -259,7 +259,7 @@ protected:
     #else
         Adafruit_FT6206 _touchScreen;
     #endif
-    #if HYDRO_UI_BSP_TOUCH_ENABLE
+    #if HYDRO_UI_ENABLE_BSP_TOUCH
         StBspTouchInterrogator _touchInterrogator;
     #else
         iotouch::AdaLibTouchInterrogator _touchInterrogator;

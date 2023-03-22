@@ -29,22 +29,22 @@ void HydroDisplayDriver::setupRendering(uint8_t titleMode, Hydro_DisplayTheme di
         if (_displayTheme != displayTheme) {
             switch ((_displayTheme = displayTheme)) {
                 case Hydro_DisplayTheme_CoolBlue_ML:
-                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_CoolBlue_SM:
-                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_DarkMode_ML:
-                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_DarkMode_SM:
-                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_MonoOLED:
-                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_MonoOLED_Inv:
-                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
                     break;
             }
         }
@@ -99,7 +99,7 @@ HydroDisplayU8g2OLED::HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_Displ
         if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
             _gfx->setI2CAddress(HYDRO_UI_I2C_OLED_BASEADDR | displaySetup.cfgAs.i2c.address);
         }
-        #if HYDRO_UI_STM32_LDTC_ENABLE
+        #if HYDRO_UI_ENABLE_STM32_LDTC
             _drawable = new StChromaArtDrawable();
         #else
             if (displaySetup.cfgType == DeviceSetup::I2CSetup) {

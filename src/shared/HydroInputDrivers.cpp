@@ -281,7 +281,7 @@ HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> co
       #else
           _touchScreen(),
       #endif
-      #if HYDRO_UI_BSP_TOUCH_ENABLE
+      #if HYDRO_UI_ENABLE_BSP_TOUCH
           _touchInterrogator(TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
       #else
           _touchInterrogator(_touchScreen),

@@ -5,7 +5,7 @@
 
 #include <Hydruino.h>
 #include "HydroUIDefines.h"
-#if defined(HYDRO_USE_GUI) && (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_STM32)) && (HYDRO_UI_STM32_LDTC_ENABLE || HYDRO_UI_BSP_TOUCH_ENABLE)
+#if defined(HYDRO_USE_GUI) && (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_STM32)) && (HYDRO_UI_ENABLE_STM32_LDTC || HYDRO_UI_ENABLE_BSP_TOUCH)
 
 /*
  * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).
