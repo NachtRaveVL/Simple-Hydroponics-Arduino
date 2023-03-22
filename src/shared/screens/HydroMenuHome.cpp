@@ -80,6 +80,10 @@ void CALLBACK_FUNCTION debugAction(int id)
     }
 }
 
+#else
+
+void CALLBACK_FUNCTION debugAction(int id) { ; }
+
 #endif // /ifdef HYDRO_UI_ENABLE_DEBUG_MENU
 
 
@@ -172,24 +176,27 @@ HydroHomeMenuItems::HydroHomeMenuItems() :
     menuSystem(InfoPtrForItem(System, SubMenuInfo), &menuBackSystem, &menuSettings, InfoLocation),
     menuAlerts(InfoPtrForItem(Alerts, AnyMenuInfo), &menuSystem, InfoLocation)
 {
-    menuActuators.setReadOnly(true);
-    menuCalibrations.setReadOnly(true);
-    menuTriggerAutosave.setReadOnly(true);
-    menuToggleBadConn.setReadOnly(true);
-    menuSensors.setReadOnly(true);
-    menuSettings.setReadOnly(true);
-    menuPowerRails.setReadOnly(true);
-    menuScheduling.setReadOnly(true);
-    menuTriggerSDCleanup.setReadOnly(true);
-    menuTriggerLowMem.setReadOnly(true);
     menuBackToOverview.setReadOnly(true);
-    menuToggleFastTime.setReadOnly(true);
-    menuCropsLib.setReadOnly(true);
+    #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
+        menuToggleBadConn.setReadOnly(true);
+        menuToggleFastTime.setReadOnly(true);
+        menuTriggerSigTime.setReadOnly(true);
+        menuTriggerSDCleanup.setReadOnly(true);
+        menuTriggerLowMem.setReadOnly(true);
+        menuTriggerAutosave.setReadOnly(true);
+    #endif
+    menuInformation.setReadOnly(true);
+    menuCalibrations.setReadOnly(true);
     menuAdditives.setReadOnly(true);
+    menuCropsLib.setReadOnly(true);
+    menuSettings.setReadOnly(true);
+    menuScheduling.setReadOnly(true);
+    menuPowerRails.setReadOnly(true);
     menuReservoirs.setReadOnly(true);
-    menuTriggerSigTime.setReadOnly(true);
-    menuAlerts.setReadOnly(true);
     menuCrops.setReadOnly(true);
+    menuSensors.setReadOnly(true);
+    menuActuators.setReadOnly(true);
+    menuAlerts.setReadOnly(true);
 }
 
 #endif
