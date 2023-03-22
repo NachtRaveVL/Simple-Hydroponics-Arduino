@@ -106,23 +106,22 @@ Coord AdafruitDrawable<T>::internalTextExtents(const void *f, int mag, const cha
     }
     else {
         // we need to work out the biggest glyph and maximum extent beyond the baseline, we use 'Ay(' for this
-        static String str(F("AgyjK("));
-        const char* sz = str.c_str();
+        static const char sz[] PROGMEM = "AgyjK(";
         int height = 0;
         int bl = 0;
         const char* current = sz;
         auto fontLast = pgm_read_word(&font->last);
         auto fontFirst = pgm_read_word(&font->first);
-        while(*current && (*current < fontLast)) {
-            size_t glIdx = *current - fontFirst;
+        while(pgm_read_byte(current) && (pgm_read_byte(current) < fontLast)) {
+            size_t glIdx = pgm_read_byte(current) - fontFirst;
             auto allGlyphs = (GFXglyph*)pgm_read_ptr(&font->glyph);
             unsigned char glyphHeight = pgm_read_byte(&allGlyphs[glIdx].height);
             if (glyphHeight > height) height = glyphHeight;
             bl = glyphHeight + (signed char)pgm_read_byte(&allGlyphs[glIdx].yOffset);
             current++;
         }
-        if(baseline) *baseline = bl;
-        return Coord((int)w, height);
+        if(baseline) *baseline = (bl * mag);
+        return Coord((int)w, (height * mag));
     }
 }
 

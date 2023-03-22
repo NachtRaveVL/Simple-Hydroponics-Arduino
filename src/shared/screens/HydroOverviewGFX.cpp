@@ -149,7 +149,7 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
 
         drawBackground(Coord(0,0), Coord(screenSize.first,yOffset + _timeHeight + 5), screenSize);
         _drawable.setDrawColor(TFT_WHITE);
-        _drawable.drawText(Coord((screenSize.first - extents.x) >> 1, yOffset), _clockFont, _timeMag, timestamp.c_str());
+        _drawable.drawText(Coord((screenSize.first - extents.x) / 2, yOffset), _clockFont, _timeMag, timestamp.c_str());
 
         yOffset += _timeHeight + 5;
 
@@ -159,7 +159,7 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
 
         drawBackground(Coord(0,yOffset), Coord(screenSize.first,yOffset + _dateHeight + 5), screenSize);
         _drawable.setDrawColor(TFT_WHITE);
-        _drawable.drawText(Coord((screenSize.first - extents.x) >> 1, yOffset), _clockFont, _dateMag, timestamp.c_str());
+        _drawable.drawText(Coord((screenSize.first - extents.x) / 2, yOffset), _clockFont, _dateMag, timestamp.c_str());
 
         yOffset += _dateHeight + 5;
 
@@ -179,7 +179,7 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
             for (int i = 0; i < lastTimestamp.length() && i < currTimestamp.length(); ++i) {
                 if (i == lastTimestamp.length() || i == currTimestamp.length() || lastTimestamp[i] != currTimestamp[i]) {
                     auto partExtents = _drawable.textExtents(_clockFont, _timeMag, currTimestamp.c_str() + i);
-                    Coord partStart = Coord(((screenSize.first - fullExtents.x) >> 1) + fullExtents.x - partExtents.x, yOffset);
+                    Coord partStart = Coord(((screenSize.first - fullExtents.x) / 2) + fullExtents.x - partExtents.x, yOffset);
 
                     drawBackground(partStart, partExtents, screenSize);
 
@@ -201,7 +201,7 @@ void HydroOverviewGFX<Adafruit_ILI9341>::renderOverview(bool isLandscape, Pair<u
             for (int i = 0; i < lastTimestamp.length() && i < currTimestamp.length(); ++i) {
                 if (i == lastTimestamp.length() || i == currTimestamp.length() || lastTimestamp[i] != currTimestamp[i]) {
                     auto partExtents = _drawable.textExtents(_clockFont, _dateMag, currTimestamp.c_str() + i);
-                    Coord partStart = Coord(((screenSize.first - fullExtents.x) >> 1) + fullExtents.x - partExtents.x, yOffset);
+                    Coord partStart = Coord(((screenSize.first - fullExtents.x) / 2) + fullExtents.x - partExtents.x, yOffset);
 
                     drawBackground(partStart, partExtents, screenSize);
 

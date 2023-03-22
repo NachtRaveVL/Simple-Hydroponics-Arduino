@@ -12,6 +12,7 @@
  */
 
 /* Changelist:
+ * - Fixed internalTextExtents not working with magnification scaling / not using progmem for some char data
  * - Refactored drawable/canvas into templates to remove define switches / handle casting
  * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */

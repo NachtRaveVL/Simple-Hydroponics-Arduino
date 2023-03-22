@@ -146,7 +146,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
         } break;
 
         case HUIStr_Item_Actuators: {
-            static const AnyMenuInfo flashUIStr_Item_Actuators PROGMEM = { "Actuators", 20, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Actuators = { "Actuators", 20, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Actuators;
         } break;
         case HUIStr_Item_AddNew: {
@@ -154,11 +154,11 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_AddNew;
         } break;
         case HUIStr_Item_Additives: {
-            static const AnyMenuInfo flashUIStr_Item_Additives PROGMEM = { "Additives", 41, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Additives = { "Additives", 41, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Additives;
         } break;
         case HUIStr_Item_Alerts: {
-            static const AnyMenuInfo flashUIStr_Item_Alerts PROGMEM = { "Alerts", 1, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Alerts = { "Alerts", 1, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Alerts;
         } break;
         case HUIStr_Item_AllowRemoteCtrl: {
@@ -186,7 +186,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_AutosaveSecondary;
         } break;
         case HUIStr_Item_BackToOverview: {
-            static const AnyMenuInfo flashUIStr_Item_BackToOverview PROGMEM = { "Back to Overview", 7, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_BackToOverview = { "Back to Overview", 7, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_BackToOverview;
         } break;
         case HUIStr_Item_BatteryFailure: {
@@ -206,7 +206,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Browse;
         } break;
         case HUIStr_Item_Calibrations: {
-            static const AnyMenuInfo flashUIStr_Item_Calibrations PROGMEM = { "Calibrations", 42, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Calibrations = { "Calibrations", 42, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Calibrations;
         } break;
         case HUIStr_Item_ControlMode: {
@@ -222,11 +222,11 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Controls;
         } break;
         case HUIStr_Item_Crops: {
-            static const AnyMenuInfo flashUIStr_Item_Crops PROGMEM = { "Crops", 22, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Crops = { "Crops", 22, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Crops;
         } break;
         case HUIStr_Item_CropsLib: {
-            static const AnyMenuInfo flashUIStr_Item_CropsLib PROGMEM = { "Crops", 40, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_CropsLib = { "Crops", 40, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_CropsLib;
         } break;
         case HUIStr_Item_DSTAddHour: {
@@ -242,7 +242,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Date;
         } break;
         case HUIStr_Item_Debug: {
-            static const SubMenuInfo flashUIStr_Item_Debug PROGMEM = { "Debug", 6, NO_ADDRESS, 0, NO_CALLBACK };
+            static const PROGMEM SubMenuInfo flashUIStr_Item_Debug = { "Debug", 6, NO_ADDRESS, 0, NO_CALLBACK };
             return (const char *)&flashUIStr_Item_Debug;
         } break;
         case HUIStr_Item_DisplayMode: {
@@ -270,7 +270,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_General;
         } break;
         case HUIStr_Item_Information: {
-            static const BooleanMenuInfo flashUIStr_Item_Information PROGMEM = { "Information", 5, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM BooleanMenuInfo flashUIStr_Item_Information = { "Information", 5, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Information;
         } break;
         case HUIStr_Item_JoystickXMid: {
@@ -294,7 +294,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_LatDegrees;
         } break;
         case HUIStr_Item_Library: {
-            static const SubMenuInfo flashUIStr_Item_Library PROGMEM = { "Library", 4, NO_ADDRESS, 0, NO_CALLBACK };
+            static const PROGMEM SubMenuInfo flashUIStr_Item_Library = { "Library", 4, NO_ADDRESS, 0, NO_CALLBACK };
             return (const char *)&flashUIStr_Item_Library;
         } break;
         case HUIStr_Item_LocalTime: {
@@ -330,7 +330,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Networking;
         } break;
         case HUIStr_Item_PowerRails: {
-            static const AnyMenuInfo flashUIStr_Item_PowerRails PROGMEM = { "Power Rails", 24, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_PowerRails = { "Power Rails", 24, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_PowerRails;
         } break;
         case HUIStr_Item_RTC: {
@@ -342,7 +342,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_RemoteCtrlPort;
         } break;
         case HUIStr_Item_Reservoirs: {
-            static const AnyMenuInfo flashUIStr_Item_Reservoirs PROGMEM = { "Reservoirs", 23, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Reservoirs = { "Reservoirs", 23, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Reservoirs;
         } break;
         case HUIStr_Item_SDCard: {
@@ -350,15 +350,15 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_SDCard;
         } break;
         case HUIStr_Item_Scheduling: {
-            static const AnyMenuInfo flashUIStr_Item_Scheduling PROGMEM = { "Scheduling", 25, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Scheduling = { "Scheduling", 25, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Scheduling;
         } break;
         case HUIStr_Item_Sensors: {
-            static const AnyMenuInfo flashUIStr_Item_Sensors PROGMEM = { "Sensors", 21, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Sensors = { "Sensors", 21, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Sensors;
         } break;
         case HUIStr_Item_Settings: {
-            static const AnyMenuInfo flashUIStr_Item_Settings PROGMEM = { "Settings", 3, NO_ADDRESS, 0, gotoScreen };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Settings = { "Settings", 3, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Settings;
         } break;
         case HUIStr_Item_Size: {
@@ -366,7 +366,7 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_Size;
         } break;
         case HUIStr_Item_System: {
-            static const SubMenuInfo flashUIStr_Item_System PROGMEM = { "System", 2, NO_ADDRESS, 0, NO_CALLBACK };
+            static const PROGMEM SubMenuInfo flashUIStr_Item_System = { "System", 2, NO_ADDRESS, 0, NO_CALLBACK };
             return (const char *)&flashUIStr_Item_System;
         } break;
         case HUIStr_Item_SystemMode: {
@@ -386,27 +386,27 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             return flashUIStr_Item_TimeZone;
         } break;
         case HUIStr_Item_ToggleBadConn: {
-            static const BooleanMenuInfo flashUIStr_Item_ToggleBadConn PROGMEM = { "Toggle BadConn", 65, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
+            static const PROGMEM BooleanMenuInfo flashUIStr_Item_ToggleBadConn = { "Toggle BadConn", 65, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
             return (const char *)&flashUIStr_Item_ToggleBadConn;
         } break;
         case HUIStr_Item_ToggleFastTime: {
-            static const BooleanMenuInfo flashUIStr_Item_ToggleFastTime PROGMEM = { "Toggle FastTime", 64, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
+            static const PROGMEM BooleanMenuInfo flashUIStr_Item_ToggleFastTime = { "Toggle FastTime", 64, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
             return (const char *)&flashUIStr_Item_ToggleFastTime;
         } break;
         case HUIStr_Item_TriggerAutosave: {
-            static const AnyMenuInfo flashUIStr_Item_TriggerAutosave PROGMEM = { "Trigger Autosave", 60, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerAutosave = { "Trigger Autosave", 60, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerAutosave;
         } break;
         case HUIStr_Item_TriggerLowMem: {
-            static const AnyMenuInfo flashUIStr_Item_TriggerLowMem PROGMEM = { "Trigger LowMem", 61, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerLowMem = { "Trigger LowMem", 61, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerLowMem;
         } break;
         case HUIStr_Item_TriggerSDCleanup: {
-            static const AnyMenuInfo flashUIStr_Item_TriggerSDCleanup PROGMEM = { "Trigger SDCleanup", 62, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerSDCleanup = { "Trigger SDCleanup", 62, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerSDCleanup;
         } break;
         case HUIStr_Item_TriggerSigTime: {
-            static const AnyMenuInfo flashUIStr_Item_TriggerSigTime PROGMEM = { "Trigger SigTime", 63, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerSigTime = { "Trigger SigTime", 63, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerSigTime;
         } break;
         case HUIStr_Item_Uptime: {

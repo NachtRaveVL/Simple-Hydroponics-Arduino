@@ -243,12 +243,12 @@ MQTTClient mqttClient;
 #if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ILI9341)
 #if !SETUP_UI_USE_TCUNICODE_FONTS
 #include "shared/tcMenu_Font_AdafruitGFXArial14.h"
-#define SETUP_UI_USE_OVERVIEW_FONT      Arial14
 #define SETUP_UI_USE_MENU_FONT          Arial14
+#define SETUP_UI_USE_DETAIL_FONT        Arial14
 #else
 #include "shared/tcMenu_Font_tcUnicodeArial14.h"
-#define SETUP_UI_USE_OVERVIEW_FONT      Arial14
 #define SETUP_UI_USE_MENU_FONT          Arial14
+#define SETUP_UI_USE_DETAIL_FONT        Arial14
 #endif
 #endif
 #endif
@@ -952,8 +952,20 @@ inline void setupUI()
                     ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE2_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE2_UART), SETUP_UI_RC_NETWORKING_PORT);
                 #endif
             #endif
+            #ifdef SETUP_UI_USE_CLOCK_FONT
+                ui->setOverviewClockFont(&SETUP_UI_USE_CLOCK_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_DETAIL_FONT
+                ui->setOverviewDetailFont(&SETUP_UI_USE_DETAIL_FONT);
+            #endif
             #ifdef SETUP_UI_USE_OVERVIEW_FONT
                 ui->setOverviewFont(&SETUP_UI_USE_OVERVIEW_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_ITEM_FONT
+                ui->setMenuItemFont(&SETUP_UI_USE_ITEM_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_TITLE_FONT
+                ui->setMenuTitleFont(&SETUP_UI_USE_TITLE_FONT);
             #endif
             #ifdef SETUP_UI_USE_MENU_FONT
                 ui->setMenuFont(&SETUP_UI_USE_MENU_FONT);
