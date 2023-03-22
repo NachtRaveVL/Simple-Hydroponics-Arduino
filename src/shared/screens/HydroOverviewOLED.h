@@ -23,7 +23,11 @@ public:
 
 protected:
     U8G2 &_gfx;                                             // Graphics (strong)
-    U8g2Drawable &_drawable;                                // Drawable (strong)
+    #if HYDRO_UI_STM32_LDTC_ENABLE
+        StChromaArtDrawable &_drawable;                     // Drawable (strong)
+    #else
+        U8g2Drawable &_drawable;                            // Drawable (strong)
+    #endif
 };
 
 #endif // /ifndef HydroOverviewOLED_H

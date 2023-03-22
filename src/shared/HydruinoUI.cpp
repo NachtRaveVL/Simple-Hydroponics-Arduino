@@ -94,7 +94,7 @@ HydroUIData *HydruinoBaseUI::init(HydroUIData *uiData)
     } else if (_display) {
         _display->initBaseUIFromDefaults(); // calls back into above init with default settings for display
     } else {
-        init(HYDRO_UI_UPDATE_SPEED);
+        init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
     }
     return _uiData;
 }
@@ -194,8 +194,6 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
 
             if (_blTimeout && unixNow() >= _blTimeout) { setBacklightEnable(false); }
         } else {
-            _display->getBaseRenderer()->giveBackDisplay();
-
             #if HYDRO_UI_DEALLOC_AFTER_USE
                 if (_overview) { delete _overview; _overview = nullptr; }
             #endif
@@ -203,8 +201,16 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
             if (!_homeMenu) {
                 _homeMenu = new HydroHomeMenu();
                 HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
+
+                if (_homeMenu) { 
+                    menuMgr.setRootMenu(_homeMenu->getRootItem());
+                    taskManager.scheduleOnce(0, []{
+                        menuMgr.resetMenu(true);
+                    });
+                }
             }
-            if (_homeMenu) { menuMgr.changeMenu(_homeMenu->getRootItem()); }
+
+            _display->getBaseRenderer()->giveBackDisplay();
 
             setBacklightEnable(true);
             _blTimeout = 0;

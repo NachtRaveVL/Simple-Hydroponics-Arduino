@@ -58,7 +58,7 @@ public:
     inline void setMenuFont(const void *menuFont) { _itemFont = menuFont; _titleFont = menuFont; } // Sets both menu item and title font
 
     void init(uint8_t updatesPerSec,                                        // Updates per second (1 to 10)
-              Hydro_DisplayTheme displayTheme = Hydro_DisplayTheme_Undefined, // Display theme to apply
+              Hydro_DisplayTheme displayTheme,                              // Display theme to apply
               uint8_t titleMode = BaseGraphicalRenderer::NO_TITLE,          // Title mode
               bool analogSlider = false,                                    // Slider usage for analog items
               bool editingIcons = false);                                   // Editing icons usage

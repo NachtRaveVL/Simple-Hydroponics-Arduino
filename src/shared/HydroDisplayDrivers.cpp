@@ -87,7 +87,7 @@ HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(bool isDFRobotShield_unused
 
 void HydroDisplayLiquidCrystal::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
 }
 
 void HydroDisplayLiquidCrystal::begin()

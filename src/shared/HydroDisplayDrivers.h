@@ -107,7 +107,11 @@ public:
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
 
     inline U8G2 &getGfx() { return *_gfx; }
-    inline U8g2Drawable &getDrawable() { return *_drawable; }
+    #if HYDRO_UI_STM32_LDTC_ENABLE
+        inline StChromaArtDrawable &getDrawable() { return *_drawable; }
+    #else
+        inline U8g2Drawable &getDrawable() { return *_drawable; }
+    #endif
 
 protected:
     uint16_t _screenSize[2];
