@@ -99,7 +99,7 @@ HydroDisplayU8g2OLED::HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_Displ
         if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
             _gfx->setI2CAddress(HYDRO_UI_I2C_OLED_BASEADDR | displaySetup.cfgAs.i2c.address);
         }
-        #if HYDRO_UI_ENABLE_STM32_LDTC
+        #ifdef HYDRO_UI_ENABLE_STM32_LDTC
             _drawable = new StChromaArtDrawable();
         #else
             if (displaySetup.cfgType == DeviceSetup::I2CSetup) {

@@ -53,9 +53,6 @@
 // Uncomment or -D this define to enable usage of the Adafruit GPS library, which enables GPS capabilities.
 //#define HYDRO_ENABLE_GPS                        // https://github.com/adafruit/Adafruit_GPS
 
-// Uncomment or -D this define to enable usage of the XPT2046_Touchscreen library, in place of the Adafruit FT6206 library.
-//#define HYDRO_ENABLE_XPT2046TS                  // https://github.com/PaulStoffregen/XPT2046_Touchscreen
-
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, see DataWriter example for exporting details
 

@@ -248,18 +248,18 @@ public:
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
-    #ifdef HYDRO_ENABLE_XPT2046TS
+    #ifdef HYDRO_UI_ENABLE_XPT2046TS
         inline XPT2046_Touchscreen &getTouchScreen() { return _touchScreen; }
     #else
         inline Adafruit_FT6206 &getTouchScreen() { return _touchScreen; }
     #endif
 protected:
-    #ifdef HYDRO_ENABLE_XPT2046TS
+    #ifdef HYDRO_UI_ENABLE_XPT2046TS
         XPT2046_Touchscreen _touchScreen;
     #else
         Adafruit_FT6206 _touchScreen;
     #endif
-    #if HYDRO_UI_ENABLE_BSP_TOUCH
+    #ifdef HYDRO_UI_ENABLE_BSP_TOUCH
         StBspTouchInterrogator _touchInterrogator;
     #else
         iotouch::AdaLibTouchInterrogator _touchInterrogator;

@@ -106,7 +106,7 @@ public:
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
 
     inline U8G2 &getGfx() { return *_gfx; }
-    #if HYDRO_UI_ENABLE_STM32_LDTC
+    #ifdef HYDRO_UI_ENABLE_STM32_LDTC
         inline StChromaArtDrawable &getDrawable() { return *_drawable; }
     #else
         inline U8g2Drawable &getDrawable() { return *_drawable; }
@@ -115,7 +115,7 @@ public:
 protected:
     uint16_t _screenSize[2];
     U8G2 *_gfx;
-    #if HYDRO_UI_ENABLE_STM32_LDTC
+    #ifdef HYDRO_UI_ENABLE_STM32_LDTC
         StChromaArtDrawable *_drawable;
     #else
         U8g2Drawable *_drawable;

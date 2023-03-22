@@ -27,7 +27,7 @@
 #ifndef TCMENU_TOUCH_PLUGIN_H
 #define TCMENU_TOUCH_PLUGIN_H
 
-#ifndef HYDRO_ENABLE_XPT2046TS
+#ifndef HYDRO_UI_ENABLE_XPT2046TS
 #include <Adafruit_FT6206.h>
 #else
 #include <XPT2046_Touchscreen.h>
@@ -37,9 +37,9 @@
 //
 // This is the known absolute maximum value of the touch unit before calibration. It will become 1.0F
 //
-#ifndef HYDRO_ENABLE_XPT2046TS
-#define KNOWN_DEVICE_TOUCH_RANGE_X 240.0F
-#define KNOWN_DEVICE_TOUCH_RANGE_Y 320.0F
+#ifndef HYDRO_UI_ENABLE_XPT2046TS
+#define KNOWN_DEVICE_TOUCH_RANGE_X ((float)TFT_GFX_WIDTH)
+#define KNOWN_DEVICE_TOUCH_RANGE_Y ((float)TFT_GFX_HEIGHT)
 #else
 #define KNOWN_DEVICE_TOUCH_RANGE_X 4096.0F
 #define KNOWN_DEVICE_TOUCH_RANGE_Y 4096.0F
@@ -52,13 +52,13 @@ namespace iotouch {
      */
     class AdaLibTouchInterrogator : public iotouch::TouchInterrogator {
     private:
-        #ifndef HYDRO_ENABLE_XPT2046TS
+        #ifndef HYDRO_UI_ENABLE_XPT2046TS
             Adafruit_FT6206& theTouchDevice;
         #else
             XPT2046_Touchscreen& theTouchDevice;
         #endif
     public:
-        #ifndef HYDRO_ENABLE_XPT2046TS
+        #ifndef HYDRO_UI_ENABLE_XPT2046TS
             AdaLibTouchInterrogator(Adafruit_FT6206& touchLibRef) : theTouchDevice(touchLibRef) {}
         #else
             AdaLibTouchInterrogator(XPT2046_Touchscreen& touchLibRef) : theTouchDevice(touchLibRef) {}
