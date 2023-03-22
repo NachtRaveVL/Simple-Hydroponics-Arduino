@@ -6,11 +6,11 @@
 #include "../HydruinoUI.h"
 #ifdef HYDRO_USE_GUI
 
-static float skyEaseInOut(float x) {
+float skyEaseInOut(float x) {
     return x < 0.5f ? 2.0f * x * x : 1.0f - ((-2.0f * x + 2.0f) * (-2.0f * x + 2.0f) * 0.5f);
 }
 
-static inline void randomStarColor(uint8_t* r, uint8_t* g, uint8_t* b) {
+void randomStarColor(uint8_t* r, uint8_t* g, uint8_t* b) {
     switch(random(20)) {
         case 0:
             *r = 155; *g = 176; *b = 255;
