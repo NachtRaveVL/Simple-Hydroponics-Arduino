@@ -28,8 +28,7 @@ public:
 
     virtual HydroOverview *allocateOverview() = 0;
 
-    void setupRendering(uint8_t updatesPerSec, uint8_t titleMode, bool analogSlider = false, bool utf8Fonts = false);
-    void installTheme(Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool editingIcons = false);
+    void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false);
 
     virtual Pair<uint16_t,uint16_t> getScreenSize() const = 0;
     virtual bool isLandscape() const = 0;

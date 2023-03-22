@@ -14,51 +14,39 @@ HydroDisplayDriver::HydroDisplayDriver(Hydro_DisplayRotation displayRotation)
     : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined)
 { ; }
 
-void HydroDisplayDriver::setupRendering(uint8_t updatesPerSec, uint8_t titleMode, bool analogSlider, bool utf8Fonts)
+void HydroDisplayDriver::setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont, const void *titleFont, bool analogSlider, bool editingIcons, bool utf8Fonts)
 {
-    auto baseRenderer = getBaseRenderer();
-    if (baseRenderer) {
-        baseRenderer->setCustomDrawingHandler(getBaseUI());
-        baseRenderer->setUpdatesPerSecond(updatesPerSec);
-    }
-
     auto graphicsRenderer = getGraphicsRenderer();
     if (graphicsRenderer) {
         if (getController()->getControlInputMode() >= Hydro_ControlInputMode_ResistiveTouch &&
             getController()->getControlInputMode() < Hydro_ControlInputMode_RemoteControl) {
             graphicsRenderer->setHasTouchInterface(true);
         }
-
         graphicsRenderer->setTitleMode((BaseGraphicalRenderer::TitleMode)titleMode);
         graphicsRenderer->setUseSliderForAnalog(analogSlider);
         if (utf8Fonts) { graphicsRenderer->enableTcUnicode(); }
-    }
-}
 
-void HydroDisplayDriver::installTheme(Hydro_DisplayTheme displayTheme, const void *itemFont, const void *titleFont, bool editingIcons)
-{
-    auto graphicsRenderer = getGraphicsRenderer();
-
-    if (graphicsRenderer && _displayTheme != displayTheme) {
-        switch ((_displayTheme = displayTheme)) {
-            case Hydro_DisplayTheme_CoolBlue_ML:
-                installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
-                break;
-            case Hydro_DisplayTheme_CoolBlue_SM:
-                installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
-                break;
-            case Hydro_DisplayTheme_DarkMode_ML:
-                installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
-                break;
-            case Hydro_DisplayTheme_DarkMode_SM:
-                installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
-                break;
-            case Hydro_DisplayTheme_MonoOLED:
-                installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
-                break;
-            case Hydro_DisplayTheme_MonoOLED_Inv:
-                installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
-                break;
+        if (_displayTheme != displayTheme) {
+            switch ((_displayTheme = displayTheme)) {
+                case Hydro_DisplayTheme_CoolBlue_ML:
+                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    break;
+                case Hydro_DisplayTheme_CoolBlue_SM:
+                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    break;
+                case Hydro_DisplayTheme_DarkMode_ML:
+                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    break;
+                case Hydro_DisplayTheme_DarkMode_SM:
+                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    break;
+                case Hydro_DisplayTheme_MonoOLED:
+                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    break;
+                case Hydro_DisplayTheme_MonoOLED_Inv:
+                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, 1), MenuFontDef(titleFont, 1), editingIcons);
+                    break;
+            }
         }
     }
 }

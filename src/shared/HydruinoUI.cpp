@@ -101,13 +101,22 @@ HydroUIData *HydruinoBaseUI::init(HydroUIData *uiData)
 
 bool HydruinoBaseUI::begin()
 {
-    if (_display) { _display->begin(); }
-    if (_input) { _input->begin(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
-    else { menuMgr.initWithoutInput(_display ? _display->getBaseRenderer() : nullptr, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
+    auto baseRenderer = _display ? _display->getBaseRenderer() : nullptr;
 
     if (_display) {
-        _display->setupRendering(_uiData->updatesPerSec, _uiData->titleMode, _uiData->analogSlider, _isUnicodeFonts);
-        _display->installTheme(_uiData->displayTheme, _itemFont, _titleFont, _uiData->editingIcons);
+        _display->begin();
+
+        if (baseRenderer) {
+            baseRenderer->setCustomDrawingHandler(this);
+            baseRenderer->setUpdatesPerSecond(_uiData->updatesPerSec);
+        }
+    }
+
+    if (_input) { _input->begin(baseRenderer, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
+    else { menuMgr.initWithoutInput(baseRenderer, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
+
+    if (_display) {
+        _display->setupRendering(_uiData->titleMode, _uiData->displayTheme, _itemFont, _titleFont, _uiData->analogSlider, _uiData->editingIcons, _isUnicodeFonts);
     }
 
     #if HYDRO_UI_START_AT_OVERVIEW
