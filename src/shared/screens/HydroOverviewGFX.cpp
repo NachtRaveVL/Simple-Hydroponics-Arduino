@@ -90,7 +90,8 @@ void HydroOverviewGFX<Adafruit_ILI9341>::drawBackground(Coord pt, Coord sz, Pair
     for (int y = pt.y; y < maxY; ++y) {
         int skyBlue = constrain(y - (screenSize.second - _skyBlue - 10), max(10,_skyBlue >> 2), max(10,_skyBlue));
         uint16_t skyColor = _gfx.color565(_skyRed, (skyBlue * 7)/8, skyBlue);
-        _gfx.writeFillRectPreclipped(pt.x, y, sz.x, 1, skyColor);
+        _gfx.setAddrWindow(pt.x, y, sz.x, 1);
+        _gfx.writeColor(skyColor, (uint32_t)sz.x);
 
         if (skyBlue + skyBlue + (int)_skyRed < 255) {
             auto starIter = _stars.find(y);
