@@ -32,10 +32,10 @@
 #define _TCMENU_TCMENUADAFRUITGFX_H_
 
 #include <Adafruit_GFX.h>
+#include <Adafruit_SPITFT.h>
 #include <Adafruit_ST7735.h>
 #include <Adafruit_ST7789.h>
 #include <Adafruit_ILI9341.h>
-#include <Adafruit_SPITFT.h>
 
 #include <tcUtil.h>
 #include <BaseRenderers.h>
