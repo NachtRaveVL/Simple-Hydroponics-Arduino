@@ -37,28 +37,5 @@ protected:
     void drawBackground(Coord pt, Coord sz, Pair<uint16_t, uint16_t> &screenSize);
 };
 
-template<>
-class HydroOverviewGFX<Adafruit_ILI9341> : public HydroOverview {
-public:
-    HydroOverviewGFX(HydroDisplayAdafruitGFX<Adafruit_ILI9341> *display, const void *clockFont = nullptr, const void *detailFont = nullptr);
-    virtual ~HydroOverviewGFX();
-
-    virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;
-
-protected:
-    Adafruit_ILI9341 &_gfx;                                 // Graphics (strong)
-    AdafruitDrawable<Adafruit_ILI9341> &_drawable;          // Drawable (strong)
-    const void *_clockFont;                                 // Overview clock font (strong)
-    const void *_detailFont;                                // Overview detail font (strong)
-
-    uint8_t _skyBlue, _skyRed;                              // Sky color
-    Map<uint16_t,Pair<uint16_t,uint16_t>,HYDRO_UI_STARFIELD_MAXSIZE> _stars; // Starfield
-    int _timeMag, _dateMag;                                 // Time/date mag level
-    DateTime _lastTime;                                     // Last time (local)
-    uint16_t _timeHeight, _dateHeight;                      // Pixel height
-
-    void drawBackground(Coord pt, Coord sz, Pair<uint16_t, uint16_t> &screenSize);
-};
-
 #endif // /ifndef HydroOverviewGFX_H
 #endif
