@@ -244,18 +244,16 @@ From Hydruino.h, in class Hydruino:
 
 * The recommended Vcc power supply and logic level is 5v, with most newer MCUs restricted to 3.3v.
   * There are many devices that are 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
-* Devices that do not have the same logic level voltage as the MCU will need a level converter (or similar), bi-directional particularly on any fast data lines, in order to operate together (unless capable of doing so without such).
-  * 5v analog sensor signal data lines, for example, will need level converted in order to connect to a 3.3v MCU, as the pins will not be 5v tolerant (this includes `AREF`).
-  * Alternatively, using a 10kΩ resistor can often times be enough to 'convert' 5v to 3.3v, but the correct way is to use a 1kΩ resistor and a 2kΩ resistor (or any size with a 1:2 ratio) in a [simple voltage divider circuit](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/).
-* OneWire sensor's logic level voltage is the same as their Vcc supply voltage. Most of the time this isn't an issue, but some (such as CO2 sensors) may require 5v Vcc supply power and thus need their data line converted in order to connect to a 3.3v MCU.
+* 5v device output pins that interface with any 3.3v device input pins that are not 5v tolerant (such as a 5v AVR interfacing with a 3.3v-only [serial ESP-AT WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/), or a 3.3v MCU interfacing with a 5v analog sensor), will require a bi-directional logic level converter/shifter to use, especially for any high-speed digital data transfer lines.
+  * Alternatively, using a 10kΩ resistor can often times be enough to 'convert' 5v to 3.3v, but the correct way is to utilize a 1kΩ resistor and a 2kΩ resistor (or any size with a 1:2 ratio) in a [simple voltage divider circuit](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/).
+* OneWire sensor's logic level voltage is typically the same as their Vcc supply voltage. Most of the time this isn't an issue, but some (such as CO2 sensors) may require 5v Vcc supply power and thus need their data line converted in order to connect to a 3.3v MCU.
 
 ### Serial UART
 
 Serial UART uses individual communication lines for each device, with the receive `RX` pin of one being the transmit `TX` pin of the other - thus having to "flip wires" when connecting. However, devices can always be active and never have to share their access. UART runs at low to mid kHz speeds and is useful for simple device control, albeit somewhat clumsy at times.
 
-* When wiring up modules that use Serial UART, make sure to flip `RX`/`TX` lines.
-  * 5v devices interacting with 3.3v devices that are not 5v tolerant (such as [serial ESP WiFi modules](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/)) will require a bi-directional logic level converter/shifter to utilize.
-    * Alternatively, hack a single 10kΩ resistor ([but preferably two of any 1:2 ratio](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/)) between the 5v module's TX pin and 3.3v module's RX pin.
+* When wiring up modules that use Serial UART, make sure to flip `RX`/`TX` pins.
+* Always ensure that the data output pins and data input pins have compatible voltages.
 
 Serial UART Devices Supported: Bluetooth-AT modules, ESP-AT WiFi modules, NMEA-AT GPS modules
 
@@ -269,6 +267,7 @@ SPI devices can be chained together on the same shared data lines, which are typ
 * Many various graphical displays may have an additional `DC` (or `RS`) pin, which is required to be connected to any open digital pin in addition to its `CS` pin.
   * There is often an additional `Reset` (or `RST`) pin that needs either wired to an open digital pin for MCU control, otherwise typically will need hard-tied to a HIGH signal (such as that from `Vcc`) in order for the display to function/turn-on.
   * There is also often an additional `LED` (or `BL`) pin that controls the backlight that can be either optionally wired to an open digital or analog pin for MCU control, otherwise can be hard-tied typically to a HIGH signal (such as that from `Vcc`) in order to stay always-on, or simply left disconnected for device default.
+* Always ensure that the data output pins and data input pins have compatible voltages.
 
 SPI Devices Supported: SD card modules, NMEA GPS modules, 200x200+ OLED displays, 320x240+ LCD/TFT gfx displays, XPT2046 touchscreens
 
@@ -278,6 +277,7 @@ I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same sh
 
 * When more than one I2C device of the same kind is to be used on the same data line, each device must be set to use a different address. This is accomplished via the A0-A2 (sometimes A0-A5) pins/pads on the physical device that must be set either open or closed (typically via a de-solderable resistor, or by shorting a pin/pad). Check your specific breakout's datasheet for details.
 * Note that not all the I2C libraries used support multi-addressable I2C devices at this time (read as: may only use one). Currently, this restriction applies to: RTC devices.
+* Always ensure that the data output pins and data input pins have compatible voltages.
 
 I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS modules, 16x2/20x4 LCD displays, 128x32/128x64 OLED displays, FT6206 touchscreens, 8/16-bit pin expanders
 
@@ -288,6 +288,7 @@ OneWire devices can be chained together on the same shared data lines (no flippi
 * Typically, sensors are limited to 20 devices along a maximum 100m of wire.
 * When more than one OneWire device is on the same device line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
 * Note that DHT* 1W devices may not play nicely together on the same wire line as other 1W devices - dependency issue.
+* Always ensure that the data output pins and data input pins have compatible voltages.
 
 OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp sensors
 
