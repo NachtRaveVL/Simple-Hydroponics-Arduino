@@ -18,7 +18,6 @@ void HydruinoMinUI::allocateStandardControls()
     auto controller = getController();
     HYDRO_HARD_ASSERT(controller, SFP(HStr_Err_InitializationFailure));
     HYDRO_SOFT_ASSERT(!_input, SFP(HStr_Err_AlreadyInitialized));
-    const HydroUIData *uiData = nullptr; // todo
 
     if (controller && !_input) {
         auto ctrlInMode = controller->getControlInputMode();
@@ -42,9 +41,9 @@ void HydruinoMinUI::allocateStandardControls()
 
             case Hydro_ControlInputMode_AnalogJoystickOk: {
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Joystick, SFP(HStr_Err_InvalidParameter));
-                if (uiData) {
+                if (_uiData) {
                     _input = new HydroInputJoystick(ctrlInPins, _uiCtrlSetup.ctrlCfgAs.joystick.repeatDelay, _uiCtrlSetup.ctrlCfgAs.joystick.decreaseDivisor,
-                                                    uiData->joystickCalib[0], uiData->joystickCalib[1], uiData->joystickCalib[2]);
+                                                    _uiData->joystickCalib[0], _uiData->joystickCalib[1], _uiData->joystickCalib[2]);
                 } else {
                     _input = new HydroInputJoystick(ctrlInPins, _uiCtrlSetup.ctrlCfgAs.joystick.repeatDelay, _uiCtrlSetup.ctrlCfgAs.joystick.decreaseDivisor);
                 }

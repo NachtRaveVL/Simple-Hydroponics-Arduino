@@ -207,7 +207,7 @@ HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor
     if (volumeUnits != Hydro_UnitsType_LiqVolume_Gallons) {
         convertUnits(&reservoirVolume, &volumeUnits, Hydro_UnitsType_LiqVolume_Gallons);
     }
-    // TODO: Verify these values work
+    // TODO: Verify these values work, #22 in Hydruino
     _baseDosing = mapValue<float>(reservoirVolume, 5, 30, 500, 3000);
     _mixTime = mapValue<float>(reservoirVolume, 30, 200, (10 * SECS_PER_MIN), (30 * SECS_PER_MIN));
 }
