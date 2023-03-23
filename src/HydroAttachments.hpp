@@ -172,9 +172,7 @@ void HydroSignalAttachment<ParameterType,Slots>::setHandleSlot(const Slot<Parame
 
 inline Hydro_UnitsType HydroActuatorAttachment::getActivationUnits()
 {
-    if (resolve()) {
-        return get()->getUserCalibrationData() ? get()->getUserCalibrationData()->calibrationUnits : Hydro_UnitsType_Raw_1;
-    }
+    return resolve() && get()->getUserCalibrationData() ? get()->getUserCalibrationData()->calibrationUnits : Hydro_UnitsType_Raw_1;
 }
 
 inline float HydroActuatorAttachment::getActiveDriveIntensity()

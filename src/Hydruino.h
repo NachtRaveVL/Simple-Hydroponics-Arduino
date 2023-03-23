@@ -22,7 +22,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
 
-    Simple-Hydroponics-Arduino - Version 0.6.0.1
+    Simple-Hydroponics-Arduino - Version 0.6.5.0
 */
 
 #ifndef Hydruino_H
@@ -54,7 +54,7 @@
 //#define HYDRO_ENABLE_GPS                        // https://github.com/adafruit/Adafruit_GPS
 
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
-//#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, instead relying solely on external storage.
+//#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, see DataWriter example for exporting details
 
 // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 //#define HYDRO_ENABLE_DEBUG_OUTPUT
@@ -116,6 +116,7 @@ typedef int uartmode_t;
 
 #ifndef HYDRO_DISABLE_MULTITASKING
 #include "TaskManagerIO.h"              // Task Manager library
+#include "IoAbstraction.h"              // IoAbstraction library
 #define HYDRO_USE_MULTITASKING
 #else
 #ifndef HYDRO_DISABLE_GUI
@@ -165,27 +166,37 @@ typedef Adafruit_GPS GPSClass;
 #include "TimeLib.h"                    // Time library
 #ifndef HYDRO_DISABLE_GUI
 #include "tcMenu.h"                     // tcMenu library
-#include "LiquidCrystalIO.h"            // LiquidCrystal IO
 #define HYDRO_USE_GUI
 #endif
 
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SPI)) && SPI_INTERFACES_COUNT > 0
+#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SPI)) && (SPI_INTERFACES_COUNT > 0 || SPI_HOWMANY > 0)
 #define HYDRO_USE_SPI                   &SPI
 #else
 #define HYDRO_USE_SPI                   nullptr
 #endif
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_TWOWIRE)) && WIRE_INTERFACES_COUNT > 0
+#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SPI1)) && (SPI_INTERFACES_COUNT > 1 || SPI_HOWMANY > 1)
+#define HYDRO_USE_SPI1                  &SPI1
+#else
+#define HYDRO_USE_SPI1                  nullptr
+#endif
+#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_TWOWIRE)) && (WIRE_INTERFACES_COUNT > 0 || WIRE_HOWMANY > 0)
 #define HYDRO_USE_WIRE                  &Wire
 #else
 #define HYDRO_USE_WIRE                  nullptr
 #endif
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SERIAL1)) && (defined(HWSERIAL1) || defined(HAVE_HWSERIAL1) || defined(PIN_SERIAL1_RX) || defined(SERIAL2_RX) || defined(Serial1))
+#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_TWOWIRE1)) && (WIRE_INTERFACES_COUNT > 1 || WIRE_HOWMANY > 1)
+#define HYDRO_USE_WIRE1                 &Wire1
+#else
+#define HYDRO_USE_WIRE1                 nullptr
+#endif
+#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SERIAL1)) && (SERIAL_HOWMANY > 1 || defined(HWSERIAL1) || defined(HAVE_HWSERIAL1) || defined(PIN_SERIAL1_RX) || defined(SERIAL2_RX) || defined(Serial1))
 #define HYDRO_USE_SERIAL1               &Serial1
 #else
 #define HYDRO_USE_SERIAL1               nullptr
 #endif
 
 #include "HydroDefines.h"
+#include "shared/HydroUIDefines.h"
 
 #if ARX_HAVE_LIBSTDCPLUSPLUS >= 201103L // Have libstdc++11
 #include "ArxSmartPtr/shared_ptr.h"     // Forced shared pointer library
@@ -224,6 +235,7 @@ extern void miscLoop();
 #include "HydroPins.h"
 #include "HydroUtils.h"
 #include "HydroDatas.h"
+#include "shared/HydroUIData.h"
 #include "HydroStreams.h"
 #include "HydroTriggers.h"
 #include "HydroBalancers.h"
@@ -258,7 +270,7 @@ public:
              DeviceSetup netSetup = DeviceSetup(),                  // Network device setup (spi/uart)
              DeviceSetup gpsSetup = DeviceSetup(),                  // GPS device setup (uart/i2c/spi)
              pintype_t *ctrlInputPins = nullptr,                    // Control input pins, else nullptr
-             DeviceSetup lcdSetup = DeviceSetup());                 // LCD device setup (i2c only)
+             DeviceSetup displaySetup = DeviceSetup());             // Display device setup (i2c/spi)
     // Library destructor. Just in case.
     ~Hydruino();
 
@@ -342,7 +354,7 @@ public:
     // Minimal/RO UI only allows the user to edit existing objects, not create nor delete them.
     // Full/RW UI allows the user to add/remove system objects, customize features, change settings, etc.
     // Note: Be sure to manually include the appropriate UI system header file (e.g. #include "min/HydruinoUI.h") in Arduino sketch.
-    inline bool enableUI(HydoUIInterface *ui) { _activeUIInstance = ui; return ui->begin(); }
+    inline bool enableUI(HydroUIInterface *ui) { _activeUIInstance = ui; _uiData = ui->init(_uiData); return ui->begin(); }
 #endif
 
     // Mutators.
@@ -351,13 +363,21 @@ public:
     inline void setNeedsScheduling() { scheduler.setNeedsScheduling(); }
     // Sets publisher tabulation needed flag
     inline void setNeedsTabulation() { publisher.setNeedsTabulation(); }
-    // Sets active UI layout needed flag
-    inline void setNeedsLayout() { if (_activeUIInstance) { _activeUIInstance->setNeedsLayout(); } }
+    // Sets active UI redraw needed flag
+    inline void setNeedsRedraw() {
+        #ifdef HYDRO_USE_GUI
+            if (_activeUIInstance) { _activeUIInstance->setNeedsRedraw(); }
+        #endif
+    }
 
     // Sets display name of system (HYDRO_NAME_MAXSIZE size limit)
     void setSystemName(String systemName);
     // Sets system time zone offset from UTC
-    void setTimeZoneOffset(int8_t hoursOffset, int8_t minsOffset = 0);
+    void setTimeZoneOffset(int8_t hoursOffset, int8_t minsOffset);
+    // Sets system time zone offset from UTC, in standard hours
+    inline void setTimeZoneOffset(int hoursOffset) { setTimeZoneOffset(hoursOffset, 0); }
+    // Sets system time zone offset from UTC, in fractional hours
+    inline void setTimeZoneOffset(float hoursOffset) { setTimeZoneOffset((int8_t)hoursOffset, (fabsf(hoursOffset) - floorf(fabsf(hoursOffset))) * signbit(hoursOffset) ? -60.0f : 60.0f); }
     // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
     void setPollingInterval(uint16_t pollingInterval);
     // Sets system autosave enable mode and optional fallback mode and interval, in minutes.
@@ -377,7 +397,7 @@ public:
     void setEthernetConnection(const uint8_t *macAddress);
 #endif
     // Sets system location (lat/long/alt, note: only triggers update if significant or forced)
-    void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF, bool forceUpdate = false);
+    void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF, bool isSigChange = false);
 
     // Accessors.
 
@@ -398,12 +418,10 @@ public:
     inline const DeviceSetup &getGPSSetup() const { return _gpsSetup; }
 #endif
 #ifdef HYDRO_USE_GUI
-    // LCD output device setup configuration
-    inline const DeviceSetup &getLCDSetup() const { return _lcdSetup; }
-    // Total number of pins being used for the current control input ribbon
-    int getControlInputPins() const;
-    // Control input pin mapped to ribbon pin index, or -1 if not used
-    pintype_t getControlInputPin(int ribbonPinIndex) const;
+    // Display output device setup configuration
+    inline const DeviceSetup &getDisplaySetup() const { return _displaySetup; }
+    // Returns control input pins ribbon
+    Pair<uint8_t, const pintype_t *> getControlInputPins() const;
 #endif
 
     // EEPROM instance (lazily instantiated, nullptr return -> failure/no device)
@@ -443,6 +461,8 @@ public:
     Hydro_ControlInputMode getControlInputMode() const;
     // System display name (default: "Hydruino")
     String getSystemName() const;
+    // System display name (default: "Hydruino"), as constant chars
+    inline const char *getSystemNameChars() const { return _systemData ? _systemData->systemName : nullptr; }
     // System time zone offset from UTC (default: +0/UTC), in total offset seconds
     time_t getTimeZoneOffset() const;
     // Whenever the system booted up with the RTC battery failure flag set (meaning the time is not set correctly)
@@ -485,7 +505,8 @@ public:
 protected:
     static Hydruino *_activeInstance;                       // Current active instance (set after init, weak)
 #ifdef HYDRO_USE_GUI
-    HydoUIInterface *_activeUIInstance;                     // Current active UI instance (owned)
+    HydroUIInterface *_activeUIInstance;                    // Current active UI instance (owned)
+    HydroUIData *_uiData;                                   // UI data (owned)
 #endif
     HydroSystemData *_systemData;                           // System data (owned, saved to storage)
 
@@ -503,7 +524,7 @@ protected:
 #endif
 #ifdef HYDRO_USE_GUI
     const pintype_t *_ctrlInputPins;                        // Control input pin mapping (weak, default: Disabled/nullptr)
-    const DeviceSetup _lcdSetup;                            // LCD device setup
+    const DeviceSetup _displaySetup;                        // Display device setup
 #endif
 
     I2C_eeprom *_eeprom;                                    // EEPROM instance (owned, lazy)
@@ -568,9 +589,8 @@ protected:
     friend HydroLogger *::getLogger();
     friend HydroPublisher *::getPublisher();
 #ifdef HYDRO_USE_GUI
-    friend HydoUIInterface *::getUI();
+    friend HydroUIInterface *::getUI();
 #endif
-    friend class HydroCalibrations;
     friend class HydroCropsLibrary;
     friend class HydroScheduler;
     friend class HydroLogger;

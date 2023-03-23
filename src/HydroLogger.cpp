@@ -10,8 +10,14 @@ HydroLogEvent::HydroLogEvent(Hydro_LogLevel levelIn, const String &prefixIn, con
 { ; }
 
 
-HydroLogger::HydroLogger()
-    : _logFilename(), _initTime(0), _lastSpaceCheck(0)
+HydroLogger::HydroLogger() :
+#if HYDRO_SYS_LEAVE_FILES_OPEN
+    _logFileSD(nullptr),
+#ifdef HYDRO_USE_WIFI_STORAGE
+    _logFileWS(nullptr),
+#endif
+#endif
+    _logFilename(), _initTime(0), _lastSpaceCheck(0)
 { ; }
 
 HydroLogger::~HydroLogger()

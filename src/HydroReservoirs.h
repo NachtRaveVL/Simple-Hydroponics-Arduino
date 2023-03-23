@@ -45,9 +45,7 @@ public:
 
     virtual void update() override;
 
-    virtual bool canActivate(HydroActuator *actuator);
-    virtual bool isFilled(bool poll = false) = 0;
-    virtual bool isEmpty(bool poll = false) = 0;
+    virtual bool canActivate(HydroActuator *actuator) override;
 
     virtual void setVolumeUnits(Hydro_UnitsType volumeUnits) override;
 

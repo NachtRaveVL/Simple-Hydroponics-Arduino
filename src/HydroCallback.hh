@@ -92,12 +92,12 @@ public:
     FunctionSlot(FunctPtr funct) : Slot<ParameterType>(Function), _funct(funct) { }
 
     // Copy the slot
-    Slot<ParameterType> *clone() const {
+    virtual Slot<ParameterType> *clone() const override {
         return new FunctionSlot<ParameterType>(_funct);
     }
 
     // Execute the slot.
-    void operator() (ParameterType param) const {
+    virtual void operator() (ParameterType param) const override {
         return (_funct)(param);
     }
 
@@ -108,7 +108,7 @@ public:
     inline FunctPtr getFunct() const { return _funct; }
 
     // Compares the slot.
-    bool operator==(const Slot<ParameterType>* slot) const {
+    virtual bool operator==(const Slot<ParameterType>* slot) const override {
         if (slot && slot->slotType() == Slot<ParameterType>::_slotType) {
             const FunctionSlot<ParameterType>* functSlot = reinterpret_cast<const FunctionSlot<ParameterType>*>(slot);
             return functSlot && functSlot->_funct == _funct;
@@ -136,12 +136,12 @@ public:
         : Slot<ParameterType>(Method), _obj(reinterpret_cast<ObjectType *>(slot.getObject())), _funct(reinterpret_cast<FunctPtr>(slot.getFunct())) { }
 
     // Copy the slot.
-    Slot<ParameterType> *clone() const {
+    virtual Slot<ParameterType> *clone() const override {
         return new MethodSlot<ObjectType, ParameterType>(_obj, _funct);
     }
 
     // Execute the slot.
-    void operator() (ParameterType param) const {
+    virtual void operator() (ParameterType param) const override {
         return (_obj->*_funct)(param);
     }
 
@@ -155,7 +155,7 @@ public:
     inline FunctPtr getFunct() const { return _funct; }
 
     // Compare the slot.
-    bool operator==(const Slot<ParameterType>* slot) const {
+    virtual bool operator==(const Slot<ParameterType>* slot) const override {
         if (slot && slot->slotType() == Slot<ParameterType>::_slotType) {
             const MethodSlot<ObjectType, ParameterType>* methSlot = reinterpret_cast<const MethodSlot<ObjectType, ParameterType>*>(slot);
             return methSlot && methSlot->_obj == _obj && methSlot->_funct == _funct;

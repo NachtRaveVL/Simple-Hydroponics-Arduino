@@ -18,6 +18,8 @@ HydroData *_allocateDataFromBaseDecode(const HydroData &baseDecode)
             retVal = new HydroCropsLibData();
         } else if (baseDecode.isAdditiveData()) {
             retVal = new HydroCustomAdditiveData();
+        } else if (baseDecode.isUIData()) {
+            retVal = new HydroUIData();
         }
     } else if (baseDecode.isObjectData()) {
         retVal = _allocateDataForObjType(baseDecode.id.object.idType, baseDecode.id.object.classType);

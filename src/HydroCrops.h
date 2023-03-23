@@ -45,7 +45,6 @@ public:
     virtual void update() override;
     virtual void handleLowMemory() override;
 
-    virtual bool needsFeeding(bool poll = false) = 0;
     virtual void notifyFeedingBegan() override;
     virtual void notifyFeedingEnded() override;
 

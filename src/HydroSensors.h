@@ -57,10 +57,7 @@ public:
 
     virtual void update() override;
 
-    virtual bool takeMeasurement(bool force = false) = 0;
-    virtual const HydroMeasurement *getMeasurement(bool poll = false) = 0;
     virtual bool isTakingMeasurement() const override;
-    virtual bool needsPolling(hframe_t allowance = 0) const = 0;
 
     void yieldForMeasurement(millis_t timeout = HYDRO_DATA_LOOP_INTERVAL);
 

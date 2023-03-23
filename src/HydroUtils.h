@@ -146,7 +146,7 @@ inline HydroLogger *getLogger();
 inline HydroPublisher *getPublisher();
 #ifdef HYDRO_USE_GUI
 // Returns the active UI instance. Not guaranteed to be non-null.
-inline HydoUIInterface *getUI();
+inline HydroUIInterface *getUI();
 #endif
 
 // Publishes latest data from sensor to Publisher output.

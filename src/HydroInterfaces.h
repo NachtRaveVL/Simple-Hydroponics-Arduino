@@ -9,7 +9,7 @@
 struct HydroJSONSerializableInterface;
 
 class HydroObjInterface;
-class HydoUIInterface;
+class HydroUIInterface;
 class HydroRTCInterface;
 
 struct HydroDigitalInputPinInterface;
@@ -94,11 +94,12 @@ public:
 };
 
 // UI Interface
-class HydoUIInterface {
+class HydroUIInterface {
 public:
+    virtual HydroUIData *init(HydroUIData *data = nullptr) = 0;
     virtual bool begin() = 0;
 
-    virtual void setNeedsLayout() = 0;
+    virtual void setNeedsRedraw() = 0;
 };
 
 // RTC Module Interface

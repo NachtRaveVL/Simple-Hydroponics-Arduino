@@ -30,14 +30,15 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 
 HydroActuator::HydroActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, int classTypeIn)
     : HydroObject(HydroIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
-      _enabled(false), _enableMode(Hydro_EnableMode_Undefined), _parentRail(this), _parentReservoir(this), _needsUpdate(false)
+      _enabled(false), _needsUpdate(false), _enableMode(Hydro_EnableMode_Undefined),
+      _parentRail(this), _parentReservoir(this), _calibrationData(nullptr)
 { ; }
 
 HydroActuator::HydroActuator(const HydroActuatorData *dataIn)
     : HydroObject(dataIn), classType((typeof(classType))dataIn->id.object.classType),
-      _enabled(false), _enableMode(dataIn->enableMode),
+      _enabled(false), _needsUpdate(false), _enableMode(dataIn->enableMode),
       _contPowerUsage(&(dataIn->contPowerUsage)),
-      _parentRail(this), _parentReservoir(this), _needsUpdate(false)
+      _parentRail(this), _parentReservoir(this), _calibrationData(nullptr)
 {
     _parentRail.initObject(dataIn->railName);
     _parentReservoir.initObject(dataIn->reservoirName);
@@ -65,7 +66,7 @@ void HydroActuator::update()
                 setNeedsUpdate();
                 continue;
             }
-            forced |= (*handleIter)->isForced();
+            forced = forced || (*handleIter)->isForced();
         }
     }
 

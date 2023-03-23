@@ -102,9 +102,9 @@ public:
 
     virtual void setParent(HydroObjInterface *parent) override;
 
-    inline HydroIdentity getId() const { return _obj.getId(); }
-    inline hkey_t getKey() const { return _obj.getKey(); }
-    inline String getKeyString() const { return _obj.getKeyString(); }
+    virtual HydroIdentity getId() const override { return _obj.getId(); }
+    virtual hkey_t getKey() const override { return _obj.getKey(); }
+    virtual String getKeyString() const override { return _obj.getKeyString(); }
     inline bool isSet() const { return _obj.isSet(); }
     virtual SharedPtr<HydroObjInterface> getSharedPtrFor(const HydroObjInterface *obj) const override;
 

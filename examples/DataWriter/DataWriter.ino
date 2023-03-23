@@ -28,7 +28,7 @@
 // In Hydruino.h:
 // 
 // // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
-// //#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, instead relying solely on external storage.
+// //#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, see DataWriter example for exporting details
 // 
 // // Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
 // #define HYDRO_ENABLE_DEBUG_OUTPUT
@@ -37,17 +37,21 @@
 // build.extra_flags=-DHYDRO_ENABLE_DEBUG_OUTPUT
 
 #include <Hydruino.h>
+#include "shared/HydroUIStrings.h"
 
 // Compiler flag checks
 #ifdef HYDRO_DISABLE_BUILTIN_DATA
 #error The HYDRO_DISABLE_BUILTIN_DATA flag is expected to be undefined in order to run this sketch
 #endif
 
+#ifdef HYDRO_DISABLE_GUI
+#warning The HYDRO_DISABLE_GUI flag is enabled, which will disable UI data export - if this wasn't intentional, undefine this flag
+#endif
+
 // Pins & Class Instances
 #define SETUP_PIEZO_BUZZER_PIN          -1              // Piezo buzzer pin, else -1
-#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (24LC01, 24LC02, 24LC04, 24LC08, 24LC16, 24LC32, 24LC64, 24LC128, 24LC256, 24LC512, None)
-#define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address
-#define SETUP_RTC_I2C_ADDR              0b000           // RTC i2c address (only 0b000 can be used atm)
+#define SETUP_EEPROM_DEVICE_TYPE        None            // EEPROM device type/size (AT24LC01, AT24LC02, AT24LC04, AT24LC08, AT24LC16, AT24LC32, AT24LC64, AT24LC128, AT24LC256, AT24LC512, None)
+#define SETUP_EEPROM_I2C_ADDR           0b000           // EEPROM i2c address (A0-A2, bitwise or'ed with base address 0x50)
 #define SETUP_RTC_DEVICE_TYPE           None            // RTC device type (DS1307, DS3231, PCF8523, PCF8563, None)
 #define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
@@ -67,13 +71,13 @@ Hydruino hydroController((pintype_t)SETUP_PIEZO_BUZZER_PIN,
                          JOIN(Hydro_EEPROMType,SETUP_EEPROM_DEVICE_TYPE),
                          I2CDeviceSetup((uint8_t)SETUP_EEPROM_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
                          JOIN(Hydro_RTCType,SETUP_RTC_DEVICE_TYPE),
-                         I2CDeviceSetup((uint8_t)SETUP_RTC_I2C_ADDR, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
+                         I2CDeviceSetup((uint8_t)0b000, &SETUP_I2C_WIRE, SETUP_I2C_SPEED),
                          SPIDeviceSetup((pintype_t)SETUP_SD_CARD_SPI_CS, &SETUP_SD_CARD_SPI, SETUP_SD_CARD_SPI_SPEED));
 
 // Wraps a formatted address as appended pseudo alt text, e.g. " (0xADDR)"
 String altAddressToString(uint16_t addr)
 {
-    String retVal;
+    String retVal; retVal.reserve((2 * sizeof(void*)) + 5 + 1);
     retVal.concat(' '); retVal.concat('('); 
     retVal.concat(addressToString(addr));
     retVal.concat(')');
@@ -194,6 +198,57 @@ void setup() {
                 yield();
             }
 
+            #ifndef HYDRO_DISABLE_GUI
+            {   getLogger()->logMessage(F("=== Writing UI data to SD card ==="));
+
+                uint16_t lookupTable[HUIStr_Count];
+
+                // Initializes lookup table with proper locations
+                {   uint16_t writeAddr = sizeof(lookupTable);
+
+                    for (int stringNum = 0; stringNum < HUIStr_Count; ++stringNum) {
+                        String string = SFP((HydroUI_String)stringNum);
+                        lookupTable[stringNum] = writeAddr;
+                        writeAddr += string.length() + 1;
+                    }
+                }
+
+                getLogger()->logMessage(F("Writing UI Strings"));
+                String filename = String(String(F(SETUP_EXTDATA_SD_LIB_PREFIX)) + String(F("uidstrs.")) + SFP(HStr_dat));
+                getLogger()->logMessage(F("... to file: "), filename);
+
+                createDirectoryFor(sd, filename);
+                if (sd->exists(filename.c_str())) {
+                    sd->remove(filename.c_str());
+                }
+                auto file = sd->open(filename.c_str(), FILE_WRITE);
+                if (file) { // Strings data goes into a single file as binary
+                    uint16_t bytesWritten = 0;
+
+                    // Lookup table constructed first to avoid random seeking
+                    bytesWritten += file.write((const uint8_t *)lookupTable, sizeof(lookupTable));
+
+                    for (int stringNum = 0; stringNum < HUIStr_Count; ++stringNum) {
+                        String string = SFP((HydroUI_String)stringNum);
+                        bytesWritten += file.write((const uint8_t *)string.c_str(), string.length() + 1); // +1 to also write out null terminator
+                    }
+
+                    if (bytesWritten) {
+                        getLogger()->logMessage(F("Wrote: "), String(bytesWritten), F(" bytes"));
+                    } else {
+                        getLogger()->logError(F("Failure writing to UI strings data file!"));
+                    }
+
+                    file.flush();
+                    file.close();
+                } else {
+                    getLogger()->logError(F("Failure opening UI strings data file for writing!"));
+                }
+
+                yield();
+            }
+            #endif // /ifndef HYDRO_DISABLE_GUI
+
             getController()->endSDCard(sd);
         } else {
             getLogger()->logWarning(F("Could not find SD card device. Check that you have it set up properly."));
@@ -201,7 +256,7 @@ void setup() {
 
         getLogger()->flush();
     }
-    #endif
+    #endif // /if SETUP_EXTDATA_SD_ENABLE
 
     #if SETUP_EXTDATA_EEPROM_ENABLE
     {   auto eeprom = getController()->getEEPROM();
@@ -209,6 +264,7 @@ void setup() {
         if (eeprom) {
             uint16_t cropsLibBegAddr = SETUP_EXTDATA_EEPROM_BEG_ADDR;
             uint16_t stringsBegAddr = (uint16_t)-1;
+            uint16_t uidStrsBegAddr = (uint16_t)-1;
             uint16_t sysDataBegAddr = (uint16_t)-1;
 
             {   getLogger()->logMessage(F("=== Writing Crops Library data to EEPROM ==="));
@@ -283,18 +339,56 @@ void setup() {
                     yield();
                 }
 
-                sysDataBegAddr = stringsBegAddr;
+                sysDataBegAddr = (uidStrsBegAddr = stringsBegAddr);
                 if (writeAddr > stringsBegAddr + ((HStr_Count + 1) * sizeof(uint16_t))) {
                     uint16_t totalBytesWritten = writeAddr - stringsBegAddr;
 
                     if (eeprom->updateBlockVerify(stringsBegAddr, (const uint8_t *)&totalBytesWritten, sizeof(uint16_t))) {
                         getLogger()->logMessage(F("Successfully wrote: "), String(totalBytesWritten), F(" bytes"));
-                        sysDataBegAddr = writeAddr;
+                        sysDataBegAddr = (uidStrsBegAddr = writeAddr);
                     } else {
                         getLogger()->logError(F("Failure writing total strings data size to EEPROM!"));
                     }
                 }
             }
+
+            #ifndef HYDRO_DISABLE_GUI
+            {   getLogger()->logMessage(F("=== Writing UI strings data to EEPROM ==="));
+
+                // Similar to above, same deal with a lookup table.
+                uint16_t writeAddr = uidStrsBegAddr + ((HUIStr_Count + 1) * sizeof(uint16_t));
+
+                for (int stringNum = 0; stringNum < HUIStr_Count; ++stringNum) {
+                    String string = SFP((Hydro_String)stringNum);
+
+                    getLogger()->logMessage(F("Writing UI String: #"), String(stringNum) + String(F(" \"")), string + String(F("\"")));
+                    getLogger()->logMessage(F("... to byte offset: "), String(writeAddr), altAddressToString(writeAddr));
+
+                    if(eeprom->updateBlockVerify(writeAddr, (const uint8_t *)string.c_str(), string.length() + 1) &&
+                       eeprom->updateBlockVerify(uidStrsBegAddr + ((stringNum + 1) * sizeof(uint16_t)),
+                                                 (const uint8_t *)&writeAddr, sizeof(uint16_t))) {
+                        writeAddr += string.length() + 1;
+                        getLogger()->logMessage(F("Wrote: "), String(string.length() + 1), F(" bytes"));
+                    } else {
+                        getLogger()->logError(F("Failure writing UI strings data to EEPROM!"));
+                    }
+
+                    yield();
+                }
+
+                sysDataBegAddr = uidStrsBegAddr;
+                if (writeAddr > uidStrsBegAddr + ((HUIStr_Count + 1) * sizeof(uint16_t))) {
+                    uint16_t totalBytesWritten = writeAddr - uidStrsBegAddr;
+
+                    if (eeprom->updateBlockVerify(uidStrsBegAddr, (const uint8_t *)&totalBytesWritten, sizeof(uint16_t))) {
+                        getLogger()->logMessage(F("Successfully wrote: "), String(totalBytesWritten), F(" bytes"));
+                        sysDataBegAddr = writeAddr;
+                    } else {
+                        getLogger()->logError(F("Failure writing total UI strings data size to EEPROM!"));
+                    }
+                }
+            }
+            #endif // /ifndef HYDRO_DISABLE_GUI
 
             getLogger()->logMessage(F("Total EEPROM usage: "), String(sysDataBegAddr), F(" bytes"));
             getLogger()->logMessage(F("EEPROM capacity used: "), String(((float)sysDataBegAddr / eeprom->getDeviceSize()) * 100.0f) + String(F("% of ")), String(eeprom->getDeviceSize()) + String(F(" bytes")));
@@ -305,13 +399,17 @@ void setup() {
             Serial.println(addressToString(cropsLibBegAddr));
             Serial.print(F("#define SETUP_EEPROM_STRINGS_ADDR       "));
             Serial.println(addressToString(stringsBegAddr));
+            #ifndef HYDRO_DISABLE_GUI
+            Serial.print(F("#define SETUP_EEPROM_UIDSTRS_ADDR       "));
+            Serial.println(addressToString(uidStrsBegAddr));
+            #endif
         } else {
             getLogger()->logWarning(F("Could not find EEPROM device. Check that you have it set up properly."));
         }
 
         getLogger()->flush();
     }
-    #endif
+    #endif // /if SETUP_EXTDATA_EEPROM_ENABLE
 
     getLogger()->logMessage(F("Done!"));
 }
