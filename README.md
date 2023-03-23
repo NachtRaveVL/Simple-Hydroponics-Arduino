@@ -310,8 +310,6 @@ OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp 
   * Often these connections are used to drive other hardware-only based solutions that aren't a part of Hydruino's use case, but can still be connected up using a BinarySensor that triggers upon specific conditions, possibly using an ISR-capable pin if desired.
 * CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, and _require_ `Vcc` for its heating element (5v @ 130mA for MQ-135) thus cannot use OneWire parasitic power mode. To calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
 
-We also ask that our users report any broken sensors (outside of bad calibration data) for us to consider adding support to (also consider sponsoring our work on [Patreon](www.patreon.com/nachtrave)).
-
 ### Networking & Wireless
 
 * Networking of any kind is 100% optional, with all base functionality being able to be performed on a fully remote basis utilizing a single RTC and optional GPS (or known static location).
