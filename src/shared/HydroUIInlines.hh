@@ -80,10 +80,6 @@ struct PixelDisplaySetup {
 // Advanced TFT Display Setup (TFT_eSPI)
 struct TFTDisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
-    uint16_t screenWidth;               // TFT screen width (default: 320)
-    uint16_t screenHeight;              // TFT screen height (default: 240)
-    //pintype_t dcPin = TFT_DC;         // DC/RS pin, else -1 (uses TFT_DC statically defined)
-    //pintype_t resetPin = TFT_RST;     // Optional reset/RST pin, else -1 (uses TFT_RST statically defined, Note: Unused reset pin typically needs tied to HIGH for display to function)
     pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
     Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
     uint8_t ledBitRes;                  // Backlight PWM output bit resolution, if PWM
@@ -95,7 +91,7 @@ struct TFTDisplaySetup {
 #endif
     Hydro_ST7735Tab tabColor;           // ST7735 tab color (default: undef/-1), if ST7735
 
-    inline TFTDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, uint16_t screenWidthIn = TFT_GFX_WIDTH, uint16_t screenHeightIn = TFT_GFX_HEIGHT, pintype_t ledPinIn = -1, Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, uint8_t ledBitResIn = DAC_RESOLUTION,
+    inline TFTDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, pintype_t ledPinIn = -1, Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, uint8_t ledBitResIn = DAC_RESOLUTION,
 #ifdef ESP32
                            uint8_t ledChannel = 1,
 #endif
@@ -103,7 +99,7 @@ struct TFTDisplaySetup {
                            float ledFrequencyIn = 1000,
 #endif
                            Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined)
-        : rotation(rotationIn), screenWidth(screenWidthIn), screenHeight(screenHeightIn), ledPin(ledPinIn), ledMode(ledModeIn), ledBitRes(ledBitResIn),
+        : rotation(rotationIn), ledPin(ledPinIn), ledMode(ledModeIn), ledBitRes(ledBitResIn),
 #ifdef ESP32
           ledChannel(ledChannelIn),
 #endif

@@ -116,8 +116,6 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_GFX_BACKLIGHT_PIN      -1              // Optional display interface backlight/LED/BL pin, if using SPI display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
 #define SETUP_UI_GFX_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w backlight pin
 #define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (BModel, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Hallowing, Mini_Plugin, Undefined), if using ST7735 display
-#define SETUP_UI_TFT_SCREEN_WIDTH       TFT_GFX_WIDTH   // Custom screen width, if using TFT_eSPI
-#define SETUP_UI_TFT_SCREEN_HEIGHT      TFT_GFX_HEIGHT  // Custom screen height, if using TFT_eSPI
 #define SETUP_UI_GFX_BACKLIGHT_ESP_CHN  1               // Backlight PWM channel, if on ESP/using PWM backlight
 #define SETUP_UI_GFX_BACKLIGHT_ESP_FRQ  1000            // Backlight PWM frequency, if on ESP/using PWM backlight
 
@@ -345,7 +343,7 @@ inline void setupUI()
                     break;
 
                 case Hydro_DisplayOutputMode_TFT:
-                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ROTATION), SETUP_UI_TFT_SCREEN_WIDTH, SETUP_UI_TFT_SCREEN_HEIGHT, SETUP_UI_GFX_BACKLIGHT_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE), DAC_RESOLUTION,
+                    uiDispSetup = UIDisplaySetup(TFTDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ROTATION), SETUP_UI_GFX_BACKLIGHT_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE), DAC_RESOLUTION,
 #ifdef ESP32
                                                                  SETUP_UI_GFX_BACKLIGHT_ESP_CHN,
 #endif

@@ -115,14 +115,14 @@
 #ifdef TFT_WIDTH
 #define TFT_GFX_WIDTH                   TFT_WIDTH           // Custom defined
 #else
-#define TFT_GFX_WIDTH                   320                 // Default 320x
+#define TFT_GFX_WIDTH                   240                 // Default 240x
 #endif
 #endif
 #ifndef TFT_GFX_HEIGHT
 #ifdef TFT_HEIGHT
 #define TFT_GFX_HEIGHT                  TFT_HEIGHT          // Custom defined
 #else
-#define TFT_GFX_HEIGHT                  240                 // Default x240
+#define TFT_GFX_HEIGHT                  320                 // Default x320
 #endif
 #endif
 
