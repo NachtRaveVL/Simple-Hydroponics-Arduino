@@ -127,7 +127,7 @@ From shared/HydruinoUI.h:
 // Uncomment or -D this define to enable usage of the XPT2046_Touchscreen library, in place of the Adafruit FT6206 library.
 //#define HYDRO_UI_ENABLE_XPT2046TS               // https://github.com/PaulStoffregen/XPT2046_Touchscreen
 
-// Uncomment or -D this define to enable usage of the StChromaArt LDTC framebuffer capable StChromaArt canvas in place of default U8g2 canvas (STM32/mbed only, note: requires advanced setup)
+// Uncomment or -D this define to enable usage of the StChromaArt LDTC framebuffer capable canvas in place of default U8g2Drawable canvas (STM32/mbed only, note: requires advanced setup)
 //#define HYDRO_UI_ENABLE_STM32_LDTC
 
 // Uncomment or -D this define to enable usage of the StChromaArt BSP touch screen interrogator in place of the default AdaLibTouchInterrogator (STM32/mbed only, note: requires advanced setup, see tcMenu_Extra_BspUserSettings.h)
