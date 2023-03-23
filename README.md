@@ -312,21 +312,25 @@ OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp 
 
 We also ask that our users report any broken sensors (outside of bad calibration data) for us to consider adding support to (also consider sponsoring our work on [Patreon](www.patreon.com/nachtrave)).
 
-### Networking
+### Networking & Wireless
 
-* Devices with built-in WiFi or Ethernet port can enable such through header/build defines while other devices can utilize an external [serial ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/) on any open Serial line.
+* Networking of any kind is 100% optional, with all base functionality being able to be performed on a fully remote basis utilizing a single RTC and optional GPS (or known static location).
+  * Networking does however make things much simpler and is highly recommended.
+* Devices with built-in WiFi or Ethernet can enable such through header/build defines while other devices can utilize an external [serial ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/) on any open Serial line.
   * Warning: While WiFi password is encrypted into system settings data, it should not be considered secure.
-* Bluetooth module can be used on any open Serial line to provide remote device control.
+* Serial Bluetooth-AT modules can be used on any open Serial port to provide remote device control (only).
 * MQTT requires remotely accessible broker daemon in order to publish sensor data (setup separately).
-* Note that WiFi-based geo-location APIs require external 3rd party monthly subscription fees, thus are currently not included as a feature.
+* UDP time server requires remotely accessible time & date API service in order to sync time (TODO).
+  * RTC not required / used in reserve when UDP service enabled.
+* Note: Geo-location APIs require external 3rd party monthly subscription fees, thus isn't included as a feature.
 
 ## Memory Callouts
 
-* The total number of objects and different kinds of objects (reservoirs, pumps, probes, relays, etc.) that the controller can support at once depends on how much free Flash storage and SRAM your MCU has available. Hydruino C++0x11 objects range in memory usage size from 150 to 750 bytes or more depending on settings and object type, with the compiled Flash binary ranging in size from 100kB to 500kB+ depending on platform and settings.
-  * For our supported microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with 1MB+ of Flash and 32kB+ of SRAM. Devices with < 24kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in library data, only minimal UI, etc.), while other newer devices with more capacity build with everything enabled.
-* For AVR, SAM, and other build architectures that do not have C++0x11 STL (standard container library) support, there are a series of *`_MAXSIZE` defines nearer to the top of `HydroDefines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller instead uses.
+* The total number of objects and different kinds of objects (reservoirs, pumps, probes, relays, etc.) that the controller can support at once depends on how much free Flash storage and SRAM your MCU has available. Hydruino C++0x11 objects range in memory usage size from 150 to 750 bytes or more depending on settings and object type, with the compiled Flash binary ranging in size from 200kB to 750kB+ depending on platform and settings.
+  * For our supported microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with 1MB+ of Flash and 32kB+ of SRAM. Devices with < 24kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in library data, only minimal-to-no GUI, etc.), while other newer devices with more capacity build with everything enabled.
+* For AVR, SAM, and other build architectures that do not have C++0x11 STL (standard container library) support, there are a series of *`_MAXSIZE` defines nearer to the top of `Hydro[UI]Defines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller instead uses.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
-  * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the UI, multi-tasking subsystems, etc.
+  * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the GUI, multi-tasking subsystems, etc.
 * To further save on code size cost, see the Data Writer Example on how to externalize library data onto an SD Card or EEPROM.
   * Note: Upgrading between versions or changing custom/program data may require you to re-build and re-deploy to such external device.
 

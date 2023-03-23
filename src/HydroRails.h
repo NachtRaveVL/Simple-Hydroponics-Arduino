@@ -43,9 +43,6 @@ public:
     virtual bool addLinkage(HydroObject *obj) override;
     virtual bool removeLinkage(HydroObject *obj) override;
 
-    virtual bool canActivate(HydroActuator *actuator) = 0;
-    virtual float getCapacity(bool poll = false) = 0;
-
     inline Hydro_RailType getRailType() const { return _id.objTypeAs.railType; }
     inline hposi_t getRailIndex() const { return _id.posIndex; }
     inline float getRailVoltage() const { return getRailVoltageFromType(getRailType()); }

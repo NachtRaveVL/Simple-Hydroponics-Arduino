@@ -150,7 +150,7 @@ bool HydroPin::enablePin(int step)
 
 
 HydroDigitalPin::HydroDigitalPin()
-    : HydroPin(Digital)
+    : HydroPin(Digital), activeLow(false)
 { ; }
 
 HydroDigitalPin::HydroDigitalPin(pintype_t pinNumber, ard_pinmode_t pinMode, int8_t pinChannel)
