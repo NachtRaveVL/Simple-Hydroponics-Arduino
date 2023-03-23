@@ -12,7 +12,9 @@ struct HydroAnalogPin;
 struct HydroPinData;
 
 class HydroPinMuxer;
+#ifndef HYDRO_DISABLE_MULTITASKING
 class HydroPinExpander;
+#endif
 
 #include "Hydruino.h"
 #include "HydroUtils.h"
@@ -234,6 +236,8 @@ protected:
     friend class HydroPin;
 };
 
+#ifndef HYDRO_DISABLE_MULTITASKING
+
 // Pin Expander
 // Instead of having an address bus, a pin expander expands the pins available
 // by providing a set of virtualized pins that can be accessed over i2c. This
@@ -256,5 +260,7 @@ protected:
     friend class HydroPinHandlers;
     friend class HydroPin;
 };
+
+#endif // /ifndef HYDRO_DISABLE_MULTITASKING
 
 #endif // /ifndef HydroPin_H

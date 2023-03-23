@@ -529,6 +529,7 @@ void HydroPinMuxer::setIsActive(bool isActive)
     }
 }
 
+#ifndef HYDRO_DISABLE_MULTITASKING
 
 HydroPinExpander::HydroPinExpander()
     : _channelBits(0), _ioRef(nullptr)
@@ -542,3 +543,5 @@ bool HydroPinExpander::syncChannel()
 {
     return _ioRef->sync();
 }
+
+#endif
