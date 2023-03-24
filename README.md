@@ -15,7 +15,7 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
 * Can be used entirely offline with RTC module and optional GPS module (or known static location) for accurate time keeping, or used online through enabled on-board WiFi/Ethernet or external ESP-AT WiFi module.
   * Uses [SolarCalculator](https://github.com/jpb10/SolarCalculator), inspired by the NOAA Solar Calculator, for fine offline calculations of the sun's solar position (including sunrise, sunset, & transit times), accurate until 2100.
 * Configured system setup can be saved/loaded to/from EEPROM, SD card, or WiFiStorage-like external storage device.
-  * System setup can be saved in pretty-print JSON for human-readability (allowing easy text editing), or in raw Binary for ultra-compactness/speed.
+  * System setup can be saved in pretty-print JSON for human-readability (allowing easy text editing), or in raw Binary for compactness & speed.
   * Auto-save, backup-auto-save (for auto-recovery functionality), and low storage-space cleanup (TODO) functionality.
   * Import string decode functions are pre-optimized with minimum spanning trie for ultra-fast text parsing & reduced loading times.
 * Supports interval-based sensor data publishing and system event logging to MQTT IoT broker (for further IoT-integrated processing) or to external storage in .csv/.txt format (/w date in filename, segmented daily).
@@ -31,8 +31,7 @@ This controller allows one to set up a system of reservoirs, pumps, probes, rela
     * Minimal UI mode, which saves on compiled sketch size through optimized code stripping at the cost of having to modify/re-upload a new sketch to change most system settings (or to change core system structure).
     * Full UI mode, which uses large amounts of Flash space available on modern MCUs to provide everything all at once, with only major system (or static linked component) changes requiring a sketch modify/re-upload.
 * Actuator, Sensor, and I/O pins can be multiplexed or expanded through 8/16-bit i2c expanders for pin-limited controllers.
-* Library data can be built into onboard Flash or exported onto external storage to save on compiled sketch size.
-  * Data export may possibly free up just enough to be able to run on devices with only 256kB Flash.
+* Library data can be built into onboard Flash or exported onto external storage to additionally save on compiled sketch size.
 
 Made primarily for Arduino microcontrollers / build environments, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
 
@@ -61,7 +60,7 @@ Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
 * Definitely ___will___ work: GIGA, Portenta (any), ESP32/8266, Teensy 3.5+, STM32 (>256kB), Pico/Nano RP2040 Connect
 
-* _Can_ work /w ext. data/less GUI/fewer features: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB)
+* _Can_ work /w ext. data/less-to-no GUI/fewer features: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB)
 
 * Definitely ___will not___ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8 (|32<256kB), ATtiny (any)
 
