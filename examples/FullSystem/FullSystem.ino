@@ -30,7 +30,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_SD_CARD_SPI               SPI             // SD card SPI class instance
 #define SETUP_SD_CARD_SPI_CS            -1              // SD card CS pin, else -1
 #define SETUP_SD_CARD_SPI_SPEED         F_SPD           // SD card SPI speed, in Hz (ignored on Teensy)
-#define SETUP_DISP_I2C_ADDR             0b000           // LCD/OLED i2c address (bitwise or'ed with base address - LCD: 0x20, OLED: 0x78, Note: most LCDs typically use 0b111 => 0x27)
+#define SETUP_DISP_I2C_ADDR             0b000           // LCD/OLED i2c address (bitwise or'ed with base address - LCD: 0x20, OLED: 0x78, note: most LCDs typically use 0b111 => 0x27)
 #define SETUP_DISP_SPI                  SPI             // Display SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
 #define SETUP_DISP_SPI_SPEED            F_SPD           // Display SPI speed, in Hz
@@ -113,18 +113,20 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_UI_GFX_ROTATION           R0              // Display rotation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
 #define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC/RS pin, if using SPI display
 #define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using SPI display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_ST7735_TAG         Undefined       // ST7735 tag color (B, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Mini_Plugin, Hallowing), if using ST7735 display
+#define SETUP_UI_GFX_ST7789_RES         Undefined       // ST7789 screen resolution (128x128, 135x240, 170x320, 172x320, 240x240, 240x280, 240x320, CustomTFT), if using ST7789 display
 #define SETUP_UI_GFX_BACKLIGHT_PIN      -1              // Optional display interface backlight/LED/BL pin, if using SPI display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
 #define SETUP_UI_GFX_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w backlight pin
-#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (BModel, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Hallowing, Mini_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_GFX_BACKLIGHT_ESP_CHN  1               // Backlight PWM channel, if on ESP/using PWM backlight
 #define SETUP_UI_GFX_BACKLIGHT_ESP_FRQ  1000            // Backlight PWM frequency, if on ESP/using PWM backlight
 
 // UI Control Input Settings
 #define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
 #define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed, in ticks
-#define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
+#define SETUP_UI_KEY_REPEAT_DELAY       850             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
-#define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor)
+#define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor), if using analog joystick
+#define SETUP_UI_TOUCHSCREEN_ORIENT     Same            // Touchscreen orientation tuning (Same, None, InvertX, InvertY, InvertXY, SwapXY, InvertX_SwapXY, InvertY_SwapXY, InvertXY_SwapXY), if using touchscreen
 #define SETUP_UI_ESP32TOUCH_SWITCH      800             // ESP32 Touch key switch threshold, if on ESP32/using ESP32Touch
 #define SETUP_UI_ESP32TOUCH_HVOLTS      V_2V7           // ESP32 Touch key high reference voltage (Keep, V_2V4, V_2V5, V_2V6, V_2V7, Max), if on ESP32/using ESP32Touch
 #define SETUP_UI_ESP32TOUCH_LVOLTS      V_0V5           // ESP32 Touch key low reference voltage (Keep, V_0V5, V_0V6, V_0V7, V_0V8, Max), if on ESP32/using ESP32Touch
@@ -310,6 +312,11 @@ inline void setupUI()
                 case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk:
                 case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR:
                     uiCtrlSetup = UIControlSetup(MatrixControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_KEY_REPEAT_INTERVAL, JOIN(Hydro_EncoderSpeed,SETUP_UI_ENC_ROTARY_SPEED)));
+                    break;                
+                case Hydro_ControlInputMode_ResistiveTouch:
+                case Hydro_ControlInputMode_TouchScreen:
+                case Hydro_ControlInputMode_TFTTouch:
+                    uiCtrlSetup = UIControlSetup(TouchscreenSetup(JOIN(Hydro_TouchscreenOrientation,SETUP_UI_TOUCHSCREEN_ORIENT)));
                     break;
                 default: break;
             }
@@ -339,7 +346,14 @@ inline void setupUI()
 #ifdef ESP_PLATFORM
                                                                    SETUP_UI_GFX_BACKLIGHT_ESP_FRQ,
 #endif
-                                                                   JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB)));
+#if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735)
+                                                                   JOIN(Hydro_ST7735Tag,SETUP_UI_GFX_ST7735_TAG)
+#elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789)
+                                                                   JOIN(Hydro_ST7789Res,SETUP_UI_GFX_ST7789_RES)
+#else
+                                                                   Hydro_ST77XXKind_Undefined
+#endif
+                    ));
                     break;
 
                 case Hydro_DisplayOutputMode_TFT:
@@ -350,7 +364,12 @@ inline void setupUI()
 #ifdef ESP_PLATFORM
                                                                  SETUP_UI_GFX_BACKLIGHT_ESP_FRQ,
 #endif
-                                                                 JOIN(Hydro_ST7735Tab,SETUP_UI_GFX_ST7735_TAB)));
+#if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735)
+                                                                 JOIN(Hydro_ST7735Tag,SETUP_UI_GFX_ST7735_TAG)
+#else
+                                                                 Hydro_ST77XXKind_Undefined
+#endif
+                    ));
                     break;
                 default: break;
             }

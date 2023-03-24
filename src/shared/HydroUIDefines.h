@@ -77,6 +77,23 @@ enum Hydro_DisplayRotation : signed char {
     Hydro_DisplayRotation_Undefined = -1                    // Placeholder
 };
 
+// Touchscreen Orientation
+// Touchscreens can be glued on differently than displays, so these allow finer touchscreen setup.
+enum Hydro_TouchscreenOrientation : signed char {
+    Hydro_TouchscreenOrientation_Same,                      // Keep same orientation as display rotation (converts display rotation to swapXY/invX/invY values)
+    Hydro_TouchscreenOrientation_None,                      // No applied orientation (no invX, invY, or swapXY)
+    Hydro_TouchscreenOrientation_InvertX,                   // Only invert X axis (no invY or swapXY)
+    Hydro_TouchscreenOrientation_InvertY,                   // Only invert Y axis (no invX or swapXY)
+    Hydro_TouchscreenOrientation_InvertXY,                  // Invert X & Y axis (no swapXY)
+    Hydro_TouchscreenOrientation_SwapXY,                    // Only swap X/Y coordinates (aka transpose, no invX or invY)
+    Hydro_TouchscreenOrientation_InvertX_SwapXY,            // Invert X axis, then swap X/Y coordinates (no invY)
+    Hydro_TouchscreenOrientation_InvertY_SwapXY,            // Invert Y axis, then swap X/Y coordinates (no invX)
+    Hydro_TouchscreenOrientation_InvertXY_SwapXY,           // Invert X & Y axis, then swap X/Y coordinates
+
+    Hydro_TouchscreenOrientation_Count,                     // Placeholder
+    Hydro_TouchscreenOrientation_Undefined = -1             // Placeholder
+};
+
 // Display Theme
 // General color theme and aesthetics.
 enum Hydro_DisplayTheme : signed char {
@@ -90,23 +107,35 @@ enum Hydro_DisplayTheme : signed char {
     Hydro_DisplayTheme_Count,                               // Placeholder
     Hydro_DisplayTheme_Undefined = -1                       // Placeholder
 };
+        
+// ST77XX Device Kind
+// Special device kind identifier for common ST7735 B/S/R color tags and common ST7789 screen resolutions.
+enum Hydro_ST77XXKind : signed char {
+    Hydro_ST7735Tag_B                   = (int8_t)0xff,     // ST7735B B model
+    Hydro_ST7735Tag_Green               = (int8_t)0x00,     // ST7735S Green tag (1.8" TFT, /w offset such as WaveShare)
+    Hydro_ST7735Tag_Green18             = (int8_t)0x00,     // ST7735S 18Green tag (alias of Green)
+    Hydro_ST7735Tag_Red                 = (int8_t)0x01,     // ST7735R Red tag
+    Hydro_ST7735Tag_Red18               = (int8_t)0x01,     // ST7735R 18Red tag (alias of Red)
+    Hydro_ST7735Tag_Black               = (int8_t)0x02,     // ST7735S Black tag (1.8" TFT)
+    Hydro_ST7735Tag_Black18             = (int8_t)0x02,     // ST7735S 18Black tag (alias of Black)
+    Hydro_ST7735Tag_Green144            = (int8_t)0x01,     // ST7735R 144Green tag (1.44" TFT)
+    Hydro_ST7735Tag_Mini                = (int8_t)0x04,     // ST7735S Mini160x80 tag (0.96" TFT, 160x80, 12800 pixels - if inverted try Mini_Plugin)
+    Hydro_ST7735Tag_Mini_Plugin         = (int8_t)0x06,     // ST7735S Mini160x80_Plugin tag (0.96" TFT /w plug-in FPC, 160x80, 12800 pixels)
+    Hydro_ST7735Tag_Hallowing           = (int8_t)0x05,     // ST7735R Hallowing tag (various)
 
-// ST7735 Device Tab
-// Special device tab identifier for ST7735 (B & R) devices.
-enum Hydro_ST7735Tab : signed char {
-    Hydro_ST7735Tab_BModel              = (int8_t)0xff,     // ST7735B model (no color tag)
-    Hydro_ST7735Tab_Green               = 0x00,             // ST7735R Green tag
-    Hydro_ST7735Tab_Green18             = 0x00,             // ST7735R 18Green tag (alias of Green)
-    Hydro_ST7735Tab_Red                 = 0x01,             // ST7735R Red tag
-    Hydro_ST7735Tab_Red18               = 0x01,             // ST7735R 18Red tag (alias of Red)
-    Hydro_ST7735Tab_Black               = 0x02,             // ST7735R Black tag
-    Hydro_ST7735Tab_Black18             = 0x02,             // ST7735R 18Black tag (alias of Black)
-    Hydro_ST7735Tab_Green144            = 0x01,             // ST7735R 144Green tag (alias of Red)
-    Hydro_ST7735Tab_Mini                = 0x04,             // ST7735R Mini160x80 tag
-    Hydro_ST7735Tab_Hallowing           = 0x05,             // ST7735R Hallowing tag
-    Hydro_ST7735Tab_Mini_Plugin         = 0x06,             // ST7735R Mini160x80_Plugin tag
+    Hydro_ST7789Res_128x128             = (int8_t)0x10,     // ST7789 128x128 (0.85", 1.44" & 1.5" TFTs, 16384 pixels)
+    Hydro_ST7789Res_135x240,                                // ST7789 135x240 (1.14" TFT, 32400 pixels)
+    Hydro_ST7789Res_170x320,                                // ST7789 170x320 (1.9" TFT, 54400 pixels)
+    Hydro_ST7789Res_172x320,                                // ST7789 172x320 (1.47" TFT, 55040 pixels)
+    Hydro_ST7789Res_240x240,                                // ST7789 240x240 (1.3" & 1.54" TFTs, 57600 pixels)
+    Hydro_ST7789Res_240x280,                                // ST7789 240x280 (1.69" TFT, 67200 pixels)
+    Hydro_ST7789Res_240x320,                                // ST7789 240x320 (2", 2.4", & 2.8" TFTs, 76800 pixels)
+    Hydro_ST7789Res_CustomTFT,                              // Custom ST7789 TFT resolution (defined statically by TFT_GFX_WIDTH & TFT_GFX_HEIGHT - override via build defines, or edit directly)
 
-    Hydro_ST7735Tab_Undefined           = (int8_t)0xff      // Placeholder
+    Hydro_ST77XXKind_Undefined          = (int8_t)0xff,     // Placeholder  
+    Hydro_ST7735Tag_Undefined           = (int8_t)0xff,     // Placeholder
+    Hydro_ST7789Res_Undefined           = (int8_t)0xff,     // Placeholder
+    Hydro_ST7789Res_Start               = Hydro_ST7789Res_128x128 // ST7789 enum start (alias of 128x128)
 };
 
 // Backlight Operation Mode

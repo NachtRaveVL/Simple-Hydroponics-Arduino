@@ -19,6 +19,7 @@ struct ButtonsControlSetup;
 struct ESP32TouchControlSetup;
 struct JoystickControlSetup;
 struct MatrixControlSetup;
+struct TouchscreenSetup;
 struct UIControlSetup;
 
 #include "HydruinoUI.h"
@@ -46,8 +47,8 @@ struct LCDDisplaySetup {
 struct PixelDisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
     pintype_t dcPin;                    // DC/RS pin, else -1 (default: -1)
-    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, Note: Unused reset pin typically needs tied to HIGH for display to function)
-    pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    pintype_t resetPin;                 // Optional reset/RST pin, else -1 (default: -1, note: Unused reset pin typically needs tied to HIGH for display to function)
+    pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
     Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
     uint8_t ledBitRes;                  // Backlight PWM output bit resolution, if PWM
 #ifdef ESP32
@@ -56,7 +57,7 @@ struct PixelDisplaySetup {
 #ifdef ESP_PLATFORM
     float ledFrequency;                 // Backlight PWM output frequency, if PWM/ESP
 #endif
-    Hydro_ST7735Tab tabColor;           // ST7735 tab color (default: undef/-1), if ST7735
+    Hydro_ST77XXKind st77Kind;          // ST7735 tag color or ST7789 screen resolution (default: undef/-1), if ST77XX
 
     inline PixelDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, pintype_t dcPinIn = -1, pintype_t resetPinIn = -1, pintype_t ledPinIn = -1, Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, uint8_t ledBitResIn = DAC_RESOLUTION,
 #ifdef ESP32
@@ -65,7 +66,7 @@ struct PixelDisplaySetup {
 #ifdef ESP_PLATFORM
                              float ledFrequencyIn = 1000,
 #endif
-                             Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined)
+                             Hydro_ST77XXKind st77KindIn = Hydro_ST77XXKind_Undefined)
         : rotation(rotationIn), dcPin(dcPinIn), resetPin(resetPinIn), ledPin(ledPinIn), ledMode(ledModeIn), ledBitRes(ledBitResIn),
 #ifdef ESP32
           ledChannel(ledChannelIn),
@@ -73,14 +74,14 @@ struct PixelDisplaySetup {
 #ifdef ESP_PLATFORM
           ledFrequency(ledFrequencyIn),
 #endif
-          tabColor(tabColorIn)
+          st77Kind(st77KindIn)
         { ; }
 };
 
 // Advanced TFT Display Setup (TFT_eSPI)
 struct TFTDisplaySetup {
     Hydro_DisplayRotation rotation;     // Display orientation/rotation (default: R0)
-    pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
+    pintype_t ledPin;                   // Optional backlight/LED/BL pin, else -1 (default: -1, note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
     Hydro_BacklightMode ledMode;        // Backlight/LED/BL pin mode (default: Hydro_BacklightMode_Normal)
     uint8_t ledBitRes;                  // Backlight PWM output bit resolution, if PWM
 #ifdef ESP32
@@ -89,7 +90,7 @@ struct TFTDisplaySetup {
 #ifdef ESP_PLATFORM
     float ledFrequency;                 // Backlight PWM output frequency, if PWM/ESP
 #endif
-    Hydro_ST7735Tab tabColor;           // ST7735 tab color (default: undef/-1), if ST7735
+    Hydro_ST77XXKind st77Kind;          // ST7735 tag color (default: undef/-1), if ST7735 (ST7789 enums not used)
 
     inline TFTDisplaySetup(Hydro_DisplayRotation rotationIn = Hydro_DisplayRotation_R0, pintype_t ledPinIn = -1, Hydro_BacklightMode ledModeIn = Hydro_BacklightMode_Normal, uint8_t ledBitResIn = DAC_RESOLUTION,
 #ifdef ESP32
@@ -98,7 +99,7 @@ struct TFTDisplaySetup {
 #ifdef ESP_PLATFORM
                            float ledFrequencyIn = 1000,
 #endif
-                           Hydro_ST7735Tab tabColorIn = Hydro_ST7735Tab_Undefined)
+                           Hydro_ST77XXKind st77KindIn = Hydro_ST77XXKind_Undefined)
         : rotation(rotationIn), ledPin(ledPinIn), ledMode(ledModeIn), ledBitRes(ledBitResIn),
 #ifdef ESP32
           ledChannel(ledChannelIn),
@@ -106,7 +107,7 @@ struct TFTDisplaySetup {
 #ifdef ESP_PLATFORM
           ledFrequency(ledFrequencyIn),
 #endif
-          tabColor(tabColorIn)
+          st77Kind(st77KindIn)
         { ; }
 };
 
@@ -176,7 +177,7 @@ struct JoystickControlSetup {
     inline JoystickControlSetup(millis_t repeatDelayIn = 750, float decreaseDivisorIn = 3.0f) : repeatDelay(repeatDelayIn), decreaseDivisor(decreaseDivisorIn) { ; }
 };
 
-// Display Matrix Input Setup
+// Matrix Keyboard Input Setup
 struct MatrixControlSetup {
     millis_t repeatDelay;               // Repeat delay, in milliseconds
     millis_t repeatInterval;            // Repeat interval, in milliseconds
@@ -185,24 +186,33 @@ struct MatrixControlSetup {
     inline MatrixControlSetup(millis_t repeatDelayIn = 850, millis_t repeatIntervalIn = 350, Hydro_EncoderSpeed encoderSpeedIn = Hydro_EncoderSpeed_HalfCycle) : repeatDelay(repeatDelayIn), repeatInterval(repeatIntervalIn), encoderSpeed(encoderSpeedIn) { ; }
 };
 
+// Touchscreen Input Setup
+struct TouchscreenSetup {
+    Hydro_TouchscreenOrientation orient; // Touchscreen orientation tuning (default: Same)
+
+    inline TouchscreenSetup(Hydro_TouchscreenOrientation orientIn = Hydro_TouchscreenOrientation_Same) : orient(orientIn) { ; }
+};
+
 // Combined UI Control Setup
 // A union of the various UI control setup structures, to assist with user control input settings.
 struct UIControlSetup {
-    enum : signed char { None, Encoder, Buttons, ESP32Touch, Joystick, Matrix } ctrlCfgType; // Control config type
+    enum : signed char { None, Encoder, Buttons, ESP32Touch, Joystick, Matrix, Touchscreen } ctrlCfgType; // Control config type
     union {
         RotaryControlSetup encoder;     // Rotary encoder setup
         ButtonsControlSetup buttons;    // Up/Down buttons setup
-        ESP32TouchControlSetup touch;   // ESP32 touch keys setup
+        ESP32TouchControlSetup espTouch; // ESP32 touch keys setup
         JoystickControlSetup joystick;  // Analog joystick setup
         MatrixControlSetup matrix;      // Matrix keyboard setup
+        TouchscreenSetup touchscreen;   // Touchscreen setup
     } ctrlCfgAs;
 
     inline UIControlSetup() : ctrlCfgType(None), ctrlCfgAs{} { ; }
     inline UIControlSetup(RotaryControlSetup ctrlSetup) : ctrlCfgType(Encoder), ctrlCfgAs{.encoder=ctrlSetup} { ; }
     inline UIControlSetup(ButtonsControlSetup ctrlSetup) : ctrlCfgType(Buttons), ctrlCfgAs{.buttons=ctrlSetup} { ; }
-    inline UIControlSetup(ESP32TouchControlSetup ctrlSetup) : ctrlCfgType(ESP32Touch), ctrlCfgAs{.touch=ctrlSetup} { ; }
+    inline UIControlSetup(ESP32TouchControlSetup ctrlSetup) : ctrlCfgType(ESP32Touch), ctrlCfgAs{.espTouch=ctrlSetup} { ; }
     inline UIControlSetup(JoystickControlSetup ctrlSetup) : ctrlCfgType(Joystick), ctrlCfgAs{.joystick=ctrlSetup} { ; }
     inline UIControlSetup(MatrixControlSetup ctrlSetup) : ctrlCfgType(Matrix), ctrlCfgAs{.matrix=ctrlSetup} { ; }
+    inline UIControlSetup(TouchscreenSetup ctrlSetup) : ctrlCfgType(Touchscreen), ctrlCfgAs{.touchscreen=ctrlSetup} { ; }
 
     static inline UIControlSetup usingDFRobotShield() { return UIControlSetup(ButtonsControlSetup::usingDFRobotShield()); }
 };

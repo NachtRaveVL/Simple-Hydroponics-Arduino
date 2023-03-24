@@ -143,13 +143,15 @@ From shared/HydruinoUI.h:
 
 Certain setups may require additional, and in some cases specialized, library dependency setup in order to function. This is mainly seen around certain display and input options. Ones to highlight include:
 
-* **U8g2** (monochrome OLED displays): When specifically using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file (note: the `_F_` part of the name implies a frame buffer exists for the device to provide non-flickering animations, and is recommended). Under this custom option, this library has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing any changes.
+* **U8g2** (monochrome OLED displays): When specifically using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file (note: the `_F_` part of the name implies a frame buffer exists for the device to provide non-flickering animations, and is recommended). This custom option has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing any changes.
+
+* **Adafruit ST7735** & **Adafruit ST7789** (color TFT displays): ST7735-based displays have a tag color enumeration that is defined by `SETUP_UI_GFX_ST7735_TAG`, while ST7789-based displays have a screen resolution enumeration that is defined by `SETUP_UI_GFX_ST7789_RES`. These tag color & screen resolution enumeration settings always have static linkage and will require sketch modify/re-upload upon needing any changes.
 
 * **TFT_eSPI** (advanced color TFT displays /w full frame buffer & advanced sprite features): When specifically using the TFT display output option (in lieu of the default AdafruitGFX driven TFT options), user library setup is required via its `TFT_eSPI\User_Setup.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
 
 * **BSP_LCD** & **BSP Touch** (STM32746G-Discovery on STM32/mbed only): This particular setup can utilize a ChromaArt-based drawable (in place of U8g2Drawable) with STM32 LDTC frame buffer, and requires advanced user setup via the included `shared\tcMenu_Extra_BspUserSettings.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
 
-* **Adafruit ST7789**, **XPT2046 Touchscreen**, **TFT_eSPI**, & **BSP Touch**: These options utilize the `TFT_GFX_WIDTH` and `TFT_GFX_HEIGHT` defines for the screen width/height (defaulting to TFT_eSPI's `TFT_WIDTH` and `TFT_HEIGHT` values if defined, else assuming standard 240x320), and should be either edited directly or defined through custom build defines. These values are statically linked and will require sketch modify/re-upload upon needing any changes.
+* **XPT2046 Touchscreen**, **Adafruit ST7789 - CustomTFT**, **TFT_eSPI**, & **BSP Touch**: These options utilize the `TFT_GFX_WIDTH` and `TFT_GFX_HEIGHT` defines for the screen width/height (defaulting to TFT_eSPI's `TFT_WIDTH` and `TFT_HEIGHT` values if defined, else assuming standard 240x320), and should be either edited directly or defined through custom build defines. These values are statically linked and will require sketch modify/re-upload upon needing any changes.
 
 ### Initialization
 
@@ -511,18 +513,20 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_UI_GFX_ROTATION           R0              // Display rotation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
 #define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC/RS pin, if using SPI display
 #define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using SPI display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
+#define SETUP_UI_GFX_ST7735_TAG         Undefined       // ST7735 tag color (B, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Mini_Plugin, Hallowing), if using ST7735 display
+#define SETUP_UI_GFX_ST7789_RES         Undefined       // ST7789 screen resolution (128x128, 135x240, 170x320, 172x320, 240x240, 240x280, 240x320, CustomTFT), if using ST7789 display
 #define SETUP_UI_GFX_BACKLIGHT_PIN      -1              // Optional display interface backlight/LED/BL pin, if using SPI display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
 #define SETUP_UI_GFX_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w backlight pin
-#define SETUP_UI_GFX_ST7735_TAB         Undefined       // ST7735 tab color (BModel, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Hallowing, Mini_Plugin, Undefined), if using ST7735 display
 #define SETUP_UI_GFX_BACKLIGHT_ESP_CHN  1               // Backlight PWM channel, if on ESP/using PWM backlight
 #define SETUP_UI_GFX_BACKLIGHT_ESP_FRQ  1000            // Backlight PWM frequency, if on ESP/using PWM backlight
 
 // UI Control Input Settings
 #define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
 #define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed, in ticks
-#define SETUP_UI_KEY_REPEAT_DELAY       750             // Key repeat delay, in milliseconds
+#define SETUP_UI_KEY_REPEAT_DELAY       850             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
-#define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor)
+#define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor), if using analog joystick
+#define SETUP_UI_TOUCHSCREEN_ORIENT     Same            // Touchscreen orientation tuning (Same, None, InvertX, InvertY, InvertXY, SwapXY, InvertX_SwapXY, InvertY_SwapXY, InvertXY_SwapXY), if using touchscreen
 #define SETUP_UI_ESP32TOUCH_SWITCH      800             // ESP32 Touch key switch threshold, if on ESP32/using ESP32Touch
 #define SETUP_UI_ESP32TOUCH_HVOLTS      V_2V7           // ESP32 Touch key high reference voltage (Keep, V_2V4, V_2V5, V_2V6, V_2V7, Max), if on ESP32/using ESP32Touch
 #define SETUP_UI_ESP32TOUCH_LVOLTS      V_0V5           // ESP32 Touch key low reference voltage (Keep, V_0V5, V_0V6, V_0V7, V_0V8, Max), if on ESP32/using ESP32Touch

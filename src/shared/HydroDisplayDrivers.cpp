@@ -140,8 +140,8 @@ HydroOverview *HydroDisplayU8g2OLED::allocateOverview(const void *clockFont, con
 }
 
 
-HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST7735Tab tabColor, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation), _tab(tabColor),
+HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST77XXKind st77Kind, pintype_t dcPin, pintype_t resetPin)
+    : HydroDisplayDriver(displayRotation), _kind(st77Kind),
       #ifndef ESP8266
           _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
@@ -150,7 +150,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
-    HYDRO_SOFT_ASSERT(_tab != Hydro_ST7735Tab_Undefined, SFP(HStr_Err_InvalidParameter));
+    HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
     #endif
@@ -163,10 +163,10 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::initBaseUIFromDefaults()
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
 {
-    if (_tab == Hydro_ST7735Tab_BModel) {
+    if (_kind == Hydro_ST7735Tag_B) {
         _gfx.initB();
     } else {
-        _gfx.initR((uint8_t)_tab);
+        _gfx.initR((uint8_t)_kind);
     }
     _gfx.setRotation((uint8_t)_rotation);
 }
@@ -177,8 +177,8 @@ HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview(const 
 }
 
 
-HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation),
+HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST77XXKind st77Kind, pintype_t dcPin, pintype_t resetPin)
+    : HydroDisplayDriver(displayRotation), _kind(st77Kind),
       #ifndef ESP8266
           _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
@@ -199,7 +199,32 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::initBaseUIFromDefaults()
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
 {
-    _gfx.init(TFT_GFX_WIDTH, TFT_GFX_HEIGHT);
+    switch (_kind) {
+        case Hydro_ST7789Res_128x128:
+            _gfx.init(128, 128);
+            break;
+        case Hydro_ST7789Res_135x240:
+            _gfx.init(135, 240);
+            break;
+        case Hydro_ST7789Res_170x320:
+            _gfx.init(170, 320);
+            break;
+        case Hydro_ST7789Res_172x320:
+            _gfx.init(172, 320);
+            break;
+        case Hydro_ST7789Res_240x240:
+            _gfx.init(240, 240);
+            break;
+        case Hydro_ST7789Res_240x280:
+            _gfx.init(240, 280);
+            break;
+        case Hydro_ST7789Res_240x320:
+            _gfx.init(240, 320);
+            break;
+        default:
+            _gfx.init(TFT_GFX_WIDTH, TFT_GFX_HEIGHT);
+            break;
+    }
     _gfx.setRotation((uint8_t)_rotation);
 }
 
@@ -241,10 +266,9 @@ HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ILI9341>::allocateOverview(const
 }
 
 
-HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, uint16_t screenWidth, uint16_t screenHeight, Hydro_ST7735Tab tabColor)
-    : HydroDisplayDriver(displayRotation),
-      _screenSize{screenWidth, screenHeight}, _tabColor(tabColor),
-      _gfx(screenWidth, screenHeight),
+HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST77XXKind st77Kind)
+    : HydroDisplayDriver(displayRotation), _kind(st77Kind),
+      _gfx(TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 { ; }
@@ -256,10 +280,10 @@ void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 
 void HydroDisplayTFTeSPI::begin()
 {
-    if (_tabColor == Hydro_ST7735Tab_BModel) {
+    if (_kind == Hydro_ST7735Tag_B || _kind >= Hydro_ST7789Res_Start) {
         _gfx.begin();
     } else {
-        _gfx.begin((uint8_t)_tabColor);
+        _gfx.begin((uint8_t)_kind);
     }
     _gfx.setRotation((uint8_t)_rotation);
     _renderer.setDisplayDimensions(getScreenSize().first, getScreenSize().second);

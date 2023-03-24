@@ -253,13 +253,16 @@ void HydroInputMatrix4x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 }
 
 
-HydroInputResistiveTouch::HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver)
+HydroInputResistiveTouch::HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_TouchscreenOrientation touchOrient)
     : HydroInputDriver(controlPins),
       _touchInterrogator(controlPins.second[0], controlPins.second[1], controlPins.second[2], controlPins.second[3]),
       _touchOrientation(
-         /*swap*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3,
-         /*invX*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror,
-         /*invY*/ displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror
+         /*swap*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_SwapXY),
+         /*invX*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertX || touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY),
+         /*invY*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY)
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }
@@ -271,7 +274,7 @@ void HydroInputResistiveTouch::begin(MenuRenderer *renderer, MenuItem *initialIt
 }
 
 
-HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation)
+HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient)
     : HydroInputDriver(controlPins),
       #ifdef HYDRO_UI_ENABLE_XPT2046TS
           _touchScreen(controlPins.second[0], controlPins.second[1]),
@@ -284,9 +287,12 @@ HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> co
           _touchInterrogator(_touchScreen),
       #endif
       _touchOrientation(
-         /*swap*/ displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R3,
-         /*invX*/ displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_HorzMirror,
-         /*invY*/ displayRotation == Hydro_DisplayRotation_R3 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_VertMirror
+         /*swap*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R3))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_SwapXY),
+         /*invX*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_HorzMirror))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertX || touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY),
+         /*invY*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R3 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_VertMirror))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY)
       )
 { ; }
 
@@ -300,13 +306,16 @@ void HydroInputTouchscreen::begin(MenuRenderer *renderer, MenuItem *initialItem)
 }
 
 
-HydroInputTFTTouch::HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, bool useRawTouch)
+HydroInputTFTTouch::HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, Hydro_TouchscreenOrientation touchOrient, bool useRawTouch)
     : HydroInputDriver(controlPins),
       _touchInterrogator(&displayDriver->getGfx(), displayDriver->getScreenSize().first, displayDriver->getScreenSize().second, useRawTouch),
       _touchOrientation(
-         /*swap*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3,
-         /*invX*/ displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror,
-         /*invY*/ displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror
+         /*swap*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_SwapXY),
+         /*invX*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertX || touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY),
+         /*invY*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror))
+                  || (touchOrient == Hydro_TouchscreenOrientation_InvertY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY)
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }

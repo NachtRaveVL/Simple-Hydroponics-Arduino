@@ -216,7 +216,7 @@ protected:
 // A style of touch screen that uses resistive measurements for touch detection.
 class HydroInputResistiveTouch : public HydroInputDriver {
 public:
-    HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver);
+    HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_TouchscreenOrientation touchOrient);
     virtual ~HydroInputResistiveTouch() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
@@ -239,7 +239,7 @@ protected:
 // BSP touch interrogator uses TFT_GFX_WIDTH/HEIGHT for screen device width/height.
 class HydroInputTouchscreen : public HydroInputDriver {
 public:
-    HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation);
+    HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient);
     virtual ~HydroInputTouchscreen() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
@@ -272,7 +272,7 @@ protected:
 // Standard XPT2046 touch screen, but using TFT_eSPI library. Must be paired with TFTeSPI display driver.
 class HydroInputTFTTouch : public HydroInputDriver {
 public:
-    HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, bool useRawTouch = false);
+    HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, Hydro_TouchscreenOrientation touchOrient, bool useRawTouch = false);
     virtual ~HydroInputTFTTouch() = default;
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;

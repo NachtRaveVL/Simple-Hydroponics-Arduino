@@ -466,14 +466,14 @@ enum Hydro_DisplayOutputMode : signed char {
     Hydro_DisplayOutputMode_SSD1305_x64Ada,                 // Adafruit SSD1305 128x64 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SSD1306,                        // SSD1306 128x64 OLED, using U8g2 (i2c or SPI)
     Hydro_DisplayOutputMode_SH1106,                         // SH1106 128x64 OLED, using U8g2 (i2c or SPI)
-    Hydro_DisplayOutputMode_CustomOLED,                     // Custom OLED (class defined statically in UIDefines), using U8g2 (i2c or SPI)
+    Hydro_DisplayOutputMode_CustomOLED,                     // Custom OLED, using U8g2 (i2c or SPI, note: custom device+size defined statically by HYDRO_UI_CUSTOM_OLED_I2C &| HYDRO_UI_CUSTOM_OLED_SPI - override via build defines, or edit directly)
     Hydro_DisplayOutputMode_SSD1607,                        // SSD1607 200x200 OLED, using U8g2 (SPI only)
     Hydro_DisplayOutputMode_IL3820,                         // IL3820 296x128 OLED, using U8g2 (SPI only)
     Hydro_DisplayOutputMode_IL3820_V2,                      // IL3820 V2 296x128 OLED, using U8g2 (SPI only)
-    Hydro_DisplayOutputMode_ST7735,                         // ST7735 320x240 graphical LCD, using AdafruitGFX (SPI only)
-    Hydro_DisplayOutputMode_ST7789,                         // ST7789 320x240 graphical LCD, using AdafruitGFX (SPI only)
-    Hydro_DisplayOutputMode_ILI9341,                        // ILI9341 320x240 graphical LCD, using AdafruitGFX (SPI only)
-    Hydro_DisplayOutputMode_TFT,                            // TFT 320x240+ graphical LCD, using TFT_eSPI (SPI only, Note: usage requires editing TFT_eSPI\User_Setup.h & properly defining TFT_CS, TFT_DC, & TFT_RST)
+    Hydro_DisplayOutputMode_ST7735,                         // ST7735 graphical LCD, using AdafruitGFX (SPI only, note: usage requires tag color (kind enum) be defined)
+    Hydro_DisplayOutputMode_ST7789,                         // ST7789 graphical LCD, using AdafruitGFX (SPI only, note: usage requires screen res (kind enum) be defined, custom size defined statically by TFT_GFX_WIDTH & TFT_GFX_HEIGHT  - override via build defines, or edit directly)
+    Hydro_DisplayOutputMode_ILI9341,                        // ILI9341 graphical LCD, using AdafruitGFX (SPI only)
+    Hydro_DisplayOutputMode_TFT,                            // Graphical LCD, using TFT_eSPI (SPI only, note: usage requires editing TFT_eSPI\User_Setup.h & properly defining TFT_CS, TFT_DC, & TFT_RST)
 
     Hydro_DisplayOutputMode_Count,                          // Placeholder
     Hydro_DisplayOutputMode_Undefined = -1                  // Placeholder
