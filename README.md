@@ -273,7 +273,7 @@ SPI devices can be chained together on the same shared data lines, which are typ
   * There is also often an additional `LED` (or `BL`) pin that controls the backlight that can be either optionally wired to an open digital or analog pin for MCU control, otherwise can be hard-tied typically to a HIGH signal (such as that from `Vcc`) in order to stay always-on, or simply left disconnected for device default.
 * Always ensure that the data output pins and data input pins have compatible voltages.
 
-SPI Devices Supported: SD card modules, NMEA GPS modules, 200x200+ OLED displays, 320x240+ LCD/TFT gfx displays, XPT2046 touchscreens
+SPI Devices Supported: SD card modules, NMEA GPS modules, 128x128+ LCD/OLED/TFT graphical displays, XPT2046 touchscreens
 
 ### I2C Bus
 
