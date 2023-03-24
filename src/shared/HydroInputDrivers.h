@@ -98,7 +98,7 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
-    virtual bool areMainPinsInterruptable() const override { return false; }
+    virtual bool areMainPinsInterruptable() const override;
 
     #ifdef ESP32
         virtual IoAbstractionRef getIoAbstraction() override { return &_esp32Touch; }
@@ -125,7 +125,7 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
-    virtual bool areMainPinsInterruptable() const override { return false; }
+    virtual bool areMainPinsInterruptable() const override;
 
     virtual IoAbstractionRef getIoAbstraction() override { return &_joystickMultiIo; }
 
@@ -151,7 +151,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
-    virtual bool areMainPinsInterruptable() const override { return false; }
+    bool areRowPinsInterruptable() const;
+    virtual bool areMainPinsInterruptable() const override;
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
@@ -173,7 +174,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
-    virtual bool areMainPinsInterruptable() const override { return _rotaryEncoder ? _rotaryEncoder->areMainPinsInterruptable() : false; }
+    bool areRowPinsInterruptable() const;
+    virtual bool areMainPinsInterruptable() const override;
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 
@@ -197,7 +199,8 @@ public:
 
     virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
 
-    virtual bool areMainPinsInterruptable() const override { return _rotaryEncoder ? _rotaryEncoder->areMainPinsInterruptable() : false; }
+    bool areRowPinsInterruptable() const;
+    virtual bool areMainPinsInterruptable() const override;
 
     virtual IoAbstractionRef getIoAbstraction() override { return nullptr; }
 

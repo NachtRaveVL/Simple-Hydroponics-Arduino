@@ -7,7 +7,6 @@
 #ifdef HYDRO_USE_GUI
 #include <DfRobotInputAbstraction.h>
 
-
 HydroInputDriver::HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins)
     : _pins(controlPins)
 { ; }
@@ -29,6 +28,13 @@ HydroInputRotary::HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins,
 
 void HydroInputRotary::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
+    #ifndef HYDRO_DISABLE_MULTITASKING
+        auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
+        switches.init(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+    #else
+        switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+    #endif
+
     menuMgr.initForEncoder(renderer, initialItem, _pins.second[0], _pins.second[1], _pins.second[2], _encoderSpeed == Hydro_EncoderSpeed_FullCycle ? FULL_CYCLE : _encoderSpeed == Hydro_EncoderSpeed_HalfCycle ? HALF_CYCLE : QUARTER_CYCLE);
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);    
@@ -75,6 +81,17 @@ HydroInputUpDownButtons::~HydroInputUpDownButtons()
 
 void HydroInputUpDownButtons::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
+    if (_dfRobotIORef) {
+        switches.initialise(_dfRobotIORef, getBaseUI()->isActiveLow());
+    } else {
+        #ifndef HYDRO_DISABLE_MULTITASKING
+            auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
+            switches.init(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+        #else
+            switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+        #endif
+    }
+
     menuMgr.initForUpDownOk(renderer, initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
@@ -107,12 +124,22 @@ HydroInputESP32TouchKeys::HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t
 
 void HydroInputESP32TouchKeys::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
+    switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+
     menuMgr.initForUpDownOk(renderer, initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
     #ifdef ESP32
         _esp32Touch.ensureInterruptRegistered();
     #endif
+}
+
+bool HydroInputESP32TouchKeys::areMainPinsInterruptable() const
+{
+    return _pins.first >= 3 &&
+           isValidPin(_pins.second[0]) && checkPinCanInterrupt(_pins.second[0]) &&
+           isValidPin(_pins.second[1]) && checkPinCanInterrupt(_pins.second[1]) &&
+           isValidPin(_pins.second[2]) && checkPinCanInterrupt(_pins.second[2]);
 }
 
 
@@ -147,6 +174,8 @@ static void menuMgrValueChanged(int val)
 
 void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
+    switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+
     if (isValidPin(_pins.second[2])) {
         switches.addSwitch(_pins.second[2], NULL);
         switches.onRelease(_pins.second[2], &menuMgrOnMenuSelect);
@@ -164,6 +193,13 @@ void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
     }
 
     menuMgr.initWithoutInput(renderer, initialItem);
+}
+
+bool HydroInputJoystick::areMainPinsInterruptable() const
+{
+    return _pins.first >= 2 &&
+           isValidPin(_pins.second[0]) && checkPinCanInterrupt(_pins.second[0]) &&
+           isValidPin(_pins.second[1]) && checkPinCanInterrupt(_pins.second[1]);
 }
 
 
@@ -184,10 +220,22 @@ void HydroInputMatrix2x2::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
     #ifndef HYDRO_DISABLE_MULTITASKING
         auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
     #else
-        _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
     #endif
+}
+
+bool HydroInputMatrix2x2::areRowPinsInterruptable() const
+{
+    return _pins.first >= 2 &&
+           isValidPin(_pins.second[0]) && checkPinCanInterrupt(_pins.second[0]) &&
+           isValidPin(_pins.second[1]) && checkPinCanInterrupt(_pins.second[1]);
+}
+
+bool HydroInputMatrix2x2::areMainPinsInterruptable() const
+{
+    return areRowPinsInterruptable();
 }
 
 
@@ -221,12 +269,26 @@ void HydroInputMatrix3x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
     #ifndef HYDRO_DISABLE_MULTITASKING
         auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
     #else
-        _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
     #endif
 
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
+}
+
+bool HydroInputMatrix3x4::areRowPinsInterruptable() const
+{
+    return _pins.first >= 4 &&
+           isValidPin(_pins.second[0]) && checkPinCanInterrupt(_pins.second[0]) &&
+           isValidPin(_pins.second[1]) && checkPinCanInterrupt(_pins.second[1]) &&
+           isValidPin(_pins.second[2]) && checkPinCanInterrupt(_pins.second[2]) &&
+           isValidPin(_pins.second[3]) && checkPinCanInterrupt(_pins.second[3]);
+}
+
+bool HydroInputMatrix3x4::areMainPinsInterruptable() const
+{
+    return areRowPinsInterruptable() && (!_rotaryEncoder || _rotaryEncoder->areMainPinsInterruptable());
 }
 
 
@@ -261,12 +323,26 @@ void HydroInputMatrix4x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
     #ifndef HYDRO_DISABLE_MULTITASKING
         auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
     #else
-        _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
     #endif
 
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
+}
+
+bool HydroInputMatrix4x4::areRowPinsInterruptable() const
+{
+    return _pins.first >= 4 &&
+           isValidPin(_pins.second[0]) && checkPinCanInterrupt(_pins.second[0]) &&
+           isValidPin(_pins.second[1]) && checkPinCanInterrupt(_pins.second[1]) &&
+           isValidPin(_pins.second[2]) && checkPinCanInterrupt(_pins.second[2]) &&
+           isValidPin(_pins.second[3]) && checkPinCanInterrupt(_pins.second[3]);
+}
+
+bool HydroInputMatrix4x4::areMainPinsInterruptable() const
+{
+    return areRowPinsInterruptable() && (!_rotaryEncoder || _rotaryEncoder->areMainPinsInterruptable());
 }
 
 

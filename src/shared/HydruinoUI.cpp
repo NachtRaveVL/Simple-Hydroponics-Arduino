@@ -68,17 +68,6 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
         _uiData->editingIcons = editingIcons;
     }
 
-    if (_input) {
-        SwitchInterruptMode isrMode(SWITCHES_POLL_EVERYTHING);
-        if (_allowISR) {
-            bool mainPinsInterruptable = _input->areMainPinsInterruptable();
-            bool allPinsInterruptable = mainPinsInterruptable && _input->areAllPinsInterruptable();
-            isrMode = (allPinsInterruptable ? SWITCHES_NO_POLLING : (mainPinsInterruptable ? SWITCHES_POLL_KEYS_ONLY : SWITCHES_POLL_EVERYTHING));
-        }
-
-        switches.init(_input->getIoAbstraction() ? _input->getIoAbstraction() : internalDigitalIo(), isrMode, _isActiveLow);
-    }
-
     #if !HYDRO_UI_START_AT_OVERVIEW
         if (!_homeMenu) {
             _homeMenu = new HydroHomeMenu();
@@ -131,6 +120,17 @@ void HydruinoBaseUI::setNeedsRedraw()
 {
     if (_overview) { _overview->setNeedsFullRedraw(); }
     else { menuMgr.notifyStructureChanged(); }
+}
+
+SwitchInterruptMode HydruinoBaseUI::getISRMode() const
+{
+    SwitchInterruptMode isrMode(SWITCHES_POLL_EVERYTHING);
+    if (_allowISR && _input) {
+        bool mainPinsInterruptable = _input->areMainPinsInterruptable();
+        bool allPinsInterruptable = mainPinsInterruptable && _input->areAllPinsInterruptable();
+        isrMode = (allPinsInterruptable ? SWITCHES_NO_POLLING : (mainPinsInterruptable ? SWITCHES_POLL_KEYS_ONLY : SWITCHES_POLL_EVERYTHING));
+    }
+    return isrMode;
 }
 
 void HydruinoBaseUI::setBacklightEnable(bool enabled)

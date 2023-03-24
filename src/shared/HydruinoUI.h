@@ -85,6 +85,8 @@ public:
 
     virtual void setNeedsRedraw() override;
 
+    SwitchInterruptMode getISRMode() const;
+
     virtual bool isFullUI() = 0;
     inline bool isMinUI() { return !isFullUI(); }
 
