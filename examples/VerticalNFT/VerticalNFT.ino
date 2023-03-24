@@ -379,7 +379,7 @@ inline void setupPinChannels()
             if (!hydroController.getPinMuxer(SETUP_CROP_SOILM_PIN)) { hydroController.setPinMuxer(SETUP_CROP_SOILM_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_CROP_SOILM_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
         #endif
     #elif SETUP_EXPANDER1_CHANNEL_BITS > 0 || SETUP_EXPANDER2_CHANNEL_BITS > 0
-        SharedPtr<HydroPinExpander> expanders[] = {
+        auto expanders[] = {
             #if SETUP_EXPANDER1_CHANNEL_BITS > 0
                 SharedPtr<HydroPinExpander>(new HydroPinExpander(SETUP_EXPANDER1_CHANNEL_BITS, SETUP_EXPANDER1_IOREF_ALLOC())),
             #else
@@ -391,6 +391,9 @@ inline void setupPinChannels()
                 SharedPtr<HydroPinExpander>(nullptr)
             #endif
         };
+        if (isValidPin(SETUP_CTRL_INPUT_PINS_[0]) && SETUP_CTRL_INPUT_PINS_[0] >= hpin_virtual && !hydroController.getPinExpander(expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0]))) {
+            hydroController.setPinExpander(expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0]), expanders[expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0])]);
+        }
         #if SETUP_PH_METER_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_PH_METER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_PH_METER_PINCHNL/16, expanders[SETUP_PH_METER_PINCHNL/16]); }
             #undef SETUP_PH_METER_PIN
@@ -861,7 +864,7 @@ inline void setupUI()
 #ifdef ESP_PLATFORM
                                                                    SETUP_UI_GFX_BACKLIGHT_ESP_FRQ,
 #endif
-  #if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735)
+#if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7735)
                                                                    JOIN(Hydro_ST7735Tag,SETUP_UI_GFX_ST7735_TAG)
 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, ST7789)
                                                                    JOIN(Hydro_ST7789Res,SETUP_UI_GFX_ST7789_RES)

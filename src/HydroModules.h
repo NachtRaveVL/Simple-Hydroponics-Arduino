@@ -105,10 +105,14 @@ public:
     // Deactivates all pin muxers. All pin muxers are assumed to have a shared address bus.
     void deactivatePinMuxers();
 
+#ifndef HYDRO_DISABLE_MULTITASKING
+
     // Sets pin expander for index.
     inline void setPinExpander(hposi_t index, SharedPtr<HydroPinExpander> pinExpander) { _pinExpanders[index] = pinExpander; }
     // Returns expander for index.
     inline SharedPtr<HydroPinExpander> getPinExpander(hposi_t index) { return _pinExpanders[index]; }
+
+#endif // /ifndef HYDRO_DISABLE_MULTITASKING
 
     // OneWire instance for given pin (lazily instantiated)
     OneWire *getOneWireForPin(pintype_t pin);
@@ -119,7 +123,9 @@ protected:
     Map<pintype_t, OneWire *, HYDRO_SYS_ONEWIRES_MAXSIZE> _pinOneWire; // Pin OneWire mapping
     Map<pintype_t, pintype_t, HYDRO_SYS_PINLOCKS_MAXSIZE> _pinLocks; // Pin locks mapping (existence = locked)
     Map<pintype_t, SharedPtr<HydroPinMuxer>, HYDRO_SYS_PINMUXERS_MAXSIZE> _pinMuxers; // Pin muxers mapping
+#ifndef HYDRO_DISABLE_MULTITASKING
     Map<hposi_t, SharedPtr<HydroPinExpander>, HYDRO_SYS_PINEXPANDERS_MAXSIZE> _pinExpanders; // Pin expanders mapping
+#endif
 };
 
 #endif // /ifndef HydroModules_H

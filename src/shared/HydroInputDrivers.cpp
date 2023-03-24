@@ -182,7 +182,12 @@ HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> contro
 
 void HydroInputMatrix2x2::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
-    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #ifndef HYDRO_DISABLE_MULTITASKING
+        auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #else
+        _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #endif
 }
 
 
@@ -214,7 +219,13 @@ HydroInputMatrix3x4::~HydroInputMatrix3x4()
 
 void HydroInputMatrix3x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
-    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #ifndef HYDRO_DISABLE_MULTITASKING
+        auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #else
+        _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #endif
+
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
 }
 
@@ -248,7 +259,13 @@ HydroInputMatrix4x4::~HydroInputMatrix4x4()
 
 void HydroInputMatrix4x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
 {
-    _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #ifndef HYDRO_DISABLE_MULTITASKING
+        auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #else
+        _keyboard.initialise(internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, false);
+    #endif
+
     if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
 }
 
