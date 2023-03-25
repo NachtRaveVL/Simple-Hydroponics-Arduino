@@ -30,9 +30,10 @@ public:
 
     void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false);
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const = 0;
-    virtual bool isLandscape() const = 0;
-    inline bool isPortrait() const { return !isLandscape(); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const = 0;
+    virtual bool isLandscape(bool withRot = true) const = 0;
+    inline bool isPortrait(bool withRot = true) const { return !isLandscape(withRot); }
+    inline bool isSquare() const { return getScreenSize().first == getScreenSize().second; }
     virtual uint8_t getScreenBits() const = 0;
     inline bool isMonochrome() const { return getScreenBits() == 1; }
     inline bool isColor() const { return getScreenBits() > 1; }
@@ -52,7 +53,7 @@ protected:
 
 
 // Liquid Crystal Display Driver
-// Display driver for text-only monochrome LCD, typically ones that talk through a PCF8574 i2c driver or similar.
+// Display driver for text-only monochrome LCDs, typically ones that talk through a PCF857X i2c expander or similar.
 // Note: Parallel 6800/8080 raw data connections are not supported at this time.
 class HydroDisplayLiquidCrystal : public HydroDisplayDriver {
 public:
@@ -66,9 +67,9 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair((uint16_t)max(_screenSize[0],_screenSize[1]), (uint16_t)min(_screenSize[0],_screenSize[1]))
-                                                                                          : make_pair((uint16_t)min(_screenSize[0],_screenSize[1]), (uint16_t)max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1]; }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair((uint16_t)max(_screenSize[0],_screenSize[1]), (uint16_t)min(_screenSize[0],_screenSize[1]))
+                                                                                                                    : make_pair((uint16_t)min(_screenSize[0],_screenSize[1]), (uint16_t)max(_screenSize[0],_screenSize[1])); }
+    virtual bool isLandscape(bool withRot = true) const override { return _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 1; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
@@ -84,8 +85,8 @@ protected:
 
 
 // Monochrome OLED Display Driver
-// Display driver for monochrome OLED LCDs.
-// Note: Uses HYDRO_UI_CUSTOM_OLED_* defines for custom OLED support.
+// Display driver for smaller monochrome OLED LCDs, typically less than 1.5" in size.
+// Note: CustomOLED option uses HYDRO_UI_CUSTOM_OLED_* defines for custom OLED support.
 class HydroDisplayU8g2OLED : public HydroDisplayDriver {
 public:
     HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, U8G2 *gfx);
@@ -96,17 +97,18 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
-                                                                                          : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape() const override { return _screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
-                                                                                        : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                                                    : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
+    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                                                      : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
+                                                                                  : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 1; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
 
     inline U8G2 &getGfx() { return *_gfx; }
-    #ifdef HYDRO_UI_ENABLE_STM32_LDTC
+    #ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
         inline StChromaArtDrawable &getDrawable() { return *_drawable; }
     #else
         inline U8g2Drawable &getDrawable() { return *_drawable; }
@@ -115,7 +117,7 @@ public:
 protected:
     uint16_t _screenSize[2];
     U8G2 *_gfx;
-    #ifdef HYDRO_UI_ENABLE_STM32_LDTC
+    #ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
         StChromaArtDrawable *_drawable;
     #else
         U8g2Drawable *_drawable;
@@ -155,7 +157,7 @@ public:
 
 
 // Generic AdafruitGFX Display Driver
-// A generic base AdafruitGFX driver that serves as a template for all specialized drivers.
+// A generic base AdafruitGFX driver that serves as a template for all general AdafruitGFX color display drivers.
 // Note: It is likely that the initializer/begin calls used will not be correct for any given AdafruitGFX class used. Consider always specializing.
 template <class T>
 class HydroDisplayAdafruitGFX : public HydroDisplayDriver {
@@ -168,8 +170,11 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                                                    : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
+    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                                                      : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
+                                                                                  : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
@@ -179,6 +184,7 @@ public:
     inline AdafruitDrawable<T> &getDrawable() { return _drawable; }
 
 protected:
+    uint16_t _screenSize[2];
     T _gfx;
     AdafruitDrawable<T> _drawable;
     GraphicsDeviceRenderer _renderer;
@@ -186,8 +192,8 @@ protected:
 
 
 // ST7735 AdafruitSPITFT Display Driver
-// Advanced color display.
-// Note: Class requires proper ST7735 tag color.
+// Advanced color display. Modern & widely available, typically less than 1" in size.
+// Note: Requires proper ST7735 tag color enum (ST7735 section of Hydro_ST77XXKind). Custom resolutions are not supported.
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7735> : public HydroDisplayDriver {
 public:
@@ -199,8 +205,11 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                                                    : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
+    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                                                      : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
+                                                                                  : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
@@ -210,6 +219,7 @@ public:
     inline AdafruitDrawable<Adafruit_ST7735> &getDrawable() { return _drawable; }
 
 protected:
+    uint16_t _screenSize[2];
     const Hydro_ST77XXKind _kind;
     Adafruit_ST7735 _gfx;
     AdafruitDrawable<Adafruit_ST7735> _drawable;
@@ -218,7 +228,9 @@ protected:
 
 
 // ST7789 AdafruitSPITFT Display Driver
-// Advanced color display. Uses TFT_GFX_WIDTH/HEIGHT for CustomTFT screen device width/height.
+// Advanced color display. Modern & widely available, typically in the 1" to 3" size range.
+// Note: Requires proper ST7789 screen resolution enum (ST7789 section of Hydro_ST77XXKind).
+// Note: CustomTFT option uses TFT_GFX_WIDTH & TFT_GFX_HEIGHT for custom screen size.
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ST7789> : public HydroDisplayDriver {
 public:
@@ -230,8 +242,11 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                                                    : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
+    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                                                      : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
+                                                                                  : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
@@ -241,6 +256,7 @@ public:
     inline AdafruitDrawable<Adafruit_ST7789> &getDrawable() { return _drawable; }
 
 protected:
+    uint16_t _screenSize[2];
     const Hydro_ST77XXKind _kind;
     Adafruit_ST7789 _gfx;
     AdafruitDrawable<Adafruit_ST7789> _drawable;
@@ -249,7 +265,7 @@ protected:
 
 
 // ILI9341 AdafruitSPITFT Display Driver
-// Most modern widely-available TFT displays on market are typically a variant of this particular type.
+// Advanced color display. Modern & widely-available, typically in the 2" to 3" size range.
 template <>
 class HydroDisplayAdafruitGFX<Adafruit_ILI9341> : public HydroDisplayDriver {
 public:
@@ -261,8 +277,11 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return make_pair((uint16_t)_gfx.width(), (uint16_t)_gfx.height()); }
-    virtual bool isLandscape() const override { return _gfx.width() >= _gfx.height(); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                                                    : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
+    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                                                      : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
+                                                                                  : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
@@ -272,6 +291,7 @@ public:
     inline AdafruitDrawable<Adafruit_ILI9341> &getDrawable() { return _drawable; }
 
 protected:
+    uint16_t _screenSize[2];
     Adafruit_ILI9341 _gfx;
     AdafruitDrawable<Adafruit_ILI9341> _drawable;
     GraphicsDeviceRenderer _renderer;
@@ -279,8 +299,14 @@ protected:
 
 
 // TFT_eSPI Display Driver
-// Fastest library for working with TFT displays, but requires additional setup.
-// Note: Usage of TFT_eSPI requires library setup via its TFT_eSPI\User_Setup.h.
+// Fastest library for working with TFT displays, but requires advanced setup.
+// Library always compiles statically - changes will always require sketch modify/re-upload.
+// Drivers supported: ILI9341, ILI9341/alt, ST7735, ILI9163, S6D02A1, ILI9486/rpi, HX8357D,
+//                    ILI9481, ILI9486, ILI9488, ST7789, ST7789/min, R61581, RM68140, ST7796,
+//                    SSD1351, SSD1963/480, SSD1963/800, SSD1963/800alt, ILI9225, GC9A01
+// Note: Usage of TFT_eSPI requires library setup via its TFT_eSPI/User_Setup.h.
+// Note: Uses TFT_GFX_WIDTH & TFT_GFX_HEIGHT for custom screen size, which defaults to
+//       TFT_WIDTH & TFT_HEIGHT as defined in User_Setup.h (if not overriden by build defines).
 class HydroDisplayTFTeSPI : public HydroDisplayDriver {
 public:
     HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST77XXKind st77Kind = Hydro_ST77XXKind_Undefined);
@@ -291,10 +317,17 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize() const override { return isLandscape() ? make_pair(max(TFT_GFX_WIDTH,TFT_GFX_HEIGHT), min(TFT_GFX_WIDTH,TFT_GFX_HEIGHT))
-                                                                                          : make_pair(min(TFT_GFX_WIDTH,TFT_GFX_HEIGHT), max(TFT_GFX_WIDTH,TFT_GFX_HEIGHT)); }
-    virtual bool isLandscape() const override { return TFT_GFX_WIDTH >= TFT_GFX_HEIGHT ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
-                                                                                        : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(TFT_GFX_WIDTH,TFT_GFX_HEIGHT), min(TFT_GFX_WIDTH,TFT_GFX_HEIGHT))
+                                                                                                                    : make_pair(min(TFT_GFX_WIDTH,TFT_GFX_HEIGHT), max(TFT_GFX_WIDTH,TFT_GFX_HEIGHT)); }
+    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (TFT_GFX_WIDTH >= TFT_GFX_HEIGHT ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                                                      : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
+                                                                                  : TFT_GFX_WIDTH >= TFT_GFX_HEIGHT; }
+    inline bool isRound() const
+        #ifdef GC9A01_DRIVER
+            { return TFT_GFX_WIDTH == TFT_GFX_HEIGHT; }
+        #else
+            { return false; }
+        #endif
     virtual uint8_t getScreenBits() const override { return 24; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }

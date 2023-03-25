@@ -68,7 +68,12 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
         _uiData->editingIcons = editingIcons;
     }
 
-    #if !HYDRO_UI_START_AT_OVERVIEW
+    #if HYDRO_UI_START_AT_OVERVIEW
+        if (!_overview && _display) {
+            _overview = _display->allocateOverview(_clockFont, _detailFont);
+            HYDRO_SOFT_ASSERT(_overview, SFP(HStr_Err_AllocationFailure));
+        }
+    #else
         if (!_homeMenu) {
             _homeMenu = new HydroHomeMenu();
             HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
@@ -101,8 +106,11 @@ bool HydruinoBaseUI::begin()
         }
     }
 
-    if (_input) { _input->begin(baseRenderer, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
-    else { menuMgr.initWithoutInput(baseRenderer, _homeMenu ? _homeMenu->getRootItem() : nullptr); }
+    if (_input) {
+        _input->begin(_display, _homeMenu ? _homeMenu->getRootItem() : nullptr);
+    } else { // Default init
+        menuMgr.initWithoutInput(baseRenderer, _homeMenu ? _homeMenu->getRootItem() : nullptr);
+    }
 
     if (_display) {
         _display->setupRendering(_uiData->titleMode, _uiData->displayTheme, _itemFont, _titleFont, _uiData->analogSlider, _uiData->editingIcons, _isUnicodeFonts);
@@ -119,7 +127,7 @@ bool HydruinoBaseUI::begin()
 void HydruinoBaseUI::setNeedsRedraw()
 {
     if (_overview) { _overview->setNeedsFullRedraw(); }
-    else { menuMgr.notifyStructureChanged(); }
+    if (_homeMenu) { menuMgr.notifyStructureChanged(); }
 }
 
 SwitchInterruptMode HydruinoBaseUI::getISRMode() const
@@ -211,7 +219,7 @@ void HydruinoBaseUI::renderLoop(unsigned int currentValue, RenderPressMode userC
                 _homeMenu = new HydroHomeMenu();
                 HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
 
-                if (_homeMenu) { 
+                if (_homeMenu) {
                     menuMgr.setRootMenu(_homeMenu->getRootItem());
                     taskManager.scheduleOnce(0, []{
                         menuMgr.resetMenu(true);

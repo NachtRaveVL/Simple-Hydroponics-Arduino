@@ -1,6 +1,6 @@
 /*  Hydruino: Simple automation controller for hydroponic grow systems.
     Copyright (C) 2022-2023 NachtRaveVL     <nachtravevl@gmail.com>
-    tcMenu Adafruit FT2606 Touchscreen
+    tcMenu Adafruit FT2606 & XPT2046 Touchscreen
 */
 
 #include <Hydruino.h>
@@ -12,6 +12,8 @@
  */
 
 /* Changelist:
+ * - Refactored to have screen size given in init
+ * - Split into proper header/source file
  * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
 
@@ -34,17 +36,6 @@
 #endif
 #include <ResistiveTouchScreen.h>
 
-//
-// This is the known absolute maximum value of the touch unit before calibration. It will become 1.0F
-//
-#ifndef HYDRO_UI_ENABLE_XPT2046TS
-#define KNOWN_DEVICE_TOUCH_RANGE_X ((float)TFT_GFX_WIDTH)
-#define KNOWN_DEVICE_TOUCH_RANGE_Y ((float)TFT_GFX_HEIGHT)
-#else
-#define KNOWN_DEVICE_TOUCH_RANGE_X 4096.0F
-#define KNOWN_DEVICE_TOUCH_RANGE_Y 4096.0F
-#endif
-
 namespace iotouch {
 
     /**
@@ -57,27 +48,17 @@ namespace iotouch {
         #else
             XPT2046_Touchscreen& theTouchDevice;
         #endif
+        uint16_t maxWidthDim;
+        uint16_t maxHeightDim;
     public:
         #ifndef HYDRO_UI_ENABLE_XPT2046TS
-            AdaLibTouchInterrogator(Adafruit_FT6206& touchLibRef) : theTouchDevice(touchLibRef) {}
+            AdaLibTouchInterrogator(Adafruit_FT6206& touchLibRef);
         #else
-            AdaLibTouchInterrogator(XPT2046_Touchscreen& touchLibRef) : theTouchDevice(touchLibRef) {}
+            AdaLibTouchInterrogator(XPT2046_Touchscreen& touchLibRef);
         #endif
 
-        void init() {
-            theTouchDevice.begin();
-        }
-
-        iotouch::TouchState internalProcessTouch(float *ptrX, float *ptrY, const iotouch::TouchOrientationSettings& rotation, const iotouch::CalibrationHandler& calib) {
-            if(theTouchDevice.touched() == 0) return iotouch::NOT_TOUCHED;
-
-            TS_Point pt = theTouchDevice.getPoint();
-            //serdebugF3("point at ", pt.x, pt.y);
-
-            *ptrX = calib.calibrateX(float(pt.x) / KNOWN_DEVICE_TOUCH_RANGE_X, rotation.isXInverted());
-            *ptrY = calib.calibrateY(float(pt.y) / KNOWN_DEVICE_TOUCH_RANGE_Y, rotation.isYInverted());
-            return iotouch::TOUCHED;
-        }
+        inline void init(uint16_t xMax, uint16_t yMax) { maxWidthDim = xMax; maxHeightDim = yMax; theTouchDevice.begin(); }
+        iotouch::TouchState internalProcessTouch(float *ptrX, float *ptrY, const iotouch::TouchOrientationSettings& rotation, const iotouch::CalibrationHandler& calib);
     };
 
 }

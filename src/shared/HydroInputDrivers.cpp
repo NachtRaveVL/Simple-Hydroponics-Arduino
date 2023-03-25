@@ -26,18 +26,23 @@ HydroInputRotary::HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins,
     : HydroInputDriver(controlPins), _encoderSpeed(encoderSpeed)
 { ; }
 
-void HydroInputRotary::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputRotary::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
     #ifndef HYDRO_DISABLE_MULTITASKING
         auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-        switches.init(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+        switches.init(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()),
+                      getBaseUI() ? getBaseUI()->getISRMode() : SWITCHES_POLL_EVERYTHING,
+                      getBaseUI() && getBaseUI()->isActiveLow());
     #else
-        switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+        switches.init(getIoAbstraction() ?: internalDigitalIo(),
+                      getBaseUI() ? getBaseUI()->getISRMode() : SWITCHES_POLL_EVERYTHING,
+                      getBaseUI() && getBaseUI()->isActiveLow());
     #endif
 
-    menuMgr.initForEncoder(renderer, initialItem, _pins.second[0], _pins.second[1], _pins.second[2], _encoderSpeed == Hydro_EncoderSpeed_FullCycle ? FULL_CYCLE : _encoderSpeed == Hydro_EncoderSpeed_HalfCycle ? HALF_CYCLE : QUARTER_CYCLE);
-    if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
-    if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);    
+    menuMgr.initForEncoder(displayDriver->getBaseRenderer(), initialItem, _pins.second[0], _pins.second[1], _pins.second[2],
+                           _encoderSpeed == Hydro_EncoderSpeed_FullCycle ? FULL_CYCLE : _encoderSpeed == Hydro_EncoderSpeed_HalfCycle ? HALF_CYCLE : QUARTER_CYCLE);
+    if (_pins.first > 3 && isValidPin(_pins.second[3])) { menuMgr.setBackButton(_pins.second[3]); }
+    if (_pins.first > 4 && isValidPin(_pins.second[4])) { menuMgr.setNextButton(_pins.second[4]); }
 }
 
 bool HydroInputRotary::areMainPinsInterruptable() const
@@ -79,20 +84,24 @@ HydroInputUpDownButtons::~HydroInputUpDownButtons()
     }
 }
 
-void HydroInputUpDownButtons::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputUpDownButtons::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
     if (_dfRobotIORef) {
-        switches.initialise(_dfRobotIORef, getBaseUI()->isActiveLow());
+        switches.initialise(_dfRobotIORef, getBaseUI() && getBaseUI()->isActiveLow());
     } else {
         #ifndef HYDRO_DISABLE_MULTITASKING
             auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-            switches.init(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+            switches.init(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()),
+                          getBaseUI() ? getBaseUI()->getISRMode() : SWITCHES_POLL_EVERYTHING,
+                          getBaseUI() && getBaseUI()->isActiveLow());
         #else
-            switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+            switches.init(getIoAbstraction() ?: internalDigitalIo(),
+                          getBaseUI() ? getBaseUI()->getISRMode() : SWITCHES_POLL_EVERYTHING,
+                          getBaseUI() && getBaseUI()->isActiveLow());
         #endif
     }
 
-    menuMgr.initForUpDownOk(renderer, initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
+    menuMgr.initForUpDownOk(displayDriver->getBaseRenderer(), initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
 }
@@ -122,11 +131,13 @@ HydroInputESP32TouchKeys::HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t
 #endif
 { ; }
 
-void HydroInputESP32TouchKeys::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputESP32TouchKeys::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
-    switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+    switches.init(getIoAbstraction() ?: internalDigitalIo(),
+                  getBaseUI() ? getBaseUI()->getISRMode() : SWITCHES_POLL_EVERYTHING,
+                  getBaseUI() && getBaseUI()->isActiveLow());
 
-    menuMgr.initForUpDownOk(renderer, initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
+    menuMgr.initForUpDownOk(displayDriver->getBaseRenderer(), initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
     if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
     if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
     #ifdef ESP32
@@ -172,9 +183,11 @@ static void menuMgrValueChanged(int val)
     menuMgr.valueChanged(val);
 }
 
-void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputJoystick::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
-    switches.init(getIoAbstraction() ?: internalDigitalIo(), getBaseUI()->getISRMode(), getBaseUI()->isActiveLow());
+    switches.init(getIoAbstraction() ?: internalDigitalIo(),
+                  getBaseUI() ? getBaseUI()->getISRMode() : SWITCHES_POLL_EVERYTHING,
+                  getBaseUI() && getBaseUI()->isActiveLow());
 
     if (isValidPin(_pins.second[2])) {
         switches.addSwitch(_pins.second[2], NULL);
@@ -192,7 +205,7 @@ void HydroInputJoystick::begin(MenuRenderer *renderer, MenuItem *initialItem)
         reinterpret_cast<JoystickSwitchInput*>(switches.getEncoder())->setAccelerationParameters(_repeatDelay, _decreaseDivisor);
     }
 
-    menuMgr.initWithoutInput(renderer, initialItem);
+    menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem);
 }
 
 bool HydroInputJoystick::areMainPinsInterruptable() const
@@ -206,7 +219,7 @@ bool HydroInputJoystick::areMainPinsInterruptable() const
 HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(2,2,SFP(HUIStr_Keys_Matrix2x2Keys).c_str()),
+      _keyboardLayout(2,2,CFP(HUIStr_Keys_Matrix2x2Keys)),
       _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3])
 {
     _keyboardLayout.setRowPin(0, controlPins.second[0]);
@@ -216,13 +229,17 @@ HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> contro
     _keyboard.setRepeatKeyMillis(repeatDelay, repeatInterval);
 }
 
-void HydroInputMatrix2x2::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputMatrix2x2::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
     #ifndef HYDRO_DISABLE_MULTITASKING
         auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()),
+                             &_keyboardLayout, &_tcMenuKeyListener,
+                             (!getBaseUI() || getBaseUI()->allowingISR()) && areRowPinsInterruptable());
     #else
-        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
+        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(),
+                             &_keyboardLayout, &_tcMenuKeyListener,
+                             (!getBaseUI() || getBaseUI()->allowingISR()) && areRowPinsInterruptable());
     #endif
 }
 
@@ -242,7 +259,7 @@ bool HydroInputMatrix2x2::areMainPinsInterruptable() const
 HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,3,SFP(HUIStr_Keys_Matrix3x4Keys).c_str()),
+      _keyboardLayout(4,3,CFP(HUIStr_Keys_Matrix3x4Keys)),
       _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3]),
       _rotaryEncoder(nullptr)
 {
@@ -265,16 +282,20 @@ HydroInputMatrix3x4::~HydroInputMatrix3x4()
     if (_rotaryEncoder) { delete _rotaryEncoder; }
 }
 
-void HydroInputMatrix3x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputMatrix3x4::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
     #ifndef HYDRO_DISABLE_MULTITASKING
         auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()),
+                             &_keyboardLayout, &_tcMenuKeyListener,
+                             (!getBaseUI() || getBaseUI()->allowingISR()) && areRowPinsInterruptable());
     #else
-        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
+        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(),
+                             &_keyboardLayout, &_tcMenuKeyListener,
+                             (!getBaseUI() || getBaseUI()->allowingISR()) && areRowPinsInterruptable());
     #endif
 
-    if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
+    if (_rotaryEncoder) { _rotaryEncoder->begin(displayDriver, initialItem); }
 }
 
 bool HydroInputMatrix3x4::areRowPinsInterruptable() const
@@ -295,7 +316,7 @@ bool HydroInputMatrix3x4::areMainPinsInterruptable() const
 HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,4,SFP(HUIStr_Keys_Matrix4x4Keys).c_str()),
+      _keyboardLayout(4,4,CFP(HUIStr_Keys_Matrix4x4Keys)),
       _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3]),
       _rotaryEncoder(nullptr)
 {
@@ -319,16 +340,20 @@ HydroInputMatrix4x4::~HydroInputMatrix4x4()
     if (_rotaryEncoder) { delete _rotaryEncoder; }
 }
 
-void HydroInputMatrix4x4::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputMatrix4x4::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
     #ifndef HYDRO_DISABLE_MULTITASKING
         auto expander = getController() && _pins.first > 0 && isValidPin(_pins.second[0]) && _pins.second[0] >= hpin_virtual ? getController()->getPinExpander(expanderForPinNumber(_pins.second[0])) : nullptr;
-        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
+        _keyboard.initialise(expander && expander->getIoAbstraction() ? expander->getIoAbstraction() : (getIoAbstraction() ?: internalDigitalIo()),
+                             &_keyboardLayout, &_tcMenuKeyListener,
+                             (!getBaseUI() || getBaseUI()->allowingISR()) && areRowPinsInterruptable());
     #else
-        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(), &_keyboardLayout, &_tcMenuKeyListener, getBaseUI()->allowingISR() && areRowPinsInterruptable());
+        _keyboard.initialise(getIoAbstraction() ?: internalDigitalIo(),
+                             &_keyboardLayout, &_tcMenuKeyListener,
+                             (!getBaseUI() || getBaseUI()->allowingISR()) && areRowPinsInterruptable());
     #endif
 
-    if (_rotaryEncoder) { _rotaryEncoder->begin(renderer, initialItem); }
+    if (_rotaryEncoder) { _rotaryEncoder->begin(displayDriver, initialItem); }
 }
 
 bool HydroInputMatrix4x4::areRowPinsInterruptable() const
@@ -346,36 +371,36 @@ bool HydroInputMatrix4x4::areMainPinsInterruptable() const
 }
 
 
-HydroInputResistiveTouch::HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_TouchscreenOrientation touchOrient)
+HydroInputResistiveTouch::HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient)
     : HydroInputDriver(controlPins),
       _touchInterrogator(controlPins.second[0], controlPins.second[1], controlPins.second[2], controlPins.second[3]),
       _touchOrientation(
-         /*swap*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3))
+         /*swap*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R3))
                   || (touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_SwapXY),
-         /*invX*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror))
+         /*invX*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_HorzMirror))
                   || (touchOrient == Hydro_TouchscreenOrientation_InvertX || touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY),
-         /*invY*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror))
+         /*invY*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R3 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_VertMirror))
                   || (touchOrient == Hydro_TouchscreenOrientation_InvertY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY)
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }
 
-void HydroInputResistiveTouch::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputResistiveTouch::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
     _touchScreen.start();
-    menuMgr.initWithoutInput(renderer, initialItem);
+    menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem);
 }
 
 
-HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient)
+HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient)
     : HydroInputDriver(controlPins),
       #ifdef HYDRO_UI_ENABLE_XPT2046TS
-          _touchScreen(controlPins.second[0], controlPins.second[1]),
+          _touchScreen(controlPins.second[0], getBaseUI() && getBaseUI()->allowingISR() ? controlPins.second[1] : (uint8_t)0xff),
       #else
           _touchScreen(),
       #endif
       #ifdef HYDRO_UI_ENABLE_BSP_TOUCH
-          _touchInterrogator(TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
+          _touchInterrogator(),
       #else
           _touchInterrogator(_touchScreen),
       #endif
@@ -389,34 +414,35 @@ HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> co
       )
 { ; }
 
-void HydroInputTouchscreen::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputTouchscreen::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
-    _touchInterrogator.init(); // begins touch device
-    menuMgr.initWithoutInput(renderer, initialItem);
+    _touchInterrogator.init(displayDriver->getScreenSize(false).first, displayDriver->getScreenSize(false).second);
+    menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem);
     #ifdef HYDRO_UI_ENABLE_XPT2046TS
-        _touchScreen.setRotation(getBaseUI() ? (uint8_t)getBaseUI()->getDisplaySetup().getDisplayRotation() : 0);
+        _touchScreen.setRotation(getBaseUI()  ? (uint8_t)getBaseUI()->getDisplaySetup().getDisplayRotation() : 0);
     #endif
 }
 
 
-HydroInputTFTTouch::HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, Hydro_TouchscreenOrientation touchOrient, bool useRawTouch)
+HydroInputTFTTouch::HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient, bool useRawTouch)
     : HydroInputDriver(controlPins),
-      _touchInterrogator(&displayDriver->getGfx(), displayDriver->getScreenSize().first, displayDriver->getScreenSize().second, useRawTouch),
+      _touchInterrogator(&displayDriver->getGfx(), useRawTouch),
       _touchOrientation(
-         /*swap*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R3))
+         /*swap*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R3))
                   || (touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_SwapXY),
-         /*invX*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R1 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_HorzMirror))
+         /*invX*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R1 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_HorzMirror))
                   || (touchOrient == Hydro_TouchscreenOrientation_InvertX || touchOrient == Hydro_TouchscreenOrientation_InvertX_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY),
-         /*invY*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayDriver->getRotation() == Hydro_DisplayRotation_R3 || displayDriver->getRotation() == Hydro_DisplayRotation_R2 || displayDriver->getRotation() == Hydro_DisplayRotation_VertMirror))
+         /*invY*/ (touchOrient == Hydro_TouchscreenOrientation_Same && (displayRotation == Hydro_DisplayRotation_R3 || displayRotation == Hydro_DisplayRotation_R2 || displayRotation == Hydro_DisplayRotation_VertMirror))
                   || (touchOrient == Hydro_TouchscreenOrientation_InvertY || touchOrient == Hydro_TouchscreenOrientation_InvertY_SwapXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY || touchOrient == Hydro_TouchscreenOrientation_InvertXY_SwapXY)
       ),
       _touchScreen(&_touchInterrogator, displayDriver->getGraphicsRenderer(), _touchOrientation)
 { ; }
 
-void HydroInputTFTTouch::begin(MenuRenderer *renderer, MenuItem *initialItem)
+void HydroInputTFTTouch::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
+    _touchInterrogator.init(displayDriver->getScreenSize(false).first, displayDriver->getScreenSize(false).second);
     _touchScreen.start();
-    menuMgr.initWithoutInput(renderer, initialItem);
+    menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem);
 }
 
 #endif

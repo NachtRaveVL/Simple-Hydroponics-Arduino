@@ -22,7 +22,6 @@
  */
 
 #include "tcMenu_Display_TfteSpi.h"
-#include "tcUnicodeHelper.h"
 
 using namespace iotouch;
 
@@ -182,8 +181,8 @@ TouchState TftSpiTouchInterrogator::internalProcessTouch(float *ptrX, float *ptr
     if(usingRawTouch) {
         tft->getTouchRaw(&touchX, &touchY);
         pressed = tft->getTouchRawZ() > 600;
-        *ptrX = calib.calibrateX(float(touchX) / TFTTOUCH_XPT2046_RAW_MAX, rotation.isXInverted());
-        *ptrY = calib.calibrateY(float(touchY) / TFTTOUCH_XPT2046_RAW_MAX, rotation.isYInverted());
+        *ptrX = calib.calibrateX(float(touchX) / XPT2046_RAW_MAX, rotation.isXInverted());
+        *ptrY = calib.calibrateY(float(touchY) / XPT2046_RAW_MAX, rotation.isYInverted());
     } else {
         pressed = tft->getTouch(&touchX, &touchY);
         *ptrX = calib.calibrateX(float(touchX) / maxWidthDim, rotation.isXInverted());

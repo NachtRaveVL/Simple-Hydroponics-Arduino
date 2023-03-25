@@ -1,6 +1,6 @@
 {
     "name": "Simple-Hydroponics-Arduino",
-    "version": "0.6.5.0",
+    "version": "0.6.7.0",
     "keywords": "hydroponic,hydroponics,plant,plants,crop,crops,grow,growing,growth,watering,scheduler,tracking,diy,automation,controller,monitor,system",
     "description": "Hydruino: Simple automation controller for hydroponic grow systems.",
     "license": "MIT",

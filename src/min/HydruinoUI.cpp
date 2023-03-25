@@ -112,7 +112,7 @@ void HydruinoMinUI::allocateResistiveTouchControl()
             case Hydro_ControlInputMode_ResistiveTouch:
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_NotYetInitialized));
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Touchscreen, SFP(HStr_Err_InvalidParameter));
-                _input = new HydroInputResistiveTouch(ctrlInPins, _display, _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
+                _input = new HydroInputResistiveTouch(ctrlInPins, _display, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
                 break;
             default: break;
         }
@@ -131,11 +131,12 @@ void HydruinoMinUI::allocateTouchscreenControl()
         auto ctrlInPins = controller->getControlInputPins();
         switch (ctrlInMode) {
             case Hydro_ControlInputMode_TouchScreen:
+                HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_NotYetInitialized));
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Touchscreen, SFP(HStr_Err_InvalidParameter));
                 #ifdef HYDRO_UI_ENABLE_XPT2046TS
                     HYDRO_SOFT_ASSERT(ctrlInPins.first && ctrlInPins.second && isValidPin(ctrlInPins.second[0]), SFP(HStr_Err_InvalidPinOrType));
                 #endif
-                _input = new HydroInputTouchscreen(ctrlInPins, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
+                _input = new HydroInputTouchscreen(ctrlInPins, _display, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
                 break;
             default: break;
         }
@@ -155,7 +156,7 @@ void HydruinoMinUI::allocateTFTTouchControl()
         switch (ctrlInMode) {
             case Hydro_ControlInputMode_TFTTouch:
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_NotYetInitialized));
-                HYDRO_SOFT_ASSERT(controller->getDisplayOutputMode() == Hydro_DisplayOutputMode_TFT, SFP(HStr_Err_InvalidParameter));
+                HYDRO_SOFT_ASSERT(dispOutMode == Hydro_DisplayOutputMode_TFT, SFP(HStr_Err_InvalidParameter));
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Touchscreen, SFP(HStr_Err_InvalidParameter));
                 HYDRO_SOFT_ASSERT(ctrlInPins.first && ctrlInPins.second && isValidPin(ctrlInPins.second[0]), SFP(HStr_Err_InvalidPinOrType));
                 #ifdef TOUCH_CS
@@ -163,7 +164,7 @@ void HydruinoMinUI::allocateTFTTouchControl()
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
                 #endif
-                _input = new HydroInputTFTTouch(ctrlInPins, (HydroDisplayTFTeSPI *)_display, _uiCtrlSetup.ctrlCfgAs.touchscreen.orient, HYDRO_UI_TFTTOUCH_USES_RAW);
+                _input = new HydroInputTFTTouch(ctrlInPins, (HydroDisplayTFTeSPI *)_display, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient, HYDRO_UI_TFTTOUCH_USES_RAW);
                 break;
             default: break;
         }

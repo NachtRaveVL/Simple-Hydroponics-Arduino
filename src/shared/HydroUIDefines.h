@@ -6,6 +6,8 @@
 #ifndef HydroUIDefines_H
 #define HydroUIDefines_H
 
+#define XPT2046_RAW_MAX                 4096                // XPT2046 touch screen raw maximum value
+
 #if F_SPD >= 48000000                                       // Resolve an appropriate UI update speed (1-10)
 #define HYDRO_UI_UPDATE_SPEED           10
 #elif F_SPD >= 32000000
@@ -34,7 +36,10 @@
 #define HYDRO_UI_START_AT_OVERVIEW      true                // Starts at overview screen (true), else menu screen (false)
 #define HYDRO_UI_DEALLOC_AFTER_USE      defined(__AVR__)    // If screen data should be unloaded after use (true = lower memory usage, increased screens transition time), or stay memory-resident (false = higher memory usage, more instant screen transitions)
 #define HYDRO_UI_GFX_VARS_USES_SLIDER   true                // Default analog slider usage for graphical displays displaying variable value ranges
-#define HYDRO_UI_MENU_FONT_MAG_LEVEL    2                   // Menu font base magnification level
+#define HYDRO_UI_MENU_TITLE_MAG_LEVEL   2                   // Menu title font magnification level
+#define HYDRO_UI_MENU_ITEM_MAG_LEVEL    2                   // Menu item font magnification level
+#define HYDRO_UI_IOT_MONITOR_TEXT       "IoT Monitor"       // Menu IoT monitor item text
+#define HYDRO_UI_AUTHENTICATOR_TEXT     "Authenticator"     // Menu authenticator item text
 
 #define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed, in ticks
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port

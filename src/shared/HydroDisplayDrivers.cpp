@@ -29,22 +29,22 @@ void HydroDisplayDriver::setupRendering(uint8_t titleMode, Hydro_DisplayTheme di
         if (_displayTheme != displayTheme) {
             switch ((_displayTheme = displayTheme)) {
                 case Hydro_DisplayTheme_CoolBlue_ML:
-                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
+                    installCoolBlueModernTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_ITEM_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_TITLE_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_CoolBlue_SM:
-                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
+                    installCoolBlueTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_ITEM_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_TITLE_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_DarkMode_ML:
-                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
+                    installDarkModeModernTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_ITEM_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_TITLE_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_DarkMode_SM:
-                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
+                    installDarkModeTraditionalTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_ITEM_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_TITLE_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_MonoOLED:
-                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
+                    installMonoBorderedTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_ITEM_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_TITLE_MAG_LEVEL), editingIcons);
                     break;
                 case Hydro_DisplayTheme_MonoOLED_Inv:
-                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_FONT_MAG_LEVEL), editingIcons);
+                    installMonoInverseTitleTheme(*graphicsRenderer, MenuFontDef(itemFont, HYDRO_UI_MENU_ITEM_MAG_LEVEL), MenuFontDef(titleFont, HYDRO_UI_MENU_TITLE_MAG_LEVEL), editingIcons);
                     break;
             }
         }
@@ -99,7 +99,7 @@ HydroDisplayU8g2OLED::HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_Displ
         if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
             _gfx->setI2CAddress(HYDRO_UI_I2C_OLED_BASEADDR | displaySetup.cfgAs.i2c.address);
         }
-        #ifdef HYDRO_UI_ENABLE_STM32_LDTC
+        #ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
             _drawable = new StChromaArtDrawable();
         #else
             if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
@@ -147,6 +147,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
+      _screenSize{_gfx.width(),_gfx.height()}, // incorrect until after begin
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
@@ -168,6 +169,8 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
     } else {
         _gfx.initR((uint8_t)_kind);
     }
+    _screenSize[0] = _gfx.width();
+    _screenSize[1] = _gfx.height();
     _gfx.setRotation((uint8_t)_rotation);
 }
 
@@ -184,9 +187,11 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
+      _screenSize{_gfx.width(),_gfx.height()}, // incorrect until after begin
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
+    HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
     #endif
@@ -225,6 +230,8 @@ void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
             _gfx.init(TFT_GFX_WIDTH, TFT_GFX_HEIGHT);
             break;
     }
+    _screenSize[0] = _gfx.width();
+    _screenSize[1] = _gfx.height();
     _gfx.setRotation((uint8_t)_rotation);
 }
 
@@ -241,6 +248,7 @@ HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetu
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
+      _screenSize{_gfx.width(),_gfx.height()}, // incorrect until after begin
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {
@@ -257,6 +265,8 @@ void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::initBaseUIFromDefaults()
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
 {
     _gfx.begin(getController()->getDisplaySetup().cfgAs.spi.speed);
+    _screenSize[0] = _gfx.width();
+    _screenSize[1] = _gfx.height();
     _gfx.setRotation((uint8_t)_rotation);
 }
 

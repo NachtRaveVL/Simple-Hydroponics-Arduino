@@ -32,7 +32,7 @@ class HydroInputDriver {
 public:
     HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins);
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) = 0;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) = 0;
 
     bool areAllPinsInterruptable() const;
     virtual bool areMainPinsInterruptable() const = 0;
@@ -48,12 +48,14 @@ protected:
 
 // Rotary Encoder Input Driver
 // Rotary encoder that uses a twisting motion, along with momentary push-down.
+// Pins:   RotaryEncoderOk: {eA,eB,Ok},
+//       RotaryEncoderOkLR: {eA,eB,Ok,Bk,Nx}
 class HydroInputRotary : public HydroInputDriver {
 public:
     HydroInputRotary(Pair<uint8_t, const pintype_t *> controlPins, Hydro_EncoderSpeed encoderSpeed);
     virtual ~HydroInputRotary() = default;
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     virtual bool areMainPinsInterruptable() const override;
 
@@ -68,6 +70,8 @@ protected:
 
 // Up/Down Buttons Input Driver
 // Standard momentary buttons input.
+// Pins:   UpDownButtonsOk: {Up,Dw,Ok}
+//       UpDownButtonsOkLR: {Up,Dw,Ok,Bk,Nx}
 class HydroInputUpDownButtons : public HydroInputDriver {
 public:
     HydroInputUpDownButtons(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed);
@@ -75,7 +79,7 @@ public:
     HydroInputUpDownButtons(bool isDFRobotShield_unused, uint16_t keyRepeatSpeed);
     virtual ~HydroInputUpDownButtons();
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     virtual bool areMainPinsInterruptable() const override;
 
@@ -91,12 +95,14 @@ protected:
 
 // ESP32 ESPTouch Keys Input Driver
 // For ESP32 only, uses integrated touch keys library.
+// Pins:   UpDownESP32TouchOk: {Up,Dw,Ok}
+//       UpDownESP32TouchOkLR: {Up,Dw,Ok,Bk,Nx}
 class HydroInputESP32TouchKeys : public HydroInputDriver {
 public:
     HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t *> controlPins, uint16_t keyRepeatSpeed, uint16_t switchThreshold, Hydro_ESP32Touch_HighRef highVoltage, Hydro_ESP32Touch_LowRef lowVoltage, Hydro_ESP32Touch_HighRefAtten attenuation);
     virtual ~HydroInputESP32TouchKeys() = default;
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     virtual bool areMainPinsInterruptable() const override;
 
@@ -118,12 +124,13 @@ protected:
 
 // Analog Joystick Input Driver
 // Analog joystick control with momentary press button.
+// Pins: AnalogJoystickOk: {aX,aY,Ok}
 class HydroInputJoystick : public HydroInputDriver {
 public:
     HydroInputJoystick(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, float decreaseDivisor, float jsCenterX = 0.5f, float jsCenterY = 0.5f, float jsZeroTol = 0.05f);
     virtual ~HydroInputJoystick() = default;
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     virtual bool areMainPinsInterruptable() const override;
 
@@ -144,12 +151,13 @@ protected:
 
 // 2x2 Button Matrix Input Driver
 // For matrix-style input with 2 rows and 2 columns of cross-tied momentary buttons.
+// Pins: Matrix2x2UpDownButtonsOkL: {r0,r1,c0,c1}
 class HydroInputMatrix2x2 : public HydroInputDriver {
 public:
     HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval);
     virtual ~HydroInputMatrix2x2();
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     bool areRowPinsInterruptable() const;
     virtual bool areMainPinsInterruptable() const override;
@@ -167,12 +175,14 @@ protected:
 
 // 3x4 Button Matrix Input Driver
 // For matrix-style numeric input with 4 rows and 3 columns of cross-tied momentary buttons.
+// Pins:   Matrix3x4Keyboard_OptRotEncOk: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok}
+//       Matrix3x4Keyboard_OptRotEncOkLR: {r0,r1,r2,r3,c0,c1,c2,eA,eB,Ok,Bk,Nx}
 class HydroInputMatrix3x4 : public HydroInputDriver {
 public:
     HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed);
     virtual ~HydroInputMatrix3x4();
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     bool areRowPinsInterruptable() const;
     virtual bool areMainPinsInterruptable() const override;
@@ -192,12 +202,14 @@ protected:
 
 // 4x4 Button Matrix Input Driver
 // For matrix-style alpha-numeric input with 4 rows and 4 columns of cross-tied momentary buttons.
+// Pins:   Matrix4x4Keyboard_OptRotEncOk: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok}
+//       Matrix4x4Keyboard_OptRotEncOkLR: {r0,r1,r2,r3,c0,c1,c2,c3,eA,eB,Ok,Bk,Nx}
 class HydroInputMatrix4x4 : public HydroInputDriver {
 public:
     HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed = Hydro_EncoderSpeed_HalfCycle);
     virtual ~HydroInputMatrix4x4();
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     bool areRowPinsInterruptable() const;
     virtual bool areMainPinsInterruptable() const override;
@@ -217,12 +229,13 @@ protected:
 
 // Resistive Touch Screen Input Driver
 // A style of touch screen that uses resistive measurements for touch detection.
+// Pins: ResistiveTouch: {X+,X-,Y+,Y-}
 class HydroInputResistiveTouch : public HydroInputDriver {
 public:
-    HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_TouchscreenOrientation touchOrient);
+    HydroInputResistiveTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient);
     virtual ~HydroInputResistiveTouch() = default;
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     virtual bool areMainPinsInterruptable() const override { return false; }
 
@@ -239,13 +252,16 @@ protected:
 
 // Touch Screen Input Driver
 // Standard touch screen driver using FT6206 (i2c based) or XPT2046 (SPI based).
-// BSP touch interrogator uses TFT_GFX_WIDTH/HEIGHT for screen device width/height.
+// Pins:  TouchScreen (FT6206): {}
+//       TouchScreen (XPT2046): {tCS,tIRQ}
+// Note: FT6206 driver hardcoded to Wire - can be changed only by direct edit.
+// Note: BSP Touch interrogator uses TFT_GFX_WIDTH & TFT_GFX_HEIGHT for screen size.
 class HydroInputTouchscreen : public HydroInputDriver {
 public:
-    HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient);
+    HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayDriver *displayDriver, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient);
     virtual ~HydroInputTouchscreen() = default;
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     virtual bool areMainPinsInterruptable() const override { return false; }
 
@@ -273,12 +289,13 @@ protected:
 
 // TFT Touch Screen Input Driver
 // Standard XPT2046 touch screen, but using TFT_eSPI library. Must be paired with TFTeSPI display driver.
+// Pins: TFTTouch (XPT2046): {tCS,tIRQ}
 class HydroInputTFTTouch : public HydroInputDriver {
 public:
-    HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, Hydro_TouchscreenOrientation touchOrient, bool useRawTouch = false);
+    HydroInputTFTTouch(Pair<uint8_t, const pintype_t *> controlPins, HydroDisplayTFTeSPI *displayDriver, Hydro_DisplayRotation displayRotation, Hydro_TouchscreenOrientation touchOrient, bool useRawTouch = false);
     virtual ~HydroInputTFTTouch() = default;
 
-    virtual void begin(MenuRenderer *renderer, MenuItem *initialItem) override;
+    virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
     virtual bool areMainPinsInterruptable() const override { return false; }
 

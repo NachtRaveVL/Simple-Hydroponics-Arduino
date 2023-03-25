@@ -69,14 +69,6 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
                                                  _uiCtrlSetup.ctrlCfgAs.matrix.encoderSpeed);
             } break;
 
-            case Hydro_ControlInputMode_TouchScreen: {
-                HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Touchscreen, SFP(HStr_Err_InvalidParameter));
-                #ifdef HYDRO_UI_ENABLE_XPT2046TS
-                    HYDRO_SOFT_ASSERT(ctrlInPins.first && ctrlInPins.second && isValidPin(ctrlInPins.second[0]), SFP(HStr_Err_InvalidPinOrType));
-                #endif
-                _input = new HydroInputTouchscreen(ctrlInPins, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
-            } break;
-
             default: break;
         }
         HYDRO_SOFT_ASSERT(!(ctrlInMode >= Hydro_ControlInputMode_RotaryEncoderOk && ctrlInMode != Hydro_ControlInputMode_ResistiveTouch && ctrlInMode <= Hydro_ControlInputMode_TouchScreen) || _input, SFP(HStr_Err_AllocationFailure));
@@ -246,7 +238,16 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
             case Hydro_ControlInputMode_ResistiveTouch: {
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_NotYetInitialized));
                 HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Touchscreen, SFP(HStr_Err_InvalidParameter));
-                _input = new HydroInputResistiveTouch(ctrlInPins, _display, _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
+                _input = new HydroInputResistiveTouch(ctrlInPins, _display, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
+            } break;
+
+            case Hydro_ControlInputMode_TouchScreen: {
+                HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_NotYetInitialized));
+                HYDRO_SOFT_ASSERT(_uiCtrlSetup.ctrlCfgType == UIControlSetup::Touchscreen, SFP(HStr_Err_InvalidParameter));
+                #ifdef HYDRO_UI_ENABLE_XPT2046TS
+                    HYDRO_SOFT_ASSERT(ctrlInPins.first && ctrlInPins.second && isValidPin(ctrlInPins.second[0]), SFP(HStr_Err_InvalidPinOrType));
+                #endif
+                _input = new HydroInputTouchscreen(ctrlInPins, _display, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient);
             } break;
 
             // TFT_eSPI
@@ -260,7 +261,7 @@ HydruinoFullUI::HydruinoFullUI(UIControlSetup uiControlSetup, UIDisplaySetup uiD
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
                 #endif
-                _input = new HydroInputTFTTouch(ctrlInPins, (HydroDisplayTFTeSPI *)_display, _uiCtrlSetup.ctrlCfgAs.touchscreen.orient, HYDRO_UI_TFTTOUCH_USES_RAW);
+                _input = new HydroInputTFTTouch(ctrlInPins, (HydroDisplayTFTeSPI *)_display, _uiDispSetup.getDisplayRotation(), _uiCtrlSetup.ctrlCfgAs.touchscreen.orient, HYDRO_UI_TFTTOUCH_USES_RAW);
             } break;
 
             default: break;

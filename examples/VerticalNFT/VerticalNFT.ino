@@ -906,8 +906,6 @@ inline void setupUI()
                     ui->allocateStandardControls();
                 #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownESP32Touch) || IS_SETUP_AS(SETUP_CONTROL_IN_MODE, UpDownESP32TouchLR)
                     ui->allocateESP32TouchControl();
-                #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TouchScreen)
-                    ui->allocateTouchscreenControl();
                 #endif
                 #if IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_EN) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD16x2_RS) ||\
                     IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_EN) || IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, LCD20x4_RS) ||\
@@ -940,7 +938,9 @@ inline void setupUI()
                 #elif IS_SETUP_AS(SETUP_DISPLAY_OUT_MODE, TFT)
                     ui->allocateTFTDisplay();
                 #endif
-                #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, ResistiveTouch)
+                #if IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TouchScreen)
+                    ui->allocateTouchscreenControl();
+                #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, ResistiveTouch)
                     ui->allocateResistiveTouchControl();
                 #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TFTTouch)
                     ui->allocateTFTTouchControl();

@@ -17,7 +17,8 @@
  */
 
 /* Changelist:
- * - Refactored TFTTouch code to avoid define switches/build errors.
+ * - Refactored TFTTouch to have screen size given in init
+ * - Refactored TFTTouch code to avoid define switches/build errors
  * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
 
@@ -37,6 +38,7 @@
 
 #include <graphics/GraphicsDeviceRenderer.h>
 #include <ResistiveTouchScreen.h>
+#include <tcUnicodeHelper.h>
 
 #define TFT_SPRITE_BITS 4
 #define SPRITE_PALETTE_SIZE (1 << TFT_SPRITE_BITS)
@@ -97,8 +99,6 @@ public:
     color_t getUnderlyingColor(color_t col) override;
 };
 
-#define TFTTOUCH_XPT2046_RAW_MAX 4096
-
 namespace iotouch {
 
     /**
@@ -110,13 +110,14 @@ namespace iotouch {
     class TftSpiTouchInterrogator : public iotouch::TouchInterrogator {
     private:
         TFT_eSPI* tft;
-        float maxWidthDim;
-        float maxHeightDim;
+        uint16_t maxWidthDim;
+        uint16_t maxHeightDim;
         bool usingRawTouch;
     public:
-        TftSpiTouchInterrogator(TFT_eSPI* tft, uint16_t xMax, uint16_t yMax, bool rawTouch)
-                : tft(tft), maxWidthDim(xMax), maxHeightDim(yMax), usingRawTouch(rawTouch) { }
+        TftSpiTouchInterrogator(TFT_eSPI* tft, bool rawTouch)
+                : tft(tft), maxWidthDim(0), maxHeightDim(0), usingRawTouch(rawTouch) { }
 
+        inline void init(uint16_t xMax, uint16_t yMax) { maxWidthDim = xMax; maxHeightDim = yMax; }
         iotouch::TouchState internalProcessTouch(float *ptrX, float *ptrY, const TouchOrientationSettings& touchOrientationSettings,
                                                  const iotouch::CalibrationHandler& calib) override;
     };

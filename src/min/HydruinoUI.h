@@ -25,7 +25,7 @@ public:
     void allocateStandardControls();                                        // Allocates/pulls-into-build any standard tcMenu controls, from encoders to matrices
     void allocateESP32TouchControl();                                       // Allocates/pulls-into-build an ESP32 Touch key control (only for ESP32)
     void allocateResistiveTouchControl();                                   // Allocates/pulls-into-build a resistive touchscreen control, must be called after display allocation
-    void allocateTouchscreenControl();                                      // Allocates/pulls-into-build a Touchscreen control (using FT6206/XPT2046)
+    void allocateTouchscreenControl();                                      // Allocates/pulls-into-build a Touchscreen control (using FT6206/XPT2046), must be called after display allocation
     void allocateTFTTouchControl();                                         // Allocates/pulls-into-build a TFTTouch control (using TFT_eSPI), must be called after TFT display allocation
 
     void allocateLCDDisplay();                                              // Allocates/pulls-into-build a LCD display (using LiquidCrystalIO)

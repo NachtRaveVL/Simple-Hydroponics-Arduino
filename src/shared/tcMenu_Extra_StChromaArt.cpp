@@ -5,7 +5,7 @@
 
 #include <Hydruino.h>
 #include "HydroUIDefines.h"
-#if defined(HYDRO_USE_GUI) && (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_STM32)) && (defined(HYDRO_UI_ENABLE_STM32_LDTC) || defined(HYDRO_UI_ENABLE_BSP_TOUCH))
+#if defined(HYDRO_USE_GUI) && (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_STM32)) && (defined(HYDRO_UI_ENABLE_STCHROMA_LDTC) || defined(HYDRO_UI_ENABLE_BSP_TOUCH))
 
 /*
  * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).
@@ -105,6 +105,16 @@ void StChromaArtDrawable::drawPolygon(const Coord *points, int numPoints, bool f
 void StChromaArtDrawable::transaction(bool isStarting, bool redrawNeeded) {
 }
 
+
+StBspTouchInterrogator::StBspTouchInterrogator()
+    : width(0), height(0) {}
+
+void StBspTouchInterrogator::init(int wid, int hei) {
+    width = wid;
+    height = hei;
+    BSP_TS_Init(width, height);
+}
+
 iotouch::TouchState StBspTouchInterrogator::internalProcessTouch(float *ptrX, float *ptrY, const iotouch::TouchOrientationSettings& rotation,
                                                                  const iotouch::CalibrationHandler& calibrationHandler) {
     TS_StateTypeDef tsState;
@@ -114,12 +124,6 @@ iotouch::TouchState StBspTouchInterrogator::internalProcessTouch(float *ptrX, fl
     *ptrX = calibrationHandler.calibrateX((float)tsState.X / float(width), rotation.isXInverted());
     *ptrY = calibrationHandler.calibrateY(float(height - tsState.Y) / float(height), rotation.isYInverted());
     return iotouch::TOUCHED;
-}
-
-StBspTouchInterrogator::StBspTouchInterrogator(int w, int h) {
-    width = w;
-    height = h;
-    BSP_TS_Init(w, h);
 }
 
 #endif
