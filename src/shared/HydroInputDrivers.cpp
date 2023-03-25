@@ -107,8 +107,8 @@ void HydroInputUpDownButtons::begin(HydroDisplayDriver *displayDriver, MenuItem 
     }
 
     menuMgr.initForUpDownOk(displayDriver->getBaseRenderer(), initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
-    if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
-    if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
+    if (_pins.first > 3 && isValidPin(_pins.second[3])) { menuMgr.setBackButton(_pins.second[3]); }
+    if (_pins.first > 4 && isValidPin(_pins.second[4])) { menuMgr.setNextButton(_pins.second[4]); }
 }
 
 bool HydroInputUpDownButtons::areMainPinsInterruptable() const
@@ -143,8 +143,8 @@ void HydroInputESP32TouchKeys::begin(HydroDisplayDriver *displayDriver, MenuItem
                   getBaseUI() && getBaseUI()->isActiveLow());
 
     menuMgr.initForUpDownOk(displayDriver->getBaseRenderer(), initialItem, _pins.second[1], _pins.second[0], _pins.second[2], _keySpeed);
-    if (_pins.first > 3 && isValidPin(_pins.second[3])) menuMgr.setBackButton(_pins.second[3]);
-    if (_pins.first > 4 && isValidPin(_pins.second[4])) menuMgr.setNextButton(_pins.second[4]);
+    if (_pins.first > 3 && isValidPin(_pins.second[3])) { menuMgr.setBackButton(_pins.second[3]); }
+    if (_pins.first > 4 && isValidPin(_pins.second[4])) { menuMgr.setNextButton(_pins.second[4]); }
     #ifdef ESP32
         _esp32Touch.ensureInterruptRegistered();
     #endif
