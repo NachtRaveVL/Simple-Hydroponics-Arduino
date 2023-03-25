@@ -7,6 +7,11 @@
 #ifdef HYDRO_USE_GUI
 #include <DfRobotInputAbstraction.h>
 
+static const char _matrix2x2Keys[] PROGMEM = {HYDRO_UI_2X2MATRIX_KEYS};
+static const char _matrix3x4Keys[] PROGMEM = {HYDRO_UI_3X4MATRIX_KEYS};
+static const char _matrix4x4Keys[] PROGMEM = {HYDRO_UI_4X4MATRIX_KEYS};
+
+
 HydroInputDriver::HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins)
     : _pins(controlPins)
 { ; }
@@ -219,7 +224,7 @@ bool HydroInputJoystick::areMainPinsInterruptable() const
 HydroInputMatrix2x2::HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(2,2,CFP(HUIStr_Keys_Matrix2x2Keys)),
+      _keyboardLayout(2, 2, _matrix2x2Keys),
       _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3])
 {
     _keyboardLayout.setRowPin(0, controlPins.second[0]);
@@ -259,7 +264,7 @@ bool HydroInputMatrix2x2::areMainPinsInterruptable() const
 HydroInputMatrix3x4::HydroInputMatrix3x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,3,CFP(HUIStr_Keys_Matrix3x4Keys)),
+      _keyboardLayout(4, 3, _matrix3x4Keys),
       _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3]),
       _rotaryEncoder(nullptr)
 {
@@ -316,7 +321,7 @@ bool HydroInputMatrix3x4::areMainPinsInterruptable() const
 HydroInputMatrix4x4::HydroInputMatrix4x4(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval, Hydro_EncoderSpeed encoderSpeed)
     : HydroInputDriver(controlPins),
       _keyboard(),
-      _keyboardLayout(4,4,CFP(HUIStr_Keys_Matrix4x4Keys)),
+      _keyboardLayout(4, 4, _matrix4x4Keys),
       _tcMenuKeyListener(SFP(HUIStr_Keys_MatrixActions)[0], SFP(HUIStr_Keys_MatrixActions)[1], SFP(HUIStr_Keys_MatrixActions)[2], SFP(HUIStr_Keys_MatrixActions)[3]),
       _rotaryEncoder(nullptr)
 {

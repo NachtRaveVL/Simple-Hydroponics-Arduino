@@ -11,9 +11,6 @@
 // UI Strings Enumeration Table
 enum HydroUI_String : unsigned short {
     HUIStr_Keys_MatrixActions,
-    HUIStr_Keys_Matrix2x2Keys,
-    HUIStr_Keys_Matrix3x4Keys,
-    HUIStr_Keys_Matrix4x4Keys,
 
     HUIStr_Item_Actuators,
     HUIStr_Item_AddNew,

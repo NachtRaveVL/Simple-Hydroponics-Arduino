@@ -132,18 +132,6 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             static const char flashUIStr_Keys_MatrixActions[] PROGMEM = {HYDRO_UI_MATRIX_ACTIONS};
             return flashUIStr_Keys_MatrixActions;
         } break;
-        case HUIStr_Keys_Matrix2x2Keys: {
-            static const char flashUIStr_Keys_Matrix2x2Keys[] PROGMEM = {HYDRO_UI_2X2MATRIX_KEYS};
-            return flashUIStr_Keys_Matrix2x2Keys;
-        } break;
-        case HUIStr_Keys_Matrix3x4Keys: {
-            static const char flashUIStr_Keys_Matrix3x4Keys[] PROGMEM = {HYDRO_UI_3X4MATRIX_KEYS};
-            return flashUIStr_Keys_Matrix3x4Keys;
-        } break;
-        case HUIStr_Keys_Matrix4x4Keys: {
-            static const char flashUIStr_Keys_Matrix4x4Keys[] PROGMEM = {HYDRO_UI_4X4MATRIX_KEYS};
-            return flashUIStr_Keys_Matrix4x4Keys;
-        } break;
 
         case HUIStr_Item_Actuators: {
             static const PROGMEM AnyMenuInfo flashUIStr_Item_Actuators = { "Actuators", 20, NO_ADDRESS, 0, gotoScreen };
