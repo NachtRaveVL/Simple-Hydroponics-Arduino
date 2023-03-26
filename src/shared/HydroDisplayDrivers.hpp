@@ -189,13 +189,12 @@ inline HydroDisplayU8g2OLED *HydroDisplayU8g2OLED::allocateIL3820V2SPI1(DeviceSe
 
 template <class T>
 HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation),
+    : HydroDisplayDriver(displayRotation, _gfx.width(),_gfx.height()), // possibly incorrect until after begin
     #ifndef ESP8266
           _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _screenSize{_gfx.width(),_gfx.height()}, // incorrect until after begin
       _drawable(&_gfx, 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
 {

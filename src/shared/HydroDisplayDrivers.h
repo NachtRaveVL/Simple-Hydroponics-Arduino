@@ -20,7 +20,8 @@ class HydroDisplayTFTeSPI;
 // Base display driver class that manages display output mode selection.
 class HydroDisplayDriver {
 public:
-    HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined);
+    inline HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined, uint16_t screenWidth = 0, uint16_t screenHeight = 0)
+        : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined), _screenSize{screenWidth, screenHeight} { ; }
     virtual ~HydroDisplayDriver() = default;
 
     virtual void initBaseUIFromDefaults() = 0;
@@ -28,7 +29,7 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) = 0;
 
-    void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false);
+    virtual void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false);
 
     virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const = 0;
     virtual bool isLandscape(bool withRot = true) const = 0;
@@ -49,6 +50,7 @@ public:
 protected:
     const Hydro_DisplayRotation _rotation;
     Hydro_DisplayTheme _displayTheme;
+    uint16_t _screenSize[2];
 };
 
 
@@ -65,10 +67,12 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
+    virtual void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false) override;
+
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair((uint16_t)max(_screenSize[0],_screenSize[1]), (uint16_t)min(_screenSize[0],_screenSize[1]))
-                                                                                                                    : make_pair((uint16_t)min(_screenSize[0],_screenSize[1]), (uint16_t)max(_screenSize[0],_screenSize[1])); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+                                                                                                                    : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
     virtual bool isLandscape(bool withRot = true) const override { return _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 1; }
 
@@ -78,7 +82,6 @@ public:
     inline LiquidCrystal &getLCD() { return _lcd; }
 
 protected:
-    uint8_t _screenSize[2];
     LiquidCrystal _lcd;
     LiquidCrystalRenderer _renderer;
 };
@@ -99,9 +102,9 @@ public:
 
     virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                                                     : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
-                                                                                                                      : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
-                                                                                  : _screenSize[0] >= _screenSize[1]; }
+    virtual bool isLandscape(bool withRot = true) const override { return !withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+                                                                                                                       : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
+                                                                                   : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 1; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
@@ -115,7 +118,6 @@ public:
     #endif
 
 protected:
-    uint16_t _screenSize[2];
     U8G2 *_gfx;
     #ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
         StChromaArtDrawable *_drawable;
@@ -184,7 +186,6 @@ public:
     inline AdafruitDrawable<T> &getDrawable() { return _drawable; }
 
 protected:
-    uint16_t _screenSize[2];
     T _gfx;
     AdafruitDrawable<T> _drawable;
     GraphicsDeviceRenderer _renderer;
@@ -219,7 +220,6 @@ public:
     inline AdafruitDrawable<Adafruit_ST7735> &getDrawable() { return _drawable; }
 
 protected:
-    uint16_t _screenSize[2];
     const Hydro_ST77XXKind _kind;
     Adafruit_ST7735 _gfx;
     AdafruitDrawable<Adafruit_ST7735> _drawable;
@@ -256,7 +256,6 @@ public:
     inline AdafruitDrawable<Adafruit_ST7789> &getDrawable() { return _drawable; }
 
 protected:
-    uint16_t _screenSize[2];
     const Hydro_ST77XXKind _kind;
     Adafruit_ST7789 _gfx;
     AdafruitDrawable<Adafruit_ST7789> _drawable;
@@ -291,7 +290,6 @@ public:
     inline AdafruitDrawable<Adafruit_ILI9341> &getDrawable() { return _drawable; }
 
 protected:
-    uint16_t _screenSize[2];
     Adafruit_ILI9341 _gfx;
     AdafruitDrawable<Adafruit_ILI9341> _drawable;
     GraphicsDeviceRenderer _renderer;

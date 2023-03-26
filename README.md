@@ -12,10 +12,12 @@ Created by NachtRaveVL, May 20th, 2022.
 
 This controller allows one to set up a system of reservoirs, pumps, probes, relays, and other objects useful in automating the daily lighting, feed dosing, watering, and data monitoring & collection processes involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. Works with a large variety of widely-available aquarium/hobbyist equipment, including popular GPS, RTC, EEPROM, SD card, WiFi, and other modules compatible with Arduino. Contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases for the system configured, along with fully customizable weekly feed/additive amounts and daily feeding/lighting scheduling. With the right setup Hydruino can automatically do things like: enable grow lights for the needed period each day (potentially only turning on to augment daily sunlight hours), drive water pumps and auto-dosers during feedings, spray leafy plants in the morning before lights/sunrise, heat cold water to a specific temp for tropical plants, use CO2 sensors to manage air circulation fans to maintain optimal grow tent parameters, remind when to prune plants, or even use soil moisture sensing to dynamically determine watering schedule.
 
+Our Keep-It-Simple controller system:
+
 * Can be used entirely offline with RTC module and optional GPS module (or known static location) for accurate time keeping, or used online through enabled on-board WiFi/Ethernet or external ESP-AT WiFi module.
   * Uses [SolarCalculator](https://github.com/jpb10/SolarCalculator), inspired by the NOAA Solar Calculator, for fine offline calculations of the sun's solar position (including sunrise, sunset, & transit times), accurate until 2100.
-* Configured system setup can be saved/loaded to/from EEPROM, SD card, or WiFiStorage-like external storage device.
-  * System setup can be saved in pretty-print JSON for human-readability (allowing easy text editing), or in raw Binary for compactness & speed.
+* Configured system setup can be exported to EEPROM, SD card, or WiFiStorage external storage device.
+  * Can be saved in pretty-print JSON for human-readability (allowing easy text editing), or in raw Binary for compactness & speed.
   * Auto-save, backup-auto-save (for auto-recovery functionality), and low storage-space cleanup (TODO) functionality.
   * Import string decode functions are pre-optimized with minimum spanning trie for ultra-fast text parsing & reduced loading times.
 * Supports interval-based sensor data publishing and system event logging to MQTT IoT broker (for further IoT-integrated processing) or to external storage in .csv/.txt format (/w date in filename, segmented daily).
@@ -58,13 +60,13 @@ Hydruino is a MCU-based solution primarily written for Arduino and Arduino-like 
 Minimum MCU: 256-512kB Flash, 16-24kB SRAM, 16MHz  
 Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
-* Definitely ___will___ work: GIGA, Portenta (any), ESP32/8266, Teensy 3.5+, STM32 (>256kB), Pico/Nano RP2040 Connect
+* Definitely ___will___ work: GIGA, Portenta (any), ESP32/8266, Teensy 3.5+, STM32 (>256kB), Pico/RP2040 (any)
 
-* _Can_ work /w ext. data/less-to-no GUI/fewer features: Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB)
+* _Can_ work /w ext. data/limited UI/small setup: Uno R4, Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB)
 
-* Definitely ___will not___ work: Uno (any), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8 (|32<256kB), ATtiny (any)
+* _May_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101
 
-* _May_ work, but only with heavy tweaking/very limited build: ATMega2560, Genuino 101
+* Definitely ___will not___ work: Uno (classic to R3), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8 (|32<256kB), ATtiny (any)
 
 Note: Pin-limited MCUs may be restricted in how many sensors/actuators/etc. can be connected at once, and in such case where more pins are needed an i2c-based 8/16-bit expander using a PCF857X or MCP23017 might be recommended. The controller also supports standard multiplexing with a CD74HC or similar.
 
@@ -143,15 +145,13 @@ From shared/HydruinoUI.h:
 
 Certain setups may require additional, and in some cases specialized, library dependency setup in order to function. This is mainly seen around certain display and input options. Ones to highlight include:
 
-* **U8g2** (monochrome OLED displays): When specifically using the CustomOLED display output option, make sure to either edit directly or define custom build defines for `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI`. These should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file (note: the `_F_` part of the name implies a frame buffer exists for the device to provide non-flickering animations, and is recommended). This custom option has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing any changes.
+* **U8g2** (monochrome OLED displays): The CustomOLED display output option uses `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI` for allocating a custom U8g2 device. These defines should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file (note: the `_F_` part of the name implies frame buffer support for non-flickering animations - recommended). This custom option has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing any changes.
 
-* **Adafruit ST7735** & **Adafruit ST7789** (color TFT displays): ST7735-based displays have a tag color enumeration that is defined by `SETUP_UI_GFX_ST7735_TAG`, while ST7789-based displays have a screen resolution enumeration that is defined by `SETUP_UI_GFX_ST7789_RES`. These tag color & screen resolution enumeration settings always have static linkage and will require sketch modify/re-upload upon needing changed.
-
-* **TFT_eSPI** (advanced color TFT displays /w full frame buffer & advanced sprite features): When specifically using the TFT display output option (in lieu of the default AdafruitGFX driven TFT options), user library setup is required via its `TFT_eSPI\User_Setup.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
+* **TFT_eSPI** (advanced color TFT display library): The TFT display output option (in lieu of the default AdafruitGFX driven TFT options) uses the configuration specified via its `TFT_eSPI\User_Setup.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
 
 * **BSP_LCD** & **BSP Touch** (STM32746G-Discovery on STM32/mbed only): This particular setup can utilize a ChromaArt-based drawable (in place of U8g2Drawable) with STM32 LDTC frame buffer, and requires advanced user setup via the included `shared\tcMenu_Extra_BspUserSettings.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
 
-* **Adafruit ST7789 /w CustomTFT**, **TFT_eSPI**: These options utilize the `TFT_GFX_WIDTH` and `TFT_GFX_HEIGHT` defines for the screen width/height (defaulting to TFT_eSPI's `TFT_WIDTH` and `TFT_HEIGHT` values if defined, else assuming standard 240x320), and should be either edited directly or defined through custom build defines. These values are statically linked and will require sketch modify/re-upload upon needing any changes.
+* **ST7789::CustomTFT**, **TFT_eSPI**: These options utilize the `TFT_GFX_WIDTH` and `TFT_GFX_HEIGHT` defines for the screen width/height (defaulting to TFT_eSPI's `TFT_WIDTH` and `TFT_HEIGHT` values if defined, else assuming standard 240x320), and should be either edited directly or defined through custom build defines. These values are statically linked and will require sketch modify/re-upload upon needing any changes.
 
 ### Initialization
 
@@ -513,7 +513,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_UI_GFX_ROTATION           R0              // Display rotation (R0, R1, R2, R3, HorzMirror, VertMirror), if using graphical display or touchscreen
 #define SETUP_UI_GFX_DC_PIN             -1              // Display interface DC/RS pin, if using SPI display
 #define SETUP_UI_GFX_RESET_PIN          -1              // Optional display interface reset/RST pin, if using SPI display, else -1 (Note: Unused reset pin typically needs tied to HIGH for display to function)
-#define SETUP_UI_GFX_ST7735_TAG         Undefined       // ST7735 tag color (B, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Mini_Plugin, Hallowing), if using ST7735 display
+#define SETUP_UI_GFX_ST7735_TAG         Undefined       // ST7735 tag color (B, Green, Green18, Red, Red18, Black, Black18, Green144, Mini, Mini_Plugin, Hallo_Wing), if using ST7735 display
 #define SETUP_UI_GFX_ST7789_RES         Undefined       // ST7789 screen resolution (128x128, 135x240, 170x320, 172x320, 240x240, 240x280, 240x320, CustomTFT), if using ST7789 display
 #define SETUP_UI_GFX_BACKLIGHT_PIN      -1              // Optional display interface backlight/LED/BL pin, if using SPI display (Note: Unused backlight pin can optionally be tied typically to HIGH for always-on)
 #define SETUP_UI_GFX_BACKLIGHT_MODE     Normal          // Display backlight mode (Normal, Inverted, PWM), if using LCD or display /w backlight pin
