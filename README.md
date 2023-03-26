@@ -16,23 +16,23 @@ Our Keep-It-Simple controller system:
 
 * Can be used entirely offline with RTC module and optional GPS module (or known static location) for accurate time keeping, or used online through enabled on-board WiFi/Ethernet or external ESP-AT WiFi module.
   * Uses [SolarCalculator](https://github.com/jpb10/SolarCalculator), inspired by the NOAA Solar Calculator, for fine offline calculations of the sun's solar position (including sunrise, sunset, & transit times), accurate until 2100.
-* Configured system setup can be exported to EEPROM, SD card, or WiFiStorage external storage device.
-  * Can be saved in pretty-print JSON for human-readability (allowing easy text editing), or in raw Binary for compactness & speed.
-  * Auto-save, backup-auto-save (for auto-recovery functionality), and low storage-space cleanup (TODO) functionality.
+* Exportable system configuration to EEPROM, SD card, or WiFiStorage external storage device.
+  * Saved in pretty-print JSON for human-readability & easy text editing, or in raw binary for compactness & speed.
+  * Auto-save, backup auto-save (for auto-recovery), and low external storage space cleanup (TODO) functionality.
   * Import string decode functions are pre-optimized with minimum spanning trie for ultra-fast text parsing & reduced loading times.
 * Supports interval-based sensor data publishing and system event logging to MQTT IoT broker (for further IoT-integrated processing) or to external storage in .csv/.txt format (/w date in filename, segmented daily).
   * Can be extended to work with other JSON-based Web APIs or Client-like derivatives (for DB storage or server-endpoint support).
   * Can add a piezo buzzer for audible system warning/failure alerting (TODO), or a LCD/OLED/TFT display for current readings & recent logging messages (TODO).
 * Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by [tcMenu](https://github.com/davetcc/tcMenuLib)).
   * Contains at-a-glance system overview screen and interactive menu system for system configuration, sensor calibration, and more (TODO).
-  * Critical system configuration menus can be pin-coded to prevent setup tampering, thus still allowing informational-screen/read-only access.
+  * Critical system config menus can be pin-coded to prevent setup tampering.
   * Includes remote GUI menu access through enabled WiFi, Ethernet, Bluetooth, Serial, and/or Simhub connection via tcMenu's excellent [embedCONTROL](https://github.com/davetcc/tcMenu/releases) desktop application, available for Linux/OSX/Windows.
   * GUI I/O pins can be setup as fully interrupt driven (5-25ms latency), partially interrupt driven (only keys & buttons polled), or polling based (75-100ms+ latency), and can be automatically selected depending on pins used.
   * System examples can be compiled in:
     * Disabled UI mode, which removes all GUI code entirely, freeing a large amount of Flash size for constrained (<=256kB Flash) devices.
-    * Minimal UI mode, which saves on compiled sketch size through optimized code stripping at the cost of having to modify/re-upload a new sketch to change most system settings (or to change core system structure).
+    * Minimal UI mode, which saves on compiled sketch size through optimized code stripping at the cost of having to modify/re-upload a new sketch to change most system settings (or to change system object structure).
     * Full UI mode, which uses large amounts of Flash space available on modern MCUs to provide everything all at once, with only major system (or static linked component) changes requiring a sketch modify/re-upload.
-* Actuator, Sensor, and I/O pins can be multiplexed or expanded through 8/16-bit i2c expanders for pin-limited controllers.
+* Actuator & Sensor pins can be multiplexed or expanded along with any control input pins through 8/16-bit i2c expanders for pin-limited controllers.
 * Library data can be built into onboard Flash or exported onto external storage to additionally save on compiled sketch size.
 
 Made primarily for Arduino microcontrollers / build environments, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
