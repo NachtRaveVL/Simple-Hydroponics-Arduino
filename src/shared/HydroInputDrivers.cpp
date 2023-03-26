@@ -417,7 +417,11 @@ HydroInputTouchscreen::HydroInputTouchscreen(Pair<uint8_t, const pintype_t *> co
 
 void HydroInputTouchscreen::begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem)
 {
-    _touchInterrogator.init(displayDriver->getScreenSize(false).first, displayDriver->getScreenSize(false).second);
+    #ifndef HYDRO_UI_ENABLE_XPT2046TS
+        _touchInterrogator.init(displayDriver->getScreenSize(false).first, displayDriver->getScreenSize(false).second);
+    #else
+        _touchInterrogator.init(getBaseUI() ? getBaseUI()->getControlSetup().ctrlCfgAs.touchscreen.spiClass : nullptr);
+    #endif
     menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem);
     #ifdef HYDRO_UI_ENABLE_XPT2046TS
         _touchScreen.setRotation(getBaseUI()  ? (uint8_t)getBaseUI()->getDisplaySetup().getDisplayRotation() : 0);

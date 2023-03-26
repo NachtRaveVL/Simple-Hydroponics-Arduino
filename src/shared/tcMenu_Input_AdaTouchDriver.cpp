@@ -18,7 +18,7 @@ iotouch::AdaLibTouchInterrogator::AdaLibTouchInterrogator(Adafruit_FT6206& touch
     : theTouchDevice(touchLibRef), maxWidthDim(0), maxHeightDim(0) {}
 #else
 iotouch::AdaLibTouchInterrogator::AdaLibTouchInterrogator(XPT2046_Touchscreen& touchLibRef)
-    : theTouchDevice(touchLibRef), maxWidthDim(0), maxHeightDim(0) {}
+    : theTouchDevice(touchLibRef) {}
 #endif
 
 iotouch::TouchState iotouch::AdaLibTouchInterrogator::internalProcessTouch(float *ptrX, float *ptrY, const iotouch::TouchOrientationSettings& rotation, const iotouch::CalibrationHandler& calib) {

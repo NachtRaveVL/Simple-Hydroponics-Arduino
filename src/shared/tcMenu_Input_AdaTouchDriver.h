@@ -13,7 +13,7 @@
  */
 
 /* Changelist:
- * - Refactored to have screen size given in init
+ * - Refactored to have screen size/SPI given in init
  * - Split into proper header/source file
  * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
@@ -46,11 +46,12 @@ namespace iotouch {
     private:
         #ifndef HYDRO_UI_ENABLE_XPT2046TS
             Adafruit_FT6206& theTouchDevice;
+            uint16_t maxWidthDim;
+            uint16_t maxHeightDim;
         #else
             XPT2046_Touchscreen& theTouchDevice;
         #endif
-        uint16_t maxWidthDim;
-        uint16_t maxHeightDim;
+
     public:
         #ifndef HYDRO_UI_ENABLE_XPT2046TS
             AdaLibTouchInterrogator(Adafruit_FT6206& touchLibRef);
@@ -58,7 +59,11 @@ namespace iotouch {
             AdaLibTouchInterrogator(XPT2046_Touchscreen& touchLibRef);
         #endif
 
-        inline void init(uint16_t xMax, uint16_t yMax) { maxWidthDim = xMax; maxHeightDim = yMax; theTouchDevice.begin(); }
+        #ifndef HYDRO_UI_ENABLE_XPT2046TS
+            inline void init(uint16_t xMax, uint16_t yMax) { maxWidthDim = xMax; maxHeightDim = yMax; theTouchDevice.begin(); }
+        #else
+            inline void init(SPIClass *spi = nullptr) { if (spi) { theTouchDevice.begin(*spi); } else { theTouchDevice.begin(); } }
+        #endif
         iotouch::TouchState internalProcessTouch(float *ptrX, float *ptrY, const iotouch::TouchOrientationSettings& rotation, const iotouch::CalibrationHandler& calib);
     };
 

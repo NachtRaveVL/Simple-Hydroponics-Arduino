@@ -189,8 +189,15 @@ struct MatrixControlSetup {
 // Touchscreen Input Setup
 struct TouchscreenSetup {
     Hydro_TouchscreenOrientation orient; // Touchscreen orientation tuning (default: Same)
+    #ifdef HYDRO_UI_ENABLE_XPT2046TS
+        SPIClass *spiClass;
+    #endif
 
-    inline TouchscreenSetup(Hydro_TouchscreenOrientation orientIn = Hydro_TouchscreenOrientation_Same) : orient(orientIn) { ; }
+    #ifndef HYDRO_UI_ENABLE_XPT2046TS
+        inline TouchscreenSetup(Hydro_TouchscreenOrientation orientIn = Hydro_TouchscreenOrientation_Same) : orient(orientIn) { ; }
+    #else
+        inline TouchscreenSetup(Hydro_TouchscreenOrientation orientIn = Hydro_TouchscreenOrientation_Same, SPIClass *spiClassIn = HYDRO_USE_SPI) : orient(orientIn), spiClass(spiClassIn) { ; }
+    #endif
 };
 
 // Combined UI Control Setup
