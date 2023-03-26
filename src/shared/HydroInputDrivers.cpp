@@ -12,10 +12,6 @@ static const char _matrix3x4Keys[] PROGMEM = {HYDRO_UI_3X4MATRIX_KEYS};
 static const char _matrix4x4Keys[] PROGMEM = {HYDRO_UI_4X4MATRIX_KEYS};
 
 
-HydroInputDriver::HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins)
-    : _pins(controlPins)
-{ ; }
-
 bool HydroInputDriver::areAllPinsInterruptable() const
 {
     for (int i = 0; i < _pins.first; ++i) {

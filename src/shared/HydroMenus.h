@@ -18,8 +18,8 @@ class HydroMenu;
 class HydroMenu
 {
 public:
-    HydroMenu();
-    virtual ~HydroMenu();
+    inline HydroMenu() : _loaded(false) { ; }
+    virtual ~HydroMenu() = default;
 
     virtual void loadMenu(MenuItem *addFrom = nullptr) = 0; // should call menuMgr.addMenuAfter()
     virtual MenuItem *getRootItem() = 0;

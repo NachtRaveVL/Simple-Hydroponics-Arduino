@@ -30,7 +30,8 @@ class HydroInputTFTTouch;
 // Base input driver class that manages control input mode selection.
 class HydroInputDriver {
 public:
-    HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins);
+    inline HydroInputDriver(Pair<uint8_t, const pintype_t *> controlPins) : _pins(controlPins) { ; }
+    virtual ~HydroInputDriver() = default;
 
     virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) = 0;
 

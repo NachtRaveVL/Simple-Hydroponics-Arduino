@@ -6,11 +6,4 @@
 #include "HydruinoUI.h"
 #ifdef HYDRO_USE_GUI
 
-HydroMenu::HydroMenu()
-    : _loaded(false)
-{ ; }
-
-HydroMenu::~HydroMenu()
-{ ; }
-
 #endif

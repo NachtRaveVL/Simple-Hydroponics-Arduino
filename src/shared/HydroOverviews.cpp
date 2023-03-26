@@ -6,11 +6,4 @@
 #include "HydruinoUI.h"
 #ifdef HYDRO_USE_GUI
 
-HydroOverview::HydroOverview(HydroDisplayDriver *display)
-    : _display(display), _needsFullRedraw(true)
-{ ; }
-
-HydroOverview::~HydroOverview()
-{ ; }
-
 #endif

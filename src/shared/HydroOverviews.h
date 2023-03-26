@@ -21,8 +21,8 @@ class HydroOverviewTFT;
 // Meant to be able to be deleted on a moments notice to transition back into menu.
 class HydroOverview {
 public:
-    HydroOverview(HydroDisplayDriver *display);
-    virtual ~HydroOverview();
+    inline HydroOverview(HydroDisplayDriver *display) : _display(display), _needsFullRedraw(true) { ; }
+    virtual ~HydroOverview() = default;
 
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) = 0;
 

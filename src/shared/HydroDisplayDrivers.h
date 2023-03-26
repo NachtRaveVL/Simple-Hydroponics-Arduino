@@ -20,8 +20,7 @@ class HydroDisplayTFTeSPI;
 // Base display driver class that manages display output mode selection.
 class HydroDisplayDriver {
 public:
-    inline HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined, uint16_t screenWidth = 0, uint16_t screenHeight = 0)
-        : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined), _screenSize{screenWidth, screenHeight} { ; }
+    inline HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined, uint16_t screenWidth = 0, uint16_t screenHeight = 0) : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined), _screenSize{screenWidth, screenHeight} { ; }
     virtual ~HydroDisplayDriver() = default;
 
     virtual void initBaseUIFromDefaults() = 0;
