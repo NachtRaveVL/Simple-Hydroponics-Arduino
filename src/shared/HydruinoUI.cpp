@@ -68,12 +68,7 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
         _uiData->editingIcons = editingIcons;
     }
 
-    #if HYDRO_UI_START_AT_OVERVIEW
-        if (!_overview && _display) {
-            _overview = _display->allocateOverview(_clockFont, _detailFont);
-            HYDRO_SOFT_ASSERT(_overview, SFP(HStr_Err_AllocationFailure));
-        }
-    #else
+    #if !HYDRO_UI_START_AT_OVERVIEW
         if (!_homeMenu) {
             _homeMenu = new HydroHomeMenu();
             HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
