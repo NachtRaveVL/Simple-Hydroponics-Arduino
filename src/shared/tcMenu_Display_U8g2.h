@@ -5,6 +5,7 @@
 
 #include <Hydruino.h>
 #ifdef HYDRO_USE_GUI
+#include "HydruinoUI.h"
 
 /*
  * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).
@@ -12,6 +13,7 @@
  */
 
 /* Changelist:
+ * - Refactored UTF8 usage to dyanmic
  * - Enclosed inside of #ifdef & reorg'ed for general inclusion
  */
 
@@ -30,13 +32,14 @@
 #define _TCMENU_U8G2_H_
 
 #include <U8g2lib.h>
+#include <U8x8lib.h>
 
 #include <tcUtil.h>
 #include <graphics/BaseGraphicalRenderer.h>
 #include <graphics/GraphicsDeviceRenderer.h>
 #include <BaseDialog.h>
 #include <tcUtil.h>
-
+#include <tcUnicodeHelper.h>
 
 // If you DONT want task manager yield code in I2C set to 0
 #ifndef WANT_TASK_MANAGER_FRIENDLY_YIELD
@@ -81,12 +84,13 @@ uint8_t u8g2_byte_with_yield(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
 class U8g2Drawable : public DeviceDrawable {
 private:
 	U8G2* u8g2;
+    bool tcUtf8;
 #if WANT_TASK_MANAGER_FRIENDLY_YIELD == 1
     static TwoWire* pWire;
     friend uint8_t u8g2_byte_with_yield(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 #endif // WANT_TASK_MANAGER_FRIENDLY_YIELD
 public:
-    explicit U8g2Drawable(U8G2* u8g2, TwoWire* wire = nullptr);
+    explicit U8g2Drawable(U8G2* u8g2, TwoWire* wire = nullptr, bool tcUnicode = false);
     ~U8g2Drawable() override = default;
 
     DeviceDrawable* getSubDeviceFor(const Coord &where, const Coord &size, const color_t *palette, int paletteSize) override {return nullptr; }

@@ -10,6 +10,7 @@
 
 #include <Hydruino.h>
 #ifdef HYDRO_USE_GUI
+#include "HydruinoUI.h"
 
 /*
  * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).

@@ -4,8 +4,9 @@
 */
 
 #include <Hydruino.h>
-#include "HydroUIDefines.h"
-#if defined(HYDRO_USE_GUI) && (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_STM32)) && (defined(HYDRO_UI_ENABLE_STCHROMA_LDTC) || defined(HYDRO_UI_ENABLE_BSP_TOUCH))
+#if defined(HYDRO_USE_GUI) && (defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_STM32))
+#include "HydruinoUI.h"
+#if (defined(HYDRO_UI_ENABLE_STCHROMA_LDTC) || defined(HYDRO_UI_ENABLE_BSP_TOUCH))
 
 /*
  * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).
@@ -126,4 +127,5 @@ iotouch::TouchState StBspTouchInterrogator::internalProcessTouch(float *ptrX, fl
     return iotouch::TOUCHED;
 }
 
+#endif
 #endif

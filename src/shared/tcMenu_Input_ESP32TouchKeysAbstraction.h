@@ -5,6 +5,7 @@
 
 #include <Hydruino.h>
 #if defined(HYDRO_USE_GUI) && defined(ESP32)
+#include "HydruinoUI.h"
 
 /*
  * Copyright (c) 2018 https://www.thecoderscorner.com (Dave Cherry).
