@@ -34,7 +34,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_DISP_SPI                  SPI             // Display SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
 #define SETUP_DISP_SPI_SPEED            F_SPD           // Display SPI speed, in Hz
-#define SETUP_CTRL_INPUT_PINS           {hpin_none}     // Control input pins, else {-1}
+#define SETUP_CTRL_INPUT_PINS           {hpin_none}     // Control input pins array, else {-1} (should be same sized array as control input mode enum specifies)
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
@@ -161,7 +161,9 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_FEED_PUMP_PIN             -1              // Water level low indicator pin, else -1
 #define SETUP_WATER_HEATER_PIN          -1              // Water heater relay pin (digital), else -1
 #define SETUP_WATER_SPRAYER_PIN         -1              // Water sprayer relay pin (digital), else -1
-#define SETUP_FAN_EXHAUST_PIN           -1              // Fan exhaust relay pin (digital/PWM), else -1
+#define SETUP_FAN_EXHAUST_PIN           -1              // Fan exhaust pin (digital/PWM), else -1
+#define SETUP_FAN_EXHAUST_ESP_CHN       1               // Fan exhaust PWM channel, if on ESP
+#define SETUP_FAN_EXHAUST_ESP_FRQ       1000            // Fan exhaust PWM frequency, if on ESP
 #define SETUP_NUTRIENT_MIX_PIN          -1              // Nutrient premix peristaltic pump relay pin (digital), else -1
 #define SETUP_FRESH_WATER_PIN           -1              // Fresh water peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_UP_PIN                 -1              // pH up solution peristaltic pump relay pin (digital), else -1
@@ -392,6 +394,7 @@ inline void setupPinChannels()
                 SharedPtr<HydroPinExpander>(nullptr)
             #endif
         };
+        // To setup control input pins as part of an expander, use pin #'s 100+, which are treated as virtual pins representing an expander index ((#-100) /16) and offset ((#-100) %16).
         if (isValidPin(SETUP_CTRL_INPUT_PINS_[0]) && SETUP_CTRL_INPUT_PINS_[0] >= hpin_virtual && !hydroController.getPinExpander(expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0]))) {
             hydroController.setPinExpander(expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0]), expanders[expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0])]);
         }
@@ -751,8 +754,15 @@ inline void setupObjects()
     #endif
     #if SETUP_FAN_EXHAUST_PIN >= 0
     if (checkPinIsPWMOutput(SETUP_FAN_EXHAUST_PIN)) {
-        auto fanExhaust = hydroController.addAnalogFanExhaust(SETUP_FAN_EXHAUST_PIN, ADC_RESOLUTION, SETUP_FAN_EXHAUST_PINCHNL);
-        fanExhaust->setParentRail(dcRelayPower);          // PWM fans use DC relay
+        auto fanExhaust = hydroController.addAnalogFanExhaust(SETUP_FAN_EXHAUST_PIN, ADC_RESOLUTION,
+#ifdef ESP32
+                                                              SETUP_FAN_EXHAUST_ESP_CHN,
+#endif
+#ifdef ESP_PLATFORM
+                                                              SETUP_FAN_EXHAUST_ESP_FRQ,
+#endif
+                                                              SETUP_FAN_EXHAUST_PINCHNL);
+        fanExhaust->setParentRail(dcRelayPower);            // PWM fans use DC relay
         fanExhaust->setParentReservoir(feedReservoir);
     } else {
         auto fanExhaust = hydroController.addFanExhaustRelay(SETUP_FAN_EXHAUST_PIN, SETUP_FAN_EXHAUST_PINCHNL);

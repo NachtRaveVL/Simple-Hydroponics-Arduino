@@ -433,7 +433,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_DISP_SPI                  SPI             // Display SPI class instance
 #define SETUP_DISP_SPI_CS               -1              // Display SPI CS pin, else -1
 #define SETUP_DISP_SPI_SPEED            F_SPD           // Display SPI speed, in Hz
-#define SETUP_CTRL_INPUT_PINS           {hpin_none}     // Control input pins, else {-1}
+#define SETUP_CTRL_INPUT_PINS           {hpin_none}     // Control input pins array, else {-1} (should be same sized array as control input mode enum specifies)
 #define SETUP_I2C_WIRE                  Wire            // I2C wire class instance
 #define SETUP_I2C_SPEED                 400000U         // I2C speed, in Hz
 #define SETUP_ESP_I2C_SDA               SDA             // I2C SDA pin, if on ESP
@@ -560,7 +560,9 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_FEED_PUMP_PIN             -1              // Water level low indicator pin, else -1
 #define SETUP_WATER_HEATER_PIN          -1              // Water heater relay pin (digital), else -1
 #define SETUP_WATER_SPRAYER_PIN         -1              // Water sprayer relay pin (digital), else -1
-#define SETUP_FAN_EXHAUST_PIN           -1              // Fan exhaust relay pin (digital/PWM), else -1
+#define SETUP_FAN_EXHAUST_PIN           -1              // Fan exhaust pin (digital/PWM), else -1
+#define SETUP_FAN_EXHAUST_ESP_CHN       1               // Fan exhaust PWM channel, if on ESP
+#define SETUP_FAN_EXHAUST_ESP_FRQ       1000            // Fan exhaust PWM frequency, if on ESP 
 #define SETUP_NUTRIENT_MIX_PIN          -1              // Nutrient premix peristaltic pump relay pin (digital), else -1
 #define SETUP_FRESH_WATER_PIN           -1              // Fresh water peristaltic pump relay pin (digital), else -1
 #define SETUP_PH_UP_PIN                 -1              // pH up solution peristaltic pump relay pin (digital), else -1
