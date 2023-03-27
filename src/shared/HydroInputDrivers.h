@@ -156,7 +156,7 @@ protected:
 class HydroInputMatrix2x2 : public HydroInputDriver {
 public:
     HydroInputMatrix2x2(Pair<uint8_t, const pintype_t *> controlPins, millis_t repeatDelay, millis_t repeatInterval);
-    virtual ~HydroInputMatrix2x2();
+    virtual ~HydroInputMatrix2x2() = default;
 
     virtual void begin(HydroDisplayDriver *displayDriver, MenuItem *initialItem) override;
 
