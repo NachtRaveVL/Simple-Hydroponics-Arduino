@@ -434,7 +434,7 @@ enum Hydro_CropPhase : signed char {
 // Specifies the general tank setup, fluid levels, and waste connection defaults.
 enum Hydro_SystemMode : signed char {
     Hydro_SystemMode_Recycling,                             // System consistently recycles water in main feed water reservoir. Default setting, applicable to a wide range of NFT and DWC setups.
-    Hydro_SystemMode_DrainToWaste,                          // System refills feed reservoir every time before feeding (with pH/feed premix top off), and requires a drainage pipe (as feed pump output) or drainage pump (from feed reservoir to drainage pipe).
+    Hydro_SystemMode_DrainToWaste,                          // System refills feed reservoir every time before feeding (with pH balance/feed premix top off), and requires a drainage pump (from feed reservoir) and/or drainage pipe (as drainage/feed pump output). Suitable also for flood-based systems.
 
     Hydro_SystemMode_Count,                                 // Placeholder
     Hydro_SystemMode_Undefined = -1                         // Placeholder

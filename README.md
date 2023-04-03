@@ -314,6 +314,7 @@ OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp 
 * Sensor pins used for event triggering when measurements go above/below a pre-set tolerance - many of which are deceptively labeled `DO` (or `Do`), despite having nothing to do with being `D`ata lines of any kind - can be safely ignored, as the software implementation of such mechanism is more than sufficient.
   * Often these connections are used to drive other hardware-only based solutions that aren't a part of Hydruino's use case, but can still be connected up using a BinarySensor that triggers upon specific conditions, possibly using an ISR-capable pin if desired.
 * CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, and _require_ `Vcc` for its heating element (5v @ 130mA for MQ-135) thus cannot use OneWire parasitic power mode. To calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
+* Avoid using volatile organic cleaners nearby humidity sensors - cleaning alcohols (like those commonly used in electronics) can permanently damage these devices.
 
 ### Networking & Wireless
 

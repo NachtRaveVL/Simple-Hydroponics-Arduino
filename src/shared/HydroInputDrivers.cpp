@@ -242,6 +242,8 @@ void HydroInputMatrix2x2::begin(HydroDisplayDriver *displayDriver, MenuItem *ini
                              &_keyboardLayout, &_tcMenuKeyListener,
                              (!getBaseUI() || getBaseUI()->allowingISR()) && areRowPinsInterruptable());
     #endif
+
+    menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem);
 }
 
 bool HydroInputMatrix2x2::areRowPinsInterruptable() const
@@ -297,6 +299,7 @@ void HydroInputMatrix3x4::begin(HydroDisplayDriver *displayDriver, MenuItem *ini
     #endif
 
     if (_rotaryEncoder) { _rotaryEncoder->begin(displayDriver, initialItem); }
+    else { menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem); }
 }
 
 bool HydroInputMatrix3x4::areRowPinsInterruptable() const
@@ -355,6 +358,7 @@ void HydroInputMatrix4x4::begin(HydroDisplayDriver *displayDriver, MenuItem *ini
     #endif
 
     if (_rotaryEncoder) { _rotaryEncoder->begin(displayDriver, initialItem); }
+    else { menuMgr.initWithoutInput(displayDriver->getBaseRenderer(), initialItem); }
 }
 
 bool HydroInputMatrix4x4::areRowPinsInterruptable() const
