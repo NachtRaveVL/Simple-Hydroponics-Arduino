@@ -80,7 +80,7 @@ public:
               bool analogSlider = false,                                    // Slider usage for analog items
               bool editingIcons = false);                                   // Editing icons usage
 
-    virtual HydroUIData *init(HydroUIData *uiData = nullptr) override;      // Standard initializer
+    virtual HydroUIData *init(HydroUIData *uiData = nullptr) override;      // UIData instance
     virtual bool begin() override;                                          // Begins UI
 
     virtual void setNeedsRedraw() override;

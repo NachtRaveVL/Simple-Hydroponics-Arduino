@@ -26,6 +26,7 @@ class HydroRemoteControl {
 public:
     virtual ~HydroRemoteControl() = default;
 
+    // Connection accessor
     virtual BaseRemoteServerConnection *getConnection() = 0;
 };
 

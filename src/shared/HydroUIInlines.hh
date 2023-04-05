@@ -150,7 +150,7 @@ struct RotaryControlSetup {
 
 // Up/Down Buttons Input Setup
 struct ButtonsControlSetup {
-    uint8_t repeatSpeed;                // Key repeat speed, in ticks
+    uint8_t repeatSpeed;                // Key repeat speed, in ticks (lower = faster)
     bool isDFRobotShield;               // Using DF robot shield
 
     inline ButtonsControlSetup(uint8_t repeatSpeedIn = HYDRO_UI_KEYREPEAT_SPEED, bool isDFRobotShieldIn = false) : repeatSpeed(repeatSpeedIn), isDFRobotShield(isDFRobotShieldIn) { ; }
@@ -160,7 +160,7 @@ struct ButtonsControlSetup {
 
 // ESP32 Touch Keys Input Setup
 struct ESP32TouchControlSetup {
-    uint8_t repeatSpeed;                        // Key repeat speed, in ticks
+    uint8_t repeatSpeed;                        // Key repeat speed, in ticks (lower = faster)
     uint16_t switchThreshold;                   // Switch activation threshold (default: 800)
     Hydro_ESP32Touch_HighRef highVoltage;       // High reference voltage (default: V_2V7)
     Hydro_ESP32Touch_LowRef lowVoltage;         // Low reference voltage (default: V_0V5)

@@ -189,14 +189,14 @@ inline HydroDisplayU8g2OLED *HydroDisplayU8g2OLED::allocateIL3820V2SPI1(DeviceSe
 
 template <class T>
 HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation, _gfx.width(),_gfx.height()), // possibly incorrect until after begin
+    : HydroDisplayDriver(displayRotation, _gfx.width(), _gfx.height()), // possibly incorrect until after begin
     #ifndef ESP8266
           _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));

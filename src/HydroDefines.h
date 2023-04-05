@@ -194,6 +194,8 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_FEEDRES_FRACTION_EMPTY    0.2f                // What fraction of a feed reservoir's volume is to be considered 'empty' during7*- pumping/feedings (to account for pumps, heaters, etc. - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 #define HYDRO_FEEDRES_FRACTION_FILLED   0.9f                // What fraction of a feed reservoir's volume to top-off to/considered 'filled' during pumping/feedings (rest will be used for balancing - only used for feed reservoirs with volume tracking but no filled/empty triggers)
 
+#define HYDRO_MUXERS_SHARED_ADDR_BUS    false               // Pin muxer channel selects should disable all pin muxers due to using same address bus (true), or not (false)
+
 #define HYDRO_NIGHT_START_HR            20                  // Hour of the day night starts (for night feeding multiplier, used if not able to calculate from location & time)
 #define HYDRO_NIGHT_FINISH_HR           6                   // Hour of the day night finishes (for night feeding multiplier, used if not able to calculate from location & time)
 

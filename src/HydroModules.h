@@ -102,7 +102,8 @@ public:
     inline void setPinMuxer(pintype_t pin, SharedPtr<HydroPinMuxer> pinMuxer) { _pinMuxers[pin] = pinMuxer; }
     // Returns pin muxer for pin #.
     inline SharedPtr<HydroPinMuxer> getPinMuxer(pintype_t pin) { return _pinMuxers[pin]; }
-    // Deactivates all pin muxers. All pin muxers are assumed to have a shared address bus.
+    // Deactivates all pin muxers. Called before selecting another channel if pin muxers are assumed
+    // to have a shared address bus (based on HYDRO_MUXERS_SHARED_ADDR_BUS setting).
     void deactivatePinMuxers();
 
 #ifndef HYDRO_DISABLE_MULTITASKING

@@ -68,7 +68,7 @@ void CALLBACK_FUNCTION debugAction(int id)
             // todo
             break;
         case 63: // TriggerSigTime
-            // todo
+            getScheduler()->setNeedsUpdate();
             break;
         case 62: // TriggerSDCleanup
             // todo

@@ -23,6 +23,26 @@ void handleInterrupt(pintype_t pin)
                 }
             }
         }
+
+        if (pin < hpin_virtual) {
+            for (auto iter = Hydruino::_activeInstance->_pinMuxers.begin(); iter != Hydruino::_activeInstance->_pinMuxers.end(); ++iter) {
+                if (iter->second->getInterruptPin().pin == pin) {
+                    handleInterrupt(iter->second->getSignalPin().pin);
+                }
+            }
+            #ifndef HYDRO_DISABLE_MULTITASKING
+                for (auto iter = Hydruino::_activeInstance->_pinExpanders.begin(); iter != Hydruino::_activeInstance->_pinExpanders.end(); ++iter) {
+                    if (iter->second->getInterruptPin().pin == pin) {
+                        iter->second->trySyncChannel();
+                        for (pintype_t virtPin = hpin_virtual + (16 * iter->second->getExpanderPos());
+                            virtPin < hpin_virtual + (16 * (iter->second->getExpanderPos() + 1));
+                            ++virtPin) {
+                            handleInterrupt(virtPin);
+                        }
+                    }
+                }
+            #endif
+        }
     }
 }
 
@@ -673,6 +693,19 @@ void Hydruino::commonPreInit()
 {
     Map<uintptr_t,uint32_t> began;
 
+    #ifdef HYDRO_USE_MULTITASKING
+        taskManager.setInterruptCallback(&handleInterrupt);
+
+        for (auto iter = _pinExpanders.begin(); iter != _pinExpanders.end(); ++iter) {
+            iter->second->init();
+            iter->second->tryRegisterISR();
+        }
+    #endif
+    for (auto iter = _pinMuxers.begin(); iter != _pinMuxers.end(); ++iter) {
+        iter->second->init();
+        iter->second->tryRegisterISR();
+    }
+
     if (rtcNow() == 0) { setTime(12,0,0,1,1,2000); }
 
     if (isValidPin(_piezoBuzzerPin)) {
@@ -736,9 +769,6 @@ void Hydruino::commonPreInit()
     #endif
     #ifdef HYDRO_USE_WIFI_STORAGE
         //WiFiStorage.begin();
-    #endif
-    #ifdef HYDRO_USE_MULTITASKING
-        taskManager.setInterruptCallback(&handleInterrupt);
     #endif
 }
 

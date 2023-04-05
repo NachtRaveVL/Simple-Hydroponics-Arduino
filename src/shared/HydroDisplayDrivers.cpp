@@ -54,7 +54,7 @@ HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(Hydro_DisplayOutputMode dis
            displayMode == Hydro_DisplayOutputMode_LCD16x2_EN || displayMode == Hydro_DisplayOutputMode_LCD20x4_EN ? 0 : 2, 4, 5, 6, 7,
            ledMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : ledMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
            ioFrom8574(HYDRO_UI_I2C_LCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
-      _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
+      _renderer(_lcd, _screenSize[0], _screenSize[1], HydroDisplayDriver::getSystemName())
 {
     _lcd.configureBacklightPin(3);
     _renderer.setTitleRequired(false);
@@ -65,7 +65,7 @@ HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(bool, I2CDeviceSetup displa
       _lcd(8, 9, 4, 5, 6, 7,
            ledMode == Hydro_BacklightMode_Normal ? LiquidCrystal::BACKLIGHT_NORMAL : ledMode == Hydro_BacklightMode_Inverted ? LiquidCrystal::BACKLIGHT_INVERTED : LiquidCrystal::BACKLIGHT_PWM,
            ioFrom8574(HYDRO_UI_I2C_LCD_BASEADDR | displaySetup.address, 0xff, displaySetup.wire, false)),
-      _renderer(_lcd, _screenSize[0], _screenSize[1], getController()->getSystemNameChars())
+      _renderer(_lcd, _screenSize[0], _screenSize[1], HydroDisplayDriver::getSystemName())
 {
     _lcd.configureBacklightPin(10);
     _renderer.setTitleRequired(false);
@@ -114,7 +114,7 @@ HydroDisplayU8g2OLED::HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_Displ
         HYDRO_SOFT_ASSERT(_drawable, SFP(HStr_Err_AllocationFailure));
 
         if (_drawable) {
-            _renderer = new GraphicsDeviceRenderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), _drawable);
+            _renderer = new GraphicsDeviceRenderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), _drawable);
             HYDRO_SOFT_ASSERT(_renderer, SFP(HStr_Err_AllocationFailure));
         }
     }
@@ -148,14 +148,14 @@ HydroOverview *HydroDisplayU8g2OLED::allocateOverview(const void *clockFont, con
 
 
 HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST77XXKind st77Kind, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation, _gfx.width(),_gfx.height()), _kind(st77Kind),
+    : HydroDisplayDriver(displayRotation, _gfx.width(), _gfx.height()), _kind(st77Kind),
       #ifndef ESP8266
           _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
     #ifdef ESP8266
@@ -204,14 +204,14 @@ HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7735>::allocateOverview(const 
 
 
 HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, Hydro_ST77XXKind st77Kind, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation, _gfx.width(),_gfx.height()), _kind(st77Kind),
+    : HydroDisplayDriver(displayRotation, _gfx.width(), _gfx.height()), _kind(st77Kind),
       #ifndef ESP8266
           _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
     #ifdef ESP8266
@@ -274,14 +274,14 @@ HydroOverview *HydroDisplayAdafruitGFX<Adafruit_ST7789>::allocateOverview(const 
 
 
 HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin)
-    : HydroDisplayDriver(displayRotation, _gfx.width(),_gfx.height()), // possibly incorrect until after begin
+    : HydroDisplayDriver(displayRotation, _gfx.width(), _gfx.height()), // possibly incorrect until after begin
       #ifndef ESP8266
           _gfx(displaySetup.spi, intForPin(dcPin), intForPin(displaySetup.cs), intForPin(resetPin)),
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
       _drawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     #ifdef ESP8266
         HYDRO_SOFT_ASSERT(!(bool)HYDRO_USE_SPI || displaySetup.spi == HYDRO_USE_SPI, SFP(HStr_Err_InvalidParameter));
@@ -312,7 +312,7 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_Disp
       _kind(st77Kind),
       _gfx(TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
       _drawable(&_gfx, 0),
-      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, getController()->getSystemNameChars(), &_drawable)
+      _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 { ; }
 
 void HydroDisplayTFTeSPI::initBaseUIFromDefaults()

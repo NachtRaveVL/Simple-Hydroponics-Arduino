@@ -33,7 +33,7 @@
 #define HYDRO_UI_I2C_LCD_BASEADDR       0x20                // Base address of I2C LiquidCrystalIO LCDs (bitwise or'ed with passed address - technically base address of i2c expander in use)
 #define HYDRO_UI_I2C_OLED_BASEADDR      0x78                // Base address of I2C U8g2 OLEDs (bitwise or'ed with passed address, some devices may use 0x7e)
 #define HYDRO_UI_BACKLIGHT_TIMEOUT      5 * SECS_PER_MIN    // Backlight timeout, in seconds
-#define HYDRO_UI_START_AT_OVERVIEW      true                // Starts at overview screen (true), else menu screen (false)
+#define HYDRO_UI_START_AT_OVERVIEW      false               // UI starts at overview screen (true), else menu screen (false)
 #define HYDRO_UI_DEALLOC_AFTER_USE      defined(__AVR__)    // If screen data should be unloaded after use (true = lower memory usage, increased screens transition time), or stay memory-resident (false = higher memory usage, more instant screen transitions)
 #define HYDRO_UI_GFX_VARS_USES_SLIDER   true                // Default analog slider usage for graphical displays displaying variable value ranges
 #define HYDRO_UI_MENU_TITLE_MAG_LEVEL   2                   // Menu title font magnification level
@@ -41,12 +41,12 @@
 #define HYDRO_UI_IOT_MONITOR_TEXT       "IoT Monitor"       // Menu IoT monitor item text
 #define HYDRO_UI_AUTHENTICATOR_TEXT     "Authenticator"     // Menu authenticator item text
 
-#define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed, in ticks
+#define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed, in ticks (lower = faster)
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
-#define HYDRO_UI_2X2MATRIX_KEYS         "AB*#"              // 2x2 matrix keyboard keys (U,D,L,R)
+#define HYDRO_UI_2X2MATRIX_KEYS         "#BA*"              // 2x2 matrix keyboard keys (R/S1,D/S2,U/S3,L/S4)
 #define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // 3x4 matrix keyboard keys (123,456,789,*0#)
 #define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // 4x4 matrix keyboard keys (123A,456B,789C,*0#D)
-#define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Assigned enter/select char, delete/exit char, back char, and next char on keyboard (also 2x2 matrix keyboard keys)
+#define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Assigned enter/select char, delete/exit char, back char, and next char on keyboard
 #define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Raw touch usage for TFTTouch
 
 // Default graphical display theme base (CoolBlue, DarkMode)
@@ -75,17 +75,20 @@ enum Hydro_DisplayRotation : signed char {
     Hydro_DisplayRotation_R1,                               // 90° clockwise display rotation (90° counter-clockwise device mounting)
     Hydro_DisplayRotation_R2,                               // 180° clockwise display rotation (180° counter-clockwise device mounting)
     Hydro_DisplayRotation_R3,                               // 270° clockwise display rotation  (270° counter-clockwise device mounting)
-    Hydro_DisplayRotation_HorzMirror,                       // Horizontally mirrored (iff supported)
-    Hydro_DisplayRotation_VertMirror,                       // Vertically mirrored (iff supported)
+    Hydro_DisplayRotation_HorzMirror,                       // Horizontally mirrored (iff supported, touchscreen tuning orientation pass-through w/o rotation)
+    Hydro_DisplayRotation_VertMirror,                       // Vertically mirrored (iff supported, touchscreen tuning orientation pass-through w/o rotation)
 
     Hydro_DisplayRotation_Count,                            // Placeholder
     Hydro_DisplayRotation_Undefined = -1                    // Placeholder
 };
 
 // Touchscreen Orientation
-// Touchscreens can be glued on differently than displays, so these allow finer touchscreen setup.
+// Touchscreens can be attached differently than displays, so these allow finer touchscreen setup.
 enum Hydro_TouchscreenOrientation : signed char {
-    Hydro_TouchscreenOrientation_Same,                      // Keep same orientation as display rotation (converts display rotation to swapXY/invX/invY values)
+    Hydro_TouchscreenOrientation_Same,                      // Apply same orientation as display rotation (converts display rotation to swapXY/invX/invY values)
+    Hydro_TouchscreenOrientation_Plus1,                     // Apply same orientation as display rotation + R1, %4->[R0,R3] (converts display rotation + 90° to swapXY/invX/invY values)
+    Hydro_TouchscreenOrientation_Plus2,                     // Apply same orientation as display rotation + R2, %4->[R0,R3] (converts display rotation + 180° to swapXY/invX/invY values)
+    Hydro_TouchscreenOrientation_Plus3,                     // Apply same orientation as display rotation + R3, %4->[R0,R3] (converts display rotation + 270° to swapXY/invX/invY values)
     Hydro_TouchscreenOrientation_None,                      // No applied orientation (no invX, invY, or swapXY)
     Hydro_TouchscreenOrientation_InvertX,                   // Only invert X axis (no invY or swapXY)
     Hydro_TouchscreenOrientation_InvertY,                   // Only invert Y axis (no invX or swapXY)

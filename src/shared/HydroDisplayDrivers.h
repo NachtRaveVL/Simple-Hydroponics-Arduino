@@ -23,27 +23,54 @@ public:
     inline HydroDisplayDriver(Hydro_DisplayRotation displayRotation = Hydro_DisplayRotation_Undefined, uint16_t screenWidth = 0, uint16_t screenHeight = 0) : _rotation(displayRotation), _displayTheme(Hydro_DisplayTheme_Undefined), _screenSize{screenWidth, screenHeight} { ; }
     virtual ~HydroDisplayDriver() = default;
 
+    // Uses display driver to initialize base UI with its own unique defaults.
+    // Called when no stored UI data loaded.
     virtual void initBaseUIFromDefaults() = 0;
+    // Begins the display driver.
     virtual void begin() = 0;
 
+    // Allocates display-driver specific system-at-a-glance overview screen.
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) = 0;
 
+    // Setups any graphical rendering options, including theme, font usage, and default editing icongraphy.
     virtual void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false);
 
+    // Screen size accessor, with or without rotation included
+    // Note: May return invalid screen size until after display driver is began.
     virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const = 0;
+    // Determines if screen is in landscape screen mode, with or without rotation included.
     virtual bool isLandscape(bool withRot = true) const = 0;
+    // Determines if screen is in portrait screen mode, with or without rotation included.
     inline bool isPortrait(bool withRot = true) const { return !isLandscape(withRot); }
+    // Determines if screen is in square screen mode.
     inline bool isSquare() const { return getScreenSize().first == getScreenSize().second; }
+    // Screen bit depth accessor
     virtual uint8_t getScreenBits() const = 0;
+    // Returns true if screen is monochrome
     inline bool isMonochrome() const { return getScreenBits() == 1; }
-    inline bool isColor() const { return getScreenBits() > 1; }
+    // Returns true if screen is color (not monochrome)
+    inline bool isColor() const { return !isMonochrome(); }
+    // Returns true if screen is 16-bpp rgb565 color mode
     inline bool is16BitColor() const { return getScreenBits() == 16; }
+    // Returns true if screen is 24-bpp rgb888 color mode
     inline bool isFullColor() const { return getScreenBits() == 24; }
 
+    // System name accessor, guaranteeing PGM memory under AVR/ESP_H at expense of custom naming
+    static inline const char *getSystemName()
+        #if (defined __AVR__ || defined ESP_H) && !defined __MBED__
+            { return CFP(HStr_Default_SystemName); }
+        #else
+            { return getController() ? getController()->getSystemNameChars() : CFP(HStr_Default_SystemName); }
+        #endif
+
+    // Base menu renderer accessor, else nullptr
     virtual BaseMenuRenderer *getBaseRenderer() = 0;
+    // Graphical device renderer accessor, else nullptr
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() = 0;
 
+    // Rotation accessor
     inline Hydro_DisplayRotation getRotation() const { return _rotation; }
+    // Display theme accessor
     inline Hydro_DisplayTheme getDisplayTheme() const { return _displayTheme; }
 
 protected:
@@ -78,11 +105,12 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return nullptr; }
 
+    // LCD accessor
     inline LiquidCrystal &getLCD() { return _lcd; }
 
 protected:
-    LiquidCrystal _lcd;
-    LiquidCrystalRenderer _renderer;
+    LiquidCrystal _lcd;                                     // LCD instance
+    LiquidCrystalRenderer _renderer;                        // LCD renderer
 };
 
 
@@ -109,23 +137,26 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() override { return _renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return _renderer; }
 
+    // GFX accessor
     inline U8G2 &getGfx() { return *_gfx; }
-    #ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
-        inline StChromaArtDrawable &getDrawable() { return *_drawable; }
-    #else
-        inline U8g2Drawable &getDrawable() { return *_drawable; }
-    #endif
+#ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
+    // Drawable accessor
+    inline StChromaArtDrawable &getDrawable() { return *_drawable; }
+#else
+    // Drawable accessor
+    inline U8g2Drawable &getDrawable() { return *_drawable; }
+#endif
 
 protected:
-    U8G2 *_gfx;
-    #ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
-        StChromaArtDrawable *_drawable;
-    #else
-        U8g2Drawable *_drawable;
-    #endif
-    GraphicsDeviceRenderer *_renderer;
+    U8G2 *_gfx;                                             // Graphics device instance
+#ifdef HYDRO_UI_ENABLE_STCHROMA_LDTC
+    StChromaArtDrawable *_drawable;                         // StChromaArt drawable
+#else
+    U8g2Drawable *_drawable;                                // U8g2 drawable
+#endif
+    GraphicsDeviceRenderer *_renderer;                      // Graphics renderer
 
-public:
+public: // U8g2 factory
     static inline HydroDisplayU8g2OLED *allocateSSD1305SPI(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
     static inline HydroDisplayU8g2OLED *allocateSSD1305SPI1(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t dcPin, pintype_t resetPin);
     static inline HydroDisplayU8g2OLED *allocateSSD1305Wire(DeviceSetup displaySetup, Hydro_DisplayRotation displayRotation, pintype_t resetPin);
@@ -181,13 +212,15 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
+    // GFX accessor
     inline T &getGfx() { return _gfx; }
+    // Drawable accessor
     inline AdafruitDrawable<T> &getDrawable() { return _drawable; }
 
 protected:
-    T _gfx;
-    AdafruitDrawable<T> _drawable;
-    GraphicsDeviceRenderer _renderer;
+    T _gfx;                                                 // GFX instance
+    AdafruitDrawable<T> _drawable;                          // AdafruitGFX drawable
+    GraphicsDeviceRenderer _renderer;                       // Graphics renderer
 };
 
 
@@ -215,14 +248,16 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
+    // GFX accessor
     inline Adafruit_ST7735 &getGfx() { return _gfx; }
+    // Drawable accessor
     inline AdafruitDrawable<Adafruit_ST7735> &getDrawable() { return _drawable; }
 
 protected:
-    const Hydro_ST77XXKind _kind;
-    Adafruit_ST7735 _gfx;
-    AdafruitDrawable<Adafruit_ST7735> _drawable;
-    GraphicsDeviceRenderer _renderer;
+    const Hydro_ST77XXKind _kind;                           // ST7735 kind enum
+    Adafruit_ST7735 _gfx;                                   // GFX instance
+    AdafruitDrawable<Adafruit_ST7735> _drawable;            // AdafruitGFX drawable
+    GraphicsDeviceRenderer _renderer;                       // Graphics renderer
 };
 
 
@@ -251,14 +286,16 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
+    // GFX accessor
     inline Adafruit_ST7789 &getGfx() { return _gfx; }
+    // Drawable accessor
     inline AdafruitDrawable<Adafruit_ST7789> &getDrawable() { return _drawable; }
 
 protected:
-    const Hydro_ST77XXKind _kind;
-    Adafruit_ST7789 _gfx;
-    AdafruitDrawable<Adafruit_ST7789> _drawable;
-    GraphicsDeviceRenderer _renderer;
+    const Hydro_ST77XXKind _kind;                           // ST7789 kind enum
+    Adafruit_ST7789 _gfx;                                   // GFX instance
+    AdafruitDrawable<Adafruit_ST7789> _drawable;            // AdafruitGFX drawable
+    GraphicsDeviceRenderer _renderer;                       // Graphics renderer
 };
 
 
@@ -285,13 +322,15 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
+    // GFX accessor
     inline Adafruit_ILI9341 &getGfx() { return _gfx; }
+    // Drawable accessor
     inline AdafruitDrawable<Adafruit_ILI9341> &getDrawable() { return _drawable; }
 
 protected:
-    Adafruit_ILI9341 _gfx;
-    AdafruitDrawable<Adafruit_ILI9341> _drawable;
-    GraphicsDeviceRenderer _renderer;
+    Adafruit_ILI9341 _gfx;                                  // GFX instance
+    AdafruitDrawable<Adafruit_ILI9341> _drawable;           // AdafruitGFX drawable
+    GraphicsDeviceRenderer _renderer;                       // Graphics renderer
 };
 
 
@@ -319,6 +358,7 @@ public:
     virtual bool isLandscape(bool withRot = true) const override { return withRot ? (TFT_GFX_WIDTH >= TFT_GFX_HEIGHT ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                                                       : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
                                                                                   : TFT_GFX_WIDTH >= TFT_GFX_HEIGHT; }
+    // Determines if screen is in round screen mode.
     inline bool isRound() const
         #ifdef GC9A01_DRIVER
             { return TFT_GFX_WIDTH == TFT_GFX_HEIGHT; }
@@ -330,14 +370,16 @@ public:
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
     virtual GraphicsDeviceRenderer *getGraphicsRenderer() override { return &_renderer; }
 
+    // GFX accessor
     inline TFT_eSPI &getGfx() { return _gfx; }
+    // Drawable accessor
     inline TfteSpiDrawable &getDrawable() { return _drawable; }
 
 protected:
-    const Hydro_ST77XXKind _kind;
-    TFT_eSPI _gfx;
-    TfteSpiDrawable _drawable;
-    GraphicsDeviceRenderer _renderer;
+    const Hydro_ST77XXKind _kind;                           // ST7735 kind enum
+    TFT_eSPI _gfx;                                          // GFX instance
+    TfteSpiDrawable _drawable;                              // TFTeSPI drawable
+    GraphicsDeviceRenderer _renderer;                       // Graphics renderer
 };
 
 #endif // /ifndef HydroDisplayDrivers_H

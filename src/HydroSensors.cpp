@@ -189,7 +189,7 @@ HydroBinarySensor::HydroBinarySensor(const HydroBinarySensorData *dataIn)
 {
     HYDRO_HARD_ASSERT(_inputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
     _inputPin.init();
-    if (dataIn->usingISR) { tryRegisterAsISR(); }
+    if (dataIn->usingISR) { tryRegisterISR(); }
 }
 
 HydroBinarySensor::~HydroBinarySensor()
@@ -252,11 +252,11 @@ Hydro_UnitsType HydroBinarySensor::getMeasurementUnits(uint8_t) const
     return _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Raw_1;
 }
 
-bool HydroBinarySensor::tryRegisterAsISR()
+bool HydroBinarySensor::tryRegisterISR(bool anyChange)
 {
     #ifdef HYDRO_USE_MULTITASKING
-        if (!_usingISR && checkPinCanInterrupt(_inputPin.pin)) {
-            taskManager.addInterrupt(&interruptImpl, _inputPin.pin, _inputPin.activeLow ? FALLING : RISING);
+        if (!_usingISR && _inputPin.isValid() && checkPinCanInterrupt(_inputPin.pin)) {
+            taskManager.addInterrupt(&interruptImpl, _inputPin.pin, !anyChange ? (_inputPin.activeLow ? FALLING : RISING) : CHANGE);
             _usingISR = true;
         }
     #endif

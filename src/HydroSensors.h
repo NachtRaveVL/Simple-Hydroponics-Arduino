@@ -116,11 +116,11 @@ public:
     virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t = 0) override;
     virtual Hydro_UnitsType getMeasurementUnits(uint8_t = 0) const override;
 
-    // ISR registration requires an interruptable pin, i.e. a valid digitalPinToInterrupt().
-    // Active-low input pins interrupt on falling-edge, while active-high pins interrupt on rising-edge.
-    // Interrupt routine does little but create an async Task via TaskManager, eliminating most/if-not-all race conditions.
+    // ISR registration requires an interruptable pin, i.e. a valid digitalPinToInterrupt(inputPin).
+    // Unless anyChange true, active-low input pins interrupt on falling-edge, while active-high input pins interrupt on rising-edge.
+    // Interrupt routine does little but create an async Task via TaskManager, eliminating majority of race conditions.
     // Once registered, the ISR cannot be unregistered/changed. It is advised to use a lowered numbered pin # if able ([1-15,18]).
-    bool tryRegisterAsISR();
+    bool tryRegisterISR(bool anyChange = false);
 
     inline const HydroDigitalPin &getInputPin() const { return _inputPin; }
 

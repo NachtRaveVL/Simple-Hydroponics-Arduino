@@ -123,11 +123,11 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 
 // UI Control Input Settings
 #define SETUP_UI_ENC_ROTARY_SPEED       HalfCycle       // Rotary encoder cycling speed (FullCycle, HalfCycle, QuarterCycle)
-#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed, in ticks
+#define SETUP_UI_KEY_REPEAT_SPEED       20              // Key repeat speed, in ticks (lower = faster)
 #define SETUP_UI_KEY_REPEAT_DELAY       850             // Key repeat delay, in milliseconds
 #define SETUP_UI_KEY_REPEAT_INTERVAL    350             // Key repeat interval, in milliseconds
 #define SETUP_UI_JS_ACCELERATION        3.0f            // Joystick acceleration (decrease divisor), if using analog joystick
-#define SETUP_UI_TOUCHSCREEN_ORIENT     Same            // Touchscreen orientation tuning (Same, None, InvertX, InvertY, InvertXY, SwapXY, InvertX_SwapXY, InvertY_SwapXY, InvertXY_SwapXY), if using touchscreen
+#define SETUP_UI_TOUCHSCREEN_ORIENT     Same            // Touchscreen orientation tuning (Same, Plus1, Plus2, Plus3, None, InvertX, InvertY, InvertXY, SwapXY, InvertX_SwapXY, InvertY_SwapXY, InvertXY_SwapXY), if using touchscreen
 #define SETUP_UI_TOUCHSCREEN_SPI        SPI             // SPI class for XPT2046 touchscreen, if using XTP2046
 #define SETUP_UI_ESP32TOUCH_SWITCH      800             // ESP32 Touch key switch threshold, if on ESP32/using ESP32Touch
 #define SETUP_UI_ESP32TOUCH_HVOLTS      V_2V7           // ESP32 Touch key high reference voltage (Keep, V_2V4, V_2V5, V_2V6, V_2V7, Max), if on ESP32/using ESP32Touch
@@ -175,19 +175,22 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_MUXER_ADDRESS_PINS        {hpin_none}     // Multiplexer addressing bus/channel pins, else {-1}
 #define SETUP_MUXER_ENABLE_PIN          -1              // Multiplexer chip enable pin (optional), else -1
 #define SETUP_MUXER_ENABLE_TYPE         ACT_LOW         // Multiplexer chip enable pin type/active level (ACT_HIGH, ACT_LOW)
+#define SETUP_MUXER_ISR_PIN             -1              // Multiplexer interrupt pin, else -1
+#define SETUP_MUXER_ISR_TYPE            ACT_LOW         // Multiplexer interrupt pin type/active level (ACT_HIGH, ACT_LOW)
 
 // Device Pin Expanders Setup                           // (Note: Will redefine any used pins from channel setup below to a virtual pin = 100+chnl#)
 #define SETUP_EXPANDER1_CHANNEL_BITS    -1              // Pin expander 1 channel bits (3 = 8-bit, 4 = 16-bit), else -1
 #define SETUP_EXPANDER2_CHANNEL_BITS    -1              // Pin expander 2 channel bits (3 = 8-bit, 4 = 16-bit), else -1
 #define SETUP_EXPANDER1_IOREF_I2C_ADDR  0x27            // Pin expander 1 full I2C device address (including device base offset)
 #define SETUP_EXPANDER2_IOREF_I2C_ADDR  0x28            // Pin expander 2 full I2C device address (including device base offset)
+#define SETUP_EXPANDER_IOREF_I2C_WIRE   Wire            // Pin expanders I2C wire class instance
 #define SETUP_EXPANDER1_IOREF_ISR_PIN   -1              // Pin expander 1 interrupt pin, else -1
 #define SETUP_EXPANDER2_IOREF_ISR_PIN   -1              // Pin expander 2 interrupt pin, else -1
-#define SETUP_EXPANDER_IOREF_I2C_WIRE   Wire            // Pin expanders I2C wire class instance
+#define SETUP_EXPANDER_IOREF_ISR_TYPE   ACT_LOW         // Pin expanders interrupt pin type/active level (ACT_HIGH, ACT_LOW)
 // IORef allocation command using ioFrom* functions in IoAbstraction for pin expander 1
-#define SETUP_EXPANDER1_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER1_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER1_IOREF_ISR_PIN, &SETUP_EXPANDER_IOREF_I2C_WIRE)
+#define SETUP_EXPANDER1_IOREF_ALLOC()   ioFrom8575((uint8_t)SETUP_EXPANDER1_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER1_IOREF_ISR_PIN, &SETUP_EXPANDER_IOREF_I2C_WIRE)
 // IORef allocation command using ioFrom* functions in IoAbstraction for pin expander 2
-#define SETUP_EXPANDER2_IOREF_ALLOC()   ioFrom8574((uint8_t)SETUP_EXPANDER2_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER2_IOREF_ISR_PIN, &SETUP_EXPANDER_IOREF_I2C_WIRE)
+#define SETUP_EXPANDER2_IOREF_ALLOC()   ioFrom8575((uint8_t)SETUP_EXPANDER2_IOREF_I2C_ADDR, (pinid_t)SETUP_EXPANDER2_IOREF_ISR_PIN, &SETUP_EXPANDER_IOREF_I2C_WIRE)
 
 // Pin Muxer/Expander Channel Setup                     // (Note: Only multiplexing or expanding may be done at the same time)
 #define SETUP_PH_METER_PINCHNL          hpinchnl_none   // pH meter sensor pin muxer/expander channel #, else -127/none
@@ -321,82 +324,83 @@ inline void setupPinChannels()
     #if SETUP_MUXER_CHANNEL_BITS >= 0
         pintype_t _SETUP_MUXER_ADDRESS_PINS[] = SETUP_MUXER_ADDRESS_PINS;
         HydroDigitalPin chipEnable(SETUP_MUXER_ENABLE_PIN, OUTPUT, SETUP_MUXER_ENABLE_TYPE);
+        HydroDigitalPin interrupt(SETUP_MUXER_ISR_PIN, INPUT, SETUP_MUXER_ISR_TYPE);
         #if SETUP_PH_METER_PINCHNL >= 0 && SETUP_PH_METER_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_PH_METER_PIN)) { hydroController.setPinMuxer(SETUP_PH_METER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_PH_METER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_PH_METER_PIN)) { hydroController.setPinMuxer(SETUP_PH_METER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_PH_METER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_TDS_METER_PINCHNL >= 0 && SETUP_TDS_METER_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_TDS_METER_PIN)) { hydroController.setPinMuxer(SETUP_TDS_METER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_TDS_METER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_TDS_METER_PIN)) { hydroController.setPinMuxer(SETUP_TDS_METER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_TDS_METER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_CO2_SENSOR_PINCHNL >= 0 && SETUP_CO2_SENSOR_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_CO2_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_CO2_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_CO2_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_CO2_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_CO2_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_CO2_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_AC_USAGE_SENSOR_PINCHNL >= 0 && SETUP_AC_USAGE_SENSOR_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_AC_USAGE_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_AC_USAGE_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_AC_USAGE_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_AC_USAGE_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_AC_USAGE_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_AC_USAGE_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_DC_USAGE_SENSOR_PINCHNL >= 0 && SETUP_DC_USAGE_SENSOR_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_DC_USAGE_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_DC_USAGE_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_DC_USAGE_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_DC_USAGE_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_DC_USAGE_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_DC_USAGE_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_FLOW_RATE_SENSOR_PINCHNL >= 0 && SETUP_FLOW_RATE_SENSOR_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_FLOW_RATE_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_FLOW_RATE_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FLOW_RATE_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_FLOW_RATE_SENSOR_PIN)) { hydroController.setPinMuxer(SETUP_FLOW_RATE_SENSOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FLOW_RATE_SENSOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_VOL_FILLED_PINCHNL >= 0 && SETUP_VOL_FILLED_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_VOL_FILLED_PIN)) { hydroController.setPinMuxer(SETUP_VOL_FILLED_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_VOL_FILLED_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_VOL_FILLED_PIN)) { hydroController.setPinMuxer(SETUP_VOL_FILLED_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_VOL_FILLED_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_VOL_EMPTY_PINCHNL >= 0 && SETUP_VOL_EMPTY_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_VOL_EMPTY_PIN)) { hydroController.setPinMuxer(SETUP_VOL_EMPTY_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_VOL_EMPTY_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_VOL_EMPTY_PIN)) { hydroController.setPinMuxer(SETUP_VOL_EMPTY_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_VOL_EMPTY_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_VOL_LEVEL_PINCHNL >= 0 && SETUP_VOL_LEVEL_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_VOL_LEVEL_PIN)) { hydroController.setPinMuxer(SETUP_VOL_LEVEL_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_VOL_LEVEL_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_VOL_LEVEL_PIN)) { hydroController.setPinMuxer(SETUP_VOL_LEVEL_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_VOL_LEVEL_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_GROW_LIGHTS_PINCHNL >= 0 && SETUP_GROW_LIGHTS_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_GROW_LIGHTS_PIN)) { hydroController.setPinMuxer(SETUP_GROW_LIGHTS_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_GROW_LIGHTS_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_GROW_LIGHTS_PIN)) { hydroController.setPinMuxer(SETUP_GROW_LIGHTS_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_GROW_LIGHTS_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_WATER_AERATOR_PINCHNL >= 0 && SETUP_WATER_AERATOR_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_WATER_AERATOR_PIN)) { hydroController.setPinMuxer(SETUP_WATER_AERATOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_WATER_AERATOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_WATER_AERATOR_PIN)) { hydroController.setPinMuxer(SETUP_WATER_AERATOR_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_WATER_AERATOR_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_FEED_PUMP_PINCHNL >= 0 && SETUP_FEED_PUMP_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_FEED_PUMP_PIN)) { hydroController.setPinMuxer(SETUP_FEED_PUMP_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FEED_PUMP_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_FEED_PUMP_PIN)) { hydroController.setPinMuxer(SETUP_FEED_PUMP_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FEED_PUMP_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_WATER_HEATER_PINCHNL >= 0 && SETUP_WATER_HEATER_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_WATER_HEATER_PIN)) { hydroController.setPinMuxer(SETUP_WATER_HEATER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_WATER_HEATER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_WATER_HEATER_PIN)) { hydroController.setPinMuxer(SETUP_WATER_HEATER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_WATER_HEATER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_WATER_SPRAYER_PINCHNL >= 0 && SETUP_WATER_SPRAYER_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_WATER_SPRAYER_PIN)) { hydroController.setPinMuxer(SETUP_WATER_SPRAYER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_WATER_SPRAYER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_WATER_SPRAYER_PIN)) { hydroController.setPinMuxer(SETUP_WATER_SPRAYER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_WATER_SPRAYER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_FAN_EXHAUST_PINCHNL >= 0 && SETUP_FAN_EXHAUST_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_FAN_EXHAUST_PIN)) { hydroController.setPinMuxer(SETUP_FAN_EXHAUST_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FAN_EXHAUST_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_FAN_EXHAUST_PIN)) { hydroController.setPinMuxer(SETUP_FAN_EXHAUST_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FAN_EXHAUST_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_NUTRIENT_MIX_PINCHNL >= 0 && SETUP_NUTRIENT_MIX_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_NUTRIENT_MIX_PIN)) { hydroController.setPinMuxer(SETUP_NUTRIENT_MIX_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_NUTRIENT_MIX_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_NUTRIENT_MIX_PIN)) { hydroController.setPinMuxer(SETUP_NUTRIENT_MIX_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_NUTRIENT_MIX_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_FRESH_WATER_PINCHNL >= 0 && SETUP_FRESH_WATER_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_FRESH_WATER_PIN)) { hydroController.setPinMuxer(SETUP_FRESH_WATER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FRESH_WATER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_FRESH_WATER_PIN)) { hydroController.setPinMuxer(SETUP_FRESH_WATER_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_FRESH_WATER_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_PH_UP_PINCHNL >= 0 && SETUP_PH_UP_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_PH_UP_PIN)) { hydroController.setPinMuxer(SETUP_PH_UP_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_PH_UP_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_PH_UP_PIN)) { hydroController.setPinMuxer(SETUP_PH_UP_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_PH_UP_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_PH_DOWN_PINCHNL >= 0 && SETUP_PH_DOWN_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_PH_DOWN_PIN)) { hydroController.setPinMuxer(SETUP_PH_DOWN_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_PH_DOWN_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_PH_DOWN_PIN)) { hydroController.setPinMuxer(SETUP_PH_DOWN_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_PH_DOWN_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
         #if SETUP_CROP_SOILM_PINCHNL >= 0 && SETUP_CROP_SOILM_PIN >= 0
-            if (!hydroController.getPinMuxer(SETUP_CROP_SOILM_PIN)) { hydroController.setPinMuxer(SETUP_CROP_SOILM_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_CROP_SOILM_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable))); }
+            if (!hydroController.getPinMuxer(SETUP_CROP_SOILM_PIN)) { hydroController.setPinMuxer(SETUP_CROP_SOILM_PIN, SharedPtr<HydroPinMuxer>(new HydroPinMuxer(SETUP_CROP_SOILM_PIN, _SETUP_MUXER_ADDRESS_PINS, SETUP_MUXER_CHANNEL_BITS, chipEnable, interrupt))); }
         #endif
     #elif SETUP_EXPANDER1_CHANNEL_BITS > 0 || SETUP_EXPANDER2_CHANNEL_BITS > 0
         auto expanders[] = {
             #if SETUP_EXPANDER1_CHANNEL_BITS > 0
-                SharedPtr<HydroPinExpander>(new HydroPinExpander(SETUP_EXPANDER1_CHANNEL_BITS, SETUP_EXPANDER1_IOREF_ALLOC())),
+                SharedPtr<HydroPinExpander>(new HydroPinExpander(0, SETUP_EXPANDER1_CHANNEL_BITS, SETUP_EXPANDER1_IOREF_ALLOC(), HydroDigitalPin(SETUP_EXPANDER1_IOREF_ISR_PIN, INPUT, SETUP_EXPANDER_IOREF_ISR_TYPE))),
             #else
                 SharedPtr<HydroPinExpander>(nullptr),
             #endif
             #if SETUP_EXPANDER2_CHANNEL_BITS > 0
-                SharedPtr<HydroPinExpander>(new HydroPinExpander(SETUP_EXPANDER2_CHANNEL_BITS, SETUP_EXPANDER2_IOREF_ALLOC()))
+                SharedPtr<HydroPinExpander>(new HydroPinExpander(1, SETUP_EXPANDER2_CHANNEL_BITS, SETUP_EXPANDER2_IOREF_ALLOC(), HydroDigitalPin(SETUP_EXPANDER2_IOREF_ISR_PIN, INPUT, SETUP_EXPANDER_IOREF_ISR_TYPE)))
             #else
                 SharedPtr<HydroPinExpander>(nullptr)
             #endif
         };
         // To setup control input pins as part of an expander, use pin #'s 100+, which are treated as virtual pins representing an expander index ((#-100) /16) and offset ((#-100) %16).
-        if (isValidPin(SETUP_CTRL_INPUT_PINS_[0]) && SETUP_CTRL_INPUT_PINS_[0] >= hpin_virtual && !hydroController.getPinExpander(expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0]))) {
-            hydroController.setPinExpander(expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0]), expanders[expanderForPinNumber(SETUP_CTRL_INPUT_PINS_[0])]);
+        if (isValidPin(SETUP_CTRL_INPUT_PINS_[0]) && SETUP_CTRL_INPUT_PINS_[0] >= hpin_virtual && !hydroController.getPinExpander(expanderPosForPinNumber(SETUP_CTRL_INPUT_PINS_[0]))) {
+            hydroController.setPinExpander(expanderPosForPinNumber(SETUP_CTRL_INPUT_PINS_[0]), expanders[expanderPosForPinNumber(SETUP_CTRL_INPUT_PINS_[0])]);
         }
         #if SETUP_PH_METER_PINCHNL >= 0
             if (!hydroController.getPinExpander(SETUP_PH_METER_PINCHNL/16)) { hydroController.setPinExpander(SETUP_PH_METER_PINCHNL/16, expanders[SETUP_PH_METER_PINCHNL/16]); }

@@ -24,6 +24,7 @@ public:
     inline HydroOverview(HydroDisplayDriver *display) : _display(display), _needsFullRedraw(true) { ; }
     virtual ~HydroOverview() = default;
 
+    // Renders overview screen given current display orientation.
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) = 0;
 
     inline void setNeedsFullRedraw() { _needsFullRedraw = true; }

@@ -68,12 +68,10 @@ void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme
         _uiData->editingIcons = editingIcons;
     }
 
-    #if !HYDRO_UI_START_AT_OVERVIEW
-        if (!_homeMenu) {
-            _homeMenu = new HydroHomeMenu();
-            HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
-        }
-    #endif
+    if (!_homeMenu) {
+        _homeMenu = new HydroHomeMenu();
+        HYDRO_SOFT_ASSERT(_homeMenu, SFP(HStr_Err_AllocationFailure));
+    }
 }
 
 HydroUIData *HydruinoBaseUI::init(HydroUIData *uiData)
@@ -112,7 +110,7 @@ bool HydruinoBaseUI::begin()
     }
 
     #if HYDRO_UI_START_AT_OVERVIEW
-        reset();
+        gotoScreen(7);
     #endif
     setBacklightEnable(true);
 

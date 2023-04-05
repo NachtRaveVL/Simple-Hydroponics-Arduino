@@ -30,8 +30,7 @@ HydroPin::HydroPin()
 
 HydroPin::HydroPin(int classType, pintype_t pinNumber, Hydro_PinMode pinMode, int8_t pinChannel)
     : type((typeof(type))classType), pin(pinNumber), mode(pinMode),
-      channel(pinChannel == hpinchnl_none ? (pinNumber != hpin_none && pinNumber >= hpin_virtual ? pinChannelForExpanderChannel(abs(pinNumber - hpin_virtual)) : hpinchnl_none)
-                                          : (pinNumber != hpin_none && pinNumber >= hpin_virtual ? pinChannelForExpanderChannel(abs(pinChannel)) : pinChannelForMuxerChannel(abs(pinChannel))))
+      channel(isValidChannel(pinChannel) ? pinChannel : (isValidPin(pinNumber) && pinNumber >= hpin_virtual ? pinChannelForExpanderChannel(pinNumber - hpin_virtual) : hpinchnl_none))
 { ; }
 
 HydroPin::HydroPin(const HydroPinData *dataIn)
@@ -61,7 +60,7 @@ void HydroPin::init()
     #if !HYDRO_SYS_DRY_RUN_ENABLE
         if (isValid()) {
             if (!(isExpanded() || isVirtual())) {
-                HYDRO_SOFT_ASSERT(!isMuxed() || channel == pinChannelForMuxerChannel(abs(channel)), SFP(HStr_Err_NotConfiguredProperly));
+                HYDRO_SOFT_ASSERT(!isMuxed() || channel == pinChannelForMuxerChannel(muxerChannelForPinChannel(channel)), SFP(HStr_Err_NotConfiguredProperly));
 
                 switch (mode) {
                     case Hydro_PinMode_Digital_Input:
@@ -93,14 +92,14 @@ void HydroPin::init()
             } else {
                 #ifndef HYDRO_DISABLE_MULTITASKING
                     HYDRO_SOFT_ASSERT(isVirtual() && pin == pinNumberForPinChannel(channel), SFP(HStr_Err_NotConfiguredProperly));
-                    HYDRO_SOFT_ASSERT(channel == pinChannelForExpanderChannel(abs(channel)), SFP(HStr_Err_NotConfiguredProperly));
+                    HYDRO_SOFT_ASSERT(channel == pinChannelForExpanderChannel(channel), SFP(HStr_Err_NotConfiguredProperly));
 
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
                         #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_MBED) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY) || defined(INPUT_PULLDOWN)
-                            expander->getIoAbstraction()->pinDirection(abs(channel), isOutput() ? OUTPUT : mode == Hydro_PinMode_Digital_Input_PullUp ? INPUT_PULLUP : mode == Hydro_PinMode_Digital_Input_PullDown ? INPUT_PULLDOWN : INPUT);
+                            expander->getIoAbstraction()->pinDirection(channel % 16, isOutput() ? OUTPUT : mode == Hydro_PinMode_Digital_Input_PullUp ? INPUT_PULLUP : mode == Hydro_PinMode_Digital_Input_PullDown ? INPUT_PULLDOWN : INPUT);
                         #else
-                            expander->getIoAbstraction()->pinDirection(abs(channel), isOutput() ? OUTPUT : mode == Hydro_PinMode_Digital_Input_PullUp ? INPUT_PULLUP : INPUT);
+                            expander->getIoAbstraction()->pinDirection(channel % 16, isOutput() ? OUTPUT : mode == Hydro_PinMode_Digital_Input_PullUp ? INPUT_PULLUP : INPUT);
                         #endif
                     }
                 #else
@@ -119,9 +118,9 @@ void HydroPin::deinit()
                 pinMode(pin, INPUT);
             } else {
                 #ifndef HYDRO_DISABLE_MULTITASKING
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
-                        expander->getIoAbstraction()->pinDirection(abs(channel), INPUT);
+                        expander->getIoAbstraction()->pinDirection(channel % 16, INPUT);
                     }
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
@@ -139,16 +138,16 @@ bool HydroPin::enablePin(int step)
                 SharedPtr<HydroPinMuxer> muxer = getController() ? getController()->getPinMuxer(pin) : nullptr;
                 if (muxer) {
                     switch (step) {
-                        case 0: muxer->selectChannel(channel); muxer->activate(); return true;
-                        case 1: muxer->selectChannel(channel); return true;
+                        case 0: muxer->selectChannel(muxerChannelForPinChannel(channel)); muxer->activate(); return true;
+                        case 1: muxer->selectChannel(muxerChannelForPinChannel(channel)); return true;
                         case 2: muxer->activate(); return true;
                         default: return false;
                     }
                 }
             } else if (isExpanded() || isVirtual()) {
                 #ifndef HYDRO_DISABLE_MULTITASKING
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
-                    return expander && expander->syncChannel();
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
+                    return expander && expander->trySyncChannel();
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
                 #endif
@@ -210,9 +209,9 @@ ard_pinstatus_t HydroDigitalPin::digitalRead()
                 return ::digitalRead(pin);
             } else {
                 #ifndef HYDRO_DISABLE_MULTITASKING
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
-                        return (ard_pinstatus_t)(expander->getIoAbstraction()->readValue(abs(channel)));
+                        return (ard_pinstatus_t)(expander->getIoAbstraction()->readValue(channel % 16));
                     }
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
@@ -232,9 +231,9 @@ void HydroDigitalPin::digitalWrite(ard_pinstatus_t status)
                 ::digitalWrite(pin, status);
             } else {
                 #ifndef HYDRO_DISABLE_MULTITASKING
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
-                        expander->getIoAbstraction()->writeValue(abs(channel), (uint8_t)status);
+                        expander->getIoAbstraction()->writeValue(channel % 16, (uint8_t)status);
                     }
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
@@ -316,15 +315,15 @@ void HydroAnalogPin::init()
             } else {
                 #ifndef HYDRO_DISABLE_MULTITASKING
                     HYDRO_SOFT_ASSERT(isVirtual() && pin == pinNumberForPinChannel(channel), SFP(HStr_Err_NotConfiguredProperly));
-                    HYDRO_SOFT_ASSERT(channel == pinChannelForExpanderChannel(abs(channel)), SFP(HStr_Err_NotConfiguredProperly));
+                    HYDRO_SOFT_ASSERT(channel == pinChannelForExpanderChannel(channel), SFP(HStr_Err_NotConfiguredProperly));
 
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
                         auto ioDir = isOutput() ? AnalogDirection::DIR_OUT : AnalogDirection::DIR_IN;
                         auto analogIORef = (AnalogDevice *)(expander->getIoAbstraction());
-                        analogIORef->initPin(abs(channel), ioDir);
+                        analogIORef->initPin(channel % 16, ioDir);
 
-                        auto ioRefBits = analogIORef->getBitDepth(ioDir, abs(channel));
+                        auto ioRefBits = analogIORef->getBitDepth(ioDir, channel % 16);
                         if (bitRes.bits != ioRefBits) {
                             bitRes = BitResolution(ioRefBits);
                         }
@@ -367,10 +366,10 @@ int HydroAnalogPin::analogRead_raw()
                 return ::analogRead(pin);
             } else {
                 #ifndef HYDRO_DISABLE_MULTITASKING
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
                         auto analogIORef = (AnalogDevice *)(expander->getIoAbstraction());
-                        analogIORef->getCurrentValue(abs(channel));
+                        analogIORef->getCurrentValue(channel % 16);
                     }
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
@@ -405,10 +404,10 @@ void HydroAnalogPin::analogWrite_raw(int amount)
                 #endif
             } else {
                 #ifndef HYDRO_DISABLE_MULTITASKING
-                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderForPinChannel(channel) : expanderForPinNumber(pin)) : nullptr;
+                    auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
                         auto analogIORef = (AnalogDevice *)(expander->getIoAbstraction());
-                        analogIORef->setCurrentValue(abs(channel), amount);
+                        analogIORef->setCurrentValue(channel % 16, amount);
                     }
                 #else
                     HYDRO_HARD_ASSERT(false, SFP(HStr_Err_NotConfiguredProperly));
@@ -476,23 +475,25 @@ void HydroPinData::fromJSONObject(JsonObjectConst &objectIn)
 
 
 HydroPinMuxer::HydroPinMuxer()
-    : _signal(), _chipEnable(), _channelPins{hpin_none},
-      _channelBits(0), _channelSelect(-1)
+    : _signal(), _chipEnable(), _interrupt(), _channelPins{hpin_none},
+      _channelBits(0), _channelSelect(-1), _usingISR(false)
 {
     _signal.channel = hpinchnl_none; // unused
+    _interrupt.channel = hpinchnl_none; // unused
 }
 
 HydroPinMuxer::HydroPinMuxer(HydroPin signalPin,
                              pintype_t *muxChannelPins, int8_t muxChannelBits,
-                             HydroDigitalPin chipEnablePin)
-    : _signal(signalPin), _chipEnable(chipEnablePin),
+                             HydroDigitalPin chipEnablePin, HydroDigitalPin interruptPin)
+    : _signal(signalPin), _chipEnable(chipEnablePin), _interrupt(interruptPin),
       _channelPins{ muxChannelBits > 0 ? muxChannelPins[0] : hpin_none,
                     muxChannelBits > 1 ? muxChannelPins[1] : hpin_none,
                     muxChannelBits > 2 ? muxChannelPins[2] : hpin_none,
                     muxChannelBits > 3 ? muxChannelPins[3] : hpin_none },
-      _channelBits(muxChannelBits), _channelSelect(-1)
+      _channelBits(muxChannelBits), _channelSelect(-1), _usingISR(false)
 {
     _signal.channel = hpinchnl_none; // unused
+    _interrupt.channel = hpinchnl_none; // unused
 }
 
 void HydroPinMuxer::init()
@@ -500,6 +501,7 @@ void HydroPinMuxer::init()
     _signal.deinit();
     _chipEnable.init();
     _chipEnable.deactivate();
+    _interrupt.init();
 
     if (isValidPin(_channelPins[0])) {
         pinMode(_channelPins[0], OUTPUT);
@@ -523,13 +525,23 @@ void HydroPinMuxer::init()
     _channelSelect = 0;
 }
 
+bool HydroPinMuxer::tryRegisterISR(bool anyChange)
+{
+    #ifdef HYDRO_USE_MULTITASKING
+        if (!_usingISR && _interrupt.isValid() && checkPinCanInterrupt(_interrupt.pin)) {
+            taskManager.addInterrupt(&interruptImpl, _interrupt.pin, !anyChange ? (_interrupt.activeLow ? FALLING : RISING) : CHANGE);
+            _usingISR = true;
+        }
+    #endif
+    return _usingISR;
+}
+
 void HydroPinMuxer::selectChannel(uint8_t channelNumber)
 {
     if (_channelSelect != channelNumber) {
-        // While we could be a bit smarter about which muxers we disable, storing that
-        // wouldn't necessarily be worth the gain. The assumption is all that muxers in
-        // system occupy the same channel select bus, even if that isn't the case.
-        if (getController()) { getController()->deactivatePinMuxers(); }
+        #if HYDRO_MUXERS_SHARED_ADDR_BUS
+            if (getController()) { getController()->deactivatePinMuxers(); }
+        #endif
 
         if (isValidPin(_channelPins[0])) {
             ::digitalWrite(_channelPins[0], (channelNumber >> 0) & 1 ? HIGH : LOW);
@@ -564,14 +576,29 @@ void HydroPinMuxer::setIsActive(bool isActive)
 #ifndef HYDRO_DISABLE_MULTITASKING
 
 HydroPinExpander::HydroPinExpander()
-    : _channelBits(0), _ioRef(nullptr)
-{ ; }
+    : _expander(0), _channelBits(0), _ioRef(nullptr), _interrupt(), _usingISR(false)
+{
+    _interrupt.channel = hpinchnl_none; // unused
+}
 
-HydroPinExpander::HydroPinExpander(uint8_t channelBits, IoAbstractionRef ioRef)
-    : _channelBits(channelBits), _ioRef(ioRef)
-{ ; }
+HydroPinExpander::HydroPinExpander(hposi_t expanderPos, uint8_t channelBits, IoAbstractionRef ioRef, HydroDigitalPin interruptPin)
+    : _expander(expanderPos), _channelBits(channelBits), _ioRef(ioRef), _interrupt(interruptPin), _usingISR(false)
+{
+    _interrupt.channel = hpinchnl_none; // unused
+}
 
-bool HydroPinExpander::syncChannel()
+bool HydroPinExpander::tryRegisterISR(bool anyChange)
+{
+    #ifdef HYDRO_USE_MULTITASKING
+        if (!_usingISR && _interrupt.isValid() && checkPinCanInterrupt(_interrupt.pin)) {
+            taskManager.addInterrupt(&interruptImpl, _interrupt.pin, !anyChange ? (_interrupt.activeLow ? FALLING : RISING) : CHANGE);
+            _usingISR = true;
+        }
+    #endif
+    return _usingISR;
+}
+
+bool HydroPinExpander::trySyncChannel()
 {
     return _ioRef->sync();
 }
