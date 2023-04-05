@@ -12,7 +12,7 @@ struct HydroAnalogPin;
 struct HydroPinData;
 
 class HydroPinMuxer;
-#ifndef HYDRO_DISABLE_MULTITASKING
+#ifdef HYDRO_USE_MULTITASKING
 class HydroPinExpander;
 #endif
 
@@ -258,7 +258,7 @@ public: // consider protected
     inline void deactivate() { setIsActive(false); }        // Deactivates channel
 };
 
-#ifndef HYDRO_DISABLE_MULTITASKING
+#ifdef HYDRO_USE_MULTITASKING
 
 // Pin Expander
 // Ditching the address bus, a pin expander instead expands the pin #'s available by
@@ -304,6 +304,6 @@ protected:
     bool _usingISR;                                         // Using ISR flag
 };
 
-#endif // /ifndef HYDRO_DISABLE_MULTITASKING
+#endif // /ifdef HYDRO_USE_MULTITASKING
 
 #endif // /ifndef HydroPin_H

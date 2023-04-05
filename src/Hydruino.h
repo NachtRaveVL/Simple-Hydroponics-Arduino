@@ -56,7 +56,7 @@
 // Uncomment or -D this define to enable external data storage (SD card or EEPROM) to save on sketch size. Required for constrained devices.
 //#define HYDRO_DISABLE_BUILTIN_DATA              // Disables library data existing in Flash, see DataWriter example for exporting details
 
-// Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor).
+// Uncomment or -D this define to enable debug output (treats Serial output as attached to serial monitor, waiting on start for connection).
 //#define HYDRO_ENABLE_DEBUG_OUTPUT
 
 // Uncomment or -D this define to enable verbose debug output (note: adds considerable size to compiled sketch).
@@ -74,6 +74,18 @@
 #include <SD.h>
 #include <SPI.h>
 #include <Wire.h>
+
+#ifdef NDEBUG
+#ifdef HYDRO_ENABLE_DEBUG_OUTPUT
+#undef HYDRO_ENABLE_DEBUG_OUTPUT
+#endif
+#ifdef HYDRO_ENABLE_VERBOSE_DEBUG
+#undef HYDRO_ENABLE_VERBOSE_DEBUG
+#endif
+#ifdef HYDRO_ENABLE_DEBUG_ASSERTIONS
+#undef HYDRO_ENABLE_DEBUG_ASSERTIONS
+#endif
+#endif // /ifdef NDEBUG
 
 #if !defined(USE_SW_SERIAL)
 typedef HardwareSerial SerialClass;
@@ -100,19 +112,17 @@ typedef int uartmode_t;
 #define HYDRO_USE_WIFI_STORAGE
 #endif
 #define HYDRO_USE_WIFI
-#endif
-#ifdef HYDRO_ENABLE_AT_WIFI
+#define HYDRO_USE_NET
+#elif defined(HYDRO_ENABLE_AT_WIFI)
 #include "WiFiEspAT.h"                  // WiFi ESP AT library
 #define HYDRO_USE_AT_WIFI
 #define HYDRO_USE_WIFI
-#endif
-#ifdef HYDRO_ENABLE_ETHERNET
+#define HYDRO_USE_NET
+#elif defined(HYDRO_ENABLE_ETHERNET)
 #include <Ethernet.h>                   // https://github.com/arduino-libraries/Ethernet
 #define HYDRO_USE_ETHERNET
-#endif
-#if defined(HYDRO_USE_WIFI) || defined(HYDRO_USE_ETHERNET)
 #define HYDRO_USE_NET
-#endif
+#endif // /ifdef HYDRO_ENABLE_WIFI
 
 #ifndef HYDRO_DISABLE_MULTITASKING
 #include "TaskManagerIO.h"              // Task Manager library
@@ -130,9 +140,6 @@ typedef uint8_t pintype_t;
 #endif
 #endif
 
-#if defined(NDEBUG) && defined(HYDRO_ENABLE_DEBUG_OUTPUT)
-#undef HYDRO_ENABLE_DEBUG_OUTPUT
-#endif
 #if defined(HYDRO_ENABLE_DEBUG_OUTPUT) && defined(HYDRO_ENABLE_VERBOSE_DEBUG)
 #define HYDRO_USE_VERBOSE_OUTPUT
 #endif

@@ -20,6 +20,12 @@
 //#define HYDRO_UI_ENABLE_DEBUG_MENU
 
 
+#ifdef NDEBUG
+#ifdef HYDRO_UI_ENABLE_DEBUG_MENU
+#undef HYDRO_UI_ENABLE_DEBUG_MENU
+#endif
+#endif // /ifdef NDEBUG
+
 #include <Hydruino.h>
 #ifdef HYDRO_USE_GUI
 #ifndef HydroBaseUI_H

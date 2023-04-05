@@ -30,7 +30,7 @@ void handleInterrupt(pintype_t pin)
                     handleInterrupt(iter->second->getSignalPin().pin);
                 }
             }
-            #ifndef HYDRO_DISABLE_MULTITASKING
+            #ifdef HYDRO_USE_MULTITASKING
                 for (auto iter = Hydruino::_activeInstance->_pinExpanders.begin(); iter != Hydruino::_activeInstance->_pinExpanders.end(); ++iter) {
                     if (iter->second->getInterruptPin().pin == pin) {
                         iter->second->trySyncChannel();
@@ -90,7 +90,7 @@ Hydruino::~Hydruino()
     while (_objects.size()) { _objects.erase(_objects.begin()); }
     while (_pinOneWire.size()) { dropOneWireForPin(_pinOneWire.begin()->first); }
     while (_pinMuxers.size()) { _pinMuxers.erase(_pinMuxers.begin()); }
-#ifndef HYDRO_DISABLE_MULTITASKING
+#ifdef HYDRO_USE_MULTITASKING
     while (_pinExpanders.size()) { _pinExpanders.erase(_pinExpanders.begin()); }
 #endif
     deallocateEEPROM();
