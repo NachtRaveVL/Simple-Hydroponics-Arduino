@@ -28,6 +28,8 @@ protected:
     #else
         U8g2Drawable &_drawable;                            // Drawable (strong)
     #endif
+    const void *_clockFont;                                 // Overview clock font (strong)
+    const void *_detailFont;                                // Overview detail font (strong)
 };
 
 #endif // /ifndef HydroOverviewOLED_H

@@ -10,7 +10,7 @@ extern float skyEaseInOut(float x);
 extern void randomStarColor(uint8_t* r, uint8_t* g, uint8_t* b);
 
 HydroOverviewTFT::HydroOverviewTFT(HydroDisplayTFTeSPI *display, const void *clockFont, const void *detailFont)
-    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable())
+    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable()), _clockFont(clockFont), _detailFont(detailFont)
 { ; }
 
 HydroOverviewTFT::~HydroOverviewTFT()

@@ -7,7 +7,7 @@
 #ifdef HYDRO_USE_GUI
 
 HydroOverviewOLED::HydroOverviewOLED(HydroDisplayU8g2OLED *display, const void *clockFont, const void *detailFont)
-    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable())
+    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable()), _clockFont(clockFont), _detailFont(detailFont)
 { ; }
 
 HydroOverviewOLED::~HydroOverviewOLED()

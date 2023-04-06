@@ -24,6 +24,8 @@ public:
 protected:
     TFT_eSPI &_gfx;                                         // Graphics (strong)
     TfteSpiDrawable &_drawable;                             // Drawable (strong)
+    const void *_clockFont;                                 // Overview clock font (strong)
+    const void *_detailFont;                                // Overview detail font (strong)
 };
 
 #endif // /ifndef HydroOverviewTFT_H
