@@ -33,15 +33,15 @@ public:
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) = 0;
 
     // Setups any graphical rendering options, including theme, font usage, and default editing icongraphy.
-    virtual void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false);
+    virtual void setupRendering(Hydro_DisplayTheme displayTheme, Hydro_TitleMode titleMode, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool tcUnicodeFonts = false);
 
-    // Screen size accessor, with or without rotation included
+    // Screen size accessor, with or without current rotation mode included
     // Note: May return invalid screen size until after display driver is began.
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const = 0;
-    // Determines if screen is in landscape screen mode, with or without rotation included.
-    virtual bool isLandscape(bool withRot = true) const = 0;
-    // Determines if screen is in portrait screen mode, with or without rotation included.
-    inline bool isPortrait(bool withRot = true) const { return !isLandscape(withRot); }
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const = 0;
+    // Determines if screen is in landscape screen mode, with or without current rotation mode included.
+    virtual bool isLandscape(bool rotated = true) const = 0;
+    // Determines if screen is in portrait screen mode, with or without current rotation mode included.
+    inline bool isPortrait(bool rotated = true) const { return !isLandscape(rotated); }
     // Determines if screen is in square screen mode.
     inline bool isSquare() const { return getScreenSize().first == getScreenSize().second; }
     // Screen bit depth accessor
@@ -55,7 +55,7 @@ public:
     // Returns true if screen is 24-bpp rgb888 color mode
     inline bool isFullColor() const { return getScreenBits() == 24; }
 
-    // System name accessor, guaranteeing PGM memory under AVR/ESP_H at expense of custom naming
+    // System name accessor, guaranteeing PGM memory under AVR/ESP_H at expense of custom system naming
     static inline const char *getSystemName()
         #if (defined __AVR__ || defined ESP_H) && !defined __MBED__
             { return CFP(HStr_Default_SystemName); }
@@ -82,7 +82,7 @@ protected:
 
 // Liquid Crystal Display Driver
 // Display driver for text-only monochrome LCDs, typically ones that talk through a PCF857X i2c expander or similar.
-// Note: Parallel 6800/8080 raw data connections are not supported at this time.
+// Note: Parallel 6800/8080 raw data connections are not supported.
 class HydroDisplayLiquidCrystal : public HydroDisplayDriver {
 public:
     HydroDisplayLiquidCrystal(Hydro_DisplayOutputMode displayMode, I2CDeviceSetup displaySetup, Hydro_BacklightMode ledMode = Hydro_BacklightMode_Normal);
@@ -93,13 +93,13 @@ public:
     virtual void initBaseUIFromDefaults() override;
     virtual void begin() override;
 
-    virtual void setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool utf8Fonts = false) override;
+    virtual void setupRendering(Hydro_DisplayTheme displayTheme, Hydro_TitleMode titleMode, const void *itemFont = nullptr, const void *titleFont = nullptr, bool analogSlider = false, bool editingIcons = false, bool tcUnicodeFonts = false) override;
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const override { return isLandscape(rotated) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                                                     : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape(bool withRot = true) const override { return _screenSize[0] >= _screenSize[1]; }
+    virtual bool isLandscape(bool rotated = true) const override { return _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 1; }
 
     virtual BaseMenuRenderer *getBaseRenderer() override { return &_renderer; }
@@ -127,9 +127,9 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const override { return isLandscape(rotated) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                                                     : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape(bool withRot = true) const override { return !withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+    virtual bool isLandscape(bool rotated = true) const override { return !rotated ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                                                        : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
                                                                                    : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 1; }
@@ -202,9 +202,9 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const override { return isLandscape(rotated) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                                                     : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+    virtual bool isLandscape(bool rotated = true) const override { return rotated ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                                                       : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
                                                                                   : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
@@ -238,9 +238,9 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const override { return isLandscape(rotated) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                                                     : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+    virtual bool isLandscape(bool rotated = true) const override { return rotated ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                                                       : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
                                                                                   : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
@@ -276,9 +276,9 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const override { return isLandscape(rotated) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                                                     : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+    virtual bool isLandscape(bool rotated = true) const override { return rotated ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                                                       : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
                                                                                   : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
@@ -312,9 +312,9 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const override { return isLandscape(rotated) ? make_pair(max(_screenSize[0],_screenSize[1]), min(_screenSize[0],_screenSize[1]))
                                                                                                                     : make_pair(min(_screenSize[0],_screenSize[1]), max(_screenSize[0],_screenSize[1])); }
-    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+    virtual bool isLandscape(bool rotated = true) const override { return rotated ? (_screenSize[0] >= _screenSize[1] ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                                                       : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
                                                                                   : _screenSize[0] >= _screenSize[1]; }
     virtual uint8_t getScreenBits() const override { return 16; }
@@ -353,9 +353,9 @@ public:
 
     virtual HydroOverview *allocateOverview(const void *clockFont = nullptr, const void *detailFont = nullptr) override;
 
-    virtual Pair<uint16_t,uint16_t> getScreenSize(bool withRot = true) const override { return isLandscape(withRot) ? make_pair(max(TFT_GFX_WIDTH,TFT_GFX_HEIGHT), min(TFT_GFX_WIDTH,TFT_GFX_HEIGHT))
+    virtual Pair<uint16_t,uint16_t> getScreenSize(bool rotated = true) const override { return isLandscape(rotated) ? make_pair(max(TFT_GFX_WIDTH,TFT_GFX_HEIGHT), min(TFT_GFX_WIDTH,TFT_GFX_HEIGHT))
                                                                                                                     : make_pair(min(TFT_GFX_WIDTH,TFT_GFX_HEIGHT), max(TFT_GFX_WIDTH,TFT_GFX_HEIGHT)); }
-    virtual bool isLandscape(bool withRot = true) const override { return withRot ? (TFT_GFX_WIDTH >= TFT_GFX_HEIGHT ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
+    virtual bool isLandscape(bool rotated = true) const override { return rotated ? (TFT_GFX_WIDTH >= TFT_GFX_HEIGHT ? !(_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3)
                                                                                                                       : (_rotation == Hydro_DisplayRotation_R1 || _rotation == Hydro_DisplayRotation_R3))
                                                                                   : TFT_GFX_WIDTH >= TFT_GFX_HEIGHT; }
     // Determines if screen is in round screen mode.

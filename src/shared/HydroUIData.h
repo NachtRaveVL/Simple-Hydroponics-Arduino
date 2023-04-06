@@ -16,10 +16,11 @@ struct HydroUIData;
 struct HydroUIData : public HydroData {
     uint8_t updatesPerSec;                                  // Updates per second (1-10, default: HYDRO_UI_UPDATE_SPEED)
     Hydro_DisplayTheme displayTheme;                        // Display theme (if supported)
-    uint8_t titleMode;                                      // Title mode
+    Hydro_TitleMode titleMode;                              // Title mode
     bool analogSlider;                                      // Use analog slider
     bool editingIcons;                                      // Use editing icons
     float joystickCalib[3];                                 // Joystick calibration ({midX,midY,zeroTol}, default: {0.5,0.5,0.05})
+    uint16_t touchscreenCalib[4];                           // Touchscreen calibration ({x0,y0,x1,y1}), default: {0,0,0,0})
 
     HydroUIData();
     virtual void toJSONObject(JsonObject &objectOut) const override;

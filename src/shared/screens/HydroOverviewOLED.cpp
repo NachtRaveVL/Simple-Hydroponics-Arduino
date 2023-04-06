@@ -6,7 +6,7 @@
 #include "../HydruinoUI.h"
 #ifdef HYDRO_USE_GUI
 
-HydroOverviewOLED::HydroOverviewOLED(HydroDisplayU8g2OLED *display)
+HydroOverviewOLED::HydroOverviewOLED(HydroDisplayU8g2OLED *display, const void *clockFont, const void *detailFont)
     : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable())
 { ; }
 

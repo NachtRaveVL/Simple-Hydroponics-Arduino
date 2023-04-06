@@ -19,6 +19,7 @@
 // The following sizes apply to all architectures
 #define HYDRO_UI_RENDERER_BUFFERSIZE    32                  // Buffer size for display renderers
 #define HYDRO_UI_STARFIELD_MAXSIZE      16                  // Starfield map maxsize
+#define HYDRO_UI_SPRITE_MAXYSIZE        16                  // Sprite max Y (pixel height) - aka # rows for VRAM buffer, when enabled
 // The following sizes only apply to architectures that do not have STL support (AVR/SAM)
 #define HYDRO_UI_REMOTECONTROLS_MAXSIZE 2                   // Maximum array size for remote controls list (max # of remote controls)
 
@@ -34,22 +35,24 @@
 #define HYDRO_UI_I2C_OLED_BASEADDR      0x78                // Base address of I2C U8g2 OLEDs (bitwise or'ed with passed address, some devices may use 0x7e)
 #define HYDRO_UI_BACKLIGHT_TIMEOUT      5 * SECS_PER_MIN    // Backlight timeout, in seconds
 #define HYDRO_UI_START_AT_OVERVIEW      false               // UI starts at overview screen (true), else menu screen (false)
-#define HYDRO_UI_DEALLOC_AFTER_USE      defined(__AVR__)    // If screen data should be unloaded after use (true = lower memory usage, increased screens transition time), or stay memory-resident (false = higher memory usage, more instant screen transitions)
-#define HYDRO_UI_GFX_VARS_USES_SLIDER   true                // Default analog slider usage for graphical displays displaying variable value ranges
-#define HYDRO_UI_MENU_TITLE_MAG_LEVEL   2                   // Menu title font magnification level
-#define HYDRO_UI_MENU_ITEM_MAG_LEVEL    2                   // Menu item font magnification level
-#define HYDRO_UI_IOT_MONITOR_TEXT       "IoT Monitor"       // Menu IoT monitor item text
-#define HYDRO_UI_AUTHENTICATOR_TEXT     "Authenticator"     // Menu authenticator item text
+#define HYDRO_UI_DEALLOC_AFTER_USE      !HAS_LARGE_SRAM     // If menu data should be unloaded after use (true = lower memory usage, less responsive transitions), or stay memory-resident (false = higher memory usage, more responsive transitions)
 
 #define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed, in ticks (lower = faster)
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
-#define HYDRO_UI_2X2MATRIX_KEYS         "#BA*"              // 2x2 matrix keyboard keys (R/S1,D/S2,U/S3,L/S4)
-#define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // 3x4 matrix keyboard keys (123,456,789,*0#)
-#define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // 4x4 matrix keyboard keys (123A,456B,789C,*0#D)
-#define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Assigned enter/select char, delete/exit char, back char, and next char on keyboard
+#define HYDRO_UI_2X2MATRIX_KEYS         "#BA*"              // 2x2 matrix keyboard keys (R/S1,D/S2,U/S3,L/S4), forced PROGMEM
+#define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // 3x4 matrix keyboard keys (123,456,789,*0#), forced PROGMEM
+#define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // 4x4 matrix keyboard keys (123A,456B,789C,*0#D), forced PROGMEM
+#define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Assigned enter/select char, delete/exit char, back char, and next char on keyboard, forced PROGMEM
 #define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Raw touch usage for TFTTouch
 
-// Default graphical display theme base (CoolBlue, DarkMode)
+#define HYDRO_UI_GFX_VARS_USES_SLIDER   true                // Default analog slider usage for graphical displays displaying variable value ranges
+#define HYDRO_UI_GFX_USE_EDITING_ICONS  false               // Default editing icon usage for graphical displays
+#define HYDRO_UI_MENU_TITLE_MAG_LEVEL   2                   // Menu title font magnification level
+#define HYDRO_UI_MENU_ITEM_MAG_LEVEL    2                   // Menu item font magnification level
+#define HYDRO_UI_IOT_MONITOR_TEXT       "IoT Monitor"       // Menu IoT monitor item text, forced PROGMEM
+#define HYDRO_UI_AUTHENTICATOR_TEXT     "Authenticator"     // Menu authenticator item text, forced PROGMEM
+
+// Default graphical display theme base (CoolBlue, DarkMode) - keep on separate lines
 #define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            
 #define HYDRO_UI_GFX_DISP_THEME_SMLMED  SM
 #define HYDRO_UI_GFX_DISP_THEME_MEDLRG  ML
@@ -115,7 +118,18 @@ enum Hydro_DisplayTheme : signed char {
     Hydro_DisplayTheme_Count,                               // Placeholder
     Hydro_DisplayTheme_Undefined = -1                       // Placeholder
 };
-        
+
+// Title Mode
+// Way in which the title is shown in menu.
+enum Hydro_TitleMode : signed char {
+    Hydro_TitleMode_None,                                   // Title not displayed
+    Hydro_TitleMode_FirstRow,                               // Title only appears when first row selected (if supported)
+    Hydro_TitleMode_Always,                                 // Title is always displayed
+
+    Hydro_TitleMode_Count,                                  // Placeholder
+    Hydro_TitleMode_Undefined = -1                          // Placeholder
+};
+
 // ST77XX Device Kind
 // Special device kind identifier for common ST7735 B/S/R color tags and common ST7789 screen resolutions.
 enum Hydro_ST77XXKind : signed char {
@@ -127,9 +141,9 @@ enum Hydro_ST77XXKind : signed char {
     Hydro_ST7735Tag_Black               = (int8_t)0x02,     // ST7735S Black tag (1.8" TFT, 128x160, 20480 pixels)
     Hydro_ST7735Tag_Black18             = (int8_t)0x02,     // ST7735S 18Black tag (alias of Black, 128x160, 20480 pixels)
     Hydro_ST7735Tag_Green144            = (int8_t)0x01,     // ST7735R 144Green tag (1.44" TFT, 128x128, 16384 pixels)
-    Hydro_ST7735Tag_Mini                = (int8_t)0x04,     // ST7735S Mini160x80 tag (0.96" TFT, 80x160, 12800 pixels - if inverted try Mini_Plugin)
-    Hydro_ST7735Tag_Mini_Plugin         = (int8_t)0x06,     // ST7735S Mini160x80_Plugin tag (0.96" TFT /w plug-in FPC, 80x160, 12800 pixels)
-    Hydro_ST7735Tag_Hallo_Wing          = (int8_t)0x05,     // ST7735R HalloWing tag (upside-down 144Green, 128x128, 16384 pixels)
+    Hydro_ST7735Tag_Mini                = (int8_t)0x04,     // ST7735S Mini160x80 tag (0.96" TFT, 80x160, 12800 pixels - if inverted try MiniPlugin)
+    Hydro_ST7735Tag_MiniPlugin          = (int8_t)0x06,     // ST7735S Mini160x80_Plugin tag (0.96" TFT /w plug-in FPC, 80x160, 12800 pixels)
+    Hydro_ST7735Tag_HalloWing           = (int8_t)0x05,     // ST7735R HalloWing tag (upside-down 144Green, 128x128, 16384 pixels)
 
     Hydro_ST7789Res_128x128             = (int8_t)0x10,     // ST7789 128x128 (0.85", 1.44" & 1.5" TFTs, 16384 pixels)
     Hydro_ST7789Res_135x240,                                // ST7789 135x240 (1.14" TFT, 32400 pixels)

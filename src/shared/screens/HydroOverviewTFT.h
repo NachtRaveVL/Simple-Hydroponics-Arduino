@@ -16,7 +16,7 @@ class HydroOverviewTFT;
 // Overview screen built for TFT_eSPI displays.
 class HydroOverviewTFT : public HydroOverview {
 public:
-    HydroOverviewTFT(HydroDisplayTFTeSPI *display);
+    HydroOverviewTFT(HydroDisplayTFTeSPI *display, const void *clockFont, const void *detailFont);
     virtual ~HydroOverviewTFT();
 
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;

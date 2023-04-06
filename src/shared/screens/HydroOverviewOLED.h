@@ -16,7 +16,7 @@ class HydroOverviewOLED;
 // Overview screen built for OLED displays.
 class HydroOverviewOLED : public HydroOverview {
 public:
-    HydroOverviewOLED(HydroDisplayU8g2OLED *display);
+    HydroOverviewOLED(HydroDisplayU8g2OLED *display, const void *clockFont, const void *detailFont);
     virtual ~HydroOverviewOLED();
 
     virtual void renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize) override;

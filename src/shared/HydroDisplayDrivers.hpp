@@ -9,13 +9,12 @@
 static inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayRotation displayRotation)
 {
     switch (displayRotation) {
-        case Hydro_DisplayRotation_R0: return U8G2_R0;
         case Hydro_DisplayRotation_R1: return U8G2_R1;
         case Hydro_DisplayRotation_R2: return U8G2_R2;
         case Hydro_DisplayRotation_R3: return U8G2_R3;
         case Hydro_DisplayRotation_HorzMirror: return U8G2_MIRROR;
         case Hydro_DisplayRotation_VertMirror: return U8G2_MIRROR_VERTICAL;
-        default: return U8G2_R0;
+        case Hydro_DisplayRotation_R0: default: return U8G2_R0;
     }
 }
 
@@ -195,7 +194,7 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup,
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     #ifdef ESP8266
@@ -206,7 +205,7 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup,
 template <class T>
 void HydroDisplayAdafruitGFX<T>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 template <class T>

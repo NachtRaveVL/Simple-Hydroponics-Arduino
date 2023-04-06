@@ -73,7 +73,7 @@ void HydroPin::init()
                         break;
 
                     case Hydro_PinMode_Digital_Input_PullDown:
-                        #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_MBED) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY) || defined(INPUT_PULLDOWN)
+                        #if HAS_INPUT_PULLDOWN
                             pinMode(pin, INPUT_PULLDOWN);
                         #else
                             pinMode(pin, INPUT);
@@ -96,7 +96,7 @@ void HydroPin::init()
 
                     auto expander = getController() ? getController()->getPinExpander(isValidChannel(channel) ? expanderPosForPinChannel(channel) : expanderPosForPinNumber(pin)) : nullptr;
                     if (expander) {
-                        #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_MBED) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY) || defined(INPUT_PULLDOWN)
+                        #if HAS_INPUT_PULLDOWN
                             expander->getIoAbstraction()->pinDirection(channel % 16, isOutput() ? OUTPUT : mode == Hydro_PinMode_Digital_Input_PullUp ? INPUT_PULLUP : mode == Hydro_PinMode_Digital_Input_PullDown ? INPUT_PULLDOWN : INPUT);
                         #else
                             expander->getIoAbstraction()->pinDirection(channel % 16, isOutput() ? OUTPUT : mode == Hydro_PinMode_Digital_Input_PullUp ? INPUT_PULLUP : INPUT);

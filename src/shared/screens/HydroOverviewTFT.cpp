@@ -9,4 +9,16 @@
 extern float skyEaseInOut(float x);
 extern void randomStarColor(uint8_t* r, uint8_t* g, uint8_t* b);
 
+HydroOverviewTFT::HydroOverviewTFT(HydroDisplayTFTeSPI *display, const void *clockFont, const void *detailFont)
+    : HydroOverview(display), _gfx(display->getGfx()), _drawable(display->getDrawable())
+{ ; }
+
+HydroOverviewTFT::~HydroOverviewTFT()
+{ ; }
+
+void HydroOverviewTFT::renderOverview(bool isLandscape, Pair<uint16_t, uint16_t> screenSize)
+{
+    // todo
+}
+
 #endif

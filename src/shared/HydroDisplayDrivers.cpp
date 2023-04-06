@@ -10,7 +10,7 @@
 #include "IoAbstractionWire.h"
 #include "DfRobotInputAbstraction.h"
 
-void HydroDisplayDriver::setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont, const void *titleFont, bool analogSlider, bool editingIcons, bool utf8Fonts)
+void HydroDisplayDriver::setupRendering(Hydro_DisplayTheme displayTheme, Hydro_TitleMode titleMode, const void *itemFont, const void *titleFont, bool analogSlider, bool editingIcons, bool tcUnicodeFonts)
 {
     auto graphicsRenderer = getGraphicsRenderer();
     if (graphicsRenderer) {
@@ -20,7 +20,7 @@ void HydroDisplayDriver::setupRendering(uint8_t titleMode, Hydro_DisplayTheme di
         }
         graphicsRenderer->setTitleMode((BaseGraphicalRenderer::TitleMode)titleMode);
         graphicsRenderer->setUseSliderForAnalog(analogSlider);
-        if (utf8Fonts) { graphicsRenderer->enableTcUnicode(); }
+        if (tcUnicodeFonts) { graphicsRenderer->enableTcUnicode(); }
 
         if (_displayTheme != displayTheme) {
             switch ((_displayTheme = displayTheme)) {
@@ -73,7 +73,7 @@ HydroDisplayLiquidCrystal::HydroDisplayLiquidCrystal(bool, I2CDeviceSetup displa
 
 void HydroDisplayLiquidCrystal::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined, _screenSize[1] >= 4 ? Hydro_TitleMode_Always : Hydro_TitleMode_None);
 }
 
 void HydroDisplayLiquidCrystal::begin()
@@ -81,15 +81,15 @@ void HydroDisplayLiquidCrystal::begin()
     _lcd.begin(_screenSize[0], _screenSize[1]);
 }
 
-void HydroDisplayLiquidCrystal::setupRendering(uint8_t titleMode, Hydro_DisplayTheme displayTheme, const void *itemFont, const void *titleFont, bool analogSlider, bool editingIcons, bool utf8Fonts)
+void HydroDisplayLiquidCrystal::setupRendering(Hydro_DisplayTheme displayTheme, Hydro_TitleMode titleMode, const void *itemFont, const void *titleFont, bool analogSlider, bool editingIcons, bool tcUnicodeFonts)
 {
-    // HydroDisplayDriver::setupRendering(titleMode, displayTheme, itemFont, titleFont, analogSlider, editingIcons, utf8Fonts); // simply returns
-    _renderer.setTitleRequired(titleMode == BaseGraphicalRenderer::TITLE_ALWAYS);
+    // HydroDisplayDriver::setupRendering(displayTheme, titleMode, itemFont, titleFont, analogSlider, editingIcons, tcUnicodeFonts); // simply returns
+    _renderer.setTitleRequired(titleMode == Hydro_TitleMode_Always);
 }
 
 HydroOverview *HydroDisplayLiquidCrystal::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewLCD(this); // todo: font handling
+    return new HydroOverviewLCD(this);
 }
 
 
@@ -106,9 +106,9 @@ HydroDisplayU8g2OLED::HydroDisplayU8g2OLED(DeviceSetup displaySetup, Hydro_Displ
             _drawable = new StChromaArtDrawable();
         #else
             if (displaySetup.cfgType == DeviceSetup::I2CSetup) {
-                _drawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire, getBaseUI() && getBaseUI()->isUnicodeFonts());
+                _drawable = new U8g2Drawable(_gfx, displaySetup.cfgAs.i2c.wire, getBaseUI() && getBaseUI()->isTcUnicodeFonts());
             } else {
-                _drawable = new U8g2Drawable(_gfx, nullptr, getBaseUI() && getBaseUI()->isUnicodeFonts());
+                _drawable = new U8g2Drawable(_gfx, nullptr, getBaseUI() && getBaseUI()->isTcUnicodeFonts());
             }
         #endif
         HYDRO_SOFT_ASSERT(_drawable, SFP(HStr_Err_AllocationFailure));
@@ -129,7 +129,7 @@ HydroDisplayU8g2OLED::~HydroDisplayU8g2OLED()
 
 void HydroDisplayU8g2OLED::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), Hydro_DisplayTheme_MonoOLED), BaseGraphicalRenderer::TITLE_FIRST_ROW);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), Hydro_DisplayTheme_MonoOLED), Hydro_TitleMode_Always);
 }
 
 void HydroDisplayU8g2OLED::begin()
@@ -143,7 +143,7 @@ void HydroDisplayU8g2OLED::begin()
 
 HydroOverview *HydroDisplayU8g2OLED::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewOLED(this); // todo: font handling
+    return new HydroOverviewOLED(this, clockFont, detailFont);
 }
 
 
@@ -154,7 +154,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
@@ -164,25 +164,22 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
     switch (_kind) {
         case Hydro_ST7735Tag_Green144:
-        case Hydro_ST7735Tag_Hallo_Wing:
-            _screenSize[0] = 128;
-            _screenSize[1] = 128;
+        case Hydro_ST7735Tag_HalloWing:
+            _screenSize[0] = 128; _screenSize[1] = 128;
             break;
         case Hydro_ST7735Tag_Mini:
-        case Hydro_ST7735Tag_Mini_Plugin:
-            _screenSize[0] = 80;
-            _screenSize[1] = 160;
+        case Hydro_ST7735Tag_MiniPlugin:
+            _screenSize[0] = 80; _screenSize[1] = 160;
             break;
         default:
-            _screenSize[0] = 128;
-            _screenSize[1] = 160;
+            _screenSize[0] = 128; _screenSize[1] = 160;
             break;
     }
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
@@ -210,7 +207,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
@@ -220,43 +217,35 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
     switch (_kind) {
         case Hydro_ST7789Res_128x128:
-            _screenSize[0] = 128;
-            _screenSize[1] = 128;
+            _screenSize[0] = 128; _screenSize[1] = 128;
             break;
         case Hydro_ST7789Res_135x240:
-            _screenSize[0] = 135;
-            _screenSize[1] = 240;
+            _screenSize[0] = 135; _screenSize[1] = 240;
             break;
         case Hydro_ST7789Res_170x320:
-            _screenSize[0] = 170;
-            _screenSize[1] = 320;
+            _screenSize[0] = 170; _screenSize[1] = 320;
             break;
         case Hydro_ST7789Res_172x320:
-            _screenSize[0] = 172;
-            _screenSize[1] = 320;
+            _screenSize[0] = 172; _screenSize[1] = 320;
             break;
         case Hydro_ST7789Res_240x240:
-            _screenSize[0] = 240;
-            _screenSize[1] = 240;
+            _screenSize[0] = 240; _screenSize[1] = 240;
             break;
         case Hydro_ST7789Res_240x280:
-            _screenSize[0] = 240;
-            _screenSize[1] = 280;
+            _screenSize[0] = 240; _screenSize[1] = 280;
             break;
         case Hydro_ST7789Res_240x320:
-            _screenSize[0] = 240;
-            _screenSize[1] = 320;
+            _screenSize[0] = 240; _screenSize[1] = 320;
             break;
         default:
-            _screenSize[0] = TFT_GFX_WIDTH;
-            _screenSize[1] = TFT_GFX_HEIGHT;
+            _screenSize[0] = TFT_GFX_WIDTH; _screenSize[1] = TFT_GFX_HEIGHT;
             break;
     }
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
@@ -280,7 +269,7 @@ HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetu
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     #ifdef ESP8266
@@ -290,7 +279,7 @@ HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetu
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
@@ -311,13 +300,13 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_Disp
     : HydroDisplayDriver(displayRotation, TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
       _kind(st77Kind),
       _gfx(TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
-      _drawable(&_gfx, 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 { ; }
 
 void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), BaseGraphicalRenderer::TITLE_ALWAYS, HYDRO_UI_GFX_VARS_USES_SLIDER);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayTFTeSPI::begin()
@@ -333,7 +322,7 @@ void HydroDisplayTFTeSPI::begin()
 
 HydroOverview *HydroDisplayTFTeSPI::allocateOverview(const void *clockFont, const void *detailFont)
 {
-    return new HydroOverviewTFT(this); // todo: font handling
+    return new HydroOverviewTFT(this, clockFont, detailFont);
 }
 
 #endif

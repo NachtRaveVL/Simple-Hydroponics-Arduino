@@ -15,11 +15,13 @@ typedef HydruinoMinUI HydruinoUI;
 
 class HydruinoMinUI : public HydruinoBaseUI {
 public:
-    HydruinoMinUI(UIControlSetup uiControlSetup = UIControlSetup(),         // UI control input setup
-                  UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),         // UI display output setup 
-                  bool isActiveLowIO = true,                                // Logic level usage for control & display IO pins
+    HydruinoMinUI(String deviceUUID,                                        // Device UUID hex string for remote controllability
+                  UIControlSetup uiControlSetup = UIControlSetup(),         // UI control input setup, from controller initialization
+                  UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),         // UI display output setup, from controller initialization
+                  bool isActiveLowIO = true,                                // Signaling logic level usage for I/O control/display devices
                   bool allowInterruptableIO = true,                         // Allows interruptable pins to interrupt, else forces polling
-                  bool enableTcUnicodeFonts = true);                        // Enables tcUnicode UTF8 fonts usage instead of library fonts
+                  bool enableTcUnicodeFonts = false,                        // Enables tcUnicode fonts usage instead of gfx-lib specific fonts
+                  bool enableBufferedVRAM = false);                         // Enables sprite-sized buffered video RAM for smooth animations
     virtual ~HydruinoMinUI();
 
     void allocateStandardControls();                                        // Allocates/pulls-into-build any standard tcMenu controls, from encoders to matrices

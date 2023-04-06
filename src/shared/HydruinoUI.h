@@ -66,11 +66,13 @@
 // precede initialization. Overview & menu screens not guaranteed to be allocated.
 class HydruinoBaseUI : public HydroUIInterface, public CustomDrawing {
 public:
-    HydruinoBaseUI(UIControlSetup uiControlSetup = UIControlSetup(),        // UI control input setup
-                   UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),        // UI display output setup 
-                   bool isActiveLowIO = true,                               // Logic level usage for control & display IO pins
+    HydruinoBaseUI(String deviceUUID,                                       // Device UUID hex string for remote controllability
+                   UIControlSetup uiControlSetup = UIControlSetup(),        // UI control input setup, from controller initialization
+                   UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),        // UI display output setup, from controller initialization
+                   bool isActiveLowIO = true,                               // Signaling logic level usage for I/O control/display devices
                    bool allowInterruptableIO = true,                        // Allows interruptable pins to interrupt, else forces polling
-                   bool enableTcUnicodeFonts = false);                      // Enables tcUnicode UTF8 fonts usage instead of library fonts
+                   bool enableTcUnicodeFonts = false,                       // Enables tcUnicode fonts usage instead of gfx-lib specific fonts
+                   bool enableBufferedVRAM = false);                        // Enables sprite-sized buffered video RAM for smooth animations
     virtual ~HydruinoBaseUI();
 
     inline void setOverviewClockFont(const void *clockFont) { _clockFont = clockFont; } // Sets overview clock font
@@ -82,7 +84,7 @@ public:
 
     void init(uint8_t updatesPerSec,                                        // Updates per second (1 to 10)
               Hydro_DisplayTheme displayTheme,                              // Display theme to apply
-              uint8_t titleMode = BaseGraphicalRenderer::NO_TITLE,          // Title mode
+              Hydro_TitleMode titleMode,                                    // Title mode
               bool analogSlider = false,                                    // Slider usage for analog items
               bool editingIcons = false);                                   // Editing icons usage
 
@@ -93,6 +95,8 @@ public:
 
     SwitchInterruptMode getISRMode() const;
 
+    inline int getSpriteHeight() const { return _isBufferedVRAM ? HYDRO_UI_SPRITE_MAXYSIZE : 0; }
+
     virtual bool isFullUI() = 0;
     inline bool isMinUI() { return !isFullUI(); }
 
@@ -101,7 +105,8 @@ public:
     inline const UIDisplaySetup &getDisplaySetup() const { return _uiDispSetup; }
     inline bool isActiveLow() const { return _isActiveLow; }
     inline bool allowingISR() const { return _allowISR; }
-    inline bool isUnicodeFonts() const { return _isUnicodeFonts; }
+    inline bool isTcUnicodeFonts() const { return _isTcUnicodeFonts; }
+    inline bool isBufferedVRAM() const { return _isBufferedVRAM; }
 
     inline HydroUIData *getUIData() { return _uiData; }
     inline HydroInputDriver *getInput() { return _input; }
@@ -111,12 +116,13 @@ public:
     inline HydroHomeMenu *getHomeMenu() { return _homeMenu; }
 
 protected:
-    ConnectorLocalInfo _appInfo;                            // Application info for connections
-    const UIControlSetup _uiCtrlSetup;                      // Control setup
-    const UIDisplaySetup _uiDispSetup;                      // Display setup
-    const bool _isActiveLow;                                // IO pins use active-low signaling logic
-    const bool _allowISR;                                   // Perform ISR checks to determine ISR eligibility
-    const bool _isUnicodeFonts;                             // Using tcUnicode library fonts
+    ConnectorLocalInfo _appInfo;                            // Application info for remote connections
+    const UIControlSetup _uiCtrlSetup;                      // Control setup, from controller initialization
+    const UIDisplaySetup _uiDispSetup;                      // Display setup, from controller initialization
+    const bool _isActiveLow;                                // I/O pins use of active-low signaling logic (where LOW -> active)
+    const bool _allowISR;                                   // Perform ISR checks for eligibility (for faster I/O response timings)
+    const bool _isTcUnicodeFonts;                           // Using tcUnicode library fonts (instead of gfx-lib specific fonts)
+    const bool _isBufferedVRAM;                             // Using sprite-sized video RAM buffering (high SRAM usage for smooth anims)
 
     HydroUIData *_uiData;                                   // Hydro UI data (strong)
     HydroInputDriver *_input;                               // Input driver (owned)
@@ -127,10 +133,10 @@ protected:
     time_t _blTimeout;                                      // Backlight timeout (UTC)
     HydroOverview *_overview;                               // Overview screen (owned)
     HydroHomeMenu *_homeMenu;                               // Home menu screen (owned)
-    const void *_clockFont;                                 // Overview clock font (strong), when using graphical display
-    const void *_detailFont;                                // Overview detail font (strong), when using graphical display
-    const void *_itemFont;                                  // Menu item font (strong), when using graphical display
-    const void *_titleFont;                                 // Menu title font (strong), when using graphical display
+    const void *_clockFont;                                 // Overview clock font (strong), when gfx display
+    const void *_detailFont;                                // Overview detail font (strong), when gfx display
+    const void *_itemFont;                                  // Menu item font (strong), when gfx display
+    const void *_titleFont;                                 // Menu title font (strong), when gfx display
 
     void setBacklightEnable(bool enabled);
 

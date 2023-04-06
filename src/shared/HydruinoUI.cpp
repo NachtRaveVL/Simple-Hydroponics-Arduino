@@ -6,15 +6,14 @@
 #include "HydruinoUI.h"
 #ifdef HYDRO_USE_GUI
 
-HydruinoBaseUI::HydruinoBaseUI(UIControlSetup uiControlSetup, UIDisplaySetup uiDisplaySetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts)
+HydruinoBaseUI::HydruinoBaseUI(String deviceUUID, UIControlSetup uiControlSetup, UIDisplaySetup uiDisplaySetup, bool isActiveLowIO, bool allowInterruptableIO, bool enableTcUnicodeFonts, bool enableBufferedVRAM)
     : _appInfo{0}, _uiCtrlSetup(uiControlSetup), _uiDispSetup(uiDisplaySetup),
-      _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _isUnicodeFonts(enableTcUnicodeFonts),
+      _isActiveLow(isActiveLowIO), _allowISR(allowInterruptableIO), _isTcUnicodeFonts(enableTcUnicodeFonts), _isBufferedVRAM(enableBufferedVRAM),
       _uiData(nullptr), _input(nullptr), _display(nullptr), _remoteServer(nullptr), _backlight(nullptr), _blTimeout(0),
       _overview(nullptr), _homeMenu(nullptr), _clockFont(nullptr), _detailFont(nullptr), _itemFont(nullptr), _titleFont(nullptr)
 {
     if (getController()) { strncpy(_appInfo.name, getController()->getSystemNameChars(), 30); }
-    String uuid(F("dfa1e3a9-a13a-4af3-9133-956a6221615b")); // todo, name->hash
-    strncpy(_appInfo.uuid, uuid.c_str(), 38);
+    strncpy(_appInfo.uuid, deviceUUID.c_str(), 38);
     pintype_t ledPin = uiDisplaySetup.getBacklightPin();
     if (uiDisplaySetup.dispCfgType != UIDisplaySetup::LCD && isValidPin(ledPin)) { // LCD has its own backlight
         switch (uiDisplaySetup.getBacklightMode()) {
@@ -54,7 +53,7 @@ HydruinoBaseUI::~HydruinoBaseUI()
     if (_backlight) { delete _backlight; }
 }
 
-void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, uint8_t titleMode, bool analogSlider, bool editingIcons)
+void HydruinoBaseUI::init(uint8_t updatesPerSec, Hydro_DisplayTheme displayTheme, Hydro_TitleMode titleMode, bool analogSlider, bool editingIcons)
 {
     if (!_uiData) {
         _uiData = new HydroUIData();
@@ -81,7 +80,7 @@ HydroUIData *HydruinoBaseUI::init(HydroUIData *uiData)
     } else if (_display) {
         _display->initBaseUIFromDefaults(); // calls back into above init with default settings for display
     } else {
-        init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined);
+        init(HYDRO_UI_UPDATE_SPEED, Hydro_DisplayTheme_Undefined, Hydro_TitleMode_None);
     }
     return _uiData;
 }
@@ -106,7 +105,7 @@ bool HydruinoBaseUI::begin()
     }
 
     if (_display) {
-        _display->setupRendering(_uiData->titleMode, _uiData->displayTheme, _itemFont, _titleFont, _uiData->analogSlider, _uiData->editingIcons, _isUnicodeFonts);
+        _display->setupRendering(_uiData->displayTheme, _uiData->titleMode, _itemFont, _titleFont, _uiData->analogSlider, _uiData->editingIcons, _isTcUnicodeFonts);
     }
 
     #if HYDRO_UI_START_AT_OVERVIEW
