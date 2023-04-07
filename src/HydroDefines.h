@@ -107,18 +107,18 @@
 #define BOARD                           "OTHER"
 #endif
 #endif
-#ifndef HAS_INPUT_PULLDOWN                                  // Resolve for INPUT_PULLDOWN usage
-#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_RP2040) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY)
-#define HAS_INPUT_PULLDOWN              true                // INPUT_PULLDOWN likely available
+#ifndef HAS_INPUT_PULLDOWN                                  // Resolve for INPUT_PULLDOWN availability
+#if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_ARM) || defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_RP2040) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY)
+#define HAS_INPUT_PULLDOWN              true                // INPUT_PULLDOWN likely available (INPUT able to be PULLDOWN/floating/PULLUP)
 #else
-#define HAS_INPUT_PULLDOWN              false               // INPUT_PULLDOWN not likely available
+#define HAS_INPUT_PULLDOWN              false               // INPUT_PULLDOWN likely unavailable (INPUT restricted to just floating/PULLUP)
 #endif
 #endif
-#ifndef HAS_LARGE_SRAM                                      // Resolve for larger SRAM usage
-#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_ARCH_MBED)  || defined(ARDUINO_ARCH_RP2040) || defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY)
-#define HAS_LARGE_SRAM                  true                // Likely larger SRAM size
+#ifndef HAS_LARGE_SRAM                                      // Resolve for large SRAM size availability
+#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_ARCH_ARM) || defined(ARDUINO_ARCH_MBED)  || defined(ARDUINO_ARCH_RP2040) || defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY)
+#define HAS_LARGE_SRAM                  true                // Large SRAM size likely available (memory saving features disabled)
 #else
-#define HAS_LARGE_SRAM                  false               // Not likely large SRAM size
+#define HAS_LARGE_SRAM                  false               // Large SRAM size likely unavailable (memory saving features enabled)
 #endif
 #endif
 
