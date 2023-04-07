@@ -276,7 +276,6 @@ HydruinoFullUI::~HydruinoFullUI()
 void HydruinoFullUI::addRemote(Hydro_RemoteControl rcType, UARTDeviceSetup rcSetup, uint16_t rcServerPort)
 {
     HydroRemoteControl *remoteControl = nullptr;
-    menuid_t statusMenuId = -1; // todo
 
     switch (rcType) {
         case Hydro_RemoteControl_Serial: {
@@ -285,7 +284,7 @@ void HydruinoFullUI::addRemote(Hydro_RemoteControl rcType, UARTDeviceSetup rcSet
         } break;
 
         case Hydro_RemoteControl_Simhub: {
-            remoteControl = new HydroRemoteSimhubControl(rcSetup, statusMenuId);
+            remoteControl = new HydroRemoteSimhubControl(rcSetup, HYDRO_UI_SIMHUB_STATUS_MENU_ID);
             HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
         } break;
 

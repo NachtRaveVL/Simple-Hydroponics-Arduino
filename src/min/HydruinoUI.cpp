@@ -574,8 +574,7 @@ void HydruinoMinUI::addSerialRemote(UARTDeviceSetup rcSetup)
 
 void HydruinoMinUI::addSimhubRemote(UARTDeviceSetup rcSetup)
 {
-    menuid_t statusMenuId = -1; // todo
-    HydroRemoteControl *remoteControl = new HydroRemoteSimhubControl(rcSetup, statusMenuId);
+    HydroRemoteControl *remoteControl = new HydroRemoteSimhubControl(rcSetup, HYDRO_UI_SIMHUB_STATUS_MENU_ID);
     HYDRO_SOFT_ASSERT(remoteControl, SFP(HStr_Err_AllocationFailure));
 
     if (remoteControl && remoteControl->getConnection()) {

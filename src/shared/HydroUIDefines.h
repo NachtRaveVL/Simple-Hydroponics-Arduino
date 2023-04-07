@@ -51,6 +51,7 @@
 #define HYDRO_UI_MENU_ITEM_MAG_LEVEL    2                   // Menu item font magnification level
 #define HYDRO_UI_IOT_MONITOR_TEXT       "IoT Monitor"       // Menu IoT monitor item text, forced PROGMEM
 #define HYDRO_UI_AUTHENTICATOR_TEXT     "Authenticator"     // Menu authenticator item text, forced PROGMEM
+#define HYDRO_UI_SIMHUB_STATUS_MENU_ID  INVALID_MENU_ID     // Simhub remote status menu item ID
 
 // Default graphical display theme base (CoolBlue, DarkMode) - keep on separate lines
 #define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            
