@@ -162,13 +162,11 @@ MQTTClient mqttClient;
 // GFXfont/tcUnicode Fonts (AdafruitGFX/TFT_eSPI)
 #if !SETUP_UI_USE_TCUNICODE_FONTS
 #include "shared/tcMenu_Font_AdafruitGFXArial14.h"
-#define SETUP_UI_USE_MENU_FONT          Arial14
-#define SETUP_UI_USE_DETAIL_FONT        Arial14
 #else
 #include "shared/tcMenu_Font_tcUnicodeArial14.h"
+#endif
 #define SETUP_UI_USE_MENU_FONT          Arial14
 #define SETUP_UI_USE_DETAIL_FONT        Arial14
-#endif
 #endif
 
 // Pre-init checks
