@@ -1086,13 +1086,13 @@ void setup() {
                              JOIN(Hydro_ControlInputMode,SETUP_CONTROL_IN_MODE));
 
         setupOnce();
+        setupUI();
         setupAlways();
         setupObjects();
     } else {
+        setupUI();
         setupAlways();
     }
-
-    setupUI();
 
     // Launches controller into main operation.
     hydroController.launch();
