@@ -55,6 +55,9 @@
 #define min(a,b)                        ((a)<(b)?(a):(b))
 #define max(a,b)                        ((a)>(b)?(a):(b))
 #endif
+#if defined(CORE_TEENSY)                                    // Missing abs
+#define abs(x)                          ((x)>0?(x):-(x))
+#endif
 #ifndef RANDOM_MAX                                          // Missing RANDOM_MAX
 #if defined(RAND_MAX)
 #define RANDOM_MAX                      RAND_MAX
@@ -812,23 +815,22 @@ class HydroRail;
 #define SETUP_ENUM_IL3820_V2                                112
 #define SETUP_ENUM_ST7789                                   113
 #define SETUP_ENUM_ILI9341                                  114
-#define SETUP_ENUM_TFT                                      115
-#define SETUP_ENUM_RotaryEncoderOk                          116
-#define SETUP_ENUM_RotaryEncoderOkLR                        117
-#define SETUP_ENUM_UpDownButtonsOk                          118
-#define SETUP_ENUM_UpDownButtonsOkLR                        119
-#define SETUP_ENUM_UpDownESP32TouchOk                       120
-#define SETUP_ENUM_UpDownESP32TouchOkLR                     121
-#define SETUP_ENUM_AnalogJoystickOk                         122
-#define SETUP_ENUM_Matrix2x2UpDownButtonsOkL                123
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk            124
-#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR          125
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk            126
-#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR          127
-#define SETUP_ENUM_ResistiveTouch                           128
-#define SETUP_ENUM_TouchScreen                              139
-#define SETUP_ENUM_TFTTouch                                 130
-#define SETUP_ENUM_RemoteControl                            131
+#define SETUP_ENUM_RotaryEncoderOk                          115
+#define SETUP_ENUM_RotaryEncoderOkLR                        116
+#define SETUP_ENUM_UpDownButtonsOk                          117
+#define SETUP_ENUM_UpDownButtonsOkLR                        118
+#define SETUP_ENUM_UpDownESP32TouchOk                       119
+#define SETUP_ENUM_UpDownESP32TouchOkLR                     120
+#define SETUP_ENUM_AnalogJoystickOk                         121
+#define SETUP_ENUM_Matrix2x2UpDownButtonsOkL                122
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOk            123
+#define SETUP_ENUM_Matrix3x4Keyboard_OptRotEncOkLR          124
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOk            125
+#define SETUP_ENUM_Matrix4x4Keyboard_OptRotEncOkLR          126
+#define SETUP_ENUM_ResistiveTouch                           127
+#define SETUP_ENUM_TouchScreen                              128
+#define SETUP_ENUM_TFTTouch                                 129
+#define SETUP_ENUM_RemoteControl                            130
 // Checks setup defines for equality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)
 #define IS_SETUP_AS(X,Y)                JOIN(SETUP_ENUM,X) == SETUP_ENUM_##Y
 // Checks setup defines for inequality, first param SETUP_XXX is substituted (possibly to 0), second param literal should be defined (for non-zero substitution)

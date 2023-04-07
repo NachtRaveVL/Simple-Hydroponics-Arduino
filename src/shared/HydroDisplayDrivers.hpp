@@ -3,7 +3,7 @@
     Hydruino Display Drivers
 */
 
-#include "HydruinoUI.h"
+#include <Hydruino.h>
 #ifdef HYDRO_USE_GUI
 
 static inline const u8g2_cb_t *dispRotToU8g2Rot(Hydro_DisplayRotation displayRotation)

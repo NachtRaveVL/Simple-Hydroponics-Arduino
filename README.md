@@ -62,9 +62,9 @@ Recommended: 512kB-1MB+ Flash, 24-32kB+ SRAM, 32-48MHz+
 
 * Definitely ___will___ work: GIGA, Portenta (any), ESP32/8266, Teensy 3.5+, STM32 (>256kB), Pico/RP2040 (any)
 
-* _Can_ work /w ext. data/limited UI/small setup: Uno R4, Nano 33 (any), MKR (any), Due/Zero, Teensy 3.2, STM32 (256kB)
+* _Can_ work /w external data/minimal UI: Uno R4, Nano 33 (any), MKR (any), Due/Zero, STM32 (256kB)
 
-* _May_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101
+* _May_ work, but only with heavy tweaking/limited build: ATMega2560, Genuino 101, Teensy 3.2 (/3.1), STM32F0
 
 * Definitely ___will not___ work: Uno (classic to R3), Nano (classic & Every), Leonardo/Duemilanove, Micro, Pro, Esplora, Teensy 2/LC, STM8 (|32<256kB), ATtiny (any)
 

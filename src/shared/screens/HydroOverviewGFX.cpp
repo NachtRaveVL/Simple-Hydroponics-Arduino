@@ -34,7 +34,7 @@ void randomStarColor(uint8_t* r, uint8_t* g, uint8_t* b) {
             *r = 255; *g = 204; *b = 111;
             break;
     }
-    int randVals[3] = {random(20),random(25),random(20)};
+    int randVals[3] = {(int)random(20),(int)random(25),(int)random(20)};
     *r = constrain((int)(*r) + (-10 + randVals[0]), 0, 255);
     *g = constrain((int)(*g) + (-15 + randVals[1]), 0, 255);
     *b = constrain((int)(*b) + (-10 + randVals[2]), 0, 255);

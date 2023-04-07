@@ -12,7 +12,7 @@
 #define HYDRO_UI_UPDATE_SPEED           10
 #elif F_SPD >= 32000000
 #define HYDRO_UI_UPDATE_SPEED           5
-#elif F_SPD >= 16000000
+#else
 #define HYDRO_UI_UPDATE_SPEED           2
 #endif
 
