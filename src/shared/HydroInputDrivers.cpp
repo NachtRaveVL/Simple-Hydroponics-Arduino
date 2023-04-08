@@ -126,6 +126,9 @@ HydroInputESP32TouchKeys::HydroInputESP32TouchKeys(Pair<uint8_t, const pintype_t
                     attenuation == Hydro_ESP32Touch_HighRefAtten_Max ? TOUCH_HVOLT_ATTEN_MAX : TOUCH_HVOLT_ATTEN_KEEP)
 #endif
 {
+    #ifndef ESP32
+        HYDRO_HARD_ASSERT(false, HStr_Err_UnsupportedOperation);
+    #endif
     HYDRO_SOFT_ASSERT(_pins.first >= 1 && isValidPin(_pins.second[0]), HStr_Err_InvalidParameter);
     HYDRO_SOFT_ASSERT(_pins.first >= 2 && isValidPin(_pins.second[1]), HStr_Err_InvalidParameter);
     HYDRO_SOFT_ASSERT(_pins.first >= 3 && isValidPin(_pins.second[2]), HStr_Err_InvalidParameter);
