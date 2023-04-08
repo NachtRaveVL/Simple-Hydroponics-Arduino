@@ -65,7 +65,7 @@ public:
 
     Signal<HydroCrop *, HYDRO_FEEDING_SIGNAL_SLOTS> &getFeedingSignal();
 
-    inline void notifyDayChanged() { recalcGrowthParams(); }
+    inline void notifyDateChanged() { recalcGrowthParams(); }
 
 protected:
     Hydro_SubstrateType _substrateType;                     // Substrate type

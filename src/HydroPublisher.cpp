@@ -176,7 +176,7 @@ Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_SIGNAL_SLOTS> &Hydr
     return _publishSignal;
 }
 
-void HydroPublisher::notifyDayChanged()
+void HydroPublisher::notifyDateChanged()
 {
     if (isPublishingEnabled()) {
         _dataFilename = getYYMMDDFilename(charsToString(publisherData()->dataFilePrefix, 16), SFP(HStr_csv));

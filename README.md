@@ -511,7 +511,7 @@ Included below is the default system setup defines of the Vertical NFT example (
 // UI Settings
 #define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic active level (ACT_LOW, ACT_HIGH)
 #define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interrupt driven I/O if able, else force polling
-#define SETUP_UI_USE_TCUNICODE_FONTS    false           // Use tcUnicode fonts instead of gfx-lib specific fonts, if using graphical display
+#define SETUP_UI_USE_TCUNICODE_FONTS    false           // Use tcUnicode fonts over GFXfont (Adafruit) fonts, if using graphical color display
 #define SETUP_UI_USE_BUFFERED_VRAM      HAS_LARGE_SRAM  // Use sprite-sized buffered video RAM for smooth animations, if large SRAM
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 

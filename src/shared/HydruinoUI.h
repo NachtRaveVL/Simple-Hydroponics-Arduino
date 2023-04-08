@@ -66,53 +66,93 @@
 // precede initialization. Overview & menu screens not guaranteed to be allocated.
 class HydruinoBaseUI : public HydroUIInterface, public CustomDrawing {
 public:
+    // Base UI constructor.
     HydruinoBaseUI(String deviceUUID,                                       // Device UUID hex string for remote controllability
                    UIControlSetup uiControlSetup = UIControlSetup(),        // UI control input setup, from controller initialization
                    UIDisplaySetup uiDisplaySetup = UIDisplaySetup(),        // UI display output setup, from controller initialization
                    bool isActiveLowIO = true,                               // Signaling logic level usage for I/O control/display devices
                    bool allowInterruptableIO = true,                        // Allows interruptable pins to interrupt, else forces polling
-                   bool enableTcUnicodeFonts = false,                       // Enables tcUnicode fonts usage instead of gfx-lib specific fonts
+                   bool enableTcUnicodeFonts = false,                       // Enables tcUnicode fonts usage over GFXfont (Adafruit) fonts
                    bool enableBufferedVRAM = false);                        // Enables sprite-sized buffered video RAM for smooth animations
     virtual ~HydruinoBaseUI();
 
-    inline void setOverviewClockFont(const void *clockFont) { _clockFont = clockFont; } // Sets overview clock font
-    inline void setOverviewDetailFont(const void *detailFont) { _detailFont = detailFont; } // Sets overview detail font
-    inline void setOverviewFont(const void *overviewFont) { _clockFont = overviewFont; _detailFont = overviewFont; } // Sets both overview clock and detail font
-    inline void setMenuItemFont(const void *itemFont) { _itemFont = itemFont; }   // Sets menu item font
-    inline void setMenuTitleFont(const void *titleFont) { _titleFont = titleFont; } // Sets menu title font
-    inline void setMenuFont(const void *menuFont) { _itemFont = menuFont; _titleFont = menuFont; } // Sets both menu item and title font
+    // Sets up optional overview clock font (expected setup before init), else uses internal default
+    inline void setupOverviewClockFont(const void *clockFont) { _clockFont = clockFont; }
+    // Sets up optional overview detail font (expected setup before init), else uses internal default
+    inline void setupOverviewDetailFont(const void *detailFont) { _detailFont = detailFont; }
+    // Sets up both optional overview clock and detail font (expected setup before init), else uses internal default
+    inline void setupOverviewFont(const void *overviewFont) { _clockFont = overviewFont; _detailFont = overviewFont; }
+    // Sets up optional menu item font (expected setup before init), else uses internal default
+    inline void setupMenuItemFont(const void *itemFont) { _itemFont = itemFont; }
+    // Sets up optional menu title font (expected setup before init), else uses internal default
+    inline void setupMenuTitleFont(const void *titleFont) { _titleFont = titleFont; }
+    // Sets up both optional menu item and title font (expected setup before init), else uses internal default
+    inline void setupMenuFont(const void *menuFont) { _itemFont = menuFont; _titleFont = menuFont; }
 
+    // Initializes UI from passed UIData object, returning new UIData object or original
+    // as backing model object to export upon save. Attempts to use the display driver's
+    // default init mode settings if given a null data object. Otherwise will initialize
+    // based on remote control defaults. Designated/recommended initializer.
+    virtual HydroUIData *init(HydroUIData *uiData = nullptr) override;      // UIData instance
+
+    // Initializes UI from passed parameters. Typically called by designated initializer,
+    // but also able to be called directly for custom defaults.
     void init(uint8_t updatesPerSec,                                        // Updates per second (1 to 10)
               Hydro_DisplayTheme displayTheme,                              // Display theme to apply
               Hydro_TitleMode titleMode,                                    // Title mode
               bool analogSlider = false,                                    // Slider usage for analog items
               bool editingIcons = false);                                   // Editing icons usage
 
-    virtual HydroUIData *init(HydroUIData *uiData = nullptr) override;      // UIData instance
-    virtual bool begin() override;                                          // Begins UI
+    // Begins the display and input drivers, bringing their devices online. 
+    virtual void begin() override;
 
+    // Sets redraw needed flag for full UI screen redraw.
     virtual void setNeedsRedraw() override;
 
+    // Determines the ISR mode to use for switches/keys, based on allowed ISR setting
+    // and control input pins specified. If input controller does not allow main pins
+    // to be interruptable then it will not check for all pins being interruptable.
     SwitchInterruptMode getISRMode() const;
 
-    inline int getSpriteHeight() const { return _isBufferedVRAM ? HYDRO_UI_SPRITE_MAXYSIZE : 0; }
+    // Determines the number of buffered video RAM rows to use in SRAM, based on enabled
+    // buffering setting and graphics device (else 0 if disabled). To reduce the flicker
+    // associated with common non-buffered drawing code, the number of rows of buffered
+    // VRAM is set to the largest pixel height of sprite that will need to be rendered,
+    // and is supplied to tcMenu's Drawable-derived classes (used in screen rendering).
+    // Note: VRAM buffering can be memory intensive - only use if SRAM is plentiful.
+    inline int getVRAMBufferRows() const { return _isBufferedVRAM && (_display && _display->getGraphicsRenderer()) ? HYDRO_UI_SPRITE_MAXYSIZE : 0; }
 
+    // Determines if running in full-UI mode (true) or not (false).
     virtual bool isFullUI() = 0;
+    // Determines if running in minimal-UI mode (true) or not (false).
     inline bool isMinUI() { return !isFullUI(); }
 
+    // App info accessor
     inline const ConnectorLocalInfo &getApplicationInfo() const { return _appInfo; }
+    // Control setup accessor
     inline const UIControlSetup &getControlSetup() const { return _uiCtrlSetup; }
+    // Display setup accessor
     inline const UIDisplaySetup &getDisplaySetup() const { return _uiDispSetup; }
+    // Active low signaling logic accessor
     inline bool isActiveLow() const { return _isActiveLow; }
+    // Allowing interruptable I/O accessor
     inline bool allowingISR() const { return _allowISR; }
+    // Using tcUnicode fonts over GFXfont accessor
     inline bool isTcUnicodeFonts() const { return _isTcUnicodeFonts; }
+    // Using buffered VRAM for non-flickering sprite animations accessor
     inline bool isBufferedVRAM() const { return _isBufferedVRAM; }
 
+    // UIData accessor
     inline HydroUIData *getUIData() { return _uiData; }
+    // Input driver accessor
     inline HydroInputDriver *getInput() { return _input; }
+    // Display driver accessor
     inline HydroDisplayDriver *getDisplay() { return _display; }
+    // Remote server accessor
     inline TcMenuRemoteServer *getRemoteServer() { return _remoteServer; }
+    // Overview screen accessor
     inline HydroOverview *getOverview() { return _overview; }
+    // Home menu accessor
     inline HydroHomeMenu *getHomeMenu() { return _homeMenu; }
 
 protected:
@@ -121,7 +161,7 @@ protected:
     const UIDisplaySetup _uiDispSetup;                      // Display setup, from controller initialization
     const bool _isActiveLow;                                // I/O pins use of active-low signaling logic (where LOW -> active)
     const bool _allowISR;                                   // Perform ISR checks for eligibility (for faster I/O response timings)
-    const bool _isTcUnicodeFonts;                           // Using tcUnicode library fonts (instead of gfx-lib specific fonts)
+    const bool _isTcUnicodeFonts;                           // Using tcUnicode library fonts over GFXfont (Adafruit) fonts
     const bool _isBufferedVRAM;                             // Using sprite-sized video RAM buffering (high SRAM usage for smooth anims)
 
     HydroUIData *_uiData;                                   // Hydro UI data (strong)

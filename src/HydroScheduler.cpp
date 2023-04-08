@@ -47,7 +47,7 @@ void HydroScheduler::update()
                 if (getLogger()->getSystemUptime() >= SECS_PER_DAY) {
                     getLogger()->logSystemUptime();
                 }
-                broadcastDayChange();
+                broadcastDateChange();
             }
         }
 
@@ -554,7 +554,7 @@ void HydroScheduler::performScheduling()
     _needsScheduling = false;
 }
 
-void HydroScheduler::broadcastDayChange()
+void HydroScheduler::broadcastDateChange()
 {
     updateDayTracking();
 
@@ -562,27 +562,27 @@ void HydroScheduler::broadcastDayChange()
         // these can take a while to complete
         taskManager.scheduleOnce(0, []{
             if (getController()) {
-                getController()->notifyDayChanged();
+                getController()->broadcastDateChanged();
             }
             yield();
             if (getLogger()) {
-                getLogger()->notifyDayChanged();
+                getLogger()->notifyDateChanged();
             }
             yield();
             if (getPublisher()) {
-                getPublisher()->notifyDayChanged();
+                getPublisher()->notifyDateChanged();
             }
             yield();
         });
     #else
         if (getController()) {
-            getController()->notifyDayChanged();
+            getController()->broadcastDateChanged();
         }
         if (getLogger()) {
-            getLogger()->notifyDayChanged();
+            getLogger()->notifyDateChanged();
         }
         if (getPublisher()) {
-            getPublisher()->notifyDayChanged();
+            getPublisher()->notifyDateChanged();
         }
     #endif
 }

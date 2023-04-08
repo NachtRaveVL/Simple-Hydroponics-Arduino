@@ -25,6 +25,8 @@ public:
     virtual void loadMenu(MenuItem *addFrom = nullptr) override;
     virtual MenuItem *getRootItem() override;
 
+    void unloadSubMenus();
+
     inline HydroHomeMenuItems &getItems() { return *_items; }
 
 protected:
@@ -37,12 +39,12 @@ struct HydroHomeMenuInfo {
 
     AnyMenuInfo minfoBackToOverview;
 #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
-    BooleanMenuInfo minfoToggleBadConn;
-    BooleanMenuInfo minfoToggleFastTime;
+    AnyMenuInfo minfoTriggerSigLocation;
     AnyMenuInfo minfoTriggerSigTime;
     AnyMenuInfo minfoTriggerSDCleanup;
     AnyMenuInfo minfoTriggerLowMem;
     AnyMenuInfo minfoTriggerAutosave;
+    BooleanMenuInfo minfoSimhubConnected;
     SubMenuInfo minfoDebug;
 #endif // /ifdef HYDRO_UI_ENABLE_DEBUG_MENU
     AnyMenuInfo minfoInformation;
@@ -71,12 +73,12 @@ struct HydroHomeMenuItems {
 
     ActionMenuItem menuBackToOverview;
 #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
-    BooleanMenuItem menuToggleBadConn;
-    BooleanMenuItem menuToggleFastTime;
+    ActionMenuItem menuTriggerSigLocation;
     ActionMenuItem menuTriggerSigTime;
     ActionMenuItem menuTriggerSDCleanup;
     ActionMenuItem menuTriggerLowMem;
     ActionMenuItem menuTriggerAutosave;
+    BooleanMenuItem menuSimhubConnected;
     BackMenuItem menuBackDebug;
     SubMenuItem menuDebug;
 #endif // /ifdef HYDRO_UI_ENABLE_DEBUG_MENU

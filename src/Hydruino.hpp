@@ -50,6 +50,80 @@ inline EthernetClass *Hydruino::getEthernet(bool begin)
 
 #endif
 
+inline void Hydruino::performAutosave()
+{
+    for (int autosave = 0; autosave < 2; ++autosave) {
+        switch (autosave == 0 ? _systemData->autosaveEnabled : _systemData->autosaveFallback) {
+            case Hydro_Autosave_EnabledToSDCardJson:
+                saveToSDCard(JSON);
+                break;
+            case Hydro_Autosave_EnabledToSDCardRaw:
+                saveToSDCard(RAW);
+                break;
+            case Hydro_Autosave_EnabledToEEPROMJson:
+                saveToEEPROM(JSON);
+                break;
+            case Hydro_Autosave_EnabledToEEPROMRaw:
+                saveToEEPROM(RAW);
+                break;
+            case Hydro_Autosave_EnabledToWiFiStorageJson:
+                #ifdef HYDRO_USE_WIFI_STORAGE
+                    saveToWiFiStorage(JSON);
+                #endif
+                break;
+            case Hydro_Autosave_EnabledToWiFiStorageRaw:
+                #ifdef HYDRO_USE_WIFI_STORAGE
+                    saveToWiFiStorage(RAW);
+                #endif
+            case Hydro_Autosave_Disabled:
+                break;
+        }
+    }
+
+    _lastAutosave = unixNow();
+}
+
+inline void Hydruino::broadcastLowMemory()
+{
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        iter->second->handleLowMemory();
+    }
+}
+
+inline void Hydruino::notifyRTCTimeUpdated()
+{
+    _rtcBattFail = false;
+}
+
+inline void Hydruino::broadcastDateChanged()
+{
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+        if (iter->second->isReservoirType()) {
+            auto reservoir = static_pointer_cast<HydroReservoir>(iter->second);
+
+            if (reservoir && reservoir->isFeedClass()) {
+                auto feedReservoir = static_pointer_cast<HydroFeedReservoir>(iter->second);
+                if (feedReservoir) {feedReservoir->notifyDateChanged(); }
+            }
+        } else if (iter->second->isCropType()) {
+            auto crop = static_pointer_cast<HydroCrop>(iter->second);
+
+            if (crop) { crop->notifyDateChanged(); }
+        }
+    }
+}
+
+inline void Hydruino::notifySignificantTime(time_t time)
+{
+    logger.updateInitTracking(time);
+    _lastAutosave = isAutosaveEnabled() ? time : 0;
+}
+
+inline void Hydruino::notifySignificantLocation(Location loc)
+{
+    if (_systemData) { _systemData->bumpRevisionIfNeeded(); }
+}
+
 
 inline HydroLoggerSubData *HydroLogger::loggerData() const
 {

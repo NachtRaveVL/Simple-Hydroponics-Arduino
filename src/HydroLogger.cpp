@@ -244,7 +244,7 @@ Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> &HydroLogger::getLogSignal()
     return _logSignal;
 }
 
-void HydroLogger::notifyDayChanged()
+void HydroLogger::notifyDateChanged()
 {
     if (isLoggingEnabled()) {
         _logFilename = getYYMMDDFilename(charsToString(loggerData()->logFilePrefix, 16), SFP(HStr_txt));

@@ -125,17 +125,23 @@ void publishData(HydroSensor *sensor)
     }
 }
 
-bool _setUnixTime(DateTime unixTime)
+void _setUnixTime(DateTime unixTime, bool isSigTime)
 {
+    time_t prevTime = unixNow();
+
     auto rtc = getController() ? getController()->getRTC() : nullptr;
     if (rtc) {
         rtc->adjust(unixTime);
         getController()->notifyRTCTimeUpdated();
-        return true;
     } else {
         setTime(unixTime.unixtime());
     }
-    return false;
+
+    if (getController() && (isSigTime ||
+        getLogger()->getSystemInit() <= SECS_YR_2000 ||
+        abs(prevTime - unixTime.unixtime()) >= SECS_PER_DAY)) {
+        getController()->notifySignificantTime(unixTime.unixtime());
+    }
 }
 
 String getYYMMDDFilename(String prefix, String ext)

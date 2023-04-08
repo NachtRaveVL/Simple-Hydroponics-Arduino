@@ -154,7 +154,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getVRAMBufferRows() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
@@ -179,7 +179,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7735>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_USE_ANALOG_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7735>::begin()
@@ -207,7 +207,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getVRAMBufferRows() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     HYDRO_SOFT_ASSERT(_kind != Hydro_ST77XXKind_Undefined, SFP(HStr_Err_InvalidParameter));
@@ -245,7 +245,7 @@ HydroDisplayAdafruitGFX<Adafruit_ST7789>::HydroDisplayAdafruitGFX(SPIDeviceSetup
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_USE_ANALOG_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ST7789>::begin()
@@ -269,7 +269,7 @@ HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetu
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getVRAMBufferRows() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     #ifdef ESP8266
@@ -279,7 +279,7 @@ HydroDisplayAdafruitGFX<Adafruit_ILI9341>::HydroDisplayAdafruitGFX(SPIDeviceSetu
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_USE_ANALOG_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayAdafruitGFX<Adafruit_ILI9341>::begin()
@@ -300,13 +300,13 @@ HydroDisplayTFTeSPI::HydroDisplayTFTeSPI(SPIDeviceSetup displaySetup, Hydro_Disp
     : HydroDisplayDriver(displayRotation, TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
       _kind(st77Kind),
       _gfx(TFT_GFX_WIDTH, TFT_GFX_HEIGHT),
-      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getVRAMBufferRows() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 { ; }
 
 void HydroDisplayTFTeSPI::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_MEDLRG)), Hydro_TitleMode_Always, HYDRO_UI_GFX_USE_ANALOG_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 void HydroDisplayTFTeSPI::begin()

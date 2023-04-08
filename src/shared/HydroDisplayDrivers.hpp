@@ -194,7 +194,7 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup,
       #else
           _gfx(intForPin(displaySetup.cs), intForPin(dcPin), intForPin(resetPin)),
       #endif
-      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getSpriteHeight() : 0),
+      _drawable(&_gfx, getBaseUI() ? getBaseUI()->getVRAMBufferRows() : 0),
       _renderer(HYDRO_UI_RENDERER_BUFFERSIZE, HydroDisplayDriver::getSystemName(), &_drawable)
 {
     #ifdef ESP8266
@@ -205,7 +205,7 @@ HydroDisplayAdafruitGFX<T>::HydroDisplayAdafruitGFX(SPIDeviceSetup displaySetup,
 template <class T>
 void HydroDisplayAdafruitGFX<T>::initBaseUIFromDefaults()
 {
-    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_VARS_USES_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
+    getBaseUI()->init(HYDRO_UI_UPDATE_SPEED, definedThemeElse(getDisplayTheme(), JOIN3(Hydro_DisplayTheme, HYDRO_UI_GFX_DISP_THEME_BASE, HYDRO_UI_GFX_DISP_THEME_SMLMED)), Hydro_TitleMode_Always, HYDRO_UI_GFX_USE_ANALOG_SLIDER, HYDRO_UI_GFX_USE_EDITING_ICONS);
 }
 
 template <class T>

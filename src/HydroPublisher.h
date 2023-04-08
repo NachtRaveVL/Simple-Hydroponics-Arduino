@@ -55,7 +55,7 @@ public:
 
     Signal<Pair<uint8_t, const HydroDataColumn *>, HYDRO_PUBLISH_SIGNAL_SLOTS> &getPublishSignal();
 
-    void notifyDayChanged();
+    void notifyDateChanged();
 
 protected:
 #if HYDRO_SYS_LEAVE_FILES_OPEN
@@ -77,9 +77,6 @@ protected:
 
     friend class Hydruino;
 
-    inline HydroPublisherSubData *publisherData() const;
-    inline bool hasPublisherData() const;
-
     void advancePollingFrame();
     friend void dataLoop();
 
@@ -87,6 +84,10 @@ protected:
     void publish(time_t timestamp);
 
     void performTabulation();
+
+public: // consider protected
+    inline HydroPublisherSubData *publisherData() const;
+    inline bool hasPublisherData() const;
 
     void resetDataFile();
     void cleanupOldestData(bool force = false);

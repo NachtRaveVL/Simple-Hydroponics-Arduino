@@ -61,20 +61,21 @@ void CALLBACK_FUNCTION gotoScreen(int id)
 void CALLBACK_FUNCTION debugAction(int id)
 {
     switch (id) {
-        case 65: // ToggleBadConn
-            // todo
+        case 65: // TriggerSigLoc
+            if (getController()) { getController()->setSystemLocation(getController()->getSystemLocation(), true); }
             break;
-        case 64: // ToggleFastTime
-            // todo
+        case 64: // TriggerSigTime
+            setUnixTime(unixNow(), true);
             break;
-        case 63: // TriggerSigTime
-            getScheduler()->setNeedsUpdate();
+        case 63: // TriggerSDCleanup
+            if (getLogger()) { getLogger()->cleanupOldestLogs(true); }
+            if (getPublisher()) { getPublisher()->cleanupOldestData(true); }
             break;
-        case 62: // TriggerSDCleanup
-            // todo
+        case 62: // TriggerLowMem
+            if (getController()) { getController()->broadcastLowMemory(); }
             break;
-        case 61: // TriggerLowMem
-            // todo
+        case 61: // TriggerAutosave
+            if (getController()) { getController()->performAutosave(); }
             break;
         default: break;
     }
@@ -110,18 +111,23 @@ MenuItem *HydroHomeMenu::getRootItem()
     return _loaded && _items ? &_items->menuAlerts : nullptr;
 }
 
+void HydroHomeMenu::unloadSubMenus()
+{
+    // todo
+}
+
 #ifdef HYDRO_DISABLE_BUILTIN_DATA
 
 HydroHomeMenuInfo::HydroHomeMenuInfo()
 {
     InitAnyMenuInfo(minfoBackToOverview, HUIStr_Item_BackToOverview, 7, NO_ADDRESS, 0, gotoScreen);
     #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
-        InitBooleanMenuInfo(minfoToggleBadConn, HUIStr_Item_ToggleBadConn, 65, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF);
-        InitBooleanMenuInfo(minfoToggleFastTime, HUIStr_Item_ToggleFastTime, 64, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF);
-        InitAnyMenuInfo(minfoTriggerSigTime, HUIStr_Item_TriggerSigTime, 63, NO_ADDRESS, 0, debugAction);
-        InitAnyMenuInfo(minfoTriggerSDCleanup, HUIStr_Item_TriggerSDCleanup, 62, NO_ADDRESS, 0, debugAction);
-        InitAnyMenuInfo(minfoTriggerLowMem, HUIStr_Item_TriggerLowMem, 61, NO_ADDRESS, 0, debugAction);
-        InitAnyMenuInfo(minfoTriggerAutosave, HUIStr_Item_TriggerAutosave, 60, NO_ADDRESS, 0, debugAction);
+        InitAnyMenuInfo(minfoTriggerSigLocation, HUIStr_Item_TriggerSigLocation, 65, NO_ADDRESS, 0, debugAction);
+        InitAnyMenuInfo(minfoTriggerSigTime, HUIStr_Item_TriggerSigTime, 64, NO_ADDRESS, 0, debugAction);
+        InitAnyMenuInfo(minfoTriggerSDCleanup, HUIStr_Item_TriggerSDCleanup, 63, NO_ADDRESS, 0, debugAction);
+        InitAnyMenuInfo(minfoTriggerLowMem, HUIStr_Item_TriggerLowMem, 62, NO_ADDRESS, 0, debugAction);
+        InitAnyMenuInfo(minfoTriggerAutosave, HUIStr_Item_TriggerAutosave, 61, NO_ADDRESS, 0, debugAction);
+        InitBooleanMenuInfo(minfoSimhubConnected, HUIStr_Item_SimhubConnected, 60, NO_ADDRESS, 1, NO_CALLBACK, NAMING_CHECKBOX);
         InitSubMenuInfo(minfoDebug, HUIStr_Item_Debug, 6, NO_ADDRESS, 0, debugAction);
     #endif
     InitAnyMenuInfo(minfoInformation, HUIStr_Item_Information, 5, NO_ADDRESS, 0, gotoScreen);
@@ -148,13 +154,13 @@ HydroHomeMenuItems::HydroHomeMenuItems() :
     #endif
     menuBackToOverview(InfoPtrForItem(BackToOverview, AnyMenuInfo), nullptr, InfoLocation),
     #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
-        menuToggleBadConn(InfoPtrForItem(ToggleBadConn, BooleanMenuInfo), false, nullptr, InfoLocation), // todo: initial value
-        menuToggleFastTime(InfoPtrForItem(ToggleFastTime, BooleanMenuInfo), false, &menuToggleBadConn, InfoLocation), // todo: initial value
-        menuTriggerSigTime(InfoPtrForItem(TriggerSigTime, AnyMenuInfo), &menuToggleFastTime, InfoLocation),
+        menuTriggerSigLocation(InfoPtrForItem(TriggerSigLocation, AnyMenuInfo), nullptr, InfoLocation),
+        menuTriggerSigTime(InfoPtrForItem(TriggerSigTime, AnyMenuInfo), &menuTriggerSigLocation, InfoLocation),
         menuTriggerSDCleanup(InfoPtrForItem(TriggerSDCleanup, AnyMenuInfo), &menuTriggerSigTime, InfoLocation),
         menuTriggerLowMem(InfoPtrForItem(TriggerLowMem, AnyMenuInfo), &menuTriggerSDCleanup, InfoLocation),
         menuTriggerAutosave(InfoPtrForItem(TriggerAutosave, AnyMenuInfo), &menuTriggerLowMem, InfoLocation),
-        menuBackDebug(InfoPtrForItem(Debug, SubMenuInfo), &menuTriggerAutosave, InfoLocation),
+        menuSimhubConnected(InfoPtrForItem(SimhubConnected, BooleanMenuInfo), false, &menuTriggerAutosave, InfoLocation),
+        menuBackDebug(InfoPtrForItem(Debug, SubMenuInfo), &menuSimhubConnected, InfoLocation),
         menuDebug(InfoPtrForItem(Debug, SubMenuInfo), &menuBackDebug, &menuBackToOverview, InfoLocation),
         menuInformation(InfoPtrForItem(Information, AnyMenuInfo), &menuDebug, InfoLocation),
     #else
@@ -178,12 +184,12 @@ HydroHomeMenuItems::HydroHomeMenuItems() :
 {
     menuBackToOverview.setReadOnly(true);
     #ifdef HYDRO_UI_ENABLE_DEBUG_MENU
-        menuToggleBadConn.setReadOnly(true);
-        menuToggleFastTime.setReadOnly(true);
+        menuTriggerSigLocation.setReadOnly(true);
         menuTriggerSigTime.setReadOnly(true);
         menuTriggerSDCleanup.setReadOnly(true);
         menuTriggerLowMem.setReadOnly(true);
         menuTriggerAutosave.setReadOnly(true);
+        menuSimhubConnected.setReadOnly(true);
     #endif
     menuInformation.setReadOnly(true);
     menuCalibrations.setReadOnly(true);

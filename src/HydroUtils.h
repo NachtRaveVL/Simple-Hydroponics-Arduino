@@ -161,11 +161,9 @@ inline time_t unixDayStart(time_t unixTime = unixNow());
 // Returns local DateTime (offset by system TZ) of when today started.
 inline DateTime localDayStart(time_t unixTime = unixNow());
 // Sets global RTC current time to passed unix/UTC time_t.
-// Returns update success after calling appropriate system notifiers.
-inline bool setUnixTime(time_t unixTime);
+inline void setUnixTime(time_t unixTime, bool isSigTime = false);
 // Sets global RTC current time to passed local DateTime (offset by system TZ).
-// Returns update success after calling appropriate system notifiers.
-inline bool setLocalTime(DateTime localTime);
+inline void setLocalTime(DateTime localTime, bool isSigTime = false);
 
 // Returns a proper filename for a storage monitoring file (log, data, etc) that uses YYMMDD as filename.
 extern String getYYMMDDFilename(String prefix, String ext);

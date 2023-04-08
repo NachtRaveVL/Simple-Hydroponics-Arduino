@@ -333,13 +333,17 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             static const PROGMEM AnyMenuInfo flashUIStr_Item_Reservoirs = { "Reservoirs", 23, NO_ADDRESS, 0, gotoScreen };
             return (const char *)&flashUIStr_Item_Reservoirs;
         } break;
+        case HUIStr_Item_Scheduling: {
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_Scheduling = { "Scheduling", 25, NO_ADDRESS, 0, gotoScreen };
+            return (const char *)&flashUIStr_Item_Scheduling;
+        } break;
         case HUIStr_Item_SDCard: {
             static const char flashUIStr_Item_SDCard[] PROGMEM = {"SD Card"};
             return flashUIStr_Item_SDCard;
         } break;
-        case HUIStr_Item_Scheduling: {
-            static const PROGMEM AnyMenuInfo flashUIStr_Item_Scheduling = { "Scheduling", 25, NO_ADDRESS, 0, gotoScreen };
-            return (const char *)&flashUIStr_Item_Scheduling;
+        case HUIStr_Item_SimhubConnected: {
+            static const PROGMEM BooleanMenuInfo flashUIStr_Item_SimhubConnected = { "Simhub Connected", 60, NO_ADDRESS, 1, NO_CALLBACK, NAMING_CHECKBOX };
+            return (const char *)&flashUIStr_Item_SimhubConnected;
         } break;
         case HUIStr_Item_Sensors: {
             static const PROGMEM AnyMenuInfo flashUIStr_Item_Sensors = { "Sensors", 21, NO_ADDRESS, 0, gotoScreen };
@@ -373,29 +377,25 @@ const char *pgmAddrForStr(HydroUI_String strNum)
             static const char flashUIStr_Item_TimeZone[] PROGMEM = {"Time Zone"};
             return flashUIStr_Item_TimeZone;
         } break;
-        case HUIStr_Item_ToggleBadConn: {
-            static const PROGMEM BooleanMenuInfo flashUIStr_Item_ToggleBadConn = { "Toggle BadConn", 65, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
-            return (const char *)&flashUIStr_Item_ToggleBadConn;
-        } break;
-        case HUIStr_Item_ToggleFastTime: {
-            static const PROGMEM BooleanMenuInfo flashUIStr_Item_ToggleFastTime = { "Toggle FastTime", 64, NO_ADDRESS, 1, debugAction, NAMING_ON_OFF };
-            return (const char *)&flashUIStr_Item_ToggleFastTime;
-        } break;
         case HUIStr_Item_TriggerAutosave: {
-            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerAutosave = { "Trigger Autosave", 60, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerAutosave = { "Trigger Autosave", 61, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerAutosave;
         } break;
         case HUIStr_Item_TriggerLowMem: {
-            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerLowMem = { "Trigger LowMem", 61, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerLowMem = { "Trigger LowMem", 62, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerLowMem;
         } break;
         case HUIStr_Item_TriggerSDCleanup: {
-            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerSDCleanup = { "Trigger SDCleanup", 62, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerSDCleanup = { "Trigger SDCleanup", 63, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerSDCleanup;
         } break;
         case HUIStr_Item_TriggerSigTime: {
-            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerSigTime = { "Trigger SigTime", 63, NO_ADDRESS, 0, debugAction };
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerSigTime = { "Trigger SigTime", 64, NO_ADDRESS, 0, debugAction };
             return (const char *)&flashUIStr_Item_TriggerSigTime;
+        } break;
+        case HUIStr_Item_TriggerSigLocation: {
+            static const PROGMEM AnyMenuInfo flashUIStr_Item_TriggerSigLocation = { "Trigger SigLocation", 65, NO_ADDRESS, 0, debugAction };
+            return (const char *)&flashUIStr_Item_TriggerSigLocation;
         } break;
         case HUIStr_Item_Uptime: {
             static const char flashUIStr_Item_Uptime[] PROGMEM = {"Uptime"};

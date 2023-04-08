@@ -176,32 +176,6 @@ typedef Adafruit_GPS GPSClass;
 #define HYDRO_USE_GUI
 #endif
 
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SPI)) && (SPI_INTERFACES_COUNT > 0 || SPI_HOWMANY > 0)
-#define HYDRO_USE_SPI                   &SPI
-#else
-#define HYDRO_USE_SPI                   nullptr
-#endif
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SPI1)) && (SPI_INTERFACES_COUNT > 1 || SPI_HOWMANY > 1)
-#define HYDRO_USE_SPI1                  &SPI1
-#else
-#define HYDRO_USE_SPI1                  nullptr
-#endif
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_TWOWIRE)) && (WIRE_INTERFACES_COUNT > 0 || WIRE_HOWMANY > 0)
-#define HYDRO_USE_WIRE                  &Wire
-#else
-#define HYDRO_USE_WIRE                  nullptr
-#endif
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_TWOWIRE1)) && (WIRE_INTERFACES_COUNT > 1 || WIRE_HOWMANY > 1)
-#define HYDRO_USE_WIRE1                 &Wire1
-#else
-#define HYDRO_USE_WIRE1                 nullptr
-#endif
-#if !(defined(NO_GLOBAL_INSTANCES) || defined(NO_GLOBAL_SERIAL1)) && (SERIAL_HOWMANY > 1 || defined(HWSERIAL1) || defined(HAVE_HWSERIAL1) || defined(PIN_SERIAL1_RX) || defined(SERIAL2_RX) || defined(Serial1))
-#define HYDRO_USE_SERIAL1               &Serial1
-#else
-#define HYDRO_USE_SERIAL1               nullptr
-#endif
-
 #include "HydroDefines.h"
 #include "shared/HydroUIDefines.h"
 
@@ -358,10 +332,10 @@ public:
 
 #ifdef HYDRO_USE_GUI
     // Enables UI to run with passed instance.
-    // Minimal/RO UI only allows the user to edit existing objects, not create nor delete them.
-    // Full/RW UI allows the user to add/remove system objects, customize features, change settings, etc.
+    // Minimal/RO UI only allows the user to edit existing objects, has less run-time customizable features, etc.
+    // Full/RW UI allows the user to add/remove system objects, has more run-time customize features, etc.
     // Note: Be sure to manually include the appropriate UI system header file (e.g. #include "min/HydruinoUI.h") in Arduino sketch.
-    inline bool enableUI(HydroUIInterface *ui) { _activeUIInstance = ui; _uiData = ui->init(_uiData); return ui->begin(); }
+    inline bool enableUI(HydroUIInterface *ui) { _activeUIInstance = ui; _uiData = ui->init(_uiData); ui->begin(); return (bool)_uiData; }
 #endif
 
     // Mutators.
@@ -405,6 +379,8 @@ public:
 #endif
     // Sets system location (lat/long/alt, note: only triggers update if significant or forced)
     void setSystemLocation(double latitude, double longitude, double altitude = DBL_UNDEF, bool isSigChange = false);
+    // Sets system location (Location data, note: only triggers update if significant or forced)
+    inline void setSystemLocation(Location location, bool isSigChange = false) { setSystemLocation(location.latitude, location.longitude, location.altitude, isSigChange); }
 
     // Accessors.
 
@@ -501,14 +477,6 @@ public:
     // System location (lat/long/alt)
     Location getSystemLocation() const;
 
-    // Misc.
-
-    // Called to notify system when RTC time is updated (also clears RTC battery failure flag)
-    void notifyRTCTimeUpdated();
-
-    // Called by scheduler to announce that date conditions have changed (significant time event)
-    void notifyDayChanged();
-
 protected:
     static Hydruino *_activeInstance;                       // Current active instance (set after init, weak)
 #ifdef HYDRO_USE_GUI
@@ -580,16 +548,11 @@ protected:
     void commonPostInit();
     void commonPostSave();
 
+    friend void handleInterrupt(pintype_t pin);
     friend SharedPtr<HydroObjInterface> HydroDLinkObject::resolveObject();
     friend void controlLoop();
     friend void dataLoop();
     friend void miscLoop();
-    friend void handleInterrupt(pintype_t pin);
-
-    void checkFreeMemory();
-    void broadcastLowMemory();
-    void checkFreeSpace();
-    void checkAutosave();
 
     friend Hydruino *::getController();
     friend HydroScheduler *::getScheduler();
@@ -602,6 +565,18 @@ protected:
     friend class HydroScheduler;
     friend class HydroLogger;
     friend class HydroPublisher;
+
+public: // consider protected
+    void checkFreeMemory();
+    void checkFreeSpace();
+    void checkAutosave();
+
+    inline void performAutosave();
+    inline void broadcastLowMemory();
+    inline void notifyRTCTimeUpdated();
+    inline void broadcastDateChanged();
+    inline void notifySignificantTime(time_t time);
+    inline void notifySignificantLocation(Location loc);
 };
 
 // Template implementations

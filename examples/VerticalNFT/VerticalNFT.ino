@@ -107,7 +107,7 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 // UI Settings
 #define SETUP_UI_LOGIC_LEVEL            ACT_LOW         // I/O signaling logic active level (ACT_LOW, ACT_HIGH)
 #define SETUP_UI_ALLOW_INTERRUPTS       true            // Allow interrupt driven I/O if able, else force polling
-#define SETUP_UI_USE_TCUNICODE_FONTS    false           // Use tcUnicode fonts instead of gfx-lib specific fonts, if using graphical display
+#define SETUP_UI_USE_TCUNICODE_FONTS    false           // Use tcUnicode fonts over GFXfont (Adafruit) fonts, if using graphical color display
 #define SETUP_UI_USE_BUFFERED_VRAM      HAS_LARGE_SRAM  // Use sprite-sized buffered video RAM for smooth animations, if large SRAM
 #define SETUP_UI_IS_DFROBOTSHIELD       false           // Using DFRobotShield as preset (SETUP_CTRL_INPUT_PINS may be left {-1})
 
@@ -832,31 +832,24 @@ inline void setupUI()
             uiDispSetup = UIDisplaySetup::usingDFRobotShield();
         #else
             switch (hydroController.getControlInputMode()) {
-                case Hydro_ControlInputMode_RotaryEncoderOk:
-                case Hydro_ControlInputMode_RotaryEncoderOkLR:
+                case Hydro_ControlInputMode_RotaryEncoderOk: case Hydro_ControlInputMode_RotaryEncoderOkLR:
                     uiCtrlSetup = UIControlSetup(RotaryControlSetup(JOIN(Hydro_EncoderSpeed,SETUP_UI_ENC_ROTARY_SPEED)));
                     break;
-                case Hydro_ControlInputMode_UpDownButtonsOk:
-                case Hydro_ControlInputMode_UpDownButtonsOkLR:
+                case Hydro_ControlInputMode_UpDownButtonsOk: case Hydro_ControlInputMode_UpDownButtonsOkLR:
                     uiCtrlSetup = UIControlSetup(ButtonsControlSetup(SETUP_UI_KEY_REPEAT_SPEED));
                     break;
-                case Hydro_ControlInputMode_UpDownESP32TouchOk:
-                case Hydro_ControlInputMode_UpDownESP32TouchOkLR:
+                case Hydro_ControlInputMode_UpDownESP32TouchOk: case Hydro_ControlInputMode_UpDownESP32TouchOkLR:
                     uiCtrlSetup = UIControlSetup(ESP32TouchControlSetup(SETUP_UI_KEY_REPEAT_SPEED, SETUP_UI_ESP32TOUCH_SWITCH, JOIN(Hydro_ESP32Touch_HighRef,SETUP_UI_ESP32TOUCH_HVOLTS), JOIN(Hydro_ESP32Touch_LowRef,SETUP_UI_ESP32TOUCH_LVOLTS), JOIN(Hydro_ESP32Touch_HighRefAtten,SETUP_UI_ESP32TOUCH_HVATTEN)));
                     break;
                 case Hydro_ControlInputMode_AnalogJoystickOk:
                     uiCtrlSetup = UIControlSetup(JoystickControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_JS_ACCELERATION));
                     break;
                 case Hydro_ControlInputMode_Matrix2x2UpDownButtonsOkL:
-                case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk:
-                case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
-                case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk:
-                case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR:
+                case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOk: case Hydro_ControlInputMode_Matrix3x4Keyboard_OptRotEncOkLR:
+                case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOk: case Hydro_ControlInputMode_Matrix4x4Keyboard_OptRotEncOkLR:
                     uiCtrlSetup = UIControlSetup(MatrixControlSetup(SETUP_UI_KEY_REPEAT_DELAY, SETUP_UI_KEY_REPEAT_INTERVAL, JOIN(Hydro_EncoderSpeed,SETUP_UI_ENC_ROTARY_SPEED)));
                     break;
-                case Hydro_ControlInputMode_ResistiveTouch:
-                case Hydro_ControlInputMode_TouchScreen:
-                case Hydro_ControlInputMode_TFTTouch:
+                case Hydro_ControlInputMode_ResistiveTouch: case Hydro_ControlInputMode_TouchScreen: case Hydro_ControlInputMode_TFTTouch:
                     #ifndef HYDRO_UI_ENABLE_XPT2046TS
                         uiCtrlSetup = UIControlSetup(TouchscreenSetup(JOIN(Hydro_TouchscreenOrientation,SETUP_UI_TOUCHSCREEN_ORIENT)));
                     #else
@@ -866,24 +859,14 @@ inline void setupUI()
                 default: break;
             }
             switch (hydroController.getDisplayOutputMode()) {
-                case Hydro_DisplayOutputMode_LCD16x2_EN:
-                case Hydro_DisplayOutputMode_LCD16x2_RS:
-                case Hydro_DisplayOutputMode_LCD20x4_EN:
-                case Hydro_DisplayOutputMode_LCD20x4_RS:
+                case Hydro_DisplayOutputMode_LCD16x2_EN: case Hydro_DisplayOutputMode_LCD16x2_RS:
+                case Hydro_DisplayOutputMode_LCD20x4_EN: case Hydro_DisplayOutputMode_LCD20x4_RS:
                     uiDispSetup = UIDisplaySetup(LCDDisplaySetup(JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE)));
                     break;
-                case Hydro_DisplayOutputMode_SSD1305:
-                case Hydro_DisplayOutputMode_SSD1305_x32Ada:
-                case Hydro_DisplayOutputMode_SSD1305_x64Ada:
-                case Hydro_DisplayOutputMode_SSD1306:
-                case Hydro_DisplayOutputMode_SH1106:
-                case Hydro_DisplayOutputMode_CustomOLED:
-                case Hydro_DisplayOutputMode_SSD1607:
-                case Hydro_DisplayOutputMode_IL3820:
-                case Hydro_DisplayOutputMode_IL3820_V2:
-                case Hydro_DisplayOutputMode_ST7735:
-                case Hydro_DisplayOutputMode_ST7789:
-                case Hydro_DisplayOutputMode_ILI9341:
+                case Hydro_DisplayOutputMode_SSD1305: case Hydro_DisplayOutputMode_SSD1305_x32Ada: case Hydro_DisplayOutputMode_SSD1305_x64Ada:
+                case Hydro_DisplayOutputMode_SSD1306: case Hydro_DisplayOutputMode_SH1106: case Hydro_DisplayOutputMode_CustomOLED:
+                case Hydro_DisplayOutputMode_SSD1607: case Hydro_DisplayOutputMode_IL3820: case Hydro_DisplayOutputMode_IL3820_V2:
+                case Hydro_DisplayOutputMode_ST7735: case Hydro_DisplayOutputMode_ST7789: case Hydro_DisplayOutputMode_ILI9341:
                     uiDispSetup = UIDisplaySetup(PixelDisplaySetup(JOIN(Hydro_DisplayRotation,SETUP_UI_GFX_ROTATION), SETUP_UI_GFX_DC_PIN, SETUP_UI_GFX_RESET_PIN, SETUP_UI_GFX_BACKLIGHT_PIN, JOIN(Hydro_BacklightMode,SETUP_UI_GFX_BACKLIGHT_MODE), DAC_RESOLUTION,
 #ifdef ESP32
                                                                    SETUP_UI_GFX_BACKLIGHT_ESP_CHN,
@@ -972,7 +955,30 @@ inline void setupUI()
                 #elif IS_SETUP_AS(SETUP_CONTROL_IN_MODE, TFTTouch)
                     ui->allocateTFTTouchControl();
                 #endif
+            #endif
 
+            #ifdef SETUP_UI_USE_CLOCK_FONT
+                ui->setupOverviewClockFont(&SETUP_UI_USE_CLOCK_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_DETAIL_FONT
+                ui->setupOverviewDetailFont(&SETUP_UI_USE_DETAIL_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_OVERVIEW_FONT
+                ui->setupOverviewFont(&SETUP_UI_USE_OVERVIEW_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_ITEM_FONT
+                ui->setupMenuItemFont(&SETUP_UI_USE_ITEM_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_TITLE_FONT
+                ui->setupMenuTitleFont(&SETUP_UI_USE_TITLE_FONT);
+            #endif
+            #ifdef SETUP_UI_USE_MENU_FONT
+                ui->setupMenuFont(&SETUP_UI_USE_MENU_FONT);
+            #endif
+
+            hydroController.enableUI(ui);
+
+            #if IS_SETUP_AS(SETUP_SYS_UI_MODE, Minimal)
                 #if IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Serial) || IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, UART)
                     ui->addSerialRemote(UARTDeviceSetup(&SETUP_UI_REMOTE1_UART));
                 #elif IS_SETUP_AS(SETUP_UI_REMOTE1_TYPE, Simhub)
@@ -999,25 +1005,6 @@ inline void setupUI()
                     ui->addRemote(JOIN(Hydro_RemoteControl,SETUP_UI_REMOTE2_TYPE), UARTDeviceSetup(&SETUP_UI_REMOTE2_UART), SETUP_UI_RC_NETWORKING_PORT);
                 #endif
             #endif
-            #ifdef SETUP_UI_USE_CLOCK_FONT
-                ui->setOverviewClockFont(&SETUP_UI_USE_CLOCK_FONT);
-            #endif
-            #ifdef SETUP_UI_USE_DETAIL_FONT
-                ui->setOverviewDetailFont(&SETUP_UI_USE_DETAIL_FONT);
-            #endif
-            #ifdef SETUP_UI_USE_OVERVIEW_FONT
-                ui->setOverviewFont(&SETUP_UI_USE_OVERVIEW_FONT);
-            #endif
-            #ifdef SETUP_UI_USE_ITEM_FONT
-                ui->setMenuItemFont(&SETUP_UI_USE_ITEM_FONT);
-            #endif
-            #ifdef SETUP_UI_USE_TITLE_FONT
-                ui->setMenuTitleFont(&SETUP_UI_USE_TITLE_FONT);
-            #endif
-            #ifdef SETUP_UI_USE_MENU_FONT
-                ui->setMenuFont(&SETUP_UI_USE_MENU_FONT);
-            #endif
-            hydroController.enableUI(ui);
         }
     #endif
 }

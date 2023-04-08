@@ -83,7 +83,7 @@ protected:
 
     void updateDayTracking();
     void performScheduling();
-    void broadcastDayChange();
+    void broadcastDateChange();
 };
 
 

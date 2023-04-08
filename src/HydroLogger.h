@@ -76,11 +76,12 @@ public:
     inline Hydro_LogLevel getLogLevel() const;
 
     inline bool isLoggingEnabled() const;
+    inline time_t getSystemInit() const { return _initTime; }
     inline time_t getSystemUptime() const { return unixNow() - (_initTime ?: SECS_YR_2000); }
 
     Signal<const HydroLogEvent, HYDRO_LOG_SIGNAL_SLOTS> &getLogSignal();
 
-    void notifyDayChanged();
+    void notifyDateChanged();
 
 protected:
 #if HYDRO_SYS_LEAVE_FILES_OPEN
@@ -97,11 +98,13 @@ protected:
 
     friend class Hydruino;
 
+    void log(const HydroLogEvent &event);
+
+public: // consider protected
     inline HydroLoggerSubData *loggerData() const;
     inline bool hasLoggerData() const;
 
-    inline void updateInitTracking() { _initTime = unixNow(); }
-    void log(const HydroLogEvent &event);
+    inline void updateInitTracking(time_t time = unixNow()) { _initTime = time; }
     void cleanupOldestLogs(bool force = false);
 };
 

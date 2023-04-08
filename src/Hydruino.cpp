@@ -1223,7 +1223,7 @@ void Hydruino::setSystemLocation(double latitude, double longitude, double altit
         _systemData->latitude = latitude;
         _systemData->longitude = longitude;
         _systemData->altitude = altitude;
-        if (isSigChange) { _systemData->bumpRevisionIfNeeded(); }
+        if (isSigChange) { notifySignificantLocation(*((Location *)&_systemData->latitude)); }
     }
 }
 
@@ -1508,43 +1508,11 @@ Location Hydruino::getSystemLocation() const
     return _systemData ? Location(_systemData->latitude, _systemData->longitude, _systemData->altitude) : Location();
 }
 
-void Hydruino::notifyRTCTimeUpdated()
-{
-    _rtcBattFail = false;
-    _lastAutosave = 0;
-    logger.updateInitTracking();
-}
-
-void Hydruino::notifyDayChanged()
-{
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        if (iter->second->isReservoirType()) {
-            auto reservoir = static_pointer_cast<HydroReservoir>(iter->second);
-
-            if (reservoir && reservoir->isFeedClass()) {
-                auto feedReservoir = static_pointer_cast<HydroFeedReservoir>(iter->second);
-                if (feedReservoir) {feedReservoir->notifyDayChanged(); }
-            }
-        } else if (iter->second->isCropType()) {
-            auto crop = static_pointer_cast<HydroCrop>(iter->second);
-
-            if (crop) { crop->notifyDayChanged(); }
-        }
-    }
-}
-
 void Hydruino::checkFreeMemory()
 {
     auto memLeft = freeMemory();
     if (memLeft != -1 && memLeft < HYDRO_SYS_FREERAM_LOWBYTES) {
         broadcastLowMemory();
-    }
-}
-
-void Hydruino::broadcastLowMemory()
-{
-    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
-        iter->second->handleLowMemory();
     }
 }
 
@@ -1566,7 +1534,7 @@ void Hydruino::checkFreeSpace()
     if ((logger.isLoggingEnabled() || publisher.isPublishingEnabled()) &&
         (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (HYDRO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
         if (logger.isLoggingToSDCard() || publisher.isPublishingToSDCard()) {
-            uint32_t freeKB = getSDCardFreeSpace() >> 10;
+            uint32_t freeKB = getSDCardFreeSpace();
             while (freeKB < HYDRO_SYS_FREESPACE_LOWSPACE) {
                 logger.cleanupOldestLogs(true);
                 publisher.cleanupOldestData(true);
@@ -1581,33 +1549,6 @@ void Hydruino::checkFreeSpace()
 void Hydruino::checkAutosave()
 {
     if (isAutosaveEnabled() && unixNow() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
-        for (int index = 0; index < 2; ++index) {
-            switch (index == 0 ? _systemData->autosaveEnabled : _systemData->autosaveFallback) {
-                case Hydro_Autosave_EnabledToSDCardJson:
-                    saveToSDCard(JSON);
-                    break;
-                case Hydro_Autosave_EnabledToSDCardRaw:
-                    saveToSDCard(RAW);
-                    break;
-                case Hydro_Autosave_EnabledToEEPROMJson:
-                    saveToEEPROM(JSON);
-                    break;
-                case Hydro_Autosave_EnabledToEEPROMRaw:
-                    saveToEEPROM(RAW);
-                    break;
-                case Hydro_Autosave_EnabledToWiFiStorageJson:
-                    #ifdef HYDRO_USE_WIFI_STORAGE
-                        saveToWiFiStorage(JSON);
-                    #endif
-                    break;
-                case Hydro_Autosave_EnabledToWiFiStorageRaw:
-                    #ifdef HYDRO_USE_WIFI_STORAGE
-                        saveToWiFiStorage(RAW);
-                    #endif
-                case Hydro_Autosave_Disabled:
-                    break;
-            }
-        }
-        _lastAutosave = unixNow();
+        performAutosave();
     }
 }

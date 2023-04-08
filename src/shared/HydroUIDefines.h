@@ -39,19 +39,20 @@
 
 #define HYDRO_UI_KEYREPEAT_SPEED        20                  // Default key press repeat speed, in ticks (lower = faster)
 #define HYDRO_UI_REMOTESERVER_PORT      3333                // Default remote control server's listening port
-#define HYDRO_UI_2X2MATRIX_KEYS         "#BA*"              // 2x2 matrix keyboard keys (R/S1,D/S2,U/S3,L/S4), forced PROGMEM
-#define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // 3x4 matrix keyboard keys (123,456,789,*0#), forced PROGMEM
-#define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // 4x4 matrix keyboard keys (123A,456B,789C,*0#D), forced PROGMEM
+#define HYDRO_UI_2X2MATRIX_KEYS         "#BA*"              // 2x2 matrix keyboard keys (R/S1,D/S2,U/S3,L/S4), forced PROGMEM chars
+#define HYDRO_UI_3X4MATRIX_KEYS         "123456789*0#"      // 3x4 matrix keyboard keys (123,456,789,*0#), forced PROGMEM chars
+#define HYDRO_UI_4X4MATRIX_KEYS         "123A456B789C*0#D"  // 4x4 matrix keyboard keys (123A,456B,789C,*0#D), forced PROGMEM chars
 #define HYDRO_UI_MATRIX_ACTIONS         "#*AB"              // Assigned enter/select char, delete/exit char, back char, and next char on keyboard, forced PROGMEM
 #define HYDRO_UI_TFTTOUCH_USES_RAW      false               // Raw touch usage for TFTTouch
 
-#define HYDRO_UI_GFX_VARS_USES_SLIDER   true                // Default analog slider usage for graphical displays displaying variable value ranges
+#define HYDRO_UI_GFX_USE_ANALOG_SLIDER  true                // Default analog slider usage for graphical displays displaying variable value ranges
 #define HYDRO_UI_GFX_USE_EDITING_ICONS  false               // Default editing icon usage for graphical displays
-#define HYDRO_UI_MENU_TITLE_MAG_LEVEL   2                   // Menu title font magnification level
-#define HYDRO_UI_MENU_ITEM_MAG_LEVEL    2                   // Menu item font magnification level
-#define HYDRO_UI_IOT_MONITOR_TEXT       "IoT Monitor"       // Menu IoT monitor item text, forced PROGMEM
-#define HYDRO_UI_AUTHENTICATOR_TEXT     "Authenticator"     // Menu authenticator item text, forced PROGMEM
-#define HYDRO_UI_SIMHUB_STATUS_MENU_ID  INVALID_MENU_ID     // Simhub remote status menu item ID
+#define HYDRO_UI_MENU_TITLE_MAG_LEVEL   2                   // Menu title font magnification level (int only)
+#define HYDRO_UI_MENU_ITEM_MAG_LEVEL    2                   // Menu item font magnification level (int only)
+#define HYDRO_UI_IOT_MONITOR_TEXT       "IoT Monitor"       // Menu IoT monitor item text, forced PROGMEM chars
+#define HYDRO_UI_AUTHENTICATOR_TEXT     "Authenticator"     // Menu authenticator item text, forced PROGMEM chars
+#define HYDRO_UI_SIMHUB_STATUS_MENU_ID  60                  // Simhub remote status boolean menu item ID
+#define HYDRO_UI_OVERVIEW_ACT_MENU_ID   7                   // Overview action menu item ID
 
 // Default graphical display theme base (CoolBlue, DarkMode) - keep on separate lines
 #define HYDRO_UI_GFX_DISP_THEME_BASE    CoolBlue            

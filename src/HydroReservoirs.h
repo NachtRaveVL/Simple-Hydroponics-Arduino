@@ -182,7 +182,7 @@ public:
 
     inline void notifyFeedingBegan() { _numFeedingsToday++; _lastFeedingTime = unixNow(); }
     inline void notifyFeedingEnded() { ; }
-    inline void notifyDayChanged() { _numFeedingsToday = 0; }
+    inline void notifyDateChanged() { _numFeedingsToday = 0; }
 
 protected:
     time_t _lastChangeTime;                                 // Last water change/maintenance date (recycling systems only, UTC)
