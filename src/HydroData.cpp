@@ -6,56 +6,64 @@
 #include "Hydruino.h"
 #include "HydroCoreLogic.h"
 
+static size_t skipBinaryStreamBytes(Stream *streamIn, size_t bytesToSkip)
+{
+    size_t skippedBytes = 0;
+    uint8_t skipBuffer[16];
+
+    while (skippedBytes < bytesToSkip) {
+        size_t chunkSize = bytesToSkip - skippedBytes;
+        if (chunkSize > sizeof(skipBuffer)) { chunkSize = sizeof(skipBuffer); }
+
+        const size_t skipped = streamIn->readBytes(skipBuffer, chunkSize);
+        skippedBytes += skipped;
+        if (skipped != chunkSize) { break; }
+    }
+
+    return skippedBytes;
+}
+
 size_t serializeDataToBinaryStream(const HydroData *data, Stream *streamOut, size_t skipBytes)
 {
-    return streamOut->write((const uint8_t *)((intptr_t)data + skipBytes), data->_size - skipBytes);
+    return streamOut->write((const uint8_t *)data + skipBytes, data->_size - skipBytes);
 }
 
 size_t deserializeDataFromBinaryStream(HydroData *data, Stream *streamIn, size_t skipBytes)
 {
-    return streamIn->readBytes((uint8_t *)((intptr_t)data + skipBytes), data->_size - skipBytes);
+    return streamIn->readBytes((uint8_t *)data + skipBytes, data->_size - skipBytes);
 }
 
 HydroData *newDataFromBinaryStream(Stream *streamIn)
 {
     HydroData baseDecode;
     const size_t baseSize = baseDecode._size;
+    const size_t basePayloadSize = baseSize - sizeof(void*);
     size_t readBytes = deserializeDataFromBinaryStream(&baseDecode, streamIn, sizeof(void*));
     const size_t serializedSize = baseDecode._size;
-    HYDRO_SOFT_ASSERT(readBytes == baseSize - sizeof(void*) && serializedSize >= baseSize, SFP(HStr_Err_ImportFailure));
+    const bool baseReadValid = readBytes == basePayloadSize && serializedSize >= baseSize;
+    HYDRO_SOFT_ASSERT(baseReadValid, SFP(HStr_Err_ImportFailure));
+    if (!baseReadValid) { return nullptr; }
 
-    if (readBytes == baseSize - sizeof(void*) && serializedSize >= baseSize) {
-        HydroData *data = _allocateDataFromBaseDecode(baseDecode);
-        HYDRO_SOFT_ASSERT(data, SFP(HStr_Err_AllocationFailure));
+    HydroData *data = _allocateDataFromBaseDecode(baseDecode);
+    HYDRO_SOFT_ASSERT(data, SFP(HStr_Err_AllocationFailure));
+    if (!data) { return nullptr; }
 
-        if (data) {
-            auto readPlan = hydroBinaryDataReadPlan(serializedSize, data->_size, baseSize);
-            if (readPlan.copyBytes) {
-                readBytes += streamIn->readBytes((uint8_t *)data + baseSize, readPlan.copyBytes);
-            }
-
-            size_t skippedBytes = 0;
-            uint8_t skipBuffer[16];
-            while (skippedBytes < readPlan.skipBytes) {
-                size_t skipBytes = readPlan.skipBytes - skippedBytes;
-                if (skipBytes > sizeof(skipBuffer)) { skipBytes = sizeof(skipBuffer); }
-                size_t skipped = streamIn->readBytes(skipBuffer, skipBytes);
-                skippedBytes += skipped;
-                if (skipped != skipBytes) { break; }
-            }
-
-            HYDRO_SOFT_ASSERT(readBytes == baseSize - sizeof(void*) + readPlan.copyBytes &&
-                               skippedBytes == readPlan.skipBytes, SFP(HStr_Err_ImportFailure));
-            if (readBytes == baseSize - sizeof(void*) + readPlan.copyBytes && skippedBytes == readPlan.skipBytes) {
-                data->migrateFromBinaryVersion(baseDecode._version);
-                return data;
-            }
-
-            delete data;
-        }
+    const auto readPlan = hydroBinaryDataReadPlan(serializedSize, data->_size, baseSize);
+    if (readPlan.copyBytes) {
+        readBytes += streamIn->readBytes((uint8_t *)data + baseSize, readPlan.copyBytes);
     }
 
-    return nullptr;
+    const size_t skippedBytes = skipBinaryStreamBytes(streamIn, readPlan.skipBytes);
+    const bool payloadReadValid = readBytes == basePayloadSize + readPlan.copyBytes &&
+                                  skippedBytes == readPlan.skipBytes;
+    HYDRO_SOFT_ASSERT(payloadReadValid, SFP(HStr_Err_ImportFailure));
+    if (!payloadReadValid) {
+        delete data;
+        return nullptr;
+    }
+
+    data->migrateFromBinaryVersion(baseDecode._version);
+    return data;
 }
 
 HydroData *newDataFromJSONObject(JsonObjectConst &objectIn)

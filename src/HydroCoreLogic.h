@@ -10,19 +10,28 @@
 #include <stddef.h>
 #include <math.h>
 
+inline uint32_t hydroElapsedTime(uint32_t now, uint32_t start)
+{
+    return (uint32_t)(now - start);
+}
+
+inline bool hydroHasElapsed(uint32_t now, uint32_t start, uint32_t duration)
+{
+    return hydroElapsedTime(now, start) >= duration;
+}
+
 inline int hydroCropPhaseForWeek(int growWeek, const uint8_t *phaseDurationWeeks, int phaseCount)
 {
-    int phase = 0;
+    if (phaseCount <= 0) { return 0; }
+
     int phaseEndWeek = 0;
 
     for (int phaseIndex = 0; phaseIndex < phaseCount; ++phaseIndex) {
         phaseEndWeek += phaseDurationWeeks[phaseIndex];
-        if (growWeek >= phaseEndWeek) {
-            phase = phaseIndex + 1;
-        } else { break; }
+        if (growWeek < phaseEndWeek) { return phaseIndex; }
     }
 
-    return phase;
+    return phaseCount;
 }
 
 inline bool hydroUpdateStableBinaryState(bool acceptedState, bool sampledState, uint32_t nowMillis,
@@ -38,7 +47,7 @@ inline bool hydroUpdateStableBinaryState(bool acceptedState, bool sampledState, 
         pendingState = sampledState;
         pendingStateStart = nowMillis;
         hasPendingState = true;
-    } else if ((uint32_t)(nowMillis - pendingStateStart) >= stableTimeMillis) {
+    } else if (hydroHasElapsed(nowMillis, pendingStateStart, stableTimeMillis)) {
         hasPendingState = false;
         return sampledState;
     }
@@ -50,16 +59,16 @@ inline uint32_t hydroFeedingIntervalSeconds(uint8_t feedingsPerDay, uint8_t feed
 {
     if (feedingsPerDay) {
         return (24UL * 60UL * 60UL) / feedingsPerDay;
-    } else if (feedingsPerWeek) {
-        return (7UL * 24UL * 60UL * 60UL) / feedingsPerWeek;
-    } else {
-        return (uint32_t)feedIntervalMins * 60UL;
     }
+    if (feedingsPerWeek) {
+        return (7UL * 24UL * 60UL * 60UL) / feedingsPerWeek;
+    }
+    return (uint32_t)feedIntervalMins * 60UL;
 }
 
 inline bool hydroFeedingDue(uint32_t now, uint32_t lastFeedingTime, uint32_t intervalSeconds)
 {
-    return intervalSeconds && (!lastFeedingTime || (uint32_t)(now - lastFeedingTime) >= intervalSeconds);
+    return intervalSeconds && (!lastFeedingTime || hydroHasElapsed(now, lastFeedingTime, intervalSeconds));
 }
 
 inline bool hydroTimedFeedingNeeded(uint32_t now, uint32_t lastFeedingTime, uint32_t feedDurationSeconds, uint32_t intervalSeconds)
@@ -67,13 +76,13 @@ inline bool hydroTimedFeedingNeeded(uint32_t now, uint32_t lastFeedingTime, uint
     if (!intervalSeconds) { return false; }
     if (!lastFeedingTime) { return true; }
 
-    uint32_t elapsed = (uint32_t)(now - lastFeedingTime);
+    const uint32_t elapsed = hydroElapsedTime(now, lastFeedingTime);
     return elapsed < feedDurationSeconds || elapsed >= intervalSeconds;
 }
 
 inline int hydroBalancingStateForValue(float value, float targetSetpoint, float targetRange)
 {
-    float halfTargetRange = fabsf(targetRange) * 0.5f;
+    const float halfTargetRange = fabsf(targetRange) * 0.5f;
     if (value < targetSetpoint - halfTargetRange) { return 0; }
     if (value > targetSetpoint + halfTargetRange) { return 2; }
     return 1;
@@ -92,14 +101,14 @@ inline float hydroEstimateDosingMillis(float targetSetpoint, float dosingValue, 
 {
     float dosing = baseDosingMillis;
     if (lastDosingMillis > 0.0f) {
-        float responsePerMs = fabsf(dosingValue - lastDosingValue) / lastDosingMillis;
+        const float responsePerMs = fabsf(dosingValue - lastDosingValue) / lastDosingMillis;
         if (responsePerMs > 0.000001f) {
             dosing = fabsf(targetSetpoint - dosingValue) / responsePerMs;
         }
     }
 
-    float minDosing = baseDosingMillis * minFraction;
-    float maxDosing = baseDosingMillis * maxFraction;
+    const float minDosing = baseDosingMillis * minFraction;
+    const float maxDosing = baseDosingMillis * maxFraction;
     if (dosing < minDosing) { dosing = minDosing; }
     if (dosing > maxDosing) { dosing = maxDosing; }
     return dosing;
@@ -115,9 +124,9 @@ inline HydroBinaryDataReadPlan hydroBinaryDataReadPlan(size_t serializedSize, si
 {
     if (serializedSize < baseSize || currentSize < baseSize) { return {0, 0}; }
 
-    size_t serializedRemaining = serializedSize - baseSize;
-    size_t currentRemaining = currentSize - baseSize;
-    size_t copyBytes = serializedRemaining < currentRemaining ? serializedRemaining : currentRemaining;
+    const size_t serializedRemaining = serializedSize - baseSize;
+    const size_t currentRemaining = currentSize - baseSize;
+    const size_t copyBytes = serializedRemaining < currentRemaining ? serializedRemaining : currentRemaining;
     return {copyBytes, serializedRemaining - copyBytes};
 }
 

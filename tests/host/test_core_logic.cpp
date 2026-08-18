@@ -9,10 +9,24 @@ static bool nearlyEqual(float lhs, float rhs, float eps = 0.001f)
     return std::fabs(lhs - rhs) <= eps;
 }
 
+static void testElapsedTime()
+{
+    assert(hydroElapsedTime(150, 100) == 50);
+    assert(!hydroHasElapsed(149, 100, 50));
+    assert(hydroHasElapsed(150, 100, 50));
+
+    const uint32_t start = UINT32_MAX - 24;
+    assert(hydroElapsedTime(25, start) == 50);
+    assert(!hydroHasElapsed(24, start, 50));
+    assert(hydroHasElapsed(25, start, 50));
+}
+
 static void testCropPhases()
 {
     const uint8_t phases[3] = {2, 4, 8};
 
+    assert(hydroCropPhaseForWeek(0, phases, 0) == 0);
+    assert(hydroCropPhaseForWeek(0, phases, -1) == 0);
     assert(hydroCropPhaseForWeek(0, phases, 3) == 0);
     assert(hydroCropPhaseForWeek(1, phases, 3) == 0);
     assert(hydroCropPhaseForWeek(2, phases, 3) == 1);
@@ -142,12 +156,16 @@ static void testBinaryDataReadPlan()
     auto newer = hydroBinaryDataReadPlan(120, 100, 20);
     assert(newer.copyBytes == 80 && newer.skipBytes == 20);
 
-    auto invalid = hydroBinaryDataReadPlan(10, 100, 20);
-    assert(invalid.copyBytes == 0 && invalid.skipBytes == 0);
+    auto invalidSerialized = hydroBinaryDataReadPlan(10, 100, 20);
+    assert(invalidSerialized.copyBytes == 0 && invalidSerialized.skipBytes == 0);
+
+    auto invalidCurrent = hydroBinaryDataReadPlan(100, 10, 20);
+    assert(invalidCurrent.copyBytes == 0 && invalidCurrent.skipBytes == 0);
 }
 
 int main()
 {
+    testElapsedTime();
     testBinaryDataReadPlan();
     testCropPhases();
     testFeedingCadence();
