@@ -151,7 +151,7 @@ Certain setups may require additional, and in some cases specialized, library de
 
 * **BSP_LCD** & **BSP Touch** (STM32746G-Discovery on STM32/mbed only): This particular setup can utilize a ChromaArt-based drawable (in place of U8g2Drawable) with STM32 LDTC frame buffer, and requires advanced user setup via the included `shared\tcMenu_Extra_BspUserSettings.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
 
-* **ST7789::CustomTFT**, **TFT_eSPI**: These options utilize the `TFT_GFX_WIDTH` and `TFT_GFX_HEIGHT` defines for the screen width/height (defaulting to TFT_eSPI's `TFT_WIDTH` and `TFT_HEIGHT` values if defined, else assuming standard 240x320), and should be either edited directly or defined through custom build defines. These values are statically linked and will require sketch modify/re-upload upon needing any changes.
+* **ST7789::CustomTFT** & **TFT_eSPI**: These options utilize the `TFT_GFX_WIDTH` and `TFT_GFX_HEIGHT` defines for the screen width/height (defaulting to TFT_eSPI's `TFT_WIDTH` and `TFT_HEIGHT` values if defined, else assuming standard 240x320), and should be either edited directly or defined through custom build defines. These values are statically linked and will require sketch modify/re-upload upon needing any changes.
 
 ### Initialization
 
