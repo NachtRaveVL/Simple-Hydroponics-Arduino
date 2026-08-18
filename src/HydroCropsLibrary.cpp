@@ -237,11 +237,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Anise);
             } break;
             case Hydro_CropType_Artichoke: {
-                static const char flashStr_Artichoke[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Artichoke\",\"cropName\":\"Artichoke\",\"totalGrowWeeks\":24,\"phaseDurationWeeks\":\"3,10,11\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,23\",\"airTempRange\":\"16,26\",\"co2Levels\":\"650,800\",\"flags\":\"perennial\"}"};
+                static const char flashStr_Artichoke[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Artichoke\",\"cropName\":\"Artichoke\",\"totalGrowWeeks\":30,\"phaseDurationWeeks\":\"10,12,8\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,23\",\"airTempRange\":\"16,26\",\"co2Levels\":\"650,800\",\"flags\":\"perennial\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Artichoke);
             } break;
             case Hydro_CropType_Arugula: {
-                static const char flashStr_Arugula[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Arugula\",\"cropName\":\"Arugula\",\"totalGrowWeeks\":6,\"phaseDurationWeeks\":\"1,3,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7.5\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Arugula[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Arugula\",\"cropName\":\"Arugula\",\"totalGrowWeeks\":5,\"phaseDurationWeeks\":\"1,3,1\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7.5\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Arugula);
             } break;
             case Hydro_CropType_Asparagus: {
@@ -249,11 +249,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Asparagus);
             } break;
             case Hydro_CropType_Basil: {
-                static const char flashStr_Basil[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Basil\",\"cropName\":\"Basil\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"2,5,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"1,1.6\",\"nightlyFeedRate\":1,\"waterTempRange\":\"19,23\",\"airTempRange\":\"18,26\",\"co2Levels\":\"600,750\",\"flags\":\"pruning\"}"};
+                static const char flashStr_Basil[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Basil\",\"cropName\":\"Basil\",\"totalGrowWeeks\":6,\"phaseDurationWeeks\":\"1,4,1\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"1,1.6\",\"nightlyFeedRate\":1,\"waterTempRange\":\"19,23\",\"airTempRange\":\"18,26\",\"co2Levels\":\"600,750\",\"flags\":\"pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Basil);
             } break;
             case Hydro_CropType_Bean: {
-                static const char flashStr_Bean[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Bean\",\"cropName\":\"Bean (common)\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6,6\",\"tdsRange\":\"2,4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"18,25\",\"co2Levels\":\"600,800\",\"flags\":\"pruning\"}"};
+                static const char flashStr_Bean[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Bean\",\"cropName\":\"Bean (common)\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6,6\",\"tdsRange\":\"2,4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"18,25\",\"co2Levels\":\"600,800\",\"flags\":\"pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Bean);
             } break;
             case Hydro_CropType_BeanBroad: {
@@ -261,7 +261,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_BeanBroad);
             } break;
             case Hydro_CropType_Beetroot: {
-                static const char flashStr_Beetroot[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Beetroot\",\"cropName\":\"Beetroot\",\"totalGrowWeeks\":9,\"phaseDurationWeeks\":\"2,5,2\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Beetroot[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Beetroot\",\"cropName\":\"Beetroot\",\"totalGrowWeeks\":9,\"phaseDurationWeeks\":\"1,6,2\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Beetroot);
             } break;
             case Hydro_CropType_BlackCurrant: {
@@ -273,19 +273,19 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Blueberry);
             } break;
             case Hydro_CropType_BokChoi: {
-                static const char flashStr_BokChoi[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BokChoi\",\"cropName\":\"Bok-choi\",\"totalGrowWeeks\":7,\"phaseDurationWeeks\":\"1,4,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"1.5,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_BokChoi[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BokChoi\",\"cropName\":\"Bok-choi\",\"totalGrowWeeks\":6,\"phaseDurationWeeks\":\"1,4,1\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"7,7\",\"tdsRange\":\"1.5,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_BokChoi);
             } break;
             case Hydro_CropType_Broccoli: {
-                static const char flashStr_Broccoli[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Broccoli\",\"cropName\":\"Broccoli\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.8\",\"tdsRange\":\"2.8,3.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Broccoli[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Broccoli\",\"cropName\":\"Broccoli\",\"totalGrowWeeks\":14,\"phaseDurationWeeks\":\"5,6,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.8\",\"tdsRange\":\"2.8,3.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Broccoli);
             } break;
             case Hydro_CropType_BrusselsSprout: {
-                static const char flashStr_BrusselsSprout[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BrusselsSprout\",\"cropName\":\"Brussell Sprouts\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"2.5,3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_BrusselsSprout[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"BrusselsSprout\",\"cropName\":\"Brussels Sprouts\",\"totalGrowWeeks\":19,\"phaseDurationWeeks\":\"5,7,7\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,7.5\",\"tdsRange\":\"2.5,3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_BrusselsSprout);
             } break;
             case Hydro_CropType_Cabbage: {
-                static const char flashStr_Cabbage[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cabbage\",\"cropName\":\"Cabbage\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,7\",\"tdsRange\":\"2.5,3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Cabbage[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cabbage\",\"cropName\":\"Cabbage\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"5,7,4\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,7\",\"tdsRange\":\"2.5,3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Cabbage);
             } break;
             case Hydro_CropType_Cannabis: {
@@ -293,11 +293,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Cannabis);
             } break;
             case Hydro_CropType_Capsicum: {
-                static const char flashStr_Capsicum[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Capsicum\",\"cropName\":\"Capsicum\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\"}"};
+                static const char flashStr_Capsicum[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Capsicum\",\"cropName\":\"Capsicum\",\"totalGrowWeeks\":18,\"phaseDurationWeeks\":\"8,5,5\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Capsicum);
             } break;
             case Hydro_CropType_Carrots: {
-                static const char flashStr_Carrots[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Carrots\",\"cropName\":\"Carrots\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"2,5,3\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"6.3,6.3\",\"tdsRange\":\"1.6,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Carrots[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Carrots\",\"cropName\":\"Carrots\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"1,6,3\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"6.3,6.3\",\"tdsRange\":\"1.6,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Carrots);
             } break;
             case Hydro_CropType_Catnip: {
@@ -305,11 +305,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Catnip);
             } break;
             case Hydro_CropType_Cauliflower: {
-                static const char flashStr_Cauliflower[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cauliflower\",\"cropName\":\"Cauliflower\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"0.5,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Cauliflower[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cauliflower\",\"cropName\":\"Cauliflower\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"5,8,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"0.5,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Cauliflower);
             } break;
             case Hydro_CropType_Celery: {
-                static const char flashStr_Celery[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Celery\",\"cropName\":\"Celery\",\"totalGrowWeeks\":14,\"phaseDurationWeeks\":\"2,6,6\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,6.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Celery[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Celery\",\"cropName\":\"Celery\",\"totalGrowWeeks\":27,\"phaseDurationWeeks\":\"11,12,4\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,6.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Celery);
             } break;
             case Hydro_CropType_Chamomile: {
@@ -325,19 +325,19 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Chives);
             } break;
             case Hydro_CropType_Cilantro: {
-                static const char flashStr_Cilantro[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cilantro\",\"cropName\":\"Cilantro\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,6.7\",\"tdsRange\":\"1.3,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Cilantro[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cilantro\",\"cropName\":\"Cilantro\",\"totalGrowWeeks\":9,\"phaseDurationWeeks\":\"1,5,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,6.7\",\"tdsRange\":\"1.3,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Cilantro);
             } break;
             case Hydro_CropType_Coriander: {
-                static const char flashStr_Coriander[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Coriander\",\"cropName\":\"Coriander\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.8,6.4\",\"tdsRange\":\"1.2,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Coriander[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Coriander\",\"cropName\":\"Coriander\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"1,6,5\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.8,6.4\",\"tdsRange\":\"1.2,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Coriander);
             } break;
             case Hydro_CropType_CornSweet: {
-                static const char flashStr_CornSweet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"CornSweet\",\"cropName\":\"Corn (sweet)\",\"totalGrowWeeks\":14,\"phaseDurationWeeks\":\"2,6,6\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.8,6.5\",\"tdsRange\":\"1.6,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,30\",\"co2Levels\":\"700,900\",\"flags\":\"large,toxic\"}"};
+                static const char flashStr_CornSweet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"CornSweet\",\"cropName\":\"Corn (sweet)\",\"totalGrowWeeks\":11,\"phaseDurationWeeks\":\"1,6,4\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.8,6.5\",\"tdsRange\":\"1.6,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,30\",\"co2Levels\":\"700,900\",\"flags\":\"large,toxic\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_CornSweet);
             } break;
             case Hydro_CropType_Cucumber: {
-                static const char flashStr_Cucumber[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cucumber\",\"cropName\":\"Cucumber\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5,5.5\",\"tdsRange\":\"1.7,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
+                static const char flashStr_Cucumber[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Cucumber\",\"cropName\":\"Cucumber\",\"totalGrowWeeks\":13,\"phaseDurationWeeks\":\"4,4,5\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5,5.5\",\"tdsRange\":\"1.7,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Cucumber);
             } break;
             case Hydro_CropType_Dill: {
@@ -345,11 +345,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Dill);
             } break;
             case Hydro_CropType_Eggplant: {
-                static const char flashStr_Eggplant[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Eggplant\",\"cropName\":\"Eggplant\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6,6\",\"tdsRange\":\"2.5,3.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
+                static const char flashStr_Eggplant[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Eggplant\",\"cropName\":\"Eggplant\",\"totalGrowWeeks\":19,\"phaseDurationWeeks\":\"8,6,5\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6,6\",\"tdsRange\":\"2.5,3.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Eggplant);
             } break;
             case Hydro_CropType_Endive: {
-                static const char flashStr_Endive[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Endive\",\"cropName\":\"Endive\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.5,5.5\",\"tdsRange\":\"2,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Endive[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Endive\",\"cropName\":\"Endive\",\"totalGrowWeeks\":13,\"phaseDurationWeeks\":\"2,8,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.5,5.5\",\"tdsRange\":\"2,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Endive);
             } break;
             case Hydro_CropType_Fennel: {
@@ -369,11 +369,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Garlic);
             } break;
             case Hydro_CropType_Ginger: {
-                static const char flashStr_Ginger[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Ginger\",\"cropName\":\"Ginger\",\"totalGrowWeeks\":24,\"phaseDurationWeeks\":\"3,10,11\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"5.8,6\",\"tdsRange\":\"2,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"600,750\"}"};
+                static const char flashStr_Ginger[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Ginger\",\"cropName\":\"Ginger\",\"totalGrowWeeks\":40,\"phaseDurationWeeks\":\"4,24,12\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"5.8,6\",\"tdsRange\":\"1.5,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"600,750\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Ginger);
             } break;
             case Hydro_CropType_Kale: {
-                static const char flashStr_Kale[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Kale\",\"cropName\":\"Kale\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.25,1.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\",\"flags\":\"perennial\"}"};
+                static const char flashStr_Kale[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Kale\",\"cropName\":\"Kale\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,5,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"5.5,6.5\",\"tdsRange\":\"1.25,1.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\",\"flags\":\"perennial\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Kale);
             } break;
             case Hydro_CropType_Lavender: {
@@ -381,7 +381,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Lavender);
             } break;
             case Hydro_CropType_Leek: {
-                static const char flashStr_Leek[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Leek\",\"cropName\":\"Leek\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"6.5,7\",\"tdsRange\":\"1.4,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\",\"flags\":\"toxic\"}"};
+                static const char flashStr_Leek[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Leek\",\"cropName\":\"Leek\",\"totalGrowWeeks\":23,\"phaseDurationWeeks\":\"7,12,4\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"6.5,7\",\"tdsRange\":\"1.4,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\",\"flags\":\"toxic\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Leek);
             } break;
             case Hydro_CropType_LemonBalm: {
@@ -389,7 +389,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_LemonBalm);
             } break;
             case Hydro_CropType_Lettuce: {
-                static const char flashStr_Lettuce[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Lettuce\",\"cropName\":\"Lettuce\",\"totalGrowWeeks\":6,\"phaseDurationWeeks\":\"1,3,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"1.2,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Lettuce[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Lettuce\",\"cropName\":\"Lettuce\",\"totalGrowWeeks\":5,\"phaseDurationWeeks\":\"2,2,1\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"1.2,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Lettuce);
             } break;
             case Hydro_CropType_Marrow: {
@@ -397,7 +397,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Marrow);
             } break;
             case Hydro_CropType_Melon: {
-                static const char flashStr_Melon[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Melon\",\"cropName\":\"Melon\",\"totalGrowWeeks\":14,\"phaseDurationWeeks\":\"2,6,6\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large\"}"};
+                static const char flashStr_Melon[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Melon\",\"cropName\":\"Melon\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"4,6,6\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"2,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Melon);
             } break;
             case Hydro_CropType_Mint: {
@@ -409,7 +409,7 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_MustardCress);
             } break;
             case Hydro_CropType_Okra: {
-                static const char flashStr_Okra[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Okra\",\"cropName\":\"Okra\",\"totalGrowWeeks\":14,\"phaseDurationWeeks\":\"2,6,6\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6.5,6.5\",\"tdsRange\":\"2,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\"}"};
+                static const char flashStr_Okra[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Okra\",\"cropName\":\"Okra\",\"totalGrowWeeks\":9,\"phaseDurationWeeks\":\"1,5,3\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6.5,6.5\",\"tdsRange\":\"2,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Okra);
             } break;
             case Hydro_CropType_Onions: {
@@ -421,11 +421,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Oregano);
             } break;
             case Hydro_CropType_PakChoi: {
-                static const char flashStr_PakChoi[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PakChoi\",\"cropName\":\"Pak-choi\",\"totalGrowWeeks\":7,\"phaseDurationWeeks\":\"1,4,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"7,7\",\"tdsRange\":\"1.5,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_PakChoi[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PakChoi\",\"cropName\":\"Pak-choi\",\"totalGrowWeeks\":6,\"phaseDurationWeeks\":\"1,4,1\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"7,7\",\"tdsRange\":\"1.5,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_PakChoi);
             } break;
             case Hydro_CropType_Parsley: {
-                static const char flashStr_Parsley[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Parsley\",\"cropName\":\"Parsley\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"2,5,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\",\"flags\":\"perennial,toxic\"}"};
+                static const char flashStr_Parsley[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Parsley\",\"cropName\":\"Parsley\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"3,5,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,700\",\"flags\":\"perennial,toxic\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Parsley);
             } break;
             case Hydro_CropType_Parsnip: {
@@ -433,11 +433,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Parsnip);
             } break;
             case Hydro_CropType_Pea: {
-                static const char flashStr_Pea[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Pea\",\"cropName\":\"Pea (common)\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6,7\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"18,25\",\"co2Levels\":\"600,800\"}"};
+                static const char flashStr_Pea[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Pea\",\"cropName\":\"Pea (common)\",\"totalGrowWeeks\":9,\"phaseDurationWeeks\":\"1,5,3\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6,7\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"18,25\",\"co2Levels\":\"600,800\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Pea);
             } break;
             case Hydro_CropType_PeaSugar: {
-                static const char flashStr_PeaSugar[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeaSugar\",\"cropName\":\"Pea (sugar)\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6,6.8\",\"tdsRange\":\"0.8,1.9\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"18,25\",\"co2Levels\":\"600,800\",\"flags\":\"toxic\"}"};
+                static const char flashStr_PeaSugar[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeaSugar\",\"cropName\":\"Pea (sugar)\",\"totalGrowWeeks\":9,\"phaseDurationWeeks\":\"1,5,3\",\"dailyLightHours\":\"16,16,14\",\"phRange\":\"6,6.8\",\"tdsRange\":\"0.8,1.9\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"18,25\",\"co2Levels\":\"600,800\",\"flags\":\"toxic\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_PeaSugar);
             } break;
             case Hydro_CropType_Pepino: {
@@ -445,11 +445,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Pepino);
             } break;
             case Hydro_CropType_PeppersBell: {
-                static const char flashStr_PeppersBell[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeppersBell\",\"cropName\":\"Peppers (bell)\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
+                static const char flashStr_PeppersBell[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeppersBell\",\"cropName\":\"Peppers (bell)\",\"totalGrowWeeks\":18,\"phaseDurationWeeks\":\"8,5,5\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_PeppersBell);
             } break;
             case Hydro_CropType_PeppersHot: {
-                static const char flashStr_PeppersHot[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeppersHot\",\"cropName\":\"Peppers (hot)\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
+                static const char flashStr_PeppersHot[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PeppersHot\",\"cropName\":\"Peppers (hot)\",\"totalGrowWeeks\":18,\"phaseDurationWeeks\":\"8,5,5\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,6\",\"tdsRange\":\"0.8,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_PeppersHot);
             } break;
             case Hydro_CropType_Potato: {
@@ -457,11 +457,11 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Potato);
             } break;
             case Hydro_CropType_PotatoSweet: {
-                static const char flashStr_PotatoSweet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PotatoSweet\",\"cropName\":\"Potato (sweet)\",\"totalGrowWeeks\":18,\"phaseDurationWeeks\":\"2,8,8\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"5,6\",\"tdsRange\":\"2,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"600,750\",\"flags\":\"perennial\"}"};
+                static const char flashStr_PotatoSweet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"PotatoSweet\",\"cropName\":\"Potato (sweet)\",\"totalGrowWeeks\":18,\"phaseDurationWeeks\":\"6,8,4\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"5,6\",\"tdsRange\":\"2,2.5\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"600,750\",\"flags\":\"perennial\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_PotatoSweet);
             } break;
             case Hydro_CropType_Pumpkin: {
-                static const char flashStr_Pumpkin[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Pumpkin\",\"cropName\":\"Pumpkin\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,7.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large,pruning\"}"};
+                static const char flashStr_Pumpkin[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Pumpkin\",\"cropName\":\"Pumpkin\",\"totalGrowWeeks\":19,\"phaseDurationWeeks\":\"4,8,7\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.5,7.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large,pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Pumpkin);
             } break;
             case Hydro_CropType_Radish: {
@@ -481,15 +481,15 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Sage);
             } break;
             case Hydro_CropType_Silverbeet: {
-                static const char flashStr_Silverbeet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Silverbeet\",\"cropName\":\"Silverbeet\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"2,5,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Silverbeet[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Silverbeet\",\"cropName\":\"Silverbeet\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,5,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Silverbeet);
             } break;
             case Hydro_CropType_Spinach: {
-                static const char flashStr_Spinach[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Spinach\",\"cropName\":\"Spinach\",\"totalGrowWeeks\":6,\"phaseDurationWeeks\":\"1,3,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Spinach[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Spinach\",\"cropName\":\"Spinach\",\"totalGrowWeeks\":6,\"phaseDurationWeeks\":\"1,4,1\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,7\",\"tdsRange\":\"1.8,2.3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Spinach);
             } break;
             case Hydro_CropType_Squash: {
-                static const char flashStr_Squash[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Squash\",\"cropName\":\"Squash\",\"totalGrowWeeks\":14,\"phaseDurationWeeks\":\"2,6,6\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5,6.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large,pruning\"}"};
+                static const char flashStr_Squash[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Squash\",\"cropName\":\"Squash\",\"totalGrowWeeks\":13,\"phaseDurationWeeks\":\"1,7,5\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5,6.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large,pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Squash);
             } break;
             case Hydro_CropType_Sunflower: {
@@ -497,15 +497,15 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Sunflower);
             } break;
             case Hydro_CropType_Strawberries: {
-                static const char flashStr_Strawberries[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Strawberries\",\"cropName\":\"Strawberries\",\"totalGrowWeeks\":20,\"phaseDurationWeeks\":\"3,8,9\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6\",\"tdsRange\":\"1.8,2.2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,750\",\"flags\":\"perennial\"}"};
+                static const char flashStr_Strawberries[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Strawberries\",\"cropName\":\"Strawberries\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"2,4,4\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6\",\"tdsRange\":\"1.8,2.2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,24\",\"co2Levels\":\"600,750\",\"flags\":\"perennial\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Strawberries);
             } break;
             case Hydro_CropType_SwissChard: {
-                static const char flashStr_SwissChard[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"SwissChard\",\"cropName\":\"Swiss Chard\",\"totalGrowWeeks\":10,\"phaseDurationWeeks\":\"2,5,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_SwissChard[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"SwissChard\",\"cropName\":\"Swiss Chard\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,5,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_SwissChard);
             } break;
             case Hydro_CropType_Taro: {
-                static const char flashStr_Taro[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Taro\",\"cropName\":\"Taro\",\"totalGrowWeeks\":24,\"phaseDurationWeeks\":\"3,10,11\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"5,5.5\",\"tdsRange\":\"2.5,3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"600,750\",\"flags\":\"toxic\"}"};
+                static const char flashStr_Taro[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Taro\",\"cropName\":\"Taro\",\"totalGrowWeeks\":40,\"phaseDurationWeeks\":\"4,24,12\",\"dailyLightHours\":\"16,14,12\",\"phRange\":\"5,5.5\",\"tdsRange\":\"2.5,3\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"600,750\",\"flags\":\"toxic\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Taro);
             } break;
             case Hydro_CropType_Tarragon: {
@@ -517,27 +517,28 @@ HydroCropsLibraryBook *HydroCropsLibrary::newBookFromType(Hydro_CropType cropTyp
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Thyme);
             } break;
             case Hydro_CropType_Tomato: {
-                static const char flashStr_Tomato[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Tomato\",\"cropName\":\"Tomato\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"2,6,8\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"toxic,pruning\"}"};
+                static const char flashStr_Tomato[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Tomato\",\"cropName\":\"Tomato\",\"totalGrowWeeks\":16,\"phaseDurationWeeks\":\"5,5,6\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"2,4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"toxic,pruning\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Tomato);
             } break;
             case Hydro_CropType_Turnip: {
-                static const char flashStr_Turnip[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Turnip\",\"cropName\":\"Turnip\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
+                static const char flashStr_Turnip[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Turnip\",\"cropName\":\"Turnip\",\"totalGrowWeeks\":7,\"phaseDurationWeeks\":\"1,4,2\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6,6.5\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Turnip);
             } break;
             case Hydro_CropType_Watercress: {
-                static const char flashStr_Watercress[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Watercress\",\"cropName\":\"Watercress\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,6.8\",\"tdsRange\":\"0.4,1.8\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\",\"flags\":\"perennial,toxic\"}"};
+                static const char flashStr_Watercress[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Watercress\",\"cropName\":\"Watercress\",\"totalGrowWeeks\":8,\"phaseDurationWeeks\":\"1,4,3\",\"dailyLightHours\":\"16,14,14\",\"phRange\":\"6.5,6.8\",\"tdsRange\":\"1.5,2\",\"nightlyFeedRate\":1,\"waterTempRange\":\"18,22\",\"airTempRange\":\"16,23\",\"co2Levels\":\"600,700\",\"flags\":\"perennial,toxic\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Watercress);
             } break;
             case Hydro_CropType_Watermelon: {
-                static const char flashStr_Watermelon[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Watermelon\",\"cropName\":\"Watermelon\",\"totalGrowWeeks\":14,\"phaseDurationWeeks\":\"2,6,6\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.8,5.8\",\"tdsRange\":\"1.5,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large\"}"};
+                static const char flashStr_Watermelon[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Watermelon\",\"cropName\":\"Watermelon\",\"totalGrowWeeks\":17,\"phaseDurationWeeks\":\"4,6,7\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"5.8,5.8\",\"tdsRange\":\"1.5,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Watermelon);
             } break;
             case Hydro_CropType_Zucchini: {
-                static const char flashStr_Zucchini[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Zucchini\",\"cropName\":\"Zucchini\",\"totalGrowWeeks\":12,\"phaseDurationWeeks\":\"2,6,4\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6,6\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large\"}"};
+                static const char flashStr_Zucchini[] PROGMEM = {"{\"type\":\"HCLD\",\"id\":\"Zucchini\",\"cropName\":\"Zucchini\",\"totalGrowWeeks\":11,\"phaseDurationWeeks\":\"4,3,4\",\"dailyLightHours\":\"18,16,14\",\"phRange\":\"6,6\",\"tdsRange\":\"1.8,2.4\",\"nightlyFeedRate\":1,\"waterTempRange\":\"20,24\",\"airTempRange\":\"20,28\",\"co2Levels\":\"700,900\",\"flags\":\"large\"}"};
                 progmemStream = HydroPROGMEMStream((uintptr_t)flashStr_Zucchini);
             } break;
             default: break;
         }
+
         if (progmemStream.available()) { return new HydroCropsLibraryBook(progmemStream, true); }
     }
     #endif // /ifndef HYDRO_DISABLE_BUILTIN_DATA
