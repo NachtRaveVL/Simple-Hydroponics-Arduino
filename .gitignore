@@ -1,19 +1,35 @@
-# OS generated files #
-######################
+# Build output
+build/
+build-*/
+.pio/
+CMakeFiles/
+Testing/
+wiki/
+
+# Compiled files
+*.o
+*.a
+*.elf
+*.hex
+*.bin
+*.uf2
+*.map
+
+# IDE files
+.vscode/
+.vs/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS junk
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-Icon?
-ehthumbs.db
 Thumbs.db
-pad
-SmokeTest1
 
-# Generic:
-###############
+# Temporary files
+*.log
+*.tmp
 *.bak
-.vscode
-
-build-host/
+*~
