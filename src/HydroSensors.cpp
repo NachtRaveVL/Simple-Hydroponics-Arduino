@@ -4,10 +4,11 @@
 */
 
 #include "Hydruino.h"
+#include "HydroCoreLogic.h"
 
 HydroSensor *newSensorObjectFromData(const HydroSensorData *dataIn)
 {
-    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
+    if (dataIn && !isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
@@ -178,14 +179,17 @@ void HydroSensor::saveToData(HydroData *dataOut)
 
 HydroBinarySensor::HydroBinarySensor(Hydro_SensorType sensorType, hposi_t sensorIndex, HydroDigitalPin inputPin, int classType)
     : HydroSensor(sensorType, sensorIndex, classType),
-      _inputPin(inputPin), _usingISR(false)
+      _inputPin(inputPin), _usingISR(false), _pendingState(false), _hasPendingState(false),
+      _pendingStateStart(millis_none), _stateStableTimeMs(HYDRO_SENSOR_BINARY_STABLE_MILLIS)
 {
     HYDRO_HARD_ASSERT(_inputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
     _inputPin.init();
 }
 
 HydroBinarySensor::HydroBinarySensor(const HydroBinarySensorData *dataIn)
-    : HydroSensor(dataIn), _inputPin(&dataIn->inputPin), _usingISR(false)
+    : HydroSensor(dataIn), _inputPin(&dataIn->inputPin), _usingISR(false),
+      _pendingState(false), _hasPendingState(false), _pendingStateStart(millis_none),
+      _stateStableTimeMs(dataIn->stateStableTimeMs)
 {
     HYDRO_HARD_ASSERT(_inputPin.isValid(), SFP(HStr_Err_InvalidPinOrType));
     _inputPin.init();
@@ -204,9 +208,12 @@ bool HydroBinarySensor::takeMeasurement(bool force)
     if (_inputPin.isValid() && (force || needsPolling()) && !_isTakingMeasure) {
         _isTakingMeasure = true;
         bool stateBefore = _lastMeasurement.state;
-
-        bool state = _inputPin.isActive();
+        bool sampledState = _inputPin.isActive();
         auto timestamp = unixNow();
+        uint32_t pendingStateStart = _pendingStateStart;
+        bool state = hydroUpdateStableBinaryState(stateBefore, sampledState, millis(), _stateStableTimeMs,
+                                                  _pendingState, _hasPendingState, pendingStateStart);
+        _pendingStateStart = pendingStateStart;
 
         _lastMeasurement = HydroBinaryMeasurement(state, timestamp);
         _isTakingMeasure = false;
@@ -252,6 +259,15 @@ Hydro_UnitsType HydroBinarySensor::getMeasurementUnits(uint8_t) const
     return _calibrationData ? _calibrationData->calibrationUnits : Hydro_UnitsType_Raw_1;
 }
 
+void HydroBinarySensor::setStateStableTime(uint16_t stableTimeMs)
+{
+    if (_stateStableTimeMs != stableTimeMs) {
+        _stateStableTimeMs = stableTimeMs;
+        _hasPendingState = false;
+        bumpRevisionIfNeeded();
+    }
+}
+
 bool HydroBinarySensor::tryRegisterISR(bool anyChange)
 {
     #ifdef HYDRO_USE_MULTITASKING
@@ -274,6 +290,7 @@ void HydroBinarySensor::saveToData(HydroData *dataOut)
 
     _inputPin.saveToData(&((HydroBinarySensorData *)dataOut)->inputPin);
     ((HydroBinarySensorData *)dataOut)->usingISR = _usingISR;
+    ((HydroBinarySensorData *)dataOut)->stateStableTimeMs = _stateStableTimeMs;
 }
 
 
@@ -850,9 +867,10 @@ void HydroSensorData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroBinarySensorData::HydroBinarySensorData()
-    : HydroSensorData(), usingISR(false)
+    : HydroSensorData(), usingISR(false), stateStableTimeMs(HYDRO_SENSOR_BINARY_STABLE_MILLIS)
 {
     _size = sizeof(*this);
+    _version = 2;
 }
 
 void HydroBinarySensorData::toJSONObject(JsonObject &objectOut) const
@@ -860,6 +878,7 @@ void HydroBinarySensorData::toJSONObject(JsonObject &objectOut) const
     HydroSensorData::toJSONObject(objectOut);
 
     if (usingISR != false) { objectOut[SFP(HStr_Key_UsingISR)] = usingISR; }
+    if (stateStableTimeMs != HYDRO_SENSOR_BINARY_STABLE_MILLIS) { objectOut[SFP(HStr_Key_StateStableTimeMs)] = stateStableTimeMs; }
 }
 
 void HydroBinarySensorData::fromJSONObject(JsonObjectConst &objectIn)
@@ -867,6 +886,12 @@ void HydroBinarySensorData::fromJSONObject(JsonObjectConst &objectIn)
     HydroSensorData::fromJSONObject(objectIn);
 
     usingISR = objectIn[SFP(HStr_Key_UsingISR)] | usingISR;
+    stateStableTimeMs = objectIn[SFP(HStr_Key_StateStableTimeMs)] | stateStableTimeMs;
+}
+
+void HydroBinarySensorData::migrateFromBinaryVersion(uint8_t fromVersion)
+{
+    if (fromVersion < 2) { stateStableTimeMs = HYDRO_SENSOR_BINARY_STABLE_MILLIS; }
 }
 
 HydroAnalogSensorData::HydroAnalogSensorData()

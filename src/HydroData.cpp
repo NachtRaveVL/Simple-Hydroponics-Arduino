@@ -4,6 +4,7 @@
 */
 
 #include "Hydruino.h"
+#include "HydroCoreLogic.h"
 
 size_t serializeDataToBinaryStream(const HydroData *data, Stream *streamOut, size_t skipBytes)
 {
@@ -18,18 +19,39 @@ size_t deserializeDataFromBinaryStream(HydroData *data, Stream *streamIn, size_t
 HydroData *newDataFromBinaryStream(Stream *streamIn)
 {
     HydroData baseDecode;
+    const size_t baseSize = baseDecode._size;
     size_t readBytes = deserializeDataFromBinaryStream(&baseDecode, streamIn, sizeof(void*));
-    HYDRO_SOFT_ASSERT(readBytes == baseDecode._size - sizeof(void*), SFP(HStr_Err_ImportFailure));
+    const size_t serializedSize = baseDecode._size;
+    HYDRO_SOFT_ASSERT(readBytes == baseSize - sizeof(void*) && serializedSize >= baseSize, SFP(HStr_Err_ImportFailure));
 
-    if (readBytes) {
+    if (readBytes == baseSize - sizeof(void*) && serializedSize >= baseSize) {
         HydroData *data = _allocateDataFromBaseDecode(baseDecode);
         HYDRO_SOFT_ASSERT(data, SFP(HStr_Err_AllocationFailure));
 
         if (data) {
-            readBytes += deserializeDataFromBinaryStream(data, streamIn, readBytes + sizeof(void*));
-            HYDRO_SOFT_ASSERT(readBytes == data->_size - sizeof(void*), SFP(HStr_Err_ImportFailure));
+            auto readPlan = hydroBinaryDataReadPlan(serializedSize, data->_size, baseSize);
+            if (readPlan.copyBytes) {
+                readBytes += streamIn->readBytes((uint8_t *)data + baseSize, readPlan.copyBytes);
+            }
 
-            return data;
+            size_t skippedBytes = 0;
+            uint8_t skipBuffer[16];
+            while (skippedBytes < readPlan.skipBytes) {
+                size_t skipBytes = readPlan.skipBytes - skippedBytes;
+                if (skipBytes > sizeof(skipBuffer)) { skipBytes = sizeof(skipBuffer); }
+                size_t skipped = streamIn->readBytes(skipBuffer, skipBytes);
+                skippedBytes += skipped;
+                if (skipped != skipBytes) { break; }
+            }
+
+            HYDRO_SOFT_ASSERT(readBytes == baseSize - sizeof(void*) + readPlan.copyBytes &&
+                               skippedBytes == readPlan.skipBytes, SFP(HStr_Err_ImportFailure));
+            if (readBytes == baseSize - sizeof(void*) + readPlan.copyBytes && skippedBytes == readPlan.skipBytes) {
+                data->migrateFromBinaryVersion(baseDecode._version);
+                return data;
+            }
+
+            delete data;
         }
     }
 

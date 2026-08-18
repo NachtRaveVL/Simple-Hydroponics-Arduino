@@ -175,6 +175,7 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_SENSOR_SIGNAL_SLOTS       6                   // Maximum number of slots for sensor's measurement signal
 #define HYDRO_TRIGGER_SIGNAL_SLOTS      4                   // Maximum number of slots for trigger's state signal
 #define HYDRO_BALANCER_SIGNAL_SLOTS     2                   // Maximum number of slots for balancer's state signal
+#define HYDRO_BALANCER_STALE_FRAMES     3                   // Maximum sensor frames balancers will act on without a fresh reading
 #define HYDRO_LOG_SIGNAL_SLOTS          2                   // Maximum number of slots for system log signal
 #define HYDRO_PUBLISH_SIGNAL_SLOTS      2                   // Maximum number of slots for data publish signal
 #define HYDRO_RESERVOIR_SIGNAL_SLOTS    2                   // Maximum number of slots for filled/empty signal
@@ -233,6 +234,7 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_SCH_BALANCE_MINTIME       30                  // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
 #define HYDRO_SCH_AERATORS_FEEDRUN      true                // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
+#define HYDRO_SENSOR_BINARY_STABLE_MILLIS 100                 // Minimum time a binary sensor input must remain changed before the new state is accepted, in milliseconds
 #define HYDRO_SENSOR_ANALOGREAD_SAMPLES 5                   // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRO_SENSOR_ANALOGREAD_DELAY   0                   // Delay time between samples, or 0 to disable delay, in milliseconds
 
@@ -475,6 +477,18 @@ enum Hydro_CropPhase : signed char {
     Hydro_CropPhase_Count,                                  // Placeholder
     Hydro_CropPhase_MainCount = 3,                          // Placeholder
     Hydro_CropPhase_Undefined = -1                          // Placeholder
+};
+
+// Feeding Schedule
+// Timed crop watering cadence. Daily/weekly modes spread feedings evenly while
+// interval mode waits a fixed amount of elapsed time between feedings.
+enum Hydro_FeedingSchedule : signed char {
+    Hydro_FeedingSchedule_Daily,                            // Feed X times per day
+    Hydro_FeedingSchedule_Weekly,                           // Feed X times per week
+    Hydro_FeedingSchedule_Interval,                         // Feed after X elapsed time
+
+    Hydro_FeedingSchedule_Count,                            // Placeholder
+    Hydro_FeedingSchedule_Undefined = -1                    // Placeholder
 };
 
 // System Run Mode

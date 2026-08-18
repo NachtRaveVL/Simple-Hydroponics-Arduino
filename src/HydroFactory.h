@@ -167,7 +167,8 @@ public:
     // Convenience builders for common crops (shared, nullptr return -> failure).
 
     // Adds a new simple timer-fed crop to the system using the given parameters, by past or future date of sowing.
-    // Timer fed crops use an hourly time-on/time-off schedule for driving their feeding times.
+    // Timer fed crops use the supplied duration and legacy off-time as their initial elapsed feeding cycle.
+    // The returned crop can be switched to daily, weekly, or elapsed cadence through its scheduling setters.
     SharedPtr<HydroTimedCrop> addTimerFedCrop(Hydro_CropType cropType,                      // Crop type (kind of plant)
                                               Hydro_SubstrateType substrateType,            // Substrate type (soil composition)
                                               DateTime sowTime,                             // Sow date (may be a future date to stagger enable feed reservoirs)

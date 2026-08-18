@@ -95,8 +95,8 @@ protected:
 
 
 // Simple Timed Crop
-// Standard crop object that feeds itself based on a time on/time off watering schedule.
-// Further limitations on watering, etc., can be set through the scheduler.
+// Standard crop object that feeds itself for a configured duration at a daily, weekly,
+// or elapsed interval cadence. Further limitations on watering can be set through the scheduler.
 class HydroTimedCrop : public HydroCrop {
 public:
     HydroTimedCrop(Hydro_CropType cropType,
@@ -116,9 +116,26 @@ public:
     void setFeedTimeOff(TimeSpan timeOff);
     inline TimeSpan getFeedTimeOff() const { return TimeSpan(_feedTimingMins[1] * SECS_PER_MIN); }
 
+    void setFeedingsPerDay(uint8_t feedingsPerDay);
+    inline uint8_t getFeedingsPerDay() const { return _feedingsPerDay; }
+
+    void setFeedingsPerWeek(uint8_t feedingsPerWeek);
+    inline uint8_t getFeedingsPerWeek() const { return _feedingsPerWeek; }
+
+    void setFeedInterval(TimeSpan feedInterval);
+    inline TimeSpan getFeedInterval() const { return TimeSpan(_feedIntervalMins * SECS_PER_MIN); }
+
+    inline Hydro_FeedingSchedule getFeedingSchedule() const {
+        return _feedingsPerDay ? Hydro_FeedingSchedule_Daily :
+               (_feedingsPerWeek ? Hydro_FeedingSchedule_Weekly : Hydro_FeedingSchedule_Interval);
+    }
+
 protected:
     time_t _lastFeedingTime;                                // Last feeding date (UTC)
-    uint8_t _feedTimingMins[2];                             // Feed timing (on/off), in minutes
+    uint8_t _feedTimingMins[2];                             // Feed duration + legacy off-time, in minutes
+    uint8_t _feedingsPerDay;                               // Number of feedings per day (0 when unused)
+    uint8_t _feedingsPerWeek;                              // Number of feedings per week (0 when unused)
+    uint16_t _feedIntervalMins;                            // Elapsed feed interval, in minutes (0 when unused)
 
     virtual void saveToData(HydroData *dataOut) override;
 };
@@ -174,11 +191,15 @@ struct HydroCropData : public HydroObjectData
 struct HydroTimedCropData : public HydroCropData
 {
     time_t lastFeedingTime;                                 // Last feeding (UTC)
-    uint8_t feedTimingMins[2];                              // Timing minutes (on/off)
+    uint8_t feedTimingMins[2];                              // Feed duration + legacy off-time, in minutes
+    uint8_t feedingsPerDay;                                 // Number of feedings per day (0 when unused)
+    uint8_t feedingsPerWeek;                                // Number of feedings per week (0 when unused)
+    uint16_t feedIntervalMins;                              // Elapsed feed interval, in minutes (0 when unused)
 
     HydroTimedCropData();
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void migrateFromBinaryVersion(uint8_t fromVersion) override;
 };
 
 // Adaptive Crop Serialization Data

@@ -7,7 +7,7 @@
 
 HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 {
-    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
+    if (dataIn && !isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {

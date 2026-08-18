@@ -4,10 +4,11 @@
 */
 
 #include "Hydruino.h"
+#include "HydroCoreLogic.h"
 
 HydroCrop *newCropObjectFromData(const HydroCropData *dataIn)
 {
-    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
+    if (dataIn && !isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
@@ -135,12 +136,7 @@ void HydroCrop::recalcGrowthParams()
 
     if (_cropsData) {
         _totalGrowWeeks = _cropsData->totalGrowWeeks;
-        _cropPhase = Hydro_CropPhase_Seedling;
-        for (int phaseIndex = 0; phaseIndex < (int)Hydro_CropPhase_MainCount; ++phaseIndex) {
-            if (_growWeek > _cropsData->phaseDurationWeeks[phaseIndex]) {
-                _cropPhase = (Hydro_CropPhase)(phaseIndex + 1);
-            } else { break; }
-        }
+        _cropPhase = (Hydro_CropPhase)hydroCropPhaseForWeek(_growWeek, _cropsData->phaseDurationWeeks, Hydro_CropPhase_MainCount);
     }
 }
 
@@ -174,20 +170,28 @@ void HydroCrop::handleCustomCropUpdated(Hydro_CropType cropType)
 HydroTimedCrop::HydroTimedCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, TimeSpan timeOn, TimeSpan timeOff, int classType)
     : HydroCrop(cropType, cropIndex, substrateType, sowTime, classType),
       _lastFeedingTime(),
-      _feedTimingMins{timeOn.totalseconds() / SECS_PER_MIN, timeOff.totalseconds() / SECS_PER_MIN}
+      _feedTimingMins{timeOn.totalseconds() / SECS_PER_MIN, timeOff.totalseconds() / SECS_PER_MIN},
+      _feedingsPerDay(0), _feedingsPerWeek(0),
+      _feedIntervalMins(_feedTimingMins[0] + _feedTimingMins[1])
 { ; }
 
 HydroTimedCrop::HydroTimedCrop(const HydroTimedCropData *dataIn)
     : HydroCrop(dataIn),
       _lastFeedingTime(dataIn->lastFeedingTime),
-      _feedTimingMins{dataIn->feedTimingMins[0], dataIn->feedTimingMins[1]}
-{ ; }
+      _feedTimingMins{dataIn->feedTimingMins[0], dataIn->feedTimingMins[1]},
+      _feedingsPerDay(dataIn->feedingsPerDay), _feedingsPerWeek(dataIn->feedingsPerWeek),
+      _feedIntervalMins(dataIn->feedIntervalMins)
+{
+    if (!_feedingsPerDay && !_feedingsPerWeek && !_feedIntervalMins) {
+        _feedIntervalMins = _feedTimingMins[0] + _feedTimingMins[1];
+    }
+}
 
 bool HydroTimedCrop::needsFeeding(bool poll)
 {
-    time_t time = unixNow();
-    return time >= _lastFeedingTime + ((_feedTimingMins[0] + _feedTimingMins[1]) * SECS_PER_MIN) ||
-           time < _lastFeedingTime + (_feedTimingMins[0] * SECS_PER_MIN);
+    auto interval = hydroFeedingIntervalSeconds(_feedingsPerDay, _feedingsPerWeek, _feedIntervalMins);
+    auto feedDuration = (uint32_t)_feedTimingMins[0] * SECS_PER_MIN;
+    return hydroTimedFeedingNeeded(unixNow(), _lastFeedingTime, feedDuration, interval);
 }
 
 void HydroTimedCrop::notifyFeedingBegan()
@@ -200,12 +204,49 @@ void HydroTimedCrop::notifyFeedingBegan()
 void HydroTimedCrop::setFeedTimeOn(TimeSpan timeOn)
 {
     _feedTimingMins[0] = timeOn.totalseconds() / SECS_PER_MIN;
+    if (getFeedingSchedule() == Hydro_FeedingSchedule_Interval) {
+        _feedIntervalMins = _feedTimingMins[0] + _feedTimingMins[1];
+    }
     bumpRevisionIfNeeded();
 }
 
 void HydroTimedCrop::setFeedTimeOff(TimeSpan timeOff)
 {
     _feedTimingMins[1] = timeOff.totalseconds() / SECS_PER_MIN;
+    if (getFeedingSchedule() == Hydro_FeedingSchedule_Interval) {
+        _feedIntervalMins = _feedTimingMins[0] + _feedTimingMins[1];
+    }
+    bumpRevisionIfNeeded();
+}
+
+void HydroTimedCrop::setFeedingsPerDay(uint8_t feedingsPerDay)
+{
+    _feedingsPerDay = feedingsPerDay;
+    if (feedingsPerDay) {
+        _feedingsPerWeek = 0;
+        _feedIntervalMins = 0;
+    }
+    bumpRevisionIfNeeded();
+}
+
+void HydroTimedCrop::setFeedingsPerWeek(uint8_t feedingsPerWeek)
+{
+    _feedingsPerWeek = feedingsPerWeek;
+    if (feedingsPerWeek) {
+        _feedingsPerDay = 0;
+        _feedIntervalMins = 0;
+    }
+    bumpRevisionIfNeeded();
+}
+
+void HydroTimedCrop::setFeedInterval(TimeSpan feedInterval)
+{
+    auto feedIntervalMins = (uint32_t)feedInterval.totalseconds() / SECS_PER_MIN;
+    _feedIntervalMins = feedIntervalMins > UINT16_MAX ? UINT16_MAX : (uint16_t)feedIntervalMins;
+    if (_feedIntervalMins) {
+        _feedingsPerDay = 0;
+        _feedingsPerWeek = 0;
+    }
     bumpRevisionIfNeeded();
 }
 
@@ -216,6 +257,9 @@ void HydroTimedCrop::saveToData(HydroData *dataOut)
     ((HydroTimedCropData *)dataOut)->lastFeedingTime = _lastFeedingTime;
     ((HydroTimedCropData *)dataOut)->feedTimingMins[0] = _feedTimingMins[0];
     ((HydroTimedCropData *)dataOut)->feedTimingMins[1] = _feedTimingMins[1];
+    ((HydroTimedCropData *)dataOut)->feedingsPerDay = _feedingsPerDay;
+    ((HydroTimedCropData *)dataOut)->feedingsPerWeek = _feedingsPerWeek;
+    ((HydroTimedCropData *)dataOut)->feedIntervalMins = _feedIntervalMins;
 }
 
 
@@ -328,9 +372,10 @@ void HydroCropData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroTimedCropData::HydroTimedCropData()
-    : HydroCropData(), lastFeedingTime(0), feedTimingMins{0}
+    : HydroCropData(), lastFeedingTime(0), feedTimingMins{0}, feedingsPerDay(0), feedingsPerWeek(0), feedIntervalMins(0)
 {
     _size = sizeof(*this);
+    _version = 2;
 }
 
 void HydroTimedCropData::toJSONObject(JsonObject &objectOut) const
@@ -339,6 +384,9 @@ void HydroTimedCropData::toJSONObject(JsonObject &objectOut) const
 
     if (lastFeedingTime) { objectOut[SFP(HStr_Key_LastFeedingTime)] = lastFeedingTime; }
     objectOut[SFP(HStr_Key_FeedTimingMins)] = commaStringFromArray(feedTimingMins, 2);
+    if (feedingsPerDay) { objectOut[SFP(HStr_Key_FeedingsPerDay)] = feedingsPerDay; }
+    if (feedingsPerWeek) { objectOut[SFP(HStr_Key_FeedingsPerWeek)] = feedingsPerWeek; }
+    if (feedIntervalMins) { objectOut[SFP(HStr_Key_FeedIntervalMins)] = feedIntervalMins; }
 }
 
 void HydroTimedCropData::fromJSONObject(JsonObjectConst &objectIn)
@@ -347,6 +395,18 @@ void HydroTimedCropData::fromJSONObject(JsonObjectConst &objectIn)
     lastFeedingTime = objectIn[SFP(HStr_Key_LastFeedingTime)] | lastFeedingTime;
     JsonVariantConst feedTimingMinsVar = objectIn[SFP(HStr_Key_FeedTimingMins)];
     commaStringToArray(feedTimingMinsVar, feedTimingMins, 2);
+    feedingsPerDay = objectIn[SFP(HStr_Key_FeedingsPerDay)] | feedingsPerDay;
+    feedingsPerWeek = objectIn[SFP(HStr_Key_FeedingsPerWeek)] | feedingsPerWeek;
+    feedIntervalMins = objectIn[SFP(HStr_Key_FeedIntervalMins)] | feedIntervalMins;
+}
+
+void HydroTimedCropData::migrateFromBinaryVersion(uint8_t fromVersion)
+{
+    if (fromVersion < 2) {
+        feedingsPerDay = 0;
+        feedingsPerWeek = 0;
+        feedIntervalMins = (uint16_t)feedTimingMins[0] + feedTimingMins[1];
+    }
 }
 
 HydroAdaptiveCropData::HydroAdaptiveCropData()

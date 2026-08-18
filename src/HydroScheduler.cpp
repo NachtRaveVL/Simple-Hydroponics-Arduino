@@ -138,7 +138,7 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
             float dosingRate = getCombinedDosingRate(reservoir, Hydro_ReservoirType_FreshWater);
 
             if (dosingRate > FLT_EPSILON) {
-                auto dilutionPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_NutrientPremix);
+                auto dilutionPumps = linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ReservoirType_FreshWater);
 
                 linksResolveActuatorsToAttachmentsByRateAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(dilutionPumps, waterTDSBalancer.get(), dosingRate, decActuators, Hydro_ActuatorType_PeristalticPump);
                 if (!decActuators.size()) { // prefer peristaltic, else use full pump
@@ -189,14 +189,14 @@ void HydroScheduler::setupAirCO2Balancer(HydroReservoir *reservoir, SharedPtr<Hy
 {
     if (reservoir && airCO2Balancer) {
         {   Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> incActuators;
-            auto fans = linksFilterActuatorsByReservoirAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ActuatorType_FanExhaust);
-
-            linksResolveActuatorsToAttachmentsByRateAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(fans, airCO2Balancer.get(), 1.0f, incActuators, Hydro_ActuatorType_FanExhaust);
-
             airCO2Balancer->setIncrementActuators(incActuators);
         }
 
         {   Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> decActuators;
+            auto fans = linksFilterActuatorsByReservoirAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(reservoir->getLinkages(), reservoir, Hydro_ActuatorType_FanExhaust);
+
+            linksResolveActuatorsToAttachmentsByRateAndType<HYDRO_BAL_ACTUATORS_MAXSIZE>(fans, airCO2Balancer.get(), 1.0f, decActuators, Hydro_ActuatorType_FanExhaust);
+
             airCO2Balancer->setDecrementActuators(decActuators);
         }
     }
@@ -359,17 +359,18 @@ float HydroScheduler::getCombinedDosingRate(HydroReservoir *reservoir, Hydro_Res
         for (auto cropIter = crops.begin(); cropIter != crops.end(); ++cropIter) {
             auto crop = (HydroCrop *)(*cropIter);
             if (crop) {
+                auto feedingWeight = crop->getFeedingWeight();
                 if (reservoirType <= Hydro_ReservoirType_NutrientPremix) {
-                    totalWeights += crop->getFeedingWeight();
-                    totalDosing += schedulerData()->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1)];
+                    totalWeights += feedingWeight;
+                    totalDosing += schedulerData()->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, HYDRO_CROPS_GROWWEEKS_MAX - 1)] * feedingWeight;
                 } else if (reservoirType < Hydro_ReservoirType_CustomAdditive1) {
-                    totalWeights += crop->getFeedingWeight();
-                    totalDosing += schedulerData()->stdDosingRates[reservoirType - Hydro_ReservoirType_FreshWater];
+                    totalWeights += feedingWeight;
+                    totalDosing += schedulerData()->stdDosingRates[reservoirType - Hydro_ReservoirType_FreshWater] * feedingWeight;
                 } else {
                     auto additiveData = Hydruino::_activeInstance->getCustomAdditiveData(reservoirType);
                     if (additiveData) {
-                        totalWeights += crop->getFeedingWeight();
-                        totalDosing += additiveData->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, crop->getTotalGrowWeeks() - 1)];
+                        totalWeights += feedingWeight;
+                        totalDosing += additiveData->weeklyDosingRates[constrain(crop->getGrowWeek(), 0, HYDRO_CROPS_GROWWEEKS_MAX - 1)] * feedingWeight;
                     }
                 }
             }
@@ -772,7 +773,7 @@ void HydroFeeding::setupStaging()
     }
 
     if (feedRes->getAirCO2Sensor()) {
-        auto co2Balancer = feedRes->getAirTemperatureBalancer();
+        auto co2Balancer = feedRes->getAirCO2Balancer();
         if (!co2Balancer) {
             co2Balancer = SharedPtr<HydroLinearEdgeBalancer>(new HydroLinearEdgeBalancer(feedRes->getAirCO2Sensor(), co2Setpoint, HYDRO_RANGE_CO2_HALF, -HYDRO_RANGE_CO2_HALF * 0.25f, HYDRO_RANGE_CO2_HALF * 0.5f));
             HYDRO_SOFT_ASSERT(co2Balancer, SFP(HStr_Err_AllocationFailure));
@@ -1330,10 +1331,11 @@ void HydroLighting::update()
 
 
 HydroSchedulerSubData::HydroSchedulerSubData()
-    : HydroSubData(), baseFeedMultiplier(1), weeklyDosingRates{1}, stdDosingRates{1,0.5,0.5},
+    : HydroSubData(), baseFeedMultiplier(1), weeklyDosingRates{0}, stdDosingRates{1,0.5,0.5},
       totalFeedingsPerDay(0), preFeedAeratorMins(30), preDawnSprayMins(60), airReportInterval(8 * SECS_PER_HOUR), natLightOffsetMins(-1)
 {
     type = 0; // no type differentiation
+    for (int weekIndex = 0; weekIndex < HYDRO_CROPS_GROWWEEKS_MAX; ++weekIndex) { weeklyDosingRates[weekIndex] = 1.0f; }
 }
 
 void HydroSchedulerSubData::toJSONObject(JsonObject &objectOut) const
@@ -1341,7 +1343,7 @@ void HydroSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     //HydroSubData::toJSONObject(objectOut); // purposeful no call to base method (ignores type)
 
     if (!isFPEqual(baseFeedMultiplier, 1.0f)) { objectOut[SFP(HStr_Key_BaseFeedMultiplier)] = baseFeedMultiplier; }
-    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX, 1.0f);
+    bool hasWeeklyDosings = !arrayElementsEqual(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX, 1.0f);
     if (hasWeeklyDosings) { objectOut[SFP(HStr_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX); }
     bool hasStandardDosings = !isFPEqual(stdDosingRates[0], 1.0f) || !isFPEqual(stdDosingRates[1], 0.5f) || !isFPEqual(stdDosingRates[2], 0.5f);
     if (hasStandardDosings) { objectOut[SFP(HStr_Key_StdDosingRates)] = commaStringFromArray(stdDosingRates, 3); }

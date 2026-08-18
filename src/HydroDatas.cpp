@@ -28,7 +28,7 @@ HydroData *_allocateDataFromBaseDecode(const HydroData &baseDecode)
     HYDRO_SOFT_ASSERT(retVal, F("Unknown data decode"));
     if (retVal) {
         retVal->id = baseDecode.id;
-        HYDRO_SOFT_ASSERT(retVal->_version == baseDecode._version, F("Data version mismatch"));
+        HYDRO_SOFT_ASSERT(retVal->_version >= baseDecode._version, F("Data version mismatch"));
         retVal->_revision = baseDecode._revision;
         return retVal;
     }
@@ -423,6 +423,9 @@ void HydroCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
     {   JsonVariantConst airTempRangeVar = objectIn[SFP(HStr_Key_AirTempRange)];
         commaStringToArray(airTempRangeVar, airTempRange, 2);
     }
+    {   JsonVariantConst co2LevelsVar = objectIn[SFP(HStr_Key_CO2Levels)];
+        commaStringToArray(co2LevelsVar, co2Levels, 2);
+    }
 
     {   JsonVariantConst flagsVar = objectIn[SFP(HStr_Key_Flags)];
         if (flagsVar.is<JsonArrayConst>()) {
@@ -450,17 +453,17 @@ void HydroCropsLibData::fromJSONObject(JsonObjectConst &objectIn)
 }
 
 HydroCustomAdditiveData::HydroCustomAdditiveData()
-    : HydroData('H','A','D','D', 1), additiveName{0}, weeklyDosingRates{1}
+    : HydroData('H','A','D','D', 1), additiveName{0}, weeklyDosingRates{0}
 {
-    HYDRO_HARD_ASSERT(isCalibrationData(), SFP(HStr_Err_OperationFailure));
+    HYDRO_HARD_ASSERT(isAdditiveData(), SFP(HStr_Err_OperationFailure));
     _size = sizeof(*this);
 }
 
 HydroCustomAdditiveData::HydroCustomAdditiveData(Hydro_ReservoirType reservoirType)
-    : HydroData('H','A','D','D', 1), additiveName{0}, weeklyDosingRates{1}
+    : HydroData('H','A','D','D', 1), additiveName{0}, weeklyDosingRates{0}
 {
     _size = sizeof(*this);
-    HYDRO_HARD_ASSERT(isCalibrationData(), SFP(HStr_Err_OperationFailure));
+    HYDRO_HARD_ASSERT(isAdditiveData(), SFP(HStr_Err_OperationFailure));
 
     {   auto additiveData = getController() ? getController()->getCustomAdditiveData(reservoirType) : nullptr;
         if (additiveData && this != additiveData) {
@@ -475,7 +478,7 @@ void HydroCustomAdditiveData::toJSONObject(JsonObject &objectOut) const
 
     objectOut[SFP(HStr_Key_Id)] = reservoirTypeToString(reservoirType);
     if (additiveName[0]) { objectOut[SFP(HStr_Key_AdditiveName)] = charsToString(additiveName, HYDRO_NAME_MAXSIZE); }
-    bool hasWeeklyDosings = arrayElementsEqual(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX, 0.0f);
+    bool hasWeeklyDosings = !arrayElementsEqual(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX, 0.0f);
     if (hasWeeklyDosings) { objectOut[SFP(HStr_Key_WeeklyDosingRates)] = commaStringFromArray(weeklyDosingRates, HYDRO_CROPS_GROWWEEKS_MAX); }
 }
 

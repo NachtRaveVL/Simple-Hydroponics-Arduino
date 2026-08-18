@@ -15,3 +15,5 @@ SmokeTest1
 ###############
 *.bak
 .vscode
+
+build-host/

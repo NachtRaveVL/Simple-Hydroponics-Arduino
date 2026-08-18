@@ -547,6 +547,18 @@ const char *pgmAddrForStr(Hydro_String strNum)
             static const char flashStr_Key_FeedTimingMins[] PROGMEM = {"feedTimingMins"};
             return flashStr_Key_FeedTimingMins;
         } break;
+        case HStr_Key_FeedingsPerDay: {
+            static const char flashStr_Key_FeedingsPerDay[] PROGMEM = {"feedingsPerDay"};
+            return flashStr_Key_FeedingsPerDay;
+        } break;
+        case HStr_Key_FeedingsPerWeek: {
+            static const char flashStr_Key_FeedingsPerWeek[] PROGMEM = {"feedingsPerWeek"};
+            return flashStr_Key_FeedingsPerWeek;
+        } break;
+        case HStr_Key_FeedIntervalMins: {
+            static const char flashStr_Key_FeedIntervalMins[] PROGMEM = {"feedIntervalMins"};
+            return flashStr_Key_FeedIntervalMins;
+        } break;
         case HStr_Key_FeedingTrigger: {
             static const char flashStr_Key_FeedingTrigger[] PROGMEM = {"feedingTrigger"};
             return flashStr_Key_FeedingTrigger;
@@ -886,6 +898,10 @@ const char *pgmAddrForStr(Hydro_String strNum)
         case HStr_Key_UsingISR: {
             static const char flashStr_Key_UsingISR[] PROGMEM = {"usingISR"};
             return flashStr_Key_UsingISR;
+        } break;
+        case HStr_Key_StateStableTimeMs: {
+            static const char flashStr_Key_StateStableTimeMs[] PROGMEM = {"stateStableTimeMs"};
+            return flashStr_Key_StateStableTimeMs;
         } break;
         case HStr_Key_Value: {
             static const char flashStr_Key_Value[] PROGMEM = {"value"};

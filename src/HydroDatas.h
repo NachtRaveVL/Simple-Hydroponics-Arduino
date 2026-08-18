@@ -159,7 +159,7 @@ struct HydroCropsLibData : public HydroData {
     uint8_t phaseDurationWeeks[Hydro_CropPhase_MainCount];  // How many weeks each main crop phase lasts (seed,veg,bloom&> - default: 2,4,8)
     uint8_t dailyLightHours[Hydro_CropPhase_MainCount];     // How many light hours per day is needed per main stages (seed,veg,bloom&> or all - default: 20,18,12)
     float phRange[2];                                       // Ideal pH range (min,max or mid - default: 6)
-    float tdsRange[2];                                      // Ideal TDS/EC range (min,max or mid - default: 1.8,2.4)
+    float tdsRange[2];                                      // Ideal EC range, in mS/cm (legacy TDS name - default: 1.8,2.4)
     float nightlyFeedRate;                                  // Nightly feed multiplier, if crop uses a lower TDS/EC at night (default: 1)
     float waterTempRange[2];                                // Ideal water temperature range, in Celsius (min,max or mid - default: 25)
     float airTempRange[2];                                  // Ideal air temperature range, in Celsius (min,max or mid - default: 25)

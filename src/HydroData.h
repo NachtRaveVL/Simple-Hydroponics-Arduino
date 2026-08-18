@@ -65,6 +65,7 @@ struct HydroData : public HydroJSONSerializableInterface {
 
     virtual void toJSONObject(JsonObject &objectOut) const override;
     virtual void fromJSONObject(JsonObjectConst &objectIn) override;
+    virtual void migrateFromBinaryVersion(uint8_t) { ; }
 
     inline uint8_t getRevision() const { return abs(_revision); }
     inline bool isModified() const { return _revision < 0; }

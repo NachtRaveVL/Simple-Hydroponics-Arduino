@@ -4,6 +4,7 @@
 */
 
 #include "Hydruino.h"
+#include "HydroCoreLogic.h"
 
 HydroBalancer::HydroBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, uint8_t measurementRow, int typeIn)
     : type((typeof(type))typeIn), _targetSetpoint(targetSetpoint), _targetRange(targetRange),
@@ -23,6 +24,11 @@ HydroBalancer::~HydroBalancer()
 void HydroBalancer::update()
 {
     _sensor.updateIfNeeded(true);
+
+    if (_enabled && getController() && getController()->isPollingFrameOld(_sensor.getMeasurementFrame(), HYDRO_BALANCER_STALE_FRAMES)) {
+        _balancingState = Hydro_BalancingState_Undefined;
+        disableAllActivations();
+    }
 }
 
 void HydroBalancer::setTargetSetpoint(float targetSetpoint)
@@ -39,6 +45,19 @@ Hydro_BalancingState HydroBalancer::getBalancingState(bool poll)
 {
     _sensor.updateIfNeeded(poll);
     return _balancingState;
+}
+
+void HydroBalancer::setEnabled(bool enabled)
+{
+    if (_enabled != enabled) {
+        _enabled = enabled;
+        if (_enabled) {
+            _sensor.setNeedsMeasurement();
+        } else {
+            _balancingState = Hydro_BalancingState_Undefined;
+            disableAllActivations();
+        }
+    }
 }
 
 void HydroBalancer::setIncrementActuators(const Vector<HydroActuatorAttachment, HYDRO_BAL_ACTUATORS_MAXSIZE> &incActuators)
@@ -142,13 +161,7 @@ void HydroBalancer::handleMeasurement(const HydroMeasurement *measurement)
         _sensor.setMeasurement(measure);
 
         if (_enabled) {
-            float halfTargetRange = _targetRange * 0.5f;
-            if (measure.value > _targetSetpoint - halfTargetRange + FLT_EPSILON &&
-                measure.value < _targetSetpoint + halfTargetRange - FLT_EPSILON) {
-                _balancingState = Hydro_BalancingState_Balanced;
-            } else {
-                _balancingState = measure.value > _targetSetpoint ? Hydro_BalancingState_TooHigh : Hydro_BalancingState_TooLow;
-            }
+            _balancingState = (Hydro_BalancingState)hydroBalancingStateForValue(measure.value, _targetSetpoint, _targetRange);
 
             if (_balancingState != balancingStateBefore) {
                 #ifdef HYDRO_USE_MULTITASKING
@@ -169,9 +182,13 @@ HydroLinearEdgeBalancer::HydroLinearEdgeBalancer(SharedPtr<HydroSensor> sensor, 
 void HydroLinearEdgeBalancer::update()
 {
     HydroBalancer::update();
-    if (!_enabled || !_sensor) { return; }
+    if (!_enabled || !_sensor) {
+        disableAllActivations();
+        return;
+    }
 
-    if (_balancingState != Hydro_BalancingState_Balanced && _balancingState != Hydro_BalancingState_Undefined) {
+    int correction = hydroBalancingCorrectionForState(_balancingState);
+    if (correction) {
         auto measure = _sensor.getMeasurement(true);
 
         float x = fabsf(measure.value - _targetSetpoint);
@@ -179,17 +196,25 @@ void HydroLinearEdgeBalancer::update()
                                               : (x >= _edgeOffset - FLT_EPSILON ? 1.0 : 0.0f);
         val = constrain(val, 0.0f, 1.0f);
 
-        if (_balancingState == Hydro_BalancingState_TooLow) {
+        if (correction > 0) {
+            for (auto attachIter = _decActuators.begin(); attachIter != _decActuators.end(); ++attachIter) {
+                attachIter->disableActivation();
+            }
             for (auto attachIter = _incActuators.begin(); attachIter != _incActuators.end(); ++attachIter) {
                 attachIter->setupActivation(val * attachIter->getRateMultiplier());
                 attachIter->enableActivation();
             }
         } else {
+            for (auto attachIter = _incActuators.begin(); attachIter != _incActuators.end(); ++attachIter) {
+                attachIter->disableActivation();
+            }
             for (auto attachIter = _decActuators.begin(); attachIter != _decActuators.end(); ++attachIter) {
                 attachIter->setupActivation(val * attachIter->getRateMultiplier());
                 attachIter->enableActivation();
             }
         }
+    } else {
+        disableAllActivations();
     }
 }
 
@@ -215,13 +240,24 @@ HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor
 void HydroTimedDosingBalancer::update()
 {
     HydroBalancer::update();
-    if (!_enabled || !_sensor) { return; }
+    if (!_enabled || !_sensor) {
+        _dosingActIndex = -1;
+        _dosingDir = Hydro_BalancingState_Undefined;
+        disableAllActivations();
+        return;
+    }
 
-    if (_balancingState != Hydro_BalancingState_Balanced && _balancingState != Hydro_BalancingState_Undefined &&
-        (!_lastDosingTime || unixNow() > _lastDosingTime + _mixTime)) {
+    if (_balancingState == Hydro_BalancingState_Balanced || _balancingState == Hydro_BalancingState_Undefined) {
+        _dosingActIndex = -1;
+        _dosingDir = Hydro_BalancingState_Undefined;
+        disableAllActivations();
+        return;
+    }
+
+    if (!_lastDosingTime || unixNow() > _lastDosingTime + _mixTime) {
         if (_dosingDir != _balancingState) { // reset dir control on dir change
             _dosing = 0;
-            _dosingActIndex = 0;
+            _dosingActIndex = -1;
             _dosingDir = Hydro_BalancingState_Undefined;
             disableAllActivations();
         }
@@ -229,10 +265,8 @@ void HydroTimedDosingBalancer::update()
         float dosing = _baseDosing;
         auto dosingValue = _sensor.getMeasurementValue(true);
         if (_dosing) {
-            auto dosingRatePerMs = (dosingValue - _lastDosingValue) / _dosing;
-            dosing = (_targetSetpoint - dosingValue) * dosingRatePerMs;
-            dosing = constrain(dosing, _baseDosing * HYDRO_DOSETIME_FRACTION_MIN,
-                                       _baseDosing * HYDRO_DOSETIME_FRACTION_MAX);
+            dosing = hydroEstimateDosingMillis(_targetSetpoint, dosingValue, _lastDosingValue, _dosing, _baseDosing,
+                                               HYDRO_DOSETIME_FRACTION_MIN, HYDRO_DOSETIME_FRACTION_MAX);
         }
 
         _lastDosingValue = dosingValue;
@@ -257,6 +291,7 @@ void HydroTimedDosingBalancer::update()
                             attachIter->setupActivation(attachIter->getRateMultiplier(), _dosing);
                         }
                         attachIter->enableActivation();
+                        _dosingActIndex++;
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif
@@ -279,6 +314,7 @@ void HydroTimedDosingBalancer::update()
                             attachIter->setupActivation(attachIter->getRateMultiplier(), _dosing);
                         }
                         attachIter->enableActivation();
+                        _dosingActIndex++;
                         #ifdef HYDRO_DISABLE_MULTITASKING
                             break; // only one dosing pass per call when done this way
                         #endif

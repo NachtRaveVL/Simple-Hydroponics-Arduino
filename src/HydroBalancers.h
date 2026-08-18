@@ -51,7 +51,7 @@ public:
     inline float getTargetSetpoint() const { return _targetSetpoint; }
     inline float getTargetRange() const { return _targetRange; }
 
-    inline void setEnabled(bool enabled) { _enabled = enabled; }
+    void setEnabled(bool enabled);
     inline bool isEnabled() const { return _enabled; }
 
     virtual void setMeasurementUnits(Hydro_UnitsType measurementUnits, uint8_t = 0) override;

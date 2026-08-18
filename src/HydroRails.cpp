@@ -7,7 +7,7 @@
 
 HydroRail *newRailObjectFromData(const HydroRailData *dataIn)
 {
-    if (dataIn && isValidType(dataIn->id.object.idType)) return nullptr;
+    if (dataIn && !isValidType(dataIn->id.object.idType)) return nullptr;
     HYDRO_SOFT_ASSERT(dataIn && dataIn->isObjectData(), SFP(HStr_Err_InvalidParameter));
 
     if (dataIn && dataIn->isObjectData()) {
@@ -227,7 +227,7 @@ bool HydroRegulatedRail::canActivate(HydroActuator *actuator)
 
 float HydroRegulatedRail::getCapacity(bool poll)
 {
-    if (_limitTrigger.isTriggered()) { return 1.0f; }
+    if (_limitTrigger.isTriggered(poll)) { return 1.0f; }
     return _powerUsage.getMeasurementValue(poll) / (HYDRO_RAILS_FRACTION_SATURATED * _maxPower);
 }
 
@@ -237,6 +237,7 @@ void HydroRegulatedRail::setPowerUnits(Hydro_UnitsType powerUnits)
         _powerUnits = powerUnits;
 
         _powerUsage.setMeasurementUnits(getPowerUnits(), getRailVoltage());
+        bumpRevisionIfNeeded();
     }
 }
 

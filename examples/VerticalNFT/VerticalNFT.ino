@@ -224,8 +224,10 @@ SoftwareSerial SWSerial(RX, TX);                        // Replace with Rx/Tx pi
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
 #define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
 #define SETUP_PERI_PUMP_FLOWRATE        0.070           // The base continuous flow rate of any peristaltic pumps, in L/min
-#define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for (per feeding cycle)
-#define SETUP_CROP_OFF_TIME             45              // Minutes feeding pumps are to be turned off for (per feeding cycle)
+#define SETUP_CROP_FEED_DURATION        15              // Minutes feeding pumps run during each feeding
+#define SETUP_CROP_FEED_SCHEDULE        Daily           // Feeding cadence (Daily, Weekly, Interval)
+#define SETUP_CROP_FEED_COUNT           24              // Feedings per day/week when using Daily/Weekly cadence
+#define SETUP_CROP_FEED_INTERVAL_MINS   60              // Minutes between feeding starts when using Interval cadence
 #define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
 #define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate, else Undefined
 #define SETUP_CROP_NUMBER               1               // Number of plants in crop position (aka averaging weight)
@@ -635,8 +637,19 @@ inline void setupObjects()
                 auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
                                                             JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
                                                             SETUP_CROP_SOW_DATE,
-                                                            SETUP_CROP_ON_TIME,
-                                                            SETUP_CROP_OFF_TIME);
+                                                            SETUP_CROP_FEED_DURATION, 0);
+                switch (JOIN(Hydro_FeedingSchedule,SETUP_CROP_FEED_SCHEDULE)) {
+                    case Hydro_FeedingSchedule_Daily:
+                        crop->setFeedingsPerDay(SETUP_CROP_FEED_COUNT);
+                        break;
+                    case Hydro_FeedingSchedule_Weekly:
+                        crop->setFeedingsPerWeek(SETUP_CROP_FEED_COUNT);
+                        break;
+                    case Hydro_FeedingSchedule_Interval:
+                        crop->setFeedInterval(TimeSpan((int32_t)SETUP_CROP_FEED_INTERVAL_MINS * SECS_PER_MIN));
+                        break;
+                    default: break;
+                }
             #endif
             crop->setFeedReservoir(feedReservoir);
             crop->setFeedingWeight(SETUP_CROP_NUMBER);

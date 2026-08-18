@@ -1,16 +1,14 @@
 # Hydruino
 Hydruino: Simple Hydroponics Automation Controller.
 
-**Simple-Hydroponics-Arduino v0.6.8.0**
+**Simple-Hydroponics-Arduino v0.7.0.0**
 
 Simple automation controller for hydroponic grow systems.  
 Licensed under the non-restrictive MIT license.
 
 Created by NachtRaveVL, May 20th, 2022.
 
-**UNDER ACTIVE DEVELOPMENT -- WORK IN PROGRESS**
-
-This controller allows one to set up a system of reservoirs, pumps, probes, relays, and other objects useful in automating the daily lighting, feed dosing, watering, and data monitoring & collection processes involved in hydroponically grown fruits, vegetables, teas, herbs, and salves. Works with a large variety of widely-available aquarium/hobbyist equipment, including popular GPS, RTC, EEPROM, SD card, WiFi, and other modules compatible with Arduino. Contains a large library of crop data to select from that will automatically aim the system for the best growing parameters during the various growth phases for the system configured, along with fully customizable weekly feed/additive amounts and daily feeding/lighting scheduling. With the right setup Hydruino can automatically do things like: enable grow lights for the needed period each day (potentially only turning on to augment daily sunlight hours), drive water pumps and auto-dosers during feedings, spray leafy plants in the morning before lights/sunrise, heat cold water to a specific temp for tropical plants, use CO2 sensors to manage air circulation fans to maintain optimal grow tent parameters, remind when to prune plants, or even use soil moisture sensing to dynamically determine watering schedule.
+This controller manages reservoirs, pumps, probes, relays, lighting, dosing, watering, and data collection for hydroponic grow systems. It supports common Arduino-compatible RTC, GPS, EEPROM, SD, networking, sensor, and display hardware while keeping networking completely optional. The built-in crop library provides growth-stage timing and environmental targets, and timed crops can water a configured number of times per day, number of times per week, or after an elapsed interval.
 
 Our Keep-It-Simple controller system:
 
@@ -79,6 +77,23 @@ The easiest way to install this controller is to utilize the Arduino IDE library
 From there, you can make a local copy of one of the example sketches based on the kind of system setup you want to use. If you are unsure of which, we recommend the Vertical NFT Example, as it is our standard implementation built for most common system setups and only requires changing setup defines at the top of the file.
 
 Storage constrained MCUs (< 512kB Flash, particularly <= 256kB) may need further setup file/max-sizes tweaking, and possibly external storage hardware (such as EEPROM or SD Card - see the Data Writer example for more details). Modern MCUs with lots of Flash storage can instead simply build the Full System Example (TODO: Still a WIP - use Vertical NFT Example for right now).
+
+### Crop Data and Watering
+
+Hydruino includes 77 built-in crop profiles. Growth cycle and phase durations are stored in weeks, daily light values are hours per day, `tdsRange` stores EC in mS/cm, water and air temperatures are Celsius, and CO2 targets are PPM. These profiles are useful starting points and should still be tuned for the cultivar, lighting, substrate, and system being used.
+
+Timer-fed crops keep watering duration separate from watering cadence. Cadence can be set with `setFeedingsPerDay()`, `setFeedingsPerWeek()`, or `setFeedInterval()`. Existing JSON on/off timing data is still loaded as an equivalent elapsed cycle.
+
+### Host Tests
+
+Core logic and source-data checks can be run without an Arduino connected:
+
+```sh
+cmake -S tests -B build-host
+cmake --build build-host
+ctest --test-dir build-host --output-on-failure
+python3 tests/validate_source.py
+```
 
 ### Setup
 
@@ -317,13 +332,14 @@ OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp 
   * Again, make sure all analog sensors are calibrated to output the same 0v - `AREF` (or `IOREF`) volts in range.
 * Sensor pins used for event triggering when measurements go above/below a pre-set tolerance - many of which are deceptively labeled `DO` (or `Do`), despite having nothing to do with being `D`ata lines of any kind - can be safely ignored, as the software implementation of such mechanism is more than sufficient.
   * Often these connections are used to drive other hardware-only based solutions that aren't a part of Hydruino's use case, but can still be connected up using a BinarySensor that triggers upon specific conditions, possibly using an ISR-capable pin if desired.
+  * BinarySensor state changes use a configurable stable-time filter before a new level is accepted. The default is 100ms. Use `setStateStableTime()` to adjust it, or set `stateStableTimeMs` to 0 to disable the filter.
 * CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, and _require_ `Vcc` for its heating element (5v @ 130mA for MQ-135) thus cannot use OneWire parasitic power mode. To calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
 * Avoid using volatile organic cleaners nearby humidity sensors - cleaning alcohols (like those commonly used in electronics) can permanently damage these devices.
 
 ### Networking & Wireless
 
-* Networking of any kind is 100% optional, with all base functionality being able to be performed on a fully remote basis utilizing a single RTC and optional GPS (or known static location).
-  * Networking does however make things much simpler and is highly recommended.
+* Networking of any kind is 100% optional. Base controller operation works offline using an RTC and optional GPS or known static location.
+  * WiFi or Ethernet can be enabled when remote control, MQTT, network time, or network storage is wanted.
 * Devices with built-in WiFi or Ethernet can enable such through header/build defines while other devices can utilize an external [serial ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/) on any open Serial line.
   * Warning: While WiFi password is encrypted into system settings data, it should not be considered secure.
 * Serial Bluetooth-AT modules can be used on any open Serial port to provide remote device control (only).
@@ -396,10 +412,11 @@ void setup() {
     lights->setParentRail(relayPower);
     lights->setParentReservoir(feedReservoir);
 
-    // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
+    // Add timer fed crop set to run for 15 minutes once per hour, and links it to the feed water reservoir.
     auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
                                                 JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
                                                 SETUP_CROP_SOW_DATE);
+    crop->setFeedInterval(TimeSpan(60 * SECS_PER_MIN));
     crop->setFeedReservoir(feedReservoir);
 
     // Launches controller into main operation.
@@ -628,8 +645,10 @@ Included below is the default system setup defines of the Vertical NFT example (
 #define SETUP_FEED_RESERVOIR_SIZE       5               // Reservoir size, in default measurement units
 #define SETUP_FEED_PUMP_FLOWRATE        20              // The base continuous flow rate of the main feed pumps, in L/min
 #define SETUP_PERI_PUMP_FLOWRATE        0.070           // The base continuous flow rate of any peristaltic pumps, in L/min
-#define SETUP_CROP_ON_TIME              15              // Minutes feeding pumps are to be turned on for (per feeding cycle)
-#define SETUP_CROP_OFF_TIME             45              // Minutes feeding pumps are to be turned off for (per feeding cycle)
+#define SETUP_CROP_FEED_DURATION        15              // Minutes feeding pumps run during each feeding
+#define SETUP_CROP_FEED_SCHEDULE        Daily           // Feeding cadence (Daily, Weekly, Interval)
+#define SETUP_CROP_FEED_COUNT           24              // Feedings per day/week when using Daily/Weekly cadence
+#define SETUP_CROP_FEED_INTERVAL_MINS   60              // Minutes between feeding starts when using Interval cadence
 #define SETUP_CROP_TYPE                 Lettuce         // Type of crop planted, else Undefined
 #define SETUP_CROP_SUBSTRATE            ClayPebbles     // Type of crop substrate, else Undefined
 #define SETUP_CROP_NUMBER               1               // Number of plants in crop position (aka averaging weight)

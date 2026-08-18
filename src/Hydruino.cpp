@@ -618,7 +618,7 @@ bool Hydruino::saveToBinaryStream(Stream *streamOut)
     if (_systemData && streamOut) {
         {   size_t bytesWritten = serializeDataToBinaryStream(_systemData, streamOut);
 
-            HYDRO_SOFT_ASSERT(!bytesWritten, SFP(HStr_Err_ExportFailure));
+            HYDRO_SOFT_ASSERT(bytesWritten, SFP(HStr_Err_ExportFailure));
             if (!bytesWritten) { return false; }
         }
 

@@ -54,10 +54,11 @@ void setup() {
     lights->setParentRail(relayPower);
     lights->setParentReservoir(feedReservoir);
 
-    // Add timer fed crop set to feed on a standard 15 mins on/45 mins off timer, and links it to the feed water reservoir.
+    // Add timer fed crop set to run for 15 minutes once per hour, and links it to the feed water reservoir.
     auto crop = hydroController.addTimerFedCrop(JOIN(Hydro_CropType,SETUP_CROP_TYPE),
                                                 JOIN(Hydro_SubstrateType,SETUP_CROP_SUBSTRATE),
                                                 SETUP_CROP_SOW_DATE);
+    crop->setFeedInterval(TimeSpan(60 * SECS_PER_MIN));
     crop->setFeedReservoir(feedReservoir);
 
     // Launches controller into main operation.
