@@ -103,6 +103,24 @@ def validate_binary_persistence():
             "Binary save still reports successful writes as assertion failures")
 
 
+def validate_family_consistency():
+    attachments = (SRC / "HydroAttachments.cpp").read_text()
+    core_logic = (SRC / "HydroCoreLogic.h").read_text()
+    datas = (SRC / "HydroDatas.cpp").read_text()
+
+    require("hydroDirectionForValue(value, FLT_EPSILON)" in attachments,
+            "Bidirectional attachment direction is bypassing the shared floating-point direction helper")
+    require("value > FLT_EPSILON ? Hydro_DirectionMode_Forward" not in attachments,
+            "Bidirectional attachment direction still uses an inline raw-epsilon ternary")
+    require("isFPEqual(bTerm, 0.0f)" in datas,
+            "Calibration two-point setup is bypassing isFPEqual() for its zero-span guard")
+
+    for field in ["copyBytes", "skipBytes"]:
+        lines = [line for line in core_logic.splitlines() if re.search(rf"\b{field}\s*;", line)]
+        require(lines and all("//" in line for line in lines),
+                f"HydroBinaryDataReadPlan.{field} is missing its inline member comment")
+
+
 def validate_readme():
     readme = (ROOT / "README.md").read_text()
     require("UNDER ACTIVE DEVELOPMENT -- WORK IN PROGRESS" not in readme, "README still has WIP banner")
@@ -113,5 +131,6 @@ if __name__ == "__main__":
     validate_factories()
     validate_scheduler_fixes()
     validate_binary_persistence()
+    validate_family_consistency()
     validate_readme()
     print("Hydruino source validation passed")

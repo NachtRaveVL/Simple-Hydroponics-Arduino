@@ -4,6 +4,7 @@
 */
 
 #include "Hydruino.h"
+#include "HydroCoreLogic.h"
 
 HydroDLinkObject::HydroDLinkObject()
     : _key(hkey_none), _obj(nullptr), _keyStr(nullptr)
@@ -144,7 +145,10 @@ void HydroActuatorAttachment::setupActivation(float value, millis_t duration, bo
         value = get()->calibrationInvTransform(value);
 
         if (get()->isBidirectionalType()) {
-            setupActivation(HydroActivation(value > FLT_EPSILON ? Hydro_DirectionMode_Forward : value < -FLT_EPSILON ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop, fabsf(value), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
+            // Keep direction selection tolerant of floating-point noise around a stopped command.
+            int direction = hydroDirectionForValue(value, FLT_EPSILON);
+            setupActivation(HydroActivation(direction > 0 ? Hydro_DirectionMode_Forward : direction < 0 ? Hydro_DirectionMode_Reverse : Hydro_DirectionMode_Stop,
+                                            fabsf(value), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)));
             return;
         }
     }

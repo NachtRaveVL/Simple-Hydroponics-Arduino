@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cmath>
+#include <cfloat>
 
 #include "HydroCoreLogic.h"
 
@@ -19,6 +20,17 @@ static void testElapsedTime()
     assert(hydroElapsedTime(25, start) == 50);
     assert(!hydroHasElapsed(24, start, 50));
     assert(hydroHasElapsed(25, start, 50));
+}
+
+static void testSignedDirection()
+{
+    assert(hydroDirectionForValue(1.0f) == 1);
+    assert(hydroDirectionForValue(-1.0f) == -1);
+    assert(hydroDirectionForValue(0.0f) == 0);
+    assert(hydroDirectionForValue(FLT_EPSILON) == 0);
+    assert(hydroDirectionForValue(-FLT_EPSILON) == 0);
+    assert(hydroDirectionForValue(FLT_EPSILON * 2.0f) == 1);
+    assert(hydroDirectionForValue(-FLT_EPSILON * 2.0f) == -1);
 }
 
 static void testCropPhases()
@@ -166,6 +178,7 @@ static void testBinaryDataReadPlan()
 int main()
 {
     testElapsedTime();
+    testSignedDirection();
     testBinaryDataReadPlan();
     testCropPhases();
     testFeedingCadence();

@@ -8,18 +8,28 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <float.h>
 #include <math.h>
 
+// Returns elapsed unsigned time while remaining safe across 32-bit timer rollover.
 inline uint32_t hydroElapsedTime(uint32_t now, uint32_t start)
 {
     return (uint32_t)(now - start);
 }
 
+// Returns true once the requested unsigned duration has elapsed.
 inline bool hydroHasElapsed(uint32_t now, uint32_t start, uint32_t duration)
 {
     return hydroElapsedTime(now, start) >= duration;
 }
 
+// Converts a signed actuator value into reverse, stopped, or forward direction.
+inline int hydroDirectionForValue(float value, float epsilon = FLT_EPSILON)
+{
+    return fabsf(value) <= epsilon ? 0 : value > 0.0f ? 1 : -1;
+}
+
+// Resolves the current crop phase from the elapsed grow week and phase durations.
 inline int hydroCropPhaseForWeek(int growWeek, const uint8_t *phaseDurationWeeks, int phaseCount)
 {
     if (phaseCount <= 0) { return 0; }
@@ -34,6 +44,7 @@ inline int hydroCropPhaseForWeek(int growWeek, const uint8_t *phaseDurationWeeks
     return phaseCount;
 }
 
+// Applies a minimum stable time before accepting a changed binary sensor state.
 inline bool hydroUpdateStableBinaryState(bool acceptedState, bool sampledState, uint32_t nowMillis,
                                          uint16_t stableTimeMillis, bool &pendingState,
                                          bool &hasPendingState, uint32_t &pendingStateStart)
@@ -55,6 +66,7 @@ inline bool hydroUpdateStableBinaryState(bool acceptedState, bool sampledState, 
     return acceptedState;
 }
 
+// Converts the configured daily, weekly, or fixed-minute feeding cadence into seconds.
 inline uint32_t hydroFeedingIntervalSeconds(uint8_t feedingsPerDay, uint8_t feedingsPerWeek, uint16_t feedIntervalMins)
 {
     if (feedingsPerDay) {
@@ -66,11 +78,13 @@ inline uint32_t hydroFeedingIntervalSeconds(uint8_t feedingsPerDay, uint8_t feed
     return (uint32_t)feedIntervalMins * 60UL;
 }
 
+// Returns true when another feeding interval has become due.
 inline bool hydroFeedingDue(uint32_t now, uint32_t lastFeedingTime, uint32_t intervalSeconds)
 {
     return intervalSeconds && (!lastFeedingTime || hydroHasElapsed(now, lastFeedingTime, intervalSeconds));
 }
 
+// Keeps an active timed feeding running and starts a new one once its interval expires.
 inline bool hydroTimedFeedingNeeded(uint32_t now, uint32_t lastFeedingTime, uint32_t feedDurationSeconds, uint32_t intervalSeconds)
 {
     if (!intervalSeconds) { return false; }
@@ -80,6 +94,7 @@ inline bool hydroTimedFeedingNeeded(uint32_t now, uint32_t lastFeedingTime, uint
     return elapsed < feedDurationSeconds || elapsed >= intervalSeconds;
 }
 
+// Resolves a measured value as too low, balanced, or too high around the target range.
 inline int hydroBalancingStateForValue(float value, float targetSetpoint, float targetRange)
 {
     const float halfTargetRange = fabsf(targetRange) * 0.5f;
@@ -88,6 +103,7 @@ inline int hydroBalancingStateForValue(float value, float targetSetpoint, float 
     return 1;
 }
 
+// Converts a balancing state into positive, neutral, or negative correction direction.
 inline int hydroBalancingCorrectionForState(int balancingState)
 {
     if (balancingState == 0) { return 1; }
@@ -95,6 +111,7 @@ inline int hydroBalancingCorrectionForState(int balancingState)
     return 0;
 }
 
+// Estimates the next dosing duration from the response observed after the previous dose.
 inline float hydroEstimateDosingMillis(float targetSetpoint, float dosingValue, float lastDosingValue,
                                        float lastDosingMillis, float baseDosingMillis,
                                        float minFraction, float maxFraction)
@@ -114,12 +131,14 @@ inline float hydroEstimateDosingMillis(float targetSetpoint, float dosingValue, 
     return dosing;
 }
 
+// Binary record copy/skip plan used for append-only serialized data migrations.
 struct HydroBinaryDataReadPlan
 {
-    size_t copyBytes;
-    size_t skipBytes;
+    size_t copyBytes;                                       // Bytes that can be copied into the current data structure
+    size_t skipBytes;                                       // Unknown trailing bytes that must be skipped in the serialized record
 };
 
+// Builds a safe copy plan for older, current, or newer append-only binary records.
 inline HydroBinaryDataReadPlan hydroBinaryDataReadPlan(size_t serializedSize, size_t currentSize, size_t baseSize)
 {
     if (serializedSize < baseSize || currentSize < baseSize) { return {0, 0}; }
