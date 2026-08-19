@@ -1,15 +1,128 @@
-==================================
-CLASSES
-==================================
+# Hydruino syntax coloring
 
-==================================
-FUNCTIONS
-==================================
+# Controllers and core types
+Hydruino	KEYWORD1
+HydroObject	KEYWORD1
+HydroSubObject	KEYWORD1
+HydroFactory	KEYWORD1
+HydroScheduler	KEYWORD1
+HydroLogger	KEYWORD1
+HydroPublisher	KEYWORD1
+HydroCalibrations	KEYWORD1
+HydroAdditives	KEYWORD1
+HydroObjectRegistration	KEYWORD1
+HydroPinHandlers	KEYWORD1
 
-==================================
-CONSTANTS
-==================================
+# Activations and attachments
+HydroActivation	KEYWORD1
+HydroActivationHandle	KEYWORD1
+HydroDLinkObject	KEYWORD1
+HydroAttachment	KEYWORD1
+HydroActuatorAttachment	KEYWORD1
+HydroSensorAttachment	KEYWORD1
+HydroTriggerAttachment	KEYWORD1
+HydroBalancerAttachment	KEYWORD1
 
-==================================
-DATA TYPES
-==================================
+# Measurements and pins
+HydroMeasurement	KEYWORD1
+HydroSingleMeasurement	KEYWORD1
+HydroBinaryMeasurement	KEYWORD1
+HydroDoubleMeasurement	KEYWORD1
+HydroTripleMeasurement	KEYWORD1
+HydroMeasurementData	KEYWORD1
+HydroPin	KEYWORD1
+HydroDigitalPin	KEYWORD1
+HydroAnalogPin	KEYWORD1
+HydroPinData	KEYWORD1
+HydroPinMuxer	KEYWORD1
+HydroPinExpander	KEYWORD1
+
+# Actuators and sensors
+HydroActuator	KEYWORD1
+HydroRelayActuator	KEYWORD1
+HydroRelayPumpActuator	KEYWORD1
+HydroVariableActuator	KEYWORD1
+HydroSensor	KEYWORD1
+HydroBinarySensor	KEYWORD1
+HydroAnalogSensor	KEYWORD1
+HydroDigitalSensor	KEYWORD1
+HydroDHTTempHumiditySensor	KEYWORD1
+HydroDSTemperatureSensor	KEYWORD1
+
+# Triggers and balancers
+HydroTrigger	KEYWORD1
+HydroMeasurementValueTrigger	KEYWORD1
+HydroMeasurementRangeTrigger	KEYWORD1
+HydroBalancer	KEYWORD1
+HydroLinearEdgeBalancer	KEYWORD1
+HydroTimedDosingBalancer	KEYWORD1
+
+# Crops, reservoirs, and rails
+HydroCrop	KEYWORD1
+HydroTimedCrop	KEYWORD1
+HydroAdaptiveCrop	KEYWORD1
+HydroReservoir	KEYWORD1
+HydroFluidReservoir	KEYWORD1
+HydroFeedReservoir	KEYWORD1
+HydroInfiniteReservoir	KEYWORD1
+HydroRail	KEYWORD1
+HydroSimpleRail	KEYWORD1
+HydroRegulatedRail	KEYWORD1
+
+# User interface
+HydruinoBaseUI	KEYWORD1
+HydruinoMinUI	KEYWORD1
+HydruinoFullUI	KEYWORD1
+HydruinoUI	KEYWORD1
+
+# Public enum types
+Hydro_SystemMode	KEYWORD1
+Hydro_MeasurementMode	KEYWORD1
+Hydro_DisplayOutputMode	KEYWORD1
+Hydro_ControlInputMode	KEYWORD1
+Hydro_ActuatorType	KEYWORD1
+Hydro_SensorType	KEYWORD1
+Hydro_CropType	KEYWORD1
+Hydro_SubstrateType	KEYWORD1
+Hydro_ReservoirType	KEYWORD1
+Hydro_RailType	KEYWORD1
+Hydro_PinMode	KEYWORD1
+Hydro_EnableMode	KEYWORD1
+Hydro_DirectionMode	KEYWORD1
+Hydro_UnitsCategory	KEYWORD1
+Hydro_UnitsType	KEYWORD1
+Hydro_BalancingState	KEYWORD1
+Hydro_TriggerState	KEYWORD1
+Hydro_CropPhase	KEYWORD1
+Hydro_EEPROMType	KEYWORD1
+Hydro_RTCType	KEYWORD1
+Hydro_ActivationFlags	KEYWORD1
+
+# Public factory and conversion helpers
+newActuatorObjectFromData	KEYWORD2
+newSensorObjectFromData	KEYWORD2
+newCropObjectFromData	KEYWORD2
+newReservoirObjectFromData	KEYWORD2
+newRailObjectFromData	KEYWORD2
+newTriggerObjectFromSubData	KEYWORD2
+newMeasurementObjectFromSubData	KEYWORD2
+newPinObjectFromSubData	KEYWORD2
+defaultUnitsForSensor	KEYWORD2
+defaultCategoryForSensor	KEYWORD2
+
+# Build flags
+HYDRO_DISABLE_MULTITASKING	LITERAL1
+HYDRO_DISABLE_GUI	LITERAL1
+HYDRO_ENABLE_WIFI	LITERAL1
+HYDRO_ENABLE_AT_WIFI	LITERAL1
+HYDRO_ENABLE_ETHERNET	LITERAL1
+HYDRO_ENABLE_MQTT	LITERAL1
+HYDRO_ENABLE_GPS	LITERAL1
+HYDRO_DISABLE_BUILTIN_DATA	LITERAL1
+HYDRO_ENABLE_DEBUG_OUTPUT	LITERAL1
+HYDRO_ENABLE_VERBOSE_DEBUG	LITERAL1
+HYDRO_ENABLE_DEBUG_ASSERTIONS	LITERAL1
+HYDRO_UI_ENABLE_XPT2046TS	LITERAL1
+HYDRO_UI_ENABLE_STCHROMA_LDTC	LITERAL1
+HYDRO_UI_ENABLE_BSP_TOUCH	LITERAL1
+HYDRO_UI_ENABLE_DEBUG_MENU	LITERAL1
