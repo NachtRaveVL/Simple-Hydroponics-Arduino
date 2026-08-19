@@ -1,7 +1,7 @@
 # Hydruino
 Hydruino: Simple Hydroponics Automation Controller.
 
-**Simple-Hydroponics-Arduino v0.7.0.0**
+**Simple-Hydroponics-Arduino v0.7.1.0**
 
 Simple automation controller for hydroponic grow systems.  
 Licensed under the non-restrictive MIT license.
@@ -34,10 +34,6 @@ Our Keep-It-Simple controller system:
 * Library data can be built into onboard Flash or exported onto external storage to additionally save on compiled sketch size.
 
 Made primarily for Arduino microcontrollers / build environments, but should work with PlatformIO, Espressif, Teensy, STM32, Pico, and others - although one might experience turbulence until the bug reports get ironed out.
-
-Dependencies include: Adafruit BusIO (dep of RTClib/tcMenu), Adafruit GPS Library (ext NMEA-AT, optional), Adafruit Unified Sensor (dep of DHT), ArduinoJson, ArxContainer (AVR/SAM STL), ArxSmartPtr (SharedPtr), DallasTemperature, DHT sensor library, I2C_EEPROM, IoAbstraction (dep of TaskManagerIO), MQTT, OneWire (platform|like), RTClib, SimpleCollections (dep of TaskManagerIO), SD (platform|like), SolarCalculator, TaskManagerIO (disableable, dep of tcMenu), tcMenu (disableable), Time, and a WiFi-like networking library (optional): WiFi101 (MKR1000 only), WiFiNINA_Generic, WiFiEspAT (ext ESP-AT), or Ethernet (platform|like).
-
-Additional GUI (tcMenu) dependencies: Adafruit FT6206 Library (disableable), Adafruit GFX Library, Adafruit ILI9341, Adafruit ST7735 and ST7789 Library, Adafruit TouchScreen, LiquidCrystalIO, tcUnicodeHelper, TFT_eSPI, U8g2, and XPT2046_Touchscreen (optional). (Note: There may be additional sub-dependencies not listed here).
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
@@ -158,15 +154,39 @@ From shared/HydruinoUI.h:
 
 #### External Libraries
 
-Certain setups may require additional, and in some cases specialized, library dependency setup in order to function. This is mainly seen around certain display and input options. Ones to highlight include:
+Hydruino uses the following controller-side libraries depending on the enabled hardware and features:
 
-* **U8g2** (monochrome OLED displays): The CustomOLED display output option uses `HYDRO_UI_CUSTOM_OLED_I2C` and/or `HYDRO_UI_CUSTOM_OLED_SPI` for allocating a custom U8g2 device. These defines should resolve to an appropriate U8g2 based device string, such as `U8G2_SSD1309_128X64_NONAME0_F_HW_I2C`, defined en-masse inside of the U8g2 library header file (note: the `_F_` part of the name implies frame buffer support for non-flickering animations - recommended). This custom option has static linkage against a single custom i2c/SPI device at a time and will require sketch modify/re-upload upon needing any changes.
+* **ArduinoJson** for JSON configuration data.
+* **ArxContainer** and **ArxSmartPtr** for container and shared-pointer support on Arduino targets.
+* **DallasTemperature** and **OneWire** for DS18-series temperature sensors.
+* **DHT sensor library** and **Adafruit Unified Sensor** for DHT environmental sensors.
+* **I2C_EEPROM** for external I2C EEPROM storage.
+* **RTClib** and **Time** for RTC and system time handling.
+* **SolarCalculator** for offline solar position, sunrise, sunset, and transit calculations.
+* **TaskManagerIO**, **IoAbstraction**, and **SimpleCollections** for multitasking and I/O support when multitasking is enabled.
+* **Adafruit GPS** when GPS support is enabled.
+* **MQTT** when MQTT publishing is enabled.
+* **SD** plus the platform SPI/Wire support for local storage and buses.
+* **WiFi101**, **WiFiNINA_Generic**, **WiFiEspAT**, or **Ethernet** when the matching optional network path is enabled.
 
-* **TFT_eSPI** (advanced color TFT display library): The TFT display output option (in lieu of the default AdafruitGFX driven TFT options) uses the configuration specified via its `TFT_eSPI\User_Setup.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
+Networking is optional. An offline Hydruino system does not need a WiFi, Ethernet, or MQTT library.
 
-* **BSP_LCD** & **BSP Touch** (STM32746G-Discovery on STM32/mbed only): This particular setup can utilize a ChromaArt-based drawable (in place of U8g2Drawable) with STM32 LDTC frame buffer, and requires advanced user setup via the included `shared\tcMenu_Extra_BspUserSettings.h` library setup file. This library always has static linkage and will require sketch modify/re-upload upon needing any changes. Use of this library is only recommended for advanced users.
+#### External UI Libraries
 
-* **ST7789::CustomTFT** & **TFT_eSPI**: These options utilize the `TFT_GFX_WIDTH` and `TFT_GFX_HEIGHT` defines for the screen width/height (defaulting to TFT_eSPI's `TFT_WIDTH` and `TFT_HEIGHT` values if defined, else assuming standard 240x320), and should be either edited directly or defined through custom build defines. These values are statically linked and will require sketch modify/re-upload upon needing any changes.
+The optional tcMenu UI layer can use the same display and input libraries across the controller family:
+
+* **tcMenu** for the menu, remote-control, and display abstraction layer.
+* **Adafruit GFX**, **Adafruit ILI9341**, and **Adafruit ST7735 and ST7789 Library** for supported color displays.
+* **Adafruit FT6206**, **Adafruit TouchScreen**, and optional **XPT2046_Touchscreen** for touch input.
+* **LiquidCrystalIO** for character LCD displays.
+* **U8g2** for monochrome OLED and LCD displays.
+* **TFT_eSPI** for supported advanced TFT configurations.
+* **tcUnicodeHelper** for Unicode-capable tcMenu display paths.
+
+* **U8g2** custom display setups use the selected U8g2 device class and are statically linked to that display configuration.
+* **TFT_eSPI** uses its `TFT_eSPI\User_Setup.h` configuration and therefore requires a rebuild when that hardware setup changes.
+* **BSP LCD / BSP Touch** support can use the included ChromaArt/BSP adapter layer on supported STM32/mbed targets. This is an advanced hardware-specific path.
+* **ST7789 custom TFT / TFT_eSPI** setups use statically configured screen dimensions and require a rebuild when those values change.
 
 ### Initialization
 

@@ -1,6 +1,6 @@
 {
     "name": "Simple-Hydroponics-Arduino",
-    "version": "0.7.0.0",
+    "version": "0.7.1.0",
     "keywords": "hydroponic,hydroponics,plant,plants,crop,crops,grow,growing,growth,watering,scheduler,tracking,diy,automation,controller,monitor,system",
     "description": "Hydruino: Simple automation controller for hydroponic grow systems.",
     "license": "MIT",
@@ -21,24 +21,43 @@
         {
             "name": "SimpleDWC",
             "base": "examples/SimpleDWC",
-            "files": ["SimpleDWC.ino"]
+            "files": [
+                "SimpleDWC.ino"
+            ]
         },
         {
             "name": "VerticalNFT",
             "base": "examples/VerticalNFT",
-            "files": ["VerticalNFT.ino"]
+            "files": [
+                "VerticalNFT.ino"
+            ]
         },
         {
             "name": "FullSystem",
             "base": "examples/FullSystem",
-            "files": ["FullSystem.ino"]
+            "files": [
+                "FullSystem.ino"
+            ]
         },
         {
             "name": "DataWriter",
             "base": "examples/DataWriter",
-            "files": ["DataWriter.ino"]
+            "files": [
+                "DataWriter.ino"
+            ]
         }
     ],
-    "frameworks": ["arduino", "espidf", "mbed"],
-    "platforms": ["avr", "sam", "samd", "teensy", "espressif8266", "espressif32"]
+    "frameworks": [
+        "arduino",
+        "espidf",
+        "mbed"
+    ],
+    "platforms": [
+        "avr",
+        "sam",
+        "samd",
+        "teensy",
+        "espressif8266",
+        "espressif32"
+    ]
 }
