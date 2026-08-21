@@ -70,7 +70,7 @@ Note: Certain MCUs, such as those from STM, are sold in many different Flash/SRA
 
 The easiest way to install this controller is to utilize the Arduino IDE library manager, or through a package manager such as PlatformIO. Otherwise, simply download this controller and extract its files into a `Simple-Hydroponics-Arduino` folder in your Arduino custom libraries folder, typically found in your `[My ]Documents\Arduino\libraries` folder (Windows), or `~/Documents/Arduino/libraries/` folder (Linux/OSX).
 
-From there, a local copy of one of the example sketches can be used as the system starting point. The Simple DWC Example is the recommended first example because it is the smallest practical Hydruino setup and makes the controller object relationships easier to follow. The Vertical NFT Example is the larger reference implementation for a more complete system and only requires changing setup defines at the top of the file.
+From there, you can make a local copy of one of the example sketches based on the kind of system setup you want to use. If you are unsure of which, start with the Simple DWC Example. It is the smallest practical Hydruino setup and is easier to follow while learning how the controller objects fit together. The Vertical NFT Example is the larger reference implementation for a more complete system and only requires changing setup defines at the top of the file.
 
 Storage constrained MCUs (< 512kB Flash, particularly <= 256kB) may need further setup file/max-sizes tweaking, and possibly external storage hardware (such as EEPROM or SD Card - see the Data Writer example for more details). Modern MCUs with lots of Flash storage can instead simply build the Full System Example (TODO: Still a WIP - use Vertical NFT Example for right now).
 
@@ -453,7 +453,7 @@ void loop()
 
 ### Main System Examples
 
-There are two larger system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. New users should start with the Simple DWC Example above, then use the Vertical NFT Example as the main reference when moving to a more complete system. Vertical NFT is also the standard implementation for the 3D printed controller enclosure and can be extended to include other functionality if desired.
+There are two larger system examples to choose from, Vertical NFT and Full System, each with its own requirements and capabilities. New users should start with the Simple DWC Example above, then use the Vertical NFT Example as the main reference when moving to a more complete system. Vertical NFT is also the standard implementation for our 3D printed controller enclosure and can be extended to include other functionality if desired.
 
 The Vertical NFT Example sketch has the benefit of being able to compile in a minimal UI mode that will strip out what isn't used, making it ideal for storage constrained devices (e.g. those with < 512kB Flash), but will not provide full UI functionality since it will be missing the code for all the other objects the system build code strips out, thus requiring re-compiling/re-uploading on system setup changes. The UI, in this mode, only provides edit capabilities, not create/delete, with more customization options locked out.
 
