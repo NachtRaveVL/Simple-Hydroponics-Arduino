@@ -1,7 +1,7 @@
 # Hydruino
 Hydruino: Simple Hydroponics Automation Controller.
 
-**Simple-Hydroponics-Arduino v0.7.1.0**
+**Simple-Hydroponics-Arduino v0.7.2.0**
 
 Simple automation controller for hydroponic grow systems.  
 Licensed under the non-restrictive MIT license.
