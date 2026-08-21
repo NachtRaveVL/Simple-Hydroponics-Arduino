@@ -1103,12 +1103,11 @@ void Hydruino::setSystemName(String systemName)
     }
 }
 
-void Hydruino::setTimeZoneOffset(int8_t hoursOffset, int8_t minsOffset)
+void Hydruino::setTimeZoneOffset(int8_t hoursOffset)
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
-    int16_t timeZoneOffset = (hoursOffset * 100) + ((minsOffset * 100) / 60);
-    if (_systemData && _systemData->timeZoneOffset != timeZoneOffset) {
-        _systemData->timeZoneOffset = timeZoneOffset;
+    if (_systemData && _systemData->timeZoneOffset != hoursOffset) {
+        _systemData->timeZoneOffset = hoursOffset;
 
         setNeedsRedraw();
         _systemData->bumpRevisionIfNeeded();
@@ -1437,7 +1436,7 @@ String Hydruino::getSystemName() const
 time_t Hydruino::getTimeZoneOffset() const
 {
     HYDRO_SOFT_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
-    return _systemData ? (_systemData->timeZoneOffset * SECS_PER_HOUR) / 100 : 0;
+    return _systemData ? _systemData->timeZoneOffset * SECS_PER_HOUR : 0;
 }
 
 uint16_t Hydruino::getPollingInterval() const

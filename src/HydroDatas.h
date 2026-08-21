@@ -36,7 +36,7 @@ struct HydroSystemData : public HydroData {
     Hydro_DisplayOutputMode dispOutMode;                    // System display output mode
     Hydro_ControlInputMode ctrlInMode;                      // System control input mode 
     char systemName[HYDRO_NAME_MAXSIZE];                    // System name
-    int16_t timeZoneOffset;                                 // Timezone offset *100 (accounts for :30 and :45)
+    int16_t timeZoneOffset;                                 // Timezone offset from UTC, in whole hours
     uint16_t pollingInterval;                               // Sensor polling interval, in milliseconds
     Hydro_Autosave autosaveEnabled;                         // Autosave enabled
     Hydro_Autosave autosaveFallback;                        // Autosave fallback
