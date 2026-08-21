@@ -191,7 +191,7 @@ SharedPtr<HydroObject> HydroObjectRegistration::objectById(HydroIdentity id) con
                 if (id.keyString == iter->second->getKeyString()) {
                     return iter->second;
                 } else {
-                    objectById_Col(id);
+                    return objectById_Col(id);
                 }
             }
         }
@@ -202,7 +202,7 @@ SharedPtr<HydroObject> HydroObjectRegistration::objectById(HydroIdentity id) con
                 if (id.keyString == iter->second->getKeyString()) {
                     return iter->second;
                 } else {
-                    objectById_Col(id);
+                    return objectById_Col(id);
                 }
             }
         }
@@ -212,7 +212,7 @@ SharedPtr<HydroObject> HydroObjectRegistration::objectById(HydroIdentity id) con
             if (id.keyString == iter->second->getKeyString()) {
                 return iter->second;
             } else {
-                objectById_Col(id);
+                return objectById_Col(id);
             }
         }
     }
