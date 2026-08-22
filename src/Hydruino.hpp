@@ -3,6 +3,9 @@
     Hydruino System
 */
 
+#ifndef Hydruino_HPP
+#define Hydruino_HPP
+
 #include "Hydruino.h"
 
 inline bool Twilight::isDaytime(time_t unixTime) const {
@@ -241,3 +244,5 @@ inline void HydroScheduler::setLastWeekAsFlush(HydroCrop *crop)
 {
     if (crop) { setFlushWeek(crop->getTotalGrowWeeks() - 1); }
 }
+
+#endif // /ifndef Hydruino_HPP
