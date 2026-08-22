@@ -4,8 +4,8 @@
 */
 // Copied and modified from: https://github.com/tomstewart89/Callback
 
-#ifndef HydroCallback_H
-#define HydroCallback_H
+#ifndef HydroCallback_HH
+#define HydroCallback_HH
 
 #include "Hydruino.h"
 
@@ -164,4 +164,4 @@ public:
     }
 };
 
-#endif // HydroCallback_H
+#endif // HydroCallback_HH
