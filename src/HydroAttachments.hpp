@@ -3,6 +3,9 @@
     Hydruino Attachment Points
 */
 
+#ifndef HydroAttachments_HPP
+#define HydroAttachments_HPP
+
 #include "Hydruino.h"
 
 inline HydroDLinkObject &HydroDLinkObject::operator=(HydroIdentity rhs)
@@ -206,3 +209,5 @@ inline Hydro_BalancingState HydroBalancerAttachment::getBalancingState(bool poll
 {
     return resolve() ? get()->getBalancingState(poll) : Hydro_BalancingState_Undefined;
 }
+
+#endif // /ifndef HydroAttachments_HPP
