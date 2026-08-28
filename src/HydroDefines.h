@@ -234,7 +234,7 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_SCH_BALANCE_MINTIME       30                  // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
 #define HYDRO_SCH_AERATORS_FEEDRUN      true                // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
-#define HYDRO_SENSOR_BINARY_STABLE_MILLIS 100                 // Minimum time a binary sensor input must remain changed before the new state is accepted, in milliseconds
+#define HYDRO_SENSOR_BINARY_STABLE_MILLIS 100               // Minimum time a binary sensor input must remain changed before the new state is accepted, in milliseconds
 #define HYDRO_SENSOR_ANALOGREAD_SAMPLES 5                   // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRO_SENSOR_ANALOGREAD_DELAY   0                   // Delay time between samples, or 0 to disable delay, in milliseconds
 

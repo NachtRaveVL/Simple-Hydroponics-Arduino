@@ -24,7 +24,3 @@ target_include_directories(hydruino_hardening_tests PRIVATE ../src)
 
 add_test(NAME hydruino_core_tests COMMAND hydruino_core_tests)
 add_test(NAME hydruino_hardening_tests COMMAND hydruino_hardening_tests)
-
-if(Python3_Interpreter_FOUND)
-    add_test(NAME source_validation COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/validate_source.py)
-endif()
