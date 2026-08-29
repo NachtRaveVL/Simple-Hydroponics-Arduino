@@ -45,7 +45,7 @@ inline int hydroCropPhaseForWeek(int growWeek, const uint8_t *phaseDurationWeeks
 }
 
 // Applies a minimum stable time before accepting a changed binary sensor state.
-inline bool hydroUpdateStableBinaryState(bool acceptedState, bool sampledState, uint32_t nowMillis,
+inline bool hydroUpdateStableBinaryState(bool acceptedState, bool sampledState, uint32_t now,
                                          uint16_t stableTimeMillis, bool &pendingState,
                                          bool &hasPendingState, uint32_t &pendingStateStart)
 {
@@ -56,9 +56,9 @@ inline bool hydroUpdateStableBinaryState(bool acceptedState, bool sampledState, 
         return sampledState;
     } else if (!hasPendingState || pendingState != sampledState) {
         pendingState = sampledState;
-        pendingStateStart = nowMillis;
+        pendingStateStart = now;
         hasPendingState = true;
-    } else if (hydroHasElapsed(nowMillis, pendingStateStart, stableTimeMillis)) {
+    } else if (hydroHasElapsed(now, pendingStateStart, stableTimeMillis)) {
         hasPendingState = false;
         return sampledState;
     }
