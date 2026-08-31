@@ -1149,11 +1149,7 @@ void Hydruino::setAutosaveEnabled(Hydro_Autosave autosaveEnabled, Hydro_Autosave
 
 void Hydruino::setRTCTime(DateTime time)
 {
-    auto rtc = getRTC();
-    if (rtc) {
-        rtc->adjust(DateTime((uint32_t)unixTime(time)));
-        notifyRTCTimeUpdated();
-    }
+    _setUnixTime(DateTime((uint32_t)unixTime(time)), true);
 }
 
 #ifdef HYDRO_USE_WIFI

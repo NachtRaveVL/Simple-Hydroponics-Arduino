@@ -78,6 +78,7 @@ inline void Hydruino::performAutosave()
                 #ifdef HYDRO_USE_WIFI_STORAGE
                     saveToWiFiStorage(RAW);
                 #endif
+                break;
             case Hydro_Autosave_Disabled:
                 break;
         }
