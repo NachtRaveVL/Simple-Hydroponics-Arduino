@@ -740,9 +740,9 @@ void Hydruino::commonPreInit()
         }
     #endif
     if (_sdSetup.cfgType == DeviceSetup::SPISetup && isValidPin(_sdSetup.cfgAs.spi.cs)) {
-        if (began.find((uintptr_t)_rtcSetup.cfgAs.spi.spi) == began.end()) {
+        if (began.find((uintptr_t)_sdSetup.cfgAs.spi.spi) == began.end()) {
             _sdSetup.cfgAs.spi.spi->begin();
-            began[(uintptr_t)_rtcSetup.cfgAs.spi.spi] = 0;
+            began[(uintptr_t)_sdSetup.cfgAs.spi.spi] = 0;
         }
         pinMode(_sdSetup.cfgAs.spi.cs, OUTPUT);
         digitalWrite(_sdSetup.cfgAs.spi.cs, HIGH);
