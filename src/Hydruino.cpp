@@ -368,17 +368,16 @@ bool Hydruino::saveToWiFiStorage(bool jsonFormat)
         }
         auto configFile = WiFiStorage.open(_sysConfigFilename.c_str());
 
-        if (configFile) {
-            bool retVal = false;
-            {
-                auto configFileStream = HydroWiFiStorageFileStream(configFile);
-                retVal = jsonFormat ? saveToJSONStream(&configFileStream, false) : saveToBinaryStream(&configFileStream);
-                configFileStream.flush();
-            }
-
-            configFile.close();
-            return retVal;
+        bool retVal = false;
+        {
+            auto configFileStream = HydroWiFiStorageFileStream(configFile);
+            retVal = jsonFormat ? saveToJSONStream(&configFileStream, false) : saveToBinaryStream(&configFileStream);
+            configFileStream.flush();
         }
+
+        retVal = retVal && configFile;
+        configFile.close();
+        return retVal;
     }
 
     return false;

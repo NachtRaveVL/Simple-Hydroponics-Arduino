@@ -4,6 +4,7 @@
 */
 
 #include "Hydruino.h"
+#include <limits.h>
 
 HydroEEPROMStream::HydroEEPROMStream()
     : Stream(), _eeprom(nullptr), _readAddress(0), _writeAddress(0), _endAddress(0)
@@ -25,7 +26,9 @@ HydroEEPROMStream::HydroEEPROMStream(uint16_t dataAddress, size_t dataSize)
 
 int HydroEEPROMStream::available()
 {
-    return _eeprom ? ((int)_endAddress - _readAddress) : 0;
+    if (!_eeprom || _readAddress >= _endAddress) { return 0; }
+    uint32_t available = _endAddress - _readAddress;
+    return available > INT_MAX ? INT_MAX : (int)available;
 }
 
 int HydroEEPROMStream::read()
@@ -36,10 +39,20 @@ int HydroEEPROMStream::read()
 
 size_t HydroEEPROMStream::readBytes(char *buffer, size_t length)
 {
-    if (!_eeprom || _readAddress >= _endAddress) { return -1; }
-    size_t retVal = _eeprom->readBlock(_readAddress, (uint8_t *)buffer, length);
-    _readAddress += retVal;
-    return retVal;
+    if (!_eeprom || !buffer || !length || _readAddress >= _endAddress) { return 0; }
+    uint32_t remaining = _endAddress - _readAddress;
+    if (length > remaining) { length = remaining; }
+
+    size_t bytesRead = 0;
+    while (bytesRead < length) {
+        size_t chunkSize = length - bytesRead;
+        if (chunkSize > UINT16_MAX) { chunkSize = UINT16_MAX; }
+        size_t chunkRead = _eeprom->readBlock((uint16_t)_readAddress, (uint8_t *)buffer + bytesRead, (uint16_t)chunkSize);
+        _readAddress += chunkRead;
+        bytesRead += chunkRead;
+        if (chunkRead != chunkSize) { break; }
+    }
+    return bytesRead;
 }
 
 int HydroEEPROMStream::peek()
@@ -55,16 +68,22 @@ void HydroEEPROMStream::flush()
 
 size_t HydroEEPROMStream::write(const uint8_t *buffer, size_t size)
 {
-    if (!_eeprom || _writeAddress >= _endAddress) { return 0; }
-    size_t remaining = _endAddress - _writeAddress;
+    if (!_eeprom || !buffer || !size || _writeAddress >= _endAddress) { return 0; }
+    uint32_t remaining = _endAddress - _writeAddress;
     if (size > remaining) { size = remaining; }
-    if (_eeprom->updateBlockVerify(_writeAddress, buffer, size)) {
-        _writeAddress += size;
-        return size;
-    } else {
-        HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
-        return 0;
+
+    size_t bytesWritten = 0;
+    while (bytesWritten < size) {
+        size_t chunkSize = size - bytesWritten;
+        if (chunkSize > UINT16_MAX) { chunkSize = UINT16_MAX; }
+        if (!_eeprom->updateBlockVerify((uint16_t)_writeAddress, buffer + bytesWritten, (uint16_t)chunkSize)) {
+            HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
+            break;
+        }
+        _writeAddress += chunkSize;
+        bytesWritten += chunkSize;
     }
+    return bytesWritten;
 }
 
 size_t HydroEEPROMStream::write(uint8_t data)
@@ -81,7 +100,9 @@ size_t HydroEEPROMStream::write(uint8_t data)
 
 int HydroEEPROMStream::availableForWrite()
 {
-    return _eeprom ? ((int)_endAddress - _writeAddress) : 0;
+    if (!_eeprom || _writeAddress >= _endAddress) { return 0; }
+    uint32_t available = _endAddress - _writeAddress;
+    return available > INT_MAX ? INT_MAX : (int)available;
 }
 
 
@@ -140,28 +161,23 @@ size_t HydroPROGMEMStream::write(uint8_t data)
 
 #ifdef HYDRO_USE_WIFI_STORAGE
 
-HydroWiFiStorageFileStream::HydroWiFiStorageFileStream(WiFiStorageFile file, uintptr_t seekPos)
+HydroWiFiStorageFileStream::HydroWiFiStorageFileStream(WiFiStorageFile file, uint32_t seekPos)
     : Stream(), _file(file), _buffer{0}, _bufferOffset(0), _bufferFileOffset(-1), _bufferDirection(None), _readOffset(0), _writeOffset(0), _endOffset(0)
 {
-    if (_file) {
-        _endOffset = _file.size();
-        _readOffset = _writeOffset = seekPos;
-    }
+    _endOffset = _file.size();
+    _readOffset = _writeOffset = seekPos;
 }
 
 HydroWiFiStorageFileStream::~HydroWiFiStorageFileStream()
 {
-    if (_file) {
-        if (_bufferDirection == WriteBuffer && _bufferOffset > 0) {
-            _file.seek(_bufferFileOffset);
-            _file.write((const void*)_buffer, _bufferOffset); _bufferOffset = 0;
-        }
-    }
+    flush();
 }
 
 int HydroWiFiStorageFileStream::available()
 {
-    return _file ? _endOffset - _readOffset : 0;
+    if (!_file || _readOffset >= _endOffset) { return 0; }
+    uint32_t available = _endOffset - _readOffset;
+    return available > INT_MAX ? INT_MAX : (int)available;
 }
 
 int HydroWiFiStorageFileStream::read()
@@ -174,7 +190,8 @@ int HydroWiFiStorageFileStream::read()
 
 size_t HydroWiFiStorageFileStream::readBytes(char *buffer, size_t length)
 {
-    if (!_file || _readOffset >= _endOffset) { return -1; }
+    if (!_file || !buffer || !length || _readOffset >= _endOffset) { return 0; }
+    size_t bytesRead = 0;
     while (length && _readOffset < _endOffset) {
         prepareReadBuffer();
         size_t howMany = min(length, _endOffset - _readOffset);
@@ -184,7 +201,9 @@ size_t HydroWiFiStorageFileStream::readBytes(char *buffer, size_t length)
         _bufferOffset += howMany;
         buffer += howMany;
         length -= howMany;
+        bytesRead += howMany;
     }
+    return bytesRead;
 }
 
 int HydroWiFiStorageFileStream::peek()
@@ -199,12 +218,14 @@ void HydroWiFiStorageFileStream::flush()
     if (_bufferDirection == WriteBuffer && _bufferOffset > 0) {
         _file.seek(_bufferFileOffset);
         _file.write((const void*)_buffer, _bufferOffset); _bufferOffset = 0;
+        _bufferFileOffset = _writeOffset;
     }
 }
 
 size_t HydroWiFiStorageFileStream::write(const uint8_t *buffer, size_t size)
 {
-    if (!_file || _writeOffset >= _endOffset) { return -1; }
+    if (!buffer || !size) { return 0; }
+    size_t bytesWritten = 0;
     while (size) {
         prepareWriteBuffer();
         size_t howMany = min(size, HYDRO_WIFISTREAM_BUFFER_SIZE - _bufferOffset);
@@ -213,26 +234,29 @@ size_t HydroWiFiStorageFileStream::write(const uint8_t *buffer, size_t size)
         _bufferOffset += howMany;
         buffer += howMany;
         size -= howMany;
+        bytesWritten += howMany;
     }
+    if (_writeOffset > _endOffset) { _endOffset = _writeOffset; }
+    return bytesWritten;
 }
 
 size_t HydroWiFiStorageFileStream::write(uint8_t data)
 {
-    if (!_file || _writeOffset >= _endOffset) { return -1; }
     prepareWriteBuffer();
     _buffer[_bufferOffset++] = data;
     _writeOffset++;
+    if (_writeOffset > _endOffset) { _endOffset = _writeOffset; }
     return 1;
 }
 
 int HydroWiFiStorageFileStream::availableForWrite() 
 {
-    return _file ? _endOffset - _writeOffset : 0;
+    return _bufferDirection == WriteBuffer ? HYDRO_WIFISTREAM_BUFFER_SIZE - _bufferOffset : HYDRO_WIFISTREAM_BUFFER_SIZE;
 }
 
 void HydroWiFiStorageFileStream::prepareReadBuffer()
 {
-    if (_bufferDirection != ReadBuffer || _bufferFileOffset == -1 || _readOffset < _bufferFileOffset || _readOffset >= _bufferFileOffset + HYDRO_WIFISTREAM_BUFFER_SIZE) {
+    if (_bufferDirection != ReadBuffer || _bufferFileOffset == UINT32_MAX || _readOffset < _bufferFileOffset || _readOffset >= _bufferFileOffset + HYDRO_WIFISTREAM_BUFFER_SIZE) {
         if (_bufferDirection == WriteBuffer && _bufferOffset > 0) {
             _file.seek(_bufferFileOffset);
             _file.write((const void*)_buffer, _bufferOffset); //_bufferOffset = 0;
@@ -248,7 +272,7 @@ void HydroWiFiStorageFileStream::prepareReadBuffer()
 
 void HydroWiFiStorageFileStream::prepareWriteBuffer()
 {
-    if (_bufferDirection != WriteBuffer || _bufferFileOffset == -1 || _writeOffset < _bufferFileOffset || _writeOffset >= _bufferFileOffset + HYDRO_WIFISTREAM_BUFFER_SIZE) {
+    if (_bufferDirection != WriteBuffer || _bufferFileOffset == UINT32_MAX || _writeOffset < _bufferFileOffset || _writeOffset >= _bufferFileOffset + HYDRO_WIFISTREAM_BUFFER_SIZE) {
         if (_bufferDirection == WriteBuffer && _bufferOffset > 0) {
             _file.seek(_bufferFileOffset);
             _file.write((const void*)_buffer, _bufferOffset); //_bufferOffset = 0;
