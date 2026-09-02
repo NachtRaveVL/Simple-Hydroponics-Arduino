@@ -23,7 +23,7 @@ class HydroInputTFTTouch;
 #include "HydruinoUI.h"
 #include "KeyboardManager.h"
 #include "tcMenuKeyboard.h"
-#include "graphics\MenuTouchScreenEncoder.h"
+#include "graphics/MenuTouchScreenEncoder.h"
 #include "JoystickSwitchInput.h"
 
 // Input Driver Base

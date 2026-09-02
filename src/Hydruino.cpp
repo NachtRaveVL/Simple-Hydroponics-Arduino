@@ -870,6 +870,11 @@ void Hydruino::commonPostSave()
     if (_systemData) {
         _systemData->unsetModified();
     }
+    #ifdef HYDRO_USE_GUI
+        if (_uiData) {
+            _uiData->unsetModified();
+        }
+    #endif
 
     if (hydroCropsLib.hasUserCrops()) {
         for (auto iter = hydroCropsLib._cropsData.begin(); iter != hydroCropsLib._cropsData.end(); ++iter) {
