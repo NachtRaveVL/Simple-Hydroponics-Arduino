@@ -41,7 +41,8 @@ void HydroActivationHandle::unset()
     checkTime = 0;
 
     if (actuator) {
-        for (auto handleIter = actuator->_handles.end() - 1; handleIter != actuator->_handles.begin() - 1; --handleIter) {
+        for (auto handleIter = actuator->_handles.end(); handleIter != actuator->_handles.begin();) {
+            --handleIter;
             if ((*handleIter) == this) {
                 actuator->_handles.erase(handleIter);
                 break;
