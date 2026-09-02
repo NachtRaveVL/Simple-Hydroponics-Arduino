@@ -353,8 +353,8 @@ public:
 
     // Sets display name of system (HYDRO_NAME_MAXSIZE size limit)
     void setSystemName(String systemName);
-    // Sets system time zone offset from UTC
-    void setTimeZoneOffset(int8_t hoursOffset);
+    // Sets system time zone offset from UTC, in fractional hours
+    void setTimeZoneOffset(float hoursOffset);
     // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
     void setPollingInterval(uint16_t pollingInterval);
     // Sets system autosave enable mode and optional fallback mode and interval, in minutes.
