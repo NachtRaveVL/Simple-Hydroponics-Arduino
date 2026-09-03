@@ -25,17 +25,15 @@ HydroRail *newRailObjectFromData(const HydroRailData *dataIn)
 
 
 HydroRail::HydroRail(Hydro_RailType railType, hposi_t railIndex, int classTypeIn)
-    : HydroObject(HydroIdentity(railType, railIndex)), classType((typeof(classType))classTypeIn),
-      HydroPowerUnitsInterfaceStorage(defaultPowerUnits()),
-      _limitState(Hydro_TriggerState_Undefined)
+    : HydroObject(HydroIdentity(railType, railIndex)), HydroPowerUnitsInterfaceStorage(defaultPowerUnits()),
+      classType(static_cast<decltype(Simple)>(classTypeIn)), _limitState(Hydro_TriggerState_Undefined)
 {
     allocateLinkages(HYDRO_RAILS_LINKS_BASESIZE);
 }
 
 HydroRail::HydroRail(const HydroRailData *dataIn)
-    : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      HydroPowerUnitsInterfaceStorage(definedUnitsElse(dataIn->powerUnits, defaultPowerUnits())),
-      _limitState(Hydro_TriggerState_Undefined)
+    : HydroObject(dataIn), HydroPowerUnitsInterfaceStorage(definedUnitsElse(dataIn->powerUnits, defaultPowerUnits())),
+      classType(static_cast<decltype(Simple)>(dataIn->id.object.classType)), _limitState(Hydro_TriggerState_Undefined)
 {
     allocateLinkages(HYDRO_RAILS_LINKS_BASESIZE);
 }
@@ -138,11 +136,13 @@ HydroSimpleRail::HydroSimpleRail(const HydroSimpleRailData *dataIn)
 
 bool HydroSimpleRail::canActivate(HydroActuator *actuator)
 {
+    (void)actuator;
     return _activeCount < _maxActiveAtOnce;
 }
 
 float HydroSimpleRail::getCapacity(bool poll)
 {
+    (void)poll;
     return _activeCount / (float)_maxActiveAtOnce;
 }
 

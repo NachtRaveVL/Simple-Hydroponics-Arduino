@@ -22,6 +22,23 @@ HydroDLinkObject::HydroDLinkObject(const HydroDLinkObject &obj)
     }
 }
 
+HydroDLinkObject &HydroDLinkObject::operator=(const HydroDLinkObject &obj)
+{
+    if (this != &obj) {
+        _key = obj._key;
+        _obj = obj._obj;
+        if (_keyStr) { free((void *)_keyStr); _keyStr = nullptr; }
+        if (obj._keyStr) {
+            auto len = strnlen(obj._keyStr, HYDRO_NAME_MAXSIZE);
+            if (len) {
+                _keyStr = (const char *)malloc(len + 1);
+                strncpy((char *)_keyStr, obj._keyStr, len + 1);
+            }
+        }
+    }
+    return *this;
+}
+
 HydroDLinkObject::~HydroDLinkObject()
 {
     if (_keyStr) { free((void *)_keyStr); }
@@ -64,6 +81,22 @@ HydroAttachment::HydroAttachment(const HydroAttachment &attachment)
     initObject(attachment._obj);
 }
 
+HydroAttachment &HydroAttachment::operator=(const HydroAttachment &attachment)
+{
+    if (this != &attachment) {
+        if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) {
+            _obj.get<HydroObject>()->removeLinkage((HydroObject *)_parent);
+        }
+
+        _parent = attachment._parent;
+        _obj = attachment._obj;
+        if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) {
+            _obj.get<HydroObject>()->addLinkage((HydroObject *)_parent);
+        }
+    }
+    return *this;
+}
+
 HydroAttachment::~HydroAttachment()
 {
     if (isResolved() && _obj->isObject() && _parent && _parent->isObject()) {
@@ -88,6 +121,7 @@ void HydroAttachment::detachObject()
 
 void HydroAttachment::updateIfNeeded(bool poll)
 {
+    (void)poll;
     // intended to be overridden by derived classes, but not an error if left not implemented
 }
 
@@ -120,6 +154,20 @@ HydroActuatorAttachment::HydroActuatorAttachment(const HydroActuatorAttachment &
       _rateMultiplier(attachment._rateMultiplier), _calledLastUpdate(false)
 { ; }
 
+HydroActuatorAttachment &HydroActuatorAttachment::operator=(const HydroActuatorAttachment &attachment)
+{
+    if (this != &attachment) {
+        HydroSignalAttachment<HydroActuator *, HYDRO_ACTUATOR_SIGNAL_SLOTS>::operator=(attachment);
+        _actHandle = attachment._actHandle;
+        _actSetup = attachment._actSetup;
+        if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
+        _updateSlot = attachment._updateSlot ? attachment._updateSlot->clone() : nullptr;
+        _rateMultiplier = attachment._rateMultiplier;
+        _calledLastUpdate = false;
+    }
+    return *this;
+}
+
 HydroActuatorAttachment::~HydroActuatorAttachment()
 {
     if (_updateSlot) { delete _updateSlot; _updateSlot = nullptr; }
@@ -127,6 +175,7 @@ HydroActuatorAttachment::~HydroActuatorAttachment()
 
 void HydroActuatorAttachment::updateIfNeeded(bool poll)
 {
+    (void)poll;
     if (_actHandle.isValid()) {
         if (isActivated()) {
             _actHandle.elapseTo();

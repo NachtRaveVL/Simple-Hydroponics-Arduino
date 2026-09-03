@@ -29,13 +29,13 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 
 
 HydroActuator::HydroActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, int classTypeIn)
-    : HydroObject(HydroIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
+    : HydroObject(HydroIdentity(actuatorType, actuatorIndex)), classType(static_cast<decltype(Relay)>(classTypeIn)),
       _enabled(false), _needsUpdate(false), _enableMode(Hydro_EnableMode_Undefined),
       _parentRail(this), _parentReservoir(this), _calibrationData(nullptr)
 { ; }
 
 HydroActuator::HydroActuator(const HydroActuatorData *dataIn)
-    : HydroObject(dataIn), classType((typeof(classType))dataIn->id.object.classType),
+    : HydroObject(dataIn), classType(static_cast<decltype(Relay)>(dataIn->id.object.classType)),
       _enabled(false), _needsUpdate(false), _enableMode(dataIn->enableMode),
       _contPowerUsage(&(dataIn->contPowerUsage)),
       _parentRail(this), _parentReservoir(this), _calibrationData(nullptr)
@@ -56,17 +56,18 @@ void HydroActuator::update()
     // Update running handles and elapse them as needed, determine forced status, and remove invalid/finished handles
     bool forced = false;
     if (_handles.size()) {
-        for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
+        for (auto handleIter = _handles.begin(); handleIter != _handles.end();) {
             if (_enabled && (*handleIter)->isActive()) {
                 (*handleIter)->elapseTo(time);
             }
             if ((*handleIter)->actuator.get() != this || !(*handleIter)->isValid() || (*handleIter)->isDone()) {
                 if ((*handleIter)->actuator.get() == this) { (*handleIter)->actuator = nullptr; }
-                handleIter = _handles.erase(handleIter) - 1;
+                handleIter = _handles.erase(handleIter);
                 setNeedsUpdate();
                 continue;
             }
             forced = forced || (*handleIter)->isForced();
+            ++handleIter;
         }
     }
 
@@ -132,7 +133,8 @@ void HydroActuator::update()
             } break;
 
             case Hydro_EnableMode_RevOrder: {
-                for (auto handleIter = _handles.end() - 1; handleIter != _handles.begin() - 1; --handleIter) {
+                for (auto handleIter = _handles.end(); handleIter != _handles.begin();) {
+                    --handleIter;
                     if ((*handleIter)->isValid() && !(*handleIter)->isDone()) {
                         drivingIntensity += (*handleIter)->getDriveIntensity();
                         break;
@@ -150,7 +152,7 @@ void HydroActuator::update()
             case Hydro_EnableMode_DescOrder: {
                 bool selected = false;
                 for (auto handleIter = _handles.begin(); handleIter != _handles.end(); ++handleIter) {
-                    if (!selected && (*handleIter)->isValid() && !(*handleIter)->isDone() && isFPEqual((*handleIter)->activation.intensity, getDriveIntensity())) {
+                    if (!selected && (*handleIter)->isValid() && !(*handleIter)->isDone() && isFPEqual((*handleIter)->getDriveIntensity(), drivingIntensity)) {
                         selected = true; (*handleIter)->checkTime = time;
                     } else if ((*handleIter)->checkTime != 0) {
                         (*handleIter)->checkTime = 0;
@@ -161,8 +163,9 @@ void HydroActuator::update()
             case Hydro_EnableMode_RevOrder:
             case Hydro_EnableMode_AscOrder: {
                 bool selected = false;
-                for (auto handleIter = _handles.end() - 1; handleIter != _handles.begin() - 1; --handleIter) {
-                    if (!selected && (*handleIter)->isValid() && !(*handleIter)->isDone() && isFPEqual((*handleIter)->activation.intensity, getDriveIntensity())) {
+                for (auto handleIter = _handles.end(); handleIter != _handles.begin();) {
+                    --handleIter;
+                    if (!selected && (*handleIter)->isValid() && !(*handleIter)->isDone() && isFPEqual((*handleIter)->getDriveIntensity(), drivingIntensity)) {
                         selected = true; (*handleIter)->checkTime = time;
                     } else if ((*handleIter)->checkTime != 0) {
                         (*handleIter)->checkTime = 0;
@@ -311,6 +314,7 @@ float HydroRelayActuator::getDriveIntensity() const
 
 bool HydroRelayActuator::isEnabled(float tolerance) const
 {
+    (void)tolerance;
     return _enabled;
 }
 
@@ -363,9 +367,9 @@ HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType, 
 HydroRelayPumpActuator::HydroRelayPumpActuator(const HydroPumpActuatorData *dataIn)
     : HydroRelayActuator(dataIn),
       HydroFlowRateUnitsInterfaceStorage(definedUnitsElse(dataIn->flowRateUnits, defaultFlowRateUnits())),
-      _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0),
       _contFlowRate(&(dataIn->contFlowRate)),
-      _flowRate(this), _destReservoir(this)
+      _flowRate(this), _destReservoir(this),
+      _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0)
 {
     _flowRate.setMeasurementUnits(getFlowRateUnits());
     _destReservoir.initObject(dataIn->destReservoir);
@@ -424,6 +428,8 @@ bool HydroRelayPumpActuator::canPump(float volume, Hydro_UnitsType volumeUnits)
 {
     if (getSourceReservoir() && _contFlowRate.value > FLT_EPSILON) {
         auto waterVolume = getSourceReservoir()->getWaterVolumeSensorAttachment().getMeasurement().asUnits(getVolumeUnits());
+        volumeUnits = definedUnitsElse(volumeUnits, getVolumeUnits());
+        if (!convertUnits(&volume, &volumeUnits, getVolumeUnits())) { return false; }
         return volume <= waterVolume.value + FLT_EPSILON;
     }
     return false;

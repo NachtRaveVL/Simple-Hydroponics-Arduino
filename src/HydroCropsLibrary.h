@@ -63,6 +63,7 @@ protected:
 };
 
 // Crops Library Book
+// Holds one checked-out target entry and its checkout reference count.
 struct HydroCropsLibraryBook {
     HydroCropsLibData data;                                 // Crop library data
     int count;                                              // Reference count

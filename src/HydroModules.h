@@ -19,6 +19,9 @@ class HydroPinHandlers;
 // an usable input value.
 class HydroCalibrations {
 public:
+    ~HydroCalibrations();
+    void clearUserCalibrations();
+
     // Adds/updates user calibration data to the store, returning success flag
     bool setUserCalibrationData(const HydroCalibrationData *calibrationData);
 
@@ -41,6 +44,9 @@ protected:
 // through the growing cycle.
 class HydroAdditives {
 public:
+    ~HydroAdditives();
+    void clearUserAdditives();
+
     // Sets custom additive data, returning success flag.
     bool setCustomAdditiveData(const HydroCustomAdditiveData *customAdditiveData);
     

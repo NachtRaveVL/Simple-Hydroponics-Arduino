@@ -8,420 +8,420 @@
 
 // Strings Enumeration Table
 enum Hydro_String : unsigned short {
-    HStr_ColonSpace,
-    HStr_DoubleSpace,
-    HStr_csv,
-    HStr_dat,
-    HStr_Disabled,
-    HStr_raw,
-    HStr_txt,
-    HStr_Undefined,
-    HStr_null,
+    HStr_ColonSpace,                                // ": "
+    HStr_DoubleSpace,                               // "  "
+    HStr_csv,                                       // "csv"
+    HStr_dat,                                       // "dat"
+    HStr_Disabled,                                  // "Disabled"
+    HStr_raw,                                       // "raw"
+    HStr_txt,                                       // "txt"
+    HStr_Undefined,                                 // "Undefined"
+    HStr_null,                                      // "null"
 
-    HStr_Default_SystemName,
-    HStr_Default_ConfigFilename,
+    HStr_Default_SystemName,                        // "Hydruino"
+    HStr_Default_ConfigFilename,                    // "hydruino.cfg"
 
-    HStr_Err_AllocationFailure,
-    HStr_Err_AlreadyInitialized,
-    HStr_Err_AssertionFailure,
-    HStr_Err_ExportFailure,
-    HStr_Err_ImportFailure,
-    HStr_Err_InitializationFailure,
-    HStr_Err_InvalidParameter,
-    HStr_Err_InvalidPinOrType,
-    HStr_Err_MeasurementFailure,
-    HStr_Err_MissingLinkage,
-    HStr_Err_NoPositionsAvailable,
-    HStr_Err_NotConfiguredProperly,
-    HStr_Err_NotYetInitialized,
-    HStr_Err_OperationFailure,
-    HStr_Err_UnsupportedOperation,
+    HStr_Err_AllocationFailure,                     // "Allocation failure"
+    HStr_Err_AlreadyInitialized,                    // "Already initialized"
+    HStr_Err_AssertionFailure,                      // "Assertion failure"
+    HStr_Err_ExportFailure,                         // "Export failure"
+    HStr_Err_ImportFailure,                         // "Import failure"
+    HStr_Err_InitializationFailure,                 // "Initialization failure"
+    HStr_Err_InvalidParameter,                      // "Invalid parameter"
+    HStr_Err_InvalidPinOrType,                      // "Invalid pin or type"
+    HStr_Err_MeasurementFailure,                    // "Measurement failure"
+    HStr_Err_MissingLinkage,                        // "Missing or no linkage"
+    HStr_Err_NoPositionsAvailable,                  // "No positions available"
+    HStr_Err_NotConfiguredProperly,                 // "Not configured properly"
+    HStr_Err_NotYetInitialized,                     // "Not yet initialized"
+    HStr_Err_OperationFailure,                      // "Operation failure"
+    HStr_Err_UnsupportedOperation,                  // "Unsupported operation"
 
-    HStr_Log_AirReport,
-    HStr_Log_CalculatedPumping,
-    HStr_Log_FeedingSequence,
-    HStr_Log_HasBegan,
-    HStr_Log_HasDisabled,
-    HStr_Log_HasEnabled,
-    HStr_Log_HasEnded,
-    HStr_Log_LightingSequence,
-    HStr_Log_MeasuredPumping,
-    HStr_Log_NatLightingSequence,
-    HStr_Log_PreFeedBalancing,
-    HStr_Log_PreFeedTopOff,
-    HStr_Log_PreDawnSpraying,
-    HStr_Log_RTCBatteryFailure,
-    HStr_Log_SystemDataSaved,
-    HStr_Log_SystemUptime,
+    HStr_Log_AirReport,                             // " air report:"
+    HStr_Log_CalculatedPumping,                     // " pumping request:"
+    HStr_Log_FeedingSequence,                       // " feeding sequence"
+    HStr_Log_HasBegan,                              // " has began"
+    HStr_Log_HasDisabled,                           // " has disabled"
+    HStr_Log_HasEnabled,                            // " has enabled"
+    HStr_Log_HasEnded,                              // " has ended"
+    HStr_Log_LightingSequence,                      // " lighting sequence"
+    HStr_Log_MeasuredPumping,                       // " pumping result:"
+    HStr_Log_NatLightingSequence,                   // " natural lighting sequence"
+    HStr_Log_PreFeedBalancing,                      // " pre-feed balancing"
+    HStr_Log_PreFeedTopOff,                         // " pre-feed top-off"
+    HStr_Log_PreDawnSpraying,                       // " pre-dawn spraying"
+    HStr_Log_RTCBatteryFailure,                     // "RTC battery failure, time needs reset."
+    HStr_Log_SystemDataSaved,                       // "System data saved"
+    HStr_Log_SystemUptime,                          // "System uptime: "
 
-    HStr_Log_Prefix_Info,
-    HStr_Log_Prefix_Warning,
-    HStr_Log_Prefix_Error,
+    HStr_Log_Prefix_Info,                           // "[INFO] "
+    HStr_Log_Prefix_Warning,                        // "[WARN] "
+    HStr_Log_Prefix_Error,                          // "[FAIL] "
 
-    HStr_Log_Field_Aerator_Duration,
-    HStr_Log_Field_CO2_Measured,
-    HStr_Log_Field_CO2_Setpoint,
-    HStr_Log_Field_Destination_Reservoir,
-    HStr_Log_Field_Light_Duration,
-    HStr_Log_Field_MixTime_Duration,
-    HStr_Log_Field_pH_Measured,
-    HStr_Log_Field_pH_Setpoint,
-    HStr_Log_Field_Source_Reservoir,
-    HStr_Log_Field_Sprayer_Duration,
-    HStr_Log_Field_TDS_Measured,
-    HStr_Log_Field_TDS_Setpoint,
-    HStr_Log_Field_Temp_Measured,
-    HStr_Log_Field_Temp_Setpoint,
-    HStr_Log_Field_Time_Calculated,
-    HStr_Log_Field_Time_Finish,
-    HStr_Log_Field_Time_Measured,
-    HStr_Log_Field_Time_Start,
-    HStr_Log_Field_Vol_Calculated,
-    HStr_Log_Field_Vol_Measured,
+    HStr_Log_Field_Aerator_Duration,                // "  Aerator run time: "
+    HStr_Log_Field_CO2_Measured,                    // "  CO2 sensor: "
+    HStr_Log_Field_CO2_Setpoint,                    // "  CO2 setpoint: "
+    HStr_Log_Field_Destination_Reservoir,           // "  To reservoir: "
+    HStr_Log_Field_Light_Duration,                  // "  Daylight hours: "
+    HStr_Log_Field_MixTime_Duration,                // "  Dosing mix time: "
+    HStr_Log_Field_pH_Measured,                     // "  pH sensor: "
+    HStr_Log_Field_pH_Setpoint,                     // "  ph setpoint: "
+    HStr_Log_Field_Source_Reservoir,                // "  From reservoir: "
+    HStr_Log_Field_Sprayer_Duration,                // "  Sprayer run time: "
+    HStr_Log_Field_TDS_Measured,                    // "  TDS sensor: "
+    HStr_Log_Field_TDS_Setpoint,                    // "  TDS setpoint: "
+    HStr_Log_Field_Temp_Measured,                   // "  Temp sensor: "
+    HStr_Log_Field_Temp_Setpoint,                   // "  Temp setpoint: "
+    HStr_Log_Field_Time_Calculated,                 // "  Pump run time: "
+    HStr_Log_Field_Time_Finish,                     // "  Finish time: "
+    HStr_Log_Field_Time_Measured,                   // "  Elapsed time: "
+    HStr_Log_Field_Time_Start,                      // "  Start time: "
+    HStr_Log_Field_Vol_Calculated,                  // "  Est. pumped vol.: "
+    HStr_Log_Field_Vol_Measured,                    // "  Act. pumped vol.: "
 
-    HStr_Key_ActiveLow,
-    HStr_Key_AdditiveName,
-    HStr_Key_AirConcentrateUnits,
-    HStr_Key_AirReportInterval,
-    HStr_Key_AirTempRange,
-    HStr_Key_AirTemperatureSensor,
-    HStr_Key_AlwaysFilled,
-    HStr_Key_AutosaveEnabled,
-    HStr_Key_AutosaveFallback,
-    HStr_Key_AutosaveInterval,
-    HStr_Key_BaseFeedMultiplier,
-    HStr_Key_BitRes,
-    HStr_Key_CalibrationUnits,
-    HStr_Key_Channel,
-    HStr_Key_ComputeHeatIndex,
-    HStr_Key_ConcentrateUnits,
-    HStr_Key_ContinuousFlowRate,
-    HStr_Key_ContinuousPowerUsage,
-    HStr_Key_CO2Levels,
-    HStr_Key_CO2Sensor,
-    HStr_Key_CropName,
-    HStr_Key_CtrlInMode,
-    HStr_Key_DailyLightHours,
-    HStr_Key_DataFilePrefix,
-    HStr_Key_DetriggerDelay,
-    HStr_Key_DetriggerTol,
-    HStr_Key_DHTType,
-    HStr_Key_DisplayTheme,
-    HStr_Key_DispOutMode,
-    HStr_Key_EmptyTrigger,
-    HStr_Key_EnableMode,
-    HStr_Key_FeedReservoir,
-    HStr_Key_FeedTimingMins,
-    HStr_Key_FeedingsPerDay,
-    HStr_Key_FeedingsPerWeek,
-    HStr_Key_FeedIntervalMins,
-    HStr_Key_FeedingTrigger,
-    HStr_Key_FeedingWeight,
-    HStr_Key_FilledTrigger,
-    HStr_Key_Flags,
-    HStr_Key_FlowRateSensor,
-    HStr_Key_FlowRateUnits,
-    HStr_Key_Id,
-    HStr_Key_InputInversion,
-    HStr_Key_InputPin,
-    HStr_Key_Invasive,
-    HStr_Key_JoystickCalib,
-    HStr_Key_Large,
-    HStr_Key_LastChangeTime,
-    HStr_Key_LastFeedingTime,
-    HStr_Key_LastPruningTime,
-    HStr_Key_LimitTrigger,
-    HStr_Key_Location,
-    HStr_Key_LogFilePrefix,
-    HStr_Key_LogLevel,
-    HStr_Key_LogToSDCard,
-    HStr_Key_LogToWiFiStorage,
-    HStr_Key_Logger,
-    HStr_Key_MACAddress,
-    HStr_Key_MaxActiveAtOnce,
-    HStr_Key_MaxPower,
-    HStr_Key_MaxVolume,
-    HStr_Key_MeasureMode,
-    HStr_Key_MeasurementRow,
-    HStr_Key_MeasurementUnits,
-    HStr_Key_Mode,
-    HStr_Key_MoistureSensor,
-    HStr_Key_Multiplier,
-    HStr_Key_NaturalLightOffsetMins,
-    HStr_Key_NightlyFeedRate,
-    HStr_Key_NumFeedingsToday,
-    HStr_Key_Offset,
-    HStr_Key_OutputPin,
-    HStr_Key_OutputReservoir,
-    HStr_Key_Perennial,
-    HStr_Key_PhaseDurationWeeks,
-    HStr_Key_PHRange,
-    HStr_Key_PHSensor,
-    HStr_Key_Pin,
-    HStr_Key_PollingInterval,
-    HStr_Key_PowerSensor,
-    HStr_Key_PowerUnits,
-    HStr_Key_PreFeedAeratorMins,
-    HStr_Key_PreDawnSprayMins,
-    HStr_Key_Pruning,
-    HStr_Key_PublishToSDCard,
-    HStr_Key_PublishToWiFiStorage,
-    HStr_Key_Publisher,
-    HStr_Key_PullupPin,
-    HStr_Key_PWMChannel,
-    HStr_Key_PWMFrequency,
-    HStr_Key_RailName,
-    HStr_Key_ReservoirName,
-    HStr_Key_Revision,
-    HStr_Key_Scheduler,
-    HStr_Key_SensorName,
-    HStr_Key_SowTime,
-    HStr_Key_Spraying,
-    HStr_Key_State,
-    HStr_Key_StdDosingRates,
-    HStr_Key_SubstrateType,
-    HStr_Key_SystemMode,
-    HStr_Key_SystemName,
-    HStr_Key_TDSRange,
-    HStr_Key_TDSSensor,
-    HStr_Key_TemperatureUnits,
-    HStr_Key_TemperatureSensor,
-    HStr_Key_TimeZoneOffset,
-    HStr_Key_Timestamp,
-    HStr_Key_Tolerance,
-    HStr_Key_ToleranceHigh,
-    HStr_Key_ToleranceLow,
-    HStr_Key_TotalFeedingsPerDay,
-    HStr_Key_TotalGrowWeeks,
-    HStr_Key_Toxic,
-    HStr_Key_TriggerBelow,
-    HStr_Key_TriggerOutside,
-    HStr_Key_Type,
-    HStr_Key_Units,
-    HStr_Key_UpdatesPerSec,
-    HStr_Key_UsingISR,
-    HStr_Key_StateStableTimeMs,
-    HStr_Key_Value,
-    HStr_Key_Version,
-    HStr_Key_Viner,
-    HStr_Key_VolumeSensor,
-    HStr_Key_VolumeUnits,
-    HStr_Key_WaterConcentrateUnits,
-    HStr_Key_WaterTemperatureRange,
-    HStr_Key_WaterTemperatureSensor,
-    HStr_Key_WeeklyDosingRates,
-    HStr_Key_WiFiPassword,
-    HStr_Key_WiFiPasswordSeed,
-    HStr_Key_WiFiSSID,
-    HStr_Key_WireDevAddress,
-    HStr_Key_WirePosIndex,
+    HStr_Key_ActiveLow,                             // "activeLow"
+    HStr_Key_AdditiveName,                          // "additiveName"
+    HStr_Key_AirConcentrateUnits,                   // "airConcentrateUnits"
+    HStr_Key_AirReportInterval,                     // "airReportInterval"
+    HStr_Key_AirTempRange,                          // "airTempRange"
+    HStr_Key_AirTemperatureSensor,                  // "airTempSensor"
+    HStr_Key_AlwaysFilled,                          // "alwaysFilled"
+    HStr_Key_AutosaveEnabled,                       // "autosaveEnabled"
+    HStr_Key_AutosaveFallback,                      // "autosaveFallback"
+    HStr_Key_AutosaveInterval,                      // "autosaveInterval"
+    HStr_Key_BaseFeedMultiplier,                    // "baseFeedMultiplier"
+    HStr_Key_BitRes,                                // "bitRes"
+    HStr_Key_CalibrationUnits,                      // "calibrationUnits"
+    HStr_Key_Channel,                               // "channel"
+    HStr_Key_ComputeHeatIndex,                      // "computeHeatIndex"
+    HStr_Key_ConcentrateUnits,                      // "concentrateUnits"
+    HStr_Key_ContinuousFlowRate,                    // "contFlowRate"
+    HStr_Key_ContinuousPowerUsage,                  // "contPowerUsage"
+    HStr_Key_CO2Levels,                             // "co2Levels"
+    HStr_Key_CO2Sensor,                             // "co2Sensor"
+    HStr_Key_CropName,                              // "cropName"
+    HStr_Key_CtrlInMode,                            // "ctrlInMode"
+    HStr_Key_DailyLightHours,                       // "dailyLightHours"
+    HStr_Key_DataFilePrefix,                        // "dataFilePrefix"
+    HStr_Key_DetriggerDelay,                        // "detriggerDelay"
+    HStr_Key_DetriggerTol,                          // "detriggerTol"
+    HStr_Key_DHTType,                               // "dhtType"
+    HStr_Key_DisplayTheme,                          // "displayTheme"
+    HStr_Key_DispOutMode,                           // "dispOutMode"
+    HStr_Key_EmptyTrigger,                          // "emptyTrigger"
+    HStr_Key_EnableMode,                            // "enableMode"
+    HStr_Key_FeedReservoir,                         // "feedReservoir"
+    HStr_Key_FeedTimingMins,                        // "feedTimingMins"
+    HStr_Key_FeedingsPerDay,                        // "feedingsPerDay"
+    HStr_Key_FeedingsPerWeek,                       // "feedingsPerWeek"
+    HStr_Key_FeedIntervalMins,                      // "feedIntervalMins"
+    HStr_Key_FeedingTrigger,                        // "feedingTrigger"
+    HStr_Key_FeedingWeight,                         // "feedingWeight"
+    HStr_Key_FilledTrigger,                         // "filledTrigger"
+    HStr_Key_Flags,                                 // "flags"
+    HStr_Key_FlowRateSensor,                        // "flowRateSensor"
+    HStr_Key_FlowRateUnits,                         // "flowRateUnits"
+    HStr_Key_Id,                                    // "id"
+    HStr_Key_InputInversion,                        // "inputInversion"
+    HStr_Key_InputPin,                              // "inputPin"
+    HStr_Key_Invasive,                              // "invasive"
+    HStr_Key_JoystickCalib,                         // "joystickCalib"
+    HStr_Key_Large,                                 // "large"
+    HStr_Key_LastChangeTime,                        // "lastChangeTime"
+    HStr_Key_LastFeedingTime,                       // "lastFeedingTime"
+    HStr_Key_LastPruningTime,                       // "lastPruningTime"
+    HStr_Key_LimitTrigger,                          // "limitTrigger"
+    HStr_Key_Location,                              // "location"
+    HStr_Key_LogFilePrefix,                         // "logFilePrefix"
+    HStr_Key_LogLevel,                              // "logLevel"
+    HStr_Key_LogToSDCard,                           // "logToSDCard"
+    HStr_Key_LogToWiFiStorage,                      // "logToWiFiStorage"
+    HStr_Key_Logger,                                // "logger"
+    HStr_Key_MACAddress,                            // "macAddress"
+    HStr_Key_MaxActiveAtOnce,                       // "maxActiveAtOnce"
+    HStr_Key_MaxPower,                              // "maxPower"
+    HStr_Key_MaxVolume,                             // "maxVolume"
+    HStr_Key_MeasureMode,                           // "measureMode"
+    HStr_Key_MeasurementRow,                        // "measurementRow"
+    HStr_Key_MeasurementUnits,                      // "measurementUnits"
+    HStr_Key_Mode,                                  // "mode"
+    HStr_Key_MoistureSensor,                        // "moistureSensor"
+    HStr_Key_Multiplier,                            // "multiplier"
+    HStr_Key_NaturalLightOffsetMins,                // "naturalLightOffsetMins"
+    HStr_Key_NightlyFeedRate,                       // "nightlyFeedRate"
+    HStr_Key_NumFeedingsToday,                      // "numFeedingsToday"
+    HStr_Key_Offset,                                // "offset"
+    HStr_Key_OutputPin,                             // "outputPin"
+    HStr_Key_OutputReservoir,                       // "destReservoir"
+    HStr_Key_Perennial,                             // "perennial"
+    HStr_Key_PhaseDurationWeeks,                    // "phaseDurationWeeks"
+    HStr_Key_PHRange,                               // "phRange"
+    HStr_Key_PHSensor,                              // "phSensor"
+    HStr_Key_Pin,                                   // "pin"
+    HStr_Key_PollingInterval,                       // "pollingInterval"
+    HStr_Key_PowerSensor,                           // "powerSensor"
+    HStr_Key_PowerUnits,                            // "powerUnits"
+    HStr_Key_PreFeedAeratorMins,                    // "preFeedAeratorMins"
+    HStr_Key_PreDawnSprayMins,                      // "preDawnSprayMins"
+    HStr_Key_Pruning,                               // "pruning"
+    HStr_Key_PublishToSDCard,                       // "publishToSDCard"
+    HStr_Key_PublishToWiFiStorage,                  // "publishToWiFiStorage"
+    HStr_Key_Publisher,                             // "publisher"
+    HStr_Key_PullupPin,                             // "pullupPin"
+    HStr_Key_PWMChannel,                            // "pwmChannel"
+    HStr_Key_PWMFrequency,                          // "pwmFrequency"
+    HStr_Key_RailName,                              // "railName"
+    HStr_Key_ReservoirName,                         // "reservoirName"
+    HStr_Key_Revision,                              // "revision"
+    HStr_Key_Scheduler,                             // "scheduler"
+    HStr_Key_SensorName,                            // "sensorName"
+    HStr_Key_SowTime,                               // "sowTime"
+    HStr_Key_Spraying,                              // "spraying"
+    HStr_Key_State,                                 // "state"
+    HStr_Key_StdDosingRates,                        // "stdDosingRates"
+    HStr_Key_SubstrateType,                         // "substrateType"
+    HStr_Key_SystemMode,                            // "systemMode"
+    HStr_Key_SystemName,                            // "systemName"
+    HStr_Key_TDSRange,                              // "tdsRange"
+    HStr_Key_TDSSensor,                             // "tdsSensor"
+    HStr_Key_TemperatureUnits,                      // "temperatureUnits"
+    HStr_Key_TemperatureSensor,                     // "tempSensor"
+    HStr_Key_TimeZoneOffset,                        // "timeZoneOffset"
+    HStr_Key_Timestamp,                             // "timestamp"
+    HStr_Key_Tolerance,                             // "tolerance"
+    HStr_Key_ToleranceHigh,                         // "toleranceHigh"
+    HStr_Key_ToleranceLow,                          // "toleranceLow"
+    HStr_Key_TotalFeedingsPerDay,                   // "totalFeedingsPerDay"
+    HStr_Key_TotalGrowWeeks,                        // "totalGrowWeeks"
+    HStr_Key_Toxic,                                 // "toxic"
+    HStr_Key_TriggerBelow,                          // "triggerBelow"
+    HStr_Key_TriggerOutside,                        // "triggerOutside"
+    HStr_Key_Type,                                  // "type"
+    HStr_Key_Units,                                 // "units"
+    HStr_Key_UpdatesPerSec,                         // "updatesPerSec"
+    HStr_Key_UsingISR,                              // "usingISR"
+    HStr_Key_StateStableTimeMs,                     // "stateStableTimeMs"
+    HStr_Key_Value,                                 // "value"
+    HStr_Key_Version,                               // "version"
+    HStr_Key_Viner,                                 // "viner"
+    HStr_Key_VolumeSensor,                          // "volumeSensor"
+    HStr_Key_VolumeUnits,                           // "volumeUnits"
+    HStr_Key_WaterConcentrateUnits,                 // "waterConcentrateUnits"
+    HStr_Key_WaterTemperatureRange,                 // "waterTempRange"
+    HStr_Key_WaterTemperatureSensor,                // "waterTempSensor"
+    HStr_Key_WeeklyDosingRates,                     // "weeklyDosingRates"
+    HStr_Key_WiFiPassword,                          // "wifiPassword"
+    HStr_Key_WiFiPasswordSeed,                      // "wifiPwSeed"
+    HStr_Key_WiFiSSID,                              // "wifiSSID"
+    HStr_Key_WireDevAddress,                        // "wireDevAddress"
+    HStr_Key_WirePosIndex,                          // "wirePosIndex"
 
-    HStr_Enum_AC110V,
-    HStr_Enum_AC220V,
-    HStr_Enum_AirCarbonDioxide,
-    HStr_Enum_AirTemperatureHumidity,
-    HStr_Enum_Alkalinity,
-    HStr_Enum_AloeVera,
-    HStr_Enum_AnalogInput,
-    HStr_Enum_AnalogJoystick,
-    HStr_Enum_AnalogOutput,
-    HStr_Enum_Anise,
-    HStr_Enum_Artichoke,
-    HStr_Enum_Arugula,
-    HStr_Enum_AscOrder,
-    HStr_Enum_Asparagus,
-    HStr_Enum_Average,
-    HStr_Enum_Basil,
-    HStr_Enum_Bean,
-    HStr_Enum_BeanBroad,
-    HStr_Enum_Beetroot,
-    HStr_Enum_BlackCurrant,
-    HStr_Enum_Blueberry,
-    HStr_Enum_BokChoi,
-    HStr_Enum_Broccoli,
-    HStr_Enum_BrusselsSprout,
-    HStr_Enum_Cabbage,
-    HStr_Enum_Cannabis,
-    HStr_Enum_Capsicum,
-    HStr_Enum_Carrots,
-    HStr_Enum_Catnip,
-    HStr_Enum_Cauliflower,
-    HStr_Enum_Celery,
-    HStr_Enum_Chamomile,
-    HStr_Enum_Chicory,
-    HStr_Enum_Chives,
-    HStr_Enum_Cilantro,
-    HStr_Enum_ClayPebbles,
-    HStr_Enum_CoconutCoir,
-    HStr_Enum_Concentration,
-    HStr_Enum_Coriander,
-    HStr_Enum_CornSweet,
-    HStr_Enum_Cucumber,
-    HStr_Enum_CustomAdditive1,
-    HStr_Enum_CustomAdditive2,
-    HStr_Enum_CustomAdditive3,
-    HStr_Enum_CustomAdditive4,
-    HStr_Enum_CustomAdditive5,
-    HStr_Enum_CustomAdditive6,
-    HStr_Enum_CustomAdditive7,
-    HStr_Enum_CustomAdditive8,
-    HStr_Enum_CustomAdditive9,
-    HStr_Enum_CustomAdditive10,
-    HStr_Enum_CustomAdditive11,
-    HStr_Enum_CustomAdditive12,
-    HStr_Enum_CustomAdditive13,
-    HStr_Enum_CustomAdditive14,
-    HStr_Enum_CustomAdditive15,
-    HStr_Enum_CustomAdditive16,
-    HStr_Enum_CustomCrop1,
-    HStr_Enum_CustomCrop2,
-    HStr_Enum_CustomCrop3,
-    HStr_Enum_CustomCrop4,
-    HStr_Enum_CustomCrop5,
-    HStr_Enum_CustomCrop6,
-    HStr_Enum_CustomCrop7,
-    HStr_Enum_CustomCrop8,
-    HStr_Enum_CustomOLED,
-    HStr_Enum_DC12V,
-    HStr_Enum_DC24V,
-    HStr_Enum_DC3V3,
-    HStr_Enum_DC48V,
-    HStr_Enum_DC5V,
-    HStr_Enum_DescOrder,
-    HStr_Enum_DigitalInput,
-    HStr_Enum_DigitalInputPullDown,
-    HStr_Enum_DigitalInputPullUp,
-    HStr_Enum_DigitalOutput,
-    HStr_Enum_DigitalOutputPushPull,
-    HStr_Enum_Dill,
-    HStr_Enum_Distance,
-    HStr_Enum_DrainageWater,
-    HStr_Enum_DrainToWaste,
-    HStr_Enum_Eggplant,
-    HStr_Enum_Endive,
-    HStr_Enum_FanExhaust,
-    HStr_Enum_FeedWater,
-    HStr_Enum_Fennel,
-    HStr_Enum_Flowers,
-    HStr_Enum_Fodder,
-    HStr_Enum_FreshWater,
-    HStr_Enum_Garlic,
-    HStr_Enum_Ginger,
-    HStr_Enum_GrowLights,
-    HStr_Enum_Highest,
-    HStr_Enum_IL3820,
-    HStr_Enum_IL3820V2,
-    HStr_Enum_ILI9341,
-    HStr_Enum_Imperial,
-    HStr_Enum_InOrder,
-    HStr_Enum_Kale,
-    HStr_Enum_Lavender,
-    HStr_Enum_LCD16x2,
-    HStr_Enum_LCD20x4,
-    HStr_Enum_Leek,
-    HStr_Enum_LemonBalm,
-    HStr_Enum_Lettuce,
-    HStr_Enum_LiqDilution,
-    HStr_Enum_LiqFlowRate,
-    HStr_Enum_LiqVolume,
-    HStr_Enum_Lowest,
-    HStr_Enum_Marrow,
-    HStr_Enum_Matrix2x2,
-    HStr_Enum_Matrix3x4,
-    HStr_Enum_Matrix4x4,
-    HStr_Enum_Melon,
-    HStr_Enum_Metric,
-    HStr_Enum_Mint,
-    HStr_Enum_Multiply,
-    HStr_Enum_MustardCress,
-    HStr_Enum_NutrientPremix,
-    HStr_Enum_Okra,
-    HStr_Enum_Onions,
-    HStr_Enum_Oregano,
-    HStr_Enum_PakChoi,
-    HStr_Enum_Parsley,
-    HStr_Enum_Parsnip,
-    HStr_Enum_Pea,
-    HStr_Enum_PeaSugar,
-    HStr_Enum_Pepino,
-    HStr_Enum_PeppersBell,
-    HStr_Enum_PeppersHot,
-    HStr_Enum_Percentile,
-    HStr_Enum_PeristalticPump,
-    HStr_Enum_PhDownSolution,
-    HStr_Enum_PhUpSolution,
-    HStr_Enum_Potato,
-    HStr_Enum_PotatoSweet,
-    HStr_Enum_Power,
-    HStr_Enum_PowerLevel,
-    HStr_Enum_PumpFlow,
-    HStr_Enum_Pumpkin,
-    HStr_Enum_Radish,
-    HStr_Enum_Recycling,
-    HStr_Enum_RemoteControl,
-    HStr_Enum_ResistiveTouch,
-    HStr_Enum_RevOrder,
-    HStr_Enum_Rhubarb,
-    HStr_Enum_Rockwool,
-    HStr_Enum_Rosemary,
-    HStr_Enum_RotaryEncoder,
-    HStr_Enum_Sage,
-    HStr_Enum_Scientific,
-    HStr_Enum_SH1106,
-    HStr_Enum_Silverbeet,
-    HStr_Enum_SoilMoisture,
-    HStr_Enum_Spinach,
-    HStr_Enum_Squash,
-    HStr_Enum_SSD1305,
-    HStr_Enum_SSD1305x32Ada,
-    HStr_Enum_SSD1305x64Ada,
-    HStr_Enum_SSD1306,
-    HStr_Enum_SSD1607,
-    HStr_Enum_ST7735,
-    HStr_Enum_ST7789,
-    HStr_Enum_Strawberries,
-    HStr_Enum_Sunflower,
-    HStr_Enum_SwissChard,
-    HStr_Enum_Taro,
-    HStr_Enum_Tarragon,
-    HStr_Enum_Temperature,
-    HStr_Enum_TFTTouch,
-    HStr_Enum_Thyme,
-    HStr_Enum_Tomato,
-    HStr_Enum_TouchScreen,
-    HStr_Enum_Turnip,
-    HStr_Enum_UpDownButtons,
-    HStr_Enum_UpDownESP32Touch,
-    HStr_Enum_WaterAerator,
-    HStr_Enum_WaterHeater,
-    HStr_Enum_WaterHeight,
-    HStr_Enum_WaterLevel,
-    HStr_Enum_WaterPH,
-    HStr_Enum_WaterPump,
-    HStr_Enum_WaterSprayer,
-    HStr_Enum_WaterTDS,
-    HStr_Enum_WaterTemperature,
-    HStr_Enum_Watercress,
-    HStr_Enum_Watermelon,
-    HStr_Enum_Weight,
-    HStr_Enum_Zucchini,
+    HStr_Enum_AC110V,                               // "AC110V"
+    HStr_Enum_AC220V,                               // "AC220V"
+    HStr_Enum_AirCarbonDioxide,                     // "AirCO2"
+    HStr_Enum_AirTemperatureHumidity,               // "AirTempHumidity"
+    HStr_Enum_Alkalinity,                           // "Alkalinity"
+    HStr_Enum_AloeVera,                             // "AloeVera"
+    HStr_Enum_AnalogInput,                          // "AnalogInput"
+    HStr_Enum_AnalogJoystick,                       // "AnalogJoystick"
+    HStr_Enum_AnalogOutput,                         // "AnalogOutput"
+    HStr_Enum_Anise,                                // "Anise"
+    HStr_Enum_Artichoke,                            // "Artichoke"
+    HStr_Enum_Arugula,                              // "Arugula"
+    HStr_Enum_AscOrder,                             // "AscOrder"
+    HStr_Enum_Asparagus,                            // "Asparagus"
+    HStr_Enum_Average,                              // "Average"
+    HStr_Enum_Basil,                                // "Basil"
+    HStr_Enum_Bean,                                 // "Bean"
+    HStr_Enum_BeanBroad,                            // "BeanBroad"
+    HStr_Enum_Beetroot,                             // "Beetroot"
+    HStr_Enum_BlackCurrant,                         // "BlackCurrant"
+    HStr_Enum_Blueberry,                            // "Blueberry"
+    HStr_Enum_BokChoi,                              // "BokChoi"
+    HStr_Enum_Broccoli,                             // "Broccoli"
+    HStr_Enum_BrusselsSprout,                       // "BrusselsSprout"
+    HStr_Enum_Cabbage,                              // "Cabbage"
+    HStr_Enum_Cannabis,                             // "Cannabis"
+    HStr_Enum_Capsicum,                             // "Capsicum"
+    HStr_Enum_Carrots,                              // "Carrots"
+    HStr_Enum_Catnip,                               // "Catnip"
+    HStr_Enum_Cauliflower,                          // "Cauliflower"
+    HStr_Enum_Celery,                               // "Celery"
+    HStr_Enum_Chamomile,                            // "Chamomile"
+    HStr_Enum_Chicory,                              // "Chicory"
+    HStr_Enum_Chives,                               // "Chives"
+    HStr_Enum_Cilantro,                             // "Cilantro"
+    HStr_Enum_ClayPebbles,                          // "ClayPebbles"
+    HStr_Enum_CoconutCoir,                          // "CoconutCoir"
+    HStr_Enum_Concentration,                        // "Concentration"
+    HStr_Enum_Coriander,                            // "Coriander"
+    HStr_Enum_CornSweet,                            // "CornSweet"
+    HStr_Enum_Cucumber,                             // "Cucumber"
+    HStr_Enum_CustomAdditive1,                      // "CustomAdditive1"
+    HStr_Enum_CustomAdditive2,                      // "CustomAdditive2"
+    HStr_Enum_CustomAdditive3,                      // "CustomAdditive3"
+    HStr_Enum_CustomAdditive4,                      // "CustomAdditive4"
+    HStr_Enum_CustomAdditive5,                      // "CustomAdditive5"
+    HStr_Enum_CustomAdditive6,                      // "CustomAdditive6"
+    HStr_Enum_CustomAdditive7,                      // "CustomAdditive7"
+    HStr_Enum_CustomAdditive8,                      // "CustomAdditive8"
+    HStr_Enum_CustomAdditive9,                      // "CustomAdditive9"
+    HStr_Enum_CustomAdditive10,                     // "CustomAdditive10"
+    HStr_Enum_CustomAdditive11,                     // "CustomAdditive11"
+    HStr_Enum_CustomAdditive12,                     // "CustomAdditive12"
+    HStr_Enum_CustomAdditive13,                     // "CustomAdditive13"
+    HStr_Enum_CustomAdditive14,                     // "CustomAdditive14"
+    HStr_Enum_CustomAdditive15,                     // "CustomAdditive15"
+    HStr_Enum_CustomAdditive16,                     // "CustomAdditive16"
+    HStr_Enum_CustomCrop1,                          // "CustomCrop1"
+    HStr_Enum_CustomCrop2,                          // "CustomCrop2"
+    HStr_Enum_CustomCrop3,                          // "CustomCrop3"
+    HStr_Enum_CustomCrop4,                          // "CustomCrop4"
+    HStr_Enum_CustomCrop5,                          // "CustomCrop5"
+    HStr_Enum_CustomCrop6,                          // "CustomCrop6"
+    HStr_Enum_CustomCrop7,                          // "CustomCrop7"
+    HStr_Enum_CustomCrop8,                          // "CustomCrop8"
+    HStr_Enum_CustomOLED,                           // "CustomOLED"
+    HStr_Enum_DC12V,                                // "DC12V"
+    HStr_Enum_DC24V,                                // "DC24V"
+    HStr_Enum_DC3V3,                                // "DC3V3"
+    HStr_Enum_DC48V,                                // "DC48V"
+    HStr_Enum_DC5V,                                 // "DC5V"
+    HStr_Enum_DescOrder,                            // "DescOrder"
+    HStr_Enum_DigitalInput,                         // "DigitalInput"
+    HStr_Enum_DigitalInputPullDown,                 // "DigitalInputPullDown"
+    HStr_Enum_DigitalInputPullUp,                   // "DigitalInputPullUp"
+    HStr_Enum_DigitalOutput,                        // "DigitalOutput"
+    HStr_Enum_DigitalOutputPushPull,                // "DigitalOutputPushPull"
+    HStr_Enum_Dill,                                 // "Dill"
+    HStr_Enum_Distance,                             // "Distance"
+    HStr_Enum_DrainageWater,                        // "DrainageWater"
+    HStr_Enum_DrainToWaste,                         // "DrainToWaste"
+    HStr_Enum_Eggplant,                             // "Eggplant"
+    HStr_Enum_Endive,                               // "Endive"
+    HStr_Enum_FanExhaust,                           // "FanExhaust"
+    HStr_Enum_FeedWater,                            // "FeedWater"
+    HStr_Enum_Fennel,                               // "Fennel"
+    HStr_Enum_Flowers,                              // "Flowers"
+    HStr_Enum_Fodder,                               // "Fodder"
+    HStr_Enum_FreshWater,                           // "FreshWater"
+    HStr_Enum_Garlic,                               // "Garlic"
+    HStr_Enum_Ginger,                               // "Ginger"
+    HStr_Enum_GrowLights,                           // "GrowLights"
+    HStr_Enum_Highest,                              // "Highest"
+    HStr_Enum_IL3820,                               // "IL3820"
+    HStr_Enum_IL3820V2,                             // "IL3820V2"
+    HStr_Enum_ILI9341,                              // "ILI9341"
+    HStr_Enum_Imperial,                             // "Imperial"
+    HStr_Enum_InOrder,                              // "InOrder"
+    HStr_Enum_Kale,                                 // "Kale"
+    HStr_Enum_Lavender,                             // "Lavender"
+    HStr_Enum_LCD16x2,                              // "LCD16x2"
+    HStr_Enum_LCD20x4,                              // "LCD20x4"
+    HStr_Enum_Leek,                                 // "Leek"
+    HStr_Enum_LemonBalm,                            // "LemonBalm"
+    HStr_Enum_Lettuce,                              // "Lettuce"
+    HStr_Enum_LiqDilution,                          // "LiqDilution"
+    HStr_Enum_LiqFlowRate,                          // "LiqFlowRate"
+    HStr_Enum_LiqVolume,                            // "LiqVolume"
+    HStr_Enum_Lowest,                               // "Lowest"
+    HStr_Enum_Marrow,                               // "Marrow"
+    HStr_Enum_Matrix2x2,                            // "Matrix2x2"
+    HStr_Enum_Matrix3x4,                            // "Matrix3x4"
+    HStr_Enum_Matrix4x4,                            // "Matrix4x4"
+    HStr_Enum_Melon,                                // "Melon"
+    HStr_Enum_Metric,                               // "Metric"
+    HStr_Enum_Mint,                                 // "Mint"
+    HStr_Enum_Multiply,                             // "Multiply"
+    HStr_Enum_MustardCress,                         // "MustardCress"
+    HStr_Enum_NutrientPremix,                       // "NutrientPremix"
+    HStr_Enum_Okra,                                 // "Okra"
+    HStr_Enum_Onions,                               // "Onions"
+    HStr_Enum_Oregano,                              // "Oregano"
+    HStr_Enum_PakChoi,                              // "PakChoi"
+    HStr_Enum_Parsley,                              // "Parsley"
+    HStr_Enum_Parsnip,                              // "Parsnip"
+    HStr_Enum_Pea,                                  // "Pea"
+    HStr_Enum_PeaSugar,                             // "PeaSugar"
+    HStr_Enum_Pepino,                               // "Pepino"
+    HStr_Enum_PeppersBell,                          // "PeppersBell"
+    HStr_Enum_PeppersHot,                           // "PeppersHot"
+    HStr_Enum_Percentile,                           // "Percentile"
+    HStr_Enum_PeristalticPump,                      // "PeristalticPump"
+    HStr_Enum_PhDownSolution,                       // "PhDownSolution"
+    HStr_Enum_PhUpSolution,                         // "PhUpSolution"
+    HStr_Enum_Potato,                               // "Potato"
+    HStr_Enum_PotatoSweet,                          // "PotatoSweet"
+    HStr_Enum_Power,                                // "Power"
+    HStr_Enum_PowerLevel,                           // "PowerLevel"
+    HStr_Enum_PumpFlow,                             // "PumpFlow"
+    HStr_Enum_Pumpkin,                              // "Pumpkin"
+    HStr_Enum_Radish,                               // "Radish"
+    HStr_Enum_Recycling,                            // "Recycling"
+    HStr_Enum_RemoteControl,                        // "RemoteControl"
+    HStr_Enum_ResistiveTouch,                       // "ResistiveTouch"
+    HStr_Enum_RevOrder,                             // "RevOrder"
+    HStr_Enum_Rhubarb,                              // "Rhubarb"
+    HStr_Enum_Rockwool,                             // "Rockwool"
+    HStr_Enum_Rosemary,                             // "Rosemary"
+    HStr_Enum_RotaryEncoder,                        // "RotaryEncoder"
+    HStr_Enum_Sage,                                 // "Sage"
+    HStr_Enum_Scientific,                           // "Scientific"
+    HStr_Enum_SH1106,                               // "SH1106"
+    HStr_Enum_Silverbeet,                           // "Silverbeet"
+    HStr_Enum_SoilMoisture,                         // "SoilMoisture"
+    HStr_Enum_Spinach,                              // "Spinach"
+    HStr_Enum_Squash,                               // "Squash"
+    HStr_Enum_SSD1305,                              // "SSD1305"
+    HStr_Enum_SSD1305x32Ada,                        // "SSD1305x32Ada"
+    HStr_Enum_SSD1305x64Ada,                        // "SSD1305x64Ada"
+    HStr_Enum_SSD1306,                              // "SSD1306"
+    HStr_Enum_SSD1607,                              // "SSD1607"
+    HStr_Enum_ST7735,                               // "ST7735"
+    HStr_Enum_ST7789,                               // "ST7789"
+    HStr_Enum_Strawberries,                         // "Strawberries"
+    HStr_Enum_Sunflower,                            // "Sunflower"
+    HStr_Enum_SwissChard,                           // "SwissChard"
+    HStr_Enum_Taro,                                 // "Taro"
+    HStr_Enum_Tarragon,                             // "Tarragon"
+    HStr_Enum_Temperature,                          // "Temperature"
+    HStr_Enum_TFTTouch,                             // "TFTTouch"
+    HStr_Enum_Thyme,                                // "Thyme"
+    HStr_Enum_Tomato,                               // "Tomato"
+    HStr_Enum_TouchScreen,                          // "TouchScreen"
+    HStr_Enum_Turnip,                               // "Turnip"
+    HStr_Enum_UpDownButtons,                        // "UpDownButtons"
+    HStr_Enum_UpDownESP32Touch,                     // "UpDownESP32Touch"
+    HStr_Enum_WaterAerator,                         // "WaterAerator"
+    HStr_Enum_WaterHeater,                          // "WaterHeater"
+    HStr_Enum_WaterHeight,                          // "WaterHeight"
+    HStr_Enum_WaterLevel,                           // "LevelIndicator"
+    HStr_Enum_WaterPH,                              // "WaterPH"
+    HStr_Enum_WaterPump,                            // "WaterPump"
+    HStr_Enum_WaterSprayer,                         // "WaterSprayer"
+    HStr_Enum_WaterTDS,                             // "WaterTDS"
+    HStr_Enum_WaterTemperature,                     // "WaterTemp"
+    HStr_Enum_Watercress,                           // "Watercress"
+    HStr_Enum_Watermelon,                           // "Watermelon"
+    HStr_Enum_Weight,                               // "Weight"
+    HStr_Enum_Zucchini,                             // "Zucchini"
 
-    HStr_Unit_Count,
-    HStr_Unit_Degree,
-    HStr_Unit_EC5,
-    HStr_Unit_Feet,
-    HStr_Unit_Gallons,
-    HStr_Unit_Kilograms,
-    HStr_Unit_MilliLiterPer,
-    HStr_Unit_PerMinute,
-    HStr_Unit_pH14,
-    HStr_Unit_Pounds,
-    HStr_Unit_PPM500,
-    HStr_Unit_PPM640,
-    HStr_Unit_PPM700,
-    HStr_Unit_Undefined,
+    HStr_Unit_Count,                                // "[qty]"
+    HStr_Unit_Degree,                               // "°"
+    HStr_Unit_EC5,                                  // "EC(5)"
+    HStr_Unit_Feet,                                 // "ft"
+    HStr_Unit_Gallons,                              // "gal"
+    HStr_Unit_Kilograms,                            // "Kg"
+    HStr_Unit_MilliLiterPer,                        // "mL/"
+    HStr_Unit_PerMinute,                            // "/min"
+    HStr_Unit_pH14,                                 // "[pH(14)]"
+    HStr_Unit_Pounds,                               // "lbs"
+    HStr_Unit_PPM500,                               // "ppm(500)"
+    HStr_Unit_PPM640,                               // "ppm(640)"
+    HStr_Unit_PPM700,                               // "ppm(700)"
+    HStr_Unit_Undefined,                            // "[undef]"
 
-    HStr_Count
+    HStr_Count                                      // String count
 };
 
 // Blank string ("")

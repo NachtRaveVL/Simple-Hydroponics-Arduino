@@ -3,6 +3,9 @@
     Hydruino Attachment Points
 */
 
+#ifndef HydroInterfaces_HPP
+#define HydroInterfaces_HPP
+
 #include "Hydruino.h"
 
 inline Hydro_UnitsType HydroDilutionUnitsInterfaceStorage::getVolumeUnits() const
@@ -365,3 +368,5 @@ inline SharedPtr<U> HydroLimitTriggerAttachmentInterface::getLimitTrigger(bool p
     getLimitTriggerAttachment().updateIfNeeded(poll);
     return getLimitTriggerAttachment().HydroAttachment::getObject<U>();
 }
+
+#endif // /ifndef HydroInterfaces_HPP

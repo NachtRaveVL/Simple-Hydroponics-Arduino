@@ -27,15 +27,13 @@ HydroReservoir *newReservoirObjectFromData(const HydroReservoirData *dataIn)
 
 
 HydroReservoir::HydroReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, int classTypeIn)
-    : HydroObject(HydroIdentity(reservoirType, reservoirIndex)), classType((typeof(classType))classTypeIn),
-      HydroVolumeUnitsInterfaceStorage(defaultVolumeUnits()),
-      _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
+    : HydroObject(HydroIdentity(reservoirType, reservoirIndex)), HydroVolumeUnitsInterfaceStorage(defaultVolumeUnits()),
+      classType(static_cast<decltype(Fluid)>(classTypeIn)), _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
 HydroReservoir::HydroReservoir(const HydroReservoirData *dataIn)
-    : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
-      HydroVolumeUnitsInterfaceStorage(definedUnitsElse(dataIn->volumeUnits, defaultVolumeUnits())),
-      _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
+    : HydroObject(dataIn), HydroVolumeUnitsInterfaceStorage(definedUnitsElse(dataIn->volumeUnits, defaultVolumeUnits())),
+      classType(static_cast<decltype(Fluid)>(dataIn->id.object.classType)), _filledState(Hydro_TriggerState_Disabled), _emptyState(Hydro_TriggerState_Disabled)
 { ; }
 
 void HydroReservoir::update()
@@ -418,20 +416,22 @@ void HydroFeedReservoir::saveToData(HydroData *dataOut)
 
 
 HydroInfiniteReservoir::HydroInfiniteReservoir(Hydro_ReservoirType reservoirType, hposi_t reservoirIndex, bool alwaysFilled, int classType)
-    : HydroReservoir(reservoirType, reservoirIndex, classType), _alwaysFilled(alwaysFilled), _waterVolume(this)
+    : HydroReservoir(reservoirType, reservoirIndex, classType), _waterVolume(this), _alwaysFilled(alwaysFilled)
 { ; }
 
 HydroInfiniteReservoir::HydroInfiniteReservoir(const HydroInfiniteReservoirData *dataIn)
-    : HydroReservoir(dataIn), _alwaysFilled(dataIn->alwaysFilled), _waterVolume(this)
+    : HydroReservoir(dataIn), _waterVolume(this), _alwaysFilled(dataIn->alwaysFilled)
 { ; }
 
 bool HydroInfiniteReservoir::isFilled(bool poll)
 {
+    (void)poll;
     return _alwaysFilled;
 }
 
 bool HydroInfiniteReservoir::isEmpty(bool poll)
 {
+    (void)poll;
     return !_alwaysFilled;
 }
 

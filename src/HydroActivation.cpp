@@ -6,8 +6,8 @@
 #include "Hydruino.h"
 
 HydroActivationHandle::HydroActivationHandle(SharedPtr<HydroActuator> actuatorIn, Hydro_DirectionMode direction, float intensity, millis_t duration, bool force)
-    : activation(direction, constrain(intensity, 0.0f, 1.0f), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)), 
-      actuator(nullptr), checkTime(0), elapsed(0)
+    : actuator(nullptr), activation(direction, constrain(intensity, 0.0f, 1.0f), duration, (force ? Hydro_ActivationFlags_Forced : Hydro_ActivationFlags_None)),
+      checkTime(0), elapsed(0)
 {
     operator=(actuatorIn);
 }
@@ -41,7 +41,8 @@ void HydroActivationHandle::unset()
     checkTime = 0;
 
     if (actuator) {
-        for (auto handleIter = actuator->_handles.end() - 1; handleIter != actuator->_handles.begin() - 1; --handleIter) {
+        for (auto handleIter = actuator->_handles.end(); handleIter != actuator->_handles.begin();) {
+            --handleIter;
             if ((*handleIter) == this) {
                 actuator->_handles.erase(handleIter);
                 break;

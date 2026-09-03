@@ -22,7 +22,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
 
-    Simple-Hydroponics-Arduino - Version 0.7.1.0
+    Simple-Hydroponics-Arduino - Version 0.7.2.0
 */
 
 #ifndef Hydruino_H
@@ -353,12 +353,8 @@ public:
 
     // Sets display name of system (HYDRO_NAME_MAXSIZE size limit)
     void setSystemName(String systemName);
-    // Sets system time zone offset from UTC
-    void setTimeZoneOffset(int8_t hoursOffset, int8_t minsOffset);
-    // Sets system time zone offset from UTC, in standard hours
-    inline void setTimeZoneOffset(int hoursOffset) { setTimeZoneOffset(hoursOffset, 0); }
     // Sets system time zone offset from UTC, in fractional hours
-    inline void setTimeZoneOffset(float hoursOffset) { setTimeZoneOffset((int8_t)hoursOffset, (fabsf(hoursOffset) - floorf(fabsf(hoursOffset))) * signbit(hoursOffset) ? -60.0f : 60.0f); }
+    void setTimeZoneOffset(float hoursOffset);
     // Sets system polling interval, in milliseconds (does not enable polling, see enable publishing methods)
     void setPollingInterval(uint16_t pollingInterval);
     // Sets system autosave enable mode and optional fallback mode and interval, in minutes.

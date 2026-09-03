@@ -31,7 +31,7 @@ struct HydroActivation {
 
     inline bool isValid() const { return direction != Hydro_DirectionMode_Undefined; }
     inline bool isDone() const { return duration == millis_none; }
-    inline bool isUntimed() const { return duration == -1; }
+    inline bool isUntimed() const { return duration == (millis_t)-1; }
     inline bool isForced() const { return flags & Hydro_ActivationFlags_Forced; }
     inline float getDriveIntensity() const { return direction == Hydro_DirectionMode_Forward ? intensity :
                                                     direction == Hydro_DirectionMode_Reverse ? -intensity : 0.0f; }

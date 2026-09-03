@@ -105,6 +105,7 @@ public:
 // RTC Module Interface
 class HydroRTCInterface {
 public:
+    virtual ~HydroRTCInterface() { ; }
     virtual bool begin(TwoWire *wireInstance) = 0;
     virtual void adjust(const DateTime &dt) = 0;
     virtual bool lostPower(void) = 0;
@@ -190,7 +191,7 @@ public:
 template <size_t N> class HydroMeasurementUnitsStorage {
 protected:
     Hydro_UnitsType _measurementUnits[N];
-    inline HydroMeasurementUnitsStorage(Hydro_UnitsType measurementUnits = Hydro_UnitsType_Undefined) { for (hposi_t i = 0; i < N; ++i) { _measurementUnits[i] = measurementUnits; } }
+    inline HydroMeasurementUnitsStorage(Hydro_UnitsType measurementUnits = Hydro_UnitsType_Undefined) { for (size_t i = 0; i < N; ++i) { _measurementUnits[i] = measurementUnits; } }
 };
 
 // Single Measure Units Interface + Storage

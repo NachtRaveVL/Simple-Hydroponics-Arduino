@@ -153,6 +153,7 @@ void HydruinoMinUI::allocateTFTTouchControl()
     if (controller && !_input) {
         auto ctrlInMode = controller->getControlInputMode();
         auto ctrlInPins = controller->getControlInputPins();
+        auto dispOutMode = controller->getDisplayOutputMode();
         switch (ctrlInMode) {
             case Hydro_ControlInputMode_TFTTouch:
                 HYDRO_SOFT_ASSERT(_display, SFP(HStr_Err_NotYetInitialized));

@@ -84,16 +84,6 @@ enum HydroUI_String : unsigned short {
     HUIStr_Item_WiFiPass,
     HUIStr_Item_WiFiSSID,
 
-    HUIStr_Enum_Autosave,
-    HUIStr_Enum_DataPolling,
-    HUIStr_Enum_GPSPolling,
-    HUIStr_Enum_Measurements,
-    HUIStr_Enum_SystemMode,
-    HUIStr_Enum_TimeZone,
-
-    HUIStr_Unit_MSL,
-    HUIStr_Unit_Percent,
-
     HUIStr_Count
 };
 

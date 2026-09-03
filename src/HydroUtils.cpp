@@ -138,8 +138,8 @@ void _setUnixTime(DateTime unixTime, bool isSigTime)
     }
 
     if (getController() && (isSigTime ||
-        getLogger()->getSystemInit() <= SECS_YR_2000 ||
-        abs(prevTime - unixTime.unixtime()) >= SECS_PER_DAY)) {
+        getLogger()->getSystemInit() <= (time_t)SECS_YR_2000 ||
+        abs(prevTime - unixTime.unixtime()) >= (time_t)SECS_PER_DAY)) {
         getController()->notifySignificantTime(unixTime.unixtime());
     }
 }
@@ -192,7 +192,7 @@ void createDirectoryFor(SDClass *sd, String filename)
 hkey_t stringHash(String string)
 {
     hkey_t hash = 5381;
-    for(int index = 0; index < string.length(); ++index) {
+    for(size_t index = 0; index < string.length(); ++index) {
         hash = ((hash << 5) + hash) + (hkey_t)string[index]; // Good 'ol DJB2
     }
     return hash != hkey_none ? hash : 5381;
@@ -278,16 +278,16 @@ template<>
 String commaStringFromArray<float>(const float *arrayIn, size_t length)
 {
     if (!arrayIn || !length) { return String(SFP(HStr_null)); }
-    String retVal; retVal.reserve(length << 1 + length >> 1 + 1);
+    String retVal; retVal.reserve((length << 1) + (length >> 1) + 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
 
         String floatString = String(arrayIn[index], 6);
-        int trimIndex = floatString.length() - 1;
+        int trimIndex = (int)floatString.length() - 1;
 
         while (floatString[trimIndex] == '0' && trimIndex > 0) { trimIndex--; }
         if (floatString[trimIndex] == '.' && trimIndex > 0) { trimIndex--; }
-        if (trimIndex < floatString.length() - 1) {
+        if (trimIndex < (int)floatString.length() - 1) {
             floatString = floatString.substring(0, trimIndex+1);
         }
 
@@ -300,16 +300,16 @@ template<>
 String commaStringFromArray<double>(const double *arrayIn, size_t length)
 {
     if (!arrayIn || !length) { return String(SFP(HStr_null)); }
-    String retVal; retVal.reserve(length << 1 + length >> 1 + 1);
+    String retVal; retVal.reserve((length << 1) + (length >> 1) + 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
 
         String doubleString = String(arrayIn[index], 14);
-        int trimIndex = doubleString.length() - 1;
+        int trimIndex = (int)doubleString.length() - 1;
 
         while (doubleString[trimIndex] == '0' && trimIndex > 0) { trimIndex--; }
         if (doubleString[trimIndex] == '.' && trimIndex > 0) { trimIndex--; }
-        if (trimIndex < doubleString.length() - 1) {
+        if (trimIndex < (int)doubleString.length() - 1) {
             doubleString = doubleString.substring(0, trimIndex+1);
         }
 
@@ -327,7 +327,7 @@ void commaStringToArray<float>(String stringIn, float *arrayOut, size_t length)
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
         if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
         String subString = stringIn.substring(lastSepPos+1, nextSepPos);
-        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+        if (nextSepPos < (int)stringIn.length()) { lastSepPos = nextSepPos; }
 
         arrayOut[index] = subString.toFloat();
     }
@@ -342,7 +342,7 @@ void commaStringToArray<double>(String stringIn, double *arrayOut, size_t length
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
         if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
         String subString = stringIn.substring(lastSepPos+1, nextSepPos);
-        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+        if (nextSepPos < (int)stringIn.length()) { lastSepPos = nextSepPos; }
 
         #if !defined(CORE_TEENSY)
             arrayOut[index] = subString.toDouble();
@@ -361,7 +361,7 @@ void commaStringToArray<String>(String stringIn, String *arrayOut, size_t length
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
         if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
         String subString = stringIn.substring(lastSepPos+1, nextSepPos);
-        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+        if (nextSepPos < (int)stringIn.length()) { lastSepPos = nextSepPos; }
         arrayOut[index] = subString;
     }
 }
@@ -764,7 +764,10 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
                         *valueOut = valueIn * convertParam;
                         return true;
                     }
-                break;
+                    break;
+
+                default:
+                    break;
             }
             break;
 
@@ -775,7 +778,10 @@ bool tryConvertUnits(float valueIn, Hydro_UnitsType unitsIn, float *valueOut, Hy
                         *valueOut = valueIn / convertParam;
                         return true;
                     }
-                break;
+                    break;
+
+                default:
+                    break;
             }
             break;
 
@@ -1125,6 +1131,7 @@ bool checkPinIsAnalogInput(pintype_t pin)
 
 bool checkPinIsAnalogOutput(pintype_t pin)
 {
+    (void)pin;
     #if !defined(NUM_ANALOG_OUTPUTS) || NUM_ANALOG_OUTPUTS == 0
         return false;
     #elif defined(ESP32)

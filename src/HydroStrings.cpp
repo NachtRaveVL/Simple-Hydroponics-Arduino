@@ -22,7 +22,7 @@ void beginStringsFromSDCard(String dataFilePrefix)
 
 inline String getStringsFilename()
 {
-    String filename; filename.reserve(_strDataFilePrefix.length() + 12);
+    String filename; filename.reserve(_strDataFilePrefix.length() + 11 + 1);
     filename.concat(_strDataFilePrefix);
     filename.concat('s'); // Cannot use SFP here so have to do it the long way
     filename.concat('t');

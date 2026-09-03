@@ -26,7 +26,7 @@ HydroTrigger *newTriggerObjectFromSubData(const HydroTriggerSubData *dataIn)
 
 
 HydroTrigger::HydroTrigger(HydroIdentity sensorId, uint8_t measurementRow, float detriggerTol, millis_t detriggerDelay, int typeIn)
-    : type((typeof(type))typeIn), _sensor(this), _detriggerTol(detriggerTol), _detriggerDelay(detriggerDelay),
+    : type(static_cast<decltype(MeasureValue)>(typeIn)), _sensor(this), _detriggerTol(detriggerTol), _detriggerDelay(detriggerDelay),
       _lastTrigger(0), _triggerState(Hydro_TriggerState_Disabled)
 {
     _sensor.setMeasurementRow(measurementRow);
@@ -34,7 +34,7 @@ HydroTrigger::HydroTrigger(HydroIdentity sensorId, uint8_t measurementRow, float
 }
 
 HydroTrigger::HydroTrigger(SharedPtr<HydroSensor> sensor, uint8_t measurementRow, float detriggerTol, millis_t detriggerDelay, int typeIn)
-    : type((typeof(type))typeIn), _sensor(this), _detriggerTol(detriggerTol), _detriggerDelay(detriggerDelay),
+    : type(static_cast<decltype(MeasureValue)>(typeIn)), _sensor(this), _detriggerTol(detriggerTol), _detriggerDelay(detriggerDelay),
       _lastTrigger(0), _triggerState(Hydro_TriggerState_Disabled)
 {
     _sensor.setMeasurementRow(measurementRow);
@@ -42,8 +42,8 @@ HydroTrigger::HydroTrigger(SharedPtr<HydroSensor> sensor, uint8_t measurementRow
 }
 
 HydroTrigger::HydroTrigger(const HydroTriggerSubData *dataIn)
-    : type((typeof(type))(dataIn->type)), _sensor(this), _lastTrigger(0), _triggerState(Hydro_TriggerState_Disabled),
-      _detriggerTol(dataIn->detriggerTol), _detriggerDelay(dataIn->detriggerDelay)
+    : type(static_cast<decltype(MeasureValue)>(dataIn->type)), _sensor(this), _detriggerTol(dataIn->detriggerTol), _detriggerDelay(dataIn->detriggerDelay),
+      _lastTrigger(0), _triggerState(Hydro_TriggerState_Disabled)
 {
     _sensor.setMeasurementRow(dataIn->measurementRow);
     _sensor.setMeasurementUnits(dataIn->measurementUnits);

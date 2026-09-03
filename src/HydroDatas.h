@@ -36,7 +36,7 @@ struct HydroSystemData : public HydroData {
     Hydro_DisplayOutputMode dispOutMode;                    // System display output mode
     Hydro_ControlInputMode ctrlInMode;                      // System control input mode 
     char systemName[HYDRO_NAME_MAXSIZE];                    // System name
-    int16_t timeZoneOffset;                                 // Timezone offset *100 (accounts for :30 and :45)
+    float timeZoneOffset;                                   // Timezone offset from UTC, in fractional hours
     uint16_t pollingInterval;                               // Sensor polling interval, in milliseconds
     Hydro_Autosave autosaveEnabled;                         // Autosave enabled
     Hydro_Autosave autosaveFallback;                        // Autosave fallback
@@ -83,7 +83,7 @@ struct HydroCalibrationData : public HydroData {
     inline void transform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { *valueInOut = transform(*valueInOut);
                                                                                           if (unitsOut) { *unitsOut = calibrationUnits; } }
     // Transforms measurement from raw (or initial) measurement into calibrated (or transformed) measurement.
-    inline HydroSingleMeasurement transform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(transform(measurement.value), calibrationUnits, measurement.timestamp, measurement.frame); }
+    inline HydroSingleMeasurement transform(HydroSingleMeasurement measurement) const { return HydroSingleMeasurement(transform(measurement.value), calibrationUnits, measurement.timestamp, measurement.frame); }
     // Transforms measurement in-place from raw (or initial) measurement into calibrated (or transformed) measurement.
     inline void transform(HydroSingleMeasurement *measurementInOut) const { transform(&measurementInOut->value, &measurementInOut->units); }
 
@@ -93,7 +93,7 @@ struct HydroCalibrationData : public HydroData {
     inline void inverseTransform(float *valueInOut, Hydro_UnitsType *unitsOut = nullptr) const { *valueInOut = inverseTransform(*valueInOut);
                                                                                                  if (unitsOut) { *unitsOut = Hydro_UnitsType_Raw_1; } }
     // Inverse transforms measurement from calibrated (or transformed) measurement back into raw (or initial) measurement.
-    inline HydroSingleMeasurement inverseTransform(HydroSingleMeasurement measurement) { return HydroSingleMeasurement(inverseTransform(measurement.value), calibrationUnits, measurement.timestamp, measurement.frame); }
+    inline HydroSingleMeasurement inverseTransform(HydroSingleMeasurement measurement) const { return HydroSingleMeasurement(inverseTransform(measurement.value), Hydro_UnitsType_Raw_1, measurement.timestamp, measurement.frame); }
     // Inverse transforms measurement in-place from calibrated (or transformed) measurement back into raw (or initial) measurement.
     inline void inverseTransform(HydroSingleMeasurement *measurementInOut) const { inverseTransform(&measurementInOut->value, &measurementInOut->units); }
 

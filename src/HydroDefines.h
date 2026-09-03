@@ -234,7 +234,7 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_SCH_BALANCE_MINTIME       30                  // Minimum time, in seconds, that all balancers must register as balanced for until balancing is marked as completed
 #define HYDRO_SCH_AERATORS_FEEDRUN      true                // If aerators should be continued to be ran during feeding, after pre-feeding aeration is finished
 
-#define HYDRO_SENSOR_BINARY_STABLE_MILLIS 100                 // Minimum time a binary sensor input must remain changed before the new state is accepted, in milliseconds
+#define HYDRO_SENSOR_BINARY_STABLE_MILLIS 100               // Minimum time a binary sensor input must remain changed before the new state is accepted, in milliseconds
 #define HYDRO_SENSOR_ANALOGREAD_SAMPLES 5                   // Number of samples to take for any analogRead call inside of a sensor's takeMeasurement call, or 0 to disable sampling (note: bitRes.maxValue * # of samples must fit inside a uint32_t)
 #define HYDRO_SENSOR_ANALOGREAD_DELAY   0                   // Delay time between samples, or 0 to disable delay, in milliseconds
 
@@ -244,7 +244,11 @@ typedef typeof(LOW)                     ard_pinstatus_t;    // Arduino pin statu
 #define HYDRO_SYS_ATWIFI_SERIALMODE     SERIAL_8N1          // Data transfer mode for serial AT WiFi (see SERIAL_* defines)
 #define HYDRO_SYS_NMEAGPS_SERIALBAUD    9600                // Data baud rate for serial NMEA GPS, in bps (older modules may need 4800)
 #define HYDRO_SYS_URLHTTP_PORT          80                  // Which default port to access when accessing HTTP resources
-#define HYDRO_SYS_LEAVE_FILES_OPEN      !defined(__AVR__)   // If high access files should be left open to improve performance (true), or closed after use to reduce memory consumption (false)
+#if defined(__AVR__)
+#define HYDRO_SYS_LEAVE_FILES_OPEN          false               // If high access files should be left open to improve performance (true), or closed after use to reduce memory consumption (false)
+#else
+#define HYDRO_SYS_LEAVE_FILES_OPEN          true                // If high access files should be left open to improve performance (true), or closed after use to reduce memory consumption (false)
+#endif
 #define HYDRO_SYS_FREERAM_LOWBYTES      1024                // How many bytes of free memory left spawns a handle low mem call to all objects
 #define HYDRO_SYS_FREESPACE_INTERVAL    240                 // How many minutes should pass before checking attached file systems have enough disk space (performs cleanup if not)
 #define HYDRO_SYS_FREESPACE_LOWSPACE    256                 // How many kilobytes of disk space remaining will force cleanup of oldest log/data files first

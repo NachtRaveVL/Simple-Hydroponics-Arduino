@@ -26,9 +26,9 @@ HydroCrop *newCropObjectFromData(const HydroCropData *dataIn)
 
 
 HydroCrop::HydroCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, int classTypeIn)
-    : HydroObject(HydroIdentity(cropType, cropIndex)), classType((typeof(classType))classTypeIn),
-      _substrateType(substrateType), _sowTime(unixTime(sowTime)), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _feedingWeight(1.0f),
-      _cropPhase(Hydro_CropPhase_Undefined), _feedingState(Hydro_TriggerState_NotTriggered)
+    : HydroObject(HydroIdentity(cropType, cropIndex)), classType(static_cast<decltype(Timed)>(classTypeIn)),
+      _substrateType(substrateType), _sowTime(unixTime(sowTime)), _feedReservoir(this), _cropsData(nullptr), _growWeek(0), _totalGrowWeeks(0), _cropPhase(Hydro_CropPhase_Undefined),
+      _feedingState(Hydro_TriggerState_NotTriggered), _feedingWeight(1.0f)
 {
     allocateLinkages(HYDRO_CROPS_LINKS_BASESIZE);
 
@@ -36,10 +36,10 @@ HydroCrop::HydroCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_Substrate
 }
 
 HydroCrop::HydroCrop(const HydroCropData *dataIn)
-    : HydroObject(dataIn), classType((typeof(classType))(dataIn->id.object.classType)),
+    : HydroObject(dataIn), classType(static_cast<decltype(Timed)>(dataIn->id.object.classType)),
       _substrateType(dataIn->substrateType), _sowTime(dataIn->sowTime), _feedReservoir(this),
-      _cropsData(nullptr), _growWeek(0), _feedingWeight(dataIn->feedingWeight),
-      _cropPhase(Hydro_CropPhase_Undefined), _feedingState(Hydro_TriggerState_NotTriggered)
+      _cropsData(nullptr), _growWeek(0), _totalGrowWeeks(0), _cropPhase(Hydro_CropPhase_Undefined),
+      _feedingState(Hydro_TriggerState_NotTriggered), _feedingWeight(dataIn->feedingWeight)
 {
     allocateLinkages(HYDRO_CROPS_LINKS_BASESIZE);
 
@@ -170,7 +170,7 @@ void HydroCrop::handleCustomCropUpdated(Hydro_CropType cropType)
 HydroTimedCrop::HydroTimedCrop(Hydro_CropType cropType, hposi_t cropIndex, Hydro_SubstrateType substrateType, DateTime sowTime, TimeSpan timeOn, TimeSpan timeOff, int classType)
     : HydroCrop(cropType, cropIndex, substrateType, sowTime, classType),
       _lastFeedingTime(),
-      _feedTimingMins{timeOn.totalseconds() / SECS_PER_MIN, timeOff.totalseconds() / SECS_PER_MIN},
+      _feedTimingMins{static_cast<uint8_t>(timeOn.totalseconds() / SECS_PER_MIN), static_cast<uint8_t>(timeOff.totalseconds() / SECS_PER_MIN)},
       _feedingsPerDay(0), _feedingsPerWeek(0),
       _feedIntervalMins(_feedTimingMins[0] + _feedTimingMins[1])
 { ; }
@@ -189,6 +189,7 @@ HydroTimedCrop::HydroTimedCrop(const HydroTimedCropData *dataIn)
 
 bool HydroTimedCrop::needsFeeding(bool poll)
 {
+    (void)poll;
     auto interval = hydroFeedingIntervalSeconds(_feedingsPerDay, _feedingsPerWeek, _feedIntervalMins);
     auto feedDuration = (uint32_t)_feedTimingMins[0] * SECS_PER_MIN;
     return hydroTimedFeedingNeeded(unixNow(), _lastFeedingTime, feedDuration, interval);
@@ -274,8 +275,9 @@ HydroAdaptiveCrop::HydroAdaptiveCrop(Hydro_CropType cropType, hposi_t cropIndex,
 }
 
 HydroAdaptiveCrop::HydroAdaptiveCrop(const HydroAdaptiveCropData *dataIn)
-    : HydroCrop(dataIn), _soilMoisture(this), _feedingTrigger(this),
-    HydroWaterConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, defaultConcentrateUnits()))
+    : HydroCrop(dataIn),
+      HydroWaterConcentrateUnitsInterfaceStorage(definedUnitsElse(dataIn->concentrateUnits, defaultConcentrateUnits())),
+      _soilMoisture(this), _feedingTrigger(this)
 {
     _soilMoisture.setMeasurementUnits(definedUnitsElse(dataIn->concentrateUnits, getWaterConcentrateUnits()));
     _soilMoisture.initObject(dataIn->moistureSensor);

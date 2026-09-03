@@ -36,7 +36,7 @@ public:
 
 protected:
     I2C_eeprom *_eeprom;
-    uint16_t _readAddress, _writeAddress, _endAddress;
+    uint32_t _readAddress, _writeAddress, _endAddress;
 };
 
 
@@ -63,7 +63,7 @@ protected:
 
 class HydroWiFiStorageFileStream : public Stream {
 public:
-    HydroWiFiStorageFileStream(WiFiStorageFile file, uintptr_t seekPos = 0);
+    HydroWiFiStorageFileStream(WiFiStorageFile file, uint32_t seekPos = 0);
     virtual ~HydroWiFiStorageFileStream();
 
     virtual int available() override;
@@ -81,9 +81,9 @@ protected:
     WiFiStorageFile _file;
     uint8_t _buffer[HYDRO_WIFISTREAM_BUFFER_SIZE];
     size_t _bufferOffset;
-    uintptr_t _bufferFileOffset;
+    uint32_t _bufferFileOffset;
     WiFiStorageFileDirection _bufferDirection;
-    uintptr_t _readOffset, _writeOffset, _endOffset;
+    uint32_t _readOffset, _writeOffset, _endOffset;
 
     void prepareReadBuffer();
     void prepareWriteBuffer();

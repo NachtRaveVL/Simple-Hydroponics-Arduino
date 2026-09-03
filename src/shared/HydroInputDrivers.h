@@ -23,7 +23,7 @@ class HydroInputTFTTouch;
 #include "HydruinoUI.h"
 #include "KeyboardManager.h"
 #include "tcMenuKeyboard.h"
-#include "graphics\MenuTouchScreenEncoder.h"
+#include "graphics/MenuTouchScreenEncoder.h"
 #include "JoystickSwitchInput.h"
 
 // Input Driver Base
@@ -124,7 +124,7 @@ public:
     virtual bool areAllPinsInterruptable() const override { return false; }
 
 #ifdef ESP32
-    virtual IoAbstractionRef getIoAbstraction() override { return &_esp32Touch; }
+    virtual IoAbstractionRef getIoAbstraction() const override { return (IoAbstractionRef)&_esp32Touch; }
 #endif
 
     // Key repeat speed accessor

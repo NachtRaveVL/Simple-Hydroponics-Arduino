@@ -3,6 +3,9 @@
     Hydruino System
 */
 
+#ifndef Hydruino_HPP
+#define Hydruino_HPP
+
 #include "Hydruino.h"
 
 inline bool Twilight::isDaytime(time_t unixTime) const {
@@ -75,6 +78,7 @@ inline void Hydruino::performAutosave()
                 #ifdef HYDRO_USE_WIFI_STORAGE
                     saveToWiFiStorage(RAW);
                 #endif
+                break;
             case Hydro_Autosave_Disabled:
                 break;
         }
@@ -119,7 +123,7 @@ inline void Hydruino::notifySignificantTime(time_t time)
     _lastAutosave = isAutosaveEnabled() ? time : 0;
 }
 
-inline void Hydruino::notifySignificantLocation(Location loc)
+inline void Hydruino::notifySignificantLocation(Location)
 {
     if (_systemData) { _systemData->bumpRevisionIfNeeded(); }
 }
@@ -241,3 +245,5 @@ inline void HydroScheduler::setLastWeekAsFlush(HydroCrop *crop)
 {
     if (crop) { setFlushWeek(crop->getTotalGrowWeeks() - 1); }
 }
+
+#endif // /ifndef Hydruino_HPP
