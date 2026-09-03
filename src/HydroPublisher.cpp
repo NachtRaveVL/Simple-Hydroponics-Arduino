@@ -6,15 +6,19 @@
 #include "Hydruino.h"
 
 HydroPublisher::HydroPublisher()
-    : _dataFilename(), _needsTabulation(false), _pollingFrame(0), _dataColumns(nullptr), _columnSize(0)
 #if HYDRO_SYS_LEAVE_FILES_OPEN
-      , _dataFileSD(nullptr)
+    : _dataFileSD(nullptr)
 #ifdef HYDRO_USE_WIFI_STORAGE
       , _dataFileWS(nullptr)
 #endif
-#endif
 #ifdef HYDRO_USE_MQTT
-    , _mqttClient(nullptr)
+      , _mqttClient(nullptr)
+#endif
+      , _dataFilename(), _pollingFrame(0), _needsTabulation(false), _columnSize(0), _dataColumns(nullptr)
+#elif defined(HYDRO_USE_MQTT)
+    : _mqttClient(nullptr), _dataFilename(), _pollingFrame(0), _needsTabulation(false), _columnSize(0), _dataColumns(nullptr)
+#else
+    : _dataFilename(), _pollingFrame(0), _needsTabulation(false), _columnSize(0), _dataColumns(nullptr)
 #endif
 { ; }
 
@@ -489,6 +493,7 @@ void HydroPublisher::resetDataFile()
 
 void HydroPublisher::cleanupOldestData(bool force)
 {
+    (void)force;
     // TODO: Old data cleanup. #17 in Hydruino.
 }
 

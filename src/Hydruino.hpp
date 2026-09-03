@@ -123,7 +123,7 @@ inline void Hydruino::notifySignificantTime(time_t time)
     _lastAutosave = isAutosaveEnabled() ? time : 0;
 }
 
-inline void Hydruino::notifySignificantLocation(Location loc)
+inline void Hydruino::notifySignificantLocation(Location)
 {
     if (_systemData) { _systemData->bumpRevisionIfNeeded(); }
 }

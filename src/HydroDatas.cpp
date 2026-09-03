@@ -275,7 +275,7 @@ void HydroCalibrationData::setFromTwoPoints(float point1MeasuredAt, float point1
 HydroCropsLibData::HydroCropsLibData()
     : HydroData('H','C','L','D', 1),
       cropType(Hydro_CropType_Undefined), cropName{0},
-      totalGrowWeeks(14), dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
+      totalGrowWeeks(14), phaseDurationWeeks{2,4,8}, dailyLightHours{20,18,12},
       phRange{6,6}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
       flags(Hydro_CropsDataFlag_None)
@@ -287,7 +287,7 @@ HydroCropsLibData::HydroCropsLibData()
 HydroCropsLibData::HydroCropsLibData(const Hydro_CropType cropTypeIn)
     : HydroData('H','C','L','D', 1),
       cropType(cropTypeIn), cropName{0},
-      totalGrowWeeks(14), dailyLightHours{20,18,12}, phaseDurationWeeks{2,4,8},
+      totalGrowWeeks(14), phaseDurationWeeks{2,4,8}, dailyLightHours{20,18,12},
       phRange{6,6}, tdsRange{1.8f,2.4f}, nightlyFeedRate(1),
       waterTempRange{25,25}, airTempRange{25,25}, co2Levels{700,1400},
       flags(Hydro_CropsDataFlag_None)

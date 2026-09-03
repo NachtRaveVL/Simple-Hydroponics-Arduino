@@ -26,6 +26,7 @@ class HydroDLinkObject {
 public:
     HydroDLinkObject();
     HydroDLinkObject(const HydroDLinkObject &obj);
+    HydroDLinkObject &operator=(const HydroDLinkObject &obj);
     virtual ~HydroDLinkObject();
 
     inline bool isUnresolved() const { return !_obj; }
@@ -78,6 +79,7 @@ class HydroAttachment : public HydroSubObject {
 public:
     HydroAttachment(HydroObjInterface *parent = nullptr);
     HydroAttachment(const HydroAttachment &attachment);
+    HydroAttachment &operator=(const HydroAttachment &attachment);
     virtual ~HydroAttachment();
 
     // Attaches object and any relevant signaling mechanisms. Derived classes should call base class's method first.
@@ -137,6 +139,7 @@ public:
 
     template<class U> HydroSignalAttachment(HydroObjInterface *parent = nullptr, Signal<ParameterType,Slots> &(U::*signalGetter)(void) = nullptr);
     HydroSignalAttachment(const HydroSignalAttachment<ParameterType,Slots> &attachment);
+    HydroSignalAttachment<ParameterType,Slots> &operator=(const HydroSignalAttachment<ParameterType,Slots> &attachment);
     virtual ~HydroSignalAttachment();
 
     virtual void attachObject() override;
@@ -169,6 +172,7 @@ class HydroActuatorAttachment : public HydroSignalAttachment<HydroActuator *, HY
 public:
     HydroActuatorAttachment(HydroObjInterface *parent = nullptr);
     HydroActuatorAttachment(const HydroActuatorAttachment &attachment);
+    HydroActuatorAttachment &operator=(const HydroActuatorAttachment &attachment);
     virtual ~HydroActuatorAttachment();
 
     // Updates with actuator activation handle. Does not call actuator's update() (handled by system).

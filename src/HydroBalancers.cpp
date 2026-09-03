@@ -7,8 +7,8 @@
 #include "HydroCoreLogic.h"
 
 HydroBalancer::HydroBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, uint8_t measurementRow, int typeIn)
-    : type((typeof(type))typeIn), _targetSetpoint(targetSetpoint), _targetRange(targetRange),
-      _sensor(this), _balancingState(Hydro_BalancingState_Undefined), _enabled(false)
+    : type(static_cast<decltype(LinearEdge)>(typeIn)), _sensor(this), _balancingState(Hydro_BalancingState_Undefined),
+      _targetSetpoint(targetSetpoint), _targetRange(targetRange), _enabled(false)
 {
     _sensor.setMeasurementRow(measurementRow);
     _sensor.setHandleMethod(&HydroBalancer::handleMeasurement, this);
@@ -221,8 +221,8 @@ void HydroLinearEdgeBalancer::update()
 
 HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, millis_t baseDosing, time_t mixTime, uint8_t measurementRow)
     : HydroBalancer(sensor, targetSetpoint, targetRange, measurementRow, TimedDosing),
-      _lastDosingTime(0), _lastDosingValue(0.0f), _dosing(0), _dosingDir(Hydro_BalancingState_Undefined), _dosingActIndex(-1),
-      _baseDosing(baseDosing), _mixTime(mixTime)
+      _mixTime(mixTime), _baseDosing(baseDosing), _lastDosingTime(0), _lastDosingValue(0.0f),
+      _dosing(0), _dosingDir(Hydro_BalancingState_Undefined), _dosingActIndex(-1)
 { ; }
 
 HydroTimedDosingBalancer::HydroTimedDosingBalancer(SharedPtr<HydroSensor> sensor, float targetSetpoint, float targetRange, float reservoirVolume, Hydro_UnitsType volumeUnits, uint8_t measurementRow)
@@ -280,7 +280,7 @@ void HydroTimedDosingBalancer::update()
     if (_dosingActIndex >= 0) { // has dosing that needs performed
         switch (_dosingDir) {
             case Hydro_BalancingState_TooLow:
-                while (_dosingActIndex < _incActuators.size()) {
+                while (static_cast<size_t>(_dosingActIndex) < _incActuators.size()) {
                     auto attachIter = _incActuators.begin(); // advance iter to index
                     for (int actuatorIndex = 0; attachIter != _incActuators.end() && actuatorIndex < _dosingActIndex; ++attachIter, ++actuatorIndex) { ; }
 
@@ -297,13 +297,13 @@ void HydroTimedDosingBalancer::update()
                         #endif
                     } else { break; }
                 }
-                if (_dosingActIndex >= _incActuators.size()) {
+                if (static_cast<size_t>(_dosingActIndex) >= _incActuators.size()) {
                     _dosingActIndex = -1; // dosing completed
                 }
                 break;
 
             case Hydro_BalancingState_TooHigh:
-                while (_dosingActIndex < _decActuators.size()) {
+                while (static_cast<size_t>(_dosingActIndex) < _decActuators.size()) {
                     auto attachIter = _decActuators.begin(); // advance iter to index
                     for (int actuatorIndex = 0; attachIter != _decActuators.end() && actuatorIndex < _dosingActIndex; ++attachIter, ++actuatorIndex) { ; }
 
@@ -320,7 +320,7 @@ void HydroTimedDosingBalancer::update()
                         #endif
                     } else { break; }
                 }
-                if (_dosingActIndex >= _decActuators.size()) {
+                if (static_cast<size_t>(_dosingActIndex) >= _decActuators.size()) {
                     _dosingActIndex = -1; // dosing completed
                 }
                 break;

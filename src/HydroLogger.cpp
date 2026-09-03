@@ -255,6 +255,7 @@ void HydroLogger::notifyDateChanged()
 
 void HydroLogger::cleanupOldestLogs(bool force)
 {
+    (void)force;
     // TODO: Old data cleanup. #17 in Hydruino.
 }
 

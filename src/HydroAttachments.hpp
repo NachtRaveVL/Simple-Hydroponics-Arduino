@@ -117,6 +117,26 @@ HydroSignalAttachment<ParameterType,Slots>::HydroSignalAttachment(const HydroSig
 { ; }
 
 template<class ParameterType, int Slots>
+HydroSignalAttachment<ParameterType,Slots> &HydroSignalAttachment<ParameterType,Slots>::operator=(const HydroSignalAttachment<ParameterType,Slots> &attachment)
+{
+    if (this != &attachment) {
+        if (isResolved() && _handleSlot && _signalGetter) {
+            (get()->*_signalGetter)().detach(*_handleSlot);
+        }
+
+        HydroAttachment::operator=(attachment);
+        _signalGetter = attachment._signalGetter;
+        if (_handleSlot) { delete _handleSlot; _handleSlot = nullptr; }
+        _handleSlot = attachment._handleSlot ? attachment._handleSlot->clone() : nullptr;
+
+        if (isResolved() && _handleSlot && _signalGetter) {
+            (get()->*_signalGetter)().attach(*_handleSlot);
+        }
+    }
+    return *this;
+}
+
+template<class ParameterType, int Slots>
 HydroSignalAttachment<ParameterType,Slots>::~HydroSignalAttachment()
 {
     if (isResolved() && _handleSlot && _signalGetter) {

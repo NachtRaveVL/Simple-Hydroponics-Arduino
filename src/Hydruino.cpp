@@ -57,26 +57,46 @@ Hydruino::Hydruino(pintype_t piezoBuzzerPin,
                    DeviceSetup gpsSetup,
                    pintype_t *ctrlInputPins,
                    DeviceSetup displaySetup)
-    : _piezoBuzzerPin(piezoBuzzerPin),
-      _eepromType(eepromType), _eepromSetup(eepromSetup), _eeprom(nullptr), _eepromBegan(false),
-      _rtcType(rtcType), _rtcSetup(rtcSetup), _rtc(nullptr), _rtcBegan(false), _rtcBattFail(false),
-      _sdSetup(sdSetup), _sd(nullptr), _sdBegan(false), _sdOut(0),
+    :
+#ifdef HYDRO_USE_GUI
+      _activeUIInstance(nullptr), _uiData(nullptr),
+#endif
+      _systemData(nullptr),
+      _piezoBuzzerPin(piezoBuzzerPin),
+      _eepromType(eepromType), _eepromSetup(eepromSetup),
+      _rtcType(rtcType), _rtcSetup(rtcSetup),
+      _sdSetup(sdSetup),
 #ifdef HYDRO_USE_NET
-      _netSetup(netSetup), _netBegan(false),
+      _netSetup(netSetup),
 #endif
 #ifdef HYDRO_USE_GPS
-      _gpsSetup(gpsSetup), _gps(nullptr), _gpsBegan(false),
+      _gpsSetup(gpsSetup),
 #endif
 #ifdef HYDRO_USE_GUI
-      _activeUIInstance(nullptr), _uiData(nullptr), _ctrlInputPins(ctrlInputPins), _displaySetup(displaySetup),
+      _ctrlInputPins(ctrlInputPins), _displaySetup(displaySetup),
+#endif
+      _eeprom(nullptr), _rtc(nullptr), _sd(nullptr), _sdOut(0),
+#ifdef HYDRO_USE_GPS
+      _gps(nullptr),
+#endif
+      _eepromBegan(false), _rtcBegan(false), _rtcBattFail(false), _sdBegan(false),
+#ifdef HYDRO_USE_NET
+      _netBegan(false),
+#endif
+#ifdef HYDRO_USE_GPS
+      _gpsBegan(false),
 #endif
 #ifdef HYDRO_USE_MULTITASKING
       _controlTaskId(TASKMGR_INVALIDID), _dataTaskId(TASKMGR_INVALIDID), _miscTaskId(TASKMGR_INVALIDID),
 #endif
-      _systemData(nullptr), _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0),
-      _sysConfigFilename(SFP(HStr_Default_ConfigFilename)), _sysDataAddress(-1)
+      _suspend(true), _pollingFrame(0), _lastSpaceCheck(0), _lastAutosave(0),
+      _sysConfigFilename(SFP(HStr_Default_ConfigFilename)), _sysDataAddress((uint16_t)-1)
 {
     _activeInstance = this;
+    (void)netSetup;
+    (void)gpsSetup;
+    (void)ctrlInputPins;
+    (void)displaySetup;
 }
 
 Hydruino::~Hydruino()
@@ -216,6 +236,8 @@ void Hydruino::init(Hydro_SystemMode systemMode,
                     Hydro_DisplayOutputMode dispOutMode,
                     Hydro_ControlInputMode ctrlInMode)
 {
+    (void)dispOutMode;
+    (void)ctrlInMode;
     HYDRO_HARD_ASSERT(!_systemData, SFP(HStr_Err_AlreadyInitialized));
 
     if (!_systemData) {
@@ -254,7 +276,7 @@ bool Hydruino::initFromEEPROM(bool jsonFormat)
     if (!_systemData) {
         commonPreInit();
 
-        if (getEEPROM() && _eepromBegan && _sysDataAddress != -1) {
+        if (getEEPROM() && _eepromBegan && _sysDataAddress != (uint16_t)-1) {
             HydroEEPROMStream eepromStream(_sysDataAddress, getEEPROMSize() - _sysDataAddress);
             return jsonFormat ? initFromJSONStream(&eepromStream) : initFromBinaryStream(&eepromStream);
         }
@@ -268,7 +290,7 @@ bool Hydruino::saveToEEPROM(bool jsonFormat)
     HYDRO_HARD_ASSERT(_systemData, SFP(HStr_Err_NotYetInitialized));
 
     if (_systemData) {
-        if (getEEPROM() && _eepromBegan && _sysDataAddress != -1) {
+        if (getEEPROM() && _eepromBegan && _sysDataAddress != (uint16_t)-1) {
             HydroEEPROMStream eepromStream(_sysDataAddress, getEEPROMSize() - _sysDataAddress);
             return jsonFormat ? saveToJSONStream(&eepromStream) : saveToBinaryStream(&eepromStream);
         }
@@ -421,10 +443,13 @@ bool Hydruino::initFromJSONStream(Stream *streamIn)
                         hydroCropsLib.setUserCropData((HydroCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
                         setCustomAdditiveData((HydroCustomAdditiveData *)data);
-                    } else if (data->isUIData()) {
-                        if (_uiData) { delete _uiData; }
-                        _uiData = (HydroUIData *)data; data = nullptr;
                     }
+                    #ifdef HYDRO_USE_GUI
+                        else if (data->isUIData()) {
+                            if (_uiData) { delete _uiData; }
+                            _uiData = (HydroUIData *)data; data = nullptr;
+                        }
+                    #endif
                     if (data) { delete data; data = nullptr; }
                 } else if (data && data->isObjectData()) {
                     HydroObject *obj = newObjectFromData(data);
@@ -515,17 +540,19 @@ bool Hydruino::saveToJSONStream(Stream *streamOut, bool compact)
             }
         }
 
-        if (_uiData) {
-            StaticJsonDocument<HYDRO_JSON_DOC_DEFSIZE> doc;
+        #ifdef HYDRO_USE_GUI
+            if (_uiData) {
+                StaticJsonDocument<HYDRO_JSON_DOC_DEFSIZE> doc;
 
-            JsonObject uiDataObj = doc.to<JsonObject>();
-            _uiData->toJSONObject(uiDataObj);
+                JsonObject uiDataObj = doc.to<JsonObject>();
+                _uiData->toJSONObject(uiDataObj);
 
-            if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
-                HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_ExportFailure));
-                return false;
+                if (!(compact ? serializeJson(doc, *streamOut) : serializeJsonPretty(doc, *streamOut))) {
+                    HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_ExportFailure));
+                    return false;
+                }
             }
-        }
+        #endif
 
         if (_objects.size()) {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
@@ -587,10 +614,13 @@ bool Hydruino::initFromBinaryStream(Stream *streamIn)
                         hydroCropsLib.setUserCropData((HydroCropsLibData *)data);
                     } else if (data->isAdditiveData()) {
                         setCustomAdditiveData((HydroCustomAdditiveData *)data);
-                    } else if (data->isUIData()) {
-                        if (_uiData) { delete _uiData; }
-                        _uiData = (HydroUIData *)data; data = nullptr;
                     }
+                    #ifdef HYDRO_USE_GUI
+                        else if (data->isUIData()) {
+                            if (_uiData) { delete _uiData; }
+                            _uiData = (HydroUIData *)data; data = nullptr;
+                        }
+                    #endif
                     if (data) { delete data; data = nullptr; }
                 } else if (data && data->isObjectData()) {
                     HydroObject *obj = newObjectFromData(data);
@@ -667,12 +697,14 @@ bool Hydruino::saveToBinaryStream(Stream *streamOut)
             if (!bytesWritten) { return false; }
         }
 
-        if (_uiData) {
-            size_t bytesWritten = serializeDataToBinaryStream(_uiData, streamOut);
+        #ifdef HYDRO_USE_GUI
+            if (_uiData) {
+                size_t bytesWritten = serializeDataToBinaryStream(_uiData, streamOut);
 
-            HYDRO_SOFT_ASSERT(bytesWritten, SFP(HStr_Err_ExportFailure));
-            if (!bytesWritten) { return false; }
-        }
+                HYDRO_SOFT_ASSERT(bytesWritten, SFP(HStr_Err_ExportFailure));
+                if (!bytesWritten) { return false; }
+            }
+        #endif
 
         if (_objects.size()) {
             for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
@@ -1333,6 +1365,7 @@ SDClass *Hydruino::getSDCard(bool begin)
 
 void Hydruino::endSDCard(SDClass *sd)
 {
+    (void)sd;
     #if defined(CORE_TEENSY)
         --_sdOut; // no delayed write on teensy's SD impl
     #else
@@ -1521,7 +1554,7 @@ Location Hydruino::getSystemLocation() const
 void Hydruino::checkFreeMemory()
 {
     auto memLeft = freeMemory();
-    if (memLeft != -1 && memLeft < HYDRO_SYS_FREERAM_LOWBYTES) {
+    if (memLeft != (unsigned int)-1 && memLeft < HYDRO_SYS_FREERAM_LOWBYTES) {
         broadcastLowMemory();
     }
 }
@@ -1542,7 +1575,7 @@ static uint64_t getSDCardFreeSpace()
 void Hydruino::checkFreeSpace()
 {
     if ((logger.isLoggingEnabled() || publisher.isPublishingEnabled()) &&
-        (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (HYDRO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
+        (!_lastSpaceCheck || unixNow() >= _lastSpaceCheck + (time_t)(HYDRO_SYS_FREESPACE_INTERVAL * SECS_PER_MIN))) {
         if (logger.isLoggingToSDCard() || publisher.isPublishingToSDCard()) {
             uint32_t freeKB = getSDCardFreeSpace();
             while (freeKB < HYDRO_SYS_FREESPACE_LOWSPACE) {
@@ -1558,7 +1591,7 @@ void Hydruino::checkFreeSpace()
 
 void Hydruino::checkAutosave()
 {
-    if (isAutosaveEnabled() && unixNow() >= _lastAutosave + (_systemData->autosaveInterval * SECS_PER_MIN)) {
+    if (isAutosaveEnabled() && unixNow() >= _lastAutosave + (time_t)(_systemData->autosaveInterval * SECS_PER_MIN)) {
         performAutosave();
     }
 }

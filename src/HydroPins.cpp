@@ -527,6 +527,7 @@ void HydroPinMuxer::init()
 
 bool HydroPinMuxer::tryRegisterISR(bool anyChange)
 {
+    (void)anyChange;
     #ifdef HYDRO_USE_MULTITASKING
         if (!_usingISR && _interrupt.isValid() && checkPinCanInterrupt(_interrupt.pin)) {
             taskManager.addInterrupt(&interruptImpl, _interrupt.pin, !anyChange ? (_interrupt.activeLow ? FALLING : RISING) : CHANGE);

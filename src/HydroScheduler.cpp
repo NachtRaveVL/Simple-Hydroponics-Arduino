@@ -44,7 +44,7 @@ void HydroScheduler::update()
                   _lastDay[1] == currTime.month() &&
                   _lastDay[2] == currTime.day())) {
                 // only log uptime upon actual day change and if uptime has been at least 1d
-                if (getLogger()->getSystemUptime() >= SECS_PER_DAY) {
+                if (getLogger()->getSystemUptime() >= (time_t)SECS_PER_DAY) {
                     getLogger()->logSystemUptime();
                 }
                 broadcastDateChange();
@@ -111,7 +111,7 @@ void HydroScheduler::setupWaterTDSBalancer(HydroReservoir *reservoir, SharedPtr<
             }
 
             if (Hydruino::_activeInstance->hasCustomAdditives()) {
-                int prevIncSize = incActuators.size();
+                size_t prevIncSize = incActuators.size();
 
                 for (int reservoirType = Hydro_ReservoirType_CustomAdditive1; reservoirType < Hydro_ReservoirType_CustomAdditive1 + Hydro_ReservoirType_CustomAdditiveCount; ++reservoirType) {
                     if (Hydruino::_activeInstance->getCustomAdditiveData((Hydro_ReservoirType)reservoirType)) {
@@ -334,8 +334,8 @@ void HydroScheduler::setUseNaturalLight(bool useNaturalLight, unsigned int twili
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
 
     if (hasSchedulerData() && ((useNaturalLight && schedulerData()->natLightOffsetMins != twilightOffsetMins) ||
-                               (!useNaturalLight && schedulerData()->natLightOffsetMins != -1))) {
-        schedulerData()->natLightOffsetMins = useNaturalLight ? twilightOffsetMins : -1;
+                               (!useNaturalLight && schedulerData()->natLightOffsetMins != (uint8_t)-1))) {
+        schedulerData()->natLightOffsetMins = useNaturalLight ? twilightOffsetMins : (uint8_t)-1;
 
         setNeedsScheduling();
         Hydruino::_activeInstance->_systemData->bumpRevisionIfNeeded();
@@ -462,7 +462,7 @@ TimeSpan HydroScheduler::getAirReportInterval() const
 int HydroScheduler::getNaturalLightOffsetMins() const
 {
     HYDRO_SOFT_ASSERT(hasSchedulerData(), SFP(HStr_Err_NotYetInitialized));
-    return hasSchedulerData() && schedulerData()->natLightOffsetMins != -1 ? schedulerData()->natLightOffsetMins : -1;
+    return hasSchedulerData() && schedulerData()->natLightOffsetMins != (uint8_t)-1 ? schedulerData()->natLightOffsetMins : -1;
 }
 
 void HydroScheduler::updateDayTracking()
@@ -946,7 +946,7 @@ void HydroFeeding::update()
         } break;
 
         case PreFeed: {
-            if (!actuatorReqs.size() || time >= stageStart + (getScheduler()->schedulerData()->preFeedAeratorMins * SECS_PER_MIN)) {
+            if (!actuatorReqs.size() || time >= stageStart + (time_t)(getScheduler()->schedulerData()->preFeedAeratorMins * SECS_PER_MIN)) {
                 auto phBalancer = feedRes->getWaterPHBalancer();
                 auto tdsBalancer = feedRes->getWaterTDSBalancer();
                 auto waterTempBalancer = feedRes->getWaterTemperatureBalancer();
@@ -1351,7 +1351,7 @@ void HydroSchedulerSubData::toJSONObject(JsonObject &objectOut) const
     if (preFeedAeratorMins != 30) { objectOut[SFP(HStr_Key_PreFeedAeratorMins)] = preFeedAeratorMins; }
     if (preDawnSprayMins != 60) { objectOut[SFP(HStr_Key_PreDawnSprayMins)] = preDawnSprayMins; }
     if (airReportInterval != (8 * SECS_PER_HOUR)) { objectOut[SFP(HStr_Key_AirReportInterval)] = airReportInterval; }
-    if (natLightOffsetMins != -1) { objectOut[SFP(HStr_Key_NaturalLightOffsetMins)] = natLightOffsetMins; }
+    if (natLightOffsetMins != (uint8_t)-1) { objectOut[SFP(HStr_Key_NaturalLightOffsetMins)] = natLightOffsetMins; }
 }
 
 void HydroSchedulerSubData::fromJSONObject(JsonObjectConst &objectIn)

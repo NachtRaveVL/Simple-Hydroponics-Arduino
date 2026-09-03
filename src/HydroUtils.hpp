@@ -99,7 +99,7 @@ template<typename T>
 String commaStringFromArray(const T *arrayIn, size_t length)
 {
     if (!arrayIn || !length) { return String(SFP(HStr_null)); }
-    String retVal; retVal.reserve(length << 1 + length >> 1 + 1);
+    String retVal; retVal.reserve((length << 1) + (length >> 1) + 1);
     for (size_t index = 0; index < length; ++index) {
         if (retVal.length()) { retVal.concat(','); }
         retVal += String(arrayIn[index]);
@@ -116,7 +116,7 @@ void commaStringToArray(String stringIn, T *arrayOut, size_t length)
         int nextSepPos = stringIn.indexOf(',', lastSepPos+1);
         if (nextSepPos == -1) { nextSepPos = stringIn.length(); }
         String subString = stringIn.substring(lastSepPos+1, nextSepPos);
-        if (nextSepPos < stringIn.length()) { lastSepPos = nextSepPos; }
+        if (nextSepPos < static_cast<int>(stringIn.length())) { lastSepPos = nextSepPos; }
 
         arrayOut[index] = static_cast<T>(subString.toInt());
     }
@@ -170,7 +170,7 @@ inline bool convertUnits(const HydroSingleMeasurement *measureIn, HydroSingleMea
 }
 
 
-template<size_t N = HYDRO_DEFAULT_MAXSIZE>
+template<size_t N>
 Vector<HydroObject *, N> linksFilterActuators(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links)
 {
     Vector<HydroObject *, N> retVal;
@@ -184,7 +184,7 @@ Vector<HydroObject *, N> linksFilterActuators(Pair<uint8_t, Pair<HydroObject *, 
     return retVal;
 }
 
-template<size_t N = HYDRO_DEFAULT_MAXSIZE>
+template<size_t N>
 Vector<HydroObject *, N> linksFilterCrops(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links)
 {
     Vector<HydroObject *, N> retVal;
@@ -198,7 +198,7 @@ Vector<HydroObject *, N> linksFilterCrops(Pair<uint8_t, Pair<HydroObject *, int8
     return retVal;
 }
 
-template<size_t N = HYDRO_DEFAULT_MAXSIZE>
+template<size_t N>
 Vector<HydroObject *, N> linksFilterActuatorsByReservoirAndType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ActuatorType actuatorType)
 {
     Vector<HydroObject *, N> retVal;
@@ -216,7 +216,7 @@ Vector<HydroObject *, N> linksFilterActuatorsByReservoirAndType(Pair<uint8_t, Pa
     return retVal;
 }
 
-template<size_t N = HYDRO_DEFAULT_MAXSIZE>
+template<size_t N>
 Vector<HydroObject *, N> linksFilterPumpActuatorsBySourceReservoirAndOutputReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *srcReservoir, Hydro_ReservoirType destReservoirType)
 {
     Vector<HydroObject *, N> retVal;
@@ -238,7 +238,7 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsBySourceReservoirAndOutputReser
     return retVal;
 }
 
-template<size_t N = HYDRO_DEFAULT_MAXSIZE>
+template<size_t N>
 Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndSourceReservoirType(Pair<uint8_t, Pair<HydroObject *, int8_t> *> links, HydroReservoir *destReservoir, Hydro_ReservoirType srcReservoirType)
 {
     Vector<HydroObject *, N> retVal;
@@ -260,7 +260,7 @@ Vector<HydroObject *, N> linksFilterPumpActuatorsByOutputReservoirAndSourceReser
     return retVal;
 }
 
-template<size_t N = HYDRO_DEFAULT_MAXSIZE>
+template<size_t N>
 void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuatorsIn, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {
@@ -273,7 +273,7 @@ void linksResolveActuatorsToAttachmentsByType(Vector<HydroObject *, N> &actuator
     }
 }
 
-template<size_t N = HYDRO_DEFAULT_MAXSIZE>
+template<size_t N>
 void linksResolveActuatorsToAttachmentsByRateAndType(Vector<HydroObject *, N> &actuatorsIn, HydroObjInterface *parent, float rateMultiplier, Vector<HydroActuatorAttachment, N> &activationsOut, Hydro_ActuatorType actuatorType)
 {
     for (auto actIter = actuatorsIn.begin(); actIter != actuatorsIn.end(); ++actIter) {

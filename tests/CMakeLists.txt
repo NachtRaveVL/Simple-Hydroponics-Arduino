@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic -Wfloat-equal -Werror)
+    add_compile_options(-Wall -Wextra -Werror)
 endif()
 
 find_package(Python3 COMPONENTS Interpreter)

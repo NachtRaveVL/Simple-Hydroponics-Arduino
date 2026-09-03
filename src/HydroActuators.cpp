@@ -29,13 +29,13 @@ HydroActuator *newActuatorObjectFromData(const HydroActuatorData *dataIn)
 
 
 HydroActuator::HydroActuator(Hydro_ActuatorType actuatorType, hposi_t actuatorIndex, int classTypeIn)
-    : HydroObject(HydroIdentity(actuatorType, actuatorIndex)), classType((typeof(classType))classTypeIn),
+    : HydroObject(HydroIdentity(actuatorType, actuatorIndex)), classType(static_cast<decltype(Relay)>(classTypeIn)),
       _enabled(false), _needsUpdate(false), _enableMode(Hydro_EnableMode_Undefined),
       _parentRail(this), _parentReservoir(this), _calibrationData(nullptr)
 { ; }
 
 HydroActuator::HydroActuator(const HydroActuatorData *dataIn)
-    : HydroObject(dataIn), classType((typeof(classType))dataIn->id.object.classType),
+    : HydroObject(dataIn), classType(static_cast<decltype(Relay)>(dataIn->id.object.classType)),
       _enabled(false), _needsUpdate(false), _enableMode(dataIn->enableMode),
       _contPowerUsage(&(dataIn->contPowerUsage)),
       _parentRail(this), _parentReservoir(this), _calibrationData(nullptr)
@@ -314,6 +314,7 @@ float HydroRelayActuator::getDriveIntensity() const
 
 bool HydroRelayActuator::isEnabled(float tolerance) const
 {
+    (void)tolerance;
     return _enabled;
 }
 
@@ -366,9 +367,9 @@ HydroRelayPumpActuator::HydroRelayPumpActuator(Hydro_ActuatorType actuatorType, 
 HydroRelayPumpActuator::HydroRelayPumpActuator(const HydroPumpActuatorData *dataIn)
     : HydroRelayActuator(dataIn),
       HydroFlowRateUnitsInterfaceStorage(definedUnitsElse(dataIn->flowRateUnits, defaultFlowRateUnits())),
-      _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0),
       _contFlowRate(&(dataIn->contFlowRate)),
-      _flowRate(this), _destReservoir(this)
+      _flowRate(this), _destReservoir(this),
+      _pumpVolumeAccum(0.0f), _pumpTimeStart(0), _pumpTimeAccum(0)
 {
     _flowRate.setMeasurementUnits(getFlowRateUnits());
     _destReservoir.initObject(dataIn->destReservoir);
@@ -427,6 +428,8 @@ bool HydroRelayPumpActuator::canPump(float volume, Hydro_UnitsType volumeUnits)
 {
     if (getSourceReservoir() && _contFlowRate.value > FLT_EPSILON) {
         auto waterVolume = getSourceReservoir()->getWaterVolumeSensorAttachment().getMeasurement().asUnits(getVolumeUnits());
+        volumeUnits = definedUnitsElse(volumeUnits, getVolumeUnits());
+        if (!convertUnits(&volume, &volumeUnits, getVolumeUnits())) { return false; }
         return volume <= waterVolume.value + FLT_EPSILON;
     }
     return false;

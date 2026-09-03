@@ -101,7 +101,7 @@ void HydroObject::allocateLinkages(size_t size)
         if (size) {
             HYDRO_HARD_ASSERT(newLinks, SFP(HStr_Err_AllocationFailure));
 
-            hposi_t linksIndex = 0;
+            size_t linksIndex = 0;
             if (_links) {
                 for (; linksIndex < _linksSize && linksIndex < size; ++linksIndex) {
                     newLinks[linksIndex] = _links[linksIndex];
@@ -236,7 +236,7 @@ void HydroObject::saveToData(HydroData *dataOut)
 
 
 void HydroSubObject::unresolveAny(HydroObject *obj)
-{ ; }
+{ (void)obj; }
 
 HydroIdentity HydroSubObject::getId() const
 {

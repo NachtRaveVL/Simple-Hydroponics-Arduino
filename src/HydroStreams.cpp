@@ -148,12 +148,15 @@ void HydroPROGMEMStream::flush()
 
 size_t HydroPROGMEMStream::write(const uint8_t *buffer, size_t size)
 {
+    (void)buffer;
+    (void)size;
     HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
     return 0;
 }
 
 size_t HydroPROGMEMStream::write(uint8_t data)
 {
+    (void)data;
     HYDRO_SOFT_ASSERT(false, SFP(HStr_Err_OperationFailure));
     return 0;
 }
