@@ -61,8 +61,14 @@ add_executable(hydruino_hardware_tests
 )
 target_link_libraries(hydruino_hardware_tests PRIVATE hydruino_host)
 
+add_executable(hydruino_serialization_tests
+    host/test_serialization.cpp
+)
+target_link_libraries(hydruino_serialization_tests PRIVATE hydruino_host)
+
 enable_testing()
 add_test(NAME hydruino_core_tests COMMAND hydruino_core_tests)
 add_test(NAME hydruino_hardening_tests COMMAND hydruino_hardening_tests)
 add_test(NAME hydruino_infrastructure_tests COMMAND hydruino_infrastructure_tests)
 add_test(NAME hydruino_hardware_tests COMMAND hydruino_hardware_tests)
+add_test(NAME hydruino_serialization_tests COMMAND hydruino_serialization_tests)
