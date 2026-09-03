@@ -40,6 +40,14 @@ set(HYDRUINO_SRC
 
 add_library(hydruino_host STATIC ${HYDRUINO_SRC})
 target_include_directories(hydruino_host PUBLIC ../src)
+target_include_directories(hydruino_host SYSTEM PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/host/shims
+)
+target_compile_definitions(hydruino_host PUBLIC
+    ARDUINO=10819
+    HYDRO_DISABLE_GUI
+    HYDRO_DISABLE_MULTITASKING
+)
 
 add_executable(hydruino_core_tests
     host/test_core_logic.cpp
