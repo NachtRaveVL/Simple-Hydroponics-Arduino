@@ -1,6 +1,6 @@
 {
     "name": "Simple-Hydroponics-Arduino",
-    "version": "0.7.2.0",
+    "version": "0.7.2",
     "keywords": "hydroponic,hydroponics,plant,plants,crop,crops,grow,growing,growth,watering,scheduler,tracking,diy,automation,controller,monitor,system",
     "description": "Hydruino: Simple automation controller for hydroponic grow systems.",
     "license": "MIT",
@@ -47,17 +47,6 @@
             ]
         }
     ],
-    "frameworks": [
-        "arduino",
-        "espidf",
-        "mbed"
-    ],
-    "platforms": [
-        "avr",
-        "sam",
-        "samd",
-        "teensy",
-        "espressif8266",
-        "espressif32"
-    ]
+    "frameworks": "arduino",
+    "platforms": "*"
 }

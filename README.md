@@ -14,20 +14,17 @@ This controller manages reservoirs, pumps, probes, relays, lighting, dosing, wat
 
 The Keep-It-Simple controller system:
 
-* Can be used entirely offline with RTC module and optional GPS module (or known static location) for accurate time keeping, or used online through enabled on-board WiFi/Ethernet or external ESP-AT WiFi module.
+* Can be used entirely offline with an RTC module for timekeeping and either a known static location or optional GPS module for location, or used online through enabled on-board WiFi/Ethernet or an external ESP-AT WiFi module.
   * Uses [SolarCalculator](https://github.com/jpb10/SolarCalculator), inspired by the NOAA Solar Calculator, for fine offline calculations of the sun's solar position (including sunrise, sunset, & transit times), accurate until 2100.
 * Exportable system configuration to EEPROM, SD card, or WiFiStorage external storage device.
   * Saved in pretty-print JSON for human-readability & easy text editing, or in raw binary for compactness & speed.
-  * Auto-save, backup auto-save (for auto-recovery), and low external storage space cleanup (TODO) functionality.
+  * Auto-save, backup auto-save (for auto-recovery), and low external storage space cleanup functionality.
   * Import string decode functions are pre-optimized with minimum spanning trie for ultra-fast text parsing & reduced loading times.
 * Supports interval-based sensor data publishing and system event logging to MQTT IoT broker (for further IoT-integrated processing) or to external storage in .csv/.txt format (/w date in filename, segmented daily).
   * Can be extended to work with other JSON-based Web APIs or Client-like derivatives (for DB storage or server-endpoint support).
-  * Can add a piezo buzzer for audible system warning/failure alerting (TODO), or a LCD/OLED/TFT display for current readings & recent logging messages (TODO).
 * Enabled GUI works with a large variety of common Arduino-compatible LCD/OLED/TFT displays, touchscreens, matrix keypads, analog joysticks, rotary encoders, and momentary buttons (support by [tcMenu](https://github.com/davetcc/tcMenuLib)).
-  * Contains at-a-glance system overview screen and interactive menu system for system configuration, sensor calibration, and more (TODO).
-  * Critical system config menus can be pin-coded to prevent setup tampering.
-  * Includes remote GUI menu access through enabled WiFi, Ethernet, Bluetooth, Serial, and/or Simhub connection via tcMenu's excellent [embedCONTROL](https://github.com/davetcc/tcMenu/releases) desktop application, available for Linux/OSX/Windows.
-  * GUI I/O pins can be setup as fully interrupt driven (5-25ms latency), partially interrupt driven (only keys & buttons polled), or polling based (75-100ms+ latency), and can be automatically selected depending on pins used.
+  * Remote tcMenu connections can use enabled Serial, WiFi, Ethernet, or Simhub transports with compatible tcMenu clients such as [embedCONTROL](https://github.com/davetcc/tcMenu/releases).
+  * GUI input handling supports interrupt-assisted or polling operation depending on the selected control type and the capabilities of the pins used.
   * System examples can be compiled in:
     * Disabled UI mode, which removes all GUI code entirely, freeing a large amount of Flash size for constrained (<=256kB Flash) devices.
     * Minimal UI mode, which saves on compiled sketch size through optimized code stripping at the cost of having to modify/re-upload a new sketch to change most system settings (or to change system object structure).
@@ -35,11 +32,11 @@ The Keep-It-Simple controller system:
 * Actuator & Sensor pins can be multiplexed or expanded along with any control input pins through 8/16-bit i2c expanders for pin-limited controllers.
 * Library data can be built into onboard Flash or exported onto external storage to additionally save on compiled sketch size.
 
-Designed primarily for Arduino and Arduino-compatible build environments. PlatformIO, Espressif, Teensy, STM32, Pico, and other supported toolchains may also be used.
+Designed primarily for Arduino and Arduino-compatible build environments. PlatformIO can also be used with supported Arduino cores for Espressif, Teensy, STM32, RP2040/RP2350, and other compatible targets.
 
 Datasheet links include: [DS18B20 Temperature Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/DS18B20.pdf), [DHT12 Air Temperature and Humidity Sensor](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/dht12.pdf), [4502c Analog pH Sensor (writeup)](https://github.com/NachtRaveVL/Simple-Hydroponics-Arduino/blob/main/extra/ph-sensor-ph-4502c.pdf), but many more are available online.
 
-*If this work is useful, project support is always appreciated through [Patreon](www.patreon.com/nachtrave).*
+*If this work is useful, project support is always appreciated through [Patreon](https://www.patreon.com/nachtrave).*
 
 ## About
 
@@ -266,7 +263,7 @@ After initialization, the controller can write timestamped system logs and senso
 
 Serial logging output can also be enabled with `HYDRO_ENABLE_DEBUG_OUTPUT`, described above under Header Defines.
 
-FAT32-based SD cards use 8.3 filenames, limiting file/folder names to eight characters plus a three-character extension.
+Some embedded SD/FAT library configurations use 8.3 filenames, limiting file/folder names to eight characters plus a three-character extension. Long-filename support depends on the storage library and build configuration.
 
 From Hydruino.h, in class Hydruino:
 ```Arduino
@@ -283,15 +280,13 @@ Many of the various electronic components and systems this controller is designe
 
 ### General
 
-* The recommended Vcc power supply and logic level is 5v, with most newer MCUs restricted to 3.3v.
-  * There are many devices that are 3.3v only and not 5v tolerant. Check your IC's datasheet for details.
-* 5v device output pins that interface with any 3.3v device input pins that are not 5v tolerant (such as a 5v AVR interfacing with a 3.3v-only [serial ESP-AT WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/), or a 3.3v MCU interfacing with a 5v analog sensor), will require a bi-directional logic level converter/shifter to use, especially for any high-speed digital data transfer lines.
-  * Alternatively, using a 10kΩ resistor can often times be enough to 'convert' 5v to 3.3v, but the correct way is to utilize a 1kΩ resistor and a 2kΩ resistor (or any size with a 1:2 ratio) in a [simple voltage divider circuit](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/).
-* OneWire sensor's logic level voltage is typically the same as their Vcc supply voltage. Most of the time this isn't an issue, but some (such as CO2 sensors) may require 5v Vcc supply power and thus need their data line converted in order to connect to a 3.3v MCU.
+* Use the supply and logic voltages required by the selected MCU and peripherals. Arduino-compatible hardware commonly uses either 5V or 3.3V logic, and many 3.3V devices are not 5V tolerant. Check the MCU, module, and IC datasheets before connecting signals.
+* When two devices use incompatible logic levels, use a level-shifting method appropriate to the signal. A unidirectional resistor divider can be suitable for some slow 5V-to-3.3V signals, while bidirectional or high-speed buses generally need a proper level shifter. A single series resistor is not a general-purpose voltage converter.
+* Never apply a signal outside the receiving pin's absolute-maximum and input-threshold specifications. Do not assume that a 3.3V HIGH will always satisfy a 5V input, or that a breakout board provides level shifting unless its documentation says so.
 
 ### Serial UART
 
-Serial UART uses individual communication lines for each device, with the receive `RX` pin of one being the transmit `TX` pin of the other - thus having to "flip wires" when connecting. However, devices can always be active and never have to share their access. UART runs at low to mid kHz speeds and is useful for simple device control, albeit somewhat clumsy at times.
+Serial UART uses individual communication lines for each device, with the receive `RX` pin of one being the transmit `TX` pin of the other - thus having to "flip wires" when connecting. However, devices can always be active and never have to share their access. UART commonly operates from low kilobit/s rates into the hundreds of kilobits/s and is useful for simple point-to-point device control.
 
 * When wiring up modules that use Serial UART, make sure to flip `RX`/`TX` pins.
 * Always ensure that any data output pins and data input pins have compatible voltages.
@@ -300,11 +295,11 @@ Serial UART Devices Supported: Bluetooth-AT modules, ESP-AT WiFi modules, NMEA-A
 
 ### SPI Bus
 
-SPI devices can be chained together on the same shared data lines, which are typically labeled `COPI` (or `MOSI`), `CIPO` (or `MISO`), and `SCK`, often with an additional `CS` (or `SS`). Each SPI device requires its own individual cable-select `CS` wire as only one SPI device may be active at any given time - accomplished by pulling its `CS` line of that device low (aka active-low). SPI runs at MHz speeds and is useful for large data block transfers.
+SPI devices can be chained together on the same shared data lines, which are typically labeled `COPI` (or `MOSI`), `CIPO` (or `MISO`), and `SCK`, often with an additional `CS` (or `SS`). Each SPI device requires its own individual chip-select `CS` wire as only one SPI device may be active at any given time - accomplished by pulling its `CS` line of that device low (aka active-low). SPI runs at MHz speeds and is useful for large data block transfers.
 
 * The `CS` pin may be connected to any digital output pin, but it's common to use the `CS` (or `SS`) pin for the first device. Additional devices are not restricted to what pin they can or should use, but given it's not a data pin not using a choice interrupt-capable pin allows those to be used for interrupt driven mechanisms.
-* Many low-cost SPI-based SD card modules on market only read SDHC sized SD cards (2GB to 32GB) formatted in FAT32 (filenames limited to 8 characters plus 3 character file extension).
-  * Some SD cards simply will not play nicely with these modules and you may have to try another SD card manufacturer. We recommend 32GB SD cards due to overall lowest cost (smaller SD cards actually becoming _more_ expensive).
+* SD-card compatibility depends on the card, breakout hardware, voltage translation, and the storage library used by the target. FAT32 is widely supported on embedded Arduino setups, while maximum card size and long-filename support vary by library and configuration.
+  * Validate the exact card and module combination on the target hardware before relying on it for configuration, logging, or autosave.
 * Many various graphical displays may have an additional `DC` (or `RS`) pin, which is required to be connected to any open digital pin in addition to its `CS` pin.
   * There is often an additional `Reset` (or `RST`) pin that needs either wired to an open digital pin for MCU control, otherwise typically will need hard-tied to a HIGH signal (such as that from `Vcc`) in order for the display to function/turn-on.
   * There is also often an additional `LED` (or `BL`) pin that controls the backlight that can be either optionally wired to an open digital or analog pin for MCU control, otherwise can be hard-tied typically to a HIGH signal (such as that from `Vcc`) in order to stay always-on, or simply left disconnected for device default.
@@ -314,9 +309,9 @@ SPI Devices Supported: SD card modules, NMEA GPS modules, 128x128+ LCD/OLED/TFT 
 
 ### I2C Bus
 
-I2C (aka I²C, IIC, TwoWire, TWI) devices can be chained together on the same shared data lines (no flipping of wires), which are typically labeled `SCL` and `SDA`. Only different kinds of I2C devices can be used on the same data line together using factory default settings, otherwise manual addressing must be done. I2C runs at mid to high kHz speeds and is useful for advanced device control.
+I2C (aka I²C, IIC, TwoWire, TWI) devices share the same `SCL` and `SDA` lines. Every active device on a bus must have a non-conflicting address; whether two modules can coexist depends on their configurable address ranges, not simply on whether they are the same device type. I2C commonly runs at 100kHz or 400kHz, with other rates supported by some hardware.
 
-* When more than one I2C device of the same kind is to be used on the same data line, each device must be set to use a different address. This is accomplished via the A0-A2 (sometimes A0-A5) pins/pads on the physical device that must be set either open or closed (typically via a de-solderable resistor, or by shorting a pin/pad). Check your specific breakout's datasheet for details.
+* When addresses conflict, use the device's address-select pins/pads when available, place the devices on separate buses, or use an appropriate I2C multiplexer. Check the specific breakout and library documentation for supported addressing.
 * Note that not all the I2C libraries used support multi-addressable I2C devices at this time (read as: may only use one). Currently, this restriction applies to: RTC devices.
 * Always ensure that any data output pins and data input pins have compatible voltages.
 
@@ -324,53 +319,48 @@ I2C Devices Supported: DS*/PCF* RTC modules, AT24C* EEPROM modules, NMEA GPS mod
 
 ### OneWire Bus
 
-OneWire devices can be chained together on the same shared data lines (no flipping of wires). Devices can be of the same or different types, require minimal setup (and often no soldering), and most can even operate in "parasite" power mode where they use the power from the data line (and an internal capacitor) to function (thus saving a `Vcc` line, only requiring `Data` and return `GND`). OneWire runs only in the low kb/s speeds and is useful for light-weight digital sensors.
+Dallas/Maxim OneWire devices can share a single data line and are identified by a 64-bit ROM address. Some devices support parasite power, but externally powered operation is often more robust for larger or electrically noisy installations.
 
-* Typically, sensors are limited to 20 devices along a maximum 100m of wire.
-* When more than one OneWire device is on the same device line, each device registers itself an enumeration index (0 - N) along with its own 64-bit unique identifier (UUID, with last byte being CRC). The device can then be referenced via this UUID by the system in the future indefinitely, or enumeration index so long as the device doesn't change its line position.
-* Note that DHT* 1W devices may not play nicely together on the same wire line as other 1W devices - dependency issue.
+* Practical bus length and device count depend on cable capacitance, topology, pull-up strength, power mode, timing, and the devices in use. Validate the real wiring rather than relying on a fixed universal distance or device-count limit.
+* When more than one OneWire device is present, the controller can identify devices by their 64-bit ROM address and may also use an enumeration position where supported. The ROM address is the stable identity; enumeration order can change if the bus population or topology changes.
 * Always ensure that any data output pins and data input pins have compatible voltages.
 
-OneWire Devices Supported: DHT* 1W air temp/humidity sensors, DS* 1W water temp sensors
+OneWire Devices Supported: DS18-series temperature sensors. DHT sensors use their own single-data-wire protocol and are not Dallas/Maxim OneWire devices.
 
 ### Analog IO
 
-* All analog sensors will need to have the same operational voltage range as the controller supports. Many analog sensors are set to use 0v to 5v by default, but some can go -5v to +5v, some even up to 5.5v.
-  * Note: Altering default factory calibration settings may require addition tools for setting up a new calibration, such as special calibration fluids/procedures/etc. Refer to the datasheet of your device for details.
-* The `AREF` (or `IOREF`) pin, which controls the upper-bound of this range, by default if left not-connected (NC) is the same voltage as the MCU. Analog sensors must not exceed this voltage limit.
-  * 5v analog sensor output signals connecting to 3.3v MCUs that are not 5v tolerant **must** either be: [level converted](https://randomnerdtutorials.com/how-to-level-shift-5v-to-3-3v/) in order to connect, or configured to output 0v to `AREF` (or `IOREF`) in voltage calibration output range (if able to calibrate - see note above).
-  * Warning: Too high of applied voltage to any pin incapable of receiving such high a voltage risks permanent damage to that device. _Always_ ensure that the applied voltage level coming out a device is supported when going back into another. Some breakouts/IC's have 5v tolerance built-in, some do not. Refer to the datasheet of your MCU/device for details.
-  * Note: Typically a 3.3v output signal will _not_ need level converted up to 5v for a 5v digital input to operate (read as: 3.3v is plenty enough to trigger HIGH on 5v device inputs).
-* The SAM/SAMD family of MCUs (e.g. Due, Zero, MKR, Nano 33, etc.) as well as many more modern MCUs support different bit resolutions for analog/PWM pins (tied to overridable `DAC_RESOLUTION` & `ADC_RESOLUTION` defines), with some (e.g. Pico, ESP32, etc.) supporting any pin being digital or analog w/o restriction. Refer to the datasheet of your MCU for details.
+* Analog sensors must stay within the electrical input range of the MCU pin. A sensor that can output more voltage than the ADC input allows needs attenuation, level conversion, or a different interface before it is connected.
+  * Altering a sensor's factory calibration or output range may require calibration references, fluids, or procedures specific to that device. Refer to its datasheet.
+* ADC reference behavior is board-specific. `AREF` can select or accept an analog reference on boards that support it when configured appropriately; `IOREF` normally indicates the board's logic voltage and is not interchangeable with `AREF`. Check the board documentation before using either pin.
+  * Applying voltage beyond a pin's rated range can permanently damage the MCU. Verify both the normal operating range and absolute-maximum rating.
+* ADC-capable pins, PWM-capable pins, and supported ADC/DAC resolutions vary substantially by MCU and board. The `ADC_RESOLUTION` and `DAC_RESOLUTION` defines describe the configured conversion resolution; they do not imply that every GPIO supports analog input or output. Refer to the target board's pinout and datasheet.
 
 ### Sensors
 
-* If able to set in hardware, ensure any electro-conductivity-based sensors (such as TDS meters and soil moisture sensors) use EC (aka mS/cm, millisiemens per centimeter) mode. EC is considered a normalized standard measurement while PPM can be split into different scale categories depending on sensor chemistry in use, which is often tied to country of origin. PPM/EC based sensors operating on anything other than a 1v=500ppm or 1v=1EC will need to have their scaling explicitly set.
+* When a conductivity/TDS sensor can report EC directly, prefer EC (mS/cm) so the measurement is not tied to an ambiguous PPM conversion factor. If the device reports TDS/PPM instead, configure the conversion scale used by that sensor explicitly.
 * Many different kinds of hobbyist sensors label their analog output `AO` (or `Ao`) - however, always check your specific sensor's datasheet, as some may have non-standard pin designations.
-  * Again, make sure all analog sensors are calibrated to output the same 0v - `AREF` (or `IOREF`) volts in range.
-* Sensor pins used for event triggering when measurements go above/below a pre-set tolerance - many of which are deceptively labeled `DO` (or `Do`), despite having nothing to do with being `D`ata lines of any kind - can be safely ignored, as the software implementation of such mechanism is more than sufficient.
-  * Often these connections are used to drive other hardware-only based solutions that aren't a part of Hydruino's use case, but can still be connected up using a BinarySensor that triggers upon specific conditions, possibly using an ISR-capable pin if desired.
-  * BinarySensor state changes use a configurable stable-time filter before a new level is accepted. The default is 100ms. Use `setStateStableTime()` to adjust it, or set `stateStableTimeMs` to 0 to disable the filter.
-* CO2 sensors are a bit unique - they require a 24 hour powered initialization period to burn off manufacturing chemicals, and _require_ `Vcc` for its heating element (5v @ 130mA for MQ-135) thus cannot use OneWire parasitic power mode. To calibrate, you have to set it outside while active until its voltage stabilizes, then calibrate its stabilized voltage to the current global known CO2 level.
+  * Ensure the sensor output remains within the configured ADC input range and reference used by the target board.
+* Many sensor modules expose a digital threshold output labeled `DO` (or `Do`). It is optional when software thresholds on the measured value are sufficient, but it can be useful when the hardware threshold itself should be monitored.
+  * Connect that output through a `HydroBinarySensor` when it should participate in the controller, optionally using an ISR-capable pin where appropriate.
+  * `HydroBinarySensor` state changes use a configurable stable-time filter before a new level is accepted. The default is 100ms. Use `setStateStableTime()` to adjust it, or set `stateStableTimeMs` to 0 to disable the filter.
+* Gas and CO2 sensors vary widely. Heated metal-oxide devices such as the MQ-135 require substantial warm-up/burn-in and are not inherently selective or calibrated CO2 instruments. Follow the specific sensor manufacturer's power, warm-up, and calibration procedure.
 * Avoid using volatile organic cleaners nearby humidity sensors - cleaning alcohols (like those commonly used in electronics) can permanently damage these devices.
 
 ### Networking & Wireless
 
-* Networking of any kind is 100% optional. Base controller operation works offline using an RTC and optional GPS or known static location.
-  * WiFi or Ethernet can be enabled when remote control, MQTT, network time, or network storage is wanted.
+* Networking of any kind is 100% optional. Base controller operation works offline using an RTC for timekeeping and either an optional GPS receiver or known static location for location data.
+  * WiFi or Ethernet can be enabled when remote control, MQTT, or network storage is wanted.
 * Devices with built-in WiFi or Ethernet can enable such through header/build defines while other devices can utilize an external [serial ESP WiFi module](http://www.instructables.com/id/Cheap-Arduino-WiFi-Shield-With-ESP8266/) on any open Serial line.
   * Warning: While WiFi password is encrypted into system settings data, it should not be considered secure.
 * Serial Bluetooth-AT modules can be used on any open Serial port to provide remote device control (only).
 * MQTT requires remotely accessible broker daemon in order to publish sensor data (setup separately).
-* UDP time server requires remotely accessible time & date API service in order to sync time (TODO).
-  * RTC not required / used in reserve when UDP service enabled.
 * Note: Geo-location APIs require external 3rd party monthly subscription fees, thus isn't included as a feature.
 
 ## Memory Callouts
 
-* The total number of objects and different kinds of objects (reservoirs, pumps, probes, relays, etc.) that the controller can support at once depends on how much free Flash storage and SRAM your MCU has available. Hydruino C++0x11 objects range in memory usage size from 150 to 750 bytes or more depending on settings and object type, with the compiled Flash binary ranging in size from 200kB to 750kB+ depending on platform and settings.
+* The total number of objects and different kinds of objects (reservoirs, pumps, probes, relays, etc.) that the controller can support at once depends on how much free Flash storage and SRAM your MCU has available. Exact object and firmware sizes depend on the target architecture, enabled features, compiler, and system configuration.
   * For our supported microcontroller range, on the low end we have devices with 256kB of Flash and at least 16kB of SRAM, while on the upper end we have more modern devices with 1MB+ of Flash and 32kB+ of SRAM. Devices with < 24kB of SRAM may struggle with system builds and may be limited to minimal system setups (such as no WiFi, no data publishing, no built-in library data, only minimal-to-no GUI, etc.), while other newer devices with more capacity build with everything enabled.
-* For AVR, SAM, and other build architectures that do not have C++0x11 STL (standard container library) support, there are a series of *`_MAXSIZE` defines nearer to the top of `Hydro[UI]Defines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller instead uses.
+* For AVR, SAM, and other build architectures that do not have C++11 STL (standard container library) support, there are a series of *`_MAXSIZE` defines nearer to the top of `Hydro[UI]Defines.h` that can be modified to adjust how much memory space is allocated for the various static array structures the controller instead uses.
 * To save on the cost of code size for constrained devices, focus on not enabling that which you won't need, which has the benefit of being able to utilize code stripping to remove sections of code that don't get used.
   * There are also header defines that can strip out certain libraries and functionality, such as ones that disable the GUI, multi-tasking subsystems, etc.
 * To further save on code size cost, see the Data Writer Example on how to externalize library data onto an SD Card or EEPROM.
